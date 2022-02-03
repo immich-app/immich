@@ -29,6 +29,12 @@ COPY . .
 
 RUN yarn build
 
+# Clean up commands
+RUN apt-get autoremove -y && apt-get clean && \
+  rm -rf /usr/local/src/*
+
+RUN apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
 FROM ubuntu:20.04 as production
 ARG DEBIAN_FRONTEND=noninteractive
@@ -61,5 +67,12 @@ RUN yarn install --only=production
 COPY . .
 
 COPY --from=development /usr/src/app/dist ./dist
+
+# Clean up commands
+RUN apt-get autoremove -y && apt-get clean && \
+  rm -rf /usr/local/src/*
+
+RUN apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
 CMD ["node", "dist/main"]

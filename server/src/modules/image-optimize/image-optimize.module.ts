@@ -7,7 +7,7 @@ import { AssetService } from '../../api-v1/asset/asset.service';
 import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
 import { ImageOptimizeProcessor } from './image-optimize.processor';
 import { ImageOptimizeService } from './image-optimize.service';
-// import { MachineLearningProcessor } from './machine-learning.processor';
+import { MachineLearningProcessor } from './machine-learning.processor';
 
 @Module({
   imports: [
@@ -30,7 +30,7 @@ import { ImageOptimizeService } from './image-optimize.service';
 
     TypeOrmModule.forFeature([AssetEntity]),
   ],
-  providers: [ImageOptimizeService, ImageOptimizeProcessor],
+  providers: [ImageOptimizeService, ImageOptimizeProcessor, MachineLearningProcessor],
   exports: [ImageOptimizeService],
 })
 export class ImageOptimizeModule {}

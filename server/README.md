@@ -10,16 +10,4 @@ There is a tensorflow module running in the server so some package will be neede
 $ apt-get install make cmake gcc g++
 ```
 
-# Docker
 
-To run application using docker compose
-
-```bash
-docker-compose up
-```
-
-To force rebuild node module after installing new packages
-
-```bash
-docker-compose up --build -V
-```
