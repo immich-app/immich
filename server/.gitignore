@@ -38,3 +38,4 @@ lerna-debug.log*
 dist/
 upload/
 tmp/
+core

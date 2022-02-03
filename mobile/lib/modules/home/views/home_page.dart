@@ -88,8 +88,9 @@ class HomePage extends HookConsumerWidget {
 
           lastGroupDate = dateTitle;
         }
+      } 
 
-        return SafeArea(
+       return SafeArea(
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -98,9 +99,6 @@ class HomePage extends HookConsumerWidget {
             ],
           ),
         );
-      } else {
-        return Container();
-      }
     }
 
     return Scaffold(

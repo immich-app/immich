@@ -27,9 +27,9 @@ import { ServerInfoModule } from './api-v1/server-info/server-info.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         redis: {
-          host: configService.get('REDIS_HOST'),
-          port: configService.get('REDIS_PORT'),
-          password: configService.get('REDIS_PASSWORD'),
+          host: 'immich_redis',
+          port: 6379,
+          // password: configService.get('REDIS_PASSWORD'),
         },
       }),
       inject: [ConfigService],
@@ -44,6 +44,6 @@ import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    // consumer.apply(AppLoggerMiddleware).forRoutes('*');
+    consumer.apply(AppLoggerMiddleware).forRoutes('*');
   }
 }

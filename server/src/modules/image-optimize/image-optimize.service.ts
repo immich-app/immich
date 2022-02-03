@@ -8,10 +8,7 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 
 @Injectable()
 export class ImageOptimizeService {
-  constructor(
-    @InjectQueue('image') private imageQueue: Queue,
-    @InjectQueue('machine-learning') private machineLearningQueue: Queue,
-  ) {}
+  constructor(@InjectQueue('image') private imageQueue: Queue) {}
 
   public async resizeImage(savedAsset: AssetEntity) {
     const job = await this.imageQueue.add(

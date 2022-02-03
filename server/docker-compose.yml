@@ -1,0 +1,54 @@
+version: '3.8'
+
+
+services:
+  server:
+    container_name: immich_server
+    image: immich-server-dev:1.0.0
+    build:
+      context: .
+      target: development
+      dockerfile: ./Dockerfile
+    command: yarn start:dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+      - userdata:/usr/src/app/upload
+      - /usr/src/app/node_modules
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - database
+    networks:
+      - immich_network
+
+  redis:
+    container_name: immich_redis
+    image: redis:6.2
+    networks:
+      - immich_network  
+
+  database:
+    container_name: immich_postgres
+    image: postgres:14
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      PG_DATA: /var/lib/postgresql/data
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - immich_network  
+
+networks:
+  immich_network:
+volumes:
+  pgdata:
+  userdata:
