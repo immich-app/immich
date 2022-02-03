@@ -31,3 +31,17 @@ To force rebuild node modules after installing new packages
 ```bash
 docker-compose up --build -V ./server
 ```
+
+# Known Issue
+
+TensorFlow doesn't run with older CPU architecture, it requires CPU with AVX and AVX2 instruction set. If you encounter error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command ad make sure you see `AVX` and `AVX2`. Otherwise, switch to a different VM/desktop with different architecture.
+
+```bash
+more /proc/cpuinfo | grep flags
+```
+
+If you are running virtualization in Promox, the VM doesn't have the flag enable.
+
+You need to change the CPU type from `kvm64` to `host` under VMs hardware tab.
+
+`Hardware > Processors > Edit > Advanced > Type (dropdown menu) > host`
