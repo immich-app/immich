@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="design/immich-logo.svg" width="150" title="hover text">
+</p>
+
 # IMMICH
 
 Self-hosted Photo backup solution directly from your mobile phone.
