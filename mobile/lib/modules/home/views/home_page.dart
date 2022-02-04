@@ -104,32 +104,30 @@ class HomePage extends HookConsumerWidget {
         }
       }
 
-      return SafeArea(
-        child: DraggableScrollbar.semicircle(
-          // labelTextBuilder: (offset) {
-          //   final int currentItem = _scrollController.hasClients
-          //       ? (_scrollController.offset / _scrollController.position.maxScrollExtent * imageGridGroup.length)
-          //           .floor()
-          //       : 0;
+      return DraggableScrollbar.semicircle(
+        // labelTextBuilder: (offset) {
+        //   final int currentItem = _scrollController.hasClients
+        //       ? (_scrollController.offset / _scrollController.position.maxScrollExtent * imageGridGroup.length)
+        //           .floor()
+        //       : 0;
 
-          //   if (imageGridGroup[currentItem] is MonthlyTitleText) {
-          //     MonthlyTitleText item = imageGridGroup[currentItem] as MonthlyTitleText;
+        //   if (imageGridGroup[currentItem] is MonthlyTitleText) {
+        //     MonthlyTitleText item = imageGridGroup[currentItem] as MonthlyTitleText;
 
-          //     scrollLabelText.value = item.monthTitleText;
-          //   }
+        //     scrollLabelText.value = item.monthTitleText;
+        //   }
 
-          //   return Text(scrollLabelText.value);
-          // },
-          // labelConstraints: const BoxConstraints.tightFor(width: 200.0, height: 30.0),
+        //   return Text(scrollLabelText.value);
+        // },
+        // labelConstraints: const BoxConstraints.tightFor(width: 200.0, height: 30.0),
+        controller: _scrollController,
+        heightScrollThumb: 40.0,
+        child: CustomScrollView(
           controller: _scrollController,
-          heightScrollThumb: 40.0,
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              ImmichSliverAppBar(imageGridGroup: imageGridGroup),
-              ...imageGridGroup,
-            ],
-          ),
+          slivers: [
+            ImmichSliverAppBar(imageGridGroup: imageGridGroup),
+            ...imageGridGroup,
+          ],
         ),
       );
     }
