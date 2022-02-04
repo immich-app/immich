@@ -100,7 +100,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
             ],
           ),
         ],
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
     );
   }
