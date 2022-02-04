@@ -1,0 +1,40 @@
+FROM node:16-bullseye-slim AS development
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /usr/src/app
+
+COPY package.json yarn.lock ./
+
+RUN apt-get update
+RUN apt-get install gcc g++ make cmake python3 python3-pip -y
+
+RUN npm i -g yarn --force
+
+RUN yarn install
+
+COPY . .
+
+RUN yarn build
+
+FROM node:16-bullseye-slim as production
+ARG DEBIAN_FRONTEND=noninteractive
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+WORKDIR /usr/src/app
+
+COPY package.json yarn.lock ./
+
+RUN apt-get update
+RUN apt-get install gcc g++ make cmake python3 python3-pip -y
+
+RUN npm i -g yarn --force
+
+RUN yarn install --only=production
+
+COPY . .
+
+COPY --from=development /usr/src/app/dist ./dist
+
+CMD ["node", "dist/main"]

@@ -8,7 +8,7 @@ services:
     build:
       context: .
       target: development
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile-minimal
     command: yarn start:dev
     ports:
       - "3000:3000"
