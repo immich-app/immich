@@ -84,6 +84,7 @@ class HomePage extends HookConsumerWidget {
           int? currentMonth = DateTime.tryParse(dateTitle)?.month;
           int? previousMonth = DateTime.tryParse(lastGroupDate)?.month;
 
+          // Add Monthly Title Group if started at the beginning of the month
           if ((currentMonth! - previousMonth!) != 0) {
             var monthTitleText = DateFormat('MMMM, y').format(DateTime.parse(dateTitle));
 
@@ -92,10 +93,12 @@ class HomePage extends HookConsumerWidget {
             );
           }
 
+          // Add Daily Title Group
           imageGridGroup.add(
-            _buildDateGroupTitle(dateTitle),
+            DailyTitleText(dateTitle: dateTitle),
           );
 
+          // Add Image Group
           imageGridGroup.add(
             ImageGrid(assetGroup: assetGroup),
           );
@@ -121,8 +124,9 @@ class HomePage extends HookConsumerWidget {
           //   return Text(scrollLabelText.value);
           // },
           // labelConstraints: const BoxConstraints.tightFor(width: 200.0, height: 30.0),
+          backgroundColor: Theme.of(context).primaryColor,
           controller: _scrollController,
-          heightScrollThumb: 40.0,
+          heightScrollThumb: 48.0,
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -161,6 +165,44 @@ class MonthlyTitleText extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: Theme.of(context).primaryColor,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class DailyTitleText extends StatelessWidget {
+  const DailyTitleText({
+    Key? key,
+    required this.dateTitle,
+  }) : super(key: key);
+
+  final String dateTitle;
+
+  @override
+  Widget build(BuildContext context) {
+    var currentYear = DateTime.now().year;
+    var groupYear = DateTime.parse(dateTitle).year;
+    var formatDateTemplate = currentYear == groupYear ? 'E, MMM dd' : 'E, MMM dd, yyyy';
+    var dateText = DateFormat(formatDateTemplate).format(DateTime.parse(dateTitle));
+
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 24.0, bottom: 24.0, left: 3.0),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0, bottom: 5.0, top: 5.0),
+              child: Text(
+                dateText,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

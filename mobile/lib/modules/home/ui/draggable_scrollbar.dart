@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Build the Scroll Thumb and label using the current configuration
@@ -166,7 +165,7 @@ class DraggableScrollbar extends StatefulWidget {
     }) {
       final scrollThumb = CustomPaint(
         key: scrollThumbKey,
-        foregroundPainter: ArrowCustomPainter(Colors.grey),
+        foregroundPainter: ArrowCustomPainter(Colors.white),
         child: Material(
           elevation: 4.0,
           child: Container(
@@ -348,7 +347,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
 
   double get barMaxScrollExtent => context.size!.height - widget.heightScrollThumb;
 
-  double get barMinScrollExtent => 0.0;
+  double get barMinScrollExtent => 0;
 
   double get viewMaxScrollExtent => widget.controller.position.maxScrollExtent;
 

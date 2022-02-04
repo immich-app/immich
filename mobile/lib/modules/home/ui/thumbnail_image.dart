@@ -5,7 +5,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 class ThumbnailImage extends StatelessWidget {
   final ImmichAsset asset;
@@ -17,7 +16,6 @@ class ThumbnailImage extends StatelessWidget {
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
         '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
-
     return GestureDetector(
       onTap: () {
         AutoRouter.of(context).push(
@@ -44,7 +42,10 @@ class ThumbnailImage extends StatelessWidget {
             scale: 0.2,
             child: CircularProgressIndicator(value: downloadProgress.progress),
           ),
-          errorWidget: (context, url, error) => const Icon(Icons.error),
+          errorWidget: (context, url, error) {
+            debugPrint("Error Loading Thumbnail Widget $error");
+            return const Icon(Icons.error);
+          },
         ),
       ),
     );
