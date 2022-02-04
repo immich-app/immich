@@ -27,13 +27,13 @@ Then populate the value in there.
 To start, run
 
 ```bash
-docker-compose up ./server
+docker-compose -f ./server/docker-compose.yml up
 ```
 
 To force rebuild node modules after installing new packages
 
 ```bash
-docker-compose up --build -V ./server
+docker-compose -f ./server/docker-compose.yml up --build -V
 ```
 
 # Known Issue

@@ -46,10 +46,6 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
   }
 
   Future<void> initApp() async {
-    // ! TOBE DELETE
-    // Simulate Sign In And Register/Get Device ID
-    // await ref.read(authenticationProvider.notifier).login();
-    // ref.read(backupProvider.notifier).getBackupInfo();
     // WidgetsBinding.instance?.addObserver(this);
   }
 

@@ -75,12 +75,14 @@ class ImmichSliverAppBar extends ConsumerWidget {
                 onPressed: () async {
                   var onPop = await AutoRouter.of(context).push(const BackupControllerRoute());
 
-                  // Fetch new image
                   if (onPop == true) {
-                    // Remove and force getting new widget again
-                    if (imageGridGroup.isNotEmpty) {
+                    // Remove and force getting new widget again if there is not many widget on screen.
+                    // Otherwise do nothing.
+                    if (imageGridGroup.isNotEmpty && imageGridGroup.length < 20) {
+                      print("Get more access");
                       ref.read(assetProvider.notifier).getMoreAsset();
-                    } else {
+                    } else if (imageGridGroup.isEmpty) {
+                      print("get immich asset");
                       ref.read(assetProvider.notifier).getImmichAssets();
                     }
                   }

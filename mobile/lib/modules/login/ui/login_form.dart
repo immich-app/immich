@@ -12,7 +12,7 @@ class LoginForm extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final usernameController = useTextEditingController(text: 'testuser@email.com');
     final passwordController = useTextEditingController(text: 'password');
-    final serverEndpointController = useTextEditingController(text: 'http://192.168.1.216');
+    final serverEndpointController = useTextEditingController(text: 'http://192.168.1.103:3000');
 
     return Center(
       child: ConstrainedBox(

@@ -63,7 +63,7 @@ export class AssetService {
           lastQueryCreatedAt: query.nextPageKey || new Date().toISOString(),
         })
         .orderBy('a."createdAt"::date', 'DESC')
-        .take(200)
+        .take(10000)
         .getMany();
 
       if (assets.length > 0) {

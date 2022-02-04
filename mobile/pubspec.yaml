@@ -25,6 +25,8 @@ dependencies:
   auto_route: ^3.2.2
   exif: ^3.1.1
   transparent_image: ^2.0.0
+  visibility_detector: ^0.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
