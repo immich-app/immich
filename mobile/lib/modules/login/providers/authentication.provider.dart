@@ -9,7 +9,6 @@ import 'package:immich_mobile/shared/services/backup.service.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
-import 'package:immich_mobile/utils/dio_http_interceptor.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   AuthenticationNotifier()
@@ -45,8 +44,12 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       Hive.box(userInfoBox).put(serverEndpointKey, serverEndpoint);
     }
 
-    bool isServerEndpointVerified = await _networkService.pingServer();
-    if (!isServerEndpointVerified) {
+    try {
+      bool isServerEndpointVerified = await _networkService.pingServer();
+      if (!isServerEndpointVerified) {
+        return false;
+      }
+    } catch (e) {
       return false;
     }
 

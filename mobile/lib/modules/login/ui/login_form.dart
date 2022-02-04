@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class LoginForm extends HookConsumerWidget {
   const LoginForm({Key? key}) : super(key: key);
@@ -116,7 +117,10 @@ class LoginButton extends ConsumerWidget {
           if (isAuthenicated) {
             AutoRouter.of(context).pushNamed("/home-page");
           } else {
-            debugPrint("BAD LOGIN TRY AGAIN - Show UI Here");
+            ImmichToast.show(
+                context: context,
+                msg: "Error logging you in, check server url, emald and password!",
+                toastType: ToastType.error);
           }
         },
         child: const Text("Login"));

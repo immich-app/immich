@@ -2,6 +2,9 @@ PODS:
   - device_info_plus (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - fluttertoast (0.0.2):
+    - Flutter
+    - Toast
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
@@ -13,10 +16,12 @@ PODS:
   - sqflite (0.0.2):
     - Flutter
     - FMDB (>= 2.7.5)
+  - Toast (4.0.0)
 
 DEPENDENCIES:
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - Flutter (from `Flutter`)
+  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
   - photo_manager (from `.symlinks/plugins/photo_manager/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
@@ -24,12 +29,15 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - FMDB
+    - Toast
 
 EXTERNAL SOURCES:
   device_info_plus:
     :path: ".symlinks/plugins/device_info_plus/ios"
   Flutter:
     :path: Flutter
+  fluttertoast:
+    :path: ".symlinks/plugins/fluttertoast/ios"
   path_provider_ios:
     :path: ".symlinks/plugins/path_provider_ios/ios"
   photo_manager:
@@ -40,10 +48,12 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   device_info_plus: e5c5da33f982a436e103237c0c85f9031142abed
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  fluttertoast: 6122fa75143e992b1d3470f61000f591a798cc58
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
   photo_manager: 84fa94fbeb82e607333ea9a13c43b58e0903a463
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
+  Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
