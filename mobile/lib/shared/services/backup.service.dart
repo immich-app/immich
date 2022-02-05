@@ -49,8 +49,8 @@ class BackupService {
           String originalFileName = await entity.titleAsync;
           String fileNameWithoutPath = originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
-          LatLng coordinate = await entity.latlngAsync();
           var mimeType = FileHelper.getMimeType(file.path);
+
           var formData = FormData.fromMap({
             'deviceAssetId': entity.id,
             'deviceId': deviceId,
@@ -59,8 +59,7 @@ class BackupService {
             'modifiedAt': entity.modifiedDateTime.toIso8601String(),
             'isFavorite': entity.isFavorite,
             'fileExtension': fileExtension,
-            'lat': coordinate.latitude,
-            'lon': coordinate.longitude,
+            'duration': entity.videoDuration,
             'files': [
               await MultipartFile.fromFile(
                 file.path,

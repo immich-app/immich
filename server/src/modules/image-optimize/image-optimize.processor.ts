@@ -60,13 +60,13 @@ export class ImageOptimizeProcessor {
     return 'ok';
   }
 
-  @Process('resize-video')
+  @Process('get-video-thumbnail')
   async resizeUploadedVideo(job: Job) {
-    const { savedAsset }: { savedAsset: AssetEntity } = job.data;
+    const { savedAsset, filename }: { savedAsset: AssetEntity; filename: String } = job.data;
 
     const basePath = this.configService.get('UPLOAD_LOCATION');
-    const resizePath = savedAsset.originalPath.replace('/original/', '/thumb/');
-
+    // const resizePath = savedAsset.originalPath.replace('/original/', '/thumb/');
+    console.log(filename);
     // Create folder for thumb image if not exist
     const resizeDir = `${basePath}/${savedAsset.userId}/thumb/${savedAsset.deviceId}`;
 
@@ -75,18 +75,16 @@ export class ImageOptimizeProcessor {
     }
 
     ffmpeg(savedAsset.originalPath)
-      .output(resizePath)
-      .noAudio()
-      .videoCodec('libx264')
-      .size('640x?')
-      .aspect('4:3')
-      .on('error', (e) => {
-        Logger.log(`Error resizing File: ${e}`, 'resizeUploadedVideo');
+      .thumbnail({
+        count: 1,
+        timestamps: [1],
+        folder: resizeDir,
+        filename: `${filename}.png`,
+        size: '512x512',
       })
-      .on('end', async () => {
-        await this.assetRepository.update(savedAsset, { resizePath: resizePath });
-      })
-      .run();
+      .on('end', async (a) => {
+        await this.assetRepository.update(savedAsset, { resizePath: `${resizeDir}/${filename}.png` });
+      });
 
     return 'ok';
   }

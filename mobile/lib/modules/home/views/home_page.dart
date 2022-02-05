@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
+import 'package:immich_mobile/modules/home/ui/image_grid.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer.dart';
 import 'package:immich_mobile/modules/home/models/get_all_asset_respose.model.dart';
-import 'package:immich_mobile/modules/home/ui/image_grid.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 import 'package:intl/intl.dart';
 
@@ -16,9 +16,9 @@ class HomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ValueNotifier<bool> _showBackToTopBtn = useState(false);
     ScrollController _scrollController = useScrollController();
+
     List<ImmichAssetGroupByDate> assetGroup = ref.watch(assetProvider);
     List<Widget> imageGridGroup = [];
-    String scrollBarText = "";
 
     _scrollControllerCallback() {
       var endOfPage = _scrollController.position.maxScrollExtent;
@@ -40,7 +40,6 @@ class HomePage extends HookConsumerWidget {
       _scrollController.addListener(_scrollControllerCallback);
 
       return () {
-        debugPrint("Remove scroll listener");
         _scrollController.removeListener(_scrollControllerCallback);
       };
     }, []);
@@ -72,33 +71,13 @@ class HomePage extends HookConsumerWidget {
           imageGridGroup.add(
             ImageGrid(assetGroup: assetGroup),
           );
-
+          //
           lastGroupDate = dateTitle;
         }
       }
 
       return SafeArea(
         child: DraggableScrollbar.semicircle(
-          // labelTextBuilder: (offset) {
-          // final int currentItem = _scrollController.hasClients
-          //     ? (_scrollController.offset / _scrollController.position.maxScrollExtent * imageGridGroup.length)
-          //         .floor()
-          //     : 0;
-
-          // if (imageGridGroup[currentItem] is DailyTitleText) {
-          //   DailyTitleText item = imageGridGroup[currentItem] as DailyTitleText;
-          //   debugPrint(item.isoDate);
-          //   return const Text("");
-          // }
-
-          // if (imageGridGroup[currentItem] is MonthlyTitleText) {
-          //   MonthlyTitleText item = imageGridGroup[currentItem] as MonthlyTitleText;
-          //   debugPrint(item.isoDate);
-          //   return const Text("scrollBarText");
-          // }
-          // return const Text("scrollBarText");
-          // },
-          // labelConstraints: const BoxConstraints.tightFor(width: 200.0, height: 30.0),
           backgroundColor: Theme.of(context).primaryColor,
           controller: _scrollController,
           heightScrollThumb: 48.0,

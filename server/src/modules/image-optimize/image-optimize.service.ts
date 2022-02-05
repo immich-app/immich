@@ -2,9 +2,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
 import { randomUUID } from 'crypto';
-import { join } from 'path';
 import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
 
 @Injectable()
 export class AssetOptimizeService {
@@ -24,11 +22,12 @@ export class AssetOptimizeService {
     };
   }
 
-  public async resizeVideo(savedAsset: AssetEntity) {
+  public async getVideoThumbnail(savedAsset: AssetEntity, filename: String) {
     const job = await this.optimizeQueue.add(
-      'resize-video',
+      'get-video-thumbnail',
       {
         savedAsset,
+        filename,
       },
       { jobId: randomUUID() },
     );

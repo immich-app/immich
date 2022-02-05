@@ -49,7 +49,7 @@ export class AssetController {
       }
 
       if (savedAsset && savedAsset.type == AssetType.VIDEO) {
-        await this.assetOptimizeService.resizeVideo(savedAsset);
+        await this.assetOptimizeService.getVideoThumbnail(savedAsset, file.originalname);
       }
     });
 

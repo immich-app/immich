@@ -9,7 +9,7 @@ class ImmichAsset {
   final String createdAt;
   final String modifiedAt;
   final bool isFavorite;
-  final String? description;
+  final String? duration;
 
   ImmichAsset({
     required this.id,
@@ -20,7 +20,7 @@ class ImmichAsset {
     required this.createdAt,
     required this.modifiedAt,
     required this.isFavorite,
-    this.description,
+    this.duration,
   });
 
   ImmichAsset copyWith({
@@ -32,7 +32,7 @@ class ImmichAsset {
     String? createdAt,
     String? modifiedAt,
     bool? isFavorite,
-    String? description,
+    String? duration,
   }) {
     return ImmichAsset(
       id: id ?? this.id,
@@ -43,7 +43,7 @@ class ImmichAsset {
       createdAt: createdAt ?? this.createdAt,
       modifiedAt: modifiedAt ?? this.modifiedAt,
       isFavorite: isFavorite ?? this.isFavorite,
-      description: description ?? this.description,
+      duration: duration ?? this.duration,
     );
   }
 
@@ -57,7 +57,7 @@ class ImmichAsset {
       'createdAt': createdAt,
       'modifiedAt': modifiedAt,
       'isFavorite': isFavorite,
-      'description': description,
+      'duration': duration,
     };
   }
 
@@ -71,7 +71,7 @@ class ImmichAsset {
       createdAt: map['createdAt'] ?? '',
       modifiedAt: map['modifiedAt'] ?? '',
       isFavorite: map['isFavorite'] ?? false,
-      description: map['description'],
+      duration: map['duration'],
     );
   }
 
@@ -81,7 +81,7 @@ class ImmichAsset {
 
   @override
   String toString() {
-    return 'ImmichAsset(id: $id, deviceAssetId: $deviceAssetId, userId: $userId, deviceId: $deviceId, type: $type, createdAt: $createdAt, modifiedAt: $modifiedAt, isFavorite: $isFavorite, description: $description)';
+    return 'ImmichAsset(id: $id, deviceAssetId: $deviceAssetId, userId: $userId, deviceId: $deviceId, type: $type, createdAt: $createdAt, modifiedAt: $modifiedAt, isFavorite: $isFavorite, duration: $duration)';
   }
 
   @override
@@ -97,7 +97,7 @@ class ImmichAsset {
         other.createdAt == createdAt &&
         other.modifiedAt == modifiedAt &&
         other.isFavorite == isFavorite &&
-        other.description == description;
+        other.duration == duration;
   }
 
   @override
@@ -110,6 +110,6 @@ class ImmichAsset {
         createdAt.hashCode ^
         modifiedAt.hashCode ^
         isFavorite.hashCode ^
-        description.hashCode;
+        duration.hashCode;
   }
 }

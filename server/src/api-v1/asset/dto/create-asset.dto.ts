@@ -24,8 +24,5 @@ export class CreateAssetDto {
   fileExtension: string;
 
   @IsOptional()
-  lat: string;
-
-  @IsOptional()
-  lon: string;
+  duration: string;
 }
