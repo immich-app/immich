@@ -6,7 +6,8 @@ import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
 import sharp from 'sharp';
 import fs, { existsSync, mkdirSync } from 'fs';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'crypto';
+import ffmpeg from 'fluent-ffmpeg';
+import { Logger } from '@nestjs/common';
 
 @Processor('optimize')
 export class ImageOptimizeProcessor {
@@ -73,30 +74,19 @@ export class ImageOptimizeProcessor {
       mkdirSync(resizeDir, { recursive: true });
     }
 
-    fs.readFile(savedAsset.originalPath, (err, data) => {
-      if (err) {
-        console.error('Error Reading File');
-      }
-
-      sharp(data)
-        .resize(512, 512, { fit: 'outside' })
-        .toFile(resizePath, async (err, info) => {
-          if (err) {
-            console.error('Error resizing file ', err);
-          }
-
-          await this.assetRepository.update(savedAsset, { resizePath: resizePath });
-
-          // Send file to object detection after resizing
-          // const detectionJob = await this.machineLearningQueue.add(
-          //   'object-detection',
-          //   {
-          //     resizePath,
-          //   },
-          //   { jobId: randomUUID() },
-          // );
-        });
-    });
+    ffmpeg(savedAsset.originalPath)
+      .output(resizePath)
+      .noAudio()
+      .videoCodec('libx264')
+      .size('640x?')
+      .aspect('4:3')
+      .on('error', (e) => {
+        Logger.log(`Error resizing File: ${e}`, 'resizeUploadedVideo');
+      })
+      .on('end', async () => {
+        await this.assetRepository.update(savedAsset, { resizePath: resizePath });
+      })
+      .run();
 
     return 'ok';
   }

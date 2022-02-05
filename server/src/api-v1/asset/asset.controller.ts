@@ -48,7 +48,7 @@ export class AssetController {
         await this.assetOptimizeService.resizeImage(savedAsset);
       }
 
-      if (savedAsset && savedAsset.type == AssetType.IMAGE) {
+      if (savedAsset && savedAsset.type == AssetType.VIDEO) {
         await this.assetOptimizeService.resizeVideo(savedAsset);
       }
     });
