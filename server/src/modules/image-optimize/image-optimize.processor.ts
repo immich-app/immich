@@ -8,7 +8,7 @@ import fs, { existsSync, mkdirSync } from 'fs';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 
-@Processor('image')
+@Processor('optimize')
 export class ImageOptimizeProcessor {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
@@ -16,8 +16,8 @@ export class ImageOptimizeProcessor {
     private configService: ConfigService,
   ) {}
 
-  @Process('optimize')
-  async handleOptimization(job: Job) {
+  @Process('resize-image')
+  async resizeUploadedImage(job: Job) {
     const { savedAsset }: { savedAsset: AssetEntity } = job.data;
 
     const basePath = this.configService.get('UPLOAD_LOCATION');
@@ -25,6 +25,48 @@ export class ImageOptimizeProcessor {
 
     // Create folder for thumb image if not exist
 
+    const resizeDir = `${basePath}/${savedAsset.userId}/thumb/${savedAsset.deviceId}`;
+
+    if (!existsSync(resizeDir)) {
+      mkdirSync(resizeDir, { recursive: true });
+    }
+
+    fs.readFile(savedAsset.originalPath, (err, data) => {
+      if (err) {
+        console.error('Error Reading File');
+      }
+
+      sharp(data)
+        .resize(512, 512, { fit: 'outside' })
+        .toFile(resizePath, async (err, info) => {
+          if (err) {
+            console.error('Error resizing file ', err);
+          }
+
+          await this.assetRepository.update(savedAsset, { resizePath: resizePath });
+
+          // Send file to object detection after resizing
+          // const detectionJob = await this.machineLearningQueue.add(
+          //   'object-detection',
+          //   {
+          //     resizePath,
+          //   },
+          //   { jobId: randomUUID() },
+          // );
+        });
+    });
+
+    return 'ok';
+  }
+
+  @Process('resize-video')
+  async resizeUploadedVideo(job: Job) {
+    const { savedAsset }: { savedAsset: AssetEntity } = job.data;
+
+    const basePath = this.configService.get('UPLOAD_LOCATION');
+    const resizePath = savedAsset.originalPath.replace('/original/', '/thumb/');
+
+    // Create folder for thumb image if not exist
     const resizeDir = `${basePath}/${savedAsset.userId}/thumb/${savedAsset.deviceId}`;
 
     if (!existsSync(resizeDir)) {

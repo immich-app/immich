@@ -12,7 +12,6 @@ import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
-import 'package:exif/exif.dart';
 
 class BackupService {
   final NetworkService _networkService = NetworkService();

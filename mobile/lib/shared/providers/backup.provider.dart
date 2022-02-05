@@ -35,7 +35,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   void getBackupInfo() async {
     _updateServerInfo();
 
-    List<AssetPathEntity> list = await PhotoManager.getAssetPathList(onlyAll: true, type: RequestType.image);
+    List<AssetPathEntity> list = await PhotoManager.getAssetPathList(onlyAll: true, type: RequestType.common);
 
     if (list.isEmpty) {
       debugPrint("No Asset On Device");
@@ -59,7 +59,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       // await PhotoManager.presentLimited();
       // Gather assets info
       List<AssetPathEntity> list =
-          await PhotoManager.getAssetPathList(hasAll: true, onlyAll: true, type: RequestType.image);
+          await PhotoManager.getAssetPathList(hasAll: true, onlyAll: true, type: RequestType.common);
 
       if (list.isEmpty) {
         debugPrint("No Asset On Device - Abort Backup Process");

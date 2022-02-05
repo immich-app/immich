@@ -6,13 +6,13 @@ import { AssetModule } from '../../api-v1/asset/asset.module';
 import { AssetService } from '../../api-v1/asset/asset.service';
 import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
 import { ImageOptimizeProcessor } from './image-optimize.processor';
-import { ImageOptimizeService } from './image-optimize.service';
+import { AssetOptimizeService } from './image-optimize.service';
 import { MachineLearningProcessor } from './machine-learning.processor';
 
 @Module({
   imports: [
     BullModule.registerQueue({
-      name: 'image',
+      name: 'optimize',
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
@@ -30,7 +30,7 @@ import { MachineLearningProcessor } from './machine-learning.processor';
 
     TypeOrmModule.forFeature([AssetEntity]),
   ],
-  providers: [ImageOptimizeService, ImageOptimizeProcessor, MachineLearningProcessor],
-  exports: [ImageOptimizeService],
+  providers: [AssetOptimizeService, ImageOptimizeProcessor, MachineLearningProcessor],
+  exports: [AssetOptimizeService],
 })
 export class ImageOptimizeModule {}

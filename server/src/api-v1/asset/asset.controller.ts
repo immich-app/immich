@@ -22,7 +22,7 @@ import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { createReadStream } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { ImageOptimizeService } from '../../modules/image-optimize/image-optimize.service';
+import { AssetOptimizeService } from '../../modules/image-optimize/image-optimize.service';
 import { AssetType } from './entities/asset.entity';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 
@@ -31,7 +31,7 @@ import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 export class AssetController {
   constructor(
     private readonly assetService: AssetService,
-    private readonly imageOptimizeService: ImageOptimizeService,
+    private readonly assetOptimizeService: AssetOptimizeService,
   ) {}
 
   @Post('upload')
@@ -45,7 +45,11 @@ export class AssetController {
       const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
       if (savedAsset && savedAsset.type == AssetType.IMAGE) {
-        await this.imageOptimizeService.resizeImage(savedAsset);
+        await this.assetOptimizeService.resizeImage(savedAsset);
+      }
+
+      if (savedAsset && savedAsset.type == AssetType.IMAGE) {
+        await this.assetOptimizeService.resizeVideo(savedAsset);
       }
     });
 
