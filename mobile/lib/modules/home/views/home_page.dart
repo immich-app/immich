@@ -18,7 +18,7 @@ class HomePage extends HookConsumerWidget {
     ScrollController _scrollController = useScrollController();
     List<ImmichAssetGroupByDate> assetGroup = ref.watch(assetProvider);
     List<Widget> imageGridGroup = [];
-    final scrollLabelText = useState("");
+    String scrollBarText = "";
 
     _scrollControllerCallback() {
       var endOfPage = _scrollController.position.maxScrollExtent;
@@ -45,34 +45,6 @@ class HomePage extends HookConsumerWidget {
       };
     }, []);
 
-    SliverToBoxAdapter _buildDateGroupTitle(String dateTitle) {
-      var currentYear = DateTime.now().year;
-      var groupYear = DateTime.parse(dateTitle).year;
-      var formatDateTemplate = currentYear == groupYear ? 'E, MMM dd' : 'E, MMM dd, yyyy';
-      var dateText = DateFormat(formatDateTemplate).format(DateTime.parse(dateTitle));
-
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 24.0, bottom: 24.0, left: 3.0),
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0, bottom: 5.0, top: 5.0),
-                child: Text(
-                  dateText,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     Widget _buildBody() {
       if (assetGroup.isNotEmpty) {
         String lastGroupDate = assetGroup[0].date;
@@ -86,16 +58,14 @@ class HomePage extends HookConsumerWidget {
 
           // Add Monthly Title Group if started at the beginning of the month
           if ((currentMonth! - previousMonth!) != 0) {
-            var monthTitleText = DateFormat('MMMM, y').format(DateTime.parse(dateTitle));
-
             imageGridGroup.add(
-              MonthlyTitleText(monthTitleText: monthTitleText),
+              MonthlyTitleText(isoDate: dateTitle),
             );
           }
 
           // Add Daily Title Group
           imageGridGroup.add(
-            DailyTitleText(dateTitle: dateTitle),
+            DailyTitleText(isoDate: dateTitle),
           );
 
           // Add Image Group
@@ -110,18 +80,23 @@ class HomePage extends HookConsumerWidget {
       return SafeArea(
         child: DraggableScrollbar.semicircle(
           // labelTextBuilder: (offset) {
-          //   final int currentItem = _scrollController.hasClients
-          //       ? (_scrollController.offset / _scrollController.position.maxScrollExtent * imageGridGroup.length)
-          //           .floor()
-          //       : 0;
+          // final int currentItem = _scrollController.hasClients
+          //     ? (_scrollController.offset / _scrollController.position.maxScrollExtent * imageGridGroup.length)
+          //         .floor()
+          //     : 0;
 
-          //   if (imageGridGroup[currentItem] is MonthlyTitleText) {
-          //     MonthlyTitleText item = imageGridGroup[currentItem] as MonthlyTitleText;
+          // if (imageGridGroup[currentItem] is DailyTitleText) {
+          //   DailyTitleText item = imageGridGroup[currentItem] as DailyTitleText;
+          //   debugPrint(item.isoDate);
+          //   return const Text("");
+          // }
 
-          //     scrollLabelText.value = item.monthTitleText;
-          //   }
-
-          //   return Text(scrollLabelText.value);
+          // if (imageGridGroup[currentItem] is MonthlyTitleText) {
+          //   MonthlyTitleText item = imageGridGroup[currentItem] as MonthlyTitleText;
+          //   debugPrint(item.isoDate);
+          //   return const Text("scrollBarText");
+          // }
+          // return const Text("scrollBarText");
           // },
           // labelConstraints: const BoxConstraints.tightFor(width: 200.0, height: 30.0),
           backgroundColor: Theme.of(context).primaryColor,
@@ -148,13 +123,15 @@ class HomePage extends HookConsumerWidget {
 class MonthlyTitleText extends StatelessWidget {
   const MonthlyTitleText({
     Key? key,
-    required this.monthTitleText,
+    required this.isoDate,
   }) : super(key: key);
 
-  final String monthTitleText;
+  final String isoDate;
 
   @override
   Widget build(BuildContext context) {
+    var monthTitleText = DateFormat('MMMM, y').format(DateTime.parse(isoDate));
+
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.only(left: 10.0, top: 32),
@@ -174,17 +151,17 @@ class MonthlyTitleText extends StatelessWidget {
 class DailyTitleText extends StatelessWidget {
   const DailyTitleText({
     Key? key,
-    required this.dateTitle,
+    required this.isoDate,
   }) : super(key: key);
 
-  final String dateTitle;
+  final String isoDate;
 
   @override
   Widget build(BuildContext context) {
     var currentYear = DateTime.now().year;
-    var groupYear = DateTime.parse(dateTitle).year;
+    var groupYear = DateTime.parse(isoDate).year;
     var formatDateTemplate = currentYear == groupYear ? 'E, MMM dd' : 'E, MMM dd, yyyy';
-    var dateText = DateFormat(formatDateTemplate).format(DateTime.parse(dateTitle));
+    var dateText = DateFormat(formatDateTemplate).format(DateTime.parse(isoDate));
 
     return SliverToBoxAdapter(
       child: Padding(
