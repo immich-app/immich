@@ -101,13 +101,9 @@ class ImmichSliverAppBar extends ConsumerWidget {
           ),
         ],
         systemOverlayStyle: const SystemUiOverlayStyle(
-          // Status bar color
-          statusBarColor: Colors.indigo,
-
-          // Status bar brightness (optional)
-          statusBarIconBrightness: Brightness.light, // For Android (dark icons)
-          statusBarBrightness: Brightness.dark,
-        ),
+            statusBarColor: Colors.white,
+            statusBarBrightness: Brightness.dark,
+            statusBarIconBrightness: Brightness.light),
       ),
     );
   }

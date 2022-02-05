@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -35,7 +36,11 @@ class BackupService {
 
     for (var entity in assetList) {
       try {
-        file = await entity.file.timeout(const Duration(seconds: 5));
+        if (entity.type == AssetType.video) {
+          file = await entity.file;
+        } else {
+          file = await entity.file.timeout(const Duration(seconds: 5));
+        }
 
         if (file != null) {
           // reading exif

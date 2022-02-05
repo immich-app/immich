@@ -1,10 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
 class FileHelper {
   static getMimeType(String filePath) {
+    debugPrint(filePath);
     var fileExtension = p.extension(filePath).split(".")[1];
 
-    switch (fileExtension) {
+    switch (fileExtension.toLowerCase()) {
       case 'gif':
         return {"type": "image", "subType": "gif"};
 
