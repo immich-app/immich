@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends \
   rsync \
   software-properties-common \
   unzip \
-  wget
+  wget \
+  ffmpeg
 
 # Install NodeJS
 RUN curl --silent --location https://deb.nodesource.com/setup_14.x | bash -
@@ -54,7 +55,8 @@ RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends \
   rsync \
   software-properties-common \
   unzip \
-  wget
+  wget \
+  ffmpeg
 
 # Install NodeJS
 RUN curl --silent --location https://deb.nodesource.com/setup_14.x | bash -

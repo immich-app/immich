@@ -1,5 +1,5 @@
-run_server_dev:
+dev:
 	docker-compose -f ./server/docker-compose.yml up
 
-run_server_update:
+dev-update:
 	docker-compose -f ./server/docker-compose.yml up --build -V
