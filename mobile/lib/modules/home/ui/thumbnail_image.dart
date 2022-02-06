@@ -47,7 +47,7 @@ class ThumbnailImage extends HookWidget {
           cacheKey: "${asset.id}-${cacheKey.value}",
           width: 300,
           height: 300,
-          memCacheHeight: asset.type == 'IMAGE' ? 200 : 500,
+          memCacheHeight: asset.type == 'IMAGE' ? 250 : 400,
           fit: BoxFit.cover,
           imageUrl: thumbnailRequestUrl,
           httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
