@@ -87,7 +87,6 @@ export class AssetController {
       return new StreamableFile(file);
     } else if (asset.type == AssetType.VIDEO) {
       // Handle Handling Video
-
       const { size } = await fileInfo(asset.originalPath);
       const range = headers.range;
 
@@ -108,6 +107,7 @@ export class AssetController {
 
         // Handle unavailable range request
         if (start >= size || end >= size) {
+          console.error('Bad Request');
           // Return the 416 Range Not Satisfiable.
           res.status(416).set({
             'Content-Range': `bytes */${size}`,
@@ -117,6 +117,8 @@ export class AssetController {
         }
 
         /** Sending Partial Content With HTTP Code 206 */
+        console.log('Sendinf file with type ', asset.mimeType);
+
         res.status(206).set({
           'Content-Range': `bytes ${start}-${end}/${size}`,
           'Accept-Ranges': 'bytes',
@@ -127,8 +129,16 @@ export class AssetController {
         const videoStream = createReadStream(asset.originalPath, { start: start, end: end });
 
         return new StreamableFile(videoStream);
+      } else {
+        res.set({
+          'Content-Type': asset.mimeType,
+        });
+
+        return new StreamableFile(createReadStream(asset.originalPath));
       }
     }
+
+    console.log('SHOULD NOT BE HERE');
   }
 
   @Get('/all')
