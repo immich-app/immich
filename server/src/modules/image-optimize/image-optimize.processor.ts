@@ -80,7 +80,6 @@ export class ImageOptimizeProcessor {
         timestamps: [1],
         folder: resizeDir,
         filename: `${filename}.png`,
-        size: '512x512',
       })
       .on('end', async (a) => {
         await this.assetRepository.update(savedAsset, { resizePath: `${resizeDir}/${filename}.png` });
