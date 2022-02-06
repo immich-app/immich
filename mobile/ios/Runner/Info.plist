@@ -41,9 +41,22 @@
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+
+    <key>UIUserInterfaceStyle</key>
+      <string>Light</string>
+
     <key>UIViewControllerBasedStatusBarAppearance</key>
-    <true />
+      <true />
+
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>App need your agree, can visit your album</string>
+      <string>We need to manage backup your photos album</string>
+
+    <key>NSAppTransportSecurity</key>
+		<dict>
+      <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+
+
   </dict>
 </plist>

@@ -34,16 +34,10 @@ export class AssetEntity {
   isFavorite: boolean;
 
   @Column({ nullable: true })
-  description: string;
-
-  @Column({ nullable: true })
-  lat: string;
-
-  @Column({ nullable: true })
-  lon: string;
-
-  @Column({ nullable: true })
   mimeType: string;
+
+  @Column({ nullable: true })
+  duration: string;
 }
 
 export enum AssetType {

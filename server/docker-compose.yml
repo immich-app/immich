@@ -12,6 +12,8 @@ services:
     command: yarn start:dev
     ports:
       - "3000:3000"
+    # expose:
+    #   - 3000
     volumes:
       - .:/usr/src/app
       - userdata:/usr/src/app/upload
@@ -46,6 +48,21 @@ services:
       - 5432:5432
     networks:
       - immich_network  
+
+  nginx:
+    container_name: proxy_nginx
+    image: nginx:latest
+    volumes:
+      - ./settings/nginx-conf:/etc/nginx/conf.d
+    ports:
+      - 2283:80
+      - 2284:443
+    logging:
+      driver: none
+    networks:
+      - immich_network
+    depends_on:
+      - server
 
 networks:
   immich_network:

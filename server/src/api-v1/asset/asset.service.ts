@@ -26,9 +26,9 @@ export class AssetService {
     asset.createdAt = assetInfo.createdAt;
     asset.modifiedAt = assetInfo.modifiedAt;
     asset.isFavorite = assetInfo.isFavorite;
-    asset.lat = assetInfo.lat;
-    asset.lon = assetInfo.lon;
     asset.mimeType = mimeType;
+    asset.duration = assetInfo.duration;
+
     try {
       const res = await this.assetRepository.save(asset);
 
@@ -63,7 +63,7 @@ export class AssetService {
           lastQueryCreatedAt: query.nextPageKey || new Date().toISOString(),
         })
         .orderBy('a."createdAt"::date', 'DESC')
-        .take(10000)
+        // .take(500)
         .getMany();
 
       if (assets.length > 0) {

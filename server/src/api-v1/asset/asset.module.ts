@@ -4,13 +4,13 @@ import { AssetController } from './asset.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetEntity } from './entities/asset.entity';
 import { ImageOptimizeModule } from '../../modules/image-optimize/image-optimize.module';
-import { ImageOptimizeService } from '../../modules/image-optimize/image-optimize.service';
+import { AssetOptimizeService } from '../../modules/image-optimize/image-optimize.service';
 import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
     BullModule.registerQueue({
-      name: 'image',
+      name: 'optimize',
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
@@ -29,7 +29,7 @@ import { BullModule } from '@nestjs/bull';
     ImageOptimizeModule,
   ],
   controllers: [AssetController],
-  providers: [AssetService, ImageOptimizeService],
+  providers: [AssetService, AssetOptimizeService],
   exports: [],
 })
 export class AssetModule {}

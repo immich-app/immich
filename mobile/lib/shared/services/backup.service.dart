@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -12,7 +13,6 @@ import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
-import 'package:exif/exif.dart';
 
 class BackupService {
   final NetworkService _networkService = NetworkService();
@@ -36,7 +36,11 @@ class BackupService {
 
     for (var entity in assetList) {
       try {
-        file = await entity.file.timeout(const Duration(seconds: 5));
+        if (entity.type == AssetType.video) {
+          file = await entity.file;
+        } else {
+          file = await entity.file.timeout(const Duration(seconds: 5));
+        }
 
         if (file != null) {
           // reading exif
@@ -50,8 +54,8 @@ class BackupService {
           String originalFileName = await entity.titleAsync;
           String fileNameWithoutPath = originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
-          LatLng coordinate = await entity.latlngAsync();
           var mimeType = FileHelper.getMimeType(file.path);
+
           var formData = FormData.fromMap({
             'deviceAssetId': entity.id,
             'deviceId': deviceId,
@@ -60,8 +64,7 @@ class BackupService {
             'modifiedAt': entity.modifiedDateTime.toIso8601String(),
             'isFavorite': entity.isFavorite,
             'fileExtension': fileExtension,
-            'lat': coordinate.latitude,
-            'lon': coordinate.longitude,
+            'duration': entity.videoDuration,
             'files': [
               await MultipartFile.fromFile(
                 file.path,

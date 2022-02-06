@@ -5,26 +5,22 @@ class ImmichAsset {
   final String deviceAssetId;
   final String userId;
   final String deviceId;
-  final String assetType;
-  final String localPath;
-  final String remotePath;
+  final String type;
   final String createdAt;
   final String modifiedAt;
   final bool isFavorite;
-  final String? description;
+  final String? duration;
 
   ImmichAsset({
     required this.id,
     required this.deviceAssetId,
     required this.userId,
     required this.deviceId,
-    required this.assetType,
-    required this.localPath,
-    required this.remotePath,
+    required this.type,
     required this.createdAt,
     required this.modifiedAt,
     required this.isFavorite,
-    this.description,
+    this.duration,
   });
 
   ImmichAsset copyWith({
@@ -32,26 +28,22 @@ class ImmichAsset {
     String? deviceAssetId,
     String? userId,
     String? deviceId,
-    String? assetType,
-    String? localPath,
-    String? remotePath,
+    String? type,
     String? createdAt,
     String? modifiedAt,
     bool? isFavorite,
-    String? description,
+    String? duration,
   }) {
     return ImmichAsset(
       id: id ?? this.id,
       deviceAssetId: deviceAssetId ?? this.deviceAssetId,
       userId: userId ?? this.userId,
       deviceId: deviceId ?? this.deviceId,
-      assetType: assetType ?? this.assetType,
-      localPath: localPath ?? this.localPath,
-      remotePath: remotePath ?? this.remotePath,
+      type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       modifiedAt: modifiedAt ?? this.modifiedAt,
       isFavorite: isFavorite ?? this.isFavorite,
-      description: description ?? this.description,
+      duration: duration ?? this.duration,
     );
   }
 
@@ -61,13 +53,11 @@ class ImmichAsset {
       'deviceAssetId': deviceAssetId,
       'userId': userId,
       'deviceId': deviceId,
-      'assetType': assetType,
-      'localPath': localPath,
-      'remotePath': remotePath,
+      'type': type,
       'createdAt': createdAt,
       'modifiedAt': modifiedAt,
       'isFavorite': isFavorite,
-      'description': description,
+      'duration': duration,
     };
   }
 
@@ -77,13 +67,11 @@ class ImmichAsset {
       deviceAssetId: map['deviceAssetId'] ?? '',
       userId: map['userId'] ?? '',
       deviceId: map['deviceId'] ?? '',
-      assetType: map['assetType'] ?? '',
-      localPath: map['localPath'] ?? '',
-      remotePath: map['remotePath'] ?? '',
+      type: map['type'] ?? '',
       createdAt: map['createdAt'] ?? '',
       modifiedAt: map['modifiedAt'] ?? '',
       isFavorite: map['isFavorite'] ?? false,
-      description: map['description'],
+      duration: map['duration'],
     );
   }
 
@@ -93,7 +81,7 @@ class ImmichAsset {
 
   @override
   String toString() {
-    return 'ImmichAsset(id: $id, deviceAssetId: $deviceAssetId, userId: $userId, deviceId: $deviceId, assetType: $assetType, localPath: $localPath, remotePath: $remotePath, createdAt: $createdAt, modifiedAt: $modifiedAt, isFavorite: $isFavorite, description: $description)';
+    return 'ImmichAsset(id: $id, deviceAssetId: $deviceAssetId, userId: $userId, deviceId: $deviceId, type: $type, createdAt: $createdAt, modifiedAt: $modifiedAt, isFavorite: $isFavorite, duration: $duration)';
   }
 
   @override
@@ -105,13 +93,11 @@ class ImmichAsset {
         other.deviceAssetId == deviceAssetId &&
         other.userId == userId &&
         other.deviceId == deviceId &&
-        other.assetType == assetType &&
-        other.localPath == localPath &&
-        other.remotePath == remotePath &&
+        other.type == type &&
         other.createdAt == createdAt &&
         other.modifiedAt == modifiedAt &&
         other.isFavorite == isFavorite &&
-        other.description == description;
+        other.duration == duration;
   }
 
   @override
@@ -120,12 +106,10 @@ class ImmichAsset {
         deviceAssetId.hashCode ^
         userId.hashCode ^
         deviceId.hashCode ^
-        assetType.hashCode ^
-        localPath.hashCode ^
-        remotePath.hashCode ^
+        type.hashCode ^
         createdAt.hashCode ^
         modifiedAt.hashCode ^
         isFavorite.hashCode ^
-        description.hashCode;
+        duration.hashCode;
   }
 }

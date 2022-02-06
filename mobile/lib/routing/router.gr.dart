@@ -42,6 +42,12 @@ class _$AppRouter extends RootStackRouter {
               imageUrl: args.imageUrl,
               heroTag: args.heroTag,
               thumbnailUrl: args.thumbnailUrl));
+    },
+    VideoViewerRoute.name: (routeData) {
+      final args = routeData.argsAs<VideoViewerRouteArgs>();
+      return MaterialPageX<dynamic>(
+          routeData: routeData,
+          child: VideoViewerPage(key: args.key, videoUrl: args.videoUrl));
     }
   };
 
@@ -52,7 +58,9 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(BackupControllerRoute.name,
             path: '/backup-controller-page', guards: [authGuard]),
         RouteConfig(ImageViewerRoute.name,
-            path: '/image-viewer-page', guards: [authGuard])
+            path: '/image-viewer-page', guards: [authGuard]),
+        RouteConfig(VideoViewerRoute.name,
+            path: '/video-viewer-page', guards: [authGuard])
       ];
 }
 
@@ -118,5 +126,29 @@ class ImageViewerRouteArgs {
   @override
   String toString() {
     return 'ImageViewerRouteArgs{key: $key, imageUrl: $imageUrl, heroTag: $heroTag, thumbnailUrl: $thumbnailUrl}';
+  }
+}
+
+/// generated route for
+/// [VideoViewerPage]
+class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
+  VideoViewerRoute({Key? key, required String videoUrl})
+      : super(VideoViewerRoute.name,
+            path: '/video-viewer-page',
+            args: VideoViewerRouteArgs(key: key, videoUrl: videoUrl));
+
+  static const String name = 'VideoViewerRoute';
+}
+
+class VideoViewerRouteArgs {
+  const VideoViewerRouteArgs({this.key, required this.videoUrl});
+
+  final Key? key;
+
+  final String videoUrl;
+
+  @override
+  String toString() {
+    return 'VideoViewerRouteArgs{key: $key, videoUrl: $videoUrl}';
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -11,6 +12,12 @@ void main() async {
   await Hive.openBox(userInfoBox);
   // Hive.registerAdapter(ImmichBackUpAssetAdapter());
   // Hive.deleteBoxFromDisk(hiveImmichBox);
+
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
 
   runApp(const ProviderScope(child: ImmichApp()));
 }
@@ -69,6 +76,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
       title: 'Immich',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        brightness: Brightness.light,
         primarySwatch: Colors.indigo,
         textTheme: GoogleFonts.workSansTextTheme(
           Theme.of(context).textTheme.apply(fontSizeFactor: 1.0),
@@ -79,6 +87,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
           foregroundColor: Colors.indigo,
           elevation: 1,
           centerTitle: true,
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
         ),
       ),
       routeInformationParser: _immichRouter.defaultRouteParser(),
