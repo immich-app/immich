@@ -10,10 +10,10 @@ services:
       target: development
       dockerfile: ./Dockerfile-minimal
     command: yarn start:dev
-    # ports:
-    #   - "3000:3000"
-    expose:
-      - 3000
+    ports:
+      - "3000:3000"
+    # expose:
+    #   - 3000
     volumes:
       - .:/usr/src/app
       - userdata:/usr/src/app/upload
