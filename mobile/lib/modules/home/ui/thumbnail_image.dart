@@ -21,14 +21,24 @@ class ThumbnailImage extends HookWidget {
         '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
     return GestureDetector(
       onTap: () {
-        AutoRouter.of(context).push(
-          ImageViewerRoute(
-            imageUrl:
-                '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
-            heroTag: asset.id,
-            thumbnailUrl: thumbnailRequestUrl,
-          ),
-        );
+        if (asset.type == 'IMAGE') {
+          AutoRouter.of(context).push(
+            ImageViewerRoute(
+              imageUrl:
+                  '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
+              heroTag: asset.id,
+              thumbnailUrl: thumbnailRequestUrl,
+            ),
+          );
+        } else {
+          debugPrint("Navigate to video player");
+
+          AutoRouter.of(context).push(
+            VideoViewerRoute(
+              videoUrl: '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
+            ),
+          );
+        }
       },
       onLongPress: () {},
       child: Hero(
@@ -37,7 +47,7 @@ class ThumbnailImage extends HookWidget {
           cacheKey: "${asset.id}-${cacheKey.value}",
           width: 300,
           height: 300,
-          memCacheHeight: 250,
+          memCacheHeight: asset.type == 'IMAGE' ? 250 : 500,
           fit: BoxFit.cover,
           imageUrl: thumbnailRequestUrl,
           httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
