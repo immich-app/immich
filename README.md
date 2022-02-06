@@ -6,6 +6,12 @@
 
 Self-hosted Photo backup solution directly from your mobile phone.
 
+# Note
+
+This project is under heavy development, there will be continous functions, features and api changes.
+
+**!! NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS !!**
+
 # Development
 
 You can use docker compose for development, there are several services that compose Immich
@@ -13,6 +19,8 @@ You can use docker compose for development, there are several services that comp
 1. The server
 2. PostgreSQL
 3. Redis
+4. Nginx
+   Use the curl command below to create user as we don't have user interface to create new user yet
 
 ## Populate .env file
 
@@ -34,6 +42,40 @@ To force rebuild node modules after installing new packages
 
 ```bash
 docker-compose -f ./server/docker-compose.yml up --build -V
+```
+
+The server will be running at `http://your-ip:2283` through `Nginx`
+
+## Register User
+
+Use the command below on your terminal to create user as we don't have user interface for this function yet.
+
+```bash
+curl --location --request POST 'http://your-server-ip:2283/auth/signUp' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "email": "testuser@email.com",
+    "password": "password"
+}'
+```
+
+## Run mobile app
+
+### Android
+
+Download `apk` file in folder `binary` and run on your phone. You can follow this guide on how to do that
+
+- [Run APK on Android](https://www.lifewire.com/install-apk-on-android-4177185)
+
+### iOS
+
+- Get a MacOS
+- Download and setup Flutter development environment
+- Navigate to `mobile` folder
+- Run with release build command for best performance.
+
+```bash
+flutter run --release
 ```
 
 # Known Issue
