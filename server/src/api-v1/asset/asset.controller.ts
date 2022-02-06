@@ -9,10 +9,10 @@ import {
   Param,
   ValidationPipe,
   StreamableFile,
-  Response,
   Query,
-  Logger,
-  UploadedFile,
+  Response,
+  Headers,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
@@ -25,6 +25,12 @@ import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetOptimizeService } from '../../modules/image-optimize/image-optimize.service';
 import { AssetType } from './entities/asset.entity';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
+import { Response as Res } from 'express';
+import { promisify } from 'util';
+import { stat } from 'fs';
+import { pipeline } from 'stream';
+
+const fileInfo = promisify(stat);
 
 @UseGuards(JwtAuthGuard)
 @Controller('asset')
@@ -58,23 +64,71 @@ export class AssetController {
 
   @Get('/file')
   async serveFile(
+    @Headers() headers,
     @GetAuthUser() authUser: AuthUserDto,
-    @Response({ passthrough: true }) res,
+    @Response({ passthrough: true }) res: Res,
     @Query(ValidationPipe) query: ServeFileDto,
   ): Promise<StreamableFile> {
     let file = null;
     const asset = await this.assetService.findOne(authUser, query.did, query.aid);
-    res.set({
-      'Content-Type': asset.mimeType,
-    });
 
-    if (query.isThumb === 'false' || !query.isThumb) {
-      file = createReadStream(asset.originalPath);
-    } else {
-      file = createReadStream(asset.resizePath);
+    // Handle Sending Images
+    if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
+      res.set({
+        'Content-Type': asset.mimeType,
+      });
+
+      if (query.isThumb === 'false' || !query.isThumb) {
+        file = createReadStream(asset.originalPath);
+      } else {
+        file = createReadStream(asset.resizePath);
+      }
+
+      return new StreamableFile(file);
+    } else if (asset.type == AssetType.VIDEO) {
+      // Handle Handling Video
+
+      const { size } = await fileInfo(asset.originalPath);
+      const range = headers.range;
+
+      if (range) {
+        /** Extracting Start and End value from Range Header */
+        let [start, end] = range.replace(/bytes=/, '').split('-');
+        start = parseInt(start, 10);
+        end = end ? parseInt(end, 10) : size - 1;
+
+        if (!isNaN(start) && isNaN(end)) {
+          start = start;
+          end = size - 1;
+        }
+        if (isNaN(start) && !isNaN(end)) {
+          start = size - end;
+          end = size - 1;
+        }
+
+        // Handle unavailable range request
+        if (start >= size || end >= size) {
+          // Return the 416 Range Not Satisfiable.
+          res.status(416).set({
+            'Content-Range': `bytes */${size}`,
+          });
+
+          throw new BadRequestException('Bad Request Range');
+        }
+
+        /** Sending Partial Content With HTTP Code 206 */
+        res.status(206).set({
+          'Content-Range': `bytes ${start}-${end}/${size}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': end - start + 1,
+          'Content-Type': asset.mimeType,
+        });
+
+        const videoStream = createReadStream(asset.originalPath, { start: start, end: end });
+
+        return new StreamableFile(videoStream);
+      }
     }
-
-    return new StreamableFile(file);
   }
 
   @Get('/all')
