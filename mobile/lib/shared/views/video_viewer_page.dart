@@ -55,14 +55,17 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
   }
 
   Future<void> initializePlayer() async {
-    videoPlayerController =
-        VideoPlayerController.network(widget.url, httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"});
+    try {
+      videoPlayerController =
+          VideoPlayerController.network(widget.url, httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"});
 
-    await Future.wait([
-      videoPlayerController.initialize(),
-    ]);
-    _createChewieController();
-    setState(() {});
+      await videoPlayerController.initialize();
+      _createChewieController();
+      setState(() {});
+    } catch (e) {
+      debugPrint("ERROR initialize video player");
+      print(e);
+    }
   }
 
   _createChewieController() {
@@ -80,7 +83,7 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
     super.dispose();
     videoPlayerController.pause();
     videoPlayerController.dispose();
-    chewieController!.dispose();
+    chewieController?.dispose();
   }
 
   @override
@@ -96,6 +99,7 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
             height: 75,
             child: CircularProgressIndicator.adaptive(
               strokeWidth: 2,
-            ));
+            ),
+          );
   }
 }
