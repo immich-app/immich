@@ -62,7 +62,7 @@ curl --location --request POST 'http://your-server-ip:2283/auth/signUp' \
 
 ### Android
 
-Download `apk` file in folder `binary` and run on your phone. You can follow this guide on how to do that
+Download `apk` in release tab and run on your phone. You can follow this guide on how to do that
 
 - [Run APK on Android](https://www.lifewire.com/install-apk-on-android-4177185)
 
