@@ -20,7 +20,6 @@ You can use docker compose for development, there are several services that comp
 2. PostgreSQL
 3. Redis
 4. Nginx
-   Use the curl command below to create user as we don't have user interface to create new user yet
 
 ## Populate .env file
 
