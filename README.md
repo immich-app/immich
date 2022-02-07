@@ -12,6 +12,8 @@ This project is under heavy development, there will be continous functions, feat
 
 **!! NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS !!**
 
+**The Docker build currently doesn't work on ARM architecture since Tensor Flow library full version doesn't support it.**
+
 # Development
 
 You can use docker compose for development, there are several services that compose Immich
