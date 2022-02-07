@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
@@ -8,6 +8,7 @@ import { AssetEntity, AssetType } from './entities/asset.entity';
 import _ from 'lodash';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { GetAllAssetReponseDto } from './dto/get-all-asset-response.dto';
+import { Greater } from '@tensorflow/tfjs-core';
 
 @Injectable()
 export class AssetService {
@@ -53,8 +54,6 @@ export class AssetService {
   }
 
   public async getAllAssets(authUser: AuthUserDto, query: GetAllAssetQueryDto): Promise<GetAllAssetReponseDto> {
-    // Each page will take 100 images.
-
     try {
       const assets = await this.assetRepository
         .createQueryBuilder('a')
@@ -63,7 +62,7 @@ export class AssetService {
           lastQueryCreatedAt: query.nextPageKey || new Date().toISOString(),
         })
         .orderBy('a."createdAt"::date', 'DESC')
-        // .take(500)
+        .take(5000)
         .getMany();
 
       if (assets.length > 0) {
@@ -101,5 +100,17 @@ export class AssetService {
     }
 
     return rows[0] as AssetEntity;
+  }
+
+  public async getNewAssets(authUser: AuthUserDto, latestDate: string) {
+    return await this.assetRepository.find({
+      where: {
+        userId: authUser.id,
+        createdAt: MoreThan(latestDate),
+      },
+      order: {
+        createdAt: 'ASC', // ASC order to add existed asset the latest group first before creating a new date group.
+      },
+    });
   }
 }

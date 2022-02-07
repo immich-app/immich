@@ -24,7 +24,7 @@ class HomePage extends HookConsumerWidget {
       var endOfPage = _scrollController.position.maxScrollExtent;
 
       if (_scrollController.offset >= endOfPage - (endOfPage * 0.1) && !_scrollController.position.outOfRange) {
-        ref.read(assetProvider.notifier).getMoreAsset();
+        ref.read(assetProvider.notifier).getOlderAsset();
       }
 
       if (_scrollController.offset >= 400) {
@@ -44,6 +44,18 @@ class HomePage extends HookConsumerWidget {
       };
     }, []);
 
+    onPopBackFromBackupPage() {
+      ref.read(assetProvider.notifier).getNewAsset();
+      // Remove and force getting new widget again if there is not many widget on screen.
+      // Otherwise do nothing.
+
+      if (imageGridGroup.isNotEmpty && imageGridGroup.length < 20) {
+        ref.read(assetProvider.notifier).getOlderAsset();
+      } else if (imageGridGroup.isEmpty) {
+        ref.read(assetProvider.notifier).getImmichAssets();
+      }
+    }
+
     Widget _buildBody() {
       if (assetGroup.isNotEmpty) {
         String lastGroupDate = assetGroup[0].date;
@@ -56,10 +68,13 @@ class HomePage extends HookConsumerWidget {
           int? previousMonth = DateTime.tryParse(lastGroupDate)?.month;
 
           // Add Monthly Title Group if started at the beginning of the month
-          if ((currentMonth! - previousMonth!) != 0) {
-            imageGridGroup.add(
-              MonthlyTitleText(isoDate: dateTitle),
-            );
+
+          if (currentMonth != null && previousMonth != null) {
+            if ((currentMonth - previousMonth) != 0) {
+              imageGridGroup.add(
+                MonthlyTitleText(isoDate: dateTitle),
+              );
+            }
           }
 
           // Add Daily Title Group
@@ -84,7 +99,10 @@ class HomePage extends HookConsumerWidget {
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
-              ImmichSliverAppBar(imageGridGroup: imageGridGroup),
+              ImmichSliverAppBar(
+                imageGridGroup: imageGridGroup,
+                onPopBack: onPopBackFromBackupPage,
+              ),
               ...imageGridGroup,
             ],
           ),

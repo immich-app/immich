@@ -79,7 +79,7 @@ flutter run --release
 
 # Known Issue
 
-TensorFlow doesn't run with older CPU architecture, it requires CPU with AVX and AVX2 instruction set. If you encounter error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command ad make sure you see `AVX` and `AVX2`. Otherwise, switch to a different VM/desktop with different architecture.
+TensorFlow doesn't run with older CPU architecture, it requires CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command and make sure you see `AVX` and `AVX2`. Otherwise, switch to a different VM/desktop with different architecture.
 
 ```bash
 more /proc/cpuinfo | grep flags
