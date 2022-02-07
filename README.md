@@ -4,7 +4,7 @@
 
 # IMMICH
 
-Self-hosted Photo backup solution directly from your mobile phone.
+Self-hosted photo and video backup solution directly from your mobile phone.
 
 # Note
 
