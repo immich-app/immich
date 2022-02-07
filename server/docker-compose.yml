@@ -9,7 +9,7 @@ services:
       context: .
       target: development
       dockerfile: ./Dockerfile-minimal
-    command: yarn start:dev
+    command: npm run start:dev
     ports:
       - "3000:3000"
     # expose:
