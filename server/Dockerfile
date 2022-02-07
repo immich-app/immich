@@ -1,34 +1,22 @@
-FROM ubuntu:20.04 AS development
+##################################
+# DEVELOPMENT
+##################################
+FROM node:16-bullseye-slim AS development
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /usr/src/app
 
-COPY package.json yarn.lock ./
+COPY package.json package-lock.json ./
 
-RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends \
-  build-essential \
-  curl \
-  git-core \
-  iputils-ping \
-  pkg-config \
-  rsync \
-  software-properties-common \
-  unzip \
-  wget \
-  ffmpeg
+RUN apt-get update
+RUN apt-get install gcc g++ make cmake python3 python3-pip ffmpeg -y
 
-# Install NodeJS
-RUN curl --silent --location https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get install --yes nodejs
-
-RUN npm i -g yarn
-
-RUN yarn install
+RUN npm install
 
 COPY . .
 
-RUN yarn build
+RUN npm run build
 
 # Clean up commands
 RUN apt-get autoremove -y && apt-get clean && \
@@ -37,44 +25,37 @@ RUN apt-get autoremove -y && apt-get clean && \
 RUN apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
-FROM ubuntu:20.04 as production
-ARG DEBIAN_FRONTEND=noninteractive
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
 
-WORKDIR /usr/src/app
 
-COPY package.json yarn.lock ./
+##################################
+# PRODUCTION
+##################################
+# FROM node:16-bullseye-slim as production
+# ARG DEBIAN_FRONTEND=noninteractive
+# ARG NODE_ENV=production
+# ENV NODE_ENV=${NODE_ENV}
 
-RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends \
-  build-essential \
-  curl \
-  git-core \
-  iputils-ping \
-  pkg-config \
-  rsync \
-  software-properties-common \
-  unzip \
-  wget \
-  ffmpeg
+# WORKDIR /usr/src/app
 
-# Install NodeJS
-RUN curl --silent --location https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get install --yes nodejs
+# COPY package.json yarn.lock ./
 
-RUN npm i -g yarn
+# RUN apt-get update
+# RUN apt-get install gcc g++ make cmake python3 python3-pip ffmpeg -y
 
-RUN yarn install --only=production
+# RUN npm i -g yarn --force
 
-COPY . .
+# RUN yarn install --only=production
 
-COPY --from=development /usr/src/app/dist ./dist
+# COPY . .
 
-# Clean up commands
-RUN apt-get autoremove -y && apt-get clean && \
-  rm -rf /usr/local/src/*
+# COPY --from=development /usr/src/app/dist ./dist
 
-RUN apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
+# # Clean up commands
+# RUN apt-get autoremove -y && apt-get clean && \
+#   rm -rf /usr/local/src/*
 
-CMD ["node", "dist/main"]
+# RUN apt-get clean && \
+#   rm -rf /var/lib/apt/lists/*
+
+
+# CMD ["node", "dist/main"]
