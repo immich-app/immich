@@ -43,4 +43,4 @@ jobs:
           pull: true
           push: true
           tags: |
-            alextran1502/immich:latest
+            altran1502/immich-server:latest
