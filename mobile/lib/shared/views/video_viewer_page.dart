@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:chewie/chewie.dart';
@@ -17,6 +18,7 @@ class VideoViewerPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         backgroundColor: Colors.black,
         leading: IconButton(
             onPressed: () {
@@ -24,7 +26,7 @@ class VideoViewerPage extends StatelessWidget {
             },
             icon: const Icon(Icons.arrow_back_ios)),
       ),
-      body: Center(
+      body: SafeArea(
         child: VideoThumbnailPlayer(
           url: videoUrl,
           jwtToken: jwtToken,
@@ -64,7 +66,6 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
       setState(() {});
     } catch (e) {
       debugPrint("ERROR initialize video player");
-      print(e);
     }
   }
 

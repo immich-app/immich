@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/modules/home/models/get_all_asset_respose.model.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 
 class AssetService {
@@ -17,9 +18,10 @@ class AssetService {
     } catch (e) {
       debugPrint("Error getAllAsset  ${e.toString()}");
     }
+    return null;
   }
 
-  Future<GetAllAssetResponse?> getMoreAsset(String? nextPageKey) async {
+  Future<GetAllAssetResponse?> getOlderAsset(String? nextPageKey) async {
     try {
       var res = await _networkService.getRequest(
         url: "asset/all?nextPageKey=$nextPageKey",
@@ -33,6 +35,27 @@ class AssetService {
       }
     } catch (e) {
       debugPrint("Error getAllAsset  ${e.toString()}");
+    }
+    return null;
+  }
+
+  Future<List<ImmichAsset>> getNewAsset(String latestDate) async {
+    try {
+      var res = await _networkService.getRequest(
+        url: "asset/new?latestDate=$latestDate",
+      );
+
+      List<dynamic> decodedData = jsonDecode(res.toString());
+
+      List<ImmichAsset> result = List.from(decodedData.map((a) => ImmichAsset.fromMap(a)));
+      if (result.isNotEmpty) {
+        return result;
+      }
+
+      return [];
+    } catch (e) {
+      debugPrint("Error getAllAsset  ${e.toString()}");
+      return [];
     }
   }
 }

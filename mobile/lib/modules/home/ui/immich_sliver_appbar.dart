@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/backup_state.model.dart';
@@ -12,9 +11,11 @@ class ImmichSliverAppBar extends ConsumerWidget {
   const ImmichSliverAppBar({
     Key? key,
     required this.imageGridGroup,
+    this.onPopBack,
   }) : super(key: key);
 
   final List<Widget> imageGridGroup;
+  final Function? onPopBack;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -75,15 +76,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
                   var onPop = await AutoRouter.of(context).push(const BackupControllerRoute());
 
                   if (onPop == true) {
-                    // Remove and force getting new widget again if there is not many widget on screen.
-                    // Otherwise do nothing.
-                    if (imageGridGroup.isNotEmpty && imageGridGroup.length < 20) {
-                      print("Get more access");
-                      ref.read(assetProvider.notifier).getMoreAsset();
-                    } else if (imageGridGroup.isEmpty) {
-                      print("get immich asset");
-                      ref.read(assetProvider.notifier).getImmichAssets();
-                    }
+                    onPopBack!();
                   }
                 },
               ),

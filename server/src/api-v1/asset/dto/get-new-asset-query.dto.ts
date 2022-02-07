@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class GetAssetDto {
+export class GetNewAssetQueryDto {
   @IsNotEmpty()
-  deviceId: string;
+  latestDate: string;
 }

@@ -3,13 +3,13 @@ name: Build+push Immich
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   #schedule:
-    # * is a special character in YAML so you have to quote this string
-    #- cron:  '0 0 * * *'
+  # * is a special character in YAML so you have to quote this string
+  #- cron:  '0 0 * * *'
   workflow_dispatch:
-  #push:
-    #branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  # push:
+  #branches: [ main ]
+  # pull_request:
+  #   branches: [ main ]
 
 jobs:
   buildandpush:
@@ -18,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.4.0
         with:
-          ref: 'main' # branch
+          ref: "main" # branch
       # https://github.com/docker/setup-qemu-action#usage
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1.2.0

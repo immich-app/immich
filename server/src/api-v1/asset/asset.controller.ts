@@ -29,6 +29,7 @@ import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { stat } from 'fs';
 import { pipeline } from 'stream';
+import { GetNewAssetQueryDto } from './dto/get-new-asset-query.dto';
 
 const fileInfo = promisify(stat);
 
@@ -139,6 +140,11 @@ export class AssetController {
     }
 
     console.log('SHOULD NOT BE HERE');
+  }
+
+  @Get('/new')
+  async getNewAssets(@GetAuthUser() authUser: AuthUserDto, @Query(ValidationPipe) query: GetNewAssetQueryDto) {
+    return await this.assetService.getNewAssets(authUser, query.latestDate);
   }
 
   @Get('/all')
