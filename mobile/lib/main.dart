@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
+import 'package:immich_mobile/shared/providers/backup.provider.dart';
 import 'constants/hive_box.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -36,6 +37,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
       case AppLifecycleState.resumed:
         debugPrint("[APP STATE] resumed");
         ref.read(appStateProvider.notifier).state = AppStateEnum.resumed;
+        ref.read(backupProvider.notifier).resumeBackup();
         break;
       case AppLifecycleState.inactive:
         debugPrint("[APP STATE] inactive");
@@ -53,7 +55,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
   }
 
   Future<void> initApp() async {
-    // WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance?.addObserver(this);
   }
 
   @override
