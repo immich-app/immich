@@ -6,7 +6,7 @@
 
 Self-hosted photo and video backup solution directly from your mobile phone.
 
-![](design/gif/progress-02082022.gif)
+![](https://media.giphy.com/media/y8ZeaAigGmNvlSoKhU/giphy.gif)
 
 # Note
 
