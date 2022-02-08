@@ -15,8 +15,11 @@ This project is under heavy development, there will be continous functions, feat
 # Features
 
 [x] Upload assets(videos/images)
+
 [x] View assets
+
 [x] Quick navigation with drag scroll bar
+
 [x] Auto Backup
 
 # Development
