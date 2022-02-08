@@ -53,7 +53,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
   }
 
   Future<void> initApp() async {
-    // WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance?.addObserver(this);
   }
 
   @override

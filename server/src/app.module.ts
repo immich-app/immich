@@ -44,6 +44,6 @@ import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(AppLoggerMiddleware).forRoutes('*');
+    // consumer.apply(AppLoggerMiddleware).forRoutes('*');
   }
 }
