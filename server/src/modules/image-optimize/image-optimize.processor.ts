@@ -66,7 +66,6 @@ export class ImageOptimizeProcessor {
 
     const basePath = this.configService.get('UPLOAD_LOCATION');
     // const resizePath = savedAsset.originalPath.replace('/original/', '/thumb/');
-    console.log(filename);
     // Create folder for thumb image if not exist
     const resizeDir = `${basePath}/${savedAsset.userId}/thumb/${savedAsset.deviceId}`;
 

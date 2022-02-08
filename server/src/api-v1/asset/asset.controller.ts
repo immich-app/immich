@@ -118,7 +118,6 @@ export class AssetController {
         }
 
         /** Sending Partial Content With HTTP Code 206 */
-        console.log('Sendinf file with type ', asset.mimeType);
 
         res.status(206).set({
           'Content-Range': `bytes ${start}-${end}/${size}`,

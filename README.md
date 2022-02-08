@@ -12,6 +12,13 @@ This project is under heavy development, there will be continous functions, feat
 
 **!! NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS !!**
 
+# Features
+
+[x] Upload assets(videos/images)
+[x] View assets
+[x] Quick navigation with drag scroll bar
+[x] Auto Backup
+
 # Development
 
 You can use docker compose for development, there are several services that compose Immich
