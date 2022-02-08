@@ -8,6 +8,8 @@ Self-hosted photo and video backup solution directly from your mobile phone.
 
 ![](https://media.giphy.com/media/y8ZeaAigGmNvlSoKhU/giphy.gif)
 
+Loading ~4000 images/videos
+
 # Note
 
 This project is under heavy development, there will be continous functions, features and api changes.
