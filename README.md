@@ -10,6 +10,16 @@ Self-hosted photo and video backup solution directly from your mobile phone.
 
 Loading ~4000 images/videos
 
+## Screenshots
+
+<p align="left">
+  <img src="design/sc1.PNG" width="150" title="Login With Custom URL">
+  <img src="design/sc2.PNG" width="150" title="Backup Setting Info">
+  <img src="design/sc4.PNG" width="150" title="Home Page">
+  <img src="design/sc3.PNG" width="150" title="Multiple seelct">
+  <img src="design/sc5.PNG" width="150" title="Multipe select group">
+</p>
+
 # Note
 
 This project is under heavy development, there will be continous functions, features and api changes.
