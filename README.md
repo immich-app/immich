@@ -6,6 +6,8 @@
 
 Self-hosted photo and video backup solution directly from your mobile phone.
 
+![Current Stage](https://media.giphy.com/media/UcO3eQ1h6Bjm1Sqexd/giphy-downsized-large.gif)
+
 # Note
 
 This project is under heavy development, there will be continous functions, features and api changes.

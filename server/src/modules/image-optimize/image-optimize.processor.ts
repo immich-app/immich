@@ -42,6 +42,7 @@ export class ImageOptimizeProcessor {
         .toFile(resizePath, async (err, info) => {
           if (err) {
             console.error('Error resizing file ', err);
+            return;
           }
 
           await this.assetRepository.update(savedAsset, { resizePath: resizePath });
