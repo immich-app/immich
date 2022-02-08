@@ -11,7 +11,7 @@ import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
-  AuthenticationNotifier()
+  AuthenticationNotifier(this.ref)
       : super(
           AuthenticationState(
             deviceId: "",
@@ -31,6 +31,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
           ),
         );
 
+  final Ref ref;
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
   final BackupService _backupService = BackupService();
   final NetworkService _networkService = NetworkService();
@@ -126,5 +127,5 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 }
 
 final authenticationProvider = StateNotifierProvider<AuthenticationNotifier, AuthenticationState>((ref) {
-  return AuthenticationNotifier();
+  return AuthenticationNotifier(ref);
 });

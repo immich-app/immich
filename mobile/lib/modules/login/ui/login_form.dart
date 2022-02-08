@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/shared/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class LoginForm extends HookConsumerWidget {
@@ -119,6 +120,8 @@ class LoginButton extends ConsumerWidget {
               .login(emailController.text, passwordController.text, serverEndpointController.text);
 
           if (isAuthenicated) {
+            // Resume backup (if enable) then navigate
+            ref.watch(backupProvider.notifier).resumeBackup();
             AutoRouter.of(context).pushNamed("/home-page");
           } else {
             ImmichToast.show(
