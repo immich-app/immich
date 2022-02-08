@@ -7,28 +7,41 @@ class HomePageStateNotifier extends StateNotifier<HomePageState> {
       : super(
           HomePageState(
             isMultiSelectEnable: false,
-            selectedItems: [],
+            selectedItems: {},
+            selectedDateGroup: {},
           ),
         );
 
-  void enableMultiSelect(List<ImmichAsset> selectedItems) {
+  void addSelectedDateGroup(String dateGroupTitle) {
+    state = state.copyWith(selectedDateGroup: {...state.selectedDateGroup, dateGroupTitle});
+  }
+
+  void removeSelectedDateGroup(String dateGroupTitle) {
+    var currentDateGroup = state.selectedDateGroup;
+
+    currentDateGroup.removeWhere((e) => e == dateGroupTitle);
+
+    state = state.copyWith(selectedDateGroup: currentDateGroup);
+  }
+
+  void enableMultiSelect(Set<ImmichAsset> selectedItems) {
     state = state.copyWith(isMultiSelectEnable: true, selectedItems: selectedItems);
   }
 
   void disableMultiSelect() {
-    state = state.copyWith(isMultiSelectEnable: false, selectedItems: []);
+    state = state.copyWith(isMultiSelectEnable: false, selectedItems: {}, selectedDateGroup: {});
   }
 
   void addSingleSelectedItem(ImmichAsset asset) {
-    state = state.copyWith(selectedItems: [...state.selectedItems, asset]);
+    state = state.copyWith(selectedItems: {...state.selectedItems, asset});
   }
 
   void addMultipleSelectedItems(List<ImmichAsset> assets) {
-    state = state.copyWith(selectedItems: [...state.selectedItems, ...assets]);
+    state = state.copyWith(selectedItems: {...state.selectedItems, ...assets});
   }
 
   void removeSingleSelectedItem(ImmichAsset asset) {
-    List<ImmichAsset> currentList = state.selectedItems;
+    Set<ImmichAsset> currentList = state.selectedItems;
 
     currentList.removeWhere((e) => e.id == asset.id);
 
@@ -36,7 +49,7 @@ class HomePageStateNotifier extends StateNotifier<HomePageState> {
   }
 
   void removeMultipleSelectedItem(List<ImmichAsset> assets) {
-    List<ImmichAsset> currentList = state.selectedItems;
+    Set<ImmichAsset> currentList = state.selectedItems;
 
     for (ImmichAsset asset in assets) {
       currentList.removeWhere((e) => e.id == asset.id);

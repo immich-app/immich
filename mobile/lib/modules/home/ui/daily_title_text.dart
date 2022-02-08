@@ -21,6 +21,8 @@ class DailyTitleText extends ConsumerWidget {
     var formatDateTemplate = currentYear == groupYear ? 'E, MMM dd' : 'E, MMM dd, yyyy';
     var dateText = DateFormat(formatDateTemplate).format(DateTime.parse(isoDate));
     var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
+    var selectedDateGroup = ref.watch(homePageStateProvider).selectedDateGroup;
+    var selectedItems = ref.watch(homePageStateProvider).selectedItems;
 
     return SliverToBoxAdapter(
       child: Padding(
@@ -38,14 +40,30 @@ class DailyTitleText extends ConsumerWidget {
             const Spacer(),
             GestureDetector(
               onTap: () {
-                if (!isMultiSelectEnable) {
-                  ref.watch(homePageStateProvider.notifier).enableMultiSelect(assetGroup);
-                } else {
+                if (isMultiSelectEnable &&
+                    selectedDateGroup.contains(dateText) &&
+                    selectedDateGroup.length == 1 &&
+                    selectedItems.length == assetGroup.length) {
                   ref.watch(homePageStateProvider.notifier).disableMultiSelect();
+                } else if (isMultiSelectEnable &&
+                    selectedDateGroup.contains(dateText) &&
+                    selectedItems.length != assetGroup.length) {
+                  ref.watch(homePageStateProvider.notifier).removeSelectedDateGroup(dateText);
+                  ref.watch(homePageStateProvider.notifier).removeMultipleSelectedItem(assetGroup);
+                } else if (isMultiSelectEnable &&
+                    selectedDateGroup.contains(dateText) &&
+                    selectedDateGroup.length > 1) {
+                  ref.watch(homePageStateProvider.notifier).removeSelectedDateGroup(dateText);
+                  ref.watch(homePageStateProvider.notifier).removeMultipleSelectedItem(assetGroup);
+                } else if (isMultiSelectEnable && !selectedDateGroup.contains(dateText)) {
+                  ref.watch(homePageStateProvider.notifier).addSelectedDateGroup(dateText);
+                  ref.watch(homePageStateProvider.notifier).addMultipleSelectedItems(assetGroup);
+                } else {
+                  ref.watch(homePageStateProvider.notifier).enableMultiSelect(assetGroup.toSet());
+                  ref.watch(homePageStateProvider.notifier).addSelectedDateGroup(dateText);
                 }
-                print(ref.watch(homePageStateProvider).selectedItems.length);
               },
-              child: isMultiSelectEnable
+              child: isMultiSelectEnable && selectedDateGroup.contains(dateText)
                   ? const Icon(Icons.check_circle_rounded)
                   : const Icon(Icons.check_circle_outline_rounded),
             )
