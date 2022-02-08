@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/home/ui/daily_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/home/ui/image_grid.dart';
@@ -9,6 +10,7 @@ import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer.dart';
 import 'package:immich_mobile/modules/home/models/get_all_asset_respose.model.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
+import 'package:sliver_tools/sliver_tools.dart';
 
 class HomePage extends HookConsumerWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -18,6 +20,8 @@ class HomePage extends HookConsumerWidget {
     ScrollController _scrollController = useScrollController();
     List<ImmichAssetGroupByDate> _assetGroup = ref.watch(assetProvider);
     List<Widget> _imageGridGroup = [];
+    var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
+    var homePageState = ref.watch(homePageStateProvider);
 
     _scrollControllerCallback() {
       var endOfPage = _scrollController.position.maxScrollExtent;
@@ -85,20 +89,65 @@ class HomePage extends HookConsumerWidget {
       }
 
       return SafeArea(
-        child: DraggableScrollbar.semicircle(
-          backgroundColor: Theme.of(context).primaryColor,
-          controller: _scrollController,
-          heightScrollThumb: 48.0,
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              ImmichSliverAppBar(
-                imageGridGroup: _imageGridGroup,
-                onPopBack: onPopBackFromBackupPage,
+        child: Stack(
+          children: [
+            DraggableScrollbar.semicircle(
+              backgroundColor: Theme.of(context).primaryColor,
+              controller: _scrollController,
+              heightScrollThumb: 48.0,
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverAnimatedSwitcher(
+                    child: isMultiSelectEnable
+                        ? const SliverToBoxAdapter(
+                            child: SizedBox(
+                            height: 70,
+                            child: null,
+                          ))
+                        : ImmichSliverAppBar(
+                            imageGridGroup: _imageGridGroup,
+                            onPopBack: onPopBackFromBackupPage,
+                          ),
+                    duration: const Duration(milliseconds: 250),
+                  ),
+                  ..._imageGridGroup
+                ],
               ),
-              ..._imageGridGroup,
-            ],
-          ),
+            ),
+            isMultiSelectEnable
+                ? Positioned(
+                    top: 0,
+                    left: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8.0, top: 16),
+                      child: Material(
+                        elevation: 20,
+                        borderRadius: BorderRadius.circular(35),
+                        child: Container(
+                          // width: 100,
+                          // height: 40,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(35),
+                            color: Colors.white,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                            child: TextButton.icon(
+                                onPressed: () {
+                                  ref.watch(homePageStateProvider.notifier).disableMultiSelect();
+                                },
+                                icon: const Icon(Icons.close_rounded),
+                                label: Text(
+                                  homePageState.selectedItems.length.toString(),
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                )),
+                          ),
+                        ),
+                      ),
+                    ))
+                : Container(),
+          ],
         ),
       );
     }

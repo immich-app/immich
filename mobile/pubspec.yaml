@@ -30,6 +30,7 @@ dependencies:
   fluttertoast: ^8.0.8
   video_player: ^2.2.18
   chewie: ^1.2.2
+  sliver_tools: ^0.2.5
 
 dev_dependencies:
   flutter_test:
