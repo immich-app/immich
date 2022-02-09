@@ -32,8 +32,6 @@ class HomePage extends HookConsumerWidget {
     }
 
     useEffect(() {
-      debugPrint("Build Home Page");
-
       ref.read(assetProvider.notifier).getImmichAssets();
 
       _scrollController.addListener(_scrollControllerCallback);
@@ -97,13 +95,11 @@ class HomePage extends HookConsumerWidget {
           top: 0,
           left: 0,
           child: Padding(
-            padding: const EdgeInsets.only(left: 8.0, top: 16),
+            padding: const EdgeInsets.only(left: 16.0, top: 46),
             child: Material(
               elevation: 20,
               borderRadius: BorderRadius.circular(35),
               child: Container(
-                // width: 100,
-                // height: 40,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(35),
                   color: Colors.grey[100],
@@ -117,7 +113,7 @@ class HomePage extends HookConsumerWidget {
                       icon: const Icon(Icons.close_rounded),
                       label: Text(
                         homePageState.selectedItems.length.toString(),
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
                       )),
                 ),
               ),
@@ -126,7 +122,87 @@ class HomePage extends HookConsumerWidget {
         );
       }
 
+      _buildControlBottomBar() {
+        return Positioned(
+          bottom: 0,
+          left: 0,
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * 0.15,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+              color: Colors.grey[300]?.withOpacity(0.98),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 60,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      backgroundColor: Colors.grey[200],
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                      title: const Text("Delete Permanently"),
+                                      content: const Text(
+                                          "These items will be permanently deleted from Immich and from your device"),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text(
+                                            "Cancel",
+                                            style: TextStyle(color: Colors.blueGrey),
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {},
+                                          child: Text(
+                                            "Delete",
+                                            style: TextStyle(color: Colors.red[400]),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.delete_forever_rounded,
+                                size: 30,
+                              ),
+                            ),
+                            const Text(
+                              "Delete",
+                              softWrap: true,
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      }
+
       return SafeArea(
+        bottom: !isMultiSelectEnable,
+        top: !isMultiSelectEnable,
         child: Stack(
           children: [
             DraggableScrollbar.semicircle(
@@ -155,6 +231,7 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
             isMultiSelectEnable ? _buildDisableMultiSelectButton() : Container(),
+            isMultiSelectEnable ? _buildControlBottomBar() : Container(),
           ],
         ),
       );
