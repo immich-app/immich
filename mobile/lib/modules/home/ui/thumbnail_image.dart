@@ -49,6 +49,7 @@ class ThumbnailImage extends HookConsumerWidget {
         } else if (isMultiSelectEnable && !selectedAsset.contains(asset)) {
           ref.watch(homePageStateProvider.notifier).addSingleSelectedItem(asset);
         } else {
+          print(asset.id);
           if (asset.type == 'IMAGE') {
             AutoRouter.of(context).push(
               ImageViewerRoute(

@@ -57,8 +57,8 @@ class ProfileDrawer extends ConsumerWidget {
               bool res = await ref.read(authenticationProvider.notifier).logout();
 
               if (res) {
+                ref.watch(assetProvider.notifier).clearAllAsset();
                 AutoRouter.of(context).popUntilRoot();
-                ref.read(assetProvider.notifier).clearAllAsset();
               }
             },
           )
