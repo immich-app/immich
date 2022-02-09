@@ -22,9 +22,9 @@ Loading ~4000 images/videos
 
 # Note
 
-This project is under heavy development, there will be continous functions, features and api changes.
-
 **!! NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS !!**
+
+This project is under heavy development, there will be continous functions, features and api changes.
 
 # Features
 

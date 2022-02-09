@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
+import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/daily_title_text.dart';
+import 'package:immich_mobile/modules/home/ui/disable_multi_select_button.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/home/ui/image_grid.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
@@ -32,7 +34,7 @@ class HomePage extends HookConsumerWidget {
     }
 
     useEffect(() {
-      ref.read(assetProvider.notifier).getImmichAssets();
+      ref.read(assetProvider.notifier).getAllAssets();
 
       _scrollController.addListener(_scrollControllerCallback);
       return () {
@@ -48,7 +50,7 @@ class HomePage extends HookConsumerWidget {
       if (_imageGridGroup.isNotEmpty && _imageGridGroup.length < 20) {
         ref.read(assetProvider.notifier).getOlderAsset();
       } else if (_imageGridGroup.isEmpty) {
-        ref.read(assetProvider.notifier).getImmichAssets();
+        ref.read(assetProvider.notifier).getAllAssets();
       }
     }
 
@@ -90,116 +92,6 @@ class HomePage extends HookConsumerWidget {
         }
       }
 
-      _buildDisableMultiSelectButton() {
-        return Positioned(
-          top: 0,
-          left: 0,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 46),
-            child: Material(
-              elevation: 20,
-              borderRadius: BorderRadius.circular(35),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(35),
-                  color: Colors.grey[100],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: TextButton.icon(
-                      onPressed: () {
-                        ref.watch(homePageStateProvider.notifier).disableMultiSelect();
-                      },
-                      icon: const Icon(Icons.close_rounded),
-                      label: Text(
-                        homePageState.selectedItems.length.toString(),
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-                      )),
-                ),
-              ),
-            ),
-          ),
-        );
-      }
-
-      _buildControlBottomBar() {
-        return Positioned(
-          bottom: 0,
-          left: 0,
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.15,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
-              color: Colors.grey[300]?.withOpacity(0.98),
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 60,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      backgroundColor: Colors.grey[200],
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                                      title: const Text("Delete Permanently"),
-                                      content: const Text(
-                                          "These items will be permanently deleted from Immich and from your device"),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: const Text(
-                                            "Cancel",
-                                            style: TextStyle(color: Colors.blueGrey),
-                                          ),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {},
-                                          child: Text(
-                                            "Delete",
-                                            style: TextStyle(color: Colors.red[400]),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.delete_forever_rounded,
-                                size: 30,
-                              ),
-                            ),
-                            const Text(
-                              "Delete",
-                              softWrap: true,
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ),
-        );
-      }
-
       return SafeArea(
         bottom: !isMultiSelectEnable,
         top: !isMultiSelectEnable,
@@ -230,8 +122,13 @@ class HomePage extends HookConsumerWidget {
                 ],
               ),
             ),
-            isMultiSelectEnable ? _buildDisableMultiSelectButton() : Container(),
-            isMultiSelectEnable ? _buildControlBottomBar() : Container(),
+            isMultiSelectEnable
+                ? DisableMultiSelectButton(
+                    onPressed: ref.watch(homePageStateProvider.notifier).disableMultiSelect,
+                    selectedItemCount: homePageState.selectedItems.length,
+                  )
+                : Container(),
+            isMultiSelectEnable ? const ControlBottomAppBar() : Container(),
           ],
         ),
       );

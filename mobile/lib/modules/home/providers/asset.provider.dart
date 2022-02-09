@@ -14,7 +14,7 @@ class AssetNotifier extends StateNotifier<List<ImmichAssetGroupByDate>> {
   bool isFetching = false;
 
   // Get All assets
-  getImmichAssets() async {
+  getAllAssets() async {
     GetAllAssetResponse? res = await _assetService.getAllAsset();
     nextPageKey = res?.nextPageKey;
 
