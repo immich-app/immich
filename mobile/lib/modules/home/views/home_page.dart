@@ -32,10 +32,11 @@ class HomePage extends HookConsumerWidget {
     }
 
     useEffect(() {
+      debugPrint("Build Home Page");
+
       ref.read(assetProvider.notifier).getImmichAssets();
 
       _scrollController.addListener(_scrollControllerCallback);
-
       return () {
         _scrollController.removeListener(_scrollControllerCallback);
       };
@@ -76,7 +77,10 @@ class HomePage extends HookConsumerWidget {
 
           // Add Daily Title Group
           _imageGridGroup.add(
-            DailyTitleText(isoDate: dateTitle, assetGroup: assetGroup),
+            DailyTitleText(
+              isoDate: dateTitle,
+              assetGroup: assetGroup,
+            ),
           );
 
           // Add Image Group
@@ -86,6 +90,40 @@ class HomePage extends HookConsumerWidget {
           //
           lastGroupDate = dateTitle;
         }
+      }
+
+      _buildDisableMultiSelectButton() {
+        return Positioned(
+          top: 0,
+          left: 0,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8.0, top: 16),
+            child: Material(
+              elevation: 20,
+              borderRadius: BorderRadius.circular(35),
+              child: Container(
+                // width: 100,
+                // height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(35),
+                  color: Colors.grey[100],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: TextButton.icon(
+                      onPressed: () {
+                        ref.watch(homePageStateProvider.notifier).disableMultiSelect();
+                      },
+                      icon: const Icon(Icons.close_rounded),
+                      label: Text(
+                        homePageState.selectedItems.length.toString(),
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                      )),
+                ),
+              ),
+            ),
+          ),
+        );
       }
 
       return SafeArea(
@@ -102,57 +140,28 @@ class HomePage extends HookConsumerWidget {
                     child: isMultiSelectEnable
                         ? const SliverToBoxAdapter(
                             child: SizedBox(
-                            height: 70,
-                            child: null,
-                          ))
+                              height: 70,
+                              child: null,
+                            ),
+                          )
                         : ImmichSliverAppBar(
                             imageGridGroup: _imageGridGroup,
                             onPopBack: onPopBackFromBackupPage,
                           ),
-                    duration: const Duration(milliseconds: 250),
+                    duration: const Duration(milliseconds: 350),
                   ),
                   ..._imageGridGroup
                 ],
               ),
             ),
-            isMultiSelectEnable
-                ? Positioned(
-                    top: 0,
-                    left: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 8.0, top: 16),
-                      child: Material(
-                        elevation: 20,
-                        borderRadius: BorderRadius.circular(35),
-                        child: Container(
-                          // width: 100,
-                          // height: 40,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(35),
-                            color: Colors.white,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                            child: TextButton.icon(
-                                onPressed: () {
-                                  ref.watch(homePageStateProvider.notifier).disableMultiSelect();
-                                },
-                                icon: const Icon(Icons.close_rounded),
-                                label: Text(
-                                  homePageState.selectedItems.length.toString(),
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                                )),
-                          ),
-                        ),
-                      ),
-                    ))
-                : Container(),
+            isMultiSelectEnable ? _buildDisableMultiSelectButton() : Container(),
           ],
         ),
       );
     }
 
     return Scaffold(
+      // key: _scaffoldKey,
       drawer: const ProfileDrawer(),
       body: _buildBody(),
     );
