@@ -13,6 +13,7 @@ import { immichAppConfig } from './config/app.config';
 import { BullModule } from '@nestjs/bull';
 import { ImageOptimizeModule } from './modules/image-optimize/image-optimize.module';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
+import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 
 @Module({
   imports: [
@@ -29,7 +30,6 @@ import { ServerInfoModule } from './api-v1/server-info/server-info.module';
         redis: {
           host: 'immich_redis',
           port: 6379,
-          // password: configService.get('REDIS_PASSWORD'),
         },
       }),
       inject: [ConfigService],
@@ -38,6 +38,8 @@ import { ServerInfoModule } from './api-v1/server-info/server-info.module';
     ImageOptimizeModule,
 
     ServerInfoModule,
+
+    BackgroundTaskModule,
   ],
   controllers: [],
   providers: [],
