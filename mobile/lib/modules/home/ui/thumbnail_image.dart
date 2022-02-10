@@ -56,6 +56,7 @@ class ThumbnailImage extends HookConsumerWidget {
                     '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
                 heroTag: asset.id,
                 thumbnailUrl: thumbnailRequestUrl,
+                asset: asset,
               ),
             );
           } else {

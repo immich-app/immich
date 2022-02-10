@@ -41,7 +41,8 @@ class _$AppRouter extends RootStackRouter {
               key: args.key,
               imageUrl: args.imageUrl,
               heroTag: args.heroTag,
-              thumbnailUrl: args.thumbnailUrl));
+              thumbnailUrl: args.thumbnailUrl,
+              asset: args.asset));
     },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
@@ -96,14 +97,16 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
       {Key? key,
       required String imageUrl,
       required String heroTag,
-      required String thumbnailUrl})
+      required String thumbnailUrl,
+      required ImmichAsset asset})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
             args: ImageViewerRouteArgs(
                 key: key,
                 imageUrl: imageUrl,
                 heroTag: heroTag,
-                thumbnailUrl: thumbnailUrl));
+                thumbnailUrl: thumbnailUrl,
+                asset: asset));
 
   static const String name = 'ImageViewerRoute';
 }
@@ -113,7 +116,8 @@ class ImageViewerRouteArgs {
       {this.key,
       required this.imageUrl,
       required this.heroTag,
-      required this.thumbnailUrl});
+      required this.thumbnailUrl,
+      required this.asset});
 
   final Key? key;
 
@@ -123,9 +127,11 @@ class ImageViewerRouteArgs {
 
   final String thumbnailUrl;
 
+  final ImmichAsset asset;
+
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, imageUrl: $imageUrl, heroTag: $heroTag, thumbnailUrl: $thumbnailUrl}';
+    return 'ImageViewerRouteArgs{key: $key, imageUrl: $imageUrl, heroTag: $heroTag, thumbnailUrl: $thumbnailUrl, asset: $asset}';
   }
 }
 

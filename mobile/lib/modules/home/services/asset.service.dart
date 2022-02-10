@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/modules/home/models/get_all_asset_respose.model.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:immich_mobile/shared/models/immich_asset_with_exif.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 
 class AssetService {
@@ -56,6 +57,23 @@ class AssetService {
     } catch (e) {
       debugPrint("Error getAllAsset  ${e.toString()}");
       return [];
+    }
+  }
+
+  Future<ImmichAssetWithExif?> getAssetById(String assetId) async {
+    try {
+      var res = await _networkService.getRequest(
+        url: "asset/assetById/$assetId",
+      );
+
+      Map<String, dynamic> decodedData = jsonDecode(res.toString());
+
+      ImmichAssetWithExif result = ImmichAssetWithExif.fromMap(decodedData);
+      print("result $result");
+      return result;
+    } catch (e) {
+      debugPrint("Error getAllAsset  ${e.toString()}");
+      return null;
     }
   }
 }
