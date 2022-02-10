@@ -2,6 +2,7 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
+import { BackgroundTaskProcessor } from './background-task.processor';
 import { BackgroundTaskService } from './background-task.service';
 
 @Module({
@@ -16,6 +17,7 @@ import { BackgroundTaskService } from './background-task.service';
     }),
     TypeOrmModule.forFeature([AssetEntity]),
   ],
-  providers: [BackgroundTaskService],
+  providers: [BackgroundTaskService, BackgroundTaskProcessor],
+  exports: [BackgroundTaskService],
 })
 export class BackgroundTaskModule {}
