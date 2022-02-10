@@ -66,15 +66,6 @@ export class ImageOptimizeProcessor {
             }
 
             await this.assetRepository.update(savedAsset, { resizePath: resizePath });
-
-            // Send file to object detection after resizing
-            // const detectionJob = await this.machineLearningQueue.add(
-            //   'object-detection',
-            //   {
-            //     resizePath,
-            //   },
-            //   { jobId: randomUUID() },
-            // );
           });
       }
     });

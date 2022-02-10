@@ -36,11 +36,13 @@ This project is under heavy development, there will be continous functions, feat
 
 [x] Auto Backup
 
+[x] Support HEIC
+
 # Development
 
 You can use docker compose for development, there are several services that compose Immich
 
-1. The server
+1. NestJs
 2. PostgreSQL
 3. Redis
 4. Nginx
