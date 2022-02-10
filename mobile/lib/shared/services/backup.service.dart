@@ -37,20 +37,12 @@ class BackupService {
     for (var entity in assetList) {
       try {
         if (entity.type == AssetType.video) {
-          file = await entity.file;
+          file = await entity.originFile;
         } else {
-          file = await entity.file.timeout(const Duration(seconds: 5));
+          file = await entity.originFile.timeout(const Duration(seconds: 5));
         }
 
         if (file != null) {
-          // reading exif
-          // var exifData = await readExifFromFile(file);
-
-          // for (String key in exifData.keys) {
-          //   debugPrint("- $key (${exifData[key]?.tagType}): ${exifData[key]}");
-          // }
-
-          // debugPrint("------------------");
           String originalFileName = await entity.titleAsync;
           String fileNameWithoutPath = originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
