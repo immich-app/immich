@@ -2,6 +2,7 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
+import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
 import { BackgroundTaskProcessor } from './background-task.processor';
 import { BackgroundTaskService } from './background-task.service';
 
@@ -15,7 +16,7 @@ import { BackgroundTaskService } from './background-task.service';
         removeOnFail: false,
       },
     }),
-    TypeOrmModule.forFeature([AssetEntity]),
+    TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
   ],
   providers: [BackgroundTaskService, BackgroundTaskProcessor],
   exports: [BackgroundTaskService],

@@ -11,11 +11,13 @@ export class BackgroundTaskService {
     private backgroundTaskQueue: Queue,
   ) {}
 
-  async extractExif(savedAsset: AssetEntity) {
+  async extractExif(savedAsset: AssetEntity, fileName: string, fileSize: number) {
     const job = await this.backgroundTaskQueue.add(
       'extract-exif',
       {
         savedAsset,
+        fileName,
+        fileSize,
       },
       { jobId: randomUUID() },
     );

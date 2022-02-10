@@ -40,9 +40,8 @@ export class AssetEntity {
   @Column({ nullable: true })
   duration: string;
 
-  @OneToOne(() => ExifEntity, { cascade: true })
-  @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
-  exifData?: ExifEntity;
+  @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
+  exifInfo: ExifEntity;
 }
 
 export enum AssetType {

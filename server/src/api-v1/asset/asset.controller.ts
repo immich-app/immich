@@ -55,7 +55,7 @@ export class AssetController {
 
       if (savedAsset && savedAsset.type == AssetType.IMAGE) {
         await this.assetOptimizeService.resizeImage(savedAsset);
-        await this.backgroundTaskService.extractExif(savedAsset);
+        await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
       }
 
       if (savedAsset && savedAsset.type == AssetType.VIDEO) {
@@ -157,5 +157,10 @@ export class AssetController {
   @Get('/:deviceId')
   async getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param('deviceId') deviceId: string) {
     return await this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
+  }
+
+  @Get('/assetById/:assetId')
+  async getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param('assetId') assetId) {
+    return this.assetService.getAssetById(authUser, assetId);
   }
 }

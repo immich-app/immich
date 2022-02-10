@@ -112,4 +112,14 @@ export class AssetService {
       },
     });
   }
+
+  public async getAssetById(authUser: AuthUserDto, assetId: string) {
+    return await this.assetRepository.findOne({
+      where: {
+        userId: authUser.id,
+        id: assetId,
+      },
+      relations: ['exifInfo'],
+    });
+  }
 }

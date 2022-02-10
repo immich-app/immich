@@ -22,7 +22,7 @@ export class AssetOptimizeService {
     };
   }
 
-  public async getVideoThumbnail(savedAsset: AssetEntity, filename: String) {
+  public async getVideoThumbnail(savedAsset: AssetEntity, filename: string) {
     const job = await this.optimizeQueue.add(
       'get-video-thumbnail',
       {

@@ -1,7 +1,8 @@
-import { Index } from 'typeorm';
+import { Index, JoinColumn, OneToOne } from 'typeorm';
 import { Column } from 'typeorm/decorator/columns/Column';
 import { PrimaryGeneratedColumn } from 'typeorm/decorator/columns/PrimaryGeneratedColumn';
 import { Entity } from 'typeorm/decorator/entity/Entity';
+import { AssetEntity } from './asset.entity';
 
 @Entity('exif')
 export class ExifEntity {
@@ -37,20 +38,30 @@ export class ExifEntity {
   dateTimeOriginal: Date;
 
   @Column({ type: 'timestamptz', nullable: true })
-  modifiedDate: Date;
+  modifyDate: Date;
 
   @Column({ nullable: true })
   lensModel: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'float8', nullable: true })
   fNumber: number;
 
-  @Column({ nullable: true })
-  focalLenght: number;
+  @Column({ type: 'float8', nullable: true })
+  focalLength: number;
 
   @Column({ nullable: true })
   iso: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'float', nullable: true })
   exposureTime: number;
+
+  @Column({ type: 'float', nullable: true })
+  latitude: number;
+
+  @Column({ type: 'float', nullable: true })
+  longitude: number;
+
+  @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
+  asset: ExifEntity;
 }
