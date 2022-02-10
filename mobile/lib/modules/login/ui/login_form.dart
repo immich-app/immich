@@ -126,7 +126,7 @@ class LoginButton extends ConsumerWidget {
           } else {
             ImmichToast.show(
                 context: context,
-                msg: "Error logging you in, check server url, emald and password!",
+                msg: "Error logging you in, check server url, email and password!",
                 toastType: ToastType.error);
           }
         },

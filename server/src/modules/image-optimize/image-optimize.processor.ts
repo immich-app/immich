@@ -4,16 +4,16 @@ import { Job, Queue } from 'bull';
 import { Repository } from 'typeorm';
 import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
 import sharp from 'sharp';
-import fs, { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, readFile } from 'fs';
 import { ConfigService } from '@nestjs/config';
 import ffmpeg from 'fluent-ffmpeg';
-import { Logger } from '@nestjs/common';
 
 @Processor('optimize')
 export class ImageOptimizeProcessor {
   constructor(
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectQueue('machine-learning') private machineLearningQueue: Queue,
+    @InjectRepository(AssetEntity)
+    private assetRepository: Repository<AssetEntity>,
+
     private configService: ConfigService,
   ) {}
 
@@ -32,30 +32,42 @@ export class ImageOptimizeProcessor {
       mkdirSync(resizeDir, { recursive: true });
     }
 
-    fs.readFile(savedAsset.originalPath, (err, data) => {
+    readFile(savedAsset.originalPath, async (err, data) => {
       if (err) {
         console.error('Error Reading File');
       }
 
-      sharp(data)
-        .resize(512, 512, { fit: 'outside' })
-        .toFile(resizePath, async (err, info) => {
-          if (err) {
-            console.error('Error resizing file ', err);
-            return;
-          }
+      if (savedAsset.mimeType == 'image/heic' || savedAsset.mimeType == 'image/heif') {
+        let desitnation = '';
+        if (savedAsset.mimeType == 'image/heic') {
+          desitnation = resizePath.replace('.HEIC', '.jpeg');
+        } else {
+          desitnation = resizePath.replace('.HEIF', '.jpeg');
+        }
 
-          await this.assetRepository.update(savedAsset, { resizePath: resizePath });
+        sharp(data)
+          .toFormat('jpeg')
+          .resize(512, 512, { fit: 'outside' })
+          .toFile(desitnation, async (err, info) => {
+            if (err) {
+              console.error('Error resizing file ', err);
+              return;
+            }
 
-          // Send file to object detection after resizing
-          // const detectionJob = await this.machineLearningQueue.add(
-          //   'object-detection',
-          //   {
-          //     resizePath,
-          //   },
-          //   { jobId: randomUUID() },
-          // );
-        });
+            await this.assetRepository.update(savedAsset, { resizePath: desitnation });
+          });
+      } else {
+        sharp(data)
+          .resize(512, 512, { fit: 'outside' })
+          .toFile(resizePath, async (err, info) => {
+            if (err) {
+              console.error('Error resizing file ', err);
+              return;
+            }
+
+            await this.assetRepository.update(savedAsset, { resizePath: resizePath });
+          });
+      }
     });
 
     return 'ok';

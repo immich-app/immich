@@ -1,9 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
 class FileHelper {
   static getMimeType(String filePath) {
-    debugPrint(filePath);
     var fileExtension = p.extension(filePath).split(".")[1];
 
     switch (fileExtension.toLowerCase()) {
@@ -27,6 +25,12 @@ class FileHelper {
 
       case 'avi':
         return {"type": "video", "subType": "x-msvideo"};
+
+      case 'heic':
+        return {"type": "image", "subType": "heic"};
+
+      case 'heif':
+        return {"type": "image", "subType": "heif"};
 
       default:
         return {"type": "unsupport", "subType": "unsupport"};
