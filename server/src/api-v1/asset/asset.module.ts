@@ -17,14 +17,6 @@ import { BullModule } from '@nestjs/bull';
         removeOnFail: false,
       },
     }),
-    BullModule.registerQueue({
-      name: 'machine-learning',
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
-      },
-    }),
     TypeOrmModule.forFeature([AssetEntity]),
     ImageOptimizeModule,
   ],

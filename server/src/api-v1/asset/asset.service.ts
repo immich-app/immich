@@ -8,7 +8,6 @@ import { AssetEntity, AssetType } from './entities/asset.entity';
 import _ from 'lodash';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { GetAllAssetReponseDto } from './dto/get-all-asset-response.dto';
-import { Greater } from '@tensorflow/tfjs-core';
 
 @Injectable()
 export class AssetService {

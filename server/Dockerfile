@@ -1,7 +1,7 @@
 ##################################
 # DEVELOPMENT
 ##################################
-FROM node:16-bullseye-slim AS development
+FROM node:16-alpine3.14 AS development
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -9,23 +9,13 @@ WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
 
-RUN apt-get update
-RUN apt-get install gcc g++ make cmake python3 python3-pip ffmpeg -y
+RUN apk add --update-cache build-base python3 libheif vips-dev vips ffmpeg
 
 RUN npm install
 
 COPY . .
 
 RUN npm run build
-
-# Clean up commands
-RUN apt-get autoremove -y && apt-get clean && \
-  rm -rf /usr/local/src/*
-
-RUN apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
-
-
 
 ##################################
 # PRODUCTION
