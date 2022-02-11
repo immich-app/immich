@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { ExifEntity } from './exif.entity';
 
 @Entity('assets')
 @Unique(['deviceAssetId', 'userId', 'deviceId'])
@@ -38,6 +39,9 @@ export class AssetEntity {
 
   @Column({ nullable: true })
   duration: string;
+
+  @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
+  exifInfo: ExifEntity;
 }
 
 export enum AssetType {

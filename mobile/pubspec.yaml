@@ -31,6 +31,8 @@ dependencies:
   video_player: ^2.2.18
   chewie: ^1.2.2
   sliver_tools: ^0.2.5
+  badges: ^2.0.2
+  photo_view: ^0.13.0
 
 dev_dependencies:
   flutter_test:

@@ -30,6 +30,7 @@ import { promisify } from 'util';
 import { stat } from 'fs';
 import { pipeline } from 'stream';
 import { GetNewAssetQueryDto } from './dto/get-new-asset-query.dto';
+import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 
 const fileInfo = promisify(stat);
 
@@ -37,8 +38,9 @@ const fileInfo = promisify(stat);
 @Controller('asset')
 export class AssetController {
   constructor(
-    private readonly assetService: AssetService,
-    private readonly assetOptimizeService: AssetOptimizeService,
+    private assetService: AssetService,
+    private assetOptimizeService: AssetOptimizeService,
+    private backgroundTaskService: BackgroundTaskService,
   ) {}
 
   @Post('upload')
@@ -53,6 +55,7 @@ export class AssetController {
 
       if (savedAsset && savedAsset.type == AssetType.IMAGE) {
         await this.assetOptimizeService.resizeImage(savedAsset);
+        await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
       }
 
       if (savedAsset && savedAsset.type == AssetType.VIDEO) {
@@ -154,5 +157,10 @@ export class AssetController {
   @Get('/:deviceId')
   async getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param('deviceId') deviceId: string) {
     return await this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
+  }
+
+  @Get('/assetById/:assetId')
+  async getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param('assetId') assetId) {
+    return this.assetService.getAssetById(authUser, assetId);
   }
 }
