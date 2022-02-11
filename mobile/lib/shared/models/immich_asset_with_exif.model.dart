@@ -10,6 +10,7 @@ class ImmichAssetWithExif {
   final String type;
   final String createdAt;
   final String modifiedAt;
+  final String originalPath;
   final bool isFavorite;
   final String? duration;
   final ImmichExif? exifInfo;
@@ -22,6 +23,7 @@ class ImmichAssetWithExif {
     required this.type,
     required this.createdAt,
     required this.modifiedAt,
+    required this.originalPath,
     required this.isFavorite,
     this.duration,
     this.exifInfo,
@@ -35,6 +37,7 @@ class ImmichAssetWithExif {
     String? type,
     String? createdAt,
     String? modifiedAt,
+    String? originalPath,
     bool? isFavorite,
     String? duration,
     ImmichExif? exifInfo,
@@ -47,6 +50,7 @@ class ImmichAssetWithExif {
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       modifiedAt: modifiedAt ?? this.modifiedAt,
+      originalPath: originalPath ?? this.originalPath,
       isFavorite: isFavorite ?? this.isFavorite,
       duration: duration ?? this.duration,
       exifInfo: exifInfo ?? this.exifInfo,
@@ -62,6 +66,7 @@ class ImmichAssetWithExif {
       'type': type,
       'createdAt': createdAt,
       'modifiedAt': modifiedAt,
+      'originalPath': originalPath,
       'isFavorite': isFavorite,
       'duration': duration,
       'exifInfo': exifInfo?.toMap(),
@@ -77,6 +82,7 @@ class ImmichAssetWithExif {
       type: map['type'] ?? '',
       createdAt: map['createdAt'] ?? '',
       modifiedAt: map['modifiedAt'] ?? '',
+      originalPath: map['originalPath'] ?? '',
       isFavorite: map['isFavorite'] ?? false,
       duration: map['duration'],
       exifInfo: map['exifInfo'] != null ? ImmichExif.fromMap(map['exifInfo']) : null,
@@ -89,7 +95,7 @@ class ImmichAssetWithExif {
 
   @override
   String toString() {
-    return 'ImmichAssetWithExif(id: $id, deviceAssetId: $deviceAssetId, userId: $userId, deviceId: $deviceId, type: $type, createdAt: $createdAt, modifiedAt: $modifiedAt, isFavorite: $isFavorite, duration: $duration, exifInfo: $exifInfo)';
+    return 'ImmichAssetWithExif(id: $id, deviceAssetId: $deviceAssetId, userId: $userId, deviceId: $deviceId, type: $type, createdAt: $createdAt, modifiedAt: $modifiedAt, originalPath: $originalPath, isFavorite: $isFavorite, duration: $duration, exifInfo: $exifInfo)';
   }
 
   @override
@@ -104,6 +110,7 @@ class ImmichAssetWithExif {
         other.type == type &&
         other.createdAt == createdAt &&
         other.modifiedAt == modifiedAt &&
+        other.originalPath == originalPath &&
         other.isFavorite == isFavorite &&
         other.duration == duration &&
         other.exifInfo == exifInfo;
@@ -118,6 +125,7 @@ class ImmichAssetWithExif {
         type.hashCode ^
         createdAt.hashCode ^
         modifiedAt.hashCode ^
+        originalPath.hashCode ^
         isFavorite.hashCode ^
         duration.hashCode ^
         exifInfo.hashCode;

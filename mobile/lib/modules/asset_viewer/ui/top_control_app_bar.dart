@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class TopControlAppBar extends StatelessWidget with PreferredSizeWidget {
-  const TopControlAppBar({Key? key, required this.asset}) : super(key: key);
+  const TopControlAppBar({Key? key, required this.asset, required this.onMoreInfoPressed}) : super(key: key);
 
   final ImmichAsset asset;
-
+  final Function onMoreInfoPressed;
   @override
   Widget build(BuildContext context) {
     double iconSize = 18.0;
@@ -45,7 +45,7 @@ class TopControlAppBar extends StatelessWidget with PreferredSizeWidget {
             iconSize: iconSize,
             splashRadius: iconSize,
             onPressed: () {
-              print("show modal");
+              onMoreInfoPressed();
             },
             icon: const Icon(Icons.more_horiz_rounded))
       ],
