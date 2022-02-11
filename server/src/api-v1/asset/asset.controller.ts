@@ -73,75 +73,7 @@ export class AssetController {
     @Response({ passthrough: true }) res: Res,
     @Query(ValidationPipe) query: ServeFileDto,
   ): Promise<StreamableFile> {
-    let file = null;
-    const asset = await this.assetService.findOne(authUser, query.did, query.aid);
-
-    // Handle Sending Images
-    if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
-      res.set({
-        'Content-Type': asset.mimeType,
-      });
-
-      if (query.isThumb === 'false' || !query.isThumb) {
-        file = createReadStream(asset.originalPath);
-      } else {
-        file = createReadStream(asset.resizePath);
-      }
-
-      return new StreamableFile(file);
-    } else if (asset.type == AssetType.VIDEO) {
-      // Handle Handling Video
-      const { size } = await fileInfo(asset.originalPath);
-      const range = headers.range;
-
-      if (range) {
-        /** Extracting Start and End value from Range Header */
-        let [start, end] = range.replace(/bytes=/, '').split('-');
-        start = parseInt(start, 10);
-        end = end ? parseInt(end, 10) : size - 1;
-
-        if (!isNaN(start) && isNaN(end)) {
-          start = start;
-          end = size - 1;
-        }
-        if (isNaN(start) && !isNaN(end)) {
-          start = size - end;
-          end = size - 1;
-        }
-
-        // Handle unavailable range request
-        if (start >= size || end >= size) {
-          console.error('Bad Request');
-          // Return the 416 Range Not Satisfiable.
-          res.status(416).set({
-            'Content-Range': `bytes */${size}`,
-          });
-
-          throw new BadRequestException('Bad Request Range');
-        }
-
-        /** Sending Partial Content With HTTP Code 206 */
-
-        res.status(206).set({
-          'Content-Range': `bytes ${start}-${end}/${size}`,
-          'Accept-Ranges': 'bytes',
-          'Content-Length': end - start + 1,
-          'Content-Type': asset.mimeType,
-        });
-
-        const videoStream = createReadStream(asset.originalPath, { start: start, end: end });
-
-        return new StreamableFile(videoStream);
-      } else {
-        res.set({
-          'Content-Type': asset.mimeType,
-        });
-
-        return new StreamableFile(createReadStream(asset.originalPath));
-      }
-    }
-
-    console.log('SHOULD NOT BE HERE');
+    return this.assetService.serveFile(authUser, query, res, headers);
   }
 
   @Get('/new')
