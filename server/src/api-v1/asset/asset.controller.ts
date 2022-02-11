@@ -12,27 +12,22 @@ import {
   Query,
   Response,
   Headers,
-  BadRequestException,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerOption } from '../../config/multer-option.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { createReadStream } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetOptimizeService } from '../../modules/image-optimize/image-optimize.service';
 import { AssetType } from './entities/asset.entity';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { Response as Res } from 'express';
-import { promisify } from 'util';
-import { stat } from 'fs';
-import { pipeline } from 'stream';
 import { GetNewAssetQueryDto } from './dto/get-new-asset-query.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-
-const fileInfo = promisify(stat);
+import { DeleteAssetDto } from './dto/delete-asset.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('asset')
@@ -94,5 +89,10 @@ export class AssetController {
   @Get('/assetById/:assetId')
   async getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param('assetId') assetId) {
     return this.assetService.getAssetById(authUser, assetId);
+  }
+
+  @Delete('/')
+  async deleteAssetById(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) assetIds: DeleteAssetDto) {
+    return this.assetService.deleteAssetById(authUser, assetIds);
   }
 }

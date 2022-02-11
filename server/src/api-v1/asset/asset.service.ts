@@ -5,13 +5,14 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetEntity, AssetType } from './entities/asset.entity';
-import _ from 'lodash';
+import _, { result } from 'lodash';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { GetAllAssetReponseDto } from './dto/get-all-asset-response.dto';
 import { createReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
 import { promisify } from 'util';
+import { DeleteAssetDto } from './dto/delete-asset.dto';
 
 const fileInfo = promisify(stat);
 
@@ -197,5 +198,31 @@ export class AssetService {
         return new StreamableFile(createReadStream(asset.originalPath));
       }
     }
+  }
+
+  public async deleteAssetById(authUser: AuthUserDto, assetIds: DeleteAssetDto) {
+    let result = [];
+
+    const target = assetIds.ids;
+    for (let assetId of target) {
+      const res = await this.assetRepository.delete({
+        id: assetId,
+        userId: authUser.id,
+      });
+
+      if (res.affected) {
+        result.push({
+          id: assetId,
+          status: 'success',
+        });
+      } else {
+        result.push({
+          id: assetId,
+          status: 'failed',
+        });
+      }
+    }
+
+    return result;
   }
 }
