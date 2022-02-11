@@ -36,7 +36,9 @@ This project is under heavy development, there will be continous functions, feat
 
 [x] Auto Backup
 
-[x] Support HEIC
+[x] Support HEIC/HEIF Backup
+
+[x] Extract and display EXIF info
 
 # Development
 
