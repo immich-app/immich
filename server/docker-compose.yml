@@ -12,11 +12,9 @@ services:
     command: npm run start:dev
     ports:
       - "3000:3000"
-    # expose:
-    #   - 3000
     volumes:
       - .:/usr/src/app
-      - userdata:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
     env_file:
       - .env
@@ -68,4 +66,3 @@ networks:
   immich_network:
 volumes:
   pgdata:
-  userdata:
