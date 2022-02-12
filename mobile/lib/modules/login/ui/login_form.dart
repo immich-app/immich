@@ -20,31 +20,33 @@ class LoginForm extends HookConsumerWidget {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 300),
-        child: Wrap(
-          spacing: 32,
-          runSpacing: 32,
-          alignment: WrapAlignment.center,
-          children: [
-            const Image(
-              image: AssetImage('assets/immich-logo-no-outline.png'),
-              width: 128,
-              filterQuality: FilterQuality.high,
-            ),
-            Text(
-              'IMMICH',
-              style: GoogleFonts.snowburstOne(
-                  textStyle:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 48, color: Theme.of(context).primaryColor)),
-            ),
-            EmailInput(controller: usernameController),
-            PasswordInput(controller: passwordController),
-            ServerEndpointInput(controller: serverEndpointController),
-            LoginButton(
-              emailController: usernameController,
-              passwordController: passwordController,
-              serverEndpointController: serverEndpointController,
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Wrap(
+            spacing: 32,
+            runSpacing: 32,
+            alignment: WrapAlignment.center,
+            children: [
+              const Image(
+                image: AssetImage('assets/immich-logo-no-outline.png'),
+                width: 128,
+                filterQuality: FilterQuality.high,
+              ),
+              Text(
+                'IMMICH',
+                style: GoogleFonts.snowburstOne(
+                    textStyle:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 48, color: Theme.of(context).primaryColor)),
+              ),
+              EmailInput(controller: usernameController),
+              PasswordInput(controller: passwordController),
+              ServerEndpointInput(controller: serverEndpointController),
+              LoginButton(
+                emailController: usernameController,
+                passwordController: passwordController,
+                serverEndpointController: serverEndpointController,
+              ),
+            ],
+          ),
         ),
       ),
     );

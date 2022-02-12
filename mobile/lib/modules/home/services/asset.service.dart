@@ -69,7 +69,6 @@ class AssetService {
       Map<String, dynamic> decodedData = jsonDecode(res.toString());
 
       ImmichAssetWithExif result = ImmichAssetWithExif.fromMap(decodedData);
-      print("result $result");
       return result;
     } catch (e) {
       debugPrint("Error getAllAsset  ${e.toString()}");

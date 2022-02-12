@@ -42,6 +42,7 @@ class ThumbnailImage extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
+        debugPrint("View ${asset.id}");
         if (isMultiSelectEnable && selectedAsset.contains(asset) && selectedAsset.length == 1) {
           ref.watch(homePageStateProvider.notifier).disableMultiSelect();
         } else if (isMultiSelectEnable && selectedAsset.contains(asset) && selectedAsset.length > 1) {
