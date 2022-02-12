@@ -4,9 +4,10 @@ import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { Request } from 'express';
+import { APP_UPLOAD_LOCATION } from '../constants/upload_location.constant';
 
 export const multerConfig = {
-  dest: process.env.UPLOAD_LOCATION,
+  dest: APP_UPLOAD_LOCATION,
 };
 
 export const multerOption: MulterOptions = {

@@ -7,6 +7,7 @@ import sharp from 'sharp';
 import { existsSync, mkdirSync, readFile } from 'fs';
 import { ConfigService } from '@nestjs/config';
 import ffmpeg from 'fluent-ffmpeg';
+import { APP_UPLOAD_LOCATION } from '../../constants/upload_location.constant';
 
 @Processor('optimize')
 export class ImageOptimizeProcessor {
@@ -21,7 +22,7 @@ export class ImageOptimizeProcessor {
   async resizeUploadedImage(job: Job) {
     const { savedAsset }: { savedAsset: AssetEntity } = job.data;
 
-    const basePath = this.configService.get('UPLOAD_LOCATION');
+    const basePath = APP_UPLOAD_LOCATION;
     const resizePath = savedAsset.originalPath.replace('/original/', '/thumb/');
 
     // Create folder for thumb image if not exist
@@ -77,7 +78,7 @@ export class ImageOptimizeProcessor {
   async resizeUploadedVideo(job: Job) {
     const { savedAsset, filename }: { savedAsset: AssetEntity; filename: String } = job.data;
 
-    const basePath = this.configService.get('UPLOAD_LOCATION');
+    const basePath = APP_UPLOAD_LOCATION;
     // const resizePath = savedAsset.originalPath.replace('/original/', '/thumb/');
     // Create folder for thumb image if not exist
     const resizeDir = `${basePath}/${savedAsset.userId}/thumb/${savedAsset.deviceId}`;

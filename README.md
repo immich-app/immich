@@ -59,6 +59,8 @@ cp .env.example .env
 
 Then populate the value in there.
 
+Pay attention to the key `UPLOAD_LOCATION`, this directory must exist and is owned the user that run the `docker-compose` command below.
+
 To start, run
 
 ```bash
