@@ -2,11 +2,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/models/get_all_asset_respose.model.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 
 class AssetNotifier extends StateNotifier<List<ImmichAssetGroupByDate>> {
   final AssetService _assetService = AssetService();
+  final DeviceInfoService _deviceInfoService = DeviceInfoService();
 
   AssetNotifier() : super([]);
 
@@ -89,6 +91,15 @@ class AssetNotifier extends StateNotifier<List<ImmichAssetGroupByDate>> {
 
   clearAllAsset() {
     state = [];
+  }
+
+  deleteAssets(Set<ImmichAsset> deleteAssets) async {
+    var deviceInfo = await _deviceInfoService.getDeviceInfo();
+    var deviceId = deviceInfo["deviceId"];
+
+    // Delete asset on server
+
+    // Delete asset from device
   }
 }
 

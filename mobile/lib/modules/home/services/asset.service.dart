@@ -75,4 +75,8 @@ class AssetService {
       return null;
     }
   }
+
+  deleteAssets(Set<ImmichAsset> deleteAssets) async {
+    return null;
+  }
 }
