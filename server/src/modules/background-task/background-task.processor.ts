@@ -6,6 +6,7 @@ import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
 import { ConfigService } from '@nestjs/config';
 import exifr from 'exifr';
 import { readFile } from 'fs/promises';
+import fs from 'fs';
 import { Logger } from '@nestjs/common';
 import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
 
@@ -55,5 +56,24 @@ export class BackgroundTaskProcessor {
     } catch (e) {
       Logger.error(`Error extracting EXIF ${e.toString()}`, 'extractExif');
     }
+  }
+
+  @Process('delete-file-on-disk')
+  async deleteFileOnDisk(job) {
+    const { assets }: { assets: AssetEntity[] } = job.data;
+
+    assets.forEach(async (asset) => {
+      fs.unlink(asset.originalPath, (err) => {
+        if (err) {
+          console.log('error deleting ', asset.originalPath);
+        }
+      });
+
+      fs.unlink(asset.resizePath, (err) => {
+        if (err) {
+          console.log('error deleting ', asset.originalPath);
+        }
+      });
+    });
   }
 }

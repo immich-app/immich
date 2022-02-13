@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
+import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 
-class DeleteDialog extends StatelessWidget {
+class DeleteDialog extends ConsumerWidget {
   const DeleteDialog({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homePageState = ref.watch(homePageStateProvider);
+
     return AlertDialog(
       backgroundColor: Colors.grey[200],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -21,7 +26,12 @@ class DeleteDialog extends StatelessWidget {
           ),
         ),
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            ref.watch(assetProvider.notifier).deleteAssets(homePageState.selectedItems);
+            ref.watch(homePageStateProvider.notifier).disableMultiSelect();
+
+            Navigator.of(context).pop();
+          },
           child: Text(
             "Delete",
             style: TextStyle(color: Colors.red[400]),

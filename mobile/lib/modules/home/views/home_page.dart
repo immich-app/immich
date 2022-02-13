@@ -10,7 +10,6 @@ import 'package:immich_mobile/modules/home/ui/image_grid.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer.dart';
-import 'package:immich_mobile/modules/home/models/get_all_asset_respose.model.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
@@ -20,76 +19,51 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ScrollController _scrollController = useScrollController();
-    List<ImmichAssetGroupByDate> _assetGroup = ref.watch(assetProvider);
+    var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
     List<Widget> _imageGridGroup = [];
     var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
     var homePageState = ref.watch(homePageStateProvider);
 
-    _scrollControllerCallback() {
-      var endOfPage = _scrollController.position.maxScrollExtent;
-
-      if (_scrollController.offset >= endOfPage - (endOfPage * 0.1) && !_scrollController.position.outOfRange) {
-        ref.read(assetProvider.notifier).getOlderAsset();
-      }
-    }
-
     useEffect(() {
-      ref.read(assetProvider.notifier).getAllAssets();
-
-      _scrollController.addListener(_scrollControllerCallback);
-      return () {
-        _scrollController.removeListener(_scrollControllerCallback);
-      };
+      ref.read(assetProvider.notifier).getAllAsset();
+      return null;
     }, []);
 
     onPopBackFromBackupPage() {
-      ref.read(assetProvider.notifier).getNewAsset();
-      // Remove and force getting new widget again if there is not many widget on screen.
-      // Otherwise do nothing.
-
-      if (_imageGridGroup.isNotEmpty && _imageGridGroup.length < 20) {
-        ref.read(assetProvider.notifier).getOlderAsset();
-      } else if (_imageGridGroup.isEmpty) {
-        ref.read(assetProvider.notifier).getAllAssets();
-      }
+      ref.read(assetProvider.notifier).getAllAsset();
     }
 
     Widget _buildBody() {
-      if (_assetGroup.isNotEmpty) {
-        String lastGroupDate = _assetGroup[0].date;
+      if (assetGroupByDateTime.isNotEmpty) {
+        int? lastMonth;
 
-        for (var group in _assetGroup) {
-          var dateTitle = group.date;
-          var assetGroup = group.assets;
+        assetGroupByDateTime.forEach((dateGroup, immichAssetList) {
+          DateTime parseDateGroup = DateTime.parse(dateGroup);
+          int currentMonth = parseDateGroup.month;
 
-          int? currentMonth = DateTime.tryParse(dateTitle)?.month;
-          int? previousMonth = DateTime.tryParse(lastGroupDate)?.month;
-
-          // Add Monthly Title Group if started at the beginning of the month
-
-          if (currentMonth != null && previousMonth != null) {
-            if ((currentMonth - previousMonth) != 0) {
+          if (lastMonth != null) {
+            if (currentMonth - lastMonth! != 0) {
               _imageGridGroup.add(
-                MonthlyTitleText(isoDate: dateTitle),
+                MonthlyTitleText(
+                  isoDate: dateGroup,
+                ),
               );
             }
           }
 
-          // Add Daily Title Group
           _imageGridGroup.add(
             DailyTitleText(
-              isoDate: dateTitle,
-              assetGroup: assetGroup,
+              isoDate: dateGroup,
+              assetGroup: immichAssetList,
             ),
           );
 
-          // Add Image Group
           _imageGridGroup.add(
-            ImageGrid(assetGroup: assetGroup),
+            ImageGrid(assetGroup: immichAssetList),
           );
-          //
-          lastGroupDate = dateTitle;
-        }
+
+          lastMonth = currentMonth;
+        });
       }
 
       return SafeArea(

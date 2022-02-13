@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
+import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -25,6 +26,7 @@ class ThumbnailImage extends HookConsumerWidget {
 
     var selectedAsset = ref.watch(homePageStateProvider).selectedItems;
     var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
+    var deviceId = ref.watch(authenticationProvider).deviceId;
 
     Widget _buildSelectionIcon(ImmichAsset asset) {
       if (selectedAsset.contains(asset)) {
@@ -42,6 +44,7 @@ class ThumbnailImage extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
+        debugPrint("View ${asset.id}");
         if (isMultiSelectEnable && selectedAsset.contains(asset) && selectedAsset.length == 1) {
           ref.watch(homePageStateProvider.notifier).disableMultiSelect();
         } else if (isMultiSelectEnable && selectedAsset.contains(asset) && selectedAsset.length > 1) {
@@ -99,9 +102,10 @@ class ThumbnailImage extends HookConsumerWidget {
                   child: CircularProgressIndicator(value: downloadProgress.progress),
                 ),
                 errorWidget: (context, url, error) {
-                  debugPrint("Error Loading Thumbnail Widget $error");
-                  cacheKey.value += 1;
-                  return const Icon(Icons.error);
+                  return Icon(
+                    Icons.image_not_supported_outlined,
+                    color: Theme.of(context).primaryColor,
+                  );
                 },
               ),
             ),
@@ -116,6 +120,15 @@ class ThumbnailImage extends HookConsumerWidget {
                     )
                   : Container(),
             ),
+            Positioned(
+              right: 10,
+              bottom: 5,
+              child: Icon(
+                (deviceId != asset.deviceId) ? Icons.cloud_done_outlined : Icons.photo_library_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            )
           ],
         ),
       ),

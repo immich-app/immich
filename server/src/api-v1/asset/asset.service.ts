@@ -1,13 +1,20 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetEntity, AssetType } from './entities/asset.entity';
-import _ from 'lodash';
+import _, { result } from 'lodash';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { GetAllAssetReponseDto } from './dto/get-all-asset-response.dto';
+import { createReadStream, stat } from 'fs';
+import { ServeFileDto } from './dto/serve-file.dto';
+import { Response as Res } from 'express';
+import { promisify } from 'util';
+import { DeleteAssetDto } from './dto/delete-asset.dto';
+
+const fileInfo = promisify(stat);
 
 @Injectable()
 export class AssetService {
@@ -50,6 +57,20 @@ export class AssetService {
     const res = [];
     rows.forEach((v) => res.push(v.deviceAssetId));
     return res;
+  }
+
+  public async getAllAssetsNoPagination(authUser: AuthUserDto) {
+    try {
+      const assets = await this.assetRepository
+        .createQueryBuilder('a')
+        .where('a."userId" = :userId', { userId: authUser.id })
+        .orderBy('a."createdAt"::date', 'DESC')
+        .getMany();
+
+        return assets;
+    } catch (e) {
+      Logger.error(e, 'getAllAssets');
+    }
   }
 
   public async getAllAssets(authUser: AuthUserDto, query: GetAllAssetQueryDto): Promise<GetAllAssetReponseDto> {
@@ -121,5 +142,105 @@ export class AssetService {
       },
       relations: ['exifInfo'],
     });
+  }
+
+  public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
+    let file = null;
+    const asset = await this.findOne(authUser, query.did, query.aid);
+
+    // Handle Sending Images
+    if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
+      res.set({
+        'Content-Type': asset.mimeType,
+      });
+
+      if (query.isThumb === 'false' || !query.isThumb) {
+        file = createReadStream(asset.originalPath);
+      } else {
+        file = createReadStream(asset.resizePath);
+      }
+
+      file.on('error', (error) => {
+        Logger.log(`Cannot create read stream ${error}`);
+        return new BadRequestException('Cannot Create Read Stream');
+      });
+      return new StreamableFile(file);
+    } else if (asset.type == AssetType.VIDEO) {
+      // Handle Handling Video
+      const { size } = await fileInfo(asset.originalPath);
+      const range = headers.range;
+
+      if (range) {
+        /** Extracting Start and End value from Range Header */
+        let [start, end] = range.replace(/bytes=/, '').split('-');
+        start = parseInt(start, 10);
+        end = end ? parseInt(end, 10) : size - 1;
+
+        if (!isNaN(start) && isNaN(end)) {
+          start = start;
+          end = size - 1;
+        }
+        if (isNaN(start) && !isNaN(end)) {
+          start = size - end;
+          end = size - 1;
+        }
+
+        // Handle unavailable range request
+        if (start >= size || end >= size) {
+          console.error('Bad Request');
+          // Return the 416 Range Not Satisfiable.
+          res.status(416).set({
+            'Content-Range': `bytes */${size}`,
+          });
+
+          throw new BadRequestException('Bad Request Range');
+        }
+
+        /** Sending Partial Content With HTTP Code 206 */
+
+        res.status(206).set({
+          'Content-Range': `bytes ${start}-${end}/${size}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': end - start + 1,
+          'Content-Type': asset.mimeType,
+        });
+
+        const videoStream = createReadStream(asset.originalPath, { start: start, end: end });
+
+        return new StreamableFile(videoStream);
+      } else {
+        res.set({
+          'Content-Type': asset.mimeType,
+        });
+
+        return new StreamableFile(createReadStream(asset.originalPath));
+      }
+    }
+  }
+
+  public async deleteAssetById(authUser: AuthUserDto, assetIds: DeleteAssetDto) {
+    let result = [];
+
+    const target = assetIds.ids;
+    for (let assetId of target) {
+      const res = await this.assetRepository.delete({
+        id: assetId,
+        userId: authUser.id,
+      });
+
+      if (res.affected) {
+        result.push({
+          id: assetId,
+          status: 'success',
+        });
+      } else {
+        result.push({
+          id: assetId,
+          status: 'failed',
+        });
+      }
+    }
+
+    return result;
   }
 }

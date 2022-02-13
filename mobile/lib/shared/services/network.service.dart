@@ -7,6 +7,24 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/utils/dio_http_interceptor.dart';
 
 class NetworkService {
+  Future<dynamic> deleteRequest({required String url, dynamic data}) async {
+    try {
+      var dio = Dio();
+      dio.interceptors.add(AuthenticatedRequestInterceptor());
+
+      var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+      Response res = await dio.delete('$savedEndpoint/$url', data: data);
+
+      if (res.statusCode == 200) {
+        return res;
+      }
+    } on DioError catch (e) {
+      debugPrint("DioError: ${e.response}");
+    } catch (e) {
+      debugPrint("ERROR getRequest: ${e.toString()}");
+    }
+  }
+
   Future<dynamic> getRequest({required String url}) async {
     try {
       var dio = Dio();

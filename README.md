@@ -53,19 +53,18 @@ You can use docker compose for development, there are several services that comp
 
 Navigate to `server` directory and run
 
-```
+````
 cp .env.example .env
-```
 
 Then populate the value in there.
 
-Pay attention to the key `UPLOAD_LOCATION`, this directory must exist and is owned the user that run the `docker-compose` command below.
+Pay attention to the key `UPLOAD_LOCATION`, this directory must exist and is owned by the user that run the `docker-compose` command below.
 
 To start, run
 
 ```bash
 docker-compose -f ./server/docker-compose.yml up
-```
+````
 
 To force rebuild node modules after installing new packages
 

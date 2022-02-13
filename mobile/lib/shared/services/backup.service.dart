@@ -26,7 +26,7 @@ class BackupService {
     return result.cast<String>();
   }
 
-  backupAsset(List<AssetEntity> assetList, CancelToken cancelToken, Function singleAssetDoneCb,
+  backupAsset(List<AssetEntity> assetList, CancelToken cancelToken, Function(String, String) singleAssetDoneCb,
       Function(int, int) uploadProgress) async {
     var dio = Dio();
     dio.interceptors.add(AuthenticatedRequestInterceptor());
@@ -77,7 +77,7 @@ class BackupService {
           );
 
           if (res.statusCode == 201) {
-            singleAssetDoneCb();
+            singleAssetDoneCb(entity.id, deviceId);
           }
         }
       } on DioError catch (e) {

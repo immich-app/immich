@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/modules/home/models/get_all_asset_respose.model.dart';
+import 'package:immich_mobile/modules/home/models/delete_asset_response.model.dart';
+import 'package:immich_mobile/modules/home/models/get_all_asset_response.model.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/models/immich_asset_with_exif.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
@@ -9,7 +10,20 @@ import 'package:immich_mobile/shared/services/network.service.dart';
 class AssetService {
   final NetworkService _networkService = NetworkService();
 
-  Future<GetAllAssetResponse?> getAllAsset() async {
+  Future<List<ImmichAsset>?> getAllAsset() async {
+    var res = await _networkService.getRequest(url: "asset/");
+    try {
+      List<dynamic> decodedData = jsonDecode(res.toString());
+
+      List<ImmichAsset> result = List.from(decodedData.map((a) => ImmichAsset.fromMap(a)));
+      return result;
+    } catch (e) {
+      debugPrint("Error getAllAsset  ${e.toString()}");
+    }
+    return null;
+  }
+
+  Future<GetAllAssetResponse?> getAllAssetWithPagination() async {
     var res = await _networkService.getRequest(url: "asset/all");
     try {
       Map<String, dynamic> decodedData = jsonDecode(res.toString());
@@ -69,7 +83,27 @@ class AssetService {
       Map<String, dynamic> decodedData = jsonDecode(res.toString());
 
       ImmichAssetWithExif result = ImmichAssetWithExif.fromMap(decodedData);
-      print("result $result");
+      return result;
+    } catch (e) {
+      debugPrint("Error getAllAsset  ${e.toString()}");
+      return null;
+    }
+  }
+
+  Future<List<DeleteAssetResponse>?> deleteAssets(Set<ImmichAsset> deleteAssets) async {
+    try {
+      var payload = [];
+
+      for (var asset in deleteAssets) {
+        payload.add(asset.id);
+      }
+
+      var res = await _networkService.deleteRequest(url: "asset/", data: {"ids": payload});
+
+      List<dynamic> decodedData = jsonDecode(res.toString());
+
+      List<DeleteAssetResponse> result = List.from(decodedData.map((a) => DeleteAssetResponse.fromMap(a)));
+
       return result;
     } catch (e) {
       debugPrint("Error getAllAsset  ${e.toString()}");

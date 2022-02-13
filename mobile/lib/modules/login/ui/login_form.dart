@@ -15,36 +15,38 @@ class LoginForm extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final usernameController = useTextEditingController(text: 'testuser@email.com');
     final passwordController = useTextEditingController(text: 'password');
-    final serverEndpointController = useTextEditingController(text: 'http://192.168.1.204:2283');
+    final serverEndpointController = useTextEditingController(text: 'http://192.168.1.103:2283');
 
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 300),
-        child: Wrap(
-          spacing: 32,
-          runSpacing: 32,
-          alignment: WrapAlignment.center,
-          children: [
-            const Image(
-              image: AssetImage('assets/immich-logo-no-outline.png'),
-              width: 128,
-              filterQuality: FilterQuality.high,
-            ),
-            Text(
-              'IMMICH',
-              style: GoogleFonts.snowburstOne(
-                  textStyle:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 48, color: Theme.of(context).primaryColor)),
-            ),
-            EmailInput(controller: usernameController),
-            PasswordInput(controller: passwordController),
-            ServerEndpointInput(controller: serverEndpointController),
-            LoginButton(
-              emailController: usernameController,
-              passwordController: passwordController,
-              serverEndpointController: serverEndpointController,
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Wrap(
+            spacing: 32,
+            runSpacing: 32,
+            alignment: WrapAlignment.center,
+            children: [
+              const Image(
+                image: AssetImage('assets/immich-logo-no-outline.png'),
+                width: 128,
+                filterQuality: FilterQuality.high,
+              ),
+              Text(
+                'IMMICH',
+                style: GoogleFonts.snowburstOne(
+                    textStyle:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 48, color: Theme.of(context).primaryColor)),
+              ),
+              EmailInput(controller: usernameController),
+              PasswordInput(controller: passwordController),
+              ServerEndpointInput(controller: serverEndpointController),
+              LoginButton(
+                emailController: usernameController,
+                passwordController: passwordController,
+                serverEndpointController: serverEndpointController,
+              ),
+            ],
+          ),
         ),
       ),
     );

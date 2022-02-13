@@ -12,12 +12,22 @@ export class BackgroundTaskService {
   ) {}
 
   async extractExif(savedAsset: AssetEntity, fileName: string, fileSize: number) {
-    const job = await this.backgroundTaskQueue.add(
+    await this.backgroundTaskQueue.add(
       'extract-exif',
       {
         savedAsset,
         fileName,
         fileSize,
+      },
+      { jobId: randomUUID() },
+    );
+  }
+
+  async deleteFileOnDisk(assets: AssetEntity[]) {
+    await this.backgroundTaskQueue.add(
+      'delete-file-on-disk',
+      {
+        assets,
       },
       { jobId: randomUUID() },
     );
