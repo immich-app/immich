@@ -59,6 +59,20 @@ export class AssetService {
     return res;
   }
 
+  public async getAllAssetsNoPagination(authUser: AuthUserDto) {
+    try {
+      const assets = await this.assetRepository
+        .createQueryBuilder('a')
+        .where('a."userId" = :userId', { userId: authUser.id })
+        .orderBy('a."createdAt"::date', 'DESC')
+        .getMany();
+
+        return assets;
+    } catch (e) {
+      Logger.error(e, 'getAllAssets');
+    }
+  }
+
   public async getAllAssets(authUser: AuthUserDto, query: GetAllAssetQueryDto): Promise<GetAllAssetReponseDto> {
     try {
       const assets = await this.assetRepository
