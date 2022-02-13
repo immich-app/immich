@@ -146,6 +146,10 @@ export class AssetService {
         file = createReadStream(asset.resizePath);
       }
 
+      file.on('error', (error) => {
+        Logger.log(`Cannot create read stream ${error}`);
+        return new BadRequestException('Cannot Create Read Stream');
+      });
       return new StreamableFile(file);
     } else if (asset.type == AssetType.VIDEO) {
       // Handle Handling Video
