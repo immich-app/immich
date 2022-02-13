@@ -30,15 +30,7 @@ class HomePage extends HookConsumerWidget {
     }, []);
 
     onPopBackFromBackupPage() {
-      // ref.read(assetProvider.notifier).getNewAsset();
-      // Remove and force getting new widget again if there is not many widget on screen.
-      // Otherwise do nothing.
-
-      if (_imageGridGroup.isNotEmpty && _imageGridGroup.length < 20) {
-        // ref.read(assetProvider.notifier).getOlderAsset();
-      } else if (_imageGridGroup.isEmpty) {
-        // ref.read(assetProvider.notifier).getAllAssetsWithPagination();
-      }
+      ref.read(assetProvider.notifier).getAllAsset();
     }
 
     Widget _buildBody() {

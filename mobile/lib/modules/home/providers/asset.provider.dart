@@ -5,6 +5,7 @@ import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
   final AssetService _assetService = AssetService();
@@ -28,6 +29,21 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
   deleteAssets(Set<ImmichAsset> deleteAssets) async {
     var deviceInfo = await _deviceInfoService.getDeviceInfo();
     var deviceId = deviceInfo["deviceId"];
+    List<String> deleteIdList = [];
+    // Delete asset from device
+    for (var asset in deleteAssets) {
+      // Delete asset on device if present
+      if (asset.deviceId == deviceId) {
+        AssetEntity? localAsset = await AssetEntity.fromId(asset.deviceAssetId);
+
+        if (localAsset != null) {
+          deleteIdList.add(localAsset.id);
+        }
+      }
+    }
+
+    final List<String> result = await PhotoManager.editor.deleteWithIds(deleteIdList);
+    print(result);
 
     // Delete asset on server
     List<DeleteAssetResponse>? deleteAssetResult = await _assetService.deleteAssets(deleteAssets);
@@ -40,8 +56,6 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
         state = state.where((immichAsset) => immichAsset.id != asset.id).toList();
       }
     }
-
-    // Delete asset from device
   }
 }
 
