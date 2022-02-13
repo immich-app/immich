@@ -9,7 +9,20 @@ import 'package:immich_mobile/shared/services/network.service.dart';
 class AssetService {
   final NetworkService _networkService = NetworkService();
 
-  Future<GetAllAssetResponse?> getAllAsset() async {
+  Future<List<ImmichAsset>?> getAllAsset() async {
+    var res = await _networkService.getRequest(url: "asset/");
+    try {
+      List<dynamic> decodedData = jsonDecode(res.toString());
+
+      List<ImmichAsset> result = List.from(decodedData.map((a) => ImmichAsset.fromMap(a)));
+      return result;
+    } catch (e) {
+      debugPrint("Error getAllAsset  ${e.toString()}");
+    }
+    return null;
+  }
+
+  Future<GetAllAssetResponse?> getAllAssetWithPagination() async {
     var res = await _networkService.getRequest(url: "asset/all");
     try {
       Map<String, dynamic> decodedData = jsonDecode(res.toString());
