@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/models/delete_asset_response.model.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
@@ -29,6 +30,16 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
     var deviceId = deviceInfo["deviceId"];
 
     // Delete asset on server
+    List<DeleteAssetResponse>? deleteAssetResult = await _assetService.deleteAssets(deleteAssets);
+    if (deleteAssetResult == null) {
+      return;
+    }
+
+    for (var asset in deleteAssetResult) {
+      if (asset.status == 'success') {
+        state = state.where((immichAsset) => immichAsset.id != asset.id).toList();
+      }
+    }
 
     // Delete asset from device
   }

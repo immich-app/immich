@@ -81,7 +81,6 @@ export class AssetController {
     return await this.assetService.getAllAssets(authUser, query);
   }
 
-
   @Get('/')
   async getAllAssetsNoPagination(@GetAuthUser() authUser: AuthUserDto) {
     return await this.assetService.getAllAssetsNoPagination(authUser);

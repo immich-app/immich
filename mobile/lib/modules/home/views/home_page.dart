@@ -19,29 +19,14 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ScrollController _scrollController = useScrollController();
-    // List<ImmichAssetGroupByDate> _assetGroup = ref.watch(assetProvider);
     var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
     List<Widget> _imageGridGroup = [];
     var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
     var homePageState = ref.watch(homePageStateProvider);
 
-    _scrollControllerCallback() {
-      var endOfPage = _scrollController.position.maxScrollExtent;
-
-      if (_scrollController.offset >= endOfPage - (endOfPage * 0.1) && !_scrollController.position.outOfRange) {
-        // ref.read(assetProvider.notifier).getOlderAsset();
-      }
-    }
-
     useEffect(() {
       ref.read(assetProvider.notifier).getAllAsset();
-
-      // ref.read(assetProvider.notifier).getAllAssetsWithPagination();
-
-      _scrollController.addListener(_scrollControllerCallback);
-      return () {
-        _scrollController.removeListener(_scrollControllerCallback);
-      };
+      return null;
     }, []);
 
     onPopBackFromBackupPage() {

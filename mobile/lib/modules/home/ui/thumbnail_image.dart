@@ -102,8 +102,6 @@ class ThumbnailImage extends HookConsumerWidget {
                   child: CircularProgressIndicator(value: downloadProgress.progress),
                 ),
                 errorWidget: (context, url, error) {
-                  debugPrint("Error Loading Thumbnail Widget $error");
-                  cacheKey.value += 1;
                   return Icon(
                     Icons.image_not_supported_outlined,
                     color: Theme.of(context).primaryColor,

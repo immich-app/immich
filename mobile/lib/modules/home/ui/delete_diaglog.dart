@@ -27,8 +27,10 @@ class DeleteDialog extends ConsumerWidget {
         ),
         TextButton(
           onPressed: () {
-            // onConfirmed();
             ref.watch(assetProvider.notifier).deleteAssets(homePageState.selectedItems);
+            ref.watch(homePageStateProvider.notifier).disableMultiSelect();
+
+            Navigator.of(context).pop();
           },
           child: Text(
             "Delete",

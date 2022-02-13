@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -11,7 +13,7 @@ import 'package:immich_mobile/shared/services/backup.service.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class BackupNotifier extends StateNotifier<BackUpState> {
-  BackupNotifier(this.ref)
+  BackupNotifier({this.ref})
       : super(
           BackUpState(
             backupProgress: BackUpProgressEnum.idle,
@@ -32,9 +34,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           ),
         );
 
-  final Ref ref;
+  Ref? ref;
   final BackupService _backupService = BackupService();
   final ServerInfoService _serverInfoService = ServerInfoService();
+  final StreamController _onAssetBackupStreamCtrl = StreamController.broadcast();
 
   void getBackupInfo() async {
     _updateServerInfo();
@@ -103,7 +106,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     state = state.copyWith(backupProgress: BackUpProgressEnum.idle, progressInPercentage: 0.0);
   }
 
-  void _onAssetUploaded() {
+  void _onAssetUploaded(String deviceAssetId, String deviceId) {
     state =
         state.copyWith(backingUpAssetCount: state.backingUpAssetCount - 1, assetOnDatabase: state.assetOnDatabase + 1);
 
@@ -136,36 +139,37 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void resumeBackup() {
-    debugPrint("[resumeBackup]");
-    var authState = ref.read(authenticationProvider);
+    var authState = ref?.read(authenticationProvider);
 
     // Check if user is login
     var accessKey = Hive.box(userInfoBox).get(accessTokenKey);
 
     // User has been logged out return
-    if (accessKey == null || !authState.isAuthenticated) {
-      debugPrint("[resumeBackup] not authenticated - abort");
-      return;
-    }
-
-    // Check if this device is enable backup by the user
-    if ((authState.deviceInfo.deviceId == authState.deviceId) && authState.deviceInfo.isAutoBackup) {
-      // check if backup is alreayd in process - then return
-      if (state.backupProgress == BackUpProgressEnum.inProgress) {
-        debugPrint("[resumeBackup] Backup is already in progress - abort");
+    if (authState != null) {
+      if (accessKey == null || !authState.isAuthenticated) {
+        debugPrint("[resumeBackup] not authenticated - abort");
         return;
       }
 
-      // Run backup
-      debugPrint("[resumeBackup] Start back up");
-      startBackupProcess();
-    }
+      // Check if this device is enable backup by the user
+      if ((authState.deviceInfo.deviceId == authState.deviceId) && authState.deviceInfo.isAutoBackup) {
+        // check if backup is alreayd in process - then return
+        if (state.backupProgress == BackUpProgressEnum.inProgress) {
+          debugPrint("[resumeBackup] Backup is already in progress - abort");
+          return;
+        }
 
-    debugPrint("[resumeBackup] User disables auto backup");
-    return;
+        // Run backup
+        debugPrint("[resumeBackup] Start back up");
+        startBackupProcess();
+      }
+
+      debugPrint("[resumeBackup] User disables auto backup");
+      return;
+    }
   }
 }
 
 final backupProvider = StateNotifierProvider<BackupNotifier, BackUpState>((ref) {
-  return BackupNotifier(ref);
+  return BackupNotifier(ref: ref);
 });
