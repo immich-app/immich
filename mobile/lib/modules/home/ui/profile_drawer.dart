@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/shared/providers/backup.provider.dart';
 
 class ProfileDrawer extends ConsumerWidget {
   const ProfileDrawer({Key? key}) : super(key: key);
@@ -57,6 +58,7 @@ class ProfileDrawer extends ConsumerWidget {
               bool res = await ref.read(authenticationProvider.notifier).logout();
 
               if (res) {
+                ref.watch(backupProvider.notifier).cancelBackup();
                 ref.watch(assetProvider.notifier).clearAllAsset();
                 AutoRouter.of(context).popUntilRoot();
               }

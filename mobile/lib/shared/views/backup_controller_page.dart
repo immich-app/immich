@@ -22,6 +22,8 @@ class BackupControllerPage extends HookConsumerWidget {
       if (_backupState.backupProgress != BackUpProgressEnum.inProgress) {
         ref.read(backupProvider.notifier).getBackupInfo();
       }
+
+      return null;
     }, []);
 
     Widget _buildStorageInformation() {

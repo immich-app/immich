@@ -43,14 +43,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     _updateServerInfo();
 
     List<AssetPathEntity> list = await PhotoManager.getAssetPathList(onlyAll: true, type: RequestType.common);
+    List<String> didBackupAsset = await _backupService.getDeviceBackupAsset();
 
     if (list.isEmpty) {
       debugPrint("No Asset On Device");
+      state = state.copyWith(
+          backupProgress: BackUpProgressEnum.idle, totalAssetCount: 0, assetOnDatabase: didBackupAsset.length);
       return;
     }
 
     int totalAsset = list[0].assetCount;
-    List<String> didBackupAsset = await _backupService.getDeviceBackupAsset();
 
     state = state.copyWith(totalAssetCount: totalAsset, assetOnDatabase: didBackupAsset.length);
   }
@@ -68,18 +70,20 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       List<AssetPathEntity> list =
           await PhotoManager.getAssetPathList(hasAll: true, onlyAll: true, type: RequestType.common);
 
+      // Get device assets info from database
+      // Compare and find different assets that has not been backing up
+      // Backup those assets
+      List<String> backupAsset = await _backupService.getDeviceBackupAsset();
+
       if (list.isEmpty) {
         debugPrint("No Asset On Device - Abort Backup Process");
+        state = state.copyWith(
+            backupProgress: BackUpProgressEnum.idle, totalAssetCount: 0, assetOnDatabase: backupAsset.length);
         return;
       }
 
       int totalAsset = list[0].assetCount;
       List<AssetEntity> currentAssets = await list[0].getAssetListRange(start: 0, end: totalAsset);
-
-      // Get device assets info from database
-      // Compare and find different assets that has not been backing up
-      // Backup those assets
-      List<String> backupAsset = await _backupService.getDeviceBackupAsset();
 
       state = state.copyWith(totalAssetCount: totalAsset, assetOnDatabase: backupAsset.length);
       // Remove item that has already been backed up
@@ -164,7 +168,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         startBackupProcess();
       }
 
-      debugPrint("[resumeBackup] User disables auto backup");
       return;
     }
   }
