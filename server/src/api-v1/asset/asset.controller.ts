@@ -22,7 +22,7 @@ import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetOptimizeService } from '../../modules/image-optimize/image-optimize.service';
-import { AssetType } from './entities/asset.entity';
+import { AssetEntity, AssetType } from './entities/asset.entity';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { Response as Res } from 'express';
 import { GetNewAssetQueryDto } from './dto/get-new-asset-query.dto';
@@ -98,6 +98,21 @@ export class AssetController {
 
   @Delete('/')
   async deleteAssetById(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) assetIds: DeleteAssetDto) {
-    return this.assetService.deleteAssetById(authUser, assetIds);
+    const deleteAssetList: AssetEntity[] = [];
+
+    assetIds.ids.forEach(async (id) => {
+      const assets = await this.assetService.getAssetById(authUser, id);
+      deleteAssetList.push(assets);
+    });
+
+    const result = await this.assetService.deleteAssetById(authUser, assetIds);
+
+    result.forEach((res) => {
+      deleteAssetList.filter((a) => a.id == res.id && res.status == 'success');
+    });
+
+    await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
+
+    return result;
   }
 }
