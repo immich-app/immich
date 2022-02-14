@@ -10,8 +10,9 @@ import 'package:photo_manager/photo_manager.dart';
 class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
   final AssetService _assetService = AssetService();
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
+  final Ref ref;
 
-  AssetNotifier() : super([]);
+  AssetNotifier(this.ref) : super([]);
 
   getAllAsset() async {
     List<ImmichAsset>? allAssets = await _assetService.getAllAsset();
@@ -43,7 +44,6 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
     }
 
     final List<String> result = await PhotoManager.editor.deleteWithIds(deleteIdList);
-    print(result);
 
     // Delete asset on server
     List<DeleteAssetResponse>? deleteAssetResult = await _assetService.deleteAssets(deleteAssets);
@@ -62,7 +62,7 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
 final currentLocalPageProvider = StateProvider<int>((ref) => 0);
 
 final assetProvider = StateNotifierProvider<AssetNotifier, List<ImmichAsset>>((ref) {
-  return AssetNotifier();
+  return AssetNotifier(ref);
 });
 
 final assetGroupByDateTimeProvider = StateProvider((ref) {
