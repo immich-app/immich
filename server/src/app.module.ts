@@ -14,7 +14,7 @@ import { BullModule } from '@nestjs/bull';
 import { ImageOptimizeModule } from './modules/image-optimize/image-optimize.module';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
-import { NotificationGateway } from './api-v1/notification/notification.gateway';
+import { CommunicationModule } from './api-v1/communication/communication.module';
 
 @Module({
   imports: [
@@ -41,9 +41,11 @@ import { NotificationGateway } from './api-v1/notification/notification.gateway'
     ServerInfoModule,
 
     BackgroundTaskModule,
+
+    CommunicationModule,
   ],
   controllers: [],
-  providers: [NotificationGateway],
+  providers: [],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
