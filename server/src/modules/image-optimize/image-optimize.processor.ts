@@ -57,7 +57,12 @@ export class ImageOptimizeProcessor {
               return;
             }
 
-            await this.assetRepository.update(savedAsset, { resizePath: desitnation });
+            const res = await this.assetRepository.update(savedAsset, { resizePath: desitnation });
+            if (res.affected) {
+              this.wsCommunicateionGateway.server
+                .to(savedAsset.userId)
+                .emit('on_upload_success', JSON.stringify(savedAsset));
+            }
           });
       } else {
         sharp(data)
@@ -68,10 +73,12 @@ export class ImageOptimizeProcessor {
               return;
             }
 
-            await this.assetRepository.update(savedAsset, { resizePath: resizePath });
-            this.wsCommunicateionGateway.server
-              .to(savedAsset.userId)
-              .emit('on_upload_success', { assetId: savedAsset.id });
+            const res = await this.assetRepository.update(savedAsset, { resizePath: resizePath });
+            if (res.affected) {
+              this.wsCommunicateionGateway.server
+                .to(savedAsset.userId)
+                .emit('on_upload_success', JSON.stringify(savedAsset));
+            }
           });
       }
     });
@@ -100,7 +107,12 @@ export class ImageOptimizeProcessor {
         filename: `${filename}.png`,
       })
       .on('end', async (a) => {
-        await this.assetRepository.update(savedAsset, { resizePath: `${resizeDir}/${filename}.png` });
+        const res = await this.assetRepository.update(savedAsset, { resizePath: `${resizeDir}/${filename}.png` });
+        if (res.affected) {
+          this.wsCommunicateionGateway.server
+            .to(savedAsset.userId)
+            .emit('on_upload_success', JSON.stringify(savedAsset));
+        }
       });
 
     return 'ok';

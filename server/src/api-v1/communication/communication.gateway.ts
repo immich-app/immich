@@ -21,7 +21,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
   handleDisconnect(client: Socket) {
     client.leave(client.nsp.name);
 
-    console.log('Client left room ', client.rooms);
+    Logger.log(`Client ${client.id} disconnected`);
   }
 
   async handleConnection(client: Socket, ...args: any[]) {

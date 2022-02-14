@@ -32,7 +32,7 @@ class HomePage extends HookConsumerWidget {
     }, []);
 
     onPopBackFromBackupPage() {
-      ref.read(assetProvider.notifier).getAllAsset();
+      // ref.read(assetProvider.notifier).getAllAsset();
     }
 
     Widget _buildBody() {

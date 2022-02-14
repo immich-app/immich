@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -54,7 +58,7 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
         debugPrint("Attempting to connect to ws");
         // Configure socket transports must be sepecified
         Socket socket = io(
-          'http://192.168.1.216:2283',
+          'http://192.168.1.103:2283',
           OptionBuilder()
               .setTransports(['websocket'])
               .enableReconnection()
@@ -80,10 +84,11 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
           state = WebscoketState(isConnected: false, socket: null);
         });
 
-        socket.on(
-          'on_upload_success',
-          (data) => print("on new asset upload success $data"),
-        );
+        socket.on('on_upload_success', (data) {
+          var jsonString = jsonDecode(data.toString());
+          ImmichAsset newAsset = ImmichAsset.fromMap(jsonString);
+          ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
+        });
       } catch (e) {
         debugPrint("Catch Webcoket Error - ${e.toString()}");
       }

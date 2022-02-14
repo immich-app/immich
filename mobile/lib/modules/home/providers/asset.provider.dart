@@ -18,13 +18,16 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
     List<ImmichAsset>? allAssets = await _assetService.getAllAsset();
 
     if (allAssets != null) {
-      allAssets.sortByCompare<DateTime>((e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
       state = allAssets;
     }
   }
 
   clearAllAsset() {
     state = [];
+  }
+
+  onNewAssetUploaded(ImmichAsset newAsset) {
+    state = [...state, newAsset];
   }
 
   deleteAssets(Set<ImmichAsset> deleteAssets) async {
@@ -59,14 +62,13 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
   }
 }
 
-final currentLocalPageProvider = StateProvider<int>((ref) => 0);
-
 final assetProvider = StateNotifierProvider<AssetNotifier, List<ImmichAsset>>((ref) {
   return AssetNotifier(ref);
 });
 
 final assetGroupByDateTimeProvider = StateProvider((ref) {
-  var assetGroup = ref.watch(assetProvider);
+  var assets = ref.watch(assetProvider);
 
-  return assetGroup.groupListsBy((element) => DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)));
+  assets.sortByCompare<DateTime>((e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
+  return assets.groupListsBy((element) => DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)));
 });
