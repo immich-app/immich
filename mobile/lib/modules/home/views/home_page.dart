@@ -11,6 +11,7 @@ import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
 class HomePage extends HookConsumerWidget {
@@ -25,12 +26,13 @@ class HomePage extends HookConsumerWidget {
     var homePageState = ref.watch(homePageStateProvider);
 
     useEffect(() {
+      ref.read(websocketProvider.notifier).connect();
       ref.read(assetProvider.notifier).getAllAsset();
       return null;
     }, []);
 
     onPopBackFromBackupPage() {
-      ref.read(assetProvider.notifier).getAllAsset();
+      // ref.read(assetProvider.notifier).getAllAsset();
     }
 
     Widget _buildBody() {

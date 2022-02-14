@@ -33,6 +33,7 @@ dependencies:
   sliver_tools: ^0.2.5
   badges: ^2.0.2
   photo_view: ^0.13.0
+  socket_io_client: ^2.0.0-beta.4-nullsafety.0
 
 dev_dependencies:
   flutter_test:

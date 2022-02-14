@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'constants/hive_box.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -36,20 +38,23 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
     switch (state) {
       case AppLifecycleState.resumed:
         debugPrint("[APP STATE] resumed");
-        ref.read(appStateProvider.notifier).state = AppStateEnum.resumed;
-        ref.read(backupProvider.notifier).resumeBackup();
+        ref.watch(appStateProvider.notifier).state = AppStateEnum.resumed;
+        ref.watch(backupProvider.notifier).resumeBackup();
+        ref.watch(websocketProvider.notifier).connect();
+        ref.watch(assetProvider.notifier).getAllAsset();
         break;
       case AppLifecycleState.inactive:
         debugPrint("[APP STATE] inactive");
-        ref.read(appStateProvider.notifier).state = AppStateEnum.inactive;
+        ref.watch(appStateProvider.notifier).state = AppStateEnum.inactive;
+        ref.watch(websocketProvider.notifier).disconnect();
         break;
       case AppLifecycleState.paused:
         debugPrint("[APP STATE] paused");
-        ref.read(appStateProvider.notifier).state = AppStateEnum.paused;
+        ref.watch(appStateProvider.notifier).state = AppStateEnum.paused;
         break;
       case AppLifecycleState.detached:
         debugPrint("[APP STATE] detached");
-        ref.read(appStateProvider.notifier).state = AppStateEnum.detached;
+        ref.watch(appStateProvider.notifier).state = AppStateEnum.detached;
         break;
     }
   }

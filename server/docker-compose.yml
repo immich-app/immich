@@ -2,16 +2,15 @@ version: '3.8'
 
 
 services:
-  server:
-    container_name: immich_server
+  immich_server:
     image: immich-server-dev:1.0.0
     build:
       context: .
       target: development
       dockerfile: ./Dockerfile
     command: npm run start:dev
-    ports:
-      - "3000:3000"
+    expose: 
+      - "3000"
     volumes:
       - .:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -60,7 +59,7 @@ services:
     networks:
       - immich_network
     depends_on:
-      - server
+      - immich_server
 
 networks:
   immich_network:
