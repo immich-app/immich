@@ -51,7 +51,7 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
   final Ref ref;
 
   connect() {
-    var authenticationState = ref.watch(authenticationProvider);
+    var authenticationState = ref.read(authenticationProvider);
 
     if (authenticationState.isAuthenticated) {
       var accessToken = Hive.box(userInfoBox).get(accessTokenKey);

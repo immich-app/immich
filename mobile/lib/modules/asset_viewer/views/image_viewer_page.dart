@@ -51,56 +51,55 @@ class ImageViewerPage extends HookConsumerWidget {
               });
         },
       ),
-      body: Center(
-        child: Hero(
-          tag: heroTag,
-          child: CachedNetworkImage(
-            fit: BoxFit.cover,
-            imageUrl: imageUrl,
-            httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-            fadeInDuration: const Duration(milliseconds: 250),
-            errorWidget: (context, url, error) => ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 300),
-              child: Wrap(
-                spacing: 32,
-                runSpacing: 32,
-                alignment: WrapAlignment.center,
-                children: [
-                  const Text(
-                    "Failed To Render Image - Possibly Corrupted Data",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
-                  SingleChildScrollView(
-                    child: Text(
-                      error.toString(),
+      body: SafeArea(
+        child: Center(
+          child: Hero(
+            tag: heroTag,
+            child: CachedNetworkImage(
+              fit: BoxFit.cover,
+              imageUrl: imageUrl,
+              httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+              fadeInDuration: const Duration(milliseconds: 250),
+              errorWidget: (context, url, error) => ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 300),
+                child: Wrap(
+                  spacing: 32,
+                  runSpacing: 32,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    const Text(
+                      "Failed To Render Image - Possibly Corrupted Data",
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                      style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
-                  ),
-                ],
+                    SingleChildScrollView(
+                      child: Text(
+                        error.toString(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              placeholder: (context, url) {
+                return CachedNetworkImage(
+                  cacheKey: thumbnailUrl,
+                  fit: BoxFit.cover,
+                  imageUrl: thumbnailUrl,
+                  httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+                  placeholderFadeInDuration: const Duration(milliseconds: 0),
+                  progressIndicatorBuilder: (context, url, downloadProgress) => Transform.scale(
+                    scale: 0.2,
+                    child: CircularProgressIndicator(value: downloadProgress.progress),
+                  ),
+                  errorWidget: (context, url, error) => Icon(
+                    Icons.error,
+                    color: Colors.grey[300],
+                  ),
+                );
+              },
             ),
-            // imageBuilder: (context, imageProvider) {
-            //   return PhotoView(imageProvider: imageProvider);
-            // },
-            placeholder: (context, url) {
-              return CachedNetworkImage(
-                cacheKey: thumbnailUrl,
-                fit: BoxFit.cover,
-                imageUrl: thumbnailUrl,
-                httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-                placeholderFadeInDuration: const Duration(milliseconds: 0),
-                progressIndicatorBuilder: (context, url, downloadProgress) => Transform.scale(
-                  scale: 0.2,
-                  child: CircularProgressIndicator(value: downloadProgress.progress),
-                ),
-                errorWidget: (context, url, error) => Icon(
-                  Icons.error,
-                  color: Colors.grey[300],
-                ),
-              );
-            },
           ),
         ),
       ),
