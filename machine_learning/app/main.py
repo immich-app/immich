@@ -1,12 +1,14 @@
 from typing import Optional
 
 from fastapi import FastAPI
+import tensorflow as tf
 
 app = FastAPI()
 
 
 @app.get("/")
 def read_root():
+    print(tf.__version__)
     return {"Hello": "World 312"}
 
 

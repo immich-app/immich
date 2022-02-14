@@ -60,14 +60,17 @@ services:
     depends_on:
       - immich_server
 
-  machine_learning_fast_api:
-    image: immich-tensor-flow:1.0.0
+  immich_tf_fastapi:
+    container_name: immich_tf_fastapi
+    image: tensor_flow_fastapi:1.0.0
     restart: always
+    command: uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port 8000 --reload
     build:
       context: ../machine_learning
       dockerfile: ../machine_learning/Dockerfile
     volumes:
       - ../machine_learning/app:/code/app
+      - ${UPLOAD_LOCATION}:/code/app/upload
     ports:
       - 2285:8000
     expose:
