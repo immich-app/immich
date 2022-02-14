@@ -44,7 +44,9 @@ class WebscoketState {
 }
 
 class WebsocketNotifier extends StateNotifier<WebscoketState> {
-  WebsocketNotifier(this.ref) : super(WebscoketState(socket: null, isConnected: false));
+  WebsocketNotifier(this.ref) : super(WebscoketState(socket: null, isConnected: false)) {
+    debugPrint("Init websocket instance");
+  }
 
   final Ref ref;
 
@@ -53,12 +55,12 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
 
     if (authenticationState.isAuthenticated) {
       var accessToken = Hive.box(userInfoBox).get(accessTokenKey);
-
+      var endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       try {
-        debugPrint("Attempting to connect to ws");
+        debugPrint("[WEBSOCKET] Attempting to connect to ws");
         // Configure socket transports must be sepecified
         Socket socket = io(
-          'http://192.168.1.103:2283',
+          endpoint,
           OptionBuilder()
               .setTransports(['websocket'])
               .enableReconnection()
@@ -70,12 +72,12 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
         );
 
         socket.onConnect((_) {
-          debugPrint("Established Websocket Connection");
+          debugPrint("[WEBSOCKET] Established Websocket Connection");
           state = WebscoketState(isConnected: true, socket: socket);
         });
 
         socket.onDisconnect((_) {
-          debugPrint("Disconnect to Websocket Connection");
+          debugPrint("[WEBSOCKET] Disconnect to Websocket Connection");
           state = WebscoketState(isConnected: false, socket: null);
         });
 
@@ -90,13 +92,19 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
           ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
         });
       } catch (e) {
-        debugPrint("Catch Webcoket Error - ${e.toString()}");
+        debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }
     }
   }
 
   disconnect() {
-    state.socket?.disconnect();
+    debugPrint("[WEBSOCKET] Attempting to disconnect");
+    var socket = state.socket?.disconnect();
+    if (socket != null) {
+      if (socket.disconnected) {
+        state = WebscoketState(isConnected: false, socket: null);
+      }
+    }
   }
 }
 

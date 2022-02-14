@@ -28,17 +28,13 @@ This project is under heavy development, there will be continous functions, feat
 
 # Features
 
-[x] Upload assets(videos/images)
-
-[x] View assets
-
-[x] Quick navigation with drag scroll bar
-
-[x] Auto Backup
-
-[x] Support HEIC/HEIF Backup
-
-[x] Extract and display EXIF info
+- Upload assets(videos/images).
+- View assets.
+- Quick navigation with drag scroll bar.
+- Auto Backup.
+- Support HEIC/HEIF Backup.
+- Extract and display EXIF info.
+- Real-time render from multi-device upload event.
 
 # Development
 
