@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart';
@@ -50,35 +51,47 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
       var accessToken = Hive.box(userInfoBox).get(accessTokenKey);
 
       try {
+        debugPrint("Attempting to connect to ws");
         // Configure socket transports must be sepecified
         Socket socket = io(
-          'http://192.168.1.216:2283/${authenticationState.userId}',
+          'http://192.168.1.216:2283',
           OptionBuilder()
               .setTransports(['websocket'])
               .enableReconnection()
+              .enableForceNew()
+              .enableForceNewConnection()
               .enableAutoConnect()
               .setExtraHeaders({"Authorization": "Bearer $accessToken"})
               .build(),
         );
 
         socket.onConnect((_) {
+          debugPrint("Established Websocket Connection");
           state = WebscoketState(isConnected: true, socket: socket);
         });
 
         socket.onDisconnect((_) {
+          debugPrint("Disconnect to Websocket Connection");
           state = WebscoketState(isConnected: false, socket: null);
         });
 
-        socket.onError((data) => print("error connect to web socket $data"));
-        socket.on('on_connected', (data) => print("on connect msg from server $data"));
+        socket.on('error', (errorMessage) {
+          debugPrint("Webcoket Error - $errorMessage");
+          state = WebscoketState(isConnected: false, socket: null);
+        });
+
         socket.on(
           'on_upload_success',
-          (data) => print("on new asset $data"),
+          (data) => print("on new asset upload success $data"),
         );
       } catch (e) {
-        print(e.toString());
+        debugPrint("Catch Webcoket Error - ${e.toString()}");
       }
     }
+  }
+
+  disconnect() {
+    state.socket?.disconnect();
   }
 }
 
