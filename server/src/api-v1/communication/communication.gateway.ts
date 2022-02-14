@@ -1,17 +1,47 @@
-import { OnGatewayConnection, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { CommunicationService } from './communication.service';
 import { Socket, Server } from 'socket.io';
+import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
+import { Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from '../user/entities/user.entity';
+import { Repository } from 'typeorm';
 
 @WebSocketGateway()
-export class CommunicationGateway implements OnGatewayConnection {
-  constructor(private readonly communicationService: CommunicationService) {}
-  @WebSocketServer() server: Server;
-  handleConnection(client: Socket, ...args: any[]) {
-    console.log('Socket IO - New connetrion ', client.id);
+export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  constructor(
+    private immichJwtService: ImmichJwtService,
 
-    this.server.emit(
-      'on_connected',
-      `Connection Success - hi ${client.id} - you are connecting to chat room ${client.nsp.name}`,
-    );
+    @InjectRepository(UserEntity)
+    private userRepository: Repository<UserEntity>,
+  ) {}
+
+  @WebSocketServer() server: Server;
+
+  handleDisconnect(client: Socket) {
+    client.leave(client.nsp.name);
+
+    console.log('Client left room ', client.rooms);
+  }
+
+  async handleConnection(client: Socket, ...args: any[]) {
+    Logger.log(`New websocket connection: ${client.id}`, 'NewWebSocketConnection');
+    const accessToken = client.handshake.headers.authorization.split(' ')[1];
+    const res = await this.immichJwtService.validateToken(accessToken);
+
+    if (!res.status) {
+      client.emit('error', 'unauthorized');
+      client.disconnect();
+      return;
+    }
+
+    const user = await this.userRepository.findOne({ where: { id: res.userId } });
+    if (!user) {
+      client.emit('error', 'unauthorized');
+      client.disconnect();
+      return;
+    }
+
+    client.join(user.id);
   }
 }

@@ -16,16 +16,7 @@ export class UserService {
     return 'This action adds a new user';
   }
 
-  async findAll() {
-    try {
-      return 'welcome';
-      // return await this.userRepository.find();
-      // return await this.userRepository.query('select * from users');
-    } catch (e) {
-      console.log(e);
-    }
-    // return 'helloworld';
-  }
+  async findAll() {}
 
   findOne(id: number) {
     return `This action returns a #${id} user`;

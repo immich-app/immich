@@ -8,14 +8,16 @@ import { existsSync, mkdirSync, readFile } from 'fs';
 import { ConfigService } from '@nestjs/config';
 import ffmpeg from 'fluent-ffmpeg';
 import { APP_UPLOAD_LOCATION } from '../../constants/upload_location.constant';
+import { WebSocketServer } from '@nestjs/websockets';
+import { Socket, Server as SocketIoServer } from 'socket.io';
+import { CommunicationGateway } from '../../api-v1/communication/communication.gateway';
 
 @Processor('optimize')
 export class ImageOptimizeProcessor {
   constructor(
+    private wsCommunicateionGateway: CommunicationGateway,
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-
-    private configService: ConfigService,
   ) {}
 
   @Process('resize-image')
@@ -67,6 +69,9 @@ export class ImageOptimizeProcessor {
             }
 
             await this.assetRepository.update(savedAsset, { resizePath: resizePath });
+            this.wsCommunicateionGateway.server
+              .to(savedAsset.userId)
+              .emit('on_upload_success', { assetId: savedAsset.id });
           });
       }
     });
