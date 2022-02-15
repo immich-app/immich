@@ -68,6 +68,13 @@ services:
     build:
       context: ../machine_learning
       dockerfile: ../machine_learning/Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     volumes:
       - ../machine_learning/app:/code/app
       - ${UPLOAD_LOCATION}:/code/app/upload
@@ -79,6 +86,8 @@ services:
       - database
     networks:
       - immich_network
+
+      
 networks:
   immich_network:
 volumes:

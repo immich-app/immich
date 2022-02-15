@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM tensorflow/tensorflow:latest-gpu 
 
 WORKDIR /code
 
