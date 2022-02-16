@@ -1,31 +1,40 @@
 from typing import Optional
 
 from fastapi import FastAPI
-from tensorflow.keras.applications.vgg16 import VGG16
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.vgg16 import preprocess_input, decode_predictions
-import numpy as np
-import os
+from tensorflow.keras.applications import InceptionV3
+from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
 
+from tensorflow.keras.preprocessing import image
+import numpy as np
+
+IMG_SIZE = 299
+PREDICTION_MODEL = InceptionV3(weights='imagenet')
 app = FastAPI()
 
 
 @app.get("/")
 def read_root():
 
-    return os.getcwd()
+    return "ok"
 
 
-@app.get("/predict")
-def predict():
-    model = VGG16(weights='imagenet', include_top=False)
+@app.get("/predict/{image_name}")
+def predict(image_name: str):
 
-    img_path = './app/upload/db6e94e1-ab1d-4ff0-a3b7-ba7d9e7b9d84/thumb/76f0308a9a53080e/zMGrPdjRoOU.jpeg'
-    img = image.load_img(img_path, target_size=(224, 224))
+    img_path = f'./app/upload/eb077301-2773-4ef1-aa2a-215ceb8a4383/thumb/C37F22E9-5F07-4DCA-A3EB-5BCCE93270C0/{image_name}'
+    img = image.load_img(img_path, target_size=(IMG_SIZE, IMG_SIZE))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x = preprocess_input(x)
 
-    features = model.predict(x)
+    preds = PREDICTION_MODEL.predict(x)
+    result = decode_predictions(preds, top=3)[0]
+    payload = []
+    for _, value, _ in result:
+        payload.append(value)
 
-    return "ok"
+    return payload
+
+
+def setup():
+    pass

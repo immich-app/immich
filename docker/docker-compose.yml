@@ -67,14 +67,8 @@ services:
     command: uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port 8000 --reload
     build:
       context: ../machine_learning
+      target: cpu
       dockerfile: ../machine_learning/Dockerfile
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     volumes:
       - ../machine_learning/app:/code/app
       - ${UPLOAD_LOCATION}:/code/app/upload
@@ -87,7 +81,6 @@ services:
     networks:
       - immich_network
 
-      
 networks:
   immich_network:
 volumes:
