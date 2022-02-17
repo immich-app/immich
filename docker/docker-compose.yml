@@ -7,7 +7,8 @@ services:
       context: ../server
       target: development
       dockerfile: ../server/Dockerfile
-    command: npm run start:dev
+    entrypoint: ["/bin/sh", "./entrypoint.sh"]
+    # command: npm run start:dev
     expose:
       - "3000"
     volumes:

@@ -6,7 +6,6 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 // if (result.error) {
 //   console.log(result.error);
 // }
-
 export const databaseConfig: TypeOrmModuleOptions = {
   type: 'postgres',
   host: 'immich_postgres',
@@ -15,13 +14,10 @@ export const databaseConfig: TypeOrmModuleOptions = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE_NAME,
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
-  synchronize: true,
-  // logging: true,
-  // logger: 'advanced-console',
-  // ssl: process.env.NODE_ENV == 'production',
-  // extra: {
-  //   ssl: {
-  //     rejectUnauthorized: false,
-  //   },
-  // },
+  synchronize: false,
+  migrations: [__dirname + '/../migration/*.js'],
+  cli: {
+    migrationsDir: __dirname + '/../migration',
+  },
+  migrationsRun: true,
 };
