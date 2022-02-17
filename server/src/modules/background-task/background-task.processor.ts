@@ -76,4 +76,9 @@ export class BackgroundTaskProcessor {
       });
     });
   }
+
+  @Process('tag-image')
+  async tagImage(job) {
+    console.log('tag immage');
+  }
 }

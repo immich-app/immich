@@ -1,11 +1,10 @@
 from typing import Optional
-
+import numpy as np
 from fastapi import FastAPI
+import tensorflow as tf
 from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
-
 from tensorflow.keras.preprocessing import image
-import numpy as np
 
 IMG_SIZE = 299
 PREDICTION_MODEL = InceptionV3(weights='imagenet')
@@ -29,6 +28,7 @@ def predict(image_name: str):
 
     preds = PREDICTION_MODEL.predict(x)
     result = decode_predictions(preds, top=3)[0]
+    print(result)
     payload = []
     for _, value, _ in result:
         payload.append(value)
