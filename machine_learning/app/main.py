@@ -13,8 +13,12 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-
     return "ok"
+
+
+@app.post("/")
+def post_root():
+    return "okla"
 
 
 @app.get("/predict/{image_name}")

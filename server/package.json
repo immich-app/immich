@@ -35,6 +35,7 @@
     "@nestjs/typeorm": "^8.0.3",
     "@nestjs/websockets": "^8.2.6",
     "@socket.io/redis-adapter": "^7.1.0",
+    "axios": "^0.26.0",
     "bcrypt": "^5.0.1",
     "bull": "^4.4.0",
     "class-transformer": "^0.5.1",

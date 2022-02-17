@@ -32,4 +32,14 @@ export class BackgroundTaskService {
       { jobId: randomUUID() },
     );
   }
+
+  async tagImage(assets: AssetEntity) {
+    await this.backgroundTaskQueue.add(
+      'tag-image',
+      {
+        assets,
+      },
+      { jobId: randomUUID() },
+    );
+  }
 }

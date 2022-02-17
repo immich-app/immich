@@ -9,6 +9,7 @@ import { readFile } from 'fs/promises';
 import fs from 'fs';
 import { Logger } from '@nestjs/common';
 import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
+import axios from 'axios';
 
 @Processor('background-task')
 export class BackgroundTaskProcessor {
@@ -80,5 +81,7 @@ export class BackgroundTaskProcessor {
   @Process('tag-image')
   async tagImage(job) {
     console.log('tag immage');
+    const res = await axios.post('http://immich_tf_fastapi:8000/');
+    console.log('res ', res.data);
   }
 }
