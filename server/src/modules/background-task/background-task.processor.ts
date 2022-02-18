@@ -10,12 +10,16 @@ import fs from 'fs';
 import { Logger } from '@nestjs/common';
 import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
 import axios from 'axios';
+import { SmartInfoEntity } from '../../api-v1/asset/entities/smart-info.entity';
 
 @Processor('background-task')
 export class BackgroundTaskProcessor {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+
+    @InjectRepository(SmartInfoEntity)
+    private smartInfoRepository: Repository<SmartInfoEntity>,
 
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
@@ -80,8 +84,15 @@ export class BackgroundTaskProcessor {
 
   @Process('tag-image')
   async tagImage(job) {
-    console.log('tag immage');
-    const res = await axios.post('http://immich_tf_fastapi:8000/');
-    console.log('res ', res.data);
+    const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
+    const res = await axios.post('http://immich_tf_fastapi:8000/tagImage', { thumbnail_path: thumbnailPath });
+
+    if (res.status == 200) {
+      const smartInfo = new SmartInfoEntity();
+      smartInfo.assetId = asset.id;
+      smartInfo.tags = [...res.data];
+
+      this.smartInfoRepository.save(smartInfo);
+    }
   }
 }

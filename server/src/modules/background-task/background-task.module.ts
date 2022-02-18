@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
 import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
+import { SmartInfoEntity } from '../../api-v1/asset/entities/smart-info.entity';
 import { BackgroundTaskProcessor } from './background-task.processor';
 import { BackgroundTaskService } from './background-task.service';
 
@@ -16,7 +17,7 @@ import { BackgroundTaskService } from './background-task.service';
         removeOnFail: false,
       },
     }),
-    TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
+    TypeOrmModule.forFeature([AssetEntity, ExifEntity, SmartInfoEntity]),
   ],
   providers: [BackgroundTaskService, BackgroundTaskProcessor],
   exports: [BackgroundTaskService],

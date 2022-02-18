@@ -61,6 +61,7 @@ export class ImageOptimizeProcessor {
             }
 
             const res = await this.assetRepository.update(savedAsset, { resizePath: desitnation });
+
             if (res.affected) {
               this.wsCommunicateionGateway.server
                 .to(savedAsset.userId)
@@ -68,7 +69,7 @@ export class ImageOptimizeProcessor {
             }
 
             // Tag Image
-            this.backgroundTaskService.tagImage(savedAsset);
+            this.backgroundTaskService.tagImage(desitnation, savedAsset);
           });
       } else {
         sharp(data)
@@ -87,7 +88,7 @@ export class ImageOptimizeProcessor {
             }
 
             // Tag Image
-            this.backgroundTaskService.tagImage(savedAsset);
+            this.backgroundTaskService.tagImage(resizePath, savedAsset);
           });
       }
     });
@@ -116,7 +117,10 @@ export class ImageOptimizeProcessor {
         filename: `${filename}.png`,
       })
       .on('end', async (a) => {
+        const thumbnailPath = `${resizeDir}/${filename}.png`;
+
         const res = await this.assetRepository.update(savedAsset, { resizePath: `${resizeDir}/${filename}.png` });
+
         if (res.affected) {
           this.wsCommunicateionGateway.server
             .to(savedAsset.userId)
@@ -124,7 +128,7 @@ export class ImageOptimizeProcessor {
         }
 
         // Tag Image
-        this.backgroundTaskService.tagImage(savedAsset);
+        this.backgroundTaskService.tagImage(thumbnailPath, savedAsset);
       });
 
     return 'ok';

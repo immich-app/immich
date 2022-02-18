@@ -1,4 +1,5 @@
 from typing import Optional
+from pydantic import BaseModel
 import numpy as np
 from fastapi import FastAPI
 import tensorflow as tf
@@ -8,23 +9,34 @@ from tensorflow.keras.preprocessing import image
 
 IMG_SIZE = 299
 PREDICTION_MODEL = InceptionV3(weights='imagenet')
+
+
+def warm_up():
+    img_path = f'./app/test.png'
+    img = image.load_img(img_path, target_size=(IMG_SIZE, IMG_SIZE))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = preprocess_input(x)
+    PREDICTION_MODEL.predict(x)
+
+
+# Warm up model
+warm_up()
 app = FastAPI()
 
 
-@app.get("/")
-def read_root():
-    return "ok"
+class TagImagePayload(BaseModel):
+    thumbnail_path: str
 
 
-@app.post("/")
-def post_root():
-    return "okla"
+@app.post("/tagImage")
+async def post_root(payload: TagImagePayload):
+    imagePath = payload.thumbnail_path
 
+    if imagePath[0] == '.':
+        imagePath = imagePath[2:]
 
-@app.get("/predict/{image_name}")
-def predict(image_name: str):
-
-    img_path = f'./app/upload/eb077301-2773-4ef1-aa2a-215ceb8a4383/thumb/C37F22E9-5F07-4DCA-A3EB-5BCCE93270C0/{image_name}'
+    img_path = f'./app/{imagePath}'
     img = image.load_img(img_path, target_size=(IMG_SIZE, IMG_SIZE))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
@@ -32,13 +44,8 @@ def predict(image_name: str):
 
     preds = PREDICTION_MODEL.predict(x)
     result = decode_predictions(preds, top=3)[0]
-    print(result)
     payload = []
     for _, value, _ in result:
         payload.append(value)
 
     return payload
-
-
-def setup():
-    pass
