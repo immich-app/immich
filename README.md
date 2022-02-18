@@ -44,13 +44,15 @@ You can use docker compose for development, there are several services that comp
 2. PostgreSQL
 3. Redis
 4. Nginx
+5. TensorFlow and Keras
 
 ## Populate .env file
 
-Navigate to `server` directory and run
+Navigate to `docker` directory and run
 
-````
+```
 cp .env.example .env
+```
 
 Then populate the value in there.
 
@@ -59,13 +61,13 @@ Pay attention to the key `UPLOAD_LOCATION`, this directory must exist and is own
 To start, run
 
 ```bash
-docker-compose -f ./server/docker-compose.yml up
-````
+docker-compose -f ./docker/docker-compose.yml up
+```
 
 To force rebuild node modules after installing new packages
 
 ```bash
-docker-compose -f ./server/docker-compose.yml up --build -V
+docker-compose -f ./docker/docker-compose.yml up --build -V
 ```
 
 The server will be running at `http://your-ip:2283` through `Nginx`
