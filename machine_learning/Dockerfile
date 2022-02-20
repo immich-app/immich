@@ -1,13 +1,13 @@
 ## GPU Build
-FROM tensorflow/tensorflow:latest-gpu as gpu
+# FROM tensorflow/tensorflow:latest-gpu as gpu
 
-WORKDIR /code
+# WORKDIR /code
 
-COPY ./requirements.txt /code/requirements.txt
+# COPY ./requirements.txt /code/requirements.txt
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+# RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-COPY ./app /code/app
+# COPY ./app /code/app
 
 
 ## CPU BUILD
