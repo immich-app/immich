@@ -35,6 +35,7 @@ This project is under heavy development, there will be continous functions, feat
 - Support HEIC/HEIF Backup.
 - Extract and display EXIF info.
 - Real-time render from multi-device upload event.
+- Image Classification based on ImageNet Dataset
 
 # Development
 
