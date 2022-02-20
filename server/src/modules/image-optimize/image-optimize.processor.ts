@@ -11,6 +11,7 @@ import { APP_UPLOAD_LOCATION } from '../../constants/upload_location.constant';
 import { WebSocketServer } from '@nestjs/websockets';
 import { Socket, Server as SocketIoServer } from 'socket.io';
 import { CommunicationGateway } from '../../api-v1/communication/communication.gateway';
+import { BackgroundTaskService } from '../background-task/background-task.service';
 
 @Processor('optimize')
 export class ImageOptimizeProcessor {
@@ -18,6 +19,8 @@ export class ImageOptimizeProcessor {
     private wsCommunicateionGateway: CommunicationGateway,
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+
+    private backgroundTaskService: BackgroundTaskService,
   ) {}
 
   @Process('resize-image')
@@ -58,11 +61,15 @@ export class ImageOptimizeProcessor {
             }
 
             const res = await this.assetRepository.update(savedAsset, { resizePath: desitnation });
+
             if (res.affected) {
               this.wsCommunicateionGateway.server
                 .to(savedAsset.userId)
                 .emit('on_upload_success', JSON.stringify(savedAsset));
             }
+
+            // Tag Image
+            this.backgroundTaskService.tagImage(desitnation, savedAsset);
           });
       } else {
         sharp(data)
@@ -79,6 +86,9 @@ export class ImageOptimizeProcessor {
                 .to(savedAsset.userId)
                 .emit('on_upload_success', JSON.stringify(savedAsset));
             }
+
+            // Tag Image
+            this.backgroundTaskService.tagImage(resizePath, savedAsset);
           });
       }
     });
@@ -107,12 +117,18 @@ export class ImageOptimizeProcessor {
         filename: `${filename}.png`,
       })
       .on('end', async (a) => {
+        const thumbnailPath = `${resizeDir}/${filename}.png`;
+
         const res = await this.assetRepository.update(savedAsset, { resizePath: `${resizeDir}/${filename}.png` });
+
         if (res.affected) {
           this.wsCommunicateionGateway.server
             .to(savedAsset.userId)
             .emit('on_upload_success', JSON.stringify(savedAsset));
         }
+
+        // Tag Image
+        this.backgroundTaskService.tagImage(thumbnailPath, savedAsset);
       });
 
     return 'ok';

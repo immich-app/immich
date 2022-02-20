@@ -18,7 +18,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
   },
   "dependencies": {
     "@nestjs/bull": "^0.4.2",
@@ -34,6 +35,7 @@
     "@nestjs/typeorm": "^8.0.3",
     "@nestjs/websockets": "^8.2.6",
     "@socket.io/redis-adapter": "^7.1.0",
+    "axios": "^0.26.0",
     "bcrypt": "^5.0.1",
     "bull": "^4.4.0",
     "class-transformer": "^0.5.1",
@@ -46,10 +48,12 @@
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",
     "pg": "^8.7.1",
+    "redis": "^3.1.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "sharp": "0.28",
+    "socket.io-redis": "^6.1.1",
     "systeminformation": "^5.11.0",
     "typeorm": "^0.2.41"
   },
