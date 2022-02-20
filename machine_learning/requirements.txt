@@ -4,3 +4,4 @@ uvicorn>=0.15.0,<0.16.0
 tensorflow==2.8.0
 numpy==1.22.2
 pillow==9.0.1
+tf2_yolov4==0.1.0

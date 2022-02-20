@@ -6,9 +6,12 @@ import tensorflow as tf
 from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
+from tf2_yolov4.anchors import YOLOV4_ANCHORS
+from tf2_yolov4.model import YOLOv4
 
 IMG_SIZE = 299
 PREDICTION_MODEL = InceptionV3(weights='imagenet')
+HEIGHT, WIDTH = (640, 960)
 
 
 def warm_up():
@@ -49,3 +52,26 @@ async def post_root(payload: TagImagePayload):
         payload.append(value)
 
     return payload
+
+
+@app.get("/")
+async def test():
+    image = tf.io.read_file("./app/cars.jpg")
+    image = tf.image.decode_image(image)
+    image = tf.image.resize(image, (HEIGHT, WIDTH))
+    images = tf.expand_dims(image, axis=0) / 255.0
+
+    model = YOLOv4(
+        (HEIGHT, WIDTH, 3),
+        80,
+        YOLOV4_ANCHORS,
+        "darknet",
+    )
+
+    # model.load_weights()
+
+    print(model.summary())
+
+    # c, b, a = model.predict(images)
+
+    # print(b)
