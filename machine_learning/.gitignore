@@ -1,2 +1,3 @@
-app/__pycache__
-/devenv
+__pycache__/
+devenv/
+app/upload
