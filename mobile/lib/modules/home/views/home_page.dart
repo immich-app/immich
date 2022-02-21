@@ -89,7 +89,6 @@ class HomePage extends HookConsumerWidget {
                             ),
                           )
                         : ImmichSliverAppBar(
-                            imageGridGroup: _imageGridGroup,
                             onPopBack: onPopBackFromBackupPage,
                           ),
                     duration: const Duration(milliseconds: 350),

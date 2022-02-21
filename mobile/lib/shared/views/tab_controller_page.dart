@@ -12,8 +12,8 @@ class TabControllerPage extends ConsumerWidget {
     var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
 
     return AutoTabsRouter(
-      routes: const [
-        HomeRoute(),
+      routes: [
+        const HomeRoute(),
         SearchRoute(),
       ],
       builder: (context, child, animation) {

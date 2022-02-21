@@ -55,8 +55,10 @@ class _$AppRouter extends RootStackRouter {
           routeData: routeData, child: const HomePage());
     },
     SearchRoute.name: (routeData) {
+      final args = routeData.argsAs<SearchRouteArgs>(
+          orElse: () => const SearchRouteArgs());
       return MaterialPageX<dynamic>(
-          routeData: routeData, child: const SearchPage());
+          routeData: routeData, child: SearchPage(key: args.key));
     }
   };
 
@@ -193,8 +195,21 @@ class HomeRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [SearchPage]
-class SearchRoute extends PageRouteInfo<void> {
-  const SearchRoute() : super(SearchRoute.name, path: 'search-page');
+class SearchRoute extends PageRouteInfo<SearchRouteArgs> {
+  SearchRoute({Key? key})
+      : super(SearchRoute.name,
+            path: 'search-page', args: SearchRouteArgs(key: key));
 
   static const String name = 'SearchRoute';
+}
+
+class SearchRouteArgs {
+  const SearchRouteArgs({this.key});
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'SearchRouteArgs{key: $key}';
+  }
 }

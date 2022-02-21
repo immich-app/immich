@@ -12,11 +12,9 @@ import 'package:immich_mobile/shared/providers/backup.provider.dart';
 class ImmichSliverAppBar extends ConsumerWidget {
   const ImmichSliverAppBar({
     Key? key,
-    required this.imageGridGroup,
     this.onPopBack,
   }) : super(key: key);
 
-  final List<Widget> imageGridGroup;
   final Function? onPopBack;
 
   @override
@@ -46,7 +44,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
         style: GoogleFonts.snowburstOne(
           textStyle: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 22,
             color: Theme.of(context).primaryColor,
           ),
         ),
