@@ -69,6 +69,10 @@ class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
   void disableSearch() {
     state = state.copyWith(isSearchActivated: false);
   }
+
+  void setSearchTerm(String value) {
+    state = state.copyWith(searchTerm: value);
+  }
 }
 
 final searchPageStateProvider = StateNotifierProvider<SearchPageStateNotifier, SearchPageState>((ref) {
