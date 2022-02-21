@@ -67,7 +67,7 @@ export class AssetService {
         .orderBy('a."createdAt"::date', 'DESC')
         .getMany();
 
-        return assets;
+      return assets;
     } catch (e) {
       Logger.error(e, 'getAllAssets');
     }
@@ -242,5 +242,18 @@ export class AssetService {
     }
 
     return result;
+  }
+
+  async getAssetSearchTerm(authUser: AuthUserDto) {
+    return this.assetRepository.query(
+      `
+      select si.tags, e.*, a.type
+      from assets a
+      left join exif e on a.id = e."assetId"
+      left join smart_info si on a.id = si."assetId"
+      where a."userId" = $1;
+      `,
+      [authUser.id],
+    );
   }
 }
