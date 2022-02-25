@@ -248,7 +248,7 @@ export class AssetService {
     const possibleSearchTerm = new Set<String>();
     const rows = await this.assetRepository.query(
       `
-      select si.tags, e.orientation, e."lensModel", e.make, e.model , a.type
+      select distinct si.tags, e.orientation, e."lensModel", e.make, e.model , a.type
       from assets a
       left join exif e on a.id = e."assetId"
       left join smart_info si on a.id = si."assetId"
