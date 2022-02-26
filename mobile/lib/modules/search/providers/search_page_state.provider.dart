@@ -3,26 +3,32 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import 'package:immich_mobile/modules/search/services/search.service.dart';
+
 class SearchPageState {
   final String searchTerm;
   final bool isSearchEnabled;
   final List<String> searchSuggestion;
+  final List<String> userSuggestedSearchTerms;
 
   SearchPageState({
     required this.searchTerm,
     required this.isSearchEnabled,
     required this.searchSuggestion,
+    required this.userSuggestedSearchTerms,
   });
 
   SearchPageState copyWith({
     String? searchTerm,
     bool? isSearchEnabled,
     List<String>? searchSuggestion,
+    List<String>? userSuggestedSearchTerms,
   }) {
     return SearchPageState(
       searchTerm: searchTerm ?? this.searchTerm,
       isSearchEnabled: isSearchEnabled ?? this.isSearchEnabled,
       searchSuggestion: searchSuggestion ?? this.searchSuggestion,
+      userSuggestedSearchTerms: userSuggestedSearchTerms ?? this.userSuggestedSearchTerms,
     );
   }
 
@@ -31,6 +37,7 @@ class SearchPageState {
       'searchTerm': searchTerm,
       'isSearchEnabled': isSearchEnabled,
       'searchSuggestion': searchSuggestion,
+      'userSuggestedSearchTerms': userSuggestedSearchTerms,
     };
   }
 
@@ -39,6 +46,7 @@ class SearchPageState {
       searchTerm: map['searchTerm'] ?? '',
       isSearchEnabled: map['isSearchEnabled'] ?? false,
       searchSuggestion: List<String>.from(map['searchSuggestion']),
+      userSuggestedSearchTerms: List<String>.from(map['userSuggestedSearchTerms']),
     );
   }
 
@@ -47,8 +55,9 @@ class SearchPageState {
   factory SearchPageState.fromJson(String source) => SearchPageState.fromMap(json.decode(source));
 
   @override
-  String toString() =>
-      'SearchPageState(searchTerm: $searchTerm, isSearchEnabled: $isSearchEnabled, searchSuggestion: $searchSuggestion)';
+  String toString() {
+    return 'SearchPageState(searchTerm: $searchTerm, isSearchEnabled: $isSearchEnabled, searchSuggestion: $searchSuggestion, userSuggestedSearchTerms: $userSuggestedSearchTerms)';
+  }
 
   @override
   bool operator ==(Object other) {
@@ -58,11 +67,17 @@ class SearchPageState {
     return other is SearchPageState &&
         other.searchTerm == searchTerm &&
         other.isSearchEnabled == isSearchEnabled &&
-        listEquals(other.searchSuggestion, searchSuggestion);
+        listEquals(other.searchSuggestion, searchSuggestion) &&
+        listEquals(other.userSuggestedSearchTerms, userSuggestedSearchTerms);
   }
 
   @override
-  int get hashCode => searchTerm.hashCode ^ isSearchEnabled.hashCode ^ searchSuggestion.hashCode;
+  int get hashCode {
+    return searchTerm.hashCode ^
+        isSearchEnabled.hashCode ^
+        searchSuggestion.hashCode ^
+        userSuggestedSearchTerms.hashCode;
+  }
 }
 
 class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
@@ -72,8 +87,11 @@ class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
             searchTerm: "",
             isSearchEnabled: false,
             searchSuggestion: [],
+            userSuggestedSearchTerms: [],
           ),
         );
+
+  final SearchService _searchService = SearchService();
 
   void enableSearch() {
     state = state.copyWith(isSearchEnabled: true);
@@ -90,7 +108,7 @@ class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
   }
 
   void _getSearchSuggestion(String searchTerm) {
-    var searchList = ['January', '01 2022', 'feburary', "February", 'home', '3413'];
+    var searchList = state.userSuggestedSearchTerms;
 
     var newList = searchList.where((e) => e.toLowerCase().contains(searchTerm));
 
@@ -99,6 +117,12 @@ class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
     if (searchTerm.isEmpty) {
       state = state.copyWith(searchSuggestion: []);
     }
+  }
+
+  void getSuggestedSearchTerms() async {
+    var userSuggestedSearchTerms = await _searchService.getUserSuggestedSearchTerms();
+
+    state = state.copyWith(userSuggestedSearchTerms: userSuggestedSearchTerms);
   }
 }
 
