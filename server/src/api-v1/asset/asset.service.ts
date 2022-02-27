@@ -67,7 +67,7 @@ export class AssetService {
         .orderBy('a."createdAt"::date', 'DESC')
         .getMany();
 
-        return assets;
+      return assets;
     } catch (e) {
       Logger.error(e, 'getAllAssets');
     }
@@ -242,5 +242,39 @@ export class AssetService {
     }
 
     return result;
+  }
+
+  async getAssetSearchTerm(authUser: AuthUserDto): Promise<String[]> {
+    const possibleSearchTerm = new Set<String>();
+    const rows = await this.assetRepository.query(
+      `
+      select distinct si.tags, e.orientation, e."lensModel", e.make, e.model , a.type
+      from assets a
+      left join exif e on a.id = e."assetId"
+      left join smart_info si on a.id = si."assetId"
+      where a."userId" = $1;
+      `,
+      [authUser.id],
+    );
+
+    rows.forEach((row) => {
+      // tags
+      row['tags']?.map((tag) => possibleSearchTerm.add(tag?.toLowerCase()));
+
+      // asset's tyoe
+      possibleSearchTerm.add(row['type']?.toLowerCase());
+
+      // image orientation
+      possibleSearchTerm.add(row['orientation']?.toLowerCase());
+
+      // Lens model
+      possibleSearchTerm.add(row['lensModel']?.toLowerCase());
+
+      // Make and model
+      possibleSearchTerm.add(row['make']?.toLowerCase());
+      possibleSearchTerm.add(row['model']?.toLowerCase());
+    });
+
+    return Array.from(possibleSearchTerm).filter((x) => x != null);
   }
 }

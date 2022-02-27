@@ -25,13 +25,9 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const LoginPage());
     },
-    HomeRoute.name: (routeData) {
+    TabControllerRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
-          routeData: routeData, child: const HomePage());
-    },
-    BackupControllerRoute.name: (routeData) {
-      return MaterialPageX<dynamic>(
-          routeData: routeData, child: const BackupControllerPage());
+          routeData: routeData, child: const TabControllerPage());
     },
     ImageViewerRoute.name: (routeData) {
       final args = routeData.argsAs<ImageViewerRouteArgs>();
@@ -49,19 +45,47 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
           routeData: routeData,
           child: VideoViewerPage(key: args.key, videoUrl: args.videoUrl));
+    },
+    BackupControllerRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const BackupControllerPage());
+    },
+    HomeRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const HomePage());
+    },
+    SearchRoute.name: (routeData) {
+      final args = routeData.argsAs<SearchRouteArgs>(
+          orElse: () => const SearchRouteArgs());
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: SearchPage(key: args.key));
     }
   };
 
   @override
   List<RouteConfig> get routes => [
         RouteConfig(LoginRoute.name, path: '/'),
-        RouteConfig(HomeRoute.name, path: '/home-page', guards: [authGuard]),
-        RouteConfig(BackupControllerRoute.name,
-            path: '/backup-controller-page', guards: [authGuard]),
+        RouteConfig(TabControllerRoute.name,
+            path: '/tab-controller-page',
+            guards: [
+              authGuard
+            ],
+            children: [
+              RouteConfig(HomeRoute.name,
+                  path: 'home-page',
+                  parent: TabControllerRoute.name,
+                  guards: [authGuard]),
+              RouteConfig(SearchRoute.name,
+                  path: 'search-page',
+                  parent: TabControllerRoute.name,
+                  guards: [authGuard])
+            ]),
         RouteConfig(ImageViewerRoute.name,
             path: '/image-viewer-page', guards: [authGuard]),
         RouteConfig(VideoViewerRoute.name,
-            path: '/video-viewer-page', guards: [authGuard])
+            path: '/video-viewer-page', guards: [authGuard]),
+        RouteConfig(BackupControllerRoute.name,
+            path: '/backup-controller-page', guards: [authGuard])
       ];
 }
 
@@ -74,20 +98,13 @@ class LoginRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [HomePage]
-class HomeRoute extends PageRouteInfo<void> {
-  const HomeRoute() : super(HomeRoute.name, path: '/home-page');
+/// [TabControllerPage]
+class TabControllerRoute extends PageRouteInfo<void> {
+  const TabControllerRoute({List<PageRouteInfo>? children})
+      : super(TabControllerRoute.name,
+            path: '/tab-controller-page', initialChildren: children);
 
-  static const String name = 'HomeRoute';
-}
-
-/// generated route for
-/// [BackupControllerPage]
-class BackupControllerRoute extends PageRouteInfo<void> {
-  const BackupControllerRoute()
-      : super(BackupControllerRoute.name, path: '/backup-controller-page');
-
-  static const String name = 'BackupControllerRoute';
+  static const String name = 'TabControllerRoute';
 }
 
 /// generated route for
@@ -156,5 +173,43 @@ class VideoViewerRouteArgs {
   @override
   String toString() {
     return 'VideoViewerRouteArgs{key: $key, videoUrl: $videoUrl}';
+  }
+}
+
+/// generated route for
+/// [BackupControllerPage]
+class BackupControllerRoute extends PageRouteInfo<void> {
+  const BackupControllerRoute()
+      : super(BackupControllerRoute.name, path: '/backup-controller-page');
+
+  static const String name = 'BackupControllerRoute';
+}
+
+/// generated route for
+/// [HomePage]
+class HomeRoute extends PageRouteInfo<void> {
+  const HomeRoute() : super(HomeRoute.name, path: 'home-page');
+
+  static const String name = 'HomeRoute';
+}
+
+/// generated route for
+/// [SearchPage]
+class SearchRoute extends PageRouteInfo<SearchRouteArgs> {
+  SearchRoute({Key? key})
+      : super(SearchRoute.name,
+            path: 'search-page', args: SearchRouteArgs(key: key));
+
+  static const String name = 'SearchRoute';
+}
+
+class SearchRouteArgs {
+  const SearchRouteArgs({this.key});
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'SearchRouteArgs{key: $key}';
   }
 }

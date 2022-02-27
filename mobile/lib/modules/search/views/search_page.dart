@@ -16,10 +16,16 @@ class SearchPage extends HookConsumerWidget {
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
 
     useEffect(() {
+<<<<<<< HEAD
       searchFocusNode = FocusNode();
       return () {
         searchFocusNode.dispose();
       };
+=======
+      print("search");
+      searchFocusNode = FocusNode();
+      return () => searchFocusNode.dispose();
+>>>>>>> bfde3084924e247bc8f7004babf38605fe341a18
     }, []);
 
     return Scaffold(
