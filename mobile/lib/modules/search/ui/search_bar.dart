@@ -27,10 +27,7 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
         focusNode: searchFocusNode,
         autofocus: false,
         onTap: () {
-<<<<<<< HEAD
-=======
           ref.watch(searchPageStateProvider.notifier).getSuggestedSearchTerms();
->>>>>>> bfde3084924e247bc8f7004babf38605fe341a18
           ref.watch(searchPageStateProvider.notifier).enableSearch();
           searchFocusNode.requestFocus();
         },
