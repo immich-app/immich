@@ -71,6 +71,11 @@ export class AssetController {
     return this.assetService.serveFile(authUser, query, res, headers);
   }
 
+  @Get('/searchTerm')
+  async getAssetSearchTerm(@GetAuthUser() authUser: AuthUserDto) {
+    return this.assetService.getAssetSearchTerm(authUser);
+  }
+
   @Get('/new')
   async getNewAssets(@GetAuthUser() authUser: AuthUserDto, @Query(ValidationPipe) query: GetNewAssetQueryDto) {
     return await this.assetService.getNewAssets(authUser, query.latestDate);

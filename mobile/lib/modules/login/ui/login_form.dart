@@ -15,7 +15,7 @@ class LoginForm extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final usernameController = useTextEditingController(text: 'testuser@email.com');
     final passwordController = useTextEditingController(text: 'password');
-    final serverEndpointController = useTextEditingController(text: 'http://192.168.1.103:2283');
+    final serverEndpointController = useTextEditingController(text: 'http://192.168.1.216:2283');
 
     return Center(
       child: ConstrainedBox(
@@ -124,7 +124,8 @@ class LoginButton extends ConsumerWidget {
           if (isAuthenicated) {
             // Resume backup (if enable) then navigate
             ref.watch(backupProvider.notifier).resumeBackup();
-            AutoRouter.of(context).pushNamed("/home-page");
+            // AutoRouter.of(context).pushNamed("/home-page");
+            AutoRouter.of(context).pushNamed("/tab-controller-page");
           } else {
             ImmichToast.show(
                 context: context,
