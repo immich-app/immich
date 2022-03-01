@@ -35,14 +35,14 @@ class SearchResultPage extends HookConsumerWidget {
         focusNode: searchFocusNode,
         autofocus: false,
         onTap: () {
-          ref.watch(searchPageStateProvider.notifier).getSuggestedSearchTerms();
-          ref.watch(searchPageStateProvider.notifier).enableSearch();
+          searchTermController.clear();
+          ref.watch(searchPageStateProvider.notifier).setSearchTerm("");
           searchFocusNode.requestFocus();
         },
         textInputAction: TextInputAction.search,
         onSubmitted: (searchTerm) {
           if (searchTerm.isNotEmpty) {
-            searchTermController.text = "";
+            searchTermController.clear();
             _onSearchSubmitted(searchTerm);
           } else {
             isNewSearch.value = false;
@@ -95,7 +95,7 @@ class SearchResultPage extends HookConsumerWidget {
             if (isNewSearch.value) {
               isNewSearch.value = false;
             } else {
-              AutoRouter.of(context).pop();
+              AutoRouter.of(context).pop(true);
             }
           },
           icon: const Icon(Icons.arrow_back_ios_rounded),

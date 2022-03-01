@@ -7,7 +7,7 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
   SearchBar({Key? key, required this.searchFocusNode, required this.onSubmitted}) : super(key: key);
 
   final FocusNode searchFocusNode;
-  final Function onSubmitted;
+  final Function(String) onSubmitted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

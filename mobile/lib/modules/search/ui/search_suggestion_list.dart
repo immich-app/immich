@@ -5,7 +5,7 @@ import 'package:immich_mobile/modules/search/providers/search_page_state.provide
 class SearchSuggestionList extends ConsumerWidget {
   const SearchSuggestionList({Key? key, required this.onSubmitted}) : super(key: key);
 
-  final Function onSubmitted;
+  final Function(String) onSubmitted;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final searchTerm = ref.watch(searchPageStateProvider).searchTerm;
