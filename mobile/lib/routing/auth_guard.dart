@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 
 class AuthGuard extends AutoRouteGuard {
