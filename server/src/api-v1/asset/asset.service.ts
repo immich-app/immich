@@ -280,13 +280,12 @@ export class AssetService {
   }
 
   async searchAsset(authUser: AuthUserDto, searchAssetDto: SearchAssetDto) {
-    console.log(searchAssetDto);
     const query = `
     SELECT a.*
     FROM assets a
              LEFT JOIN smart_info si ON a.id = si."assetId"
              LEFT JOIN exif e ON a.id = e."assetId"
-             
+
     WHERE a."userId" = $1
        AND 
        (
@@ -297,7 +296,6 @@ export class AssetService {
 
     const rows = await this.assetRepository.query(query, [authUser.id, searchAssetDto.searchTerm]);
 
-    console.log(rows);
-    return 'ok' + searchAssetDto.searchTerm;
+    return rows;
   }
 }
