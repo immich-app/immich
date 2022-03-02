@@ -27,8 +27,8 @@ class SearchResultPage extends HookConsumerWidget {
 
     useEffect(() {
       searchFocusNode = FocusNode();
-      ref.read(searchResultPageStateProvider.notifier).search(searchTerm);
 
+      Future.delayed(Duration.zero, () => ref.read(searchResultPageStateProvider.notifier).search(searchTerm));
       return () => searchFocusNode.dispose();
     }, []);
 
@@ -101,6 +101,7 @@ class SearchResultPage extends HookConsumerWidget {
     _buildSearchResult() {
       var searchResultPageState = ref.watch(searchResultPageStateProvider);
       var assetGroupByDateTime = ref.watch(searchResultGroupByDateTimeProvider);
+
       if (searchResultPageState.isError) {
         return const Text("Error");
       }
