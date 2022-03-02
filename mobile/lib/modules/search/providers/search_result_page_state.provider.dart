@@ -1,34 +1,54 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:immich_mobile/modules/search/services/search.service.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:intl/intl.dart';
 
 class SearchresultPageState {
-  final bool isLoading = true;
-  final bool isSuccess = false;
-  final bool isError = false;
-  final dynamic searchResult;
+  final bool isLoading;
+  final bool isSuccess;
+  final bool isError;
+  final List<ImmichAsset> searchResult;
+
   SearchresultPageState({
+    required this.isLoading,
+    required this.isSuccess,
+    required this.isError,
     required this.searchResult,
   });
 
   SearchresultPageState copyWith({
-    dynamic? searchResult,
+    bool? isLoading,
+    bool? isSuccess,
+    bool? isError,
+    List<ImmichAsset>? searchResult,
   }) {
     return SearchresultPageState(
+      isLoading: isLoading ?? this.isLoading,
+      isSuccess: isSuccess ?? this.isSuccess,
+      isError: isError ?? this.isError,
       searchResult: searchResult ?? this.searchResult,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'searchResult': searchResult,
+      'isLoading': isLoading,
+      'isSuccess': isSuccess,
+      'isError': isError,
+      'searchResult': searchResult.map((x) => x.toMap()).toList(),
     };
   }
 
   factory SearchresultPageState.fromMap(Map<String, dynamic> map) {
     return SearchresultPageState(
-      searchResult: map['searchResult'],
+      isLoading: map['isLoading'] ?? false,
+      isSuccess: map['isSuccess'] ?? false,
+      isError: map['isError'] ?? false,
+      searchResult: List<ImmichAsset>.from(map['searchResult']?.map((x) => ImmichAsset.fromMap(x))),
     );
   }
 
@@ -37,32 +57,55 @@ class SearchresultPageState {
   factory SearchresultPageState.fromJson(String source) => SearchresultPageState.fromMap(json.decode(source));
 
   @override
-  String toString() => 'SearchresultPageState(searchResult: $searchResult)';
+  String toString() {
+    return 'SearchresultPageState(isLoading: $isLoading, isSuccess: $isSuccess, isError: $isError, searchResult: $searchResult)';
+  }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
+    final listEquals = const DeepCollectionEquality().equals;
 
-    return other is SearchresultPageState && other.searchResult == searchResult;
+    return other is SearchresultPageState &&
+        other.isLoading == isLoading &&
+        other.isSuccess == isSuccess &&
+        other.isError == isError &&
+        listEquals(other.searchResult, searchResult);
   }
 
   @override
-  int get hashCode => searchResult.hashCode;
+  int get hashCode {
+    return isLoading.hashCode ^ isSuccess.hashCode ^ isError.hashCode ^ searchResult.hashCode;
+  }
 }
 
 class SearchResultPageStateNotifier extends StateNotifier<SearchresultPageState> {
-  SearchResultPageStateNotifier() : super(SearchresultPageState(searchResult: null));
+  SearchResultPageStateNotifier()
+      : super(SearchresultPageState(searchResult: [], isError: false, isLoading: true, isSuccess: false));
 
   final SearchService _searchService = SearchService();
 
   search(String searchTerm) async {
-    var res = await _searchService.searchAsset(searchTerm);
+    state = state.copyWith(searchResult: [], isError: false, isLoading: true, isSuccess: false);
 
-    print(res);
+    List<ImmichAsset>? assets = await _searchService.searchAsset(searchTerm);
+
+    if (assets != null) {
+      state = state.copyWith(searchResult: assets, isError: false, isLoading: false, isSuccess: true);
+    } else {
+      state = state.copyWith(searchResult: [], isError: true, isLoading: false, isSuccess: false);
+    }
   }
 }
 
 final searchResultPageStateProvider =
     StateNotifierProvider<SearchResultPageStateNotifier, SearchresultPageState>((ref) {
   return SearchResultPageStateNotifier();
+});
+
+final searchResultGroupByDateTimeProvider = StateProvider((ref) {
+  var assets = ref.watch(searchResultPageStateProvider).searchResult;
+
+  assets.sortByCompare<DateTime>((e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
+  return assets.groupListsBy((element) => DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)));
 });

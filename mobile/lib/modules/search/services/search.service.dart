@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 
 class SearchService {
@@ -18,19 +19,21 @@ class SearchService {
     }
   }
 
-  searchAsset(String searchTerm) async {
+  Future<List<ImmichAsset>?> searchAsset(String searchTerm) async {
     try {
       var res = await _networkService.postRequest(
         url: "asset/search",
         data: {"searchTerm": searchTerm},
       );
 
-      var decodedData = res.toString();
+      List<dynamic> decodedData = jsonDecode(res.toString());
 
-      return decodedData;
+      List<ImmichAsset> result = List.from(decodedData.map((a) => ImmichAsset.fromMap(a)));
+
+      return result;
     } catch (e) {
       debugPrint("[ERROR] [searchAsset] ${e.toString()}");
-      return [];
+      return null;
     }
   }
 }
