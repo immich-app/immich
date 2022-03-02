@@ -13,6 +13,7 @@ import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
+import { SearchAssetDto } from './dto/search-asset.dto';
 
 const fileInfo = promisify(stat);
 
@@ -276,5 +277,25 @@ export class AssetService {
     });
 
     return Array.from(possibleSearchTerm).filter((x) => x != null);
+  }
+
+  async searchAsset(authUser: AuthUserDto, searchAssetDto: SearchAssetDto) {
+    const query = `
+    SELECT a.*
+    FROM assets a
+             LEFT JOIN smart_info si ON a.id = si."assetId"
+             LEFT JOIN exif e ON a.id = e."assetId"
+
+    WHERE a."userId" = $1
+       AND 
+       (
+         TO_TSVECTOR('english', ARRAY_TO_STRING(si.tags, ',')) @@ PLAINTO_TSQUERY('english', $2) OR 
+         e.exif_text_searchable_column @@ PLAINTO_TSQUERY('english', $2)
+        );
+    `;
+
+    const rows = await this.assetRepository.query(query, [authUser.id, searchAssetDto.searchTerm]);
+
+    return rows;
   }
 }

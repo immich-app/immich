@@ -4,8 +4,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 
 class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
-  SearchBar({Key? key, required this.searchFocusNode}) : super(key: key);
-  FocusNode searchFocusNode;
+  SearchBar({Key? key, required this.searchFocusNode, required this.onSubmitted}) : super(key: key);
+
+  final FocusNode searchFocusNode;
+  final Function(String) onSubmitted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,6 +21,7 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
               onPressed: () {
                 searchFocusNode.unfocus();
                 ref.watch(searchPageStateProvider.notifier).disableSearch();
+                searchTermController.clear();
               },
               icon: const Icon(Icons.arrow_back_ios_rounded))
           : const Icon(Icons.search_rounded),
@@ -27,13 +30,17 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
         focusNode: searchFocusNode,
         autofocus: false,
         onTap: () {
+          searchTermController.clear();
           ref.watch(searchPageStateProvider.notifier).getSuggestedSearchTerms();
           ref.watch(searchPageStateProvider.notifier).enableSearch();
+          ref.watch(searchPageStateProvider.notifier).setSearchTerm("");
+
           searchFocusNode.requestFocus();
         },
         onSubmitted: (searchTerm) {
-          ref.watch(searchPageStateProvider.notifier).disableSearch();
-          searchFocusNode.unfocus();
+          onSubmitted(searchTerm);
+          searchTermController.clear();
+          ref.watch(searchPageStateProvider.notifier).setSearchTerm("");
         },
         onChanged: (value) {
           ref.watch(searchPageStateProvider.notifier).setSearchTerm(value);

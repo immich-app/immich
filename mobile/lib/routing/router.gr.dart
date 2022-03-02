@@ -50,6 +50,12 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const BackupControllerPage());
     },
+    SearchResultRoute.name: (routeData) {
+      final args = routeData.argsAs<SearchResultRouteArgs>();
+      return MaterialPageX<dynamic>(
+          routeData: routeData,
+          child: SearchResultPage(key: args.key, searchTerm: args.searchTerm));
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -85,7 +91,9 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(VideoViewerRoute.name,
             path: '/video-viewer-page', guards: [authGuard]),
         RouteConfig(BackupControllerRoute.name,
-            path: '/backup-controller-page', guards: [authGuard])
+            path: '/backup-controller-page', guards: [authGuard]),
+        RouteConfig(SearchResultRoute.name,
+            path: '/search-result-page', guards: [authGuard])
       ];
 }
 
@@ -183,6 +191,30 @@ class BackupControllerRoute extends PageRouteInfo<void> {
       : super(BackupControllerRoute.name, path: '/backup-controller-page');
 
   static const String name = 'BackupControllerRoute';
+}
+
+/// generated route for
+/// [SearchResultPage]
+class SearchResultRoute extends PageRouteInfo<SearchResultRouteArgs> {
+  SearchResultRoute({Key? key, required String searchTerm})
+      : super(SearchResultRoute.name,
+            path: '/search-result-page',
+            args: SearchResultRouteArgs(key: key, searchTerm: searchTerm));
+
+  static const String name = 'SearchResultRoute';
+}
+
+class SearchResultRouteArgs {
+  const SearchResultRouteArgs({this.key, required this.searchTerm});
+
+  final Key? key;
+
+  final String searchTerm;
+
+  @override
+  String toString() {
+    return 'SearchResultRouteArgs{key: $key, searchTerm: $searchTerm}';
+  }
 }
 
 /// generated route for

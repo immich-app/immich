@@ -83,12 +83,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
                       ),
                       child: const Icon(Icons.backup_rounded)),
               tooltip: 'Backup Controller',
-              onPressed: () async {
-                var onPop = await AutoRouter.of(context).push(const BackupControllerRoute());
-
-                if (onPop == true) {
-                  onPopBack!();
-                }
+              onPressed: () {
+                AutoRouter.of(context).push(const BackupControllerRoute());
               },
             ),
             _backupState.backupProgress == BackUpProgressEnum.inProgress

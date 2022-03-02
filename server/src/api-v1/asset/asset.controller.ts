@@ -28,6 +28,7 @@ import { Response as Res } from 'express';
 import { GetNewAssetQueryDto } from './dto/get-new-asset-query.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
+import { SearchAssetDto } from './dto/search-asset.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('asset')
@@ -74,6 +75,11 @@ export class AssetController {
   @Get('/searchTerm')
   async getAssetSearchTerm(@GetAuthUser() authUser: AuthUserDto) {
     return this.assetService.getAssetSearchTerm(authUser);
+  }
+
+  @Post('/search')
+  async searchAsset(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) searchAssetDto: SearchAssetDto) {
+    return this.assetService.searchAsset(authUser, searchAssetDto);
   }
 
   @Get('/new')

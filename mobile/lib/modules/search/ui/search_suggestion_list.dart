@@ -3,8 +3,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 
 class SearchSuggestionList extends ConsumerWidget {
-  const SearchSuggestionList({Key? key}) : super(key: key);
+  const SearchSuggestionList({Key? key, required this.onSubmitted}) : super(key: key);
 
+  final Function(String) onSubmitted;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final searchTerm = ref.watch(searchPageStateProvider).searchTerm;
@@ -20,7 +21,7 @@ class SearchSuggestionList extends ConsumerWidget {
               itemBuilder: ((context, index) {
                 return ListTile(
                   onTap: () {
-                    print("navigate to this search result: ${searchSuggestion[index]} ");
+                    onSubmitted(searchSuggestion[index]);
                   },
                   title: Text(searchSuggestion[index]),
                 );
