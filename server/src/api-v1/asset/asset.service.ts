@@ -281,6 +281,23 @@ export class AssetService {
 
   async searchAsset(authUser: AuthUserDto, searchAssetDto: SearchAssetDto) {
     console.log(searchAssetDto);
+    const query = `
+    SELECT a.*
+    FROM assets a
+             LEFT JOIN smart_info si ON a.id = si."assetId"
+             LEFT JOIN exif e ON a.id = e."assetId"
+             
+    WHERE a."userId" = $1
+       AND 
+       (
+         TO_TSVECTOR('english', ARRAY_TO_STRING(si.tags, ',')) @@ PLAINTO_TSQUERY('english', $2) OR 
+         e.exif_text_searchable_column @@ PLAINTO_TSQUERY('english', $2)
+        );
+    `;
+
+    const rows = await this.assetRepository.query(query, [authUser.id, searchAssetDto.searchTerm]);
+
+    console.log(rows);
     return 'ok' + searchAssetDto.searchTerm;
   }
 }
