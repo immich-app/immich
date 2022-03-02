@@ -13,6 +13,7 @@ import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
+import { SearchAssetDto } from './dto/search-asset.dto';
 
 const fileInfo = promisify(stat);
 
@@ -276,5 +277,10 @@ export class AssetService {
     });
 
     return Array.from(possibleSearchTerm).filter((x) => x != null);
+  }
+
+  async searchAsset(authUser: AuthUserDto, searchAssetDto: SearchAssetDto) {
+    console.log(searchAssetDto);
+    return 'ok' + searchAssetDto.searchTerm;
   }
 }
