@@ -17,4 +17,20 @@ class SearchService {
       return [];
     }
   }
+
+  searchAsset(String searchTerm) async {
+    try {
+      var res = await _networkService.postRequest(
+        url: "asset/search",
+        data: {"searchTerm": searchTerm},
+      );
+
+      var decodedData = res.toString();
+
+      return decodedData;
+    } catch (e) {
+      debugPrint("[ERROR] [searchAsset] ${e.toString()}");
+      return [];
+    }
+  }
 }
