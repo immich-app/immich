@@ -41,33 +41,11 @@ class SearchPage extends HookConsumerWidget {
         },
         child: Stack(
           children: [
+            const Center(
+              child: Text("Start typing to search for your photos"),
+            ),
             ListView(
-              children: [
-                Container(
-                  height: 300,
-                  color: Colors.blue,
-                ),
-                Container(
-                  height: 300,
-                  color: Colors.red,
-                ),
-                Container(
-                  height: 300,
-                  color: Colors.green,
-                ),
-                Container(
-                  height: 300,
-                  color: Colors.blue,
-                ),
-                Container(
-                  height: 300,
-                  color: Colors.red,
-                ),
-                Container(
-                  height: 300,
-                  color: Colors.green,
-                ),
-              ],
+              children: const [],
             ),
             isSearchEnabled ? SearchSuggestionList(onSubmitted: _onSearchSubmitted) : Container(),
           ],
