@@ -37,6 +37,7 @@ This project is under heavy development, there will be continous functions, feat
 - Real-time render from multi-device upload event.
 - Image Tagging/Classification based on ImageNet dataset
 - Search assets based on tags and exif data (lens, make, model, orientation)
+- Upload assets from your local computer/server using [immich cli tools](https://www.npmjs.com/package/immich)
 
 # Development
 

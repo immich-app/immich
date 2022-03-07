@@ -33,7 +33,7 @@ export const multerOption: MulterOptions = {
     },
 
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
-      cb(null, `${file.originalname}${req.body['fileExtension']}`);
+      cb(null, `${file.originalname.split('.')[0]}${req.body['fileExtension']}`);
     },
   }),
 };
