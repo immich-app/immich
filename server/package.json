@@ -22,6 +22,7 @@
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
   },
   "dependencies": {
+    "@mapbox/mapbox-sdk": "^0.13.3",
     "@nestjs/bull": "^0.4.2",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.1.6",

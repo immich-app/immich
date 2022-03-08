@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { ServerInfoService } from './server-info.service';
+import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
+import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
 
 @Controller('server-info')
 export class ServerInfoController {
@@ -22,7 +24,7 @@ export class ServerInfoController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/mapbox')
-  async getMapboxInfo(@GetAuthUser() authUser: AuthUserDto) {
+  async getMapboxInfo() {
     return {
       isEnable: this.configService.get('ENABLE_MAPBOX'),
       mapboxSecret: this.configService.get('MAPBOX_KEY'),

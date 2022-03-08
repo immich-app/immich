@@ -249,7 +249,7 @@ export class AssetService {
     const possibleSearchTerm = new Set<String>();
     const rows = await this.assetRepository.query(
       `
-      select distinct si.tags, e.orientation, e."lensModel", e.make, e.model , a.type
+      select distinct si.tags, e.orientation, e."lensModel", e.make, e.model , a.type, e.city, e.state, e.country
       from assets a
       left join exif e on a.id = e."assetId"
       left join smart_info si on a.id = si."assetId"
@@ -274,6 +274,11 @@ export class AssetService {
       // Make and model
       possibleSearchTerm.add(row['make']?.toLowerCase());
       possibleSearchTerm.add(row['model']?.toLowerCase());
+
+      // Location
+      possibleSearchTerm.add(row['city']?.toLowerCase());
+      possibleSearchTerm.add(row['state']?.toLowerCase());
+      possibleSearchTerm.add(row['country']?.toLowerCase());
     });
 
     return Array.from(possibleSearchTerm).filter((x) => x != null);
