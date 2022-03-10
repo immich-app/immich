@@ -16,7 +16,54 @@ class ExifBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print(assetDetail.exifInfo?.dateTimeOriginal);
+    _buildMap() {
+      return ref.watch(serverInfoProvider).mapboxInfo.isEnable
+          ? Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Container(
+                height: 150,
+                width: MediaQuery.of(context).size.width,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(15)),
+                ),
+                child: MapboxMap(
+                  doubleClickZoomEnabled: false,
+                  zoomGesturesEnabled: true,
+                  scrollGesturesEnabled: false,
+                  accessToken: ref.watch(serverInfoProvider).mapboxInfo.mapboxSecret,
+                  styleString: 'mapbox://styles/mapbox/streets-v11',
+                  initialCameraPosition: CameraPosition(
+                    zoom: 15.0,
+                    target: LatLng(assetDetail.exifInfo!.latitude!, assetDetail.exifInfo!.longitude!),
+                  ),
+                  onMapCreated: (MapboxMapController mapController) async {
+                    final ByteData bytes = await rootBundle.load("assets/location-pin.png");
+                    final Uint8List list = bytes.buffer.asUint8List();
+                    await mapController.addImage("assetImage", list);
+
+                    await mapController.addSymbol(
+                      SymbolOptions(
+                        geometry: LatLng(assetDetail.exifInfo!.latitude!, assetDetail.exifInfo!.longitude!),
+                        iconImage: "assetImage",
+                        iconSize: 0.2,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            )
+          : Container();
+    }
+
+    _buildLocationText() {
+      return (assetDetail.exifInfo!.city != null && assetDetail.exifInfo!.state != null)
+          ? Text(
+              "${assetDetail.exifInfo!.city}, ${assetDetail.exifInfo!.state}",
+              style: TextStyle(fontSize: 12, color: Colors.grey[200], fontWeight: FontWeight.bold),
+            )
+          : Container();
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8),
       child: ListView(
@@ -59,47 +106,8 @@ class ExifBottomSheet extends ConsumerWidget {
                         "LOCATION",
                         style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                       ),
-                      ref.watch(serverInfoProvider).mapboxInfo.isEnable
-                          ? Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16.0),
-                              child: Container(
-                                height: 150,
-                                width: MediaQuery.of(context).size.width,
-                                decoration: const BoxDecoration(
-                                  borderRadius: BorderRadius.all(Radius.circular(15)),
-                                ),
-                                child: MapboxMap(
-                                  doubleClickZoomEnabled: false,
-                                  zoomGesturesEnabled: true,
-                                  scrollGesturesEnabled: false,
-                                  accessToken: ref.watch(serverInfoProvider).mapboxInfo.mapboxSecret,
-                                  styleString: 'mapbox://styles/mapbox/streets-v11',
-                                  initialCameraPosition: CameraPosition(
-                                    zoom: 15.0,
-                                    target: LatLng(assetDetail.exifInfo!.latitude!, assetDetail.exifInfo!.longitude!),
-                                  ),
-                                  onMapCreated: (MapboxMapController mapController) async {
-                                    final ByteData bytes = await rootBundle.load("assets/location-pin.png");
-                                    final Uint8List list = bytes.buffer.asUint8List();
-                                    await mapController.addImage("assetImage", list);
-
-                                    await mapController.addSymbol(
-                                      SymbolOptions(
-                                        geometry:
-                                            LatLng(assetDetail.exifInfo!.latitude!, assetDetail.exifInfo!.longitude!),
-                                        iconImage: "assetImage",
-                                        iconSize: 0.2,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            )
-                          : Container(),
-                      Text(
-                        "${assetDetail.exifInfo!.city}, ${assetDetail.exifInfo!.state}",
-                        style: TextStyle(fontSize: 12, color: Colors.grey[200], fontWeight: FontWeight.bold),
-                      ),
+                      _buildMap(),
+                      _buildLocationText(),
                       Text(
                         "${assetDetail.exifInfo!.latitude!.toStringAsFixed(4)}, ${assetDetail.exifInfo!.longitude!.toStringAsFixed(4)}",
                         style: TextStyle(fontSize: 12, color: Colors.grey[400]),
