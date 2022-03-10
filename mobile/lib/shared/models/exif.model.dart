@@ -19,6 +19,9 @@ class ImmichExif {
   final double? exposureTime;
   final double? latitude;
   final double? longitude;
+  final String? city;
+  final String? state;
+  final String? country;
 
   ImmichExif({
     this.id,
@@ -39,6 +42,9 @@ class ImmichExif {
     this.exposureTime,
     this.latitude,
     this.longitude,
+    this.city,
+    this.state,
+    this.country,
   });
 
   ImmichExif copyWith({
@@ -60,6 +66,9 @@ class ImmichExif {
     double? exposureTime,
     double? latitude,
     double? longitude,
+    String? city,
+    String? state,
+    String? country,
   }) {
     return ImmichExif(
       id: id ?? this.id,
@@ -80,6 +89,9 @@ class ImmichExif {
       exposureTime: exposureTime ?? this.exposureTime,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      country: country ?? this.country,
     );
   }
 
@@ -103,6 +115,9 @@ class ImmichExif {
       'exposureTime': exposureTime,
       'latitude': latitude,
       'longitude': longitude,
+      'city': city,
+      'state': state,
+      'country': country,
     };
   }
 
@@ -126,6 +141,9 @@ class ImmichExif {
       exposureTime: map['exposureTime']?.toDouble(),
       latitude: map['latitude']?.toDouble(),
       longitude: map['longitude']?.toDouble(),
+      city: map['city'],
+      state: map['state'],
+      country: map['country'],
     );
   }
 
@@ -135,7 +153,7 @@ class ImmichExif {
 
   @override
   String toString() {
-    return 'ImmichExif(id: $id, assetId: $assetId, make: $make, model: $model, imageName: $imageName, exifImageWidth: $exifImageWidth, exifImageHeight: $exifImageHeight, fileSizeInByte: $fileSizeInByte, orientation: $orientation, dateTimeOriginal: $dateTimeOriginal, modifyDate: $modifyDate, lensModel: $lensModel, fNumber: $fNumber, focalLength: $focalLength, iso: $iso, exposureTime: $exposureTime, latitude: $latitude, longitude: $longitude)';
+    return 'ImmichExif(id: $id, assetId: $assetId, make: $make, model: $model, imageName: $imageName, exifImageWidth: $exifImageWidth, exifImageHeight: $exifImageHeight, fileSizeInByte: $fileSizeInByte, orientation: $orientation, dateTimeOriginal: $dateTimeOriginal, modifyDate: $modifyDate, lensModel: $lensModel, fNumber: $fNumber, focalLength: $focalLength, iso: $iso, exposureTime: $exposureTime, latitude: $latitude, longitude: $longitude, city: $city, state: $state, country: $country)';
   }
 
   @override
@@ -160,7 +178,10 @@ class ImmichExif {
         other.iso == iso &&
         other.exposureTime == exposureTime &&
         other.latitude == latitude &&
-        other.longitude == longitude;
+        other.longitude == longitude &&
+        other.city == city &&
+        other.state == state &&
+        other.country == country;
   }
 
   @override
@@ -182,6 +203,9 @@ class ImmichExif {
         iso.hashCode ^
         exposureTime.hashCode ^
         latitude.hashCode ^
-        longitude.hashCode;
+        longitude.hashCode ^
+        city.hashCode ^
+        state.hashCode ^
+        country.hashCode;
   }
 }

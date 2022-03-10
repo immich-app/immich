@@ -43,20 +43,27 @@
     </array>
 
     <key>UIUserInterfaceStyle</key>
-      <string>Light</string>
+    <string>Light</string>
 
     <key>UIViewControllerBasedStatusBarAppearance</key>
-      <true />
+    <true />
 
     <key>NSPhotoLibraryUsageDescription</key>
-      <string>We need to manage backup your photos album</string>
+    <string>We need to manage backup your photos album</string>
 
     <key>NSAppTransportSecurity</key>
-		<dict>
+    <dict>
       <key>NSAllowsArbitraryLoads</key>
-        <true/>
+      <true />
     </dict>
 
-
+    <key>io.flutter.embedded_views_preview</key>
+    <true />
+    <key>MGLMapboxMetricsEnabledSettingShownInApp</key>
+    <true />
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Enable location setting to show position of assets on map</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Enable location setting to show position of assets on map</string>
   </dict>
 </plist>

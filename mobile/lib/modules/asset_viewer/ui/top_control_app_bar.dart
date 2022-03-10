@@ -29,9 +29,9 @@ class TopControlAppBar extends StatelessWidget with PreferredSizeWidget {
           iconSize: iconSize,
           splashRadius: iconSize,
           onPressed: () {
-            print("backup");
+            print("download");
           },
-          icon: const Icon(Icons.backup_outlined),
+          icon: const Icon(Icons.cloud_download_rounded),
         ),
         IconButton(
           iconSize: iconSize,

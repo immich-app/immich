@@ -6,14 +6,18 @@ import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
 import { ConfigService } from '@nestjs/config';
 import exifr from 'exifr';
 import { readFile } from 'fs/promises';
-import fs from 'fs';
+import fs, { rmSync } from 'fs';
 import { Logger } from '@nestjs/common';
 import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
 import axios from 'axios';
 import { SmartInfoEntity } from '../../api-v1/asset/entities/smart-info.entity';
+import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
+import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
 
 @Processor('background-task')
 export class BackgroundTaskProcessor {
+  private geocodingClient: GeocodeService;
+
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
@@ -25,7 +29,13 @@ export class BackgroundTaskProcessor {
     private exifRepository: Repository<ExifEntity>,
 
     private configService: ConfigService,
-  ) {}
+  ) {
+    if (this.configService.get('ENABLE_MAPBOX')) {
+      this.geocodingClient = mapboxGeocoding({
+        accessToken: this.configService.get('MAPBOX_KEY'),
+      });
+    }
+  }
 
   @Process('extract-exif')
   async extractExif(job: Job) {
@@ -54,6 +64,26 @@ export class BackgroundTaskProcessor {
     newExif.exposureTime = exifData['ExposureTime'] || null;
     newExif.latitude = exifData['latitude'] || null;
     newExif.longitude = exifData['longitude'] || null;
+
+    // Reverse GeoCoding
+    if (this.configService.get('ENABLE_MAPBOX') && exifData['longitude'] && exifData['latitude']) {
+      const geoCodeInfo: MapiResponse = await this.geocodingClient
+        .reverseGeocode({
+          query: [exifData['longitude'], exifData['latitude']],
+          types: ['country', 'region', 'place'],
+        })
+        .send();
+
+      const res: [] = geoCodeInfo.body['features'];
+
+      const city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
+      const state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
+      const country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+
+      newExif.city = city || null;
+      newExif.state = state || null;
+      newExif.country = country || null;
+    }
 
     await this.exifRepository.save(newExif);
 

@@ -61,6 +61,15 @@ export class ExifEntity {
   @Column({ type: 'float', nullable: true })
   longitude: number;
 
+  @Column({ nullable: true })
+  city: string;
+
+  @Column({ nullable: true })
+  state: string;
+
+  @Column({ nullable: true })
+  country: string;
+
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
   asset: ExifEntity;
