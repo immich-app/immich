@@ -59,7 +59,7 @@ class ExifBottomSheet extends ConsumerWidget {
                         "LOCATION",
                         style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                       ),
-                      assetDetail.exifInfo!.latitude != null
+                      ref.watch(serverInfoProvider).mapboxInfo.isEnable
                           ? Padding(
                               padding: const EdgeInsets.symmetric(vertical: 16.0),
                               child: Container(
