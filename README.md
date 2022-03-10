@@ -38,6 +38,7 @@ This project is under heavy development, there will be continous functions, feat
 - Image Tagging/Classification based on ImageNet dataset
 - Search assets based on tags and exif data (lens, make, model, orientation)
 - Upload assets from your local computer/server using [immich cli tools](https://www.npmjs.com/package/immich)
+- Geocoding to show asset's location information on map (required MapBox registration for their generous free tier)
 
 # Development
 
@@ -59,15 +60,11 @@ cp .env.example .env
 
 Then populate the value in there.
 
+Notice that if set `ENABLE_MAPBOX` to `true`, you will have to provide `MAPBOX_KEY` for the server to run.
+
 Pay attention to the key `UPLOAD_LOCATION`, this directory must exist and is owned by the user that run the `docker-compose` command below.
 
 To start, run
-
-```bash
-docker-compose -f ./docker/docker-compose.yml up
-```
-
-To force rebuild node modules after installing new packages
 
 ```bash
 docker-compose -f ./docker/docker-compose.yml up --build -V
