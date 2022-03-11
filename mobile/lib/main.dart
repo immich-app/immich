@@ -47,6 +47,8 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
         debugPrint("[APP STATE] inactive");
         ref.watch(appStateProvider.notifier).state = AppStateEnum.inactive;
         ref.watch(websocketProvider.notifier).disconnect();
+        ref.watch(backupProvider.notifier).cancelBackup();
+
         break;
       case AppLifecycleState.paused:
         debugPrint("[APP STATE] paused");
