@@ -13,8 +13,8 @@ class LoginForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usernameController = useTextEditingController(text: 'testuser@email.com');
-    final passwordController = useTextEditingController(text: 'password');
+    final usernameController = useTextEditingController(text: '');
+    final passwordController = useTextEditingController(text: '');
     final serverEndpointController = useTextEditingController(text: 'http://192.168.1.216:2283');
 
     return Center(
