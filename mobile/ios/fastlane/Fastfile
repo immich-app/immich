@@ -21,10 +21,6 @@ platform :ios do
     build_app(scheme: "Runner",
               workspace: "Runner.xcworkspace",
               xcargs: "-allowProvisioningUpdates")
-    increment_build_number(
-                build_number: latest_testflight_build_number + 1,
-                xcodeproj: "Runner.xcodeproj"
-              )
     upload_to_testflight(
       skip_waiting_for_build_processing: true
     )
