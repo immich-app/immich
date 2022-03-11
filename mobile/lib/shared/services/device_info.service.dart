@@ -1,27 +1,18 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_udid/flutter_udid.dart';
-import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
 
 class DeviceInfoService {
   Future<Map<String, dynamic>> getDeviceInfo() async {
     // Get device info
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    String? deviceId = "";
+    String deviceId = await FlutterUdid.consistentUdid;
     String deviceType = "";
 
-    try {
-      deviceId = await FlutterUdid.consistentUdid;
+    if (Platform.isAndroid) {
       deviceType = "ANDROID";
-    } catch (e) {
-      debugPrint("Not an android device");
-    }
-
-    try {
-      deviceId = await FlutterUdid.consistentUdid;
+    } else if (Platform.isIOS) {
       deviceType = "IOS";
-      debugPrint("Device ID: $deviceId");
-    } catch (e) {
-      debugPrint("Not an ios device");
     }
 
     return {"deviceId": deviceId, "deviceType": deviceType};
