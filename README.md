@@ -2,7 +2,7 @@
   <img src="design/immich-logo.svg" width="150" title="hover text">
 </p>
 
-# IMMICH
+# Immich
 
 Self-hosted photo and video backup solution directly from your mobile phone.
 
@@ -13,11 +13,12 @@ Loading ~4000 images/videos
 ## Screenshots
 
 <p align="left">
-  <img src="design/sc1.PNG" width="150" title="Login With Custom URL">
-  <img src="design/sc2.PNG" width="150" title="Backup Setting Info">
-  <img src="design/sc4.PNG" width="150" title="Home Page">
-  <img src="design/sc3.PNG" width="150" title="Multiple seelct">
-  <img src="design/sc5.PNG" width="150" title="Multipe select group">
+  <img src="design/sc1.png" width="150" title="Login With Custom URL">
+  <img src="design/sc2.png" width="150" title="Backup Setting Info">
+  <img src="design/sc3.png" width="150" title="Multiple seelct">
+  <img src="design/sc-multiselect.png" width="150" title="Multipe select group">
+  <img src="design/sc6.png" width="150" title="EXIF Info">
+
 </p>
 
 # Note
@@ -95,14 +96,19 @@ Download `apk` in release tab and run on your phone. You can follow this guide o
 
 ### iOS
 
-- Get a MacOS
-- Download and setup Flutter development environment
-- Navigate to `mobile` folder
-- Run with release build command for best performance.
+You can download the app from Apple AppStore here:
 
-```bash
-flutter run --release
-```
+<p align="left">
+  <img src="design/ios-qr-code.png" width="250" title="Apple App Store">
+<p/>
+
+# Support
+
+If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsore**](https://github.com/sponsors/alextran1502).
+
+This is also a meaningful way to give me motivation and encounragment to continue working on the app.
+
+Cheer! 🎉
 
 # Known Issue
 
