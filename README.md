@@ -13,11 +13,10 @@ Loading ~4000 images/videos
 ## Screenshots
 
 <p align="left">
-  <img src="design/sc1.png" width="150" title="Login With Custom URL">
-  <img src="design/sc2.png" width="150" title="Backup Setting Info">
-  <img src="design/sc3.png" width="150" title="Multiple seelct">
-  <img src="design/sc-multiselect.png" width="150" title="Multipe select group">
-  <img src="design/sc6.png" width="150" title="EXIF Info">
+  <img src="design/nsc1.png" width="150" title="Login With Custom URL">
+  <img src="design/nsc2.png" width="150" title="Backup Setting Info">
+  <img src="design/nsc3.png" width="150" title="Multiple seelct">
+  <img src="design/nsc6.png" width="150" title="EXIF Info">
 
 </p>
 
