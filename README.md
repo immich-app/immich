@@ -95,7 +95,7 @@ Download `apk` in release tab and run on your phone. You can follow this guide o
 
 ### iOS
 
-You can download the app from Apple AppStore here:
+You can download the app from Apple AppStore [here](https://apps.apple.com/us/app/immich/id1613945652):
 
 <p align="left">
   <img src="design/ios-qr-code.png" width="250" title="Apple App Store">
