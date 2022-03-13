@@ -38,7 +38,8 @@ This project is under heavy development, there will be continous functions, feat
 - Image Tagging/Classification based on ImageNet dataset
 - Search assets based on tags and exif data (lens, make, model, orientation)
 - Upload assets from your local computer/server using [immich cli tools](https://www.npmjs.com/package/immich)
-- Geocoding to show asset's location information on map (required MapBox registration for their generous free tier)
+- [Optional] Reserve geocoding using Mapbox (Generous free-tier of 100,000 search/month)
+- Show asset's location information on map (OpenStreetMap).
 
 # Development
 
