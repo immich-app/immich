@@ -1,0 +1,32 @@
+name: Build APK Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile
+    steps:
+      - uses: actions/checkout@v2
+
+      # Build
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+          cache-key: flutter2.10 # optional, change this to force refresh cache
+      - run: flutter --version
+      - run: flutter pub get
+      - run: flutter build apk
+      - run: flutter build appbundle
+
+      # Upload Artifact
+      - uses: actions/upload-artifact@v2
+        with:
+          name: release-apk
+          path: mobile/build/app/outputs/apk/release/app-release.apk
