@@ -1,13 +1,10 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/immich_asset_with_exif.model.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:intl/intl.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:path/path.dart' as p;
+import 'package:latlong2/latlong.dart';
 
 class ExifBottomSheet extends ConsumerWidget {
   final ImmichAssetWithExif assetDetail;
@@ -17,7 +14,7 @@ class ExifBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     _buildMap() {
-      return ref.watch(serverInfoProvider).mapboxInfo.isEnable
+      return (assetDetail.exifInfo!.latitude != null && assetDetail.exifInfo!.longitude != null)
           ? Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: Container(
@@ -26,29 +23,32 @@ class ExifBottomSheet extends ConsumerWidget {
                 decoration: const BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(15)),
                 ),
-                child: MapboxMap(
-                  doubleClickZoomEnabled: false,
-                  zoomGesturesEnabled: true,
-                  scrollGesturesEnabled: false,
-                  accessToken: ref.watch(serverInfoProvider).mapboxInfo.mapboxSecret,
-                  styleString: 'mapbox://styles/mapbox/streets-v11',
-                  initialCameraPosition: CameraPosition(
-                    zoom: 15.0,
-                    target: LatLng(assetDetail.exifInfo!.latitude!, assetDetail.exifInfo!.longitude!),
+                child: FlutterMap(
+                  options: MapOptions(
+                    center: LatLng(assetDetail.exifInfo!.latitude!, assetDetail.exifInfo!.longitude!),
+                    zoom: 16.0,
                   ),
-                  onMapCreated: (MapboxMapController mapController) async {
-                    final ByteData bytes = await rootBundle.load("assets/location-pin.png");
-                    final Uint8List list = bytes.buffer.asUint8List();
-                    await mapController.addImage("assetImage", list);
-
-                    await mapController.addSymbol(
-                      SymbolOptions(
-                        geometry: LatLng(assetDetail.exifInfo!.latitude!, assetDetail.exifInfo!.longitude!),
-                        iconImage: "assetImage",
-                        iconSize: 0.2,
-                      ),
-                    );
-                  },
+                  layers: [
+                    TileLayerOptions(
+                      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                      subdomains: ['a', 'b', 'c'],
+                      attributionBuilder: (_) {
+                        return const Text(
+                          "© OpenStreetMap",
+                          style: TextStyle(fontSize: 10),
+                        );
+                      },
+                    ),
+                    MarkerLayerOptions(
+                      markers: [
+                        Marker(
+                          anchorPos: AnchorPos.align(AnchorAlign.top),
+                          point: LatLng(assetDetail.exifInfo!.latitude!, assetDetail.exifInfo!.longitude!),
+                          builder: (ctx) => const Image(image: AssetImage('assets/location-pin.png')),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             )
