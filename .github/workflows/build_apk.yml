@@ -30,7 +30,7 @@ jobs:
           echo "${{secrets.SIGNING_KEY}}" > release.keystore.asc
           gpg --decrypt --passphrase "${{secrets.KEY_STORE_PASSWORD}}" --batch release.keystore.asc > android/key.jks
       - name: Create key.properties
-        run: touch android/key.properties && echo "storePassword=<storePassword> keyPassword=<keyPassword> keyAlias=<keyAlias> storeFile=../key.jks" > android/key.properties
+        run: touch android/key.properties && echo "storePassword=<storePassword> keyPassword=<keyPassword> keyAlias=<keyAlias> storeFile=./key.jks" > android/key.properties
       - run: flutter --version
       - run: flutter pub get
       - run: flutter build apk
