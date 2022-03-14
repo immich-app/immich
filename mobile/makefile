@@ -6,3 +6,6 @@ watch:
 
 create_app_icon:
 	flutter pub run flutter_launcher_icons:main
+
+build_release_android:
+	flutter build appbundle
