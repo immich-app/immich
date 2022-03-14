@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/teamcity/http/immichci.little-home.net/s/Immich_BuildAndPublishIOSToTestFlight.svg?style=flat-square&label=iOS&logo=teamcity" alt="iOS Build"/>
   </a>
   <a href="https://actions-badge.atrox.dev/alextran1502/immich/goto?ref=main">
-    <img alt="Build Status" src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Falextran1502%2Fimmich%2Fbadge%3Fref%3Dmain&style=flat-square" />
+    <img alt="Build Status" src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Falextran1502%2Fimmich%2Fbadge%3Fref%3Dmain&style=flat-square&label=Server Docker" />
   </a>
   
   <br/>  
