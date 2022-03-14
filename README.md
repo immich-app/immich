@@ -2,9 +2,9 @@
   <img src="design/immich-logo.svg" width="150" title="hover text">
 </p>
 
-## Build Status
-
-Android:
+| Android Build | iOS Build |
+| --- | --- |
+| [![Build Status](<https://immichci.little-home.net/app/rest/builds/buildType:(id:Immich_BuildAndroidAndGetArtifact)/statusIcon>)](https://immichci.little-home.net/viewType.html?buildTypeId=Immich_BuildAndroidAndGetArtifact&guest=1) | [![Build Status](<https://immichci.little-home.net/app/rest/builds/buildType:(id:Immich_BuildAndroidAndGetArtifact)/statusIcon>)](https://immichci.little-home.net/viewType.html?buildTypeId=Immich_BuildAndroidAndGetArtifact&guest=1) |
 
 # Immich
 
