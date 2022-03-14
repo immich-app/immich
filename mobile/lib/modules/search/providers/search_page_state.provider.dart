@@ -120,6 +120,7 @@ class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
   }
 
   void getSuggestedSearchTerms() async {
+    print("Get suggested search term");
     var userSuggestedSearchTerms = await _searchService.getUserSuggestedSearchTerms();
 
     state = state.copyWith(userSuggestedSearchTerms: userSuggestedSearchTerms);
