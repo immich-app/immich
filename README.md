@@ -1,6 +1,7 @@
 <p align="center">
   <img src="design/immich-logo.svg" width="150" title="hover text">
 </p>
+## Build Status
 
 # Immich
 
