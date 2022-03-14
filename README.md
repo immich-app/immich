@@ -1,14 +1,14 @@
 <p align="center">
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg?color=3F51B5&style=flat-square" alt="License: MIT"></a>
-  <a href="https://github.com/alextran1502/immich"><img src="https://img.shields.io/github/stars/alextran1502/immich.svg?style=flat-square&logo=github&color=3F51B5&label=stars" alt="Star on Github"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg?color=3F51B5&style=flat-square&label=License&logoColor=000000&labelColor=ffffff" alt="License: MIT"></a>
+  <a href="https://github.com/alextran1502/immich"><img src="https://img.shields.io/github/stars/alextran1502/immich.svg?style=flat-square&logo=github&color=3F51B5&label=Stars&logoColor=000000&labelColor=ffffff" alt="Star on Github"></a>
   <a href="https://immichci.little-home.net/viewType.html?buildTypeId=Immich_BuildAndroidAndGetArtifact&guest=1">
-    <img src="https://img.shields.io/teamcity/http/immichci.little-home.net/s/Immich_BuildAndroidAndGetArtifact.svg?style=flat-square&label=Android&logo=teamcity" alt="Android Build"/>
+    <img src="https://img.shields.io/teamcity/http/immichci.little-home.net/s/Immich_BuildAndroidAndGetArtifact.svg?style=flat-square&label=Android&logo=teamcity&logoColor=000000&labelColor=ffffff" alt="Android Build"/>
   </a>
   <a href="https://immichci.little-home.net/viewType.html?buildTypeId=Immich_BuildAndPublishIOSToTestFlight&guest=1">
-    <img src="https://img.shields.io/teamcity/http/immichci.little-home.net/s/Immich_BuildAndPublishIOSToTestFlight.svg?style=flat-square&label=iOS&logo=teamcity" alt="iOS Build"/>
+    <img src="https://img.shields.io/teamcity/http/immichci.little-home.net/s/Immich_BuildAndPublishIOSToTestFlight.svg?style=flat-square&label=iOS&logo=teamcity&logoColor=000000&labelColor=ffffff" alt="iOS Build"/>
   </a>
   <a href="https://actions-badge.atrox.dev/alextran1502/immich/goto?ref=main">
-    <img alt="Build Status" src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Falextran1502%2Fimmich%2Fbadge%3Fref%3Dmain&style=flat-square&label=Server Docker" />
+    <img alt="Build Status" src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Falextran1502%2Fimmich%2Fbadge%3Fref%3Dmain&style=flat-square&label=Server Docker&logo=docker&labelColor=ffffff" />
   </a>
   
   <br/>  
