@@ -2,11 +2,11 @@
   <img src="design/immich-logo.svg" width="150" title="hover text">
 </p>
 
-| Android Build | iOS Build |
-| --- | --- |
-| [![Build Status](<https://immichci.little-home.net/app/rest/builds/buildType:(id:Immich_BuildAndroidAndGetArtifact)/statusIcon>)](https://immichci.little-home.net/viewType.html?buildTypeId=Immich_BuildAndroidAndGetArtifact&guest=1) | [![Build Status](<https://immichci.little-home.net/app/rest/builds/buildType:(id:Immich_BuildAndroidAndGetArtifact)/statusIcon>)](https://immichci.little-home.net/viewType.html?buildTypeId=Immich_BuildAndroidAndGetArtifact&guest=1) |
-
 # Immich
+
+| Android Build | iOS Build | Server Docker Build |
+| --- | --- | --- |
+| [![Build Status](<https://immichci.little-home.net/app/rest/builds/buildType:(id:Immich_BuildAndroidAndGetArtifact)/statusIcon>)](https://immichci.little-home.net/viewType.html?buildTypeId=Immich_BuildAndroidAndGetArtifact&guest=1) | [![Build Status](<https://immichci.little-home.net/app/rest/builds/buildType:(id:Immich_BuildAndroidAndGetArtifact)/statusIcon>)](https://immichci.little-home.net/viewType.html?buildTypeId=Immich_BuildAndroidAndGetArtifact&guest=1) | ![example workflow](https://github.com/alextran1502/immich/actions/workflows/build_push_server.yml/badge.svg) |
 
 Self-hosted photo and video backup solution directly from your mobile phone.
 
