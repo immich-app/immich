@@ -1,4 +1,4 @@
-package com.example.mobile
+package app.alextran.immich
 
 import io.flutter.embedding.android.FlutterActivity
 
