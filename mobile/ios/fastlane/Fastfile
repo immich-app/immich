@@ -18,6 +18,9 @@ default_platform(:ios)
 platform :ios do
   desc "iOS deployment"
   lane :beta do
+    increment_build_number({
+      build_number: latest_testflight_build_number + 1
+    })
     build_app(scheme: "Runner",
               workspace: "Runner.xcworkspace",
               xcargs: "-allowProvisioningUpdates")
