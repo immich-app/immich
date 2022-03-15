@@ -54,7 +54,7 @@ final searchPageStateProvider = StateNotifierProvider<SearchPageStateNotifier, S
   return SearchPageStateNotifier();
 });
 
-final getCuratedLocationProvider = FutureProvider<List<CuratedLocation>>((ref) async {
+final getCuratedLocationProvider = FutureProvider.autoDispose<List<CuratedLocation>>((ref) async {
   final SearchService _searchService = SearchService();
 
   var curatedLocation = await _searchService.getCuratedLocation();
