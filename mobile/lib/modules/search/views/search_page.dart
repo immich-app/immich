@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/search/models/curated_location.model.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
@@ -16,6 +17,7 @@ class SearchPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
+    AsyncValue<List<CuratedLocation>> curatedLocation = ref.watch(getCuratedLocationProvider);
 
     useEffect(() {
       searchFocusNode = FocusNode();
@@ -41,6 +43,18 @@ class SearchPage extends HookConsumerWidget {
         },
         child: Stack(
           children: [
+            curatedLocation.when(
+              loading: () => const CircularProgressIndicator(),
+              error: (err, stack) => Text('Error: $err'),
+              data: (curatedLocations) {
+                return ListView.builder(
+                  itemCount: curatedLocation.value?.length,
+                  itemBuilder: ((context, index) {
+                    return Text(curatedLocations[index].city);
+                  }),
+                );
+              },
+            ),
             const Center(
               child: Text("Start typing to search for your photos"),
             ),

@@ -101,7 +101,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
         ),
       ),
       routeInformationParser: _immichRouter.defaultRouteParser(),
-      routerDelegate: _immichRouter.delegate(navigatorObservers: () => [TabNavigationObserver()]),
+      routerDelegate: _immichRouter.delegate(navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
     );
   }
 }
