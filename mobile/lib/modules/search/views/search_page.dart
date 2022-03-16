@@ -55,6 +55,9 @@ class SearchPage extends HookConsumerWidget {
                       return ThumbnailWithInfo(
                         imageUrl: thumbnailRequestUrl,
                         textInfo: locationInfo.city,
+                        onTap: () {
+                          AutoRouter.of(context).push(SearchResultRoute(searchTerm: locationInfo.city));
+                        },
                       );
                     }),
                   ),
@@ -66,13 +69,15 @@ class SearchPage extends HookConsumerWidget {
                     scrollDirection: Axis.horizontal,
                     itemCount: 1,
                     itemBuilder: ((context, index) {
-                      return const ThumbnailWithInfo(
+                      return ThumbnailWithInfo(
                         imageUrl:
                             'https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60',
                         textInfo: 'No Places Info Available',
+                        onTap: () {},
                       );
                     }),
-                  ));
+                  ),
+                );
         },
       );
     }
@@ -110,55 +115,62 @@ class SearchPage extends HookConsumerWidget {
 }
 
 class ThumbnailWithInfo extends StatelessWidget {
-  const ThumbnailWithInfo({Key? key, required this.textInfo, required this.imageUrl}) : super(key: key);
+  const ThumbnailWithInfo({Key? key, required this.textInfo, required this.imageUrl, required this.onTap})
+      : super(key: key);
 
   final String textInfo;
   final String imageUrl;
+  final Function onTap;
 
   @override
   Widget build(BuildContext context) {
     var box = Hive.box(userInfoBox);
 
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width / 3,
-        height: MediaQuery.of(context).size.width / 3,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            Container(
-              foregroundDecoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.black26,
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: CachedNetworkImage(
-                  width: 150,
-                  height: 150,
-                  fit: BoxFit.cover,
-                  imageUrl: imageUrl,
-                  httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+    return GestureDetector(
+      onTap: () {
+        onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(right: 8.0),
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width / 3,
+          height: MediaQuery.of(context).size.width / 3,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              Container(
+                foregroundDecoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.black26,
                 ),
-              ),
-            ),
-            Positioned(
-              bottom: 8,
-              left: 10,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width / 3,
-                child: Text(
-                  textInfo,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: CachedNetworkImage(
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.cover,
+                    imageUrl: imageUrl,
+                    httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
                   ),
                 ),
               ),
-            ),
-          ],
+              Positioned(
+                bottom: 8,
+                left: 10,
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width / 3,
+                  child: Text(
+                    textInfo,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
