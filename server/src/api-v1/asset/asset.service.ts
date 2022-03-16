@@ -307,13 +307,12 @@ export class AssetService {
   async getCuratedLocation(authUser: AuthUserDto) {
     const rows = await this.assetRepository.query(
       `
-      select distinct on (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
-      from assets a
-      left join exif e on a.id = e."assetId"
-      where a."userId" = $1 
-      and e.city is not null
-      and a.type = 'IMAGE'
-      ;
+        select distinct on (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
+        from assets a
+        left join exif e on a.id = e."assetId"
+        where a."userId" = $1 
+        and e.city is not null
+        and a.type = 'IMAGE';
       `,
       [authUser.id],
     );
