@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
@@ -100,7 +101,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
         ),
       ),
       routeInformationParser: _immichRouter.defaultRouteParser(),
-      routerDelegate: _immichRouter.delegate(),
+      routerDelegate: _immichRouter.delegate(navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
     );
   }
 }

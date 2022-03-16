@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/modules/search/models/curated_location.model.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 
@@ -34,6 +35,21 @@ class SearchService {
     } catch (e) {
       debugPrint("[ERROR] [searchAsset] ${e.toString()}");
       return null;
+    }
+  }
+
+  Future<List<CuratedLocation>?> getCuratedLocation() async {
+    try {
+      var res = await _networkService.getRequest(url: "asset/allLocation");
+
+      List<dynamic> decodedData = jsonDecode(res.toString());
+
+      List<CuratedLocation> result = List.from(decodedData.map((a) => CuratedLocation.fromMap(a)));
+
+      return result;
+    } catch (e) {
+      debugPrint("[ERROR] [getCuratedLocation] ${e.toString()}");
+      throw Error();
     }
   }
 }

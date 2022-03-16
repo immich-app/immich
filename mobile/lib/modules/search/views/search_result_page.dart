@@ -7,7 +7,7 @@ import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/home/ui/image_grid.dart';
 import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
-import 'package:immich_mobile/modules/search/providers/search_result_page_state.provider.dart';
+import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 
 class SearchResultPage extends HookConsumerWidget {
@@ -28,7 +28,7 @@ class SearchResultPage extends HookConsumerWidget {
     useEffect(() {
       searchFocusNode = FocusNode();
 
-      Future.delayed(Duration.zero, () => ref.read(searchResultPageStateProvider.notifier).search(searchTerm));
+      Future.delayed(Duration.zero, () => ref.read(searchResultPageProvider.notifier).search(searchTerm));
       return () => searchFocusNode.dispose();
     }, []);
 
@@ -37,7 +37,7 @@ class SearchResultPage extends HookConsumerWidget {
       searchFocusNode.unfocus();
       isNewSearch.value = false;
       currentSearchTerm.value = newSearchTerm;
-      ref.watch(searchResultPageStateProvider.notifier).search(newSearchTerm);
+      ref.watch(searchResultPageProvider.notifier).search(newSearchTerm);
     }
 
     _buildTextField() {
@@ -99,7 +99,7 @@ class SearchResultPage extends HookConsumerWidget {
     }
 
     _buildSearchResult() {
-      var searchResultPageState = ref.watch(searchResultPageStateProvider);
+      var searchResultPageState = ref.watch(searchResultPageProvider);
       var assetGroupByDateTime = ref.watch(searchResultGroupByDateTimeProvider);
 
       if (searchResultPageState.isError) {
