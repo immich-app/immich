@@ -36,6 +36,7 @@ dependencies:
   # mapbox_gl: ^0.15.0
   flutter_map: ^0.14.0
   flutter_udid: ^2.0.0
+  package_info_plus: ^1.4.0
   
 dev_dependencies:
   flutter_test:
