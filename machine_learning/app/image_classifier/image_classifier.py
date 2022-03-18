@@ -2,6 +2,7 @@ from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
 import numpy as np
+from PIL import Image
 
 IMG_SIZE = 299
 PREDICTION_MODEL = InceptionV3(weights='imagenet')
@@ -9,7 +10,11 @@ PREDICTION_MODEL = InceptionV3(weights='imagenet')
 
 def classify_image(image_path: str):
     img_path = f'./app/{image_path}'
-    img = image.load_img(img_path, target_size=(IMG_SIZE, IMG_SIZE))
+    # img = image.load_img(img_path, target_size=(IMG_SIZE, IMG_SIZE))
+
+    im = Image.open(img_path)
+    print("IMAGE SIZE ", im.size)
+    img = im.resize((IMG_SIZE, IMG_SIZE))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x = preprocess_input(x)
