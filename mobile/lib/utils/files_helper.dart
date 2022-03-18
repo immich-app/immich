@@ -32,6 +32,9 @@ class FileHelper {
       case 'heif':
         return {"type": "image", "subType": "heif"};
 
+      case 'dng':
+        return {"type": "image", "subType": "dng"};
+
       default:
         return {"type": "unsupport", "subType": "unsupport"};
     }
