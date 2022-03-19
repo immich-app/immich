@@ -43,12 +43,19 @@ export class ImageOptimizeProcessor {
         console.error('Error Reading File');
       }
 
-      if (savedAsset.mimeType == 'image/heic' || savedAsset.mimeType == 'image/heif') {
+      // Special Assets Type - ios
+      if (
+        savedAsset.mimeType == 'image/heic' ||
+        savedAsset.mimeType == 'image/heif' ||
+        savedAsset.mimeType == 'image/dng'
+      ) {
         let desitnation = '';
         if (savedAsset.mimeType == 'image/heic') {
           desitnation = resizePath.replace('.HEIC', '.jpeg');
-        } else {
+        } else if (savedAsset.mimeType == 'image/heif') {
           desitnation = resizePath.replace('.HEIF', '.jpeg');
+        } else if (savedAsset.mimeType == 'image/dng') {
+          desitnation = resizePath.replace('.DNG', '.jpeg');
         }
 
         sharp(data)
