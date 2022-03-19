@@ -1,18 +1,36 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-class ProfileDrawer extends ConsumerWidget {
+class ProfileDrawer extends HookConsumerWidget {
   const ProfileDrawer({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     AuthenticationState _authState = ref.watch(authenticationProvider);
+    final appInfo = useState({});
+
+    _getPackageInfo() async {
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+      appInfo.value = {
+        "version": packageInfo.version,
+        "buildNumber": packageInfo.buildNumber,
+      };
+    }
+
+    useEffect(() {
+      _getPackageInfo();
+
+      return null;
+    }, []);
 
     return Drawer(
       shape: const RoundedRectangleBorder(
@@ -21,50 +39,68 @@ class ProfileDrawer extends ConsumerWidget {
           bottomRight: Radius.circular(5),
         ),
       ),
-      child: ListView(
-        padding: EdgeInsets.zero,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Image(
-                  image: AssetImage('assets/immich-logo-no-outline.png'),
-                  width: 50,
-                  filterQuality: FilterQuality.high,
+          ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
                 ),
-                const Padding(padding: EdgeInsets.all(8)),
-                Text(
-                  _authState.userEmail,
-                  style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
-                )
-              ],
-            ),
-          ),
-          ListTile(
-            tileColor: Colors.grey[100],
-            leading: const Icon(
-              Icons.logout_rounded,
-              color: Colors.black54,
-            ),
-            title: const Text(
-              "Sign Out",
-              style: TextStyle(color: Colors.black54, fontSize: 14),
-            ),
-            onTap: () async {
-              bool res = await ref.read(authenticationProvider.notifier).logout();
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Image(
+                      image: AssetImage('assets/immich-logo-no-outline.png'),
+                      width: 50,
+                      filterQuality: FilterQuality.high,
+                    ),
+                    const Padding(padding: EdgeInsets.all(8)),
+                    Text(
+                      _authState.userEmail,
+                      style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
+                    )
+                  ],
+                ),
+              ),
+              ListTile(
+                tileColor: Colors.grey[100],
+                leading: const Icon(
+                  Icons.logout_rounded,
+                  color: Colors.black54,
+                ),
+                title: const Text(
+                  "Sign Out",
+                  style: TextStyle(color: Colors.black54, fontSize: 14),
+                ),
+                onTap: () async {
+                  bool res = await ref.read(authenticationProvider.notifier).logout();
 
-              if (res) {
-                ref.watch(backupProvider.notifier).cancelBackup();
-                ref.watch(assetProvider.notifier).clearAllAsset();
-                ref.watch(websocketProvider.notifier).disconnect();
-                AutoRouter.of(context).popUntilRoot();
-              }
-            },
+                  if (res) {
+                    ref.watch(backupProvider.notifier).cancelBackup();
+                    ref.watch(assetProvider.notifier).clearAllAsset();
+                    ref.watch(websocketProvider.notifier).disconnect();
+                    AutoRouter.of(context).popUntilRoot();
+                  }
+                },
+              )
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "Version V${appInfo.value["version"]}+${appInfo.value["buildNumber"]}",
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[400],
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
           )
         ],
       ),
