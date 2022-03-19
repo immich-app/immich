@@ -15,7 +15,7 @@ export const immichAppConfig: ConfigModuleOptions = {
     MAPBOX_KEY: Joi.any().when('ENABLE_MAPBOX', {
       is: true,
       then: Joi.string().required(),
-      otherwise: Joi.string().optional,
+      otherwise: Joi.string().optional(),
     }),
   }),
 };
