@@ -37,12 +37,10 @@ export class AssetController {
   constructor(
     private wsCommunicateionGateway: CommunicationGateway,
     private assetService: AssetService,
-    private assetOptimizeService: AssetOptimizeService,
     private backgroundTaskService: BackgroundTaskService,
   ) {}
 
   @Post('upload')
-  // @UseInterceptors(FilesInterceptor('files', 30, multerOption))
   @UseInterceptors(
     FileFieldsInterceptor(
       [
@@ -62,16 +60,8 @@ export class AssetController {
 
       if (uploadFiles.thumbnailData != null) {
         await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);
-        await this.backgroundTaskService.tagImage(file.path, savedAsset);
+        await this.backgroundTaskService.tagImage(uploadFiles.thumbnailData[0].path, savedAsset);
       }
-      // if (savedAsset && savedAsset.type == AssetType.IMAGE) {
-      //   await this.assetOptimizeService.resizeImage(savedAsset);
-      //   await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
-      // }
-
-      // if (savedAsset && savedAsset.type == AssetType.VIDEO) {
-      //   await this.assetOptimizeService.getVideoThumbnail(savedAsset, file.originalname);
-      // }
 
       await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
 
