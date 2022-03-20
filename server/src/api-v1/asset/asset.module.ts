@@ -8,9 +8,12 @@ import { AssetOptimizeService } from '../../modules/image-optimize/image-optimiz
 import { BullModule } from '@nestjs/bull';
 import { BackgroundTaskModule } from '../../modules/background-task/background-task.module';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
+import { CommunicationModule } from '../communication/communication.module';
 
 @Module({
   imports: [
+    CommunicationModule,
+
     BullModule.registerQueue({
       name: 'optimize',
       defaultJobOptions: {

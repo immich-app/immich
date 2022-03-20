@@ -23,17 +23,33 @@ export const multerOption: MulterOptions = {
     destination: (req: Request, file: Express.Multer.File, cb: any) => {
       const uploadPath = multerConfig.dest;
 
-      const userPath = `${uploadPath}/${req.user['id']}/original/${req.body['deviceId']}`;
+      if (file.fieldname == 'assetData') {
+        const originalUploadFolder = `${uploadPath}/${req.user['id']}/original/${req.body['deviceId']}`;
 
-      if (!existsSync(userPath)) {
-        mkdirSync(userPath, { recursive: true });
+        if (!existsSync(originalUploadFolder)) {
+          mkdirSync(originalUploadFolder, { recursive: true });
+        }
+
+        cb(null, originalUploadFolder);
+      } else if (file.fieldname == 'thumbnailData') {
+        const thumbnailUploadFolder = `${uploadPath}/${req.user['id']}/thumb/${req.body['deviceId']}`;
+
+        if (!existsSync(thumbnailUploadFolder)) {
+          mkdirSync(thumbnailUploadFolder, { recursive: true });
+        }
+
+        cb(null, thumbnailUploadFolder);
       }
-
-      cb(null, userPath);
     },
 
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
-      cb(null, `${file.originalname.split('.')[0]}${req.body['fileExtension']}`);
+      // console.log(req, file);
+
+      if (file.fieldname == 'assetData') {
+        cb(null, `${file.originalname.split('.')[0]}${req.body['fileExtension']}`);
+      } else if (file.fieldname == 'thumbnailData') {
+        cb(null, `${file.originalname.split('.')[0]}.jpeg`);
+      }
     },
   }),
 };
