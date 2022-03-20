@@ -30,9 +30,13 @@ class BackupService {
       Function(int, int) uploadProgress) async {
     var dio = Dio();
     dio.interceptors.add(AuthenticatedRequestInterceptor());
+
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
+
+    MultipartFile assetRawUploadData;
+    MultipartFile thumbnailUploadData;
 
     for (var entity in assetList) {
       try {
@@ -43,12 +47,20 @@ class BackupService {
         }
 
         if (file != null) {
+          FormData formData;
           String originalFileName = await entity.titleAsync;
           String fileNameWithoutPath = originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
           var mimeType = FileHelper.getMimeType(file.path);
-
-          var formData = FormData.fromMap({
+          assetRawUploadData = await MultipartFile.fromFile(
+            file.path,
+            filename: fileNameWithoutPath,
+            contentType: MediaType(
+              mimeType["type"],
+              mimeType["subType"],
+            ),
+          );
+          formData = FormData.fromMap({
             'deviceAssetId': entity.id,
             'deviceId': deviceId,
             'assetType': _getAssetType(entity.type),
@@ -57,17 +69,35 @@ class BackupService {
             'isFavorite': entity.isFavorite,
             'fileExtension': fileExtension,
             'duration': entity.videoDuration,
-            'files': [
-              await MultipartFile.fromFile(
-                file.path,
-                filename: fileNameWithoutPath,
-                contentType: MediaType(
-                  mimeType["type"],
-                  mimeType["subType"],
-                ),
-              ),
-            ]
+            'assetData': [assetRawUploadData]
           });
+
+          // Build thumbnail multipart data
+          var thumbnailData = await entity.thumbDataWithSize(1280, 720);
+          if (thumbnailData != null) {
+            thumbnailUploadData = MultipartFile.fromBytes(
+              List.from(thumbnailData),
+              filename: fileNameWithoutPath,
+              contentType: MediaType(
+                "image",
+                "jpeg",
+              ),
+            );
+
+            // Send thumbnail data if it is exist
+            formData = FormData.fromMap({
+              'deviceAssetId': entity.id,
+              'deviceId': deviceId,
+              'assetType': _getAssetType(entity.type),
+              'createdAt': entity.createDateTime.toIso8601String(),
+              'modifiedAt': entity.modifiedDateTime.toIso8601String(),
+              'isFavorite': entity.isFavorite,
+              'fileExtension': fileExtension,
+              'duration': entity.videoDuration,
+              'thumbnailData': [thumbnailUploadData],
+              'assetData': [assetRawUploadData]
+            });
+          }
 
           Response res = await dio.post(
             '$savedEndpoint/asset/upload',
