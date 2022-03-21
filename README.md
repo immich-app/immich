@@ -47,8 +47,8 @@ This project is under heavy development, there will be continous functions, feat
 
 # Features
 
-- Upload assets(videos/images).
-- View assets.
+- Upload and view assets(videos/images).
+- Multi-user supported.
 - Quick navigation with drag scroll bar.
 - Auto Backup.
 - Support HEIC/HEIF Backup.
@@ -59,6 +59,7 @@ This project is under heavy development, there will be continous functions, feat
 - Upload assets from your local computer/server using [immich cli tools](https://www.npmjs.com/package/immich)
 - [Optional] Reserve geocoding using Mapbox (Generous free-tier of 100,000 search/month)
 - Show asset's location information on map (OpenStreetMap).
+- Show curated places on the search page
 
 # Development
 
