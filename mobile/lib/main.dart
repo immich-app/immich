@@ -7,6 +7,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'constants/hive_box.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -43,7 +44,10 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
         ref.watch(backupProvider.notifier).resumeBackup();
         ref.watch(websocketProvider.notifier).connect();
         ref.watch(assetProvider.notifier).getAllAsset();
+        ref.watch(serverInfoProvider.notifier).getServerVersion();
+
         break;
+
       case AppLifecycleState.inactive:
         debugPrint("[APP STATE] inactive");
         ref.watch(appStateProvider.notifier).state = AppStateEnum.inactive;
@@ -51,10 +55,12 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
         ref.watch(backupProvider.notifier).cancelBackup();
 
         break;
+
       case AppLifecycleState.paused:
         debugPrint("[APP STATE] paused");
         ref.watch(appStateProvider.notifier).state = AppStateEnum.paused;
         break;
+
       case AppLifecycleState.detached:
         debugPrint("[APP STATE] detached");
         ref.watch(appStateProvider.notifier).state = AppStateEnum.detached;

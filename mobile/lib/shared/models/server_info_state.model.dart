@@ -7,21 +7,26 @@ class ServerInfoState {
   final MapboxInfo mapboxInfo;
   final ServerVersion serverVersion;
   final bool isVersionMismatch;
+  final String versionMismatchErrorMessage;
+
   ServerInfoState({
     required this.mapboxInfo,
     required this.serverVersion,
     required this.isVersionMismatch,
+    required this.versionMismatchErrorMessage,
   });
 
   ServerInfoState copyWith({
     MapboxInfo? mapboxInfo,
     ServerVersion? serverVersion,
     bool? isVersionMismatch,
+    String? versionMismatchErrorMessage,
   }) {
     return ServerInfoState(
       mapboxInfo: mapboxInfo ?? this.mapboxInfo,
       serverVersion: serverVersion ?? this.serverVersion,
       isVersionMismatch: isVersionMismatch ?? this.isVersionMismatch,
+      versionMismatchErrorMessage: versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
     );
   }
 
@@ -30,6 +35,7 @@ class ServerInfoState {
       'mapboxInfo': mapboxInfo.toMap(),
       'serverVersion': serverVersion.toMap(),
       'isVersionMismatch': isVersionMismatch,
+      'versionMismatchErrorMessage': versionMismatchErrorMessage,
     };
   }
 
@@ -38,6 +44,7 @@ class ServerInfoState {
       mapboxInfo: MapboxInfo.fromMap(map['mapboxInfo']),
       serverVersion: ServerVersion.fromMap(map['serverVersion']),
       isVersionMismatch: map['isVersionMismatch'] ?? false,
+      versionMismatchErrorMessage: map['versionMismatchErrorMessage'] ?? '',
     );
   }
 
@@ -46,8 +53,9 @@ class ServerInfoState {
   factory ServerInfoState.fromJson(String source) => ServerInfoState.fromMap(json.decode(source));
 
   @override
-  String toString() =>
-      'ServerInfoState(mapboxInfo: $mapboxInfo, serverVersion: $serverVersion, isVersionMismatch: $isVersionMismatch)';
+  String toString() {
+    return 'ServerInfoState(mapboxInfo: $mapboxInfo, serverVersion: $serverVersion, isVersionMismatch: $isVersionMismatch, versionMismatchErrorMessage: $versionMismatchErrorMessage)';
+  }
 
   @override
   bool operator ==(Object other) {
@@ -56,9 +64,15 @@ class ServerInfoState {
     return other is ServerInfoState &&
         other.mapboxInfo == mapboxInfo &&
         other.serverVersion == serverVersion &&
-        other.isVersionMismatch == isVersionMismatch;
+        other.isVersionMismatch == isVersionMismatch &&
+        other.versionMismatchErrorMessage == versionMismatchErrorMessage;
   }
 
   @override
-  int get hashCode => mapboxInfo.hashCode ^ serverVersion.hashCode ^ isVersionMismatch.hashCode;
+  int get hashCode {
+    return mapboxInfo.hashCode ^
+        serverVersion.hashCode ^
+        isVersionMismatch.hashCode ^
+        versionMismatchErrorMessage.hashCode;
+  }
 }

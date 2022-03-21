@@ -34,8 +34,6 @@ export class ServerInfoController {
 
   @Get('/version')
   async getServerVersion() {
-    return {
-      serverVersion: serverVersion,
-    };
+    return serverVersion;
   }
 }

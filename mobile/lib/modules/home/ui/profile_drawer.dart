@@ -5,7 +5,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -15,6 +17,8 @@ class ProfileDrawer extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     AuthenticationState _authState = ref.watch(authenticationProvider);
+    ServerInfoState _serverInfoState = ref.watch(serverInfoProvider);
+
     final appInfo = useState({});
 
     _getPackageInfo() async {
@@ -92,13 +96,43 @@ class ProfileDrawer extends HookConsumerWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "Version V${appInfo.value["version"]}+${appInfo.value["buildNumber"]}",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[400],
-                fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.italic,
+            child: Card(
+              color: Colors.grey[100],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          _serverInfoState.isVersionMismatch
+                              ? _serverInfoState.versionMismatchErrorMessage
+                              : "Client and Server is up-to-date",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                      ),
+                      const Divider(),
+                      Text(
+                        "App Version V${appInfo.value["version"]}+${appInfo.value["buildNumber"]}",
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Divider(),
+                      Text(
+                        "Server Version V${_serverInfoState.serverVersion.major}.${_serverInfoState.serverVersion.minor}.${_serverInfoState.serverVersion.patch}",
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ]),
               ),
             ),
           )

@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 
 class TabNavigationObserver extends AutoRouterObserver {
   /// Riverpod Instance
@@ -26,5 +27,7 @@ class TabNavigationObserver extends AutoRouterObserver {
       // Refresh Location State
       ref.refresh(getCuratedLocationProvider);
     }
+
+    ref.watch(serverInfoProvider.notifier).getServerVersion();
   }
 }

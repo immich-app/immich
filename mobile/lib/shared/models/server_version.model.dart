@@ -1,28 +1,47 @@
 import 'dart:convert';
 
 class ServerVersion {
-  final String serverVersion;
+  final int major;
+  final int minor;
+  final int patch;
+  final int build;
+
   ServerVersion({
-    required this.serverVersion,
+    required this.major,
+    required this.minor,
+    required this.patch,
+    required this.build,
   });
 
   ServerVersion copyWith({
-    String? serverVersion,
+    int? major,
+    int? minor,
+    int? patch,
+    int? build,
   }) {
     return ServerVersion(
-      serverVersion: serverVersion ?? this.serverVersion,
+      major: major ?? this.major,
+      minor: minor ?? this.minor,
+      patch: patch ?? this.patch,
+      build: build ?? this.build,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'serverVersion': serverVersion,
+      'major': major,
+      'minor': minor,
+      'patch': patch,
+      'build': build,
     };
   }
 
   factory ServerVersion.fromMap(Map<String, dynamic> map) {
     return ServerVersion(
-      serverVersion: map['serverVersion'] ?? '',
+      major: map['major']?.toInt() ?? 0,
+      minor: map['minor']?.toInt() ?? 0,
+      patch: map['patch']?.toInt() ?? 0,
+      build: map['build']?.toInt() ?? 0,
     );
   }
 
@@ -31,15 +50,23 @@ class ServerVersion {
   factory ServerVersion.fromJson(String source) => ServerVersion.fromMap(json.decode(source));
 
   @override
-  String toString() => 'ServerVersion(serverVersion: $serverVersion)';
+  String toString() {
+    return 'ServerVersion(major: $major, minor: $minor, patch: $patch, build: $build)';
+  }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is ServerVersion && other.serverVersion == serverVersion;
+    return other is ServerVersion &&
+        other.major == major &&
+        other.minor == minor &&
+        other.patch == patch &&
+        other.build == build;
   }
 
   @override
-  int get hashCode => serverVersion.hashCode;
+  int get hashCode {
+    return major.hashCode ^ minor.hashCode ^ patch.hashCode ^ build.hashCode;
+  }
 }
