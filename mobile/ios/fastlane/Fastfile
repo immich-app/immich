@@ -30,7 +30,7 @@ platform :ios do
   end
 
   desc "iOS Release"
-  land :release do 
+  lane :release do 
     increment_version_number(
       version_number: "1.3.0"
     )
