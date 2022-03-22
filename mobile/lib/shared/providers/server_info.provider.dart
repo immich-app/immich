@@ -1,59 +1,19 @@
-import 'dart:convert';
-
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/shared/models/mapbox_info.model.dart';
+import 'package:immich_mobile/shared/models/server_info_state.model.dart';
+import 'package:immich_mobile/shared/models/server_version.model.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
-
-class ServerInfoState {
-  final MapboxInfo mapboxInfo;
-  ServerInfoState({
-    required this.mapboxInfo,
-  });
-
-  ServerInfoState copyWith({
-    MapboxInfo? mapboxInfo,
-  }) {
-    return ServerInfoState(
-      mapboxInfo: mapboxInfo ?? this.mapboxInfo,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'mapboxInfo': mapboxInfo.toMap(),
-    };
-  }
-
-  factory ServerInfoState.fromMap(Map<String, dynamic> map) {
-    return ServerInfoState(
-      mapboxInfo: MapboxInfo.fromMap(map['mapboxInfo']),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory ServerInfoState.fromJson(String source) => ServerInfoState.fromMap(json.decode(source));
-
-  @override
-  String toString() => 'ServerInfoState(mapboxInfo: $mapboxInfo)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is ServerInfoState && other.mapboxInfo == mapboxInfo;
-  }
-
-  @override
-  int get hashCode => mapboxInfo.hashCode;
-}
+import 'package:package_info_plus/package_info_plus.dart';
 
 class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   ServerInfoNotifier()
       : super(
           ServerInfoState(
             mapboxInfo: MapboxInfo(isEnable: false, mapboxSecret: ""),
+            serverVersion: ServerVersion(major: 0, patch: 0, minor: 0, build: 0),
+            isVersionMismatch: false,
+            versionMismatchErrorMessage: "",
           ),
         );
 
@@ -61,8 +21,62 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
 
   getMapboxInfo() async {
     MapboxInfo mapboxInfoRes = await _serverInfoService.getMapboxInfo();
-    print(mapboxInfoRes);
     state = state.copyWith(mapboxInfo: mapboxInfoRes);
+  }
+
+  getServerVersion() async {
+    ServerVersion? serverVersion = await _serverInfoService.getServerVersion();
+
+    if (serverVersion == null) {
+      state = state.copyWith(
+        isVersionMismatch: true,
+        versionMismatchErrorMessage:
+            "Server is out of date. Some functionalities might not working correctly. Download and rebuild server",
+      );
+      return;
+    }
+
+    state = state.copyWith(serverVersion: serverVersion);
+
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    Map<String, int> appVersion = _getDetailVersion(packageInfo.version);
+
+    if (appVersion["major"]! > serverVersion.major) {
+      state = state.copyWith(
+        isVersionMismatch: true,
+        versionMismatchErrorMessage:
+            "Server is out of date in major version. Some functionalities might not work correctly. Download and rebuild server",
+      );
+
+      return;
+    }
+
+    if (appVersion["minor"]! > serverVersion.minor) {
+      state = state.copyWith(
+        isVersionMismatch: true,
+        versionMismatchErrorMessage:
+            "Server is out of date in minor version. Some functionalities might not work correctly. Consider download and rebuild server",
+      );
+
+      return;
+    }
+
+    state = state.copyWith(isVersionMismatch: false, versionMismatchErrorMessage: "");
+  }
+
+  Map<String, int> _getDetailVersion(String version) {
+    List<String> detail = version.split(".");
+
+    var major = detail[0];
+    var minor = detail[1];
+    var patch = detail[2];
+
+    return {
+      "major": int.parse(major),
+      "minor": int.parse(minor),
+      "patch": int.parse(patch),
+    };
   }
 }
 

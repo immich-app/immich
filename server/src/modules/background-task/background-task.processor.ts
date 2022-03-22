@@ -41,7 +41,6 @@ export class BackgroundTaskProcessor {
   async extractExif(job: Job) {
     const { savedAsset, fileName, fileSize }: { savedAsset: AssetEntity; fileName: string; fileSize: number } =
       job.data;
-
     const fileBuffer = await readFile(savedAsset.originalPath);
 
     const exifData = await exifr.parse(fileBuffer);

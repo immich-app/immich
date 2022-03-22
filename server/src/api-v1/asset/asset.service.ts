@@ -24,6 +24,12 @@ export class AssetService {
     private assetRepository: Repository<AssetEntity>,
   ) {}
 
+  public async updateThumbnailInfo(assetId: string, path: string) {
+    return await this.assetRepository.update(assetId, {
+      resizePath: path,
+    });
+  }
+
   public async createUserAsset(authUser: AuthUserDto, assetInfo: CreateAssetDto, path: string, mimeType: string) {
     const asset = new AssetEntity();
     asset.deviceAssetId = assetInfo.deviceAssetId;

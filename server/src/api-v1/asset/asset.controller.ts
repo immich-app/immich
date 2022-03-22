@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { multerOption } from '../../config/multer-option.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -29,34 +29,43 @@ import { GetNewAssetQueryDto } from './dto/get-new-asset-query.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
+import { CommunicationGateway } from '../communication/communication.gateway';
 
 @UseGuards(JwtAuthGuard)
 @Controller('asset')
 export class AssetController {
   constructor(
+    private wsCommunicateionGateway: CommunicationGateway,
     private assetService: AssetService,
-    private assetOptimizeService: AssetOptimizeService,
     private backgroundTaskService: BackgroundTaskService,
   ) {}
 
   @Post('upload')
-  @UseInterceptors(FilesInterceptor('files', 30, multerOption))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'assetData', maxCount: 1 },
+        { name: 'thumbnailData', maxCount: 1 },
+      ],
+      multerOption,
+    ),
+  )
   async uploadFile(
     @GetAuthUser() authUser,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() uploadFiles: { assetData: Express.Multer.File[]; thumbnailData?: Express.Multer.File[] },
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
   ) {
-    files.forEach(async (file) => {
+    uploadFiles.assetData.forEach(async (file) => {
       const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
-      if (savedAsset && savedAsset.type == AssetType.IMAGE) {
-        await this.assetOptimizeService.resizeImage(savedAsset);
-        await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
+      if (uploadFiles.thumbnailData != null) {
+        await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);
+        await this.backgroundTaskService.tagImage(uploadFiles.thumbnailData[0].path, savedAsset);
       }
 
-      if (savedAsset && savedAsset.type == AssetType.VIDEO) {
-        await this.assetOptimizeService.getVideoThumbnail(savedAsset, file.originalname);
-      }
+      await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
+
+      this.wsCommunicateionGateway.server.to(savedAsset.userId).emit('on_upload_success', JSON.stringify(savedAsset));
     });
 
     return 'ok';

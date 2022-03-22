@@ -7,7 +7,9 @@ import 'package:immich_mobile/modules/login/providers/authentication.provider.da
 
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/backup_state.model.dart';
+import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 
 class ImmichSliverAppBar extends ConsumerWidget {
   const ImmichSliverAppBar({
@@ -21,6 +23,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final BackUpState _backupState = ref.watch(backupProvider);
     bool _isEnableAutoBackup = ref.watch(authenticationProvider).deviceInfo.isAutoBackup;
+    final ServerInfoState _serverInfoState = ref.watch(serverInfoProvider);
+
     return SliverAppBar(
       centerTitle: true,
       floating: true,
@@ -30,12 +34,46 @@ class ImmichSliverAppBar extends ConsumerWidget {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
       leading: Builder(
         builder: (BuildContext context) {
-          return IconButton(
-            icon: const Icon(Icons.account_circle_rounded),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
-            tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+          return Stack(
+            children: [
+              Positioned(
+                top: 5,
+                child: IconButton(
+                  splashRadius: 25,
+                  icon: const Icon(
+                    Icons.account_circle_rounded,
+                    size: 30,
+                  ),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
+              ),
+              _serverInfoState.isVersionMismatch
+                  ? Positioned(
+                      bottom: 12,
+                      right: 12,
+                      child: GestureDetector(
+                        onTap: () => Scaffold.of(context).openDrawer(),
+                        child: Material(
+                          color: Colors.grey[200],
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50.0),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(2.0),
+                            child: Icon(
+                              Icons.info,
+                              color: Color.fromARGB(255, 243, 188, 106),
+                              size: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(),
+            ],
           );
         },
       ),

@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { ServerInfoService } from './server-info.service';
 import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
 import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
+import { serverVersion } from '../../constants/server_version.constant';
 
 @Controller('server-info')
 export class ServerInfoController {
@@ -29,5 +30,10 @@ export class ServerInfoController {
       isEnable: this.configService.get('ENABLE_MAPBOX'),
       mapboxSecret: this.configService.get('MAPBOX_KEY'),
     };
+  }
+
+  @Get('/version')
+  async getServerVersion() {
+    return serverVersion;
   }
 }
