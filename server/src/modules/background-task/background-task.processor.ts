@@ -96,7 +96,7 @@ export class BackgroundTaskProcessor {
   async deleteFileOnDisk(job) {
     const { assets }: { assets: AssetEntity[] } = job.data;
 
-    assets.forEach(async (asset) => {
+    for (const asset of assets) {
       fs.unlink(asset.originalPath, (err) => {
         if (err) {
           console.log('error deleting ', asset.originalPath);
@@ -108,7 +108,7 @@ export class BackgroundTaskProcessor {
           console.log('error deleting ', asset.originalPath);
         }
       });
-    });
+    }
   }
 
   @Process('tag-image')
@@ -121,7 +121,7 @@ export class BackgroundTaskProcessor {
       smartInfo.assetId = asset.id;
       smartInfo.tags = [...res.data];
 
-      this.smartInfoRepository.save(smartInfo);
+      await this.smartInfoRepository.save(smartInfo);
     }
   }
 }
