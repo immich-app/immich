@@ -1,31 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import systemInformation from 'systeminformation';
 import { ServerInfoDto } from './dto/server-info.dto';
+import diskusage from 'diskusage';
 
 @Injectable()
 export class ServerInfoService {
-  constructor() {}
   async getServerInfo() {
-    const res = await systemInformation.fsSize();
+    const diskInfo = await diskusage.check('./upload');
 
-    const size = res[0].size;
-    const used = res[0].used;
-    const available = res[0].available;
-    const percentageUsage = res[0].use;
+    const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
 
     const serverInfo = new ServerInfoDto();
-    serverInfo.diskAvailable = this.getHumanReadableString(available);
-    serverInfo.diskSize = this.getHumanReadableString(size);
-    serverInfo.diskUse = this.getHumanReadableString(used);
-    serverInfo.diskAvailableRaw = available;
-    serverInfo.diskSizeRaw = size;
-    serverInfo.diskUseRaw = used;
-    serverInfo.diskUsagePercentage = percentageUsage;
+    serverInfo.diskAvailable = ServerInfoService.getHumanReadableString(diskInfo.available);
+    serverInfo.diskSize = ServerInfoService.getHumanReadableString(diskInfo.total);
+    serverInfo.diskUse = ServerInfoService.getHumanReadableString(diskInfo.total - diskInfo.free);
+    serverInfo.diskAvailableRaw = diskInfo.available;
+    serverInfo.diskSizeRaw = diskInfo.total;
+    serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
+    serverInfo.diskUsagePercentage = parseFloat(usagePercentage);
 
     return serverInfo;
   }
 
-  private getHumanReadableString(sizeInByte: number) {
+  private static getHumanReadableString(sizeInByte: number) {
     const pepibyte = 1.126 * Math.pow(10, 15);
     const tebibyte = 1.1 * Math.pow(10, 12);
     const gibibyte = 1.074 * Math.pow(10, 9);

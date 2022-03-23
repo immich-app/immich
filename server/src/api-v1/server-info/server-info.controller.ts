@@ -1,10 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { ServerInfoService } from './server-info.service';
-import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
-import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
 import { serverVersion } from '../../constants/server_version.constant';
 
 @Controller('server-info')
