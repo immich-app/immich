@@ -55,7 +55,7 @@ export class AssetController {
     @UploadedFiles() uploadFiles: { assetData: Express.Multer.File[]; thumbnailData?: Express.Multer.File[] },
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
   ) {
-    uploadFiles.assetData.forEach(async (file) => {
+    for (const file of uploadFiles.assetData) {
       const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
       if (uploadFiles.thumbnailData != null) {
@@ -66,7 +66,7 @@ export class AssetController {
       await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
 
       this.wsCommunicateionGateway.server.to(savedAsset.userId).emit('on_upload_success', JSON.stringify(savedAsset));
-    });
+    }
 
     return 'ok';
   }
@@ -125,10 +125,10 @@ export class AssetController {
   async deleteAssetById(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) assetIds: DeleteAssetDto) {
     const deleteAssetList: AssetEntity[] = [];
 
-    assetIds.ids.forEach(async (id) => {
+    for (const id of assetIds.ids) {
       const assets = await this.assetService.getAssetById(authUser, id);
       deleteAssetList.push(assets);
-    });
+    }
 
     const result = await this.assetService.deleteAssetById(authUser, assetIds);
 
