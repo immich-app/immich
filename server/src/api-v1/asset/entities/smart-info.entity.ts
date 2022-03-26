@@ -13,6 +13,9 @@ export class SmartInfoEntity {
   @Column({ type: 'text', array: true, nullable: true })
   tags: string[];
 
+  @Column({ type: 'text', array: true, nullable: true })
+  objects: string[];
+
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
   asset: SmartInfoEntity;
