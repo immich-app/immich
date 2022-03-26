@@ -43,4 +43,15 @@ export class BackgroundTaskService {
       { jobId: randomUUID() },
     );
   }
+
+  async detectObject(thumbnailPath: string, asset: AssetEntity) {
+    await this.backgroundTaskQueue.add(
+      'detect-object',
+      {
+        thumbnailPath,
+        asset,
+      },
+      { jobId: randomUUID() },
+    );
+  }
 }

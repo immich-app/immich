@@ -10,7 +10,6 @@ export class ImageClassifierService {
   private readonly MOBILENET_ALPHA = 0.5;
 
   private mobileNetModel: mobilenet.MobileNet;
-  private cocoSsdModel: cocoSsd.ObjectDetection;
 
   constructor() {
     Logger.log(
@@ -23,8 +22,6 @@ export class ImageClassifierService {
         alpha: this.MOBILENET_ALPHA,
       })
       .then((mobilenetModel) => (this.mobileNetModel = mobilenetModel));
-
-    cocoSsd.load().then((model) => (this.cocoSsdModel = model));
   }
 
   async tagImage(thumbnailPath: string) {
@@ -34,15 +31,7 @@ export class ImageClassifierService {
         const tags = [];
         const image = fs.readFileSync(thumbnailPath);
         const decodedImage = tf.node.decodeImage(image, 3) as tf.Tensor3D;
-        // const predictions = await this.cocoSsdModel.detect(decodedImage);
         const predictions = await this.mobileNetModel.classify(decodedImage);
-        // console.log('Predictions');
-        // console.log(predictions);
-        // console.log('\n\nstart predictions ------------------ ');
-        // for (var result of predictions) {
-        //   console.log(`Found ${result.class} with score ${result.score}`);
-        // }
-        // console.log('end predictions ------------------\n\n');
 
         for (const prediction of predictions) {
           if (prediction.probability >= 0.1) {

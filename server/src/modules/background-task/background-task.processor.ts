@@ -141,7 +141,7 @@ export class BackgroundTaskProcessor {
     if (res.status == 201 && res.data.length > 0) {
       const smartInfo = new SmartInfoEntity();
       smartInfo.assetId = asset.id;
-
+      smartInfo.objects = [...res.data];
       await this.smartInfoRepository.upsert(smartInfo, {
         conflictPaths: ['assetId'],
       });

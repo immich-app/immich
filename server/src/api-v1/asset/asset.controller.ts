@@ -61,6 +61,7 @@ export class AssetController {
       if (uploadFiles.thumbnailData != null) {
         await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);
         await this.backgroundTaskService.tagImage(uploadFiles.thumbnailData[0].path, savedAsset);
+        await this.backgroundTaskService.detectObject(uploadFiles.thumbnailData[0].path, savedAsset);
       }
 
       await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
