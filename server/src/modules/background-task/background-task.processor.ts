@@ -115,14 +115,36 @@ export class BackgroundTaskProcessor {
   async tagImage(job) {
     const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
 
-    const res = await axios.post('http://immich_microservices:3001/tagImage', { thumbnailPath: thumbnailPath });
+    const res = await axios.post('http://immich_microservices:3001/image-classifier/tagImage', {
+      thumbnailPath: thumbnailPath,
+    });
 
     if (res.status == 201 && res.data.length > 0) {
       const smartInfo = new SmartInfoEntity();
       smartInfo.assetId = asset.id;
       smartInfo.tags = [...res.data];
 
-      await this.smartInfoRepository.save(smartInfo);
+      await this.smartInfoRepository.upsert(smartInfo, {
+        conflictPaths: ['assetId'],
+      });
+    }
+  }
+
+  @Process('detect-object')
+  async detectObject(job) {
+    const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
+
+    const res = await axios.post('http://immich_microservices:3001/object-detection/detectObject', {
+      thumbnailPath: thumbnailPath,
+    });
+
+    if (res.status == 201 && res.data.length > 0) {
+      const smartInfo = new SmartInfoEntity();
+      smartInfo.assetId = asset.id;
+
+      await this.smartInfoRepository.upsert(smartInfo, {
+        conflictPaths: ['assetId'],
+      });
     }
   }
 }

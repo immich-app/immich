@@ -4,6 +4,6 @@ import { ObjectDetectionController } from './object-detection.controller';
 
 @Module({
   controllers: [ObjectDetectionController],
-  providers: [ObjectDetectionService]
+  providers: [ObjectDetectionService],
 })
 export class ObjectDetectionModule {}

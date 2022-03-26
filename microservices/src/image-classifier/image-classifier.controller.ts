@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ImageClassifierService } from './image-classifier.service';
 
-@Controller()
+@Controller('image-classifier')
 export class ImageClassifierController {
   constructor(
     private readonly imageClassifierService: ImageClassifierService,
