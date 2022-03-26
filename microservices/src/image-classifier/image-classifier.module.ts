@@ -4,6 +4,6 @@ import { ImageClassifierController } from './image-classifier.controller';
 
 @Module({
   controllers: [ImageClassifierController],
-  providers: [ImageClassifierService]
+  providers: [ImageClassifierService],
 })
 export class ImageClassifierModule {}

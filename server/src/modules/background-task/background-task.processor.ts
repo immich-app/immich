@@ -117,13 +117,12 @@ export class BackgroundTaskProcessor {
 
     const res = await axios.post('http://immich_microservices:3001/tagImage', { thumbnailPath: thumbnailPath });
 
-    console.log(res.data);
-    // if (res.status == 200) {
-    //   const smartInfo = new SmartInfoEntity();
-    //   smartInfo.assetId = asset.id;
-    //   smartInfo.tags = [...res.data];
+    if (res.status == 201 && res.data.length > 0) {
+      const smartInfo = new SmartInfoEntity();
+      smartInfo.assetId = asset.id;
+      smartInfo.tags = [...res.data];
 
-    //   await this.smartInfoRepository.save(smartInfo);
-    // }
+      await this.smartInfoRepository.save(smartInfo);
+    }
   }
 }
