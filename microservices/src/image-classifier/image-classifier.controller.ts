@@ -1,8 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { ImageClassifierService } from './image-classifier.service';
-import { CreateImageClassifierDto } from './dto/create-image-classifier.dto';
-import * as tf from '@tensorflow/tfjs-core';
-import * as tfnode from '@tensorflow/tfjs-node';
+import * as tf from '@tensorflow/tfjs-node';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 import * as fs from 'fs';
@@ -15,8 +13,10 @@ export class ImageClassifierController {
   private mobileNetModel: mobilenet.MobileNet;
   private cocoSsdModel: cocoSsd.ObjectDetection;
   constructor(private readonly imageClassifierService: ImageClassifierService) {
-    console.log('Running Node TensorFlow Version :', tfnode.version['tfjs']);
-
+    Logger.log(
+      `Running Node TensorFlow Version : ${tf.version['tfjs']}`,
+      'ImageClassifier',
+    );
     mobilenet
       .load({
         version: this.MOBILENET_VERSION,
@@ -28,16 +28,12 @@ export class ImageClassifierController {
   }
 
   @Post('/tagImage')
-  // tagImage(@Payload() createImageClassifierDto: CreateImageClassifierDto) {
   async tagImage(@Body('thumbnailPath') thumbnailPath: string) {
     try {
       const isExist = fs.existsSync(thumbnailPath);
       if (isExist) {
         const image = fs.readFileSync(thumbnailPath);
-        const decodedImage = tfnode.node.decodeImage(
-          image,
-          3,
-        ) as tfnode.Tensor3D;
+        const decodedImage = tf.node.decodeImage(image, 3) as tf.Tensor3D;
         // const predictions = await this.cocoSsdModel.detect(decodedImage);
         const predictions = await this.mobileNetModel.classify(decodedImage);
         console.log('Predictions');
