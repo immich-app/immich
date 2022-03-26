@@ -14,7 +14,6 @@ import { ImageOptimizeModule } from './modules/image-optimize/image-optimize.mod
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
-import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -43,19 +42,7 @@ import { ClientProxyFactory, Transport } from '@nestjs/microservices';
     CommunicationModule,
   ],
   controllers: [],
-  providers: [
-    {
-      provide: 'MICROSERVICES',
-      useFactory: () =>
-        ClientProxyFactory.create({
-          transport: Transport.TCP,
-          options: {
-            host: 'immich_microservices',
-            port: 2286,
-          },
-        }),
-    },
-  ],
+  providers: [],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
