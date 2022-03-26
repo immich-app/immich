@@ -7,13 +7,13 @@ import { ConfigService } from '@nestjs/config';
 import exifr from 'exifr';
 import { readFile } from 'fs/promises';
 import fs, { rmSync } from 'fs';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
 import axios from 'axios';
 import { SmartInfoEntity } from '../../api-v1/asset/entities/smart-info.entity';
 import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
 import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
-
+import { ClientProxy } from '@nestjs/microservices';
 @Processor('background-task')
 export class BackgroundTaskProcessor {
   private geocodingClient: GeocodeService;
@@ -29,6 +29,8 @@ export class BackgroundTaskProcessor {
     private exifRepository: Repository<ExifEntity>,
 
     private configService: ConfigService,
+
+    @Inject('MICROSERVICES') private microservices: ClientProxy,
   ) {
     if (this.configService.get('ENABLE_MAPBOX')) {
       this.geocodingClient = mapboxGeocoding({
@@ -114,14 +116,22 @@ export class BackgroundTaskProcessor {
   @Process('tag-image')
   async tagImage(job) {
     const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
-    const res = await axios.post('http://immich_tf_fastapi:8000/tagImage', { thumbnail_path: thumbnailPath });
 
-    if (res.status == 200) {
-      const smartInfo = new SmartInfoEntity();
-      smartInfo.assetId = asset.id;
-      smartInfo.tags = [...res.data];
+    this.microservices.send(
+      {
+        cmd: 'tagImage',
+      },
+      thumbnailPath,
+    );
 
-      await this.smartInfoRepository.save(smartInfo);
-    }
+    // const res = await axios.post('http://immich_tf_fastapi:8000/tagImage', { thumbnail_path: thumbnailPath });
+
+    // if (res.status == 200) {
+    //   const smartInfo = new SmartInfoEntity();
+    //   smartInfo.assetId = asset.id;
+    //   smartInfo.tags = [...res.data];
+
+    //   await this.smartInfoRepository.save(smartInfo);
+    // }
   }
 }
