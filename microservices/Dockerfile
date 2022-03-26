@@ -1,7 +1,7 @@
 ##################################
 # DEVELOPMENT
 ##################################
-FROM node:16-alpine3.14 AS development
+FROM node:16-bullseye-slim AS development
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -9,7 +9,8 @@ WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
 
-RUN apk add --update-cache build-base python3 
+RUN apt-get update
+RUN apt-get install gcc g++ make cmake python3 python3-pip ffmpeg -y
 
 RUN npm install
 
@@ -20,7 +21,7 @@ RUN npm run build
 #################################
 # PRODUCTION
 #################################
-FROM node:16-alpine3.14 AS production
+FROM node:16-bullseye-slim AS production
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG NODE_ENV=production
@@ -30,7 +31,8 @@ WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
 
-RUN apk add --update-cache build-base python3
+RUN apt-get update
+RUN apt-get install gcc g++ make cmake python3 python3-pip ffmpeg -y
 
 RUN npm install --only=production
 

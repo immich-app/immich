@@ -31,7 +31,7 @@ services:
       dockerfile: ../microservices/Dockerfile
     command: npm run start:dev
     expose:
-      - "2286"
+      - "3001"
     volumes:
       - ../microservices:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload

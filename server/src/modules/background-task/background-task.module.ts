@@ -6,7 +6,6 @@ import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
 import { SmartInfoEntity } from '../../api-v1/asset/entities/smart-info.entity';
 import { BackgroundTaskProcessor } from './background-task.processor';
 import { BackgroundTaskService } from './background-task.service';
-import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -20,21 +19,7 @@ import { ClientProxyFactory, Transport } from '@nestjs/microservices';
     }),
     TypeOrmModule.forFeature([AssetEntity, ExifEntity, SmartInfoEntity]),
   ],
-  providers: [
-    BackgroundTaskService,
-    BackgroundTaskProcessor,
-    {
-      provide: 'MICROSERVICES',
-      useFactory: () =>
-        ClientProxyFactory.create({
-          transport: Transport.TCP,
-          options: {
-            host: 'immich_microservices',
-            port: 2286,
-          },
-        }),
-    },
-  ],
+  providers: [BackgroundTaskService, BackgroundTaskProcessor],
   exports: [BackgroundTaskService],
 })
 export class BackgroundTaskModule {}
