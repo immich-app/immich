@@ -28,14 +28,14 @@ services:
       context: ../microservices
       target: development
       dockerfile: ../microservices/Dockerfile
+    command: npm run start:dev
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-                count: 1
-                capabilities: [ gpu ]
-    command: npm run start:dev
+              count: 1
+              capabilities: [ gpu ]
     expose:
       - "3001"
     volumes:
