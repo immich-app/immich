@@ -7,7 +7,7 @@ import * as fs from 'fs';
 @Injectable()
 export class ImageClassifierService {
   private readonly MOBILENET_VERSION = 2;
-  private readonly MOBILENET_ALPHA = 0.5;
+  private readonly MOBILENET_ALPHA = 1.0;
 
   private mobileNetModel: mobilenet.MobileNet;
 

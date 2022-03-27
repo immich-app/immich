@@ -324,7 +324,7 @@ export class AssetService {
   async getCuratedObject(authUser: AuthUserDto) {
     return await this.assetRepository.query(
       `
-        select distinct on (si.objects) a.id, si.objects, a."resizePath", a."deviceAssetId", a."deviceId"
+        select distinct on (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
         from assets a
         left join smart_info si on a.id = si."assetId"
         where a."userId" = $1 
