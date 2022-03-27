@@ -19,10 +19,10 @@ platform :ios do
   desc "iOS Beta"
   lane :beta do
     increment_version_number(
-      version_number: "1.3.2"
+      version_number: "1.4.0"
     )
     increment_build_number({
-      build_number: latest_testflight_build_number + 1
+      build_number: 0
     })
     build_app(scheme: "Runner",
               workspace: "Runner.xcworkspace",
@@ -32,19 +32,4 @@ platform :ios do
     )
   end
 
-  desc "iOS Release"
-  lane :release do 
-    increment_version_number(
-      version_number: "1.3.2"
-    )
-    increment_build_number({
-      build_number: latest_testflight_build_number + 1
-    })
-    build_app(scheme: "Runner",
-              workspace: "Runner.xcworkspace",
-              xcargs: "-allowProvisioningUpdates")
-    upload_to_testflight(
-      skip_waiting_for_build_processing: true
-    )
-  end
 end
