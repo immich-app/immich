@@ -59,7 +59,7 @@ export class AssetController {
       try {
         const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
-        if (uploadFiles.thumbnailData != null) {
+        if (uploadFiles.thumbnailData != null && savedAsset) {
           await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);
           await this.backgroundTaskService.tagImage(uploadFiles.thumbnailData[0].path, savedAsset);
           await this.backgroundTaskService.detectObject(uploadFiles.thumbnailData[0].path, savedAsset);
