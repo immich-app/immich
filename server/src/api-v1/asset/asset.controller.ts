@@ -16,13 +16,12 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
-import { FileFieldsInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerOption } from '../../config/multer-option.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { AssetOptimizeService } from '../../modules/image-optimize/image-optimize.service';
-import { AssetEntity, AssetType } from './entities/asset.entity';
+import { AssetEntity } from './entities/asset.entity';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { Response as Res } from 'express';
 import { GetNewAssetQueryDto } from './dto/get-new-asset-query.dto';
@@ -82,13 +81,13 @@ export class AssetController {
     return this.assetService.serveFile(authUser, query, res, headers);
   }
 
-  @Get('/allLocation')
-  async getCuratedLocation(@GetAuthUser() authUser: AuthUserDto) {
-    return this.assetService.getCuratedLocation(authUser);
-  }
-
   @Get('/allObjects')
   async getCuratedObject(@GetAuthUser() authUser: AuthUserDto) {
+    return this.assetService.getCuratedObject(authUser);
+  }
+
+  @Get('/allLocation')
+  async getCuratedLocation(@GetAuthUser() authUser: AuthUserDto) {
     return this.assetService.getCuratedLocation(authUser);
   }
 

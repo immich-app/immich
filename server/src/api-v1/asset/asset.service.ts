@@ -324,12 +324,11 @@ export class AssetService {
   async getCuratedObject(authUser: AuthUserDto) {
     return await this.assetRepository.query(
       `
-        select distinct on (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
+        select distinct on (si.objects) a.id, si.objects, a."resizePath", a."deviceAssetId", a."deviceId"
         from assets a
-        left join exif e on a.id = e."assetId"
+        left join smart_info si on a.id = si."assetId"
         where a."userId" = $1 
-        and e.city is not null
-        and a.type = 'IMAGE';
+        and si.objects is not null
       `,
       [authUser.id],
     );
