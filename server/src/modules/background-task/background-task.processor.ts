@@ -6,7 +6,7 @@ import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
 import { ConfigService } from '@nestjs/config';
 import exifr from 'exifr';
 import { readFile } from 'fs/promises';
-import fs, { rmSync } from 'fs';
+import fs from 'fs';
 import { Logger } from '@nestjs/common';
 import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
 import axios from 'axios';
@@ -114,14 +114,37 @@ export class BackgroundTaskProcessor {
   @Process('tag-image')
   async tagImage(job) {
     const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
-    const res = await axios.post('http://immich_tf_fastapi:8000/tagImage', { thumbnail_path: thumbnailPath });
 
-    if (res.status == 200) {
+    const res = await axios.post('http://immich_microservices:3001/image-classifier/tagImage', {
+      thumbnailPath: thumbnailPath,
+    });
+
+    if (res.status == 201 && res.data.length > 0) {
       const smartInfo = new SmartInfoEntity();
       smartInfo.assetId = asset.id;
       smartInfo.tags = [...res.data];
 
-      await this.smartInfoRepository.save(smartInfo);
+      await this.smartInfoRepository.upsert(smartInfo, {
+        conflictPaths: ['assetId'],
+      });
+    }
+  }
+
+  @Process('detect-object')
+  async detectObject(job) {
+    const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
+
+    const res = await axios.post('http://immich_microservices:3001/object-detection/detectObject', {
+      thumbnailPath: thumbnailPath,
+    });
+
+    if (res.status == 201 && res.data.length > 0) {
+      const smartInfo = new SmartInfoEntity();
+      smartInfo.assetId = asset.id;
+      smartInfo.objects = [...res.data];
+      await this.smartInfoRepository.upsert(smartInfo, {
+        conflictPaths: ['assetId'],
+      });
     }
   }
 }

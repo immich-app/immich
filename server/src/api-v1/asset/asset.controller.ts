@@ -16,13 +16,12 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
-import { FileFieldsInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerOption } from '../../config/multer-option.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { AssetOptimizeService } from '../../modules/image-optimize/image-optimize.service';
-import { AssetEntity, AssetType } from './entities/asset.entity';
+import { AssetEntity } from './entities/asset.entity';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { Response as Res } from 'express';
 import { GetNewAssetQueryDto } from './dto/get-new-asset-query.dto';
@@ -61,6 +60,7 @@ export class AssetController {
       if (uploadFiles.thumbnailData != null) {
         await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);
         await this.backgroundTaskService.tagImage(uploadFiles.thumbnailData[0].path, savedAsset);
+        await this.backgroundTaskService.detectObject(uploadFiles.thumbnailData[0].path, savedAsset);
       }
 
       await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
@@ -79,6 +79,11 @@ export class AssetController {
     @Query(ValidationPipe) query: ServeFileDto,
   ): Promise<StreamableFile> {
     return this.assetService.serveFile(authUser, query, res, headers);
+  }
+
+  @Get('/allObjects')
+  async getCuratedObject(@GetAuthUser() authUser: AuthUserDto) {
+    return this.assetService.getCuratedObject(authUser);
   }
 
   @Get('/allLocation')

@@ -6,10 +6,12 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/search/models/curated_location.model.dart';
+import 'package:immich_mobile/modules/search/models/curated_object.model.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 
 // ignore: must_be_immutable
 class SearchPage extends HookConsumerWidget {
@@ -22,6 +24,7 @@ class SearchPage extends HookConsumerWidget {
     var box = Hive.box(userInfoBox);
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
     AsyncValue<List<CuratedLocation>> curatedLocation = ref.watch(getCuratedLocationProvider);
+    AsyncValue<List<CuratedObject>> curatedObjects = ref.watch(getCuratedObjectProvider);
 
     useEffect(() {
       searchFocusNode = FocusNode();
@@ -82,6 +85,54 @@ class SearchPage extends HookConsumerWidget {
       );
     }
 
+    _buildThings() {
+      return curatedObjects.when(
+        loading: () => const CircularProgressIndicator(),
+        error: (err, stack) => Text('Error: $err'),
+        data: (objects) {
+          return objects.isNotEmpty
+              ? SizedBox(
+                  height: MediaQuery.of(context).size.width / 3,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(left: 16),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: curatedObjects.value?.length,
+                    itemBuilder: ((context, index) {
+                      CuratedObject curatedObjectInfo = objects[index];
+                      var thumbnailRequestUrl =
+                          '${box.get(serverEndpointKey)}/asset/file?aid=${curatedObjectInfo.deviceAssetId}&did=${curatedObjectInfo.deviceId}&isThumb=true';
+
+                      return ThumbnailWithInfo(
+                        imageUrl: thumbnailRequestUrl,
+                        textInfo: curatedObjectInfo.object,
+                        onTap: () {
+                          AutoRouter.of(context)
+                              .push(SearchResultRoute(searchTerm: curatedObjectInfo.object.capitalizeFirstLetter()));
+                        },
+                      );
+                    }),
+                  ),
+                )
+              : SizedBox(
+                  height: MediaQuery.of(context).size.width / 3,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(left: 16),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 1,
+                    itemBuilder: ((context, index) {
+                      return ThumbnailWithInfo(
+                        imageUrl:
+                            'https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60',
+                        textInfo: 'No Object Info Available',
+                        onTap: () {},
+                      );
+                    }),
+                  ),
+                );
+        },
+      );
+    }
+
     return Scaffold(
       appBar: SearchBar(
         searchFocusNode: searchFocusNode,
@@ -104,6 +155,14 @@ class SearchPage extends HookConsumerWidget {
                   ),
                 ),
                 _buildPlaces(),
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    "Things",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+                _buildThings()
               ],
             ),
             isSearchEnabled ? SearchSuggestionList(onSubmitted: _onSearchSubmitted) : Container(),
@@ -160,7 +219,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width / 3,
                   child: Text(
-                    textInfo,
+                    textInfo.capitalizeFirstLetter(),
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

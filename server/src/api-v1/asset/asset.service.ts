@@ -3,9 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetEntity, AssetType } from './entities/asset.entity';
-import _, { result } from 'lodash';
+import _ from 'lodash';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { GetAllAssetReponseDto } from './dto/get-all-asset-response.dto';
 import { createReadStream, stat } from 'fs';
@@ -44,9 +43,7 @@ export class AssetService {
     asset.duration = assetInfo.duration;
 
     try {
-      const res = await this.assetRepository.save(asset);
-
-      return res;
+      return await this.assetRepository.save(asset);
     } catch (e) {
       Logger.error(`Error Create New Asset ${e}`, 'createUserAsset');
     }
@@ -68,13 +65,11 @@ export class AssetService {
 
   public async getAllAssetsNoPagination(authUser: AuthUserDto) {
     try {
-      const assets = await this.assetRepository
+      return await this.assetRepository
         .createQueryBuilder('a')
         .where('a."userId" = :userId', { userId: authUser.id })
         .orderBy('a."createdAt"::date', 'DESC')
         .getMany();
-
-      return assets;
     } catch (e) {
       Logger.error(e, 'getAllAssets');
     }
@@ -226,10 +221,10 @@ export class AssetService {
   }
 
   public async deleteAssetById(authUser: AuthUserDto, assetIds: DeleteAssetDto) {
-    let result = [];
+    const result = [];
 
     const target = assetIds.ids;
-    for (let assetId of target) {
+    for (const assetId of target) {
       const res = await this.assetRepository.delete({
         id: assetId,
         userId: authUser.id,
@@ -251,11 +246,11 @@ export class AssetService {
     return result;
   }
 
-  async getAssetSearchTerm(authUser: AuthUserDto): Promise<String[]> {
-    const possibleSearchTerm = new Set<String>();
+  async getAssetSearchTerm(authUser: AuthUserDto): Promise<string[]> {
+    const possibleSearchTerm = new Set<string>();
     const rows = await this.assetRepository.query(
       `
-      select distinct si.tags, e.orientation, e."lensModel", e.make, e.model , a.type, e.city, e.state, e.country
+      select distinct si.tags, si.objects, e.orientation, e."lensModel", e.make, e.model , a.type, e.city, e.state, e.country
       from assets a
       left join exif e on a.id = e."assetId"
       left join smart_info si on a.id = si."assetId"
@@ -267,6 +262,9 @@ export class AssetService {
     rows.forEach((row) => {
       // tags
       row['tags']?.map((tag) => possibleSearchTerm.add(tag?.toLowerCase()));
+
+      // objects
+      row['objects']?.map((object) => possibleSearchTerm.add(object?.toLowerCase()));
 
       // asset's tyoe
       possibleSearchTerm.add(row['type']?.toLowerCase());
@@ -300,18 +298,17 @@ export class AssetService {
     WHERE a."userId" = $1
        AND 
        (
-         TO_TSVECTOR('english', ARRAY_TO_STRING(si.tags, ',')) @@ PLAINTO_TSQUERY('english', $2) OR 
+         TO_TSVECTOR('english', ARRAY_TO_STRING(si.tags, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
+         TO_TSVECTOR('english', ARRAY_TO_STRING(si.objects, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
          e.exif_text_searchable_column @@ PLAINTO_TSQUERY('english', $2)
         );
     `;
 
-    const rows = await this.assetRepository.query(query, [authUser.id, searchAssetDto.searchTerm]);
-
-    return rows;
+    return await this.assetRepository.query(query, [authUser.id, searchAssetDto.searchTerm]);
   }
 
   async getCuratedLocation(authUser: AuthUserDto) {
-    const rows = await this.assetRepository.query(
+    return await this.assetRepository.query(
       `
         select distinct on (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
         from assets a
@@ -322,7 +319,18 @@ export class AssetService {
       `,
       [authUser.id],
     );
+  }
 
-    return rows;
+  async getCuratedObject(authUser: AuthUserDto) {
+    return await this.assetRepository.query(
+      `
+        select distinct on (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
+        from assets a
+        left join smart_info si on a.id = si."assetId"
+        where a."userId" = $1 
+        and si.objects is not null
+      `,
+      [authUser.id],
+    );
   }
 }

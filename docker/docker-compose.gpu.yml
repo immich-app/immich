@@ -22,6 +22,34 @@ services:
     networks:
       - immich_network
 
+  immich_microservices:
+    image: immich-microservices-dev:1.3.2
+    build:
+      context: ../microservices
+      target: development
+      dockerfile: ../microservices/Dockerfile
+    command: npm run start:dev
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    expose:
+      - "3001"
+    volumes:
+      - ../microservices:/usr/src/app
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /usr/src/app/node_modules
+    env_file:
+      - .env
+    depends_on:
+      - database
+      - immich_server
+    networks:
+      - immich_network
+
   redis:
     container_name: immich_redis
     image: redis:6.2
@@ -60,35 +88,6 @@ services:
     depends_on:
       - immich_server
 
-  immich_tf_fastapi:
-    container_name: immich_tf_fastapi
-    image: tensor_flow_fastapi:1.0.0
-    restart: always
-    command: uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port 8000 --reload
-    build:
-      context: ../machine_learning
-      target: gpu
-      dockerfile: ../machine_learning/Dockerfile
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    volumes:
-      - ../machine_learning/app:/code/app
-      - ${UPLOAD_LOCATION}:/code/app/upload
-    ports:
-      - 2285:8000
-    expose:
-      - "8000"
-    depends_on:
-      - database
-    networks:
-      - immich_network
-
-      
 networks:
   immich_network:
 volumes:
