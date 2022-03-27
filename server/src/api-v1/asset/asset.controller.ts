@@ -87,6 +87,11 @@ export class AssetController {
     return this.assetService.getCuratedLocation(authUser);
   }
 
+  @Get('/allObjects')
+  async getCuratedObject(@GetAuthUser() authUser: AuthUserDto) {
+    return this.assetService.getCuratedLocation(authUser);
+  }
+
   @Get('/searchTerm')
   async getAssetSearchTerm(@GetAuthUser() authUser: AuthUserDto) {
     return this.assetService.getAssetSearchTerm(authUser);
