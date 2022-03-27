@@ -125,7 +125,7 @@ class BackupControllerPage extends HookConsumerWidget {
             ),
             BackupInfoCard(
               title: "Total",
-              subtitle: "All images and video on the device",
+              subtitle: "All images and videos on the device",
               info: "${_backupState.totalAssetCount}",
             ),
             BackupInfoCard(
