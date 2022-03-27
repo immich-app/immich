@@ -55,11 +55,13 @@ This project is under heavy development, there will be continous functions, feat
 - Extract and display EXIF info.
 - Real-time render from multi-device upload event.
 - Image Tagging/Classification based on ImageNet dataset
+- Object detection based on COCO SSD.
 - Search assets based on tags and exif data (lens, make, model, orientation)
 - Upload assets from your local computer/server using [immich cli tools](https://www.npmjs.com/package/immich)
 - [Optional] Reserve geocoding using Mapbox (Generous free-tier of 100,000 search/month)
 - Show asset's location information on map (OpenStreetMap).
 - Show curated places on the search page
+- Show curated objects on the search page
 
 # Development
 
@@ -69,7 +71,7 @@ You can use docker compose for development, there are several services that comp
 2. PostgreSQL
 3. Redis
 4. Nginx
-5. TensorFlow and Keras
+5. TensorFlow
 
 ## Populate .env file
 
