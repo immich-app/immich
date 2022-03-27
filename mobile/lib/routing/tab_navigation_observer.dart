@@ -26,6 +26,7 @@ class TabNavigationObserver extends AutoRouterObserver {
     if (route.name == 'SearchRoute') {
       // Refresh Location State
       ref.refresh(getCuratedLocationProvider);
+      ref.refresh(getCuratedObjectProvider);
     }
 
     ref.watch(serverInfoProvider.notifier).getServerVersion();
