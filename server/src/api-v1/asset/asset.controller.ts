@@ -13,6 +13,7 @@ import {
   Response,
   Headers,
   Delete,
+  Logger,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
@@ -55,17 +56,21 @@ export class AssetController {
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
   ) {
     for (const file of uploadFiles.assetData) {
-      const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
+      try {
+        const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
-      if (uploadFiles.thumbnailData != null) {
-        await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);
-        await this.backgroundTaskService.tagImage(uploadFiles.thumbnailData[0].path, savedAsset);
-        await this.backgroundTaskService.detectObject(uploadFiles.thumbnailData[0].path, savedAsset);
+        if (uploadFiles.thumbnailData != null && savedAsset) {
+          await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);
+          await this.backgroundTaskService.tagImage(uploadFiles.thumbnailData[0].path, savedAsset);
+          await this.backgroundTaskService.detectObject(uploadFiles.thumbnailData[0].path, savedAsset);
+        }
+
+        await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
+
+        this.wsCommunicateionGateway.server.to(savedAsset.userId).emit('on_upload_success', JSON.stringify(savedAsset));
+      } catch (e) {
+        Logger.error(`Error receiving upload file ${e}`);
       }
-
-      await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
-
-      this.wsCommunicateionGateway.server.to(savedAsset.userId).emit('on_upload_success', JSON.stringify(savedAsset));
     }
 
     return 'ok';
