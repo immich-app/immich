@@ -34,7 +34,8 @@ Loading ~4000 images/videos
 <p align="left">
   <img src="design/nsc1.png" width="150" title="Login With Custom URL">
   <img src="design/nsc2.png" width="150" title="Backup Setting Info">
-  <img src="design/nsc3.png" width="150" title="Multiple seelct">
+  <img src="design/nsc3.png" width="150" title="Multiple select">
+  <img src="design/nsc4.jpeg" width="150" title="Curated Search Info">
   <img src="design/nsc6.png" width="150" title="EXIF Info">
 
 </p>
