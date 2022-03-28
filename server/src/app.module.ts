@@ -46,6 +46,8 @@ import { CommunicationModule } from './api-v1/communication/communication.module
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    // consumer.apply(AppLoggerMiddleware).forRoutes('*');
+    if (process.env.NODE_ENV == 'development') {
+      consumer.apply(AppLoggerMiddleware).forRoutes('*');
+    }
   }
 }
