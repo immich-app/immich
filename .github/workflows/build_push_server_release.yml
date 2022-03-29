@@ -1,4 +1,4 @@
-name: Build Server
+name: Build Server - Release
 
 on:
   workflow_dispatch:
