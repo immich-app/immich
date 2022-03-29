@@ -6,7 +6,7 @@ services:
     build:
       context: ../server
       dockerfile: ../server/Dockerfile
-    command: npm run start:prod
+    entrypoint: ["/bin/sh", "./entrypoint.sh"]
     expose:
       - "3000"
     volumes:
@@ -28,7 +28,7 @@ services:
     build:
       context: ../microservices
       dockerfile: ../microservices/Dockerfile
-    command: npm run start:prod
+    entrypoint: ["/bin/sh", "./entrypoint.sh"]
     expose:
       - "3001"
     volumes:
