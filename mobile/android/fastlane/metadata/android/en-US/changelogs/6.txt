@@ -1,0 +1,1 @@
+* Added curated locations and objects on the search page
