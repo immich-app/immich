@@ -7,12 +7,11 @@ services:
       context: ../server
       dockerfile: ../server/Dockerfile
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
+    restart: unless-stopped
     expose:
       - "3000"
     volumes:
-      - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /usr/src/app/node_modules
     env_file:
       - .env
     environment:
@@ -29,12 +28,11 @@ services:
       context: ../microservices
       dockerfile: ../microservices/Dockerfile
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
+    restart: unless-stopped
     expose:
       - "3001"
     volumes:
-      - ../microservices:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /usr/src/app/node_modules
     env_file:
       - .env
     environment:
@@ -82,27 +80,6 @@ services:
       - immich_network
     depends_on:
       - immich_server
-
-  # immich_tf_fastapi:
-  #   container_name: immich_tf_fastapi
-  #   image: tensor_flow_fastapi:1.0.0
-  #   restart: always
-  #   command: uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port 8000 --reload
-  #   build:
-  #     context: ../machine_learning
-  #     target: cpu
-  #     dockerfile: ../machine_learning/Dockerfile
-  #   volumes:
-  #     - ../machine_learning/app:/code/app
-  #     - ${UPLOAD_LOCATION}:/code/app/upload
-  #   ports:
-  #     - 2285:8000
-  #   expose:
-  #     - "8000"
-  #   depends_on:
-  #     - database
-  #   networks:
-  #     - immich_network
 
 networks:
   immich_network:
