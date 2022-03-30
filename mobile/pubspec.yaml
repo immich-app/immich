@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
-  photo_manager: ^1.3.10
+  photo_manager: ^2.0.6
   flutter_hooks: ^0.18.0
   hooks_riverpod: ^2.0.0-dev.0
   hive:
