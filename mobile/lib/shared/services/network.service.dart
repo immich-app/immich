@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -25,16 +26,36 @@ class NetworkService {
     }
   }
 
-  Future<dynamic> getRequest({required String url}) async {
+  Future<dynamic> getRequest({required String url, bool isByteResponse = false, bool isStreamReponse = false}) async {
     try {
       var dio = Dio();
       dio.interceptors.add(AuthenticatedRequestInterceptor());
 
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-      Response res = await dio.get('$savedEndpoint/$url');
 
-      if (res.statusCode == 200) {
-        return res;
+      if (isByteResponse) {
+        Response<List<int>> res = await dio.get<List<int>>(
+          '$savedEndpoint/$url',
+          options: Options(responseType: ResponseType.bytes),
+        );
+
+        if (res.statusCode == 200) {
+          return res;
+        }
+      } else if (isStreamReponse) {
+        Response<ResponseBody> res = await dio.get<ResponseBody>(
+          '$savedEndpoint/$url',
+          options: Options(responseType: ResponseType.stream),
+        );
+
+        if (res.statusCode == 200) {
+          return res;
+        }
+      } else {
+        Response res = await dio.get('$savedEndpoint/$url');
+        if (res.statusCode == 200) {
+          return res;
+        }
       }
     } on DioError catch (e) {
       debugPrint("DioError: ${e.response}");
