@@ -154,9 +154,9 @@ export class AssetService {
     });
 
     if (query.isThumb === 'false' || !query.isThumb) {
-      file = createReadStream(asset.originalPath);
+      file = createReadStream(asset.originalPath, 'utf-8');
     } else {
-      file = createReadStream(asset.resizePath);
+      file = createReadStream(asset.resizePath, 'utf-8');
     }
 
     return new StreamableFile(file);
