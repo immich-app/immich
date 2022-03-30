@@ -146,10 +146,29 @@ export class AssetService {
     });
   }
 
+  public async downloadFile(authUser: AuthUserDto, query: ServeFileDto, res: Res) {
+    let file = null;
+    const asset = await this.findOne(authUser, query.did, query.aid);
+    res.set({
+      'Content-Type': asset.mimeType,
+    });
+
+    if (query.isThumb === 'false' || !query.isThumb) {
+      file = createReadStream(asset.originalPath);
+    } else {
+      file = createReadStream(asset.resizePath);
+    }
+
+    return new StreamableFile(file);
+  }
+
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
     let file = null;
     const asset = await this.findOne(authUser, query.did, query.aid);
 
+    if (!asset) {
+      throw new BadRequestException('Asset does not exist');
+    }
     // Handle Sending Images
     if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
       res.set({
