@@ -81,7 +81,7 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Query(ValidationPipe) query: ServeFileDto,
-  ): Promise<StreamableFile> {
+  ) {
     return this.assetService.downloadFile(authUser, query, res);
   }
 

@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/asset_viewer/models/request_download_asset_info.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
@@ -32,7 +31,7 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
           iconSize: iconSize,
           splashRadius: iconSize,
           onPressed: () {
-            ref.watch(downloadAssetProvider(RequestDownloadAssetInfo(asset.deviceAssetId, asset.deviceId)));
+            ref.watch(downloadAssetProvider(asset));
           },
           icon: const Icon(Icons.cloud_download_rounded),
         ),
