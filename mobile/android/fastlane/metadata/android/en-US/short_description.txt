@@ -1,1 +1,1 @@
-This is a client app for the self-hostable Immich Server (which can be found with the app's source repo). You will need to run/manage the server on your own in order to use the app.
+This is a client app for the self-hostable Immich Server
