@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -6,10 +8,12 @@ import 'package:path/path.dart' as p;
 import 'package:http/http.dart' as http;
 
 import 'package:photo_manager/photo_manager.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ImageViewerService {
   Future<bool> downloadAssetToDevice(ImmichAsset asset) async {
     try {
+      String fileName = p.basename(asset.originalPath);
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       Uri filePath =
           Uri.parse("$savedEndpoint/asset/download?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false");
@@ -19,16 +23,30 @@ class ImageViewerService {
         headers: {"Authorization": "Bearer ${Hive.box(userInfoBox).get(accessTokenKey)}"},
       );
 
-      final AssetEntity? entity = await PhotoManager.editor.saveImage(
-        res.bodyBytes,
-        title: p.basename(asset.originalPath),
-      );
+      print(res.bodyBytes.length);
+
+      final AssetEntity? entity;
+
+      if (asset.type == 'IMAGE') {
+        entity = await PhotoManager.editor.saveImage(
+          res.bodyBytes,
+          title: p.basename(asset.originalPath),
+        );
+      } else {
+        final tempDir = await getTemporaryDirectory();
+        File tempFile = await File('${tempDir.path}/$fileName').create();
+        tempFile.writeAsBytesSync(res.bodyBytes);
+        entity = await PhotoManager.editor.saveVideo(tempFile, title: fileName);
+      }
+
+      print(entity);
 
       if (entity != null) {
+        print("Save Success");
         return true;
       }
     } catch (e) {
-      debugPrint("Errir gettubg file $e");
+      debugPrint("Error saving file $e");
       return false;
     }
 
