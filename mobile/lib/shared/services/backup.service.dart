@@ -41,9 +41,9 @@ class BackupService {
     for (var entity in assetList) {
       try {
         if (entity.type == AssetType.video) {
-          file = await entity.file;
+          file = await entity.originFile;
         } else {
-          file = await entity.originFileWithSubtype.timeout(const Duration(seconds: 5));
+          file = await entity.originFile.timeout(const Duration(seconds: 5));
         }
 
         if (file != null) {
