@@ -22,6 +22,7 @@ services:
       - database
     networks:
       - immich_network
+    restart: unless-stopped
 
   immich_microservices:
     image: immich-microservices:1.4.0
@@ -43,7 +44,7 @@ services:
       - database
     networks:
       - immich_network
-
+    restart: unless-stopped
 
   redis:
     container_name: immich_redis

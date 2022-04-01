@@ -39,6 +39,7 @@ export class ImageClassifierService {
           }
         }
 
+        tf.dispose(decodedImage);
         return tags;
       }
     } catch (e) {
