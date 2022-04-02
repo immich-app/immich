@@ -1,28 +1,34 @@
 import 'dart:convert';
 
+enum DownloadAssetStatus { idle, loading, success, error }
+
 class ImageViewerPageState {
-  final bool isBottomSheetEnable;
+  // enum
+  final DownloadAssetStatus downloadAssetStatus;
+
   ImageViewerPageState({
-    required this.isBottomSheetEnable,
+    required this.downloadAssetStatus,
   });
 
   ImageViewerPageState copyWith({
-    bool? isBottomSheetEnable,
+    DownloadAssetStatus? downloadAssetStatus,
   }) {
     return ImageViewerPageState(
-      isBottomSheetEnable: isBottomSheetEnable ?? this.isBottomSheetEnable,
+      downloadAssetStatus: downloadAssetStatus ?? this.downloadAssetStatus,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'isBottomSheetEnable': isBottomSheetEnable,
-    };
+    final result = <String, dynamic>{};
+
+    result.addAll({'downloadAssetStatus': downloadAssetStatus.index});
+
+    return result;
   }
 
   factory ImageViewerPageState.fromMap(Map<String, dynamic> map) {
     return ImageViewerPageState(
-      isBottomSheetEnable: map['isBottomSheetEnable'] ?? false,
+      downloadAssetStatus: DownloadAssetStatus.values[map['downloadAssetStatus'] ?? 0],
     );
   }
 
@@ -31,15 +37,15 @@ class ImageViewerPageState {
   factory ImageViewerPageState.fromJson(String source) => ImageViewerPageState.fromMap(json.decode(source));
 
   @override
-  String toString() => 'ImageViewerPageState(isBottomSheetEnable: $isBottomSheetEnable)';
+  String toString() => 'ImageViewerPageState(downloadAssetStatus: $downloadAssetStatus)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is ImageViewerPageState && other.isBottomSheetEnable == isBottomSheetEnable;
+    return other is ImageViewerPageState && other.downloadAssetStatus == downloadAssetStatus;
   }
 
   @override
-  int get hashCode => isBottomSheetEnable.hashCode;
+  int get hashCode => downloadAssetStatus.hashCode;
 }

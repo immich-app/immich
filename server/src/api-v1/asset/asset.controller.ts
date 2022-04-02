@@ -76,6 +76,15 @@ export class AssetController {
     return 'ok';
   }
 
+  @Get('/download')
+  async downloadFile(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Response({ passthrough: true }) res: Res,
+    @Query(ValidationPipe) query: ServeFileDto,
+  ) {
+    return this.assetService.downloadFile(authUser, query, res);
+  }
+
   @Get('/file')
   async serveFile(
     @Headers() headers,

@@ -73,7 +73,7 @@ class BackupService {
           });
 
           // Build thumbnail multipart data
-          var thumbnailData = await entity.thumbDataWithSize(1280, 720);
+          var thumbnailData = await entity.thumbnailDataWithSize(const ThumbnailSize(720, 1280));
           if (thumbnailData != null) {
             thumbnailUploadData = MultipartFile.fromBytes(
               List.from(thumbnailData),

@@ -13,6 +13,7 @@ import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
+import path from 'path';
 
 const fileInfo = promisify(stat);
 
@@ -146,10 +147,26 @@ export class AssetService {
     });
   }
 
+  public async downloadFile(authUser: AuthUserDto, query: ServeFileDto, res: Res) {
+    let file = null;
+    const asset = await this.findOne(authUser, query.did, query.aid);
+
+    if (query.isThumb === 'false' || !query.isThumb) {
+      file = createReadStream(asset.originalPath);
+    } else {
+      file = createReadStream(asset.resizePath);
+    }
+
+    return new StreamableFile(file);
+  }
+
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
     let file = null;
     const asset = await this.findOne(authUser, query.did, query.aid);
 
+    if (!asset) {
+      throw new BadRequestException('Asset does not exist');
+    }
     // Handle Sending Images
     if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
       res.set({

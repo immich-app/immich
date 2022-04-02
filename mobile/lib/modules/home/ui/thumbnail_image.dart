@@ -65,8 +65,8 @@ class ThumbnailImage extends HookConsumerWidget {
           } else {
             AutoRouter.of(context).push(
               VideoViewerRoute(
-                videoUrl: '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-              ),
+                  videoUrl: '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
+                  asset: asset),
             );
           }
         }

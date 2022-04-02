@@ -29,6 +29,7 @@ export class ObjectDetectionService {
           }
         }
 
+        tf.dispose(decodedImage);
         return [...tags];
       }
     } catch (e) {

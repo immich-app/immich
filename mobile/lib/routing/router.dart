@@ -9,7 +9,7 @@ import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/views/backup_controller_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
-import 'package:immich_mobile/shared/views/video_viewer_page.dart';
+import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 
 part 'router.gr.dart';
 

@@ -97,6 +97,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
         textTheme: GoogleFonts.workSansTextTheme(
           Theme.of(context).textTheme.apply(fontSizeFactor: 1.0),
         ),
+        snackBarTheme: SnackBarThemeData(contentTextStyle: TextStyle(fontFamily: GoogleFonts.workSans().fontFamily)),
         scaffoldBackgroundColor: const Color(0xFFf6f8fe),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
