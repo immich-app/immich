@@ -1,0 +1,2 @@
+* User can now download assets to local device
+* Increased the font size for curated image thumbnail information on the seach page
