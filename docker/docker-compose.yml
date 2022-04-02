@@ -5,7 +5,7 @@ services:
     image: immich-server:1.4.0
     build:
       context: ../server
-      dockerfile: ../server/Dockerfile
+      dockerfile: Dockerfile
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     expose:
       - "3000"
@@ -28,7 +28,7 @@ services:
     image: immich-microservices:1.4.0
     build:
       context: ../microservices
-      dockerfile: ../microservices/Dockerfile
+      dockerfile: Dockerfile
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     expose:
       - "3001"

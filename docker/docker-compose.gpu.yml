@@ -5,7 +5,7 @@ services:
     image: immich-server-dev:1.4.0
     build:
       context: ../server
-      dockerfile: ../server/Dockerfile
+      dockerfile: Dockerfile
     command: npm run start:dev
     expose:
       - "3000"
@@ -25,7 +25,7 @@ services:
     image: immich-microservices-dev:1.4.0
     build:
       context: ../microservices
-      dockerfile: ../microservices/Dockerfile
+      dockerfile: Dockerfile
     command: npm run start:dev
     deploy:
       resources:
