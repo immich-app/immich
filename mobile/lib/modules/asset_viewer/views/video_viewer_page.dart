@@ -4,6 +4,9 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:chewie/chewie.dart';
+import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
@@ -22,6 +25,8 @@ class VideoViewerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final downloadAssetStatus = ref.watch(imageViewerStateProvider).downloadAssetStatus;
+
     String jwtToken = Hive.box(userInfoBox).get(accessTokenKey);
 
     getAssetExif() async {
@@ -39,19 +44,31 @@ class VideoViewerPage extends HookConsumerWidget {
         asset: asset,
         onMoreInfoPressed: () {
           showModalBottomSheet(
-              backgroundColor: Colors.black,
-              barrierColor: Colors.transparent,
-              isScrollControlled: false,
-              context: context,
-              builder: (context) {
-                return ExifBottomSheet(assetDetail: assetDetail!);
-              });
+            backgroundColor: Colors.black,
+            barrierColor: Colors.transparent,
+            isScrollControlled: false,
+            context: context,
+            builder: (context) {
+              return ExifBottomSheet(assetDetail: assetDetail!);
+            },
+          );
+        },
+        onDownloadPressed: () {
+          ref.watch(imageViewerStateProvider.notifier).downloadAsset(asset, context);
         },
       ),
       body: SafeArea(
-        child: VideoThumbnailPlayer(
-          url: videoUrl,
-          jwtToken: jwtToken,
+        child: Stack(
+          children: [
+            VideoThumbnailPlayer(
+              url: videoUrl,
+              jwtToken: jwtToken,
+            ),
+            if (downloadAssetStatus == DownloadAssetStatus.loading)
+              const Center(
+                child: DownloadLoadingIndicator(),
+              ),
+          ],
         ),
       ),
     );

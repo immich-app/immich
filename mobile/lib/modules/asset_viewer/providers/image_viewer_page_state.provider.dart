@@ -1,29 +1,43 @@
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/services/image_viewer.service.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
-  ImageViewerStateNotifier() : super(ImageViewerPageState(isBottomSheetEnable: false));
+  final ImageViewerService _imageViewerService = ImageViewerService();
 
-  void toggleBottomSheet() {
-    bool isBottomSheetEnable = state.isBottomSheetEnable;
+  ImageViewerStateNotifier() : super(ImageViewerPageState(downloadAssetStatus: DownloadAssetStatus.idle));
 
-    if (isBottomSheetEnable) {
-      state.copyWith(isBottomSheetEnable: false);
+  void downloadAsset(ImmichAsset asset, BuildContext context) async {
+    state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.loading);
+
+    bool isSuccess = await _imageViewerService.downloadAssetToDevice(asset);
+
+    if (isSuccess) {
+      state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.success);
+
+      ImmichToast.show(
+        context: context,
+        msg: "Download Success",
+        toastType: ToastType.success,
+        gravity: ToastGravity.BOTTOM,
+      );
     } else {
-      state.copyWith(isBottomSheetEnable: true);
+      state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.error);
+      ImmichToast.show(
+        context: context,
+        msg: "Download Error",
+        toastType: ToastType.error,
+        gravity: ToastGravity.BOTTOM,
+      );
     }
+
+    state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.idle);
   }
 }
 
 final imageViewerStateProvider =
     StateNotifierProvider<ImageViewerStateNotifier, ImageViewerPageState>(((ref) => ImageViewerStateNotifier()));
-
-final downloadAssetProvider = FutureProvider.autoDispose.family<String, ImmichAsset>((ref, asset) async {
-  final ImageViewerService imageViewerService = ImageViewerService();
-
-  imageViewerService.downloadAssetToDevice(asset);
-
-  return "ok";
-});

@@ -8,11 +8,23 @@ class ImmichToast {
     required BuildContext context,
     required String msg,
     ToastType toastType = ToastType.info,
+    ToastGravity gravity = ToastGravity.TOP,
   }) {
     FToast fToast;
 
     fToast = FToast();
     fToast.init(context);
+
+    _getColor(ToastType type, BuildContext context) {
+      switch (type) {
+        case ToastType.info:
+          return Theme.of(context).primaryColor;
+        case ToastType.success:
+          return const Color.fromARGB(255, 78, 140, 124);
+        case ToastType.error:
+          return const Color.fromARGB(255, 220, 48, 85);
+      }
+    }
 
     fToast.showToast(
       child: Container(
@@ -36,8 +48,8 @@ class ImmichToast {
                 : Container(),
             (toastType == ToastType.success)
                 ? const Icon(
-                    Icons.check,
-                    color: Color.fromARGB(255, 104, 248, 140),
+                    Icons.check_circle_rounded,
+                    color: Color.fromARGB(255, 78, 140, 124),
                   )
                 : Container(),
             (toastType == ToastType.error)
@@ -53,7 +65,7 @@ class ImmichToast {
               child: Text(
                 msg,
                 style: TextStyle(
-                  color: Theme.of(context).primaryColor,
+                  color: _getColor(toastType, context),
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
                 ),
@@ -62,7 +74,7 @@ class ImmichToast {
           ],
         ),
       ),
-      gravity: ToastGravity.TOP,
+      gravity: gravity,
       toastDuration: const Duration(seconds: 2),
     );
   }

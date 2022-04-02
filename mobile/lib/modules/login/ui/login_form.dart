@@ -128,9 +128,10 @@ class LoginButton extends ConsumerWidget {
             AutoRouter.of(context).pushNamed("/tab-controller-page");
           } else {
             ImmichToast.show(
-                context: context,
-                msg: "Error logging you in, check server url, email and password!",
-                toastType: ToastType.error);
+              context: context,
+              msg: "Error logging you in, check server url, email and password!",
+              toastType: ToastType.error,
+            );
           }
         },
         child: const Text("Login"));

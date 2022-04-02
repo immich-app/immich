@@ -23,8 +23,6 @@ class ImageViewerService {
         headers: {"Authorization": "Bearer ${Hive.box(userInfoBox).get(accessTokenKey)}"},
       );
 
-      print(res.bodyBytes.length);
-
       final AssetEntity? entity;
 
       if (asset.type == 'IMAGE') {
@@ -39,10 +37,7 @@ class ImageViewerService {
         entity = await PhotoManager.editor.saveVideo(tempFile, title: fileName);
       }
 
-      print(entity);
-
       if (entity != null) {
-        print("Save Success");
         return true;
       }
     } catch (e) {
