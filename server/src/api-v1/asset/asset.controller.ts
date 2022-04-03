@@ -115,18 +115,8 @@ export class AssetController {
     return this.assetService.searchAsset(authUser, searchAssetDto);
   }
 
-  @Get('/new')
-  async getNewAssets(@GetAuthUser() authUser: AuthUserDto, @Query(ValidationPipe) query: GetNewAssetQueryDto) {
-    return await this.assetService.getNewAssets(authUser, query.latestDate);
-  }
-
-  @Get('/all')
-  async getAllAssets(@GetAuthUser() authUser: AuthUserDto, @Query(ValidationPipe) query: GetAllAssetQueryDto) {
-    return await this.assetService.getAllAssets(authUser, query);
-  }
-
   @Get('/')
-  async getAllAssetsNoPagination(@GetAuthUser() authUser: AuthUserDto) {
+  async getAllAssets(@GetAuthUser() authUser: AuthUserDto) {
     return await this.assetService.getAllAssetsNoPagination(authUser);
   }
 
@@ -137,7 +127,7 @@ export class AssetController {
 
   @Get('/assetById/:assetId')
   async getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param('assetId') assetId) {
-    return this.assetService.getAssetById(authUser, assetId);
+    return await this.assetService.getAssetById(authUser, assetId);
   }
 
   @Delete('/')
