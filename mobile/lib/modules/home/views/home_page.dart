@@ -33,6 +33,11 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, []);
 
+    void reloadAllAsset() {
+      print("reload all asset");
+      ref.read(assetProvider.notifier).getAllAsset();
+    }
+
     Widget _buildBody() {
       if (assetGroupByDateTime.isNotEmpty) {
         int? lastMonth;
@@ -86,7 +91,9 @@ class HomePage extends HookConsumerWidget {
                               child: null,
                             ),
                           )
-                        : const ImmichSliverAppBar(),
+                        : ImmichSliverAppBar(
+                            onPopBack: reloadAllAsset,
+                          ),
                     duration: const Duration(milliseconds: 350),
                   ),
                   ..._imageGridGroup
