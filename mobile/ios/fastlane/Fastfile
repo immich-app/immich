@@ -21,9 +21,9 @@ platform :ios do
     increment_version_number(
       version_number: "1.5.0"
     )
-    increment_build_number({
-      build_number: 0
-    })
+    increment_build_number(
+      build_number: latest_testflight_build_number + 1,
+    )
     build_app(scheme: "Runner",
               workspace: "Runner.xcworkspace",
               xcargs: "-allowProvisioningUpdates")

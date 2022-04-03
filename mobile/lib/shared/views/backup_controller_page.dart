@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/login/models/authentication_state.model.da
 import 'package:immich_mobile/shared/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
@@ -23,6 +24,7 @@ class BackupControllerPage extends HookConsumerWidget {
         ref.read(backupProvider.notifier).getBackupInfo();
       }
 
+      ref.watch(websocketProvider.notifier).stopListenToEvent('on_upload_success');
       return null;
     }, []);
 
@@ -107,6 +109,7 @@ class BackupControllerPage extends HookConsumerWidget {
         ),
         leading: IconButton(
             onPressed: () {
+              ref.watch(websocketProvider.notifier).listenUploadEvent();
               AutoRouter.of(context).pop(true);
             },
             icon: const Icon(Icons.arrow_back_ios_rounded)),

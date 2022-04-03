@@ -76,42 +76,6 @@ export class AssetService {
     }
   }
 
-  public async getAllAssets(authUser: AuthUserDto, query: GetAllAssetQueryDto): Promise<GetAllAssetReponseDto> {
-    try {
-      const assets = await this.assetRepository
-        .createQueryBuilder('a')
-        .where('a."userId" = :userId', { userId: authUser.id })
-        .andWhere('a."createdAt" < :lastQueryCreatedAt', {
-          lastQueryCreatedAt: query.nextPageKey || new Date().toISOString(),
-        })
-        .orderBy('a."createdAt"::date', 'DESC')
-        .take(5000)
-        .getMany();
-
-      if (assets.length > 0) {
-        const data = _.groupBy(assets, (a) => new Date(a.createdAt).toISOString().slice(0, 10));
-        const formattedData = [];
-        Object.keys(data).forEach((v) => formattedData.push({ date: v, assets: data[v] }));
-
-        const response = new GetAllAssetReponseDto();
-        response.count = assets.length;
-        response.data = formattedData;
-        response.nextPageKey = assets[assets.length - 1].createdAt;
-
-        return response;
-      } else {
-        const response = new GetAllAssetReponseDto();
-        response.count = 0;
-        response.data = [];
-        response.nextPageKey = 'null';
-
-        return response;
-      }
-    } catch (e) {
-      Logger.error(e, 'getAllAssets');
-    }
-  }
-
   public async findOne(authUser: AuthUserDto, deviceId: string, assetId: string): Promise<AssetEntity> {
     const rows = await this.assetRepository.query(
       'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."userId" = $2 AND a."deviceId" = $3',
@@ -123,18 +87,6 @@ export class AssetService {
     }
 
     return rows[0] as AssetEntity;
-  }
-
-  public async getNewAssets(authUser: AuthUserDto, latestDate: string) {
-    return await this.assetRepository.find({
-      where: {
-        userId: authUser.id,
-        createdAt: MoreThan(latestDate),
-      },
-      order: {
-        createdAt: 'ASC', // ASC order to add existed asset the latest group first before creating a new date group.
-      },
-    });
   }
 
   public async getAssetById(authUser: AuthUserDto, assetId: string) {

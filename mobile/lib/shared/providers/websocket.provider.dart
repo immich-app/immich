@@ -106,6 +106,20 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
       }
     }
   }
+
+  stopListenToEvent(String eventName) {
+    debugPrint("[Websocket] Stop listening to event $eventName");
+    state.socket?.off(eventName);
+  }
+
+  listenUploadEvent() {
+    debugPrint("[Websocket] Start listening to event on_upload_success");
+    state.socket?.on('on_upload_success', (data) {
+      var jsonString = jsonDecode(data.toString());
+      ImmichAsset newAsset = ImmichAsset.fromMap(jsonString);
+      ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
+    });
+  }
 }
 
 final websocketProvider = StateNotifierProvider<WebsocketNotifier, WebscoketState>((ref) {
