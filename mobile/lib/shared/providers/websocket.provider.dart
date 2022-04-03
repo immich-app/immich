@@ -108,12 +108,12 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
   }
 
   stopListenToEvent(String eventName) {
-    debugPrint("Websocket stop listening to event $eventName");
+    debugPrint("[Websocket] Stop listening to event $eventName");
     state.socket?.off(eventName);
   }
 
   listenUploadEvent() {
-    debugPrint("listening to event onuploadsuccess");
+    debugPrint("[Websocket] Start listening to event on_upload_success");
     state.socket?.on('on_upload_success', (data) {
       var jsonString = jsonDecode(data.toString());
       ImmichAsset newAsset = ImmichAsset.fromMap(jsonString);

@@ -34,7 +34,6 @@ class HomePage extends HookConsumerWidget {
     }, []);
 
     void reloadAllAsset() {
-      print("reload all asset");
       ref.read(assetProvider.notifier).getAllAsset();
     }
 
