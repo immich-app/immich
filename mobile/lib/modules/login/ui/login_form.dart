@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -33,9 +32,12 @@ class LoginForm extends HookConsumerWidget {
               ),
               Text(
                 'IMMICH',
-                style: GoogleFonts.snowburstOne(
-                    textStyle:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 48, color: Theme.of(context).primaryColor)),
+                style: TextStyle(
+                  fontFamily: 'SnowburstOne',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 48,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
               EmailInput(controller: usernameController),
               PasswordInput(controller: passwordController),

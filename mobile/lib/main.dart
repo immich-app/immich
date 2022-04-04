@@ -10,7 +10,6 @@ import 'package:immich_mobile/shared/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'constants/hive_box.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   await Hive.initFlutter();
@@ -94,10 +93,11 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
       theme: ThemeData(
         brightness: Brightness.light,
         primarySwatch: Colors.indigo,
-        textTheme: GoogleFonts.workSansTextTheme(
-          Theme.of(context).textTheme.apply(fontSizeFactor: 1.0),
-        ),
-        snackBarTheme: SnackBarThemeData(contentTextStyle: TextStyle(fontFamily: GoogleFonts.workSans().fontFamily)),
+        // textTheme: GoogleFonts.workSansTextTheme(
+        //   Theme.of(context).textTheme.apply(fontSizeFactor: 1.0),
+        // ),
+        fontFamily: 'WorkSans',
+        snackBarTheme: const SnackBarThemeData(contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
         scaffoldBackgroundColor: const Color(0xFFf6f8fe),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
