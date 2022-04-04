@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.5.0+8
+version: 1.5.1+9
 
 environment:
   sdk: ">=2.15.1 <3.0.0"
@@ -18,7 +18,7 @@ dependencies:
   hive_flutter:
   dio: ^4.0.4
   cached_network_image: ^3.2.0
-  google_fonts: ^2.2.0
+  # google_fonts: ^2.2.0
   percent_indicator: ^3.4.0
   intl: ^0.17.0
   auto_route: ^3.2.2
@@ -50,6 +50,15 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+  fonts:
+    - family: WorkSans
+      fonts:
+        - asset: fonts/WorkSans.ttf
+        - asset: fonts/WorkSans-Italic.ttf
+          style: italic
+    - family: SnowburstOne
+      fonts:
+        - asset: fonts/SnowburstOne.ttf
 
 flutter_icons:
   image_path_android: "assets/immich-logo-no-outline.png"
