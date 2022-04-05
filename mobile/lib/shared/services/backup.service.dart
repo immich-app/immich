@@ -20,13 +20,17 @@ class BackupService {
   Future<List<String>> getDeviceBackupAsset() async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
 
-    Response response = await _networkService.getRequest(url: "asset/$deviceId");
+    Response response =
+        await _networkService.getRequest(url: "asset/$deviceId");
     List<dynamic> result = jsonDecode(response.toString());
 
     return result.cast<String>();
   }
 
-  backupAsset(List<AssetEntity> assetList, CancelToken cancelToken, Function(String, String) singleAssetDoneCb,
+  backupAsset(
+      List<AssetEntity> assetList,
+      CancelToken cancelToken,
+      Function(String, String) singleAssetDoneCb,
       Function(int, int) uploadProgress) async {
     var dio = Dio();
     dio.interceptors.add(AuthenticatedRequestInterceptor());
@@ -49,7 +53,8 @@ class BackupService {
         if (file != null) {
           FormData formData;
           String originalFileName = await entity.titleAsync;
-          String fileNameWithoutPath = originalFileName.toString().split(".")[0];
+          String fileNameWithoutPath =
+              originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
           var mimeType = FileHelper.getMimeType(file.path);
           assetRawUploadData = await MultipartFile.fromFile(
@@ -73,7 +78,8 @@ class BackupService {
           });
 
           // Build thumbnail multipart data
-          var thumbnailData = await entity.thumbnailDataWithSize(const ThumbnailSize(720, 1280));
+          var thumbnailData = await entity
+              .thumbnailDataWithSize(const ThumbnailSize(720, 1280));
           if (thumbnailData != null) {
             thumbnailUploadData = MultipartFile.fromBytes(
               List.from(thumbnailData),
@@ -112,7 +118,6 @@ class BackupService {
         }
       } on DioError catch (e) {
         debugPrint("DioError backupAsset: ${e.response}");
-        break;
       } catch (e) {
         debugPrint("ERROR backupAsset: ${e.toString()}");
         continue;
@@ -137,7 +142,8 @@ class BackupService {
     }
   }
 
-  Future<DeviceInfoRemote> setAutoBackup(bool status, String deviceId, String deviceType) async {
+  Future<DeviceInfoRemote> setAutoBackup(
+      bool status, String deviceId, String deviceType) async {
     var res = await _networkService.patchRequest(url: 'device-info', data: {
       "isAutoBackup": status,
       "deviceId": deviceId,

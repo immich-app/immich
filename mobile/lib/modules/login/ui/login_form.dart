@@ -12,9 +12,11 @@ class LoginForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usernameController = useTextEditingController(text: 'testuser@email.com');
+    final usernameController =
+        useTextEditingController(text: 'testuser@email.com');
     final passwordController = useTextEditingController(text: 'password');
-    final serverEndpointController = useTextEditingController(text: 'http://192.168.1.216:2283');
+    final serverEndpointController =
+        useTextEditingController(text: 'http://192.168.1.103:2283');
 
     return Center(
       child: ConstrainedBox(
@@ -58,14 +60,17 @@ class LoginForm extends HookConsumerWidget {
 class ServerEndpointInput extends StatelessWidget {
   final TextEditingController controller;
 
-  const ServerEndpointInput({Key? key, required this.controller}) : super(key: key);
+  const ServerEndpointInput({Key? key, required this.controller})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       decoration: const InputDecoration(
-          labelText: 'Server Endpoint URL', border: OutlineInputBorder(), hintText: 'http://your-server-ip:port'),
+          labelText: 'Server Endpoint URL',
+          border: OutlineInputBorder(),
+          hintText: 'http://your-server-ip:port'),
     );
   }
 }
@@ -79,8 +84,10 @@ class EmailInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration:
-          const InputDecoration(labelText: 'Email', border: OutlineInputBorder(), hintText: 'youremail@email.com'),
+      decoration: const InputDecoration(
+          labelText: 'Email',
+          border: OutlineInputBorder(),
+          hintText: 'youremail@email.com'),
     );
   }
 }
@@ -95,7 +102,10 @@ class PasswordInput extends StatelessWidget {
     return TextFormField(
       obscureText: true,
       controller: controller,
-      decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder(), hintText: 'password'),
+      decoration: const InputDecoration(
+          labelText: 'Password',
+          border: OutlineInputBorder(),
+          hintText: 'password'),
     );
   }
 }
@@ -121,7 +131,8 @@ class LoginButton extends ConsumerWidget {
 
           var isAuthenicated = await ref
               .read(authenticationProvider.notifier)
-              .login(emailController.text, passwordController.text, serverEndpointController.text);
+              .login(emailController.text, passwordController.text,
+                  serverEndpointController.text);
 
           if (isAuthenicated) {
             // Resume backup (if enable) then navigate
@@ -131,7 +142,8 @@ class LoginButton extends ConsumerWidget {
           } else {
             ImmichToast.show(
               context: context,
-              msg: "Error logging you in, check server url, email and password!",
+              msg:
+                  "Error logging you in, check server url, email and password!",
               toastType: ToastType.error,
             );
           }
