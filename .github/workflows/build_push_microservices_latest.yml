@@ -1,4 +1,4 @@
-name: Build Server - Latest
+name: Build Microservices - Latest
 
 on:
   workflow_dispatch:
@@ -32,10 +32,9 @@ jobs:
       - name: Build and push Immich
         uses: docker/build-push-action@v2.10.0
         with:
-          context: ./server
-          file: ./server/Dockerfile
-          #platforms: linux/amd64,linux/arm64,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          context: ./microservices
+          file: ./microservices/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            altran1502/immich-server:latest
+            altran1502/immich-microservices:latest

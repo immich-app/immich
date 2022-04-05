@@ -2,7 +2,9 @@ name: Build Server - Release
 
 on:
   workflow_dispatch:
-
+  release:
+    types: [published]
+    
 jobs:
   buildandpush:
     runs-on: ubuntu-latest
