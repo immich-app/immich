@@ -1,4 +1,4 @@
-name: Build Server - Release
+name: Build and push Docker image - Release
 
 on:
   workflow_dispatch:
@@ -41,7 +41,8 @@ jobs:
           file: ./server/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.previoustag.outputs.tag }}
+          tags: |
+            altran1502/immich-server:${{ steps.previoustag.outputs.tag }}
 
   build_and_push_microservice_release:
     runs-on: ubuntu-latest
@@ -78,4 +79,5 @@ jobs:
           file: ./microservices/Dockerfile
           platforms: linux/arm/v7,linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.previoustag.outputs.tag }}
+          tags: |
+              altran1502/immich-microservices:${{ steps.previoustag.outputs.tag }}
