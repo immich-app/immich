@@ -145,7 +145,11 @@ This is also a meaningful way to give me motivation and encounragment to continu
 Cheer! 🎉
 
 # Known Issue
- 
+
+## TensorFlow Build Issue
+
+*This is a known issue on RaspberryPi 4 arm64-v7 and incorrect Promox setup*
+
 TensorFlow doesn't run with older CPU architecture, it requires CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
  
 ```bash
