@@ -38,7 +38,6 @@ jobs:
 
   build_and_push_microservice_latest:
       runs-on: ubuntu-latest
-      needs: setup_build
       steps:
         - name: Checkout
           uses: actions/checkout@v3
