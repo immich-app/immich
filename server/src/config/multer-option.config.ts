@@ -12,7 +12,7 @@ export const multerConfig = {
 
 export const multerOption: MulterOptions = {
   fileFilter: (req: Request, file: any, cb: any) => {
-    if (file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|x-msvideo|quicktime|heic|heif|dng)$/)) {
+    if (file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|x-msvideo|quicktime|heic|heif|dng|webp)$/)) {
       cb(null, true);
     } else {
       cb(new HttpException(`Unsupported file type ${extname(file.originalname)}`, HttpStatus.BAD_REQUEST), false);
