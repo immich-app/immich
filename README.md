@@ -111,18 +111,29 @@ curl --location --request POST 'http://your-server-ip:2283/auth/signUp' \
 
 ## Run mobile app
 
-### Android
+## Android
 
-Download `apk` in release tab and run on your phone. You can follow this guide on how to do that
+#### Download latest `apk` in release tab and run on your phone. You can follow this guide on how to do that
 
 - [Run APK on Android](https://www.lifewire.com/install-apk-on-android-4177185)
 
-### iOS
+#### You can also download the app from Google Play Store [here](https://play.google.com/store/apps/details?id=app.alextran.immich) 
 
-You can download the app from Apple AppStore [here](https://apps.apple.com/us/app/immich/id1613945652):
+*The App version might be lagging behind the latest release due to the review process.*
 
 <p align="left">
-  <img src="design/ios-qr-code.png" width="250" title="Apple App Store">
+  <img src="design/google-play-qr-code.png" width="200" title="Google Play Store">
+<p/>
+
+## iOS
+
+#### You can download the app from Apple AppStore [here](https://apps.apple.com/us/app/immich/id1613945652):
+
+*The App version might be lagging behind the latest release due to the review process.*
+
+
+<p align="left">
+  <img src="design/ios-qr-code.png" width="200" title="Apple App Store">
 <p/>
 
 # Support
