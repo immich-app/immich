@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   release:
     types: [published]
-    
+
 jobs:
-  buildandpush:
+  build_and_push_server_release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
