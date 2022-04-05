@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   immich_server:
-    image: immich-server:1.5.0
+    image: immich-server:1.6.0
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
 
   immich_microservices:
-    image: immich-microservices:1.5.0
+    image: immich-microservices:1.6.0
     build:
       context: ../microservices
       dockerfile: Dockerfile
