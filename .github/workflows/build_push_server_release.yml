@@ -18,13 +18,12 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: altran1502/immich-server
-          tags: type=semver,pattern={{major}}.{{minor}}
     
       - name: 'Get Previous tag'
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
-            fallback: 1.0.0 
+            fallback: latest 
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1.2.0
@@ -46,5 +45,5 @@ jobs:
           file: ./server/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.previoustag.outputs.tag }}
           labels: ${{ steps.meta.outputs.labels }}
