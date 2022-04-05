@@ -37,24 +37,29 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   Ref? ref;
   final BackupService _backupService = BackupService();
   final ServerInfoService _serverInfoService = ServerInfoService();
-  final StreamController _onAssetBackupStreamCtrl = StreamController.broadcast();
+  final StreamController _onAssetBackupStreamCtrl =
+      StreamController.broadcast();
 
   void getBackupInfo() async {
     _updateServerInfo();
 
-    List<AssetPathEntity> list = await PhotoManager.getAssetPathList(onlyAll: true, type: RequestType.common);
+    List<AssetPathEntity> list = await PhotoManager.getAssetPathList(
+        onlyAll: true, type: RequestType.common);
     List<String> didBackupAsset = await _backupService.getDeviceBackupAsset();
 
     if (list.isEmpty) {
       debugPrint("No Asset On Device");
       state = state.copyWith(
-          backupProgress: BackUpProgressEnum.idle, totalAssetCount: 0, assetOnDatabase: didBackupAsset.length);
+          backupProgress: BackUpProgressEnum.idle,
+          totalAssetCount: 0,
+          assetOnDatabase: didBackupAsset.length);
       return;
     }
 
     int totalAsset = list[0].assetCount;
 
-    state = state.copyWith(totalAssetCount: totalAsset, assetOnDatabase: didBackupAsset.length);
+    state = state.copyWith(
+        totalAssetCount: totalAsset, assetOnDatabase: didBackupAsset.length);
   }
 
   void startBackupProcess() async {
@@ -67,8 +72,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       await PhotoManager.clearFileCache();
       // await PhotoManager.presentLimited();
       // Gather assets info
-      List<AssetPathEntity> list =
-          await PhotoManager.getAssetPathList(hasAll: true, onlyAll: true, type: RequestType.common);
+      List<AssetPathEntity> list = await PhotoManager.getAssetPathList(
+          hasAll: true, onlyAll: true, type: RequestType.common);
 
       // Get device assets info from database
       // Compare and find different assets that has not been backing up
@@ -78,14 +83,18 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       if (list.isEmpty) {
         debugPrint("No Asset On Device - Abort Backup Process");
         state = state.copyWith(
-            backupProgress: BackUpProgressEnum.idle, totalAssetCount: 0, assetOnDatabase: backupAsset.length);
+            backupProgress: BackUpProgressEnum.idle,
+            totalAssetCount: 0,
+            assetOnDatabase: backupAsset.length);
         return;
       }
 
       int totalAsset = list[0].assetCount;
-      List<AssetEntity> currentAssets = await list[0].getAssetListRange(start: 0, end: totalAsset);
+      List<AssetEntity> currentAssets =
+          await list[0].getAssetListRange(start: 0, end: totalAsset);
 
-      state = state.copyWith(totalAssetCount: totalAsset, assetOnDatabase: backupAsset.length);
+      state = state.copyWith(
+          totalAssetCount: totalAsset, assetOnDatabase: backupAsset.length);
       // Remove item that has already been backed up
       for (var backupAssetId in backupAsset) {
         currentAssets.removeWhere((e) => e.id == backupAssetId);
@@ -97,9 +106,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       state = state.copyWith(backingUpAssetCount: currentAssets.length);
 
-      // Perform Packup
+      // Perform Backup
       state = state.copyWith(cancelToken: CancelToken());
-      _backupService.backupAsset(currentAssets, state.cancelToken, _onAssetUploaded, _onUploadProgress);
+      _backupService.backupAsset(currentAssets, state.cancelToken,
+          _onAssetUploaded, _onUploadProgress);
     } else {
       PhotoManager.openSetting();
     }
@@ -107,22 +117,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   void cancelBackup() {
     state.cancelToken.cancel('Cancel Backup');
-    state = state.copyWith(backupProgress: BackUpProgressEnum.idle, progressInPercentage: 0.0);
+    state = state.copyWith(
+        backupProgress: BackUpProgressEnum.idle, progressInPercentage: 0.0);
   }
 
   void _onAssetUploaded(String deviceAssetId, String deviceId) {
-    state =
-        state.copyWith(backingUpAssetCount: state.backingUpAssetCount - 1, assetOnDatabase: state.assetOnDatabase + 1);
+    state = state.copyWith(
+        backingUpAssetCount: state.backingUpAssetCount - 1,
+        assetOnDatabase: state.assetOnDatabase + 1);
 
     if (state.backingUpAssetCount == 0) {
-      state = state.copyWith(backupProgress: BackUpProgressEnum.done, progressInPercentage: 0.0);
+      state = state.copyWith(
+          backupProgress: BackUpProgressEnum.done, progressInPercentage: 0.0);
     }
 
     _updateServerInfo();
   }
 
   void _onUploadProgress(int sent, int total) {
-    state = state.copyWith(progressInPercentage: (sent.toDouble() / total.toDouble() * 100));
+    state = state.copyWith(
+        progressInPercentage: (sent.toDouble() / total.toDouble() * 100));
   }
 
   void _updateServerInfo() async {
@@ -156,7 +170,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
 
       // Check if this device is enable backup by the user
-      if ((authState.deviceInfo.deviceId == authState.deviceId) && authState.deviceInfo.isAutoBackup) {
+      if ((authState.deviceInfo.deviceId == authState.deviceId) &&
+          authState.deviceInfo.isAutoBackup) {
         // check if backup is alreayd in process - then return
         if (state.backupProgress == BackUpProgressEnum.inProgress) {
           debugPrint("[resumeBackup] Backup is already in progress - abort");
@@ -173,6 +188,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 }
 
-final backupProvider = StateNotifierProvider<BackupNotifier, BackUpState>((ref) {
+final backupProvider =
+    StateNotifierProvider<BackupNotifier, BackUpState>((ref) {
   return BackupNotifier(ref: ref);
 });

@@ -112,7 +112,10 @@ class BackupService {
         }
       } on DioError catch (e) {
         debugPrint("DioError backupAsset: ${e.response}");
-        break;
+        if (e.type == DioErrorType.cancel || e.type == DioErrorType.other) {
+          return;
+        }
+        continue;
       } catch (e) {
         debugPrint("ERROR backupAsset: ${e.toString()}");
         continue;

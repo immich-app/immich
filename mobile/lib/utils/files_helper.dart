@@ -35,6 +35,9 @@ class FileHelper {
       case 'dng':
         return {"type": "image", "subType": "dng"};
 
+      case 'webp':
+        return {"type": "image", "subType": "webp"};
+
       default:
         return {"type": "unsupport", "subType": "unsupport"};
     }

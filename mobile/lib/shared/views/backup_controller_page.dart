@@ -87,13 +87,16 @@ class BackupControllerPage extends HookConsumerWidget {
                       style: TextStyle(fontSize: 14),
                     )
                   : Container(),
-              OutlinedButton(
-                onPressed: () {
-                  isAutoBackup
-                      ? ref.watch(authenticationProvider.notifier).setAutoBackup(false)
-                      : ref.watch(authenticationProvider.notifier).setAutoBackup(true);
-                },
-                child: Text("Turn $backupBtnText Backup"),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: OutlinedButton(
+                  onPressed: () {
+                    isAutoBackup
+                        ? ref.watch(authenticationProvider.notifier).setAutoBackup(false)
+                        : ref.watch(authenticationProvider.notifier).setAutoBackup(true);
+                  },
+                  child: Text("Turn $backupBtnText Backup", style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
               )
             ],
           ),
