@@ -18,7 +18,10 @@ jobs:
         with:
           images: altran1502/immich-server
           tags: type=semver,pattern={{major}}.{{minor}}
-            
+      
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
  
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1.2.0
