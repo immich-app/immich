@@ -59,7 +59,7 @@ This project is under heavy development, there will be continous functions, feat
 - Object detection based on COCO SSD.
 - Search assets based on tags and exif data (lens, make, model, orientation)
 - Upload assets from your local computer/server using [immich cli tools](https://www.npmjs.com/package/immich)
-- [Optional] Reserve geocoding using Mapbox (Generous free-tier of 100,000 search/month)
+- [Optional] Reverse geocoding using Mapbox (Generous free-tier of 100,000 search/month)
 - Show asset's location information on map (OpenStreetMap).
 - Show curated places on the search page
 - Show curated objects on the search page
