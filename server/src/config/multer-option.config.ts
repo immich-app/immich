@@ -5,10 +5,8 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { Request } from 'express';
 import { APP_UPLOAD_LOCATION } from '../constants/upload_location.constant';
-
-export const multerConfig = {
-  dest: APP_UPLOAD_LOCATION,
-};
+import { randomUUID } from 'crypto';
+import { CreateAssetDto } from '../api-v1/asset/dto/create-asset.dto';
 
 export const multerOption: MulterOptions = {
   fileFilter: (req: Request, file: any, cb: any) => {
@@ -21,7 +19,11 @@ export const multerOption: MulterOptions = {
 
   storage: diskStorage({
     destination: (req: Request, file: Express.Multer.File, cb: any) => {
-      const uploadPath = multerConfig.dest;
+      const uploadPath = APP_UPLOAD_LOCATION;
+      const fileInfo = req.body as CreateAssetDto;
+
+      const yearInfo = new Date(fileInfo.createdAt).getFullYear();
+      const monthInfo = new Date(fileInfo.createdAt).getMonth();
 
       if (file.fieldname == 'assetData') {
         const originalUploadFolder = `${uploadPath}/${req.user['id']}/original/${req.body['deviceId']}`;
@@ -30,6 +32,7 @@ export const multerOption: MulterOptions = {
           mkdirSync(originalUploadFolder, { recursive: true });
         }
 
+        // Save original to disk
         cb(null, originalUploadFolder);
       } else if (file.fieldname == 'thumbnailData') {
         const thumbnailUploadFolder = `${uploadPath}/${req.user['id']}/thumb/${req.body['deviceId']}`;
@@ -38,17 +41,18 @@ export const multerOption: MulterOptions = {
           mkdirSync(thumbnailUploadFolder, { recursive: true });
         }
 
+        // Save thumbnail to disk
         cb(null, thumbnailUploadFolder);
       }
     },
 
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
       // console.log(req, file);
-
+      const fileNameUUID = randomUUID();
       if (file.fieldname == 'assetData') {
-        cb(null, `${file.originalname.split('.')[0]}${req.body['fileExtension']}`);
+        cb(null, `${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`);
       } else if (file.fieldname == 'thumbnailData') {
-        cb(null, `${file.originalname.split('.')[0]}.jpeg`);
+        cb(null, `${fileNameUUID}.jpeg`);
       }
     },
   }),

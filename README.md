@@ -48,7 +48,8 @@ This project is under heavy development, there will be continous functions, feat
 
 # Features
 
-- Upload and view assets(videos/images).
+- Upload and view assets (videos/images).
+- Download asset to local device.
 - Multi-user supported.
 - Quick navigation with drag scroll bar.
 - Auto Backup.
@@ -58,7 +59,6 @@ This project is under heavy development, there will be continous functions, feat
 - Image Tagging/Classification based on ImageNet dataset
 - Object detection based on COCO SSD.
 - Search assets based on tags and exif data (lens, make, model, orientation)
-- Upload assets from your local computer/server using [immich cli tools](https://www.npmjs.com/package/immich)
 - [Optional] Reverse geocoding using Mapbox (Generous free-tier of 100,000 search/month)
 - Show asset's location information on map (OpenStreetMap).
 - Show curated places on the search page
