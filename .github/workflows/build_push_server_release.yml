@@ -14,12 +14,6 @@ jobs:
         with:
           ref: "main" 
           fetch-depth: 0
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: altran1502/immich-server
     
       - name: 'Get Previous tag'
         id: previoustag
@@ -48,7 +42,6 @@ jobs:
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.previoustag.outputs.tag }}
-          labels: ${{ steps.meta.outputs.labels }}
 
   build_and_push_microservice_release:
     runs-on: ubuntu-latest
@@ -59,12 +52,6 @@ jobs:
           ref: "main" 
           fetch-depth: 0
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: altran1502/immich-microservices
-    
       - name: 'Get Previous tag'
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
@@ -92,4 +79,3 @@ jobs:
           platforms: linux/arm/v7,linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.previoustag.outputs.tag }}
-          labels: ${{ steps.meta.outputs.labels }}
