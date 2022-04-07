@@ -1,0 +1,20 @@
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { UserSharedAlbumEntity } from './user-shared-album.entity';
+
+@Entity('shared_albums')
+export class SharedAlbumEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  ownerId: string;
+
+  @Column({ default: 'Untitled Album' })
+  albumName: string;
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  createdAt: string;
+
+  @OneToMany(() => UserSharedAlbumEntity, (userSharedAlbums) => userSharedAlbums.albumInfo)
+  sharedUsers: UserSharedAlbumEntity[];
+}

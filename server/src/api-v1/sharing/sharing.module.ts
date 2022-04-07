@@ -1,0 +1,14 @@
+import { Module } from '@nestjs/common';
+import { SharingService } from './sharing.service';
+import { SharingController } from './sharing.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AssetEntity } from '../asset/entities/asset.entity';
+import { UserEntity } from '../user/entities/user.entity';
+import { SharedAlbumEntity } from './entities/shared-album.entity';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([AssetEntity, UserEntity, SharedAlbumEntity])],
+  controllers: [SharingController],
+  providers: [SharingService],
+})
+export class SharingModule {}
