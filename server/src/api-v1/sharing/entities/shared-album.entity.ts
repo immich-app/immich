@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { AssetSharedAlbumEntity } from './asset-shared-album.entity';
 import { UserSharedAlbumEntity } from './user-shared-album.entity';
 
 @Entity('shared_albums')
@@ -17,4 +18,7 @@ export class SharedAlbumEntity {
 
   @OneToMany(() => UserSharedAlbumEntity, (userSharedAlbums) => userSharedAlbums.albumInfo)
   sharedUsers: UserSharedAlbumEntity[];
+
+  @OneToMany(() => AssetSharedAlbumEntity, (assetSharedAlbumEntity) => assetSharedAlbumEntity.albumInfo)
+  sharedAssets: AssetSharedAlbumEntity[];
 }
