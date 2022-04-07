@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
@@ -93,14 +94,11 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
       theme: ThemeData(
         brightness: Brightness.light,
         primarySwatch: Colors.indigo,
-        // textTheme: GoogleFonts.workSansTextTheme(
-        //   Theme.of(context).textTheme.apply(fontSizeFactor: 1.0),
-        // ),
         fontFamily: 'WorkSans',
         snackBarTheme: const SnackBarThemeData(contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
-        scaffoldBackgroundColor: const Color(0xFFf6f8fe),
+        scaffoldBackgroundColor: immichBackgroundColor,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
+          backgroundColor: immichBackgroundColor,
           foregroundColor: Colors.indigo,
           elevation: 1,
           centerTitle: true,

@@ -66,6 +66,10 @@ class _$AppRouter extends RootStackRouter {
           orElse: () => const SearchRouteArgs());
       return MaterialPageX<dynamic>(
           routeData: routeData, child: SearchPage(key: args.key));
+    },
+    SharingRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const SharingPage());
     }
   };
 
@@ -84,6 +88,10 @@ class _$AppRouter extends RootStackRouter {
                   guards: [authGuard]),
               RouteConfig(SearchRoute.name,
                   path: 'search-page',
+                  parent: TabControllerRoute.name,
+                  guards: [authGuard]),
+              RouteConfig(SharingRoute.name,
+                  path: 'sharing-page',
                   parent: TabControllerRoute.name,
                   guards: [authGuard])
             ]),
@@ -250,4 +258,12 @@ class SearchRouteArgs {
   String toString() {
     return 'SearchRouteArgs{key: $key}';
   }
+}
+
+/// generated route for
+/// [SharingPage]
+class SharingRoute extends PageRouteInfo<void> {
+  const SharingRoute() : super(SharingRoute.name, path: 'sharing-page');
+
+  static const String name = 'SharingRoute';
 }
