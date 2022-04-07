@@ -42,7 +42,10 @@ export class SharingService {
   }
 
   async getAllSharedAlbums(authUser: AuthUserDto) {
-    return await this.sharedAlbumRepository.find({ where: { ownerId: authUser.id }, relations: ['sharedUsers'] });
+    return await this.sharedAlbumRepository.find({
+      where: { ownerId: authUser.id },
+      relations: ['sharedUsers', 'sharedUsers.userInfo'],
+    });
   }
 
   async addUser() {}

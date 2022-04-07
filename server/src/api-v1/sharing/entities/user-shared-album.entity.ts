@@ -20,4 +20,8 @@ export class UserSharedAlbumEntity {
   })
   @JoinColumn({ name: 'albumId' })
   albumInfo: SharedAlbumEntity;
+
+  @OneToOne(() => UserEntity)
+  @JoinColumn({ name: 'sharedUserId' })
+  userInfo: UserEntity;
 }
