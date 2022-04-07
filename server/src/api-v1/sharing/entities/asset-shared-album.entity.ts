@@ -21,7 +21,10 @@ export class AssetSharedAlbumEntity {
   @JoinColumn({ name: 'albumId' })
   albumInfo: SharedAlbumEntity;
 
-  @OneToOne(() => AssetEntity)
+  @OneToOne(() => AssetEntity, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
   @JoinColumn({ name: 'assetId' })
   assetInfo: AssetEntity;
 }
