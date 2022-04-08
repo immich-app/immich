@@ -95,6 +95,11 @@ export class AssetController {
     return this.assetService.serveFile(authUser, query, res, headers);
   }
 
+  @Get('/thumbnail/:assetId')
+  async getAssetThumbnail(@Param('assetId') assetId: string): Promise<StreamableFile> {
+    return await this.assetService.getAssetThumbnail(assetId);
+  }
+
   @Get('/allObjects')
   async getCuratedObject(@GetAuthUser() authUser: AuthUserDto) {
     return this.assetService.getCuratedObject(authUser);

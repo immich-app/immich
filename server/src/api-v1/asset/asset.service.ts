@@ -112,6 +112,12 @@ export class AssetService {
     return new StreamableFile(file);
   }
 
+  public async getAssetThumbnail(assetId: string) {
+    const asset = await this.assetRepository.findOne({ id: assetId });
+
+    return new StreamableFile(createReadStream(asset.resizePath));
+  }
+
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
     let file = null;
     const asset = await this.findOne(authUser, query.did, query.aid);

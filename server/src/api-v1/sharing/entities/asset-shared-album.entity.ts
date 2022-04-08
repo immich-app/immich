@@ -3,7 +3,7 @@ import { AssetEntity } from '../../asset/entities/asset.entity';
 import { SharedAlbumEntity } from './shared-album.entity';
 
 @Entity('asset_shared_album')
-@Unique(['albumId', 'assetId'])
+@Unique('PK_unique_asset_in_album', ['albumId', 'assetId'])
 export class AssetSharedAlbumEntity {
   @PrimaryGeneratedColumn()
   id: string;
@@ -21,7 +21,7 @@ export class AssetSharedAlbumEntity {
   @JoinColumn({ name: 'albumId' })
   albumInfo: SharedAlbumEntity;
 
-  @OneToOne(() => AssetEntity, {
+  @ManyToOne(() => AssetEntity, {
     onDelete: 'CASCADE',
     nullable: true,
   })

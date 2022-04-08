@@ -16,6 +16,9 @@ export class SharedAlbumEntity {
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: string;
 
+  @Column({ comment: 'Asset ID to be used as thumbnail', nullable: true })
+  albumThumbnailAssetId: string;
+
   @OneToMany(() => UserSharedAlbumEntity, (userSharedAlbums) => userSharedAlbums.albumInfo)
   sharedUsers: UserSharedAlbumEntity[];
 

@@ -49,6 +49,11 @@ export class SharingService {
     });
   }
 
+  /**
+   * Get all shared album, including owned and shared one.
+   * @param authUser AuthUserDto
+   * @returns All Shared Album And Its Members
+   */
   async getAllSharedAlbums(authUser: AuthUserDto) {
     const ownedAlbums = await this.sharedAlbumRepository.find({
       where: { ownerId: authUser.id },
@@ -95,7 +100,7 @@ export class SharingService {
   async deleteUserFromAlbum() {}
 
   async addAssetsToAlbum(addAssetsDto: AddAssetsDto) {
-    const newRecords = [];
+    const newRecords: AssetSharedAlbumEntity[] = [];
 
     for (const assetId of addAssetsDto.assetIds) {
       const newAssetSharedAlbum = new AssetSharedAlbumEntity();
@@ -104,6 +109,16 @@ export class SharingService {
 
       newRecords.push(newAssetSharedAlbum);
     }
+
+    // Add album thumbnail if not exist.
+    const album = await this.sharedAlbumRepository.findOne({ id: addAssetsDto.albumId });
+
+    if (!album.albumThumbnailAssetId && newRecords.length > 0) {
+      console.log('adding asset to album');
+      album.albumThumbnailAssetId = newRecords[0].assetId;
+      await this.sharedAlbumRepository.save(album);
+    }
+
     return await this.assetSharedAlbumRepository.save([...newRecords]);
   }
 }
