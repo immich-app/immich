@@ -1,66 +1,15 @@
 import 'dart:convert';
 
-import 'package:immich_mobile/shared/models/user_info.model.dart';
+import 'package:collection/collection.dart';
 
-class SharedUsers {
-  final String sharedUserId;
-  final UserInfo userInfo;
-
-  SharedUsers({
-    required this.sharedUserId,
-    required this.userInfo,
-  });
-
-  SharedUsers copyWith({
-    String? sharedUserId,
-    UserInfo? userInfo,
-  }) {
-    return SharedUsers(
-      sharedUserId: sharedUserId ?? this.sharedUserId,
-      userInfo: userInfo ?? this.userInfo,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    final result = <String, dynamic>{};
-
-    result.addAll({'sharedUserId': sharedUserId});
-    result.addAll({'userInfo': userInfo.toMap()});
-
-    return result;
-  }
-
-  factory SharedUsers.fromMap(Map<String, dynamic> map) {
-    return SharedUsers(
-      sharedUserId: map['sharedUserId'] ?? '',
-      userInfo: UserInfo.fromMap(map['userInfo']),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory SharedUsers.fromJson(String source) => SharedUsers.fromMap(json.decode(source));
-
-  @override
-  String toString() => 'SharedUsers(sharedUserId: $sharedUserId, userInfo: $userInfo)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is SharedUsers && other.sharedUserId == sharedUserId && other.userInfo == userInfo;
-  }
-
-  @override
-  int get hashCode => sharedUserId.hashCode ^ userInfo.hashCode;
-}
+import 'package:immich_mobile/modules/sharing/models/shared_user.model.dart';
 
 class SharedAlbum {
   final String id;
   final String ownerId;
   final String albumName;
-  final DateTime createdAt;
-  final SharedUsers sharedUsers;
+  final String createdAt;
+  final List<SharedUsers> sharedUsers;
 
   SharedAlbum({
     required this.id,
@@ -74,8 +23,8 @@ class SharedAlbum {
     String? id,
     String? ownerId,
     String? albumName,
-    DateTime? createdAt,
-    SharedUsers? sharedUsers,
+    String? createdAt,
+    List<SharedUsers>? sharedUsers,
   }) {
     return SharedAlbum(
       id: id ?? this.id,
@@ -92,8 +41,8 @@ class SharedAlbum {
     result.addAll({'id': id});
     result.addAll({'ownerId': ownerId});
     result.addAll({'albumName': albumName});
-    result.addAll({'createdAt': createdAt.millisecondsSinceEpoch});
-    result.addAll({'sharedUsers': sharedUsers.toMap()});
+    result.addAll({'createdAt': createdAt});
+    result.addAll({'sharedUsers': sharedUsers.map((x) => x.toMap()).toList()});
 
     return result;
   }
@@ -103,8 +52,8 @@ class SharedAlbum {
       id: map['id'] ?? '',
       ownerId: map['ownerId'] ?? '',
       albumName: map['albumName'] ?? '',
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
-      sharedUsers: SharedUsers.fromMap(map['sharedUsers']),
+      createdAt: map['createdAt'] ?? '',
+      sharedUsers: List<SharedUsers>.from(map['sharedUsers']?.map((x) => SharedUsers.fromMap(x))),
     );
   }
 
@@ -120,13 +69,14 @@ class SharedAlbum {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
+    final listEquals = const DeepCollectionEquality().equals;
 
     return other is SharedAlbum &&
         other.id == id &&
         other.ownerId == ownerId &&
         other.albumName == albumName &&
         other.createdAt == createdAt &&
-        other.sharedUsers == sharedUsers;
+        listEquals(other.sharedUsers, sharedUsers);
   }
 
   @override

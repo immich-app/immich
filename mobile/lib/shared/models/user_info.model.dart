@@ -3,7 +3,8 @@ import 'dart:convert';
 class UserInfo {
   final String id;
   final String email;
-  final DateTime createdAt;
+  final String createdAt;
+
   UserInfo({
     required this.id,
     required this.email,
@@ -13,7 +14,7 @@ class UserInfo {
   UserInfo copyWith({
     String? id,
     String? email,
-    DateTime? createdAt,
+    String? createdAt,
   }) {
     return UserInfo(
       id: id ?? this.id,
@@ -24,11 +25,11 @@ class UserInfo {
 
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
-  
+
     result.addAll({'id': id});
     result.addAll({'email': email});
-    result.addAll({'createdAt': createdAt.millisecondsSinceEpoch});
-  
+    result.addAll({'createdAt': createdAt});
+
     return result;
   }
 
@@ -36,7 +37,7 @@ class UserInfo {
     return UserInfo(
       id: map['id'] ?? '',
       email: map['email'] ?? '',
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
+      createdAt: map['createdAt'] ?? '',
     );
   }
 
@@ -50,11 +51,8 @@ class UserInfo {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
-    return other is UserInfo &&
-      other.id == id &&
-      other.email == email &&
-      other.createdAt == createdAt;
+
+    return other is UserInfo && other.id == id && other.email == email && other.createdAt == createdAt;
   }
 
   @override
