@@ -3,7 +3,7 @@ import { UserEntity } from '../../user/entities/user.entity';
 import { SharedAlbumEntity } from './shared-album.entity';
 
 @Entity('user_shared_album')
-@Unique(['albumId', 'sharedUserId'])
+@Unique('unique_user_in_album', ['albumId', 'sharedUserId'])
 export class UserSharedAlbumEntity {
   @PrimaryGeneratedColumn()
   id: string;
@@ -21,7 +21,7 @@ export class UserSharedAlbumEntity {
   @JoinColumn({ name: 'albumId' })
   albumInfo: SharedAlbumEntity;
 
-  @OneToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'sharedUserId' })
   userInfo: UserEntity;
 }
