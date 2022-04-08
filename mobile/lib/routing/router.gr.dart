@@ -57,6 +57,10 @@ class _$AppRouter extends RootStackRouter {
           routeData: routeData,
           child: SearchResultPage(key: args.key, searchTerm: args.searchTerm));
     },
+    CreateSharedAlbumRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const CreateSharedAlbumPage());
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -102,7 +106,9 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(BackupControllerRoute.name,
             path: '/backup-controller-page', guards: [authGuard]),
         RouteConfig(SearchResultRoute.name,
-            path: '/search-result-page', guards: [authGuard])
+            path: '/search-result-page', guards: [authGuard]),
+        RouteConfig(CreateSharedAlbumRoute.name,
+            path: '/create-shared-album-page', guards: [authGuard])
       ];
 }
 
@@ -229,6 +235,15 @@ class SearchResultRouteArgs {
   String toString() {
     return 'SearchResultRouteArgs{key: $key, searchTerm: $searchTerm}';
   }
+}
+
+/// generated route for
+/// [CreateSharedAlbumPage]
+class CreateSharedAlbumRoute extends PageRouteInfo<void> {
+  const CreateSharedAlbumRoute()
+      : super(CreateSharedAlbumRoute.name, path: '/create-shared-album-page');
+
+  static const String name = 'CreateSharedAlbumRoute';
 }
 
 /// generated route for

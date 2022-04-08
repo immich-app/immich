@@ -4,6 +4,7 @@ import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
+import 'package:immich_mobile/modules/sharing/views/create_shared_album_page.dart';
 import 'package:immich_mobile/modules/sharing/views/sharing_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
@@ -31,6 +32,7 @@ part 'router.gr.dart';
     AutoRoute(page: VideoViewerPage, guards: [AuthGuard]),
     AutoRoute(page: BackupControllerPage, guards: [AuthGuard]),
     AutoRoute(page: SearchResultPage, guards: [AuthGuard]),
+    AutoRoute(page: CreateSharedAlbumPage, guards: [AuthGuard])
   ],
 )
 class AppRouter extends _$AppRouter {

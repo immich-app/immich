@@ -1,4 +1,6 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class SharingSliverAppBar extends StatelessWidget {
   const SharingSliverAppBar({
@@ -32,11 +34,12 @@ class SharingSliverAppBar extends StatelessWidget {
             children: [
               TextButton.icon(
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(
-                      Theme.of(context).primaryColor.withAlpha(20)),
+                  backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor.withAlpha(20)),
                   // foregroundColor: MaterialStateProperty.all(Colors.white),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  AutoRouter.of(context).push(const CreateSharedAlbumRoute());
+                },
                 icon: const Icon(
                   Icons.photo_album_outlined,
                   size: 20,
@@ -48,8 +51,7 @@ class SharingSliverAppBar extends StatelessWidget {
               ),
               TextButton.icon(
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(
-                      Theme.of(context).primaryColor.withAlpha(20)),
+                  backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor.withAlpha(20)),
                   // foregroundColor: MaterialStateProperty.all(Colors.white),
                 ),
                 onPressed: null,
