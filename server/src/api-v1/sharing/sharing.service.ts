@@ -50,10 +50,20 @@ export class SharingService {
   }
 
   async getAllSharedAlbums(authUser: AuthUserDto) {
-    return await this.sharedAlbumRepository.find({
+    const ownedAlbums = await this.sharedAlbumRepository.find({
       where: { ownerId: authUser.id },
       relations: ['sharedUsers', 'sharedUsers.userInfo'],
     });
+
+    const isSharedWithAlbums = await this.userSharedAlbumRepository.find({
+      where: {
+        sharedUserId: authUser.id,
+      },
+      relations: ['albumInfo', 'albumInfo.sharedUsers', 'albumInfo.sharedUsers.userInfo'],
+      select: ['albumInfo'],
+    });
+
+    return [...ownedAlbums, ...isSharedWithAlbums.map((o) => o.albumInfo)];
   }
 
   async getAlbumInfo(authUser: AuthUserDto, albumId: string) {
