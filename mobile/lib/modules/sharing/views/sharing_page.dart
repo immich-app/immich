@@ -6,20 +6,19 @@ class SharingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: CustomScrollView(
         slivers: [
-          const SharingSliverAppBar(),
-          SliverFixedExtentList(
-            itemExtent: 50.0,
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                return Container(
-                  alignment: Alignment.center,
-                  color: Colors.lightBlue[100 * (index % 9)],
-                  child: Text('list item $index'),
-                );
-              },
+          SharingSliverAppBar(),
+          SliverPadding(
+            padding: EdgeInsets.all(12),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                "Shared albums",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           )
         ],

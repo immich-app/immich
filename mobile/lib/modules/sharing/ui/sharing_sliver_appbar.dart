@@ -26,19 +26,40 @@ class SharingSliverAppBar extends StatelessWidget {
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(50.0),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextButton.icon(
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor.withAlpha(20)),
+                  backgroundColor: MaterialStateProperty.all(
+                      Theme.of(context).primaryColor.withAlpha(20)),
                   // foregroundColor: MaterialStateProperty.all(Colors.white),
                 ),
                 onPressed: () {},
-                icon: const Icon(Icons.image),
+                icon: const Icon(
+                  Icons.photo_album_outlined,
+                  size: 20,
+                ),
                 label: const Text(
                   "Create shared album",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+              TextButton.icon(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(
+                      Theme.of(context).primaryColor.withAlpha(20)),
+                  // foregroundColor: MaterialStateProperty.all(Colors.white),
+                ),
+                onPressed: null,
+                icon: const Icon(
+                  Icons.swap_horizontal_circle_outlined,
+                  size: 20,
+                ),
+                label: const Text(
+                  "Share with partner",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               )
             ],
