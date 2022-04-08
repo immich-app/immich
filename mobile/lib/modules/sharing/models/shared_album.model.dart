@@ -9,6 +9,7 @@ class SharedAlbum {
   final String ownerId;
   final String albumName;
   final String createdAt;
+  final String? albumThumbnailAssetId;
   final List<SharedUsers> sharedUsers;
 
   SharedAlbum({
@@ -16,6 +17,7 @@ class SharedAlbum {
     required this.ownerId,
     required this.albumName,
     required this.createdAt,
+    required this.albumThumbnailAssetId,
     required this.sharedUsers,
   });
 
@@ -24,6 +26,7 @@ class SharedAlbum {
     String? ownerId,
     String? albumName,
     String? createdAt,
+    String? albumThumbnailAssetId,
     List<SharedUsers>? sharedUsers,
   }) {
     return SharedAlbum(
@@ -31,6 +34,7 @@ class SharedAlbum {
       ownerId: ownerId ?? this.ownerId,
       albumName: albumName ?? this.albumName,
       createdAt: createdAt ?? this.createdAt,
+      albumThumbnailAssetId: albumThumbnailAssetId ?? this.albumThumbnailAssetId,
       sharedUsers: sharedUsers ?? this.sharedUsers,
     );
   }
@@ -42,6 +46,9 @@ class SharedAlbum {
     result.addAll({'ownerId': ownerId});
     result.addAll({'albumName': albumName});
     result.addAll({'createdAt': createdAt});
+    if (albumThumbnailAssetId != null) {
+      result.addAll({'albumThumbnailAssetId': albumThumbnailAssetId});
+    }
     result.addAll({'sharedUsers': sharedUsers.map((x) => x.toMap()).toList()});
 
     return result;
@@ -53,6 +60,7 @@ class SharedAlbum {
       ownerId: map['ownerId'] ?? '',
       albumName: map['albumName'] ?? '',
       createdAt: map['createdAt'] ?? '',
+      albumThumbnailAssetId: map['albumThumbnailAssetId'],
       sharedUsers: List<SharedUsers>.from(map['sharedUsers']?.map((x) => SharedUsers.fromMap(x))),
     );
   }
@@ -63,7 +71,7 @@ class SharedAlbum {
 
   @override
   String toString() {
-    return 'SharedAlbum(id: $id, ownerId: $ownerId, albumName: $albumName, createdAt: $createdAt, sharedUsers: $sharedUsers)';
+    return 'SharedAlbum(id: $id, ownerId: $ownerId, albumName: $albumName, createdAt: $createdAt, albumThumbnailAssetId: $albumThumbnailAssetId, sharedUsers: $sharedUsers)';
   }
 
   @override
@@ -76,11 +84,17 @@ class SharedAlbum {
         other.ownerId == ownerId &&
         other.albumName == albumName &&
         other.createdAt == createdAt &&
+        other.albumThumbnailAssetId == albumThumbnailAssetId &&
         listEquals(other.sharedUsers, sharedUsers);
   }
 
   @override
   int get hashCode {
-    return id.hashCode ^ ownerId.hashCode ^ albumName.hashCode ^ createdAt.hashCode ^ sharedUsers.hashCode;
+    return id.hashCode ^
+        ownerId.hashCode ^
+        albumName.hashCode ^
+        createdAt.hashCode ^
+        albumThumbnailAssetId.hashCode ^
+        sharedUsers.hashCode;
   }
 }
