@@ -82,7 +82,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                     padding: EdgeInsets.only(left: 8.0),
                     child: Text(
                       'Select photos',
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16, color: Colors.black87, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ),
