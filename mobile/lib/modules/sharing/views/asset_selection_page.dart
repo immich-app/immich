@@ -14,8 +14,11 @@ class AssetSelectionPage extends HookConsumerWidget {
     List<Widget> _imageGridGroup = [];
 
     Widget _buildBody() {
-      assetGroupMonthYear.forEach((key, value) {
-        print(key);
+      assetGroupMonthYear.forEach((monthYear, assetGroup) {
+        print("$monthYear, ${assetGroup.length}");
+
+        _imageGridGroup.add(SliverToBoxAdapter(child: Text(monthYear)));
+        _imageGridGroup.add(SliverToBoxAdapter(child: Text("Count : ${assetGroup.length}")));
       });
       // if (assetGroupByDateTime.isNotEmpty) {
       //   int? lastMonth;

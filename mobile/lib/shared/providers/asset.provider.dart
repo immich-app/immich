@@ -78,5 +78,5 @@ final assetGroupByMonthYearProvider = StateProvider((ref) {
 
   assets.sortByCompare<DateTime>((e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
 
-  return assets.groupListsBy((element) => DateFormat('yMMMM').format(DateTime.parse(element.createdAt)));
+  return assets.groupListsBy((element) => DateFormat('MMMM, y').format(DateTime.parse(element.createdAt)));
 });
