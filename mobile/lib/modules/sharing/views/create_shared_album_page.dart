@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_title_text_field.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class CreateSharedAlbumPage extends HookConsumerWidget {
   const CreateSharedAlbumPage({Key? key}) : super(key: key);
@@ -76,7 +77,9 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                     padding:
                         MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.symmetric(vertical: 22, horizontal: 16)),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    AutoRouter.of(context).push(const AssetSelectionRoute());
+                  },
                   icon: const Icon(Icons.add_rounded),
                   label: const Padding(
                     padding: EdgeInsets.only(left: 8.0),

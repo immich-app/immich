@@ -61,6 +61,10 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const CreateSharedAlbumPage());
     },
+    AssetSelectionRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const AssetSelectionPage());
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -108,7 +112,9 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(SearchResultRoute.name,
             path: '/search-result-page', guards: [authGuard]),
         RouteConfig(CreateSharedAlbumRoute.name,
-            path: '/create-shared-album-page', guards: [authGuard])
+            path: '/create-shared-album-page', guards: [authGuard]),
+        RouteConfig(AssetSelectionRoute.name,
+            path: '/asset-selection-page', guards: [authGuard])
       ];
 }
 
@@ -244,6 +250,15 @@ class CreateSharedAlbumRoute extends PageRouteInfo<void> {
       : super(CreateSharedAlbumRoute.name, path: '/create-shared-album-page');
 
   static const String name = 'CreateSharedAlbumRoute';
+}
+
+/// generated route for
+/// [AssetSelectionPage]
+class AssetSelectionRoute extends PageRouteInfo<void> {
+  const AssetSelectionRoute()
+      : super(AssetSelectionRoute.name, path: '/asset-selection-page');
+
+  static const String name = 'AssetSelectionRoute';
 }
 
 /// generated route for
