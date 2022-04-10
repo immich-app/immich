@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -46,30 +45,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
         //   ref.watch(homePageStateProvider.notifier).removeSingleSelectedItem(asset);
         // } else if (isMultiSelectEnable && !selectedAsset.contains(asset)) {
         //   ref.watch(homePageStateProvider.notifier).addSingleSelectedItem(asset);
-        // } else {
-        //   if (asset.type == 'IMAGE') {
-        //     AutoRouter.of(context).push(
-        //       ImageViewerRoute(
-        //         imageUrl:
-        //             '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
-        //         heroTag: asset.id,
-        //         thumbnailUrl: thumbnailRequestUrl,
-        //         asset: asset,
-        //       ),
-        //     );
-        //   } else {
-        //     AutoRouter.of(context).push(
-        //       VideoViewerRoute(
-        //           videoUrl: '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-        //           asset: asset),
-        //     );
-        //   }
         // }
-      },
-      onLongPress: () {
-        // Enable multi selecte function
-        // ref.watch(homePageStateProvider.notifier).enableMultiSelect({asset});
-        HapticFeedback.heavyImpact();
       },
       child: Hero(
         tag: asset.id,
@@ -85,7 +61,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
                 cacheKey: "${asset.id}-${cacheKey.value}",
                 width: 150,
                 height: 150,
-                memCacheHeight: asset.type == 'IMAGE' ? 250 : 400,
+                memCacheHeight: asset.type == 'IMAGE' ? 150 : 150,
                 fit: BoxFit.cover,
                 imageUrl: thumbnailRequestUrl,
                 httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
@@ -102,18 +78,13 @@ class SelectionThumbnailImage extends HookConsumerWidget {
                 },
               ),
             ),
-            Container(
-                child:
-                    // isMultiSelectEnable ?
-                    Padding(
+            Padding(
               padding: const EdgeInsets.all(3.0),
               child: Align(
                 alignment: Alignment.topLeft,
                 child: _buildSelectionIcon(asset),
               ),
-            )
-                // : Container(),
-                ),
+            ),
           ],
         ),
       ),
