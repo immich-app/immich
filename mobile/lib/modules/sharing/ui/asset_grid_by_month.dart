@@ -19,7 +19,9 @@ class AssetGridByMonth extends HookConsumerWidget {
           var assetType = assetGroup[index].type;
 
           return GestureDetector(
-            onTap: () {},
+            onTap: () {
+              // ref.watch(assetSelectionProvider.notifier).addSingleAsset(month, assetsInMonth)
+            },
             child: Stack(
               children: [
                 SelectionThumbnailImage(asset: assetGroup[index]),

@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/ui/asset_grid_by_month.dart';
 import 'package:immich_mobile/modules/sharing/ui/month_group_title.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
@@ -13,13 +14,12 @@ class AssetSelectionPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ScrollController _scrollController = useScrollController();
     var assetGroupMonthYear = ref.watch(assetGroupByMonthYearProvider);
+    final selectedAssets = ref.watch(assetSelectionProvider).selectedAssets;
     List<Widget> _imageGridGroup = [];
 
     Widget _buildBody() {
       assetGroupMonthYear.forEach((monthYear, assetGroup) {
-        // Add month title
         _imageGridGroup.add(MonthGroupTitle(month: monthYear, assetGroup: assetGroup));
-
         _imageGridGroup.add(AssetGridByMonth(assetGroup: assetGroup));
       });
 
@@ -44,14 +44,31 @@ class AssetSelectionPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () {
+            ref.watch(assetSelectionProvider.notifier).removeAll();
             AutoRouter.of(context).pop();
           },
         ),
-        title: const Text(
-          'Add photos',
-          style: TextStyle(fontSize: 18),
-        ),
+        title: selectedAssets.isEmpty
+            ? const Text(
+                'Add photos',
+                style: TextStyle(fontSize: 18),
+              )
+            : Text(
+                selectedAssets.length.toString(),
+                style: const TextStyle(fontSize: 18),
+              ),
         centerTitle: false,
+        actions: [
+          selectedAssets.isNotEmpty
+              ? TextButton(
+                  onPressed: () {},
+                  child: const Text(
+                    "Add",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                )
+              : Container()
+        ],
       ),
       body: _buildBody(),
     );

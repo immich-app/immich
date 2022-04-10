@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
+import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class SelectionThumbnailImage extends HookConsumerWidget {
@@ -20,7 +20,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
     var thumbnailRequestUrl =
         '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
 
-    var selectedAsset = ref.watch(homePageStateProvider).selectedItems;
+    var selectedAsset = ref.watch(assetSelectionProvider).selectedAssets;
 
     Widget _buildSelectionIcon(ImmichAsset asset) {
       if (selectedAsset.contains(asset)) {
@@ -39,13 +39,11 @@ class SelectionThumbnailImage extends HookConsumerWidget {
     return GestureDetector(
       onTap: () {
         // debugPrint("View ${asset.id}");
-        // if (isMultiSelectEnable && selectedAsset.contains(asset) && selectedAsset.length == 1) {
-        //   ref.watch(homePageStateProvider.notifier).disableMultiSelect();
-        // } else if (isMultiSelectEnable && selectedAsset.contains(asset) && selectedAsset.length > 1) {
-        //   ref.watch(homePageStateProvider.notifier).removeSingleSelectedItem(asset);
-        // } else if (isMultiSelectEnable && !selectedAsset.contains(asset)) {
-        //   ref.watch(homePageStateProvider.notifier).addSingleSelectedItem(asset);
-        // }
+        if (selectedAsset.contains(asset)) {
+          ref.watch(assetSelectionProvider.notifier).removeSingleSelectedItem(asset);
+        } else {
+          ref.watch(assetSelectionProvider.notifier).addSingleAsset(asset);
+        }
       },
       child: Hero(
         tag: asset.id,
