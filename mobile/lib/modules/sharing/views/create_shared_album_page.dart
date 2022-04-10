@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_title_text_field.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class CreateSharedAlbumPage extends HookConsumerWidget {
   const CreateSharedAlbumPage({Key? key}) : super(key: key);
@@ -14,8 +15,20 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     final albumTitleTextFieldFocusNode = useFocusNode();
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
+    final selectedAssetsForAlbum = useState<Set<ImmichAsset>>({});
 
     _submitCreateNewAlbum() {}
+
+    _onSelectPhotosButtonPressed() async {
+      Set<ImmichAsset>? selectedAsset =
+          await AutoRouter.of(context).push<Set<ImmichAsset>?>(const AssetSelectionRoute());
+
+      if (selectedAsset != null) {
+        selectedAssetsForAlbum.value = selectedAsset;
+      } else {
+        selectedAssetsForAlbum.value = {};
+      }
+    }
 
     return Scaffold(
         appBar: AppBar(
@@ -65,7 +78,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
               const Padding(
                 padding: EdgeInsets.only(top: 200, left: 18),
                 child: Text(
-                  'ADD PHOTOS',
+                  'ADD ASSETS',
                   style: TextStyle(fontSize: 12),
                 ),
               ),
@@ -77,19 +90,23 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                     padding:
                         MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.symmetric(vertical: 22, horizontal: 16)),
                   ),
-                  onPressed: () {
-                    AutoRouter.of(context).push(const AssetSelectionRoute());
-                  },
+                  onPressed: _onSelectPhotosButtonPressed,
                   icon: const Icon(Icons.add_rounded),
                   label: const Padding(
                     padding: EdgeInsets.only(left: 8.0),
                     child: Text(
-                      'Select photos',
+                      'Select assets',
                       style: TextStyle(fontSize: 16, color: Colors.black87, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ),
-              )
+              ),
+              selectedAssetsForAlbum.value.isNotEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: 18.0, top: 18),
+                      child: Text("Selected ${selectedAssetsForAlbum.value.length} assets"),
+                    )
+                  : Container()
             ],
           ),
         ));

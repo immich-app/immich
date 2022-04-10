@@ -62,7 +62,7 @@ class _$AppRouter extends RootStackRouter {
           routeData: routeData, child: const CreateSharedAlbumPage());
     },
     AssetSelectionRoute.name: (routeData) {
-      return CustomPage<dynamic>(
+      return CustomPage<Set<ImmichAsset>?>(
           routeData: routeData,
           child: const AssetSelectionPage(),
           transitionsBuilder: TransitionsBuilders.slideBottom,

@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/ui/asset_grid_by_month.dart';
 import 'package:immich_mobile/modules/sharing/ui/month_group_title.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 
@@ -45,7 +46,7 @@ class AssetSelectionPage extends HookConsumerWidget {
           icon: const Icon(Icons.close_rounded),
           onPressed: () {
             ref.watch(assetSelectionProvider.notifier).removeAll();
-            AutoRouter.of(context).pop();
+            AutoRouter.of(context).pop(null);
           },
         ),
         title: selectedAssets.isEmpty
@@ -61,7 +62,9 @@ class AssetSelectionPage extends HookConsumerWidget {
         actions: [
           selectedAssets.isNotEmpty
               ? TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    AutoRouter.of(context).pop<Set<ImmichAsset>?>(selectedAssets);
+                  },
                   child: const Text(
                     "Add",
                     style: TextStyle(fontWeight: FontWeight.bold),

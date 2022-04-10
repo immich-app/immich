@@ -34,7 +34,7 @@ part 'router.gr.dart';
     AutoRoute(page: BackupControllerPage, guards: [AuthGuard]),
     AutoRoute(page: SearchResultPage, guards: [AuthGuard]),
     AutoRoute(page: CreateSharedAlbumPage, guards: [AuthGuard]),
-    CustomRoute(
+    CustomRoute<Set<ImmichAsset>?>(
       page: AssetSelectionPage,
       guards: [AuthGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
