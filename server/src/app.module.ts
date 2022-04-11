@@ -27,7 +27,7 @@ import { CommunicationModule } from './api-v1/communication/communication.module
     BullModule.forRootAsync({
       useFactory: async () => ({
         redis: {
-          host: 'immich_redis',
+          host: process.env.REDIS_HOST,
           port: 6379,
         },
       }),

@@ -115,7 +115,7 @@ export class BackgroundTaskProcessor {
   async tagImage(job) {
     const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
 
-    const res = await axios.post('http://immich_microservices:3001/image-classifier/tagImage', {
+    const res = await axios.post('http://'+process.env.MICROSERVICE_HOST+':3001/image-classifier/tagImage', {
       thumbnailPath: thumbnailPath,
     });
 
@@ -134,7 +134,7 @@ export class BackgroundTaskProcessor {
   async detectObject(job) {
     const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
 
-    const res = await axios.post('http://immich_microservices:3001/object-detection/detectObject', {
+    const res = await axios.post('http://'+process.env.MICROSERVICE_HOST+':3001/object-detection/detectObject', {
       thumbnailPath: thumbnailPath,
     });
 
