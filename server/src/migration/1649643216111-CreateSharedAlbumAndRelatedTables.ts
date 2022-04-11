@@ -64,9 +64,9 @@ export class CreateSharedAlbumAndRelatedTables1649643216111 implements Migration
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      drop table shared_albums;
-      drop table user_shared_album;
       drop table asset_shared_album;
+      drop table user_shared_album;
+      drop table shared_albums;
     `);
   }
 }
