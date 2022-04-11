@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
@@ -14,17 +13,29 @@ class MonthGroupTitle extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedDateGroup = ref.watch(assetSelectionProvider).selectedMonths;
-    final isMonthSelected = useState(false);
+    final selectedItems = ref.watch(assetSelectionProvider).selectedAssets;
+    // final isMonthSelected = useState(false);
 
     _handleTitleIconClick() {
       HapticFeedback.heavyImpact();
 
-      if (isMonthSelected.value) {
+      if (selectedDateGroup.contains(month)) {
         ref.watch(assetSelectionProvider.notifier).removeAssetsInMonth(month, assetGroup);
-        isMonthSelected.value = false;
       } else {
         ref.watch(assetSelectionProvider.notifier).addAssetsInMonth(month, assetGroup);
-        isMonthSelected.value = true;
+      }
+    }
+
+    _getSimplifiedMonth() {
+      var monthAndYear = month.split(',');
+      var yearText = monthAndYear[1].trim();
+      var monthText = monthAndYear[0].trim();
+      var currentYear = DateTime.now().year.toString();
+
+      if (yearText == currentYear) {
+        return monthText;
+      } else {
+        return month;
       }
     }
 
@@ -48,26 +59,13 @@ class MonthGroupTitle extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
               child: Text(
-                month,
+                _getSimplifiedMonth(),
                 style: TextStyle(
                   fontSize: 24,
                   color: Theme.of(context).primaryColor,
                 ),
               ),
             ),
-            // const Spacer(),
-            // GestureDetector(
-            //   onTap: _handleTitleIconClick,
-            //   child: selectedDateGroup.contains(month)
-            //       ? Icon(
-            //           Icons.check_circle_rounded,
-            //           color: Theme.of(context).primaryColor,
-            //         )
-            //       : const Icon(
-            //           Icons.check_circle_outline_rounded,
-            //           color: Colors.grey,
-            //         ),
-            // )
           ],
         ),
       ),

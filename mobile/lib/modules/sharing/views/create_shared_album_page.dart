@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
+import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/sharing/ui/shared_album_thumbnail_image.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -78,11 +79,11 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
               ),
               onPressed: _onSelectPhotosButtonPressed,
               icon: const Icon(Icons.add_rounded),
-              label: const Padding(
-                padding: EdgeInsets.only(left: 8.0),
+              label: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
-                  'Select assets',
-                  style: TextStyle(fontSize: 16, color: Colors.black87, fontWeight: FontWeight.w500),
+                  'Select Photos',
+                  style: TextStyle(fontSize: 16, color: Colors.grey[700], fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -94,6 +95,27 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _buildControlButton() {
+      if (selectedAssetsForAlbum.value.isNotEmpty) {
+        return SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 12.0, top: 16),
+            child: SizedBox(
+              height: 30,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  AlbumActionOutlinedButton(
+                    iconData: Icons.add_photo_alternate_outlined,
+                    onPressed: _onSelectPhotosButtonPressed,
+                    labelText: "Add photos",
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+
       return const SliverToBoxAdapter();
     }
 
@@ -106,7 +128,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
         var asset = selectedAssetsForAlbum.value.toList();
 
         return SliverPadding(
-          padding: const EdgeInsets.only(top: 32),
+          padding: const EdgeInsets.only(top: 16),
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,

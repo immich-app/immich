@@ -4,7 +4,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class SharedAlbumThumbnailImage extends HookConsumerWidget {
@@ -20,16 +19,9 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
     var thumbnailRequestUrl =
         '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
 
-    var selectedAsset = ref.watch(assetSelectionProvider).selectedAssets;
-
     return GestureDetector(
       onTap: () {
         // debugPrint("View ${asset.id}");
-        if (selectedAsset.contains(asset)) {
-          ref.watch(assetSelectionProvider.notifier).removeSingleSelectedItem(asset);
-        } else {
-          ref.watch(assetSelectionProvider.notifier).addSingleAsset(asset);
-        }
       },
       child: Hero(
         tag: asset.id,

@@ -22,6 +22,96 @@ class SharingPage extends HookConsumerWidget {
       return null;
     }, []);
 
+    _buildAlbumList() {
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (BuildContext context, int index) {
+            String thumbnailUrl = sharedAlbums[index].albumThumbnailAssetId != null
+                ? "$thumbnailRequestUrl/${sharedAlbums[index].albumThumbnailAssetId}"
+                : "https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60";
+
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  thumbnailUrl,
+                  headers: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              title: Text(
+                sharedAlbums[index].albumName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 14),
+              ),
+              onTap: () {
+                debugPrint(
+                    "Navigating to album ${sharedAlbums[index].id} with thumb id ${sharedAlbums[index].albumThumbnailAssetId}");
+              },
+            );
+          },
+          childCount: sharedAlbums.length,
+        ),
+      );
+    }
+
+    _buildEmptyListIndication() {
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10), // if you need this
+              side: const BorderSide(
+                color: Colors.black12,
+                width: 1,
+              ),
+            ),
+            color: Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.all(18.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 5.0, bottom: 5),
+                    child: Icon(
+                      Icons.offline_share_outlined,
+                      size: 50,
+                      color: Theme.of(context).primaryColor.withAlpha(200),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'EMPTY LIST',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Create shared albums to share photos and videos with people in your network.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -37,40 +127,7 @@ class SharingPage extends HookConsumerWidget {
               ),
             ),
           ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                String thumbnailUrl = sharedAlbums[index].albumThumbnailAssetId != null
-                    ? "$thumbnailRequestUrl/${sharedAlbums[index].albumThumbnailAssetId}"
-                    : "https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60";
-
-                return ListTile(
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      thumbnailUrl,
-                      headers: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  title: Text(
-                    sharedAlbums[index].albumName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  onTap: () {
-                    debugPrint(
-                        "Navigating to album ${sharedAlbums[index].id} with thumb id ${sharedAlbums[index].albumThumbnailAssetId}");
-                  },
-                );
-              },
-              childCount: sharedAlbums.length,
-            ),
-          )
+          sharedAlbums.isNotEmpty ? _buildAlbumList() : _buildEmptyListIndication()
         ],
       ),
     );

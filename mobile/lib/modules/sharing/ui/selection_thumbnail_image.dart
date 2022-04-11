@@ -38,7 +38,6 @@ class SelectionThumbnailImage extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        // debugPrint("View ${asset.id}");
         if (selectedAsset.contains(asset)) {
           ref.watch(assetSelectionProvider.notifier).removeSingleSelectedItem(asset);
         } else {
