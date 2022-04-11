@@ -8,7 +8,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE_NAME,
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
-  synchronize: true,
+  synchronize: false,
   migrations: [__dirname + '/../migration/*.js'],
   cli: {
     migrationsDir: __dirname + '/../migration',

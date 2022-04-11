@@ -1,12 +1,10 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddObjectColumnToSmartInfo1648317474768
-  implements MigrationInterface
-{
+export class AddObjectColumnToSmartInfo1648317474768 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE smart_info
-        ADD COLUMN objects text[];
+        ADD COLUMN if not exists objects text[];
 
     `);
   }
