@@ -18,36 +18,31 @@ class AssetGridByMonth extends HookConsumerWidget {
         (BuildContext context, int index) {
           var assetType = assetGroup[index].type;
 
-          return GestureDetector(
-            onTap: () {
-              // ref.watch(assetSelectionProvider.notifier).addSingleAsset(month, assetsInMonth)
-            },
-            child: Stack(
-              children: [
-                SelectionThumbnailImage(asset: assetGroup[index]),
-                assetType == 'IMAGE'
-                    ? Container()
-                    : Positioned(
-                        bottom: 5,
-                        right: 5,
-                        child: Row(
-                          children: [
-                            Text(
-                              assetGroup[index].duration.toString().substring(0, 7),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.play_circle_outline_rounded,
+          return Stack(
+            children: [
+              SelectionThumbnailImage(asset: assetGroup[index]),
+              assetType == 'IMAGE'
+                  ? Container()
+                  : Positioned(
+                      bottom: 5,
+                      right: 5,
+                      child: Row(
+                        children: [
+                          Text(
+                            assetGroup[index].duration.toString().substring(0, 7),
+                            style: const TextStyle(
                               color: Colors.white,
+                              fontSize: 10,
                             ),
-                          ],
-                        ),
-                      )
-              ],
-            ),
+                          ),
+                          const Icon(
+                            Icons.play_circle_outline_rounded,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    )
+            ],
           );
         },
         childCount: assetGroup.length,
