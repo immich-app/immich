@@ -9,6 +9,73 @@ import 'package:immich_mobile/modules/sharing/ui/shared_album_thumbnail_image.da
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
+class MyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final ValueNotifier<bool> isAlbumTitleEmpty;
+  final FocusNode albumTitleTextFieldFocusNode;
+  final TextEditingController albumTitleController;
+  final ValueNotifier<bool> isAlbumTitleTextFieldFocus;
+  final VoidCallback onPressed;
+
+  const MyHeaderDelegate({
+    required this.isAlbumTitleEmpty,
+    required this.albumTitleController,
+    required this.albumTitleTextFieldFocusNode,
+    required this.isAlbumTitleTextFieldFocus,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Colors.red,
+      child: Material(
+        elevation: 0,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 50.0,
+                right: 10,
+                left: 10,
+              ),
+              child: AlbumTitleTextField(
+                  isAlbumTitleEmpty: isAlbumTitleEmpty,
+                  albumTitleTextFieldFocusNode: albumTitleTextFieldFocusNode,
+                  albumTitleController: albumTitleController,
+                  isAlbumTitleTextFieldFocus: isAlbumTitleTextFieldFocus),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 12.0, top: 16),
+              child: SizedBox(
+                height: 30,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    AlbumActionOutlinedButton(
+                      iconData: Icons.add_photo_alternate_outlined,
+                      onPressed: onPressed,
+                      labelText: "Add photos",
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent => 150;
+
+  @override
+  double get minExtent => 150;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => true;
+}
+
 class CreateSharedAlbumPage extends HookConsumerWidget {
   const CreateSharedAlbumPage({Key? key}) : super(key: key);
 
@@ -22,6 +89,15 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
 
     _submitCreateNewAlbum() {}
 
+    void _onBackgroundTapped() {
+      albumTitleTextFieldFocusNode.unfocus();
+      isAlbumTitleTextFieldFocus.value = false;
+
+      if (albumTitleController.text.isEmpty) {
+        albumTitleController.text = 'Untitled';
+      }
+    }
+
     _onSelectPhotosButtonPressed() async {
       Set<ImmichAsset>? selectedAsset =
           await AutoRouter.of(context).push<Set<ImmichAsset>?>(const AssetSelectionRoute());
@@ -34,19 +110,16 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _buildTitleInputField() {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            top: 50.0,
-            right: 10,
-            left: 10,
-          ),
-          child: AlbumTitleTextField(
-              isAlbumTitleEmpty: isAlbumTitleEmpty,
-              albumTitleTextFieldFocusNode: albumTitleTextFieldFocusNode,
-              albumTitleController: albumTitleController,
-              isAlbumTitleTextFieldFocus: isAlbumTitleTextFieldFocus),
+      return Padding(
+        padding: const EdgeInsets.only(
+          right: 10,
+          left: 10,
         ),
+        child: AlbumTitleTextField(
+            isAlbumTitleEmpty: isAlbumTitleEmpty,
+            albumTitleTextFieldFocusNode: albumTitleTextFieldFocusNode,
+            albumTitleController: albumTitleController,
+            isAlbumTitleTextFieldFocus: isAlbumTitleTextFieldFocus),
       );
     }
 
@@ -95,28 +168,49 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _buildControlButton() {
+      // if (selectedAssetsForAlbum.value.isNotEmpty) {
+      //   return SliverToBoxAdapter(
+      //     child: Padding(
+      //       padding: const EdgeInsets.only(left: 12.0, top: 16),
+      //       child: SizedBox(
+      //         height: 30,
+      //         child: ListView(
+      //           scrollDirection: Axis.horizontal,
+      //           children: [
+      //             AlbumActionOutlinedButton(
+      //               iconData: Icons.add_photo_alternate_outlined,
+      //               onPressed: _onSelectPhotosButtonPressed,
+      //               labelText: "Add photos",
+      //             ),
+      //           ],
+      //         ),
+      //       ),
+      //     ),
+      //   );
+      // }
+
+      // return const SliverToBoxAdapter();
+
       if (selectedAssetsForAlbum.value.isNotEmpty) {
-        return SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 12.0, top: 16),
-            child: SizedBox(
-              height: 30,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  AlbumActionOutlinedButton(
-                    iconData: Icons.add_photo_alternate_outlined,
-                    onPressed: _onSelectPhotosButtonPressed,
-                    labelText: "Add photos",
-                  ),
-                ],
-              ),
+        return Padding(
+          padding: const EdgeInsets.only(left: 12.0, top: 16, bottom: 16),
+          child: SizedBox(
+            height: 30,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                AlbumActionOutlinedButton(
+                  iconData: Icons.add_photo_alternate_outlined,
+                  onPressed: _onSelectPhotosButtonPressed,
+                  labelText: "Add photos",
+                ),
+              ],
             ),
           ),
         );
       }
 
-      return const SliverToBoxAdapter();
+      return Container();
     }
 
     _buildSharedUserList() {
@@ -137,7 +231,10 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
             ),
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                return SharedAlbumThumbnailImage(asset: asset[index]);
+                return GestureDetector(
+                  onTap: _onBackgroundTapped,
+                  child: SharedAlbumThumbnailImage(asset: asset[index]),
+                );
               },
               childCount: asset.length,
             ),
@@ -172,23 +269,31 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
           ],
         ),
         body: GestureDetector(
-          onTap: () {
-            albumTitleTextFieldFocusNode.unfocus();
-            isAlbumTitleTextFieldFocus.value = false;
-
-            if (albumTitleController.text.isEmpty) {
-              albumTitleController.text = 'Untitled';
-            }
-          },
+          onTap: _onBackgroundTapped,
           child: CustomScrollView(
             slivers: [
-              _buildTitleInputField(),
+              SliverAppBar(
+                leading: Container(),
+                pinned: true,
+                floating: false,
+                bottom: PreferredSize(
+                  child: Column(
+                    children: [
+                      _buildTitleInputField(),
+                      _buildControlButton(),
+                    ],
+                  ),
+                  preferredSize: const Size.fromHeight(66.0),
+                ),
+              ),
+              // _buildTitleInputField(),
+
               _buildTitle(),
               _buildSelectPhotosButton(),
 
               // Build selected photos grid
               _buildSharedUserList(),
-              _buildControlButton(),
+              // _buildControlButton(),
               _buildSelectedImageGrid(),
             ],
           ),
