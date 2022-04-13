@@ -69,6 +69,14 @@ class _$AppRouter extends RootStackRouter {
           opaque: true,
           barrierDismissible: false);
     },
+    SelectUserForSharingRoute.name: (routeData) {
+      return CustomPage<List<String>>(
+          routeData: routeData,
+          child: const SelectUserForSharingPage(),
+          transitionsBuilder: TransitionsBuilders.slideBottom,
+          opaque: true,
+          barrierDismissible: false);
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -118,7 +126,9 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(CreateSharedAlbumRoute.name,
             path: '/create-shared-album-page', guards: [authGuard]),
         RouteConfig(AssetSelectionRoute.name,
-            path: '/asset-selection-page', guards: [authGuard])
+            path: '/asset-selection-page', guards: [authGuard]),
+        RouteConfig(SelectUserForSharingRoute.name,
+            path: '/select-user-for-sharing-page', guards: [authGuard])
       ];
 }
 
@@ -263,6 +273,16 @@ class AssetSelectionRoute extends PageRouteInfo<void> {
       : super(AssetSelectionRoute.name, path: '/asset-selection-page');
 
   static const String name = 'AssetSelectionRoute';
+}
+
+/// generated route for
+/// [SelectUserForSharingPage]
+class SelectUserForSharingRoute extends PageRouteInfo<void> {
+  const SelectUserForSharingRoute()
+      : super(SelectUserForSharingRoute.name,
+            path: '/select-user-for-sharing-page');
+
+  static const String name = 'SelectUserForSharingRoute';
 }
 
 /// generated route for

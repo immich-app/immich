@@ -87,7 +87,9 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     final isAlbumTitleEmpty = useState(true);
     final selectedAssetsForAlbum = useState<Set<ImmichAsset>>({});
 
-    _submitCreateNewAlbum() {}
+    _showSelectUserPage() {
+      AutoRouter.of(context).push(const SelectUserForSharingRoute());
+    }
 
     void _onBackgroundTapped() {
       albumTitleTextFieldFocusNode.unfocus();
@@ -168,29 +170,6 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _buildControlButton() {
-      // if (selectedAssetsForAlbum.value.isNotEmpty) {
-      //   return SliverToBoxAdapter(
-      //     child: Padding(
-      //       padding: const EdgeInsets.only(left: 12.0, top: 16),
-      //       child: SizedBox(
-      //         height: 30,
-      //         child: ListView(
-      //           scrollDirection: Axis.horizontal,
-      //           children: [
-      //             AlbumActionOutlinedButton(
-      //               iconData: Icons.add_photo_alternate_outlined,
-      //               onPressed: _onSelectPhotosButtonPressed,
-      //               labelText: "Add photos",
-      //             ),
-      //           ],
-      //         ),
-      //       ),
-      //     ),
-      //   );
-      // }
-
-      // return const SliverToBoxAdapter();
-
       if (selectedAssetsForAlbum.value.isNotEmpty) {
         return Padding(
           padding: const EdgeInsets.only(left: 12.0, top: 16, bottom: 16),
@@ -258,7 +237,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
           title: const Text('Create album'),
           actions: [
             TextButton(
-              onPressed: albumTitleController.text.isNotEmpty ? _submitCreateNewAlbum : null,
+              onPressed: albumTitleController.text.isNotEmpty ? _showSelectUserPage : null,
               child: const Text(
                 'Share',
                 style: TextStyle(
@@ -273,6 +252,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
           child: CustomScrollView(
             slivers: [
               SliverAppBar(
+                elevation: 5,
                 leading: Container(),
                 pinned: true,
                 floating: false,
@@ -286,14 +266,12 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                   preferredSize: const Size.fromHeight(66.0),
                 ),
               ),
-              // _buildTitleInputField(),
 
               _buildTitle(),
               _buildSelectPhotosButton(),
 
               // Build selected photos grid
               _buildSharedUserList(),
-              // _buildControlButton(),
               _buildSelectedImageGrid(),
             ],
           ),
