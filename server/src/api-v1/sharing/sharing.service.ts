@@ -31,12 +31,14 @@ export class SharingService {
 
   async create(authUser: AuthUserDto, createSharedAlbumDto: CreateSharedAlbumDto) {
     return await getConnection().transaction(async (transactionalEntityManager) => {
+      // Create album entity
       const newSharedAlbum = new SharedAlbumEntity();
       newSharedAlbum.ownerId = authUser.id;
       newSharedAlbum.albumName = createSharedAlbumDto.albumName;
 
       const sharedAlbum = await transactionalEntityManager.save(newSharedAlbum);
 
+      // Add shared users
       for (const sharedUserId of createSharedAlbumDto.sharedWithUserIds) {
         const newSharedUser = new UserSharedAlbumEntity();
         newSharedUser.albumId = sharedAlbum.id;
@@ -44,6 +46,24 @@ export class SharingService {
 
         await transactionalEntityManager.save(newSharedUser);
       }
+
+      // Add shared assets
+      const newRecords: AssetSharedAlbumEntity[] = [];
+
+      for (const assetId of createSharedAlbumDto.assetIds) {
+        const newAssetSharedAlbum = new AssetSharedAlbumEntity();
+        newAssetSharedAlbum.assetId = assetId;
+        newAssetSharedAlbum.albumId = sharedAlbum.id;
+
+        newRecords.push(newAssetSharedAlbum);
+      }
+
+      if (!sharedAlbum.albumThumbnailAssetId && newRecords.length > 0) {
+        sharedAlbum.albumThumbnailAssetId = newRecords[0].assetId;
+        await transactionalEntityManager.save(sharedAlbum);
+      }
+
+      await transactionalEntityManager.save([...newRecords]);
 
       return sharedAlbum;
     });
@@ -114,7 +134,6 @@ export class SharingService {
     const album = await this.sharedAlbumRepository.findOne({ id: addAssetsDto.albumId });
 
     if (!album.albumThumbnailAssetId && newRecords.length > 0) {
-      console.log('adding asset to album');
       album.albumThumbnailAssetId = newRecords[0].assetId;
       await this.sharedAlbumRepository.save(album);
     }

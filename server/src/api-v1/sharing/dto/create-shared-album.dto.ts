@@ -1,9 +1,13 @@
-import { IsOptional } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
+import { AssetEntity } from '../../asset/entities/asset.entity';
 
 export class CreateSharedAlbumDto {
-  @IsOptional()
+  @IsNotEmpty()
   albumName: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   sharedWithUserIds: string[];
+
+  @IsOptional()
+  assetIds: string[];
 }
