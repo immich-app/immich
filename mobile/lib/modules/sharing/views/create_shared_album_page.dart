@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/sharing/providers/album_title.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_title_text_field.dart';
@@ -97,6 +98,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
 
       if (albumTitleController.text.isEmpty) {
         albumTitleController.text = 'Untitled';
+        ref.watch(albumTitleProvider.notifier).setAlbumTitle('Untitled');
       }
     }
 

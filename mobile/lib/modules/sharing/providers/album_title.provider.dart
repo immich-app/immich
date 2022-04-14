@@ -6,6 +6,10 @@ class AlbumTitleNotifier extends StateNotifier<String> {
   setAlbumTitle(String title) {
     state = title;
   }
+
+  clearAlbumTitle() {
+    state = "";
+  }
 }
 
 final albumTitleProvider = StateNotifierProvider<AlbumTitleNotifier, String>((ref) => AlbumTitleNotifier());

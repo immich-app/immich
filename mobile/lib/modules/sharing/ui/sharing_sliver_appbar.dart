@@ -32,36 +32,46 @@ class SharingSliverAppBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextButton.icon(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor.withAlpha(20)),
-                  // foregroundColor: MaterialStateProperty.all(Colors.white),
-                ),
-                onPressed: () {
-                  AutoRouter.of(context).push(const CreateSharedAlbumRoute());
-                },
-                icon: const Icon(
-                  Icons.photo_album_outlined,
-                  size: 20,
-                ),
-                label: const Text(
-                  "Create shared album",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 4.0),
+                  child: TextButton.icon(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor.withAlpha(20)),
+                      // foregroundColor: MaterialStateProperty.all(Colors.white),
+                    ),
+                    onPressed: () {
+                      AutoRouter.of(context).push(const CreateSharedAlbumRoute());
+                    },
+                    icon: const Icon(
+                      Icons.photo_album_outlined,
+                      size: 20,
+                    ),
+                    label: const Text(
+                      "Create shared album",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
                 ),
               ),
-              TextButton.icon(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor.withAlpha(20)),
-                  // foregroundColor: MaterialStateProperty.all(Colors.white),
-                ),
-                onPressed: null,
-                icon: const Icon(
-                  Icons.swap_horizontal_circle_outlined,
-                  size: 20,
-                ),
-                label: const Text(
-                  "Share with partner",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 4.0),
+                  child: TextButton.icon(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor.withAlpha(20)),
+                      // foregroundColor: MaterialStateProperty.all(Colors.white),
+                    ),
+                    onPressed: null,
+                    icon: const Icon(
+                      Icons.swap_horizontal_circle_outlined,
+                      size: 20,
+                    ),
+                    label: const Text(
+                      "Share with partner",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
                 ),
               )
             ],

@@ -22,7 +22,7 @@ class SharedAlbumService {
     return [];
   }
 
-  createSharedAlbum(String albumName, Set<ImmichAsset> assets, List<String> sharedUserIds) async {
+  Future<bool> createSharedAlbum(String albumName, Set<ImmichAsset> assets, List<String> sharedUserIds) async {
     try {
       var res = await _networkService.postRequest(url: 'shared/createAlbum', data: {
         "albumName": albumName,
@@ -30,9 +30,14 @@ class SharedAlbumService {
         "assetIds": assets.map((asset) => asset.id).toList(),
       });
       debugPrint("create new album $res");
+
+      if (res == null) {
+        return false;
+      }
+
       return true;
     } catch (e) {
-      debugPrint("Error getAllSharedAlbum  ${e.toString()}");
+      debugPrint("Error createSharedAlbum  ${e.toString()}");
       return false;
     }
   }

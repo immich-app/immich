@@ -4,8 +4,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/providers/album_title.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
+import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/user_info.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
@@ -15,6 +17,24 @@ class SelectUserForSharingPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sharedUsersList = useState<Set<UserInfo>>({});
     AsyncValue<List<UserInfo>> suggestedShareUsers = ref.watch(suggestedSharedUsersProvider);
+
+    _createSharedAlbum() async {
+      var isSuccess = await SharedAlbumService().createSharedAlbum(
+        ref.watch(albumTitleProvider),
+        ref.watch(assetSelectionProvider).selectedAssets,
+        sharedUsersList.value.map((userInfo) => userInfo.id).toList(),
+      );
+
+      if (isSuccess) {
+        await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
+        ref.watch(assetSelectionProvider.notifier).removeAll();
+        ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
+
+        AutoRouter.of(context).navigate(const TabControllerRoute(children: [SharingRoute()]));
+      }
+
+      const ScaffoldMessenger(child: SnackBar(content: Text('Failed to create album')));
+    }
 
     _buildTileIcon(UserInfo user) {
       if (sharedUsersList.value.contains(user)) {
@@ -104,15 +124,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         ),
         actions: [
           TextButton(
-              onPressed: sharedUsersList.value.isEmpty
-                  ? null
-                  : () async {
-                      SharedAlbumService().createSharedAlbum(
-                        ref.watch(albumTitleProvider),
-                        ref.watch(assetSelectionProvider).selectedAssets,
-                        sharedUsersList.value.map((userInfo) => userInfo.id).toList(),
-                      );
-                    },
+              onPressed: sharedUsersList.value.isEmpty ? null : _createSharedAlbum,
               child: const Text(
                 "Create Album",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
