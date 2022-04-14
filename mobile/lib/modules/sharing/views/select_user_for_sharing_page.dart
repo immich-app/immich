@@ -2,7 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/sharing/providers/album_title.provider.dart';
+import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/suggested_shared_users.provider.dart';
+import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
 import 'package:immich_mobile/shared/models/user_info.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
@@ -10,26 +13,48 @@ class SelectUserForSharingPage extends HookConsumerWidget {
   const SelectUserForSharingPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedUsersList = useState<List<UserInfo>>([]);
+    final sharedUsersList = useState<Set<UserInfo>>({});
     AsyncValue<List<UserInfo>> suggestedShareUsers = ref.watch(suggestedSharedUsersProvider);
 
+    _buildTileIcon(UserInfo user) {
+      if (sharedUsersList.value.contains(user)) {
+        return CircleAvatar(
+          backgroundColor: Theme.of(context).primaryColor,
+          child: const Icon(
+            Icons.check_rounded,
+            size: 25,
+          ),
+        );
+      } else {
+        return CircleAvatar(
+          backgroundImage: const AssetImage('assets/immich-logo-no-outline.png'),
+          backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
+        );
+      }
+    }
+
     _buildUserList(List<UserInfo> users) {
+      List<Widget> usersChip = [];
+
+      for (var user in sharedUsersList.value) {
+        usersChip.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Chip(
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.15),
+              label: Text(
+                user.email,
+                style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        );
+      }
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 50,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              shrinkWrap: true,
-              itemBuilder: ((context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Chip(label: Text(sharedUsersList.value[index].email)),
-                );
-              }),
-              itemCount: sharedUsersList.value.length,
-            ),
+          Wrap(
+            children: [...usersChip],
           ),
           const Padding(
             padding: EdgeInsets.all(16.0),
@@ -42,16 +67,18 @@ class SelectUserForSharingPage extends HookConsumerWidget {
             shrinkWrap: true,
             itemBuilder: ((context, index) {
               return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: const AssetImage('assets/immich-logo-no-outline.png'),
-                  backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
-                ),
+                leading: _buildTileIcon(users[index]),
                 title: Text(
                   users[index].email,
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 onTap: () {
-                  sharedUsersList.value = [...sharedUsersList.value, users[index]];
+                  if (sharedUsersList.value.contains(users[index])) {
+                    sharedUsersList.value =
+                        sharedUsersList.value.where((selectedUser) => selectedUser.id != users[index].id).toSet();
+                  } else {
+                    sharedUsersList.value = {...sharedUsersList.value, users[index]};
+                  }
                 },
               );
             }),
@@ -63,7 +90,10 @@ class SelectUserForSharingPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Invite to album'),
+        title: const Text(
+          'Invite to album',
+          style: TextStyle(color: Colors.black),
+        ),
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
@@ -72,6 +102,22 @@ class SelectUserForSharingPage extends HookConsumerWidget {
             AutoRouter.of(context).pop();
           },
         ),
+        actions: [
+          TextButton(
+              onPressed: sharedUsersList.value.isEmpty
+                  ? null
+                  : () async {
+                      SharedAlbumService().createSharedAlbum(
+                        ref.watch(albumTitleProvider),
+                        ref.watch(assetSelectionProvider).selectedAssets,
+                        sharedUsersList.value.map((userInfo) => userInfo.id).toList(),
+                      );
+                    },
+              child: const Text(
+                "Create Album",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ))
+        ],
       ),
       body: suggestedShareUsers.when(
         data: (users) {

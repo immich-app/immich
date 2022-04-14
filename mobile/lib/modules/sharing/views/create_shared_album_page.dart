@@ -234,7 +234,10 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                 AutoRouter.of(context).pop();
               },
               icon: const Icon(Icons.close_rounded)),
-          title: const Text('Create album'),
+          title: const Text(
+            'Create album',
+            style: TextStyle(color: Colors.black),
+          ),
           actions: [
             TextButton(
               onPressed: albumTitleController.text.isNotEmpty ? _showSelectUserPage : null,

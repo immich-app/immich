@@ -46,7 +46,7 @@ class SharingPage extends HookConsumerWidget {
                 sharedAlbums[index].albumName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
               ),
               onTap: () {
                 debugPrint(

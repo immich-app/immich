@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/sharing/providers/album_title.provider.dart';
 
-class AlbumTitleTextField extends StatelessWidget {
+class AlbumTitleTextField extends ConsumerWidget {
   const AlbumTitleTextField({
     Key? key,
     required this.isAlbumTitleEmpty,
@@ -15,7 +17,7 @@ class AlbumTitleTextField extends StatelessWidget {
   final ValueNotifier<bool> isAlbumTitleTextFieldFocus;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return TextField(
       onChanged: (v) {
         if (v.isEmpty) {
@@ -23,6 +25,8 @@ class AlbumTitleTextField extends StatelessWidget {
         } else {
           isAlbumTitleEmpty.value = false;
         }
+
+        ref.watch(albumTitleProvider.notifier).setAlbumTitle(v);
       },
       focusNode: albumTitleTextFieldFocusNode,
       style: TextStyle(fontSize: 28, color: Colors.grey[700], fontWeight: FontWeight.bold),
