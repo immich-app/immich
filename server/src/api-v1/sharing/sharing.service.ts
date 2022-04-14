@@ -88,7 +88,9 @@ export class SharingService {
       select: ['albumInfo'],
     });
 
-    return [...ownedAlbums, ...isSharedWithAlbums.map((o) => o.albumInfo)];
+    return [...ownedAlbums, ...isSharedWithAlbums.map((o) => o.albumInfo)].sort(
+      (a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf(),
+    );
   }
 
   async getAlbumInfo(authUser: AuthUserDto, albumId: string) {

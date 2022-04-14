@@ -50,8 +50,6 @@ export class CreateSharedAlbumAndRelatedTables1649643216111 implements Migration
                   references shared_albums
                   on delete cascade,
           "assetId" uuid not null
-              constraint "REL_64f2e7d68d1d1d8417acc844a4"
-                  unique
               constraint "FK_64f2e7d68d1d1d8417acc844a4a"
                   references assets
                   on delete cascade,
