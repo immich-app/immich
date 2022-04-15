@@ -77,6 +77,12 @@ class _$AppRouter extends RootStackRouter {
           opaque: true,
           barrierDismissible: false);
     },
+    AlbumViewerRoute.name: (routeData) {
+      final args = routeData.argsAs<AlbumViewerRouteArgs>();
+      return MaterialPageX<dynamic>(
+          routeData: routeData,
+          child: AlbumViewerPage(key: args.key, albumId: args.albumId));
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -128,7 +134,9 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(AssetSelectionRoute.name,
             path: '/asset-selection-page', guards: [authGuard]),
         RouteConfig(SelectUserForSharingRoute.name,
-            path: '/select-user-for-sharing-page', guards: [authGuard])
+            path: '/select-user-for-sharing-page', guards: [authGuard]),
+        RouteConfig(AlbumViewerRoute.name,
+            path: '/album-viewer-page', guards: [authGuard])
       ];
 }
 
@@ -283,6 +291,30 @@ class SelectUserForSharingRoute extends PageRouteInfo<void> {
             path: '/select-user-for-sharing-page');
 
   static const String name = 'SelectUserForSharingRoute';
+}
+
+/// generated route for
+/// [AlbumViewerPage]
+class AlbumViewerRoute extends PageRouteInfo<AlbumViewerRouteArgs> {
+  AlbumViewerRoute({Key? key, required String albumId})
+      : super(AlbumViewerRoute.name,
+            path: '/album-viewer-page',
+            args: AlbumViewerRouteArgs(key: key, albumId: albumId));
+
+  static const String name = 'AlbumViewerRoute';
+}
+
+class AlbumViewerRouteArgs {
+  const AlbumViewerRouteArgs({this.key, required this.albumId});
+
+  final Key? key;
+
+  final String albumId;
+
+  @override
+  String toString() {
+    return 'AlbumViewerRouteArgs{key: $key, albumId: $albumId}';
+  }
 }
 
 /// generated route for

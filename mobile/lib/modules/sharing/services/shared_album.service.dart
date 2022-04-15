@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -39,6 +40,18 @@ class SharedAlbumService {
     } catch (e) {
       debugPrint("Error createSharedAlbum  ${e.toString()}");
       return false;
+    }
+  }
+
+  Future<SharedAlbum> getAlbumDetail(String albumId) async {
+    try {
+      var res = await _networkService.getRequest(url: 'shared/$albumId');
+      dynamic decodedData = jsonDecode(res.toString());
+      SharedAlbum result = SharedAlbum.fromMap(decodedData);
+
+      return result;
+    } catch (e) {
+      throw Exception('Error getAllSharedAlbum  ${e.toString()}');
     }
   }
 }

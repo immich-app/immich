@@ -17,3 +17,9 @@ class SharedAlbumNotifier extends StateNotifier<List<SharedAlbum>> {
 final sharedAlbumProvider = StateNotifierProvider<SharedAlbumNotifier, List<SharedAlbum>>((ref) {
   return SharedAlbumNotifier();
 });
+
+final sharedAlbumDetailProvider = FutureProvider.autoDispose.family<SharedAlbum, String>((ref, albumId) async {
+  final SharedAlbumService _sharedAlbumService = SharedAlbumService();
+
+  return await _sharedAlbumService.getAlbumDetail(albumId);
+});
