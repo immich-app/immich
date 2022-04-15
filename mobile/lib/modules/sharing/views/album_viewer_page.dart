@@ -1,8 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +17,8 @@ class AlbumViewerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ScrollController _scrollController = useScrollController();
+
     AsyncValue<SharedAlbum> _albumInfo = ref.watch(sharedAlbumDetailProvider(albumId));
 
     Widget _buildTitle(String title) {
@@ -86,33 +91,54 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     _buildImageGrid(SharedAlbum albumInfo) {
       if (albumInfo.sharedAssets != null && albumInfo.sharedAssets!.isNotEmpty) {
-        return const SliverToBoxAdapter(
-          child: Text("asset list"),
+        return SliverPadding(
+          padding: const EdgeInsets.only(top: 10.0),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 5.0,
+              mainAxisSpacing: 5,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                return AlbumViewerThumbnail(asset: albumInfo.sharedAssets![index].assetInfo);
+              },
+              childCount: albumInfo.sharedAssets?.length,
+            ),
+          ),
         );
       }
       return const SliverToBoxAdapter();
     }
 
     _buildBody(SharedAlbum albumInfo) {
-      return CustomScrollView(
-        slivers: [
-          _buildHeader(albumInfo),
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: ImmichSliverPersistentAppBarDelegate(
-              minHeight: 40,
-              maxHeight: 70,
-              child: Container(
-                color: Colors.indigo,
-                child: const Center(
-                  child: Text("Control buttons"),
+      return Stack(children: [
+        DraggableScrollbar.semicircle(
+          backgroundColor: Theme.of(context).primaryColor,
+          controller: _scrollController,
+          heightScrollThumb: 48.0,
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              _buildHeader(albumInfo),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: ImmichSliverPersistentAppBarDelegate(
+                  minHeight: 40,
+                  maxHeight: 70,
+                  child: Container(
+                    color: Colors.indigo,
+                    child: const Center(
+                      child: Text("Control buttons"),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              _buildImageGrid(albumInfo)
+            ],
           ),
-          _buildImageGrid(albumInfo)
-        ],
-      );
+        ),
+      ]);
     }
 
     return Scaffold(
