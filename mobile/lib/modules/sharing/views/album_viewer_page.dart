@@ -84,6 +84,15 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
+    _buildImageGrid(SharedAlbum albumInfo) {
+      if (albumInfo.sharedAssets != null && albumInfo.sharedAssets!.isNotEmpty) {
+        return const SliverToBoxAdapter(
+          child: Text("asset list"),
+        );
+      }
+      return const SliverToBoxAdapter();
+    }
+
     _buildBody(SharedAlbum albumInfo) {
       return CustomScrollView(
         slivers: [
@@ -101,18 +110,7 @@ class AlbumViewerPage extends HookConsumerWidget {
               ),
             ),
           ),
-          SliverFixedExtentList(
-            itemExtent: 50.0,
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                return Container(
-                  alignment: Alignment.center,
-                  color: Colors.lightBlue[100 * (index % 9)],
-                  child: Text('list item $index'),
-                );
-              },
-            ),
-          )
+          _buildImageGrid(albumInfo)
         ],
       );
     }
