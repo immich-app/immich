@@ -9,6 +9,7 @@ import { CreateSharedAlbumDto } from './dto/create-shared-album.dto';
 import { AssetSharedAlbumEntity } from './entities/asset-shared-album.entity';
 import { SharedAlbumEntity } from './entities/shared-album.entity';
 import { UserSharedAlbumEntity } from './entities/user-shared-album.entity';
+import _ from 'lodash';
 
 @Injectable()
 export class SharingService {
@@ -111,6 +112,11 @@ export class SharingService {
     if (!albumInfo) {
       throw new NotFoundException('Album Not Found');
     }
+    const sortedSharedAsset = albumInfo.sharedAssets.sort(
+      (a, b) => new Date(a.assetInfo.createdAt).valueOf() - new Date(b.assetInfo.createdAt).valueOf(),
+    );
+
+    albumInfo.sharedAssets = sortedSharedAsset;
 
     return albumInfo;
   }
