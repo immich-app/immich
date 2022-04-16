@@ -17,7 +17,7 @@ class AlbumActionOutlinedButton extends StatelessWidget {
           padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.symmetric(vertical: 0, horizontal: 10)),
           shape: MaterialStateProperty.resolveWith<OutlinedBorder>(
             (_) => RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(25),
             ),
           ),
           side: MaterialStateProperty.resolveWith<BorderSide>(

@@ -2,9 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
@@ -111,6 +113,30 @@ class AlbumViewerPage extends HookConsumerWidget {
       return const SliverToBoxAdapter();
     }
 
+    _buildControlButton() {
+      return Padding(
+        padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
+        child: SizedBox(
+          height: 40,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              AlbumActionOutlinedButton(
+                iconData: Icons.add_photo_alternate_outlined,
+                onPressed: () {},
+                labelText: "Add photos",
+              ),
+              AlbumActionOutlinedButton(
+                iconData: Icons.person_add_alt_rounded,
+                onPressed: () {},
+                labelText: "Add users",
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     _buildBody(SharedAlbum albumInfo) {
       return Stack(children: [
         DraggableScrollbar.semicircle(
@@ -124,13 +150,11 @@ class AlbumViewerPage extends HookConsumerWidget {
               SliverPersistentHeader(
                 pinned: true,
                 delegate: ImmichSliverPersistentAppBarDelegate(
-                  minHeight: 40,
-                  maxHeight: 70,
+                  minHeight: 50,
+                  maxHeight: 50,
                   child: Container(
-                    color: Colors.indigo,
-                    child: const Center(
-                      child: Text("Control buttons"),
-                    ),
+                    color: immichBackgroundColor,
+                    child: _buildControlButton(),
                   ),
                 ),
               ),
