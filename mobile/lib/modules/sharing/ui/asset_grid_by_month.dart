@@ -16,34 +16,7 @@ class AssetGridByMonth extends HookConsumerWidget {
       ),
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
-          var assetType = assetGroup[index].type;
-
-          return Stack(
-            children: [
-              SelectionThumbnailImage(asset: assetGroup[index]),
-              assetType == 'IMAGE'
-                  ? Container()
-                  : Positioned(
-                      bottom: 5,
-                      right: 5,
-                      child: Row(
-                        children: [
-                          Text(
-                            assetGroup[index].duration.toString().substring(0, 7),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                            ),
-                          ),
-                          const Icon(
-                            Icons.play_circle_outline_rounded,
-                            color: Colors.white,
-                          ),
-                        ],
-                      ),
-                    )
-            ],
-          );
+          return SelectionThumbnailImage(asset: assetGroup[index]);
         },
         childCount: assetGroup.length,
       ),

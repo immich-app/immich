@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.da
 import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:intl/intl.dart';
@@ -24,12 +25,30 @@ class AlbumViewerPage extends HookConsumerWidget {
     ScrollController _scrollController = useScrollController();
     AsyncValue<SharedAlbum> _albumInfo = ref.watch(sharedAlbumDetailProvider(albumId));
 
-    void _onAddPhotosPressed() {
-      AutoRouter.of(context).push(const AssetSelectionRoute());
-      ref.watch(assetSelectionProvider.notifier);
+    /// Find out if the assets in album exist on the device
+    /// If they exist, add to selected asset state to show they are already selected.
+    void _onAddPhotosPressed(SharedAlbum albumInfo) async {
+      if (albumInfo.sharedAssets != null && albumInfo.sharedAssets!.isNotEmpty) {
+        ref
+            .watch(assetSelectionProvider.notifier)
+            .addMultipleAssets(albumInfo.sharedAssets!.map((e) => e.assetInfo).toList());
+      }
+
+      ref.watch(assetSelectionProvider.notifier).setIsNavigatedFromAlbum(true);
+
+      Set<ImmichAsset>? selectedAsset =
+          await AutoRouter.of(context).push<Set<ImmichAsset>?>(const AssetSelectionRoute());
+
+      if (selectedAsset != null) {
+        // Check if there is new assets add
+
+        ref.watch(assetSelectionProvider.notifier).removeAll();
+      } else {
+        ref.watch(assetSelectionProvider.notifier).removeAll();
+      }
     }
 
-    void _onAddUsersPressed() {}
+    void _onAddUsersPressed(SharedAlbum albumInfo) {}
 
     Widget _buildTitle(String title) {
       return Padding(
@@ -121,7 +140,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       return const SliverToBoxAdapter();
     }
 
-    Widget _buildControlButton() {
+    Widget _buildControlButton(SharedAlbum albumInfo) {
       return Padding(
         padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
         child: SizedBox(
@@ -131,12 +150,12 @@ class AlbumViewerPage extends HookConsumerWidget {
             children: [
               AlbumActionOutlinedButton(
                 iconData: Icons.add_photo_alternate_outlined,
-                onPressed: () => _onAddPhotosPressed(),
+                onPressed: () => _onAddPhotosPressed(albumInfo),
                 labelText: "Add photos",
               ),
               AlbumActionOutlinedButton(
                 iconData: Icons.person_add_alt_rounded,
-                onPressed: () => _onAddUsersPressed(),
+                onPressed: () => _onAddUsersPressed(albumInfo),
                 labelText: "Add users",
               ),
             ],
@@ -162,7 +181,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                   maxHeight: 50,
                   child: Container(
                     color: immichBackgroundColor,
-                    child: _buildControlButton(),
+                    child: _buildControlButton(albumInfo),
                   ),
                 ),
               ),

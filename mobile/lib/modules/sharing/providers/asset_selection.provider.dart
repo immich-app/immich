@@ -8,7 +8,12 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
       : super(AssetSelectionState(
           selectedAssets: {},
           selectedMonths: {},
+          isNavigatedFromAlbum: false,
         ));
+
+  void setIsNavigatedFromAlbum(bool isNavigatedFromAlbum) {
+    state = state.copyWith(isNavigatedFromAlbum: isNavigatedFromAlbum);
+  }
 
   void removeAssetsInMonth(String removedMonth, List<ImmichAsset> assetsInMonth) {
     Set<ImmichAsset> currentAssetList = state.selectedAssets;
@@ -61,7 +66,7 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
   }
 
   void removeAll() {
-    state = state.copyWith(selectedAssets: {}, selectedMonths: {});
+    state = state.copyWith(selectedAssets: {}, selectedMonths: {}, isNavigatedFromAlbum: false);
   }
 }
 

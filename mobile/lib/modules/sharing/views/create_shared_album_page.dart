@@ -36,6 +36,8 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _onSelectPhotosButtonPressed() async {
+      ref.watch(assetSelectionProvider.notifier).setIsNavigatedFromAlbum(false);
+
       Set<ImmichAsset>? selectedAsset =
           await AutoRouter.of(context).push<Set<ImmichAsset>?>(const AssetSelectionRoute());
 

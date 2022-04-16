@@ -15,12 +15,11 @@ class SelectionThumbnailImage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cacheKey = useState(1);
-
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
         '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
-
     var selectedAsset = ref.watch(assetSelectionProvider).selectedAssets;
+    var isNavigatedFromAlbum = ref.watch(assetSelectionProvider).isNavigatedFromAlbum;
 
     Widget _buildSelectionIcon(ImmichAsset asset) {
       if (selectedAsset.contains(asset)) {
@@ -82,6 +81,27 @@ class SelectionThumbnailImage extends HookConsumerWidget {
                 child: _buildSelectionIcon(asset),
               ),
             ),
+            asset.type == 'IMAGE'
+                ? Container()
+                : Positioned(
+                    bottom: 5,
+                    right: 5,
+                    child: Row(
+                      children: [
+                        Text(
+                          asset.duration.toString().substring(0, 7),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                        const Icon(
+                          Icons.play_circle_outline_rounded,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  )
           ],
         ),
       ),
