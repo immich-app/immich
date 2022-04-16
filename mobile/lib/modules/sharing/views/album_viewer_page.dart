@@ -5,9 +5,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
+import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:intl/intl.dart';
@@ -20,8 +22,14 @@ class AlbumViewerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ScrollController _scrollController = useScrollController();
-
     AsyncValue<SharedAlbum> _albumInfo = ref.watch(sharedAlbumDetailProvider(albumId));
+
+    void _onAddPhotosPressed() {
+      AutoRouter.of(context).push(const AssetSelectionRoute());
+      ref.watch(assetSelectionProvider.notifier);
+    }
+
+    void _onAddUsersPressed() {}
 
     Widget _buildTitle(String title) {
       return Padding(
@@ -91,7 +99,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    _buildImageGrid(SharedAlbum albumInfo) {
+    Widget _buildImageGrid(SharedAlbum albumInfo) {
       if (albumInfo.sharedAssets != null && albumInfo.sharedAssets!.isNotEmpty) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 10.0),
@@ -113,7 +121,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       return const SliverToBoxAdapter();
     }
 
-    _buildControlButton() {
+    Widget _buildControlButton() {
       return Padding(
         padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
         child: SizedBox(
@@ -123,12 +131,12 @@ class AlbumViewerPage extends HookConsumerWidget {
             children: [
               AlbumActionOutlinedButton(
                 iconData: Icons.add_photo_alternate_outlined,
-                onPressed: () {},
+                onPressed: () => _onAddPhotosPressed(),
                 labelText: "Add photos",
               ),
               AlbumActionOutlinedButton(
                 iconData: Icons.person_add_alt_rounded,
-                onPressed: () {},
+                onPressed: () => _onAddUsersPressed(),
                 labelText: "Add users",
               ),
             ],
@@ -137,7 +145,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    _buildBody(SharedAlbum albumInfo) {
+    Widget _buildBody(SharedAlbum albumInfo) {
       return Stack(children: [
         DraggableScrollbar.semicircle(
           backgroundColor: Theme.of(context).primaryColor,
