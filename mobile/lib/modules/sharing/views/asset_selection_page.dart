@@ -16,7 +16,18 @@ class AssetSelectionPage extends HookConsumerWidget {
     ScrollController _scrollController = useScrollController();
     var assetGroupMonthYear = ref.watch(assetGroupByMonthYearProvider);
     final selectedAssets = ref.watch(assetSelectionProvider).selectedAssets;
+    final newAssetsForAlbum = ref.watch(assetSelectionProvider).newAssetsForAlbum;
+    final isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
+
     List<Widget> _imageGridGroup = [];
+
+    String _buildAssetCountText() {
+      if (isAlbumExist) {
+        return (selectedAssets.length + newAssetsForAlbum.length).toString();
+      } else {
+        return selectedAssets.length.toString();
+      }
+    }
 
     Widget _buildBody() {
       assetGroupMonthYear.forEach((monthYear, assetGroup) {
@@ -55,7 +66,7 @@ class AssetSelectionPage extends HookConsumerWidget {
                 style: TextStyle(fontSize: 18),
               )
             : Text(
-                selectedAssets.length.toString(),
+                _buildAssetCountText(),
                 style: const TextStyle(fontSize: 18),
               ),
         centerTitle: false,
