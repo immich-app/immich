@@ -8,7 +8,8 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
       : super(AssetSelectionState(
           selectedAssets: {},
           selectedMonths: {},
-          isNavigatedFromAlbum: false,
+          newAssetsForAlbum: {},
+          isAlbumExist: false,
         ));
 
   void setIsNavigatedFromAlbum(bool isNavigatedFromAlbum) {
@@ -26,6 +27,12 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     }
 
     state = state.copyWith(selectedAssets: currentAssetList, selectedMonths: currentMonthList);
+  }
+
+  void addNewAssetToAlbum(List<ImmichAsset> assets) {
+    state = state.copyWith(
+      newAssetsForAlbum: {...state.newAssetsForAlbum, ...assets},
+    );
   }
 
   void addAssetsInMonth(String month, List<ImmichAsset> assetsInMonth) {
@@ -63,6 +70,16 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     }
 
     state = state.copyWith(selectedAssets: currentList);
+  }
+
+  void removeSelectedNewAssetsForAlbum(List<ImmichAsset> assets) {
+    Set<ImmichAsset> currentList = state.newAssetsForAlbum;
+
+    for (ImmichAsset asset in assets) {
+      currentList.removeWhere((e) => e.id == asset.id);
+    }
+
+    state = state.copyWith(newAssetsForAlbum: currentList);
   }
 
   void removeAll() {

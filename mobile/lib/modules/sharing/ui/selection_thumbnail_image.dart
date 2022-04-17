@@ -19,10 +19,21 @@ class SelectionThumbnailImage extends HookConsumerWidget {
     var thumbnailRequestUrl =
         '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
     var selectedAsset = ref.watch(assetSelectionProvider).selectedAssets;
-    var isNavigatedFromAlbum = ref.watch(assetSelectionProvider).isNavigatedFromAlbum;
+    var newAssetsForAlbum = ref.watch(assetSelectionProvider).newAssetsForAlbum;
+    var isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
     Widget _buildSelectionIcon(ImmichAsset asset) {
-      if (selectedAsset.contains(asset)) {
+      if (selectedAsset.contains(asset) && !isAlbumExist) {
+        return Icon(
+          Icons.check_circle,
+          color: Theme.of(context).primaryColor,
+        );
+      } else if (selectedAsset.contains(asset) && isAlbumExist) {
+        return const Icon(
+          Icons.check_circle,
+          color: Color.fromARGB(255, 233, 233, 233),
+        );
+      } else if (newAssetsForAlbum.contains(asset) && isAlbumExist) {
         return Icon(
           Icons.check_circle,
           color: Theme.of(context).primaryColor,
@@ -35,12 +46,42 @@ class SelectionThumbnailImage extends HookConsumerWidget {
       }
     }
 
+    BoxBorder drawBorderColor() {
+      if (selectedAsset.contains(asset) && !isAlbumExist) {
+        return Border.all(
+          color: Theme.of(context).primaryColorLight,
+          width: 10,
+        );
+      } else if (selectedAsset.contains(asset) && isAlbumExist) {
+        return Border.all(
+          color: const Color.fromARGB(255, 190, 190, 190),
+          width: 10,
+        );
+      } else if (newAssetsForAlbum.contains(asset) && isAlbumExist) {
+        return Border.all(
+          color: Theme.of(context).primaryColorLight,
+          width: 10,
+        );
+      }
+      return const Border();
+    }
+
     return GestureDetector(
       onTap: () {
-        if (selectedAsset.contains(asset)) {
-          ref.watch(assetSelectionProvider.notifier).removeSingleSelectedItem(asset);
+        if (!isAlbumExist) {
+          // Operation for new album
+          if (selectedAsset.contains(asset)) {
+            ref.watch(assetSelectionProvider.notifier).removeSingleSelectedItem(asset);
+          } else {
+            ref.watch(assetSelectionProvider.notifier).addSingleAsset(asset);
+          }
         } else {
-          ref.watch(assetSelectionProvider.notifier).addSingleAsset(asset);
+          // Operation for existing album
+          if (newAssetsForAlbum.contains(asset)) {
+            ref.watch(assetSelectionProvider.notifier).removeSelectedNewAssetsForAlbum([asset]);
+          } else {
+            ref.watch(assetSelectionProvider.notifier).addNewAssetToAlbum([asset]);
+          }
         }
       },
       child: Hero(
@@ -48,11 +89,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
         child: Stack(
           children: [
             Container(
-              decoration: BoxDecoration(
-                border: selectedAsset.contains(asset)
-                    ? Border.all(color: Theme.of(context).primaryColorLight, width: 10)
-                    : const Border(),
-              ),
+              decoration: BoxDecoration(border: drawBorderColor()),
               child: CachedNetworkImage(
                 cacheKey: "${asset.id}-${cacheKey.value}",
                 width: 150,

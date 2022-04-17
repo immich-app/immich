@@ -7,41 +7,49 @@ import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 class AssetSelectionState {
   final Set<String> selectedMonths;
   final Set<ImmichAsset> selectedAssets;
+  final Set<ImmichAsset> newAssetsForAlbum;
 
   /// Indicate the asset selection page is navigated from existing album
-  final bool isNavigatedFromAlbum;
+  final bool isAlbumExist;
 
   AssetSelectionState({
     required this.selectedMonths,
     required this.selectedAssets,
-    this.isNavigatedFromAlbum = false,
+    required this.newAssetsForAlbum,
+    this.isAlbumExist = false,
   });
 
   AssetSelectionState copyWith({
     Set<String>? selectedMonths,
     Set<ImmichAsset>? selectedAssets,
+    Set<ImmichAsset>? newAssetsForAlbum,
     bool? isNavigatedFromAlbum,
   }) {
     return AssetSelectionState(
       selectedMonths: selectedMonths ?? this.selectedMonths,
       selectedAssets: selectedAssets ?? this.selectedAssets,
-      isNavigatedFromAlbum: isNavigatedFromAlbum ?? this.isNavigatedFromAlbum,
+      newAssetsForAlbum: newAssetsForAlbum ?? this.newAssetsForAlbum,
+      isAlbumExist: isNavigatedFromAlbum ?? isAlbumExist,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'selectedMonths': selectedMonths.toList(),
-      'selectedAssets': selectedAssets.map((x) => x.toMap()).toList(),
-      'isNavigatedFromAlbum': isNavigatedFromAlbum,
-    };
+    final result = <String, dynamic>{};
+
+    result.addAll({'selectedMonths': selectedMonths.toList()});
+    result.addAll({'selectedAssets': selectedAssets.map((x) => x.toMap()).toList()});
+    result.addAll({'newAssetsForAlbum': newAssetsForAlbum.map((x) => x.toMap()).toList()});
+    result.addAll({'isNavigatedFromAlbum': isAlbumExist});
+
+    return result;
   }
 
   factory AssetSelectionState.fromMap(Map<String, dynamic> map) {
     return AssetSelectionState(
       selectedMonths: Set<String>.from(map['selectedMonths']),
       selectedAssets: Set<ImmichAsset>.from(map['selectedAssets']?.map((x) => ImmichAsset.fromMap(x))),
-      isNavigatedFromAlbum: map['isNavigatedFromAlbum'] ?? false,
+      newAssetsForAlbum: Set<ImmichAsset>.from(map['newAssetsForAlbum']?.map((x) => ImmichAsset.fromMap(x))),
+      isAlbumExist: map['isNavigatedFromAlbum'] ?? false,
     );
   }
 
@@ -50,8 +58,9 @@ class AssetSelectionState {
   factory AssetSelectionState.fromJson(String source) => AssetSelectionState.fromMap(json.decode(source));
 
   @override
-  String toString() =>
-      'AssetSelectionState(selectedMonths: $selectedMonths, selectedAssets: $selectedAssets, isNavigatedFromAlbum: $isNavigatedFromAlbum)';
+  String toString() {
+    return 'AssetSelectionState(selectedMonths: $selectedMonths, selectedAssets: $selectedAssets, newAssetsForAlbum: $newAssetsForAlbum, isNavigatedFromAlbum: $isAlbumExist)';
+  }
 
   @override
   bool operator ==(Object other) {
@@ -61,9 +70,12 @@ class AssetSelectionState {
     return other is AssetSelectionState &&
         setEquals(other.selectedMonths, selectedMonths) &&
         setEquals(other.selectedAssets, selectedAssets) &&
-        other.isNavigatedFromAlbum == isNavigatedFromAlbum;
+        setEquals(other.newAssetsForAlbum, newAssetsForAlbum) &&
+        other.isAlbumExist == isAlbumExist;
   }
 
   @override
-  int get hashCode => selectedMonths.hashCode ^ selectedAssets.hashCode ^ isNavigatedFromAlbum.hashCode;
+  int get hashCode {
+    return selectedMonths.hashCode ^ selectedAssets.hashCode ^ newAssetsForAlbum.hashCode ^ isAlbumExist.hashCode;
+  }
 }
