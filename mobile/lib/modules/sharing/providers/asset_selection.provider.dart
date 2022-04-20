@@ -12,8 +12,8 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
           isAlbumExist: false,
         ));
 
-  void setIsNavigatedFromAlbum(bool isNavigatedFromAlbum) {
-    state = state.copyWith(isNavigatedFromAlbum: isNavigatedFromAlbum);
+  void setisAlbumExist(bool isAlbumExist) {
+    state = state.copyWith(isAlbumExist: isAlbumExist);
   }
 
   void removeAssetsInMonth(String removedMonth, List<ImmichAsset> assetsInMonth) {
@@ -83,7 +83,7 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
   }
 
   void removeAll() {
-    state = state.copyWith(selectedAssets: {}, selectedMonths: {}, isNavigatedFromAlbum: false);
+    state = state.copyWith(selectedAssets: {}, selectedMonths: {}, newAssetsForAlbum: {}, isAlbumExist: false);
   }
 }
 

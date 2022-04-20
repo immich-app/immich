@@ -14,15 +14,25 @@ class MonthGroupTitle extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedDateGroup = ref.watch(assetSelectionProvider).selectedMonths;
     final selectedItems = ref.watch(assetSelectionProvider).selectedAssets;
-    // final isMonthSelected = useState(false);
+    final isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
     _handleTitleIconClick() {
       HapticFeedback.heavyImpact();
 
-      if (selectedDateGroup.contains(month)) {
-        ref.watch(assetSelectionProvider.notifier).removeAssetsInMonth(month, assetGroup);
+      if (isAlbumExist) {
+        if (selectedDateGroup.contains(month)) {
+          ref.watch(assetSelectionProvider.notifier).removeAssetsInMonth(month, []);
+          ref.watch(assetSelectionProvider.notifier).removeSelectedNewAssetsForAlbum(assetGroup);
+        } else {
+          ref.watch(assetSelectionProvider.notifier).addAssetsInMonth(month, []);
+          ref.watch(assetSelectionProvider.notifier).addNewAssetToAlbum(assetGroup);
+        }
       } else {
-        ref.watch(assetSelectionProvider.notifier).addAssetsInMonth(month, assetGroup);
+        if (selectedDateGroup.contains(month)) {
+          ref.watch(assetSelectionProvider.notifier).removeAssetsInMonth(month, assetGroup);
+        } else {
+          ref.watch(assetSelectionProvider.notifier).addAssetsInMonth(month, assetGroup);
+        }
       }
     }
 

@@ -16,20 +16,20 @@ class AssetSelectionState {
     required this.selectedMonths,
     required this.selectedAssets,
     required this.newAssetsForAlbum,
-    this.isAlbumExist = false,
+    required this.isAlbumExist,
   });
 
   AssetSelectionState copyWith({
     Set<String>? selectedMonths,
     Set<ImmichAsset>? selectedAssets,
     Set<ImmichAsset>? newAssetsForAlbum,
-    bool? isNavigatedFromAlbum,
+    bool? isAlbumExist,
   }) {
     return AssetSelectionState(
       selectedMonths: selectedMonths ?? this.selectedMonths,
       selectedAssets: selectedAssets ?? this.selectedAssets,
       newAssetsForAlbum: newAssetsForAlbum ?? this.newAssetsForAlbum,
-      isAlbumExist: isNavigatedFromAlbum ?? isAlbumExist,
+      isAlbumExist: isAlbumExist ?? this.isAlbumExist,
     );
   }
 
@@ -39,7 +39,7 @@ class AssetSelectionState {
     result.addAll({'selectedMonths': selectedMonths.toList()});
     result.addAll({'selectedAssets': selectedAssets.map((x) => x.toMap()).toList()});
     result.addAll({'newAssetsForAlbum': newAssetsForAlbum.map((x) => x.toMap()).toList()});
-    result.addAll({'isNavigatedFromAlbum': isAlbumExist});
+    result.addAll({'isAlbumExist': isAlbumExist});
 
     return result;
   }
@@ -49,7 +49,7 @@ class AssetSelectionState {
       selectedMonths: Set<String>.from(map['selectedMonths']),
       selectedAssets: Set<ImmichAsset>.from(map['selectedAssets']?.map((x) => ImmichAsset.fromMap(x))),
       newAssetsForAlbum: Set<ImmichAsset>.from(map['newAssetsForAlbum']?.map((x) => ImmichAsset.fromMap(x))),
-      isAlbumExist: map['isNavigatedFromAlbum'] ?? false,
+      isAlbumExist: map['isAlbumExist'] ?? false,
     );
   }
 
@@ -59,7 +59,7 @@ class AssetSelectionState {
 
   @override
   String toString() {
-    return 'AssetSelectionState(selectedMonths: $selectedMonths, selectedAssets: $selectedAssets, newAssetsForAlbum: $newAssetsForAlbum, isNavigatedFromAlbum: $isAlbumExist)';
+    return 'AssetSelectionState(selectedMonths: $selectedMonths, selectedAssets: $selectedAssets, newAssetsForAlbum: $newAssetsForAlbum, isAlbumExist: $isAlbumExist)';
   }
 
   @override

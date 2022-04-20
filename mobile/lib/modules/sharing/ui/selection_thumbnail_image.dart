@@ -68,19 +68,21 @@ class SelectionThumbnailImage extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        if (!isAlbumExist) {
+        if (isAlbumExist) {
+          // Operation for existing album
+          if (!selectedAsset.contains(asset)) {
+            if (newAssetsForAlbum.contains(asset)) {
+              ref.watch(assetSelectionProvider.notifier).removeSelectedNewAssetsForAlbum([asset]);
+            } else {
+              ref.watch(assetSelectionProvider.notifier).addNewAssetToAlbum([asset]);
+            }
+          }
+        } else {
           // Operation for new album
           if (selectedAsset.contains(asset)) {
             ref.watch(assetSelectionProvider.notifier).removeSingleSelectedItem(asset);
           } else {
             ref.watch(assetSelectionProvider.notifier).addSingleAsset(asset);
-          }
-        } else {
-          // Operation for existing album
-          if (newAssetsForAlbum.contains(asset)) {
-            ref.watch(assetSelectionProvider.notifier).removeSelectedNewAssetsForAlbum([asset]);
-          } else {
-            ref.watch(assetSelectionProvider.notifier).addNewAssetToAlbum([asset]);
           }
         }
       },

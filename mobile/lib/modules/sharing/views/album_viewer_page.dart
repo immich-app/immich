@@ -4,13 +4,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
+import 'package:immich_mobile/modules/sharing/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:intl/intl.dart';
@@ -34,13 +34,16 @@ class AlbumViewerPage extends HookConsumerWidget {
             .addMultipleAssets(albumInfo.sharedAssets!.map((e) => e.assetInfo).toList());
       }
 
-      ref.watch(assetSelectionProvider.notifier).setIsNavigatedFromAlbum(true);
+      ref.watch(assetSelectionProvider.notifier).setisAlbumExist(true);
 
-      Set<ImmichAsset>? selectedAsset =
-          await AutoRouter.of(context).push<Set<ImmichAsset>?>(const AssetSelectionRoute());
+      AssetSelectionPageResult? returnPayload =
+          await AutoRouter.of(context).push<AssetSelectionPageResult?>(const AssetSelectionRoute());
 
-      if (selectedAsset != null) {
+      if (returnPayload != null) {
         // Check if there is new assets add
+        if (returnPayload.selectedAdditionalAsset.isNotEmpty) {
+          print("add ${returnPayload.selectedAdditionalAsset.length} new asset to album");
+        }
 
         ref.watch(assetSelectionProvider.notifier).removeAll();
       } else {

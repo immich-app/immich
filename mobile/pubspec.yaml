@@ -18,7 +18,6 @@ dependencies:
   hive_flutter:
   dio: ^4.0.4
   cached_network_image: ^3.2.0
-  # google_fonts: ^2.2.0
   percent_indicator: ^3.4.0
   intl: ^0.17.0
   auto_route: ^3.2.2

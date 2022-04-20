@@ -4,6 +4,7 @@ import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
+import 'package:immich_mobile/modules/sharing/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/sharing/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/sharing/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/sharing/views/create_shared_album_page.dart';
@@ -36,7 +37,7 @@ part 'router.gr.dart';
     AutoRoute(page: BackupControllerPage, guards: [AuthGuard]),
     AutoRoute(page: SearchResultPage, guards: [AuthGuard]),
     AutoRoute(page: CreateSharedAlbumPage, guards: [AuthGuard]),
-    CustomRoute<Set<ImmichAsset>?>(
+    CustomRoute<AssetSelectionPageResult?>(
       page: AssetSelectionPage,
       guards: [AuthGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
