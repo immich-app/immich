@@ -48,9 +48,9 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
           children: [
             CachedNetworkImage(
               cacheKey: "${asset.id}-${cacheKey.value}",
-              width: 400,
-              height: 400,
-              memCacheHeight: 400,
+              width: 300,
+              height: 300,
+              memCacheHeight: 200,
               fit: BoxFit.cover,
               imageUrl: thumbnailRequestUrl,
               httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},

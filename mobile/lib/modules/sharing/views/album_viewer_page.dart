@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
+import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:intl/intl.dart';
 
 class AlbumViewerPage extends HookConsumerWidget {
@@ -43,6 +44,10 @@ class AlbumViewerPage extends HookConsumerWidget {
         // Check if there is new assets add
         if (returnPayload.selectedAdditionalAsset.isNotEmpty) {
           print("add ${returnPayload.selectedAdditionalAsset.length} new asset to album");
+
+          ImmichLoadingOverlayController.appLoader.show();
+          await Future.delayed(const Duration(seconds: 2));
+          ImmichLoadingOverlayController.appLoader.hide();
         }
 
         ref.watch(assetSelectionProvider.notifier).removeAll();

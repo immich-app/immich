@@ -10,13 +10,12 @@ import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'constants/hive_box.dart';
 
 void main() async {
   await Hive.initFlutter();
   await Hive.openBox(userInfoBox);
-  // Hive.registerAdapter(ImmichBackUpAssetAdapter());
-  // Hive.deleteBoxFromDisk(hiveImmichBox);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -88,25 +87,33 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Immich',
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        primarySwatch: Colors.indigo,
-        fontFamily: 'WorkSans',
-        snackBarTheme: const SnackBarThemeData(contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
-        scaffoldBackgroundColor: immichBackgroundColor,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: immichBackgroundColor,
-          foregroundColor: Colors.indigo,
-          elevation: 1,
-          centerTitle: true,
-          systemOverlayStyle: SystemUiOverlayStyle.dark,
-        ),
+      home: Stack(
+        children: [
+          MaterialApp.router(
+            title: 'Immich',
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              brightness: Brightness.light,
+              primarySwatch: Colors.indigo,
+              fontFamily: 'WorkSans',
+              snackBarTheme: const SnackBarThemeData(contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
+              scaffoldBackgroundColor: immichBackgroundColor,
+              appBarTheme: const AppBarTheme(
+                backgroundColor: immichBackgroundColor,
+                foregroundColor: Colors.indigo,
+                elevation: 1,
+                centerTitle: true,
+                systemOverlayStyle: SystemUiOverlayStyle.dark,
+              ),
+            ),
+            routeInformationParser: _immichRouter.defaultRouteParser(),
+            routerDelegate: _immichRouter.delegate(navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
+          ),
+          const ImmichLoadingOverlay(),
+        ],
       ),
-      routeInformationParser: _immichRouter.defaultRouteParser(),
-      routerDelegate: _immichRouter.delegate(navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
     );
   }
 }
