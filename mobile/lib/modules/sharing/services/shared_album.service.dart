@@ -54,4 +54,22 @@ class SharedAlbumService {
       throw Exception('Error getAllSharedAlbum  ${e.toString()}');
     }
   }
+
+  Future<bool> addAdditionalAssetToAlbum(Set<ImmichAsset> assets, String albumId) async {
+    try {
+      var res = await _networkService.postRequest(url: 'shared/addAssets', data: {
+        "albumId": albumId,
+        "assetIds": assets.map((asset) => asset.id).toList(),
+      });
+
+      if (res == null) {
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint("Error createSharedAlbum  ${e.toString()}");
+      return false;
+    }
+  }
 }

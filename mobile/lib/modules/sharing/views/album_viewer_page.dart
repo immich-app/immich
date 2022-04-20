@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/sharing/models/asset_selection_page_result
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -43,10 +44,15 @@ class AlbumViewerPage extends HookConsumerWidget {
       if (returnPayload != null) {
         // Check if there is new assets add
         if (returnPayload.selectedAdditionalAsset.isNotEmpty) {
-          print("add ${returnPayload.selectedAdditionalAsset.length} new asset to album");
-
           ImmichLoadingOverlayController.appLoader.show();
-          await Future.delayed(const Duration(seconds: 2));
+
+          var isSuccess =
+              await SharedAlbumService().addAdditionalAssetToAlbum(returnPayload.selectedAdditionalAsset, albumId);
+
+          if (isSuccess) {
+            ref.refresh(sharedAlbumDetailProvider(albumId));
+          }
+
           ImmichLoadingOverlayController.appLoader.hide();
         }
 
