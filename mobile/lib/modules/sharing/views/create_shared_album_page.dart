@@ -9,7 +9,6 @@ import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.da
 import 'package:immich_mobile/modules/sharing/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/sharing/ui/shared_album_thumbnail_image.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class CreateSharedAlbumPage extends HookConsumerWidget {
   const CreateSharedAlbumPage({Key? key}) : super(key: key);
@@ -20,7 +19,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     final albumTitleTextFieldFocusNode = useFocusNode();
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
-    final selectedAssetsForAlbum = useState<Set<ImmichAsset>>({});
+    final selectedAssets = ref.watch(assetSelectionProvider).selectedAssets;
 
     _showSelectUserPage() {
       AutoRouter.of(context).push(const SelectUserForSharingRoute());
@@ -42,10 +41,8 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
       AssetSelectionPageResult? selectedAsset =
           await AutoRouter.of(context).push<AssetSelectionPageResult?>(const AssetSelectionRoute());
 
-      if (selectedAsset != null) {
-        selectedAssetsForAlbum.value = selectedAsset.selectedNewAsset;
-      } else {
-        selectedAssetsForAlbum.value = {};
+      if (selectedAsset == null) {
+        ref.watch(assetSelectionProvider.notifier).removeAll();
       }
     }
 
@@ -64,7 +61,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _buildTitle() {
-      if (selectedAssetsForAlbum.value.isEmpty) {
+      if (selectedAssets.isEmpty) {
         return const SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.only(top: 200, left: 18),
@@ -80,7 +77,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _buildSelectPhotosButton() {
-      if (selectedAssetsForAlbum.value.isEmpty) {
+      if (selectedAssets.isEmpty) {
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(top: 16, left: 18, right: 18),
@@ -108,7 +105,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _buildControlButton() {
-      if (selectedAssetsForAlbum.value.isNotEmpty) {
+      if (selectedAssets.isNotEmpty) {
         return Padding(
           padding: const EdgeInsets.only(left: 12.0, top: 16, bottom: 16),
           child: SizedBox(
@@ -131,9 +128,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _buildSelectedImageGrid() {
-      if (selectedAssetsForAlbum.value.isNotEmpty) {
-        var asset = selectedAssetsForAlbum.value.toList();
-
+      if (selectedAssets.isNotEmpty) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 16),
           sliver: SliverGrid(
@@ -146,10 +141,10 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
               (BuildContext context, int index) {
                 return GestureDetector(
                   onTap: _onBackgroundTapped,
-                  child: SharedAlbumThumbnailImage(asset: asset[index]),
+                  child: SharedAlbumThumbnailImage(asset: selectedAssets.toList()[index]),
                 );
               },
-              childCount: asset.length,
+              childCount: selectedAssets.length,
             ),
           ),
         );
