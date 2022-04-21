@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
+import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/sharing/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
@@ -26,6 +27,7 @@ class AlbumViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ScrollController _scrollController = useScrollController();
     AsyncValue<SharedAlbum> _albumInfo = ref.watch(sharedAlbumDetailProvider(albumId));
+    final userId = ref.watch(authenticationProvider).userId;
 
     /// Find out if the assets in album exist on the device
     /// If they exist, add to selected asset state to show they are already selected.
@@ -62,7 +64,22 @@ class AlbumViewerPage extends HookConsumerWidget {
       }
     }
 
-    void _onAddUsersPressed(SharedAlbum albumInfo) {}
+    void _onAddUsersPressed(SharedAlbum albumInfo) async {
+      List<String>? sharedUserIds =
+          await AutoRouter.of(context).push<List<String>?>(SelectAdditionalUserForSharingRoute(albumInfo: albumInfo));
+
+      if (sharedUserIds != null) {
+        ImmichLoadingOverlayController.appLoader.show();
+
+        var isSuccess = await SharedAlbumService().addAdditionalUserToAlbum(sharedUserIds, albumId);
+
+        if (isSuccess) {
+          ref.refresh(sharedAlbumDetailProvider(albumId));
+        }
+
+        ImmichLoadingOverlayController.appLoader.hide();
+      }
+    }
 
     Widget _buildTitle(String title) {
       return Padding(
@@ -171,11 +188,13 @@ class AlbumViewerPage extends HookConsumerWidget {
                 onPressed: () => _onAddPhotosPressed(albumInfo),
                 labelText: "Add photos",
               ),
-              AlbumActionOutlinedButton(
-                iconData: Icons.person_add_alt_rounded,
-                onPressed: () => _onAddUsersPressed(albumInfo),
-                labelText: "Add users",
-              ),
+              userId == albumInfo.ownerId
+                  ? AlbumActionOutlinedButton(
+                      iconData: Icons.person_add_alt_rounded,
+                      onPressed: () => _onAddUsersPressed(albumInfo),
+                      labelText: "Add users",
+                    )
+                  : Container(),
             ],
           ),
         ),

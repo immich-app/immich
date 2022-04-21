@@ -83,6 +83,16 @@ class _$AppRouter extends RootStackRouter {
           routeData: routeData,
           child: AlbumViewerPage(key: args.key, albumId: args.albumId));
     },
+    SelectAdditionalUserForSharingRoute.name: (routeData) {
+      final args = routeData.argsAs<SelectAdditionalUserForSharingRouteArgs>();
+      return CustomPage<List<String>?>(
+          routeData: routeData,
+          child: SelectAdditionalUserForSharingPage(
+              key: args.key, albumInfo: args.albumInfo),
+          transitionsBuilder: TransitionsBuilders.slideBottom,
+          opaque: true,
+          barrierDismissible: false);
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -136,7 +146,10 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(SelectUserForSharingRoute.name,
             path: '/select-user-for-sharing-page', guards: [authGuard]),
         RouteConfig(AlbumViewerRoute.name,
-            path: '/album-viewer-page', guards: [authGuard])
+            path: '/album-viewer-page', guards: [authGuard]),
+        RouteConfig(SelectAdditionalUserForSharingRoute.name,
+            path: '/select-additional-user-for-sharing-page',
+            guards: [authGuard])
       ];
 }
 
@@ -314,6 +327,34 @@ class AlbumViewerRouteArgs {
   @override
   String toString() {
     return 'AlbumViewerRouteArgs{key: $key, albumId: $albumId}';
+  }
+}
+
+/// generated route for
+/// [SelectAdditionalUserForSharingPage]
+class SelectAdditionalUserForSharingRoute
+    extends PageRouteInfo<SelectAdditionalUserForSharingRouteArgs> {
+  SelectAdditionalUserForSharingRoute(
+      {Key? key, required SharedAlbum albumInfo})
+      : super(SelectAdditionalUserForSharingRoute.name,
+            path: '/select-additional-user-for-sharing-page',
+            args: SelectAdditionalUserForSharingRouteArgs(
+                key: key, albumInfo: albumInfo));
+
+  static const String name = 'SelectAdditionalUserForSharingRoute';
+}
+
+class SelectAdditionalUserForSharingRouteArgs {
+  const SelectAdditionalUserForSharingRouteArgs(
+      {this.key, required this.albumInfo});
+
+  final Key? key;
+
+  final SharedAlbum albumInfo;
+
+  @override
+  String toString() {
+    return 'SelectAdditionalUserForSharingRouteArgs{key: $key, albumInfo: $albumInfo}';
   }
 }
 

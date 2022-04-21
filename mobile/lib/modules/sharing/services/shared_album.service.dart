@@ -68,7 +68,25 @@ class SharedAlbumService {
 
       return true;
     } catch (e) {
-      debugPrint("Error createSharedAlbum  ${e.toString()}");
+      debugPrint("Error addAdditionalAssetToAlbum  ${e.toString()}");
+      return false;
+    }
+  }
+
+  Future<bool> addAdditionalUserToAlbum(List<String> sharedUserIds, String albumId) async {
+    try {
+      var res = await _networkService.postRequest(url: 'shared/addUsers', data: {
+        "albumId": albumId,
+        "sharedUserIds": sharedUserIds,
+      });
+
+      if (res == null) {
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint("Error addAdditionalUserToAlbum  ${e.toString()}");
       return false;
     }
   }

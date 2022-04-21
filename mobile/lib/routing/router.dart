@@ -5,9 +5,11 @@ import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
 import 'package:immich_mobile/modules/sharing/models/asset_selection_page_result.model.dart';
+import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/sharing/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/sharing/views/create_shared_album_page.dart';
+import 'package:immich_mobile/modules/sharing/views/select_additional_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/sharing/views/select_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/sharing/views/sharing_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
@@ -48,6 +50,11 @@ part 'router.gr.dart';
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
     AutoRoute(page: AlbumViewerPage, guards: [AuthGuard]),
+    CustomRoute<List<String>?>(
+      page: SelectAdditionalUserForSharingPage,
+      guards: [AuthGuard],
+      transitionsBuilder: TransitionsBuilders.slideBottom,
+    ),
   ],
 )
 class AppRouter extends _$AppRouter {
