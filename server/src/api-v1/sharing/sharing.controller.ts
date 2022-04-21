@@ -4,6 +4,7 @@ import { CreateSharedAlbumDto } from './dto/create-shared-album.dto';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
+import { AddUsersDto } from './dto/add-users.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('shared')
@@ -16,7 +17,9 @@ export class SharingController {
   }
 
   @Post('/addUsers')
-  async addUsers() {}
+  async addUsers(@Body(ValidationPipe) addUsersDto: AddUsersDto) {
+    return await this.sharingService.addUsersToAlbum(addUsersDto);
+  }
 
   @Post('/addAssets')
   async addAssets(@Body(ValidationPipe) addAssetsDto: AddAssetsDto) {

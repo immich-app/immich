@@ -82,7 +82,7 @@ export class AssetController {
     @Response({ passthrough: true }) res: Res,
     @Query(ValidationPipe) query: ServeFileDto,
   ) {
-    return this.assetService.downloadFile(authUser, query, res);
+    return this.assetService.downloadFile(query, res);
   }
 
   @Get('/file')

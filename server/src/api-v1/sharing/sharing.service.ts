@@ -10,6 +10,7 @@ import { AssetSharedAlbumEntity } from './entities/asset-shared-album.entity';
 import { SharedAlbumEntity } from './entities/shared-album.entity';
 import { UserSharedAlbumEntity } from './entities/user-shared-album.entity';
 import _ from 'lodash';
+import { AddUsersDto } from './dto/add-users.dto';
 
 @Injectable()
 export class SharingService {
@@ -121,7 +122,19 @@ export class SharingService {
     return albumInfo;
   }
 
-  async addUser() {}
+  async addUsersToAlbum(addUsersDto: AddUsersDto) {
+    const newRecords: UserSharedAlbumEntity[] = [];
+
+    for (const sharedUserId of addUsersDto.sharedUserIds) {
+      const newEntity = new UserSharedAlbumEntity();
+      newEntity.albumId = addUsersDto.albumId;
+      newEntity.sharedUserId = sharedUserId;
+
+      newRecords.push(newEntity);
+    }
+
+    return await this.userSharedAlbumRepository.save([...newRecords]);
+  }
 
   async deleteAlbum() {}
 
