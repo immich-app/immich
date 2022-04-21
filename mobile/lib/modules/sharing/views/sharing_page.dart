@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/sharing/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class SharingPage extends HookConsumerWidget {
   const SharingPage({Key? key}) : super(key: key);
@@ -36,12 +37,17 @@ class SharingPage extends HookConsumerWidget {
               contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  thumbnailUrl,
-                  headers: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+                child: FadeInImage(
                   width: 60,
                   height: 60,
                   fit: BoxFit.cover,
+                  placeholder: MemoryImage(kTransparentImage),
+                  image: NetworkImage(
+                    thumbnailUrl,
+                    headers: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+                  ),
+                  fadeInDuration: const Duration(milliseconds: 200),
+                  fadeOutDuration: const Duration(milliseconds: 200),
                 ),
               ),
               title: Text(

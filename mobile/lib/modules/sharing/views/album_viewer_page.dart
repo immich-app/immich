@@ -113,13 +113,17 @@ class AlbumViewerPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(left: 16),
                 scrollDirection: Axis.horizontal,
                 itemBuilder: ((context, index) {
-                  return const Padding(
-                    padding: EdgeInsets.only(right: 8.0),
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
                     child: CircleAvatar(
-                      radius: 15,
-                      child: Text(
-                        'TU',
-                        style: TextStyle(fontSize: 12),
+                      backgroundColor: Colors.yellow[300],
+                      radius: 18,
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: ClipRRect(
+                          child: Image.asset('assets/immich-logo-no-outline.png'),
+                          borderRadius: BorderRadius.circular(50.0),
+                        ),
                       ),
                     ),
                   );
@@ -210,7 +214,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          onPressed: () => AutoRouter.of(context).pop(),
+          onPressed: () async => await AutoRouter.of(context).pop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         actions: [
