@@ -27,6 +27,7 @@ class AlbumViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ScrollController _scrollController = useScrollController();
     AsyncValue<SharedAlbum> _albumInfo = ref.watch(sharedAlbumDetailProvider(albumId));
+
     final userId = ref.watch(authenticationProvider).userId;
 
     /// Find out if the assets in album exist on the device
@@ -133,7 +134,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: CircleAvatar(
-                      backgroundColor: Colors.yellow[300],
+                      backgroundColor: Colors.grey[300],
                       radius: 18,
                       child: Padding(
                         padding: const EdgeInsets.all(2.0),
@@ -248,34 +249,27 @@ class AlbumViewerPage extends HookConsumerWidget {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      ListTile(
-                        leading: const Icon(Icons.photo),
-                        title: const Text('Photo'),
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.music_note),
-                        title: const Text('Music'),
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.videocam),
-                        title: const Text('Video'),
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.share),
-                        title: const Text('Share'),
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
+                      _albumInfo.asData?.value.ownerId == userId
+                          ? ListTile(
+                              leading: const Icon(Icons.delete_forever_rounded),
+                              title: const Text(
+                                'Delete album',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                            )
+                          : ListTile(
+                              leading: const Icon(Icons.person_remove_rounded),
+                              title: const Text(
+                                'Leave album',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                            ),
                     ],
                   );
                 },
