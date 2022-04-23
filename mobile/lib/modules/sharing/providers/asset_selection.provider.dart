@@ -6,18 +6,20 @@ import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
   AssetSelectionNotifier()
       : super(AssetSelectionState(
-          selectedAssets: {},
+          selectedNewAssetsForAlbum: {},
           selectedMonths: {},
-          newAssetsForAlbum: {},
+          selectedAdditionalAssetsForAlbum: {},
+          selectedAssetsInAlbumViewer: {},
           isAlbumExist: false,
+          isMultiselectEnable: false,
         ));
 
-  void setisAlbumExist(bool isAlbumExist) {
+  void setIsAlbumExist(bool isAlbumExist) {
     state = state.copyWith(isAlbumExist: isAlbumExist);
   }
 
   void removeAssetsInMonth(String removedMonth, List<ImmichAsset> assetsInMonth) {
-    Set<ImmichAsset> currentAssetList = state.selectedAssets;
+    Set<ImmichAsset> currentAssetList = state.selectedNewAssetsForAlbum;
     Set<String> currentMonthList = state.selectedMonths;
 
     currentMonthList.removeWhere((selectedMonth) => selectedMonth == removedMonth);
@@ -26,64 +28,59 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
       currentAssetList.removeWhere((e) => e.id == asset.id);
     }
 
-    state = state.copyWith(selectedAssets: currentAssetList, selectedMonths: currentMonthList);
+    state = state.copyWith(selectedNewAssetsForAlbum: currentAssetList, selectedMonths: currentMonthList);
   }
 
-  void addNewAssetToAlbum(List<ImmichAsset> assets) {
+  void addAdditionalAssets(List<ImmichAsset> assets) {
     state = state.copyWith(
-      newAssetsForAlbum: {...state.newAssetsForAlbum, ...assets},
+      selectedAdditionalAssetsForAlbum: {...state.selectedAdditionalAssetsForAlbum, ...assets},
     );
   }
 
-  void addAssetsInMonth(String month, List<ImmichAsset> assetsInMonth) {
+  void addAllAssetsInMonth(String month, List<ImmichAsset> assetsInMonth) {
     state = state.copyWith(
       selectedMonths: {...state.selectedMonths, month},
-      selectedAssets: {...state.selectedAssets, ...assetsInMonth},
+      selectedNewAssetsForAlbum: {...state.selectedNewAssetsForAlbum, ...assetsInMonth},
     );
   }
 
-  void addSingleAsset(ImmichAsset asset) {
+  void addNewAssets(List<ImmichAsset> assets) {
     state = state.copyWith(
-      selectedAssets: {...state.selectedAssets, asset},
+      selectedNewAssetsForAlbum: {...state.selectedNewAssetsForAlbum, ...assets},
     );
   }
 
-  void addMultipleAssets(List<ImmichAsset> assets) {
-    state = state.copyWith(
-      selectedAssets: {...state.selectedAssets, ...assets},
-    );
-  }
-
-  void removeSingleSelectedItem(ImmichAsset asset) {
-    Set<ImmichAsset> currentList = state.selectedAssets;
-
-    currentList.removeWhere((e) => e.id == asset.id);
-
-    state = state.copyWith(selectedAssets: currentList);
-  }
-
-  void removeMultipleSelectedItem(List<ImmichAsset> assets) {
-    Set<ImmichAsset> currentList = state.selectedAssets;
+  void removeSelectedNewAssets(List<ImmichAsset> assets) {
+    Set<ImmichAsset> currentList = state.selectedNewAssetsForAlbum;
 
     for (ImmichAsset asset in assets) {
       currentList.removeWhere((e) => e.id == asset.id);
     }
 
-    state = state.copyWith(selectedAssets: currentList);
+    state = state.copyWith(selectedNewAssetsForAlbum: currentList);
   }
 
-  void removeSelectedNewAssetsForAlbum(List<ImmichAsset> assets) {
-    Set<ImmichAsset> currentList = state.newAssetsForAlbum;
+  void removeSelectedAdditionalAssets(List<ImmichAsset> assets) {
+    Set<ImmichAsset> currentList = state.selectedAdditionalAssetsForAlbum;
 
     for (ImmichAsset asset in assets) {
       currentList.removeWhere((e) => e.id == asset.id);
     }
 
-    state = state.copyWith(newAssetsForAlbum: currentList);
+    state = state.copyWith(selectedAdditionalAssetsForAlbum: currentList);
   }
 
   void removeAll() {
-    state = state.copyWith(selectedAssets: {}, selectedMonths: {}, newAssetsForAlbum: {}, isAlbumExist: false);
+    state = state.copyWith(
+        selectedNewAssetsForAlbum: {}, selectedMonths: {}, selectedAdditionalAssetsForAlbum: {}, isAlbumExist: false);
+  }
+
+  void enableMultiselection() {
+    state = state.copyWith(isMultiselectEnable: true);
+  }
+
+  void disableMultiselection() {
+    state = state.copyWith(isMultiselectEnable: false);
   }
 }
 

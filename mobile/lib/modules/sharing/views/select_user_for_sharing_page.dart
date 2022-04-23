@@ -21,7 +21,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
     _createSharedAlbum() async {
       var isSuccess = await SharedAlbumService().createSharedAlbum(
         ref.watch(albumTitleProvider),
-        ref.watch(assetSelectionProvider).selectedAssets,
+        ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
         sharedUsersList.value.map((userInfo) => userInfo.id).toList(),
       );
 

@@ -6,6 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -22,26 +23,33 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
     var deviceId = ref.watch(authenticationProvider).deviceId;
 
+    _viewAsset() {
+      if (asset.type == 'IMAGE') {
+        AutoRouter.of(context).push(
+          ImageViewerRoute(
+            imageUrl:
+                '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
+            heroTag: asset.id,
+            thumbnailUrl: thumbnailRequestUrl,
+            asset: asset,
+          ),
+        );
+      } else {
+        AutoRouter.of(context).push(
+          VideoViewerRoute(
+              videoUrl: '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
+              asset: asset),
+        );
+      }
+    }
+
+    _enableMultiselect() {
+      ref.watch(assetSelectionProvider.notifier);
+    }
+
     return GestureDetector(
-      onTap: () {
-        if (asset.type == 'IMAGE') {
-          AutoRouter.of(context).push(
-            ImageViewerRoute(
-              imageUrl:
-                  '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
-              heroTag: asset.id,
-              thumbnailUrl: thumbnailRequestUrl,
-              asset: asset,
-            ),
-          );
-        } else {
-          AutoRouter.of(context).push(
-            VideoViewerRoute(
-                videoUrl: '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-                asset: asset),
-          );
-        }
-      },
+      onTap: _viewAsset,
+      onLongPress: _enableMultiselect,
       child: Hero(
         tag: asset.id,
         child: Stack(

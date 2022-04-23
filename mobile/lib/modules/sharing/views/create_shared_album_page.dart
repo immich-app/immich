@@ -19,7 +19,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     final albumTitleTextFieldFocusNode = useFocusNode();
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
-    final selectedAssets = ref.watch(assetSelectionProvider).selectedAssets;
+    final selectedAssets = ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
 
     _showSelectUserPage() {
       AutoRouter.of(context).push(const SelectUserForSharingRoute());
@@ -36,7 +36,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _onSelectPhotosButtonPressed() async {
-      ref.watch(assetSelectionProvider.notifier).setisAlbumExist(false);
+      ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(false);
 
       AssetSelectionPageResult? selectedAsset =
           await AutoRouter.of(context).push<AssetSelectionPageResult?>(const AssetSelectionRoute());

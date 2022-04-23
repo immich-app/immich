@@ -31,7 +31,6 @@ class SharedAlbumService {
         "sharedWithUserIds": sharedUserIds,
         "assetIds": assets.map((asset) => asset.id).toList(),
       });
-      debugPrint("create new album $res");
 
       if (res == null) {
         return false;

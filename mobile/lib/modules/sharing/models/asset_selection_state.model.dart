@@ -6,29 +6,36 @@ import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class AssetSelectionState {
   final Set<String> selectedMonths;
-  final Set<ImmichAsset> selectedAssets;
-  final Set<ImmichAsset> newAssetsForAlbum;
+  final Set<ImmichAsset> selectedNewAssetsForAlbum;
+  final Set<ImmichAsset> selectedAdditionalAssetsForAlbum;
+  final Set<ImmichAsset> selectedAssetsInAlbumViewer;
+  final bool isMultiselectEnable;
 
   /// Indicate the asset selection page is navigated from existing album
   final bool isAlbumExist;
-
   AssetSelectionState({
     required this.selectedMonths,
-    required this.selectedAssets,
-    required this.newAssetsForAlbum,
+    required this.selectedNewAssetsForAlbum,
+    required this.selectedAdditionalAssetsForAlbum,
+    required this.selectedAssetsInAlbumViewer,
+    required this.isMultiselectEnable,
     required this.isAlbumExist,
   });
 
   AssetSelectionState copyWith({
     Set<String>? selectedMonths,
-    Set<ImmichAsset>? selectedAssets,
-    Set<ImmichAsset>? newAssetsForAlbum,
+    Set<ImmichAsset>? selectedNewAssetsForAlbum,
+    Set<ImmichAsset>? selectedAdditionalAssetsForAlbum,
+    Set<ImmichAsset>? selectedAssetsInAlbumViewer,
+    bool? isMultiselectEnable,
     bool? isAlbumExist,
   }) {
     return AssetSelectionState(
       selectedMonths: selectedMonths ?? this.selectedMonths,
-      selectedAssets: selectedAssets ?? this.selectedAssets,
-      newAssetsForAlbum: newAssetsForAlbum ?? this.newAssetsForAlbum,
+      selectedNewAssetsForAlbum: selectedNewAssetsForAlbum ?? this.selectedNewAssetsForAlbum,
+      selectedAdditionalAssetsForAlbum: selectedAdditionalAssetsForAlbum ?? this.selectedAdditionalAssetsForAlbum,
+      selectedAssetsInAlbumViewer: selectedAssetsInAlbumViewer ?? this.selectedAssetsInAlbumViewer,
+      isMultiselectEnable: isMultiselectEnable ?? this.isMultiselectEnable,
       isAlbumExist: isAlbumExist ?? this.isAlbumExist,
     );
   }
@@ -37,8 +44,11 @@ class AssetSelectionState {
     final result = <String, dynamic>{};
 
     result.addAll({'selectedMonths': selectedMonths.toList()});
-    result.addAll({'selectedAssets': selectedAssets.map((x) => x.toMap()).toList()});
-    result.addAll({'newAssetsForAlbum': newAssetsForAlbum.map((x) => x.toMap()).toList()});
+    result.addAll({'selectedNewAssetsForAlbum': selectedNewAssetsForAlbum.map((x) => x.toMap()).toList()});
+    result
+        .addAll({'selectedAdditionalAssetsForAlbum': selectedAdditionalAssetsForAlbum.map((x) => x.toMap()).toList()});
+    result.addAll({'selectedAssetsInAlbumViewer': selectedAssetsInAlbumViewer.map((x) => x.toMap()).toList()});
+    result.addAll({'isMultiselectEnable': isMultiselectEnable});
     result.addAll({'isAlbumExist': isAlbumExist});
 
     return result;
@@ -47,8 +57,13 @@ class AssetSelectionState {
   factory AssetSelectionState.fromMap(Map<String, dynamic> map) {
     return AssetSelectionState(
       selectedMonths: Set<String>.from(map['selectedMonths']),
-      selectedAssets: Set<ImmichAsset>.from(map['selectedAssets']?.map((x) => ImmichAsset.fromMap(x))),
-      newAssetsForAlbum: Set<ImmichAsset>.from(map['newAssetsForAlbum']?.map((x) => ImmichAsset.fromMap(x))),
+      selectedNewAssetsForAlbum:
+          Set<ImmichAsset>.from(map['selectedNewAssetsForAlbum']?.map((x) => ImmichAsset.fromMap(x))),
+      selectedAdditionalAssetsForAlbum:
+          Set<ImmichAsset>.from(map['selectedAdditionalAssetsForAlbum']?.map((x) => ImmichAsset.fromMap(x))),
+      selectedAssetsInAlbumViewer:
+          Set<ImmichAsset>.from(map['selectedAssetsInAlbumViewer']?.map((x) => ImmichAsset.fromMap(x))),
+      isMultiselectEnable: map['isMultiselectEnable'] ?? false,
       isAlbumExist: map['isAlbumExist'] ?? false,
     );
   }
@@ -59,7 +74,7 @@ class AssetSelectionState {
 
   @override
   String toString() {
-    return 'AssetSelectionState(selectedMonths: $selectedMonths, selectedAssets: $selectedAssets, newAssetsForAlbum: $newAssetsForAlbum, isAlbumExist: $isAlbumExist)';
+    return 'AssetSelectionState(selectedMonths: $selectedMonths, selectedNewAssetsForAlbum: $selectedNewAssetsForAlbum, selectedAdditionalAssetsForAlbum: $selectedAdditionalAssetsForAlbum, selectedAssetsInAlbumViewer: $selectedAssetsInAlbumViewer, isMultiselectEnable: $isMultiselectEnable, isAlbumExist: $isAlbumExist)';
   }
 
   @override
@@ -69,13 +84,20 @@ class AssetSelectionState {
 
     return other is AssetSelectionState &&
         setEquals(other.selectedMonths, selectedMonths) &&
-        setEquals(other.selectedAssets, selectedAssets) &&
-        setEquals(other.newAssetsForAlbum, newAssetsForAlbum) &&
+        setEquals(other.selectedNewAssetsForAlbum, selectedNewAssetsForAlbum) &&
+        setEquals(other.selectedAdditionalAssetsForAlbum, selectedAdditionalAssetsForAlbum) &&
+        setEquals(other.selectedAssetsInAlbumViewer, selectedAssetsInAlbumViewer) &&
+        other.isMultiselectEnable == isMultiselectEnable &&
         other.isAlbumExist == isAlbumExist;
   }
 
   @override
   int get hashCode {
-    return selectedMonths.hashCode ^ selectedAssets.hashCode ^ newAssetsForAlbum.hashCode ^ isAlbumExist.hashCode;
+    return selectedMonths.hashCode ^
+        selectedNewAssetsForAlbum.hashCode ^
+        selectedAdditionalAssetsForAlbum.hashCode ^
+        selectedAssetsInAlbumViewer.hashCode ^
+        isMultiselectEnable.hashCode ^
+        isAlbumExist.hashCode;
   }
 }

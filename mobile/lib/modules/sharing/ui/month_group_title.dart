@@ -13,7 +13,7 @@ class MonthGroupTitle extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedDateGroup = ref.watch(assetSelectionProvider).selectedMonths;
-    final selectedAssets = ref.watch(assetSelectionProvider).selectedAssets;
+    final selectedAssets = ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
     final isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
     _handleTitleIconClick() {
@@ -22,9 +22,9 @@ class MonthGroupTitle extends HookConsumerWidget {
       if (isAlbumExist) {
         if (selectedDateGroup.contains(month)) {
           ref.watch(assetSelectionProvider.notifier).removeAssetsInMonth(month, []);
-          ref.watch(assetSelectionProvider.notifier).removeSelectedNewAssetsForAlbum(assetGroup);
+          ref.watch(assetSelectionProvider.notifier).removeSelectedAdditionalAssets(assetGroup);
         } else {
-          ref.watch(assetSelectionProvider.notifier).addAssetsInMonth(month, []);
+          ref.watch(assetSelectionProvider.notifier).addAllAssetsInMonth(month, []);
 
           // Deep clone assetGroup
           var assetGroupWithNewItems = [...assetGroup];
@@ -33,13 +33,13 @@ class MonthGroupTitle extends HookConsumerWidget {
             assetGroupWithNewItems.removeWhere((a) => a.id == selectedAsset.id);
           }
 
-          ref.watch(assetSelectionProvider.notifier).addNewAssetToAlbum(assetGroupWithNewItems);
+          ref.watch(assetSelectionProvider.notifier).addAdditionalAssets(assetGroupWithNewItems);
         }
       } else {
         if (selectedDateGroup.contains(month)) {
           ref.watch(assetSelectionProvider.notifier).removeAssetsInMonth(month, assetGroup);
         } else {
-          ref.watch(assetSelectionProvider.notifier).addAssetsInMonth(month, assetGroup);
+          ref.watch(assetSelectionProvider.notifier).addAllAssetsInMonth(month, assetGroup);
         }
       }
     }

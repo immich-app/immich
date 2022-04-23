@@ -15,8 +15,8 @@ class AssetSelectionPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ScrollController _scrollController = useScrollController();
     var assetGroupMonthYear = ref.watch(assetGroupByMonthYearProvider);
-    final selectedAssets = ref.watch(assetSelectionProvider).selectedAssets;
-    final newAssetsForAlbum = ref.watch(assetSelectionProvider).newAssetsForAlbum;
+    final selectedAssets = ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
+    final newAssetsForAlbum = ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
     final isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
     List<Widget> _imageGridGroup = [];

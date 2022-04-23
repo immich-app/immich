@@ -36,10 +36,10 @@ class AlbumViewerPage extends HookConsumerWidget {
       if (albumInfo.sharedAssets != null && albumInfo.sharedAssets!.isNotEmpty) {
         ref
             .watch(assetSelectionProvider.notifier)
-            .addMultipleAssets(albumInfo.sharedAssets!.map((e) => e.assetInfo).toList());
+            .addNewAssets(albumInfo.sharedAssets!.map((e) => e.assetInfo).toList());
       }
 
-      ref.watch(assetSelectionProvider.notifier).setisAlbumExist(true);
+      ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(true);
 
       AssetSelectionPageResult? returnPayload =
           await AutoRouter.of(context).push<AssetSelectionPageResult?>(const AssetSelectionRoute());

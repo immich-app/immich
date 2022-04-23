@@ -18,8 +18,8 @@ class SelectionThumbnailImage extends HookConsumerWidget {
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
         '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
-    var selectedAsset = ref.watch(assetSelectionProvider).selectedAssets;
-    var newAssetsForAlbum = ref.watch(assetSelectionProvider).newAssetsForAlbum;
+    var selectedAsset = ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
+    var newAssetsForAlbum = ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
     var isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
     Widget _buildSelectionIcon(ImmichAsset asset) {
@@ -72,17 +72,17 @@ class SelectionThumbnailImage extends HookConsumerWidget {
           // Operation for existing album
           if (!selectedAsset.contains(asset)) {
             if (newAssetsForAlbum.contains(asset)) {
-              ref.watch(assetSelectionProvider.notifier).removeSelectedNewAssetsForAlbum([asset]);
+              ref.watch(assetSelectionProvider.notifier).removeSelectedAdditionalAssets([asset]);
             } else {
-              ref.watch(assetSelectionProvider.notifier).addNewAssetToAlbum([asset]);
+              ref.watch(assetSelectionProvider.notifier).addAdditionalAssets([asset]);
             }
           }
         } else {
           // Operation for new album
           if (selectedAsset.contains(asset)) {
-            ref.watch(assetSelectionProvider.notifier).removeSingleSelectedItem(asset);
+            ref.watch(assetSelectionProvider.notifier).removeSelectedNewAssets([asset]);
           } else {
-            ref.watch(assetSelectionProvider.notifier).addSingleAsset(asset);
+            ref.watch(assetSelectionProvider.notifier).addNewAssets([asset]);
           }
         }
       },
