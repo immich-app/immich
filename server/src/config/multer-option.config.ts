@@ -47,7 +47,6 @@ export const multerOption: MulterOptions = {
     },
 
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
-      // console.log(req, file);
       const fileNameUUID = randomUUID();
       if (file.fieldname == 'assetData') {
         cb(null, `${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`);

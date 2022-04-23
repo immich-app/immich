@@ -120,7 +120,6 @@ export class AssetService {
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
     let file = null;
     const asset = await this.findOne(query.did, query.aid);
-    console.log(asset);
     if (!asset) {
       throw new BadRequestException('Asset does not exist');
     }
