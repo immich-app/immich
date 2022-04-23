@@ -120,4 +120,22 @@ class SharedAlbumService {
       return false;
     }
   }
+
+  Future<bool> removeAssetFromAlbum(String albumId, List<String> assetIds) async {
+    try {
+      Response res = await _networkService.deleteRequest(url: 'shared/removeAssets/', data: {
+        "albumId": albumId,
+        "assetIds": assetIds,
+      });
+
+      if (res.statusCode != 200) {
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint("Error deleteAlbum  ${e.toString()}");
+      return false;
+    }
+  }
 }

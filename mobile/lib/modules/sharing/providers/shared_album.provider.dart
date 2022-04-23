@@ -34,6 +34,16 @@ class SharedAlbumNotifier extends StateNotifier<List<SharedAlbum>> {
       return false;
     }
   }
+
+  Future<bool> removeAssetFromAlbum(String albumId, List<String> assetIds) async {
+    var res = await _sharedAlbumService.removeAssetFromAlbum(albumId, assetIds);
+
+    if (res) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 
 final sharedAlbumProvider = StateNotifierProvider<SharedAlbumNotifier, List<SharedAlbum>>((ref) {

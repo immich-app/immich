@@ -11,6 +11,7 @@ import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
+import 'package:immich_mobile/modules/sharing/ui/album_viewer_appbar.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -63,36 +64,6 @@ class AlbumViewerPage extends HookConsumerWidget {
       } else {
         ref.watch(assetSelectionProvider.notifier).removeAll();
       }
-    }
-
-    void _onDeleteAlbumPressed(String albumId) async {
-      ImmichLoadingOverlayController.appLoader.show();
-
-      bool isSuccess = await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
-
-      if (isSuccess) {
-        AutoRouter.of(context).navigate(const TabControllerRoute(children: [SharingRoute()]));
-      } else {
-        Navigator.pop(context);
-        const ScaffoldMessenger(child: SnackBar(content: Text('Failed to delete album')));
-      }
-
-      ImmichLoadingOverlayController.appLoader.hide();
-    }
-
-    void _onLeaveAlbumPressed(String albumId) async {
-      ImmichLoadingOverlayController.appLoader.show();
-
-      bool isSuccess = await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(albumId);
-
-      if (isSuccess) {
-        AutoRouter.of(context).navigate(const TabControllerRoute(children: [SharingRoute()]));
-      } else {
-        Navigator.pop(context);
-        const ScaffoldMessenger(child: SnackBar(content: Text('Failed to leave album')));
-      }
-
-      ImmichLoadingOverlayController.appLoader.hide();
     }
 
     void _onAddUsersPressed(SharedAlbum albumInfo) async {
@@ -261,50 +232,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () async => await AutoRouter.of(context).pop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
-        actions: [
-          IconButton(
-            splashRadius: 25,
-            onPressed: () {
-              showModalBottomSheet(
-                backgroundColor: immichBackgroundColor,
-                isScrollControlled: false,
-                context: context,
-                builder: (context) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      _albumInfo.asData?.value.ownerId == userId
-                          ? ListTile(
-                              leading: const Icon(Icons.delete_forever_rounded),
-                              title: const Text(
-                                'Delete album',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              onTap: () => _onDeleteAlbumPressed(albumId),
-                            )
-                          : ListTile(
-                              leading: const Icon(Icons.person_remove_rounded),
-                              title: const Text(
-                                'Leave album',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              onTap: () => _onLeaveAlbumPressed(albumId),
-                            ),
-                    ],
-                  );
-                },
-              );
-            },
-            icon: const Icon(Icons.more_horiz_rounded),
-          ),
-        ],
-      ),
+      appBar: AlbumViewerAppbar(albumInfo: _albumInfo, userId: userId, albumId: albumId),
       body: _albumInfo.when(
         data: (albumInfo) => _buildBody(albumInfo),
         error: (e, _) => Center(child: Text("Error loading album info $e")),

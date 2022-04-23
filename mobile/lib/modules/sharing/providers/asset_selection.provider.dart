@@ -72,7 +72,12 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
 
   void removeAll() {
     state = state.copyWith(
-        selectedNewAssetsForAlbum: {}, selectedMonths: {}, selectedAdditionalAssetsForAlbum: {}, isAlbumExist: false);
+      selectedNewAssetsForAlbum: {},
+      selectedMonths: {},
+      selectedAdditionalAssetsForAlbum: {},
+      selectedAssetsInAlbumViewer: {},
+      isAlbumExist: false,
+    );
   }
 
   void enableMultiselection() {
@@ -80,7 +85,26 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
   }
 
   void disableMultiselection() {
-    state = state.copyWith(isMultiselectEnable: false);
+    state = state.copyWith(
+      isMultiselectEnable: false,
+      selectedAssetsInAlbumViewer: {},
+    );
+  }
+
+  void addAssetsInAlbumViewer(List<ImmichAsset> assets) {
+    state = state.copyWith(
+      selectedAssetsInAlbumViewer: {...state.selectedAssetsInAlbumViewer, ...assets},
+    );
+  }
+
+  void removeAssetsInAlbumViewer(List<ImmichAsset> assets) {
+    Set<ImmichAsset> currentList = state.selectedAssetsInAlbumViewer;
+
+    for (ImmichAsset asset in assets) {
+      currentList.removeWhere((e) => e.id == asset.id);
+    }
+
+    state = state.copyWith(selectedAssetsInAlbumViewer: currentList);
   }
 }
 
