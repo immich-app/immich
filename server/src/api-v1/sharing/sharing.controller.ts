@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
+import { RemoveAssetsDto } from './dto/remove-assets.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('shared')
@@ -31,17 +32,23 @@ export class SharingController {
     return await this.sharingService.getAllSharedAlbums(authUser);
   }
 
-  @Get(':albumId')
+  @Get('/:albumId')
   async getAlbumInfo(@GetAuthUser() authUser, @Param('albumId') albumId: string) {
     return await this.sharingService.getAlbumInfo(authUser, albumId);
   }
 
-  @Delete(':albumId')
+  @Delete('/removeAssets')
+  async removeAssetFromAlbum(@GetAuthUser() authUser, @Body(ValidationPipe) removeAssetsDto: RemoveAssetsDto) {
+    console.log('removeAssets');
+    return await this.sharingService.removeAssetsFromAlbum(authUser, removeAssetsDto);
+  }
+
+  @Delete('/:albumId')
   async deleteAlbum(@GetAuthUser() authUser, @Param('albumId') albumId: string) {
     return await this.sharingService.deleteAlbum(authUser, albumId);
   }
 
-  @Delete('leaveAlbum/:albumId')
+  @Delete('/leaveAlbum/:albumId')
   async leaveAlbum(@GetAuthUser() authUser, @Param('albumId') albumId: string) {
     return await this.sharingService.leaveAlbum(authUser, albumId);
   }

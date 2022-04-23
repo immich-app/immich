@@ -11,6 +11,7 @@ import { SharedAlbumEntity } from './entities/shared-album.entity';
 import { UserSharedAlbumEntity } from './entities/user-shared-album.entity';
 import _ from 'lodash';
 import { AddUsersDto } from './dto/add-users.dto';
+import { RemoveAssetsDto } from './dto/remove-assets.dto';
 
 @Injectable()
 export class SharingService {
@@ -146,7 +147,21 @@ export class SharingService {
 
   async removeUsersFromAlbum() {}
 
-  async removeAssetsFromAlbum() {}
+  async removeAssetsFromAlbum(authUser: AuthUserDto, removeAssetsDto: RemoveAssetsDto) {
+    let deleteAssetCount = 0;
+    const album = await this.sharedAlbumRepository.findOne({ id: removeAssetsDto.albumId });
+
+    if (album.ownerId != authUser.id) {
+      throw new BadRequestException("You don't have permission to remove assets in this album");
+    }
+
+    for (const assetId of removeAssetsDto.assetIds) {
+      const res = await this.assetSharedAlbumRepository.delete({ albumId: removeAssetsDto.albumId, assetId: assetId });
+      if (res.affected == 1) deleteAssetCount++;
+    }
+
+    return deleteAssetCount == removeAssetsDto.assetIds.length;
+  }
 
   async addAssetsToAlbum(addAssetsDto: AddAssetsDto) {
     const newRecords: AssetSharedAlbumEntity[] = [];
