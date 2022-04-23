@@ -65,6 +65,21 @@ class AlbumViewerPage extends HookConsumerWidget {
       }
     }
 
+    void _onDeleteAlbumPressed(String albumId) async {
+      ImmichLoadingOverlayController.appLoader.show();
+
+      bool isSuccess = await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
+
+      ImmichLoadingOverlayController.appLoader.hide();
+
+      if (isSuccess) {
+        AutoRouter.of(context).navigate(const TabControllerRoute(children: [SharingRoute()]));
+      } else {
+        Navigator.pop(context);
+        const ScaffoldMessenger(child: SnackBar(content: Text('Failed to delete album')));
+      }
+    }
+
     void _onAddUsersPressed(SharedAlbum albumInfo) async {
       List<String>? sharedUserIds =
           await AutoRouter.of(context).push<List<String>?>(SelectAdditionalUserForSharingRoute(albumInfo: albumInfo));
@@ -256,9 +271,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                                 'Delete album',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
-                              onTap: () {
-                                Navigator.pop(context);
-                              },
+                              onTap: () => _onDeleteAlbumPressed(albumId),
                             )
                           : ListTile(
                               leading: const Icon(Icons.person_remove_rounded),

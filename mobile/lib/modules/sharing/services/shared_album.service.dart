@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
@@ -87,6 +88,21 @@ class SharedAlbumService {
       return true;
     } catch (e) {
       debugPrint("Error addAdditionalUserToAlbum  ${e.toString()}");
+      return false;
+    }
+  }
+
+  Future<bool> deleteAlbum(String albumId) async {
+    try {
+      Response res = await _networkService.deleteRequest(url: 'shared/$albumId');
+
+      if (res.statusCode != 200) {
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint("Error deleteAlbum  ${e.toString()}");
       return false;
     }
   }
