@@ -106,4 +106,19 @@ class SharedAlbumService {
       return false;
     }
   }
+
+  Future<bool> leaveAlbum(String albumId) async {
+    try {
+      Response res = await _networkService.deleteRequest(url: 'shared/leaveAlbum/$albumId');
+
+      if (res.statusCode != 200) {
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint("Error deleteAlbum  ${e.toString()}");
+      return false;
+    }
+  }
 }

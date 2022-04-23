@@ -70,14 +70,29 @@ class AlbumViewerPage extends HookConsumerWidget {
 
       bool isSuccess = await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
 
-      ImmichLoadingOverlayController.appLoader.hide();
-
       if (isSuccess) {
         AutoRouter.of(context).navigate(const TabControllerRoute(children: [SharingRoute()]));
       } else {
         Navigator.pop(context);
         const ScaffoldMessenger(child: SnackBar(content: Text('Failed to delete album')));
       }
+
+      ImmichLoadingOverlayController.appLoader.hide();
+    }
+
+    void _onLeaveAlbumPressed(String albumId) async {
+      ImmichLoadingOverlayController.appLoader.show();
+
+      bool isSuccess = await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(albumId);
+
+      if (isSuccess) {
+        AutoRouter.of(context).navigate(const TabControllerRoute(children: [SharingRoute()]));
+      } else {
+        Navigator.pop(context);
+        const ScaffoldMessenger(child: SnackBar(content: Text('Failed to leave album')));
+      }
+
+      ImmichLoadingOverlayController.appLoader.hide();
     }
 
     void _onAddUsersPressed(SharedAlbum albumInfo) async {
@@ -279,9 +294,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                                 'Leave album',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
-                              onTap: () {
-                                Navigator.pop(context);
-                              },
+                              onTap: () => _onLeaveAlbumPressed(albumId),
                             ),
                     ],
                   );
