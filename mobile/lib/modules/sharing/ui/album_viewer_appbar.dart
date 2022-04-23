@@ -94,14 +94,18 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
 
     _buildBottomSheetActionButton() {
       if (isMultiSelectionEnable) {
-        return ListTile(
-          leading: const Icon(Icons.delete_sweep_rounded),
-          title: const Text(
-            'Remove from album',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          onTap: () => _onRemoveFromAlbumPressed(albumId),
-        );
+        if (_albumInfo.asData?.value.ownerId == userId) {
+          return ListTile(
+            leading: const Icon(Icons.delete_sweep_rounded),
+            title: const Text(
+              'Remove from album',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            onTap: () => _onRemoveFromAlbumPressed(albumId),
+          );
+        } else {
+          return Container();
+        }
       } else {
         if (_albumInfo.asData?.value.ownerId == userId) {
           return ListTile(
