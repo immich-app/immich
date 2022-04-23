@@ -35,4 +35,14 @@ export class SharingController {
   async getAlbumInfo(@GetAuthUser() authUser, @Param('albumId') albumId: string) {
     return await this.sharingService.getAlbumInfo(authUser, albumId);
   }
+
+  @Delete(':albumId')
+  async deleteAlbum(@GetAuthUser() authUser, @Param('albumId') albumId: string) {
+    return await this.sharingService.deleteAlbum(authUser, albumId);
+  }
+
+  @Delete('leaveAlbum/:albumId')
+  async leaveAlbum(@GetAuthUser() authUser, @Param('albumId') albumId: string) {
+    return await this.sharingService.leaveAlbum(authUser, albumId);
+  }
 }

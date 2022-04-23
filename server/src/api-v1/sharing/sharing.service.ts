@@ -136,9 +136,17 @@ export class SharingService {
     return await this.userSharedAlbumRepository.save([...newRecords]);
   }
 
-  async deleteAlbum() {}
+  async deleteAlbum(authUser: AuthUserDto, albumId: string) {
+    return await this.sharedAlbumRepository.delete({ id: albumId, ownerId: authUser.id });
+  }
 
-  async deleteUserFromAlbum() {}
+  async leaveAlbum(authUser: AuthUserDto, albumId: string) {
+    return await this.userSharedAlbumRepository.delete({ albumId: albumId, sharedUserId: authUser.id });
+  }
+
+  async removeUsersFromAlbum() {}
+
+  async removeAssetsFromAlbum() {}
 
   async addAssetsToAlbum(addAssetsDto: AddAssetsDto) {
     const newRecords: AssetSharedAlbumEntity[] = [];
