@@ -114,7 +114,7 @@ curl --location --request POST 'http://your-server-ip:2283/auth/signUp' \
 ## Run mobile app
 
 ## F-Droid
-You can get the app on F-droid by cliking the image below.
+You can get the app on F-droid by clicking the image below.
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
     alt="Get it on F-Droid"
@@ -123,7 +123,7 @@ You can get the app on F-droid by cliking the image below.
 
 ## Android
 
-#### Download latest `apk` in release tab and run on your phone. You can follow this guide on how to do that
+#### Download the latest `apk` in the release tab and run on your phone. You can follow this guide on how to do that
 
 - [Run APK on Android](https://www.lifewire.com/install-apk-on-android-4177185)
 
