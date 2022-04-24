@@ -76,10 +76,10 @@ export class AssetService {
     }
   }
 
-  public async findOne(authUser: AuthUserDto, deviceId: string, assetId: string): Promise<AssetEntity> {
+  public async findOne(deviceId: string, assetId: string): Promise<AssetEntity> {
     const rows = await this.assetRepository.query(
-      'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."userId" = $2 AND a."deviceId" = $3',
-      [assetId, authUser.id, deviceId],
+      'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."deviceId" = $2',
+      [assetId, deviceId],
     );
 
     if (rows.lengh == 0) {
@@ -92,16 +92,15 @@ export class AssetService {
   public async getAssetById(authUser: AuthUserDto, assetId: string) {
     return await this.assetRepository.findOne({
       where: {
-        userId: authUser.id,
         id: assetId,
       },
       relations: ['exifInfo'],
     });
   }
 
-  public async downloadFile(authUser: AuthUserDto, query: ServeFileDto, res: Res) {
+  public async downloadFile(query: ServeFileDto, res: Res) {
     let file = null;
-    const asset = await this.findOne(authUser, query.did, query.aid);
+    const asset = await this.findOne(query.did, query.aid);
 
     if (query.isThumb === 'false' || !query.isThumb) {
       file = createReadStream(asset.originalPath);
@@ -112,10 +111,15 @@ export class AssetService {
     return new StreamableFile(file);
   }
 
+  public async getAssetThumbnail(assetId: string) {
+    const asset = await this.assetRepository.findOne({ id: assetId });
+
+    return new StreamableFile(createReadStream(asset.resizePath));
+  }
+
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
     let file = null;
-    const asset = await this.findOne(authUser, query.did, query.aid);
-
+    const asset = await this.findOne(query.did, query.aid);
     if (!asset) {
       throw new BadRequestException('Asset does not exist');
     }

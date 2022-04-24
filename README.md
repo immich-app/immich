@@ -34,8 +34,9 @@ Loading ~4000 images/videos
 <p align="left">
   <img src="design/nsc1.png" width="150" title="Login With Custom URL">
   <img src="design/nsc2.png" width="150" title="Backup Setting Info">
-  <img src="design/nsc3.png" width="150" title="Multiple select">
-  <img src="design/nsc4.jpeg" width="150" title="Curated Search Info">
+  <img src="design/home-screen.jpeg" width="150" title="Home Screen">
+  <img src="design/search-screen.jpeg" width="150" title="Curated Search Info">
+  <img src="design/shared-albums.png" width="150" title="Shared Albums">
   <img src="design/nsc6.png" width="150" title="EXIF Info">
 
 </p>
@@ -63,6 +64,7 @@ This project is under heavy development, there will be continous functions, feat
 - Show asset's location information on map (OpenStreetMap).
 - Show curated places on the search page
 - Show curated objects on the search page
+- Shared album with users on the same server
 
 # Development
 
@@ -110,6 +112,14 @@ curl --location --request POST 'http://your-server-ip:2283/auth/signUp' \
 ```
 
 ## Run mobile app
+
+## F-Droid
+You can get the app on F-droid by cliking the image below.
+
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/app.alextran.immich)
+
 
 ## Android
 

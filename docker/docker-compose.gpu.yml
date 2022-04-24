@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   immich_server:
-    image: immich-server-dev:1.6.0
+    image: immich-server-dev:1.7.0
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -22,7 +22,7 @@ services:
       - immich_network
 
   immich_microservices:
-    image: immich-microservices-dev:1.6.0
+    image: immich-microservices-dev:1.7.0
     build:
       context: ../microservices
       dockerfile: Dockerfile

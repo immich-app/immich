@@ -76,9 +76,10 @@ class NetworkService {
       return res;
     } on DioError catch (e) {
       debugPrint("DioError: ${e.response}");
-      return false;
+      return null;
     } catch (e) {
       debugPrint("ERROR BackupService: $e");
+      return null;
     }
   }
 

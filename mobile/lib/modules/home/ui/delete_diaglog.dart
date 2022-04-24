@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 
 class DeleteDialog extends ConsumerWidget {
