@@ -1,0 +1,7 @@
+* New features 
+  - Share album. User can now create album to share with existing people on the network.
+  - Owner can delete album.
+  - Owner can invite additional user to album.
+  - Shared users and owner can add additional assets to album.
+* In the asset viewer, user can swip up to see detail information and swip down to dismiss.
+* Several UI enhancement.
