@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
@@ -15,7 +16,9 @@ import 'constants/hive_box.dart';
 
 void main() async {
   await Hive.initFlutter();
+  Hive.registerAdapter(HiveSavedLoginInfoAdapter());
   await Hive.openBox(userInfoBox);
+  await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

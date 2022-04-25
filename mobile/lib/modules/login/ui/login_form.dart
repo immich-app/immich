@@ -1,7 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
@@ -12,22 +15,36 @@ class LoginForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usernameController = useTextEditingController(text: 'testuser@email.com');
-    final passwordController = useTextEditingController(text: 'password');
-    final serverEndpointController = useTextEditingController(text: 'http://192.168.1.216:2283');
+    final usernameController = useTextEditingController.fromValue(TextEditingValue.empty);
+    final passwordController = useTextEditingController.fromValue(TextEditingValue.empty);
+    final serverEndpointController = useTextEditingController(text: 'http://your-server-ip:2283');
+    final isSaveLoginInfo = useState<bool>(false);
+
+    useEffect(() {
+      var loginInfo = Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
+
+      if (loginInfo != null) {
+        usernameController.text = loginInfo.email;
+        passwordController.text = loginInfo.password;
+        serverEndpointController.text = loginInfo.serverUrl;
+        isSaveLoginInfo.value = loginInfo.isSaveLogin;
+      }
+
+      return null;
+    }, []);
 
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 300),
         child: SingleChildScrollView(
           child: Wrap(
-            spacing: 32,
-            runSpacing: 32,
+            spacing: 16,
+            runSpacing: 16,
             alignment: WrapAlignment.center,
             children: [
               const Image(
                 image: AssetImage('assets/immich-logo-no-outline.png'),
-                width: 128,
+                width: 100,
                 filterQuality: FilterQuality.high,
               ),
               Text(
@@ -42,10 +59,29 @@ class LoginForm extends HookConsumerWidget {
               EmailInput(controller: usernameController),
               PasswordInput(controller: passwordController),
               ServerEndpointInput(controller: serverEndpointController),
+              CheckboxListTile(
+                activeColor: Theme.of(context).primaryColor,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                dense: true,
+                side: const BorderSide(color: Colors.grey, width: 1.5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                enableFeedback: true,
+                title: const Text(
+                  "Save login",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
+                ),
+                value: isSaveLoginInfo.value,
+                onChanged: (switchValue) {
+                  if (switchValue != null) {
+                    isSaveLoginInfo.value = switchValue;
+                  }
+                },
+              ),
               LoginButton(
                 emailController: usernameController,
                 passwordController: passwordController,
                 serverEndpointController: serverEndpointController,
+                isSavedLoginInfo: isSaveLoginInfo.value,
               ),
             ],
           ),
@@ -104,29 +140,34 @@ class LoginButton extends ConsumerWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final TextEditingController serverEndpointController;
+  final bool isSavedLoginInfo;
 
-  const LoginButton(
-      {Key? key,
-      required this.emailController,
-      required this.passwordController,
-      required this.serverEndpointController})
-      : super(key: key);
+  const LoginButton({
+    Key? key,
+    required this.emailController,
+    required this.passwordController,
+    required this.serverEndpointController,
+    required this.isSavedLoginInfo,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
+        style: ButtonStyle(
+          visualDensity: VisualDensity.standard,
+          padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.symmetric(vertical: 10, horizontal: 25)),
+        ),
         onPressed: () async {
           // This will remove current cache asset state of previous user login.
           ref.watch(assetProvider.notifier).clearAllAsset();
 
           var isAuthenticated = await ref
               .read(authenticationProvider.notifier)
-              .login(emailController.text, passwordController.text, serverEndpointController.text);
+              .login(emailController.text, passwordController.text, serverEndpointController.text, isSavedLoginInfo);
 
           if (isAuthenticated) {
             // Resume backup (if enable) then navigate
             ref.watch(backupProvider.notifier).resumeBackup();
-            // AutoRouter.of(context).pushNamed("/home-page");
             AutoRouter.of(context).pushNamed("/tab-controller-page");
           } else {
             ImmichToast.show(
@@ -136,6 +177,9 @@ class LoginButton extends ConsumerWidget {
             );
           }
         },
-        child: const Text("Login"));
+        child: const Text(
+          "Login",
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ));
   }
 }
