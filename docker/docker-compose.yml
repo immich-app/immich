@@ -2,10 +2,7 @@ version: "3.8"
 
 services:
   immich_server:
-    image: immich-server:1.7.0
-    build:
-      context: ../server
-      dockerfile: Dockerfile
+    image: altran1502/immich-server:v1.7.0_11-dev
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     expose:
       - "3000"
@@ -23,10 +20,7 @@ services:
     restart: unless-stopped
 
   immich_microservices:
-    image: immich-microservices:1.7.0
-    build:
-      context: ../microservices
-      dockerfile: Dockerfile
+    image: altran1502/immich-microservices:v1.7.0_11-dev
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     expose:
       - "3001"
