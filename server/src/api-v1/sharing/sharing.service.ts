@@ -12,6 +12,7 @@ import { UserSharedAlbumEntity } from './entities/user-shared-album.entity';
 import _ from 'lodash';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
+import { UpdateShareAlbumDto } from './dto/update-shared-album.dto';
 
 @Injectable()
 export class SharingService {
@@ -183,5 +184,16 @@ export class SharingService {
     }
 
     return await this.assetSharedAlbumRepository.save([...newRecords]);
+  }
+
+  async updateAlbumTitle(authUser: AuthUserDto, updateShareAlbumDto: UpdateShareAlbumDto) {
+    if (authUser.id != updateShareAlbumDto.ownerId) {
+      throw new BadRequestException('Unauthorized to change album info');
+    }
+
+    const sharedAlbum = await this.sharedAlbumRepository.findOne({ where: { id: updateShareAlbumDto.albumId } });
+    sharedAlbum.albumName = updateShareAlbumDto.albumName;
+
+    return await this.sharedAlbumRepository.save(sharedAlbum);
   }
 }

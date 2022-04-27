@@ -2,10 +2,11 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Validatio
 import { SharingService } from './sharing.service';
 import { CreateSharedAlbumDto } from './dto/create-shared-album.dto';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
-import { GetAuthUser } from '../../decorators/auth-user.decorator';
+import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
+import { UpdateShareAlbumDto } from './dto/update-shared-album.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('shared')
@@ -51,5 +52,10 @@ export class SharingController {
   @Delete('/leaveAlbum/:albumId')
   async leaveAlbum(@GetAuthUser() authUser, @Param('albumId') albumId: string) {
     return await this.sharingService.leaveAlbum(authUser, albumId);
+  }
+
+  @Patch('/updateInfo')
+  async updateAlbumInfo(@GetAuthUser() authUser, @Body(ValidationPipe) updateAlbumInfoDto: UpdateShareAlbumDto) {
+    return await this.sharingService.updateAlbumTitle(authUser, updateAlbumInfoDto);
   }
 }
