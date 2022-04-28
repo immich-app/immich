@@ -28,6 +28,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isMultiSelectionEnable = ref.watch(assetSelectionProvider).isMultiselectEnable;
     final selectedAssetsInAlbum = ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;
+    final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
 
     void _onDeleteAlbumPressed(String albumId) async {
@@ -156,7 +157,19 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
         );
       } else if (isEditAlbum) {
         return IconButton(
-          onPressed: () => {},
+          onPressed: () async {
+            bool isSuccess =
+                await ref.watch(albumViewerProvider.notifier).changeAlbumTitle(albumId, userId, newAlbumTitle);
+
+            if (!isSuccess) {
+              ImmichToast.show(
+                context: context,
+                msg: "Failed to change album title",
+                gravity: ToastGravity.BOTTOM,
+                toastType: ToastType.error,
+              );
+            }
+          },
           icon: const Icon(Icons.check_rounded),
           splashRadius: 25,
         );

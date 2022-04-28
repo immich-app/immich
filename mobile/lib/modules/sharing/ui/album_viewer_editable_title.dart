@@ -12,9 +12,14 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final titleTextEditController = useTextEditingController(text: albumInfo.albumName);
+    final isTitleEmpty = useState(false);
 
     void onFocusModeChange() {
-      print("on focus change");
+      if (!titleFocusNode.hasFocus && titleTextEditController.text.isEmpty) {
+        print("No Focus");
+        ref.watch(albumViewerProvider.notifier).setEditTitleText("Untitled");
+        titleTextEditController.text = "Untitled";
+      }
     }
 
     useEffect(() {
@@ -26,13 +31,10 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
 
     return TextField(
       onChanged: (value) {
-        // if (v.isEmpty) {
-        //   isAlbumTitleEmpty.value = true;
-        // } else {
-        //   isAlbumTitleEmpty.value = false;
-        // }
-
-        ref.watch(albumViewerProvider.notifier).setEditTitleText(value);
+        if (value.isEmpty) {
+        } else {
+          ref.watch(albumViewerProvider.notifier).setEditTitleText(value);
+        }
       },
       focusNode: titleFocusNode,
       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -41,11 +43,10 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
         FocusScope.of(context).requestFocus(titleFocusNode);
 
         ref.watch(albumViewerProvider.notifier).enableEditAlbum();
-        // isAlbumTitleTextFieldFocus.value = true;
 
-        // if (albumTitleController.text == 'Untitled') {
-        //   albumTitleController.clear();
-        // }
+        if (titleTextEditController.text == 'Untitled') {
+          titleTextEditController.clear();
+        }
       },
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
