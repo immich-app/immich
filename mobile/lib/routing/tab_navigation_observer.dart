@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
+import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 
 class TabNavigationObserver extends AutoRouterObserver {
@@ -21,12 +22,17 @@ class TabNavigationObserver extends AutoRouterObserver {
   }
 
   @override
-  Future<void> didChangeTabRoute(TabPageRoute route, TabPageRoute previousRoute) async {
+  Future<void> didChangeTabRoute(
+      TabPageRoute route, TabPageRoute previousRoute) async {
     // Perform tasks on re-visit to SearchRoute
     if (route.name == 'SearchRoute') {
       // Refresh Location State
       ref.refresh(getCuratedLocationProvider);
       ref.refresh(getCuratedObjectProvider);
+    }
+
+    if (route.name == 'SharingRoute') {
+      ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
     }
 
     ref.watch(serverInfoProvider.notifier).getServerVersion();

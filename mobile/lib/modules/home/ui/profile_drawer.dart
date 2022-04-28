@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
@@ -79,7 +79,7 @@ class ProfileDrawer extends HookConsumerWidget {
                 ),
                 title: const Text(
                   "Sign Out",
-                  style: TextStyle(color: Colors.black54, fontSize: 14),
+                  style: TextStyle(color: Colors.black54, fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 onTap: () async {
                   bool res = await ref.read(authenticationProvider.notifier).logout();

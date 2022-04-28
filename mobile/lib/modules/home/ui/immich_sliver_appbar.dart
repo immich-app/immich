@@ -29,7 +29,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
       floating: true,
       pinned: false,
       snap: false,
-      backgroundColor: Colors.grey[200],
+      // backgroundColor: Colors.grey[200],
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
       leading: Builder(
         builder: (BuildContext context) {
@@ -40,7 +40,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
                 child: IconButton(
                   splashRadius: 25,
                   icon: const Icon(
-                    Icons.account_circle_rounded,
+                    Icons.face_outlined,
                     size: 30,
                   ),
                   onPressed: () {

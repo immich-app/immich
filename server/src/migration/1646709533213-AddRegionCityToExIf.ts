@@ -4,13 +4,13 @@ export class AddRegionCityToExIf1646709533213 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE exif
-        ADD COLUMN city varchar;
+        ADD COLUMN if not exists city varchar;
 
       ALTER TABLE exif
-        ADD COLUMN state varchar;
+        ADD COLUMN if not exists state varchar;
       
       ALTER TABLE exif
-        ADD COLUMN country varchar;
+        ADD COLUMN if not exists country varchar;
     `);
   }
 

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -11,6 +12,7 @@ import 'package:immich_mobile/modules/search/ui/search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 
 // ignore: must_be_immutable
@@ -23,8 +25,10 @@ class SearchPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var box = Hive.box(userInfoBox);
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
-    AsyncValue<List<CuratedLocation>> curatedLocation = ref.watch(getCuratedLocationProvider);
-    AsyncValue<List<CuratedObject>> curatedObjects = ref.watch(getCuratedObjectProvider);
+    AsyncValue<List<CuratedLocation>> curatedLocation =
+        ref.watch(getCuratedLocationProvider);
+    AsyncValue<List<CuratedObject>> curatedObjects =
+        ref.watch(getCuratedObjectProvider);
 
     useEffect(() {
       searchFocusNode = FocusNode();
@@ -40,7 +44,10 @@ class SearchPage extends HookConsumerWidget {
 
     _buildPlaces() {
       return curatedLocation.when(
-        loading: () => const SizedBox(width: 60, height: 60, child: CircularProgressIndicator.adaptive()),
+        loading: () => const SizedBox(
+          height: 200,
+          child: Center(child: ImmichLoadingIndicator()),
+        ),
         error: (err, stack) => Text('Error: $err'),
         data: (curatedLocations) {
           return curatedLocations.isNotEmpty
@@ -59,7 +66,8 @@ class SearchPage extends HookConsumerWidget {
                         imageUrl: thumbnailRequestUrl,
                         textInfo: locationInfo.city,
                         onTap: () {
-                          AutoRouter.of(context).push(SearchResultRoute(searchTerm: locationInfo.city));
+                          AutoRouter.of(context).push(
+                              SearchResultRoute(searchTerm: locationInfo.city));
                         },
                       );
                     }),
@@ -87,7 +95,10 @@ class SearchPage extends HookConsumerWidget {
 
     _buildThings() {
       return curatedObjects.when(
-        loading: () => const SizedBox(width: 60, height: 60, child: CircularProgressIndicator.adaptive()),
+        loading: () => const SizedBox(
+          height: 200,
+          child: Center(child: ImmichLoadingIndicator()),
+        ),
         error: (err, stack) => Text('Error: $err'),
         data: (objects) {
           return objects.isNotEmpty
@@ -106,8 +117,9 @@ class SearchPage extends HookConsumerWidget {
                         imageUrl: thumbnailRequestUrl,
                         textInfo: curatedObjectInfo.object,
                         onTap: () {
-                          AutoRouter.of(context)
-                              .push(SearchResultRoute(searchTerm: curatedObjectInfo.object.capitalizeFirstLetter()));
+                          AutoRouter.of(context).push(SearchResultRoute(
+                              searchTerm: curatedObjectInfo.object
+                                  .capitalizeFirstLetter()));
                         },
                       );
                     }),
@@ -165,7 +177,9 @@ class SearchPage extends HookConsumerWidget {
                 _buildThings()
               ],
             ),
-            isSearchEnabled ? SearchSuggestionList(onSubmitted: _onSearchSubmitted) : Container(),
+            isSearchEnabled
+                ? SearchSuggestionList(onSubmitted: _onSearchSubmitted)
+                : Container(),
           ],
         ),
       ),

@@ -15,6 +15,7 @@ class TabControllerPage extends ConsumerWidget {
       routes: [
         const HomeRoute(),
         SearchRoute(),
+        const SharingRoute(),
       ],
       builder: (context, child, animation) {
         final tabsRouter = AutoTabsRouter.of(context);
@@ -34,7 +35,8 @@ class TabControllerPage extends ConsumerWidget {
                   },
                   items: const [
                     BottomNavigationBarItem(label: 'Photos', icon: Icon(Icons.photo)),
-                    BottomNavigationBarItem(label: 'Seach', icon: Icon(Icons.search)),
+                    BottomNavigationBarItem(label: 'Search', icon: Icon(Icons.search)),
+                    BottomNavigationBarItem(label: 'Sharing', icon: Icon(Icons.group_outlined)),
                   ],
                 ),
         );
