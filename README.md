@@ -183,7 +183,9 @@ You can get the app on F-droid by clicking the image below.
 
 # Support
 
-If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsore**](https://github.com/sponsors/alextran1502).
+If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsore**](https://github.com/sponsors/alextran1502), or one time donation with Buy Me a coffee link below.
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/altran1502)
 
 This is also a meaningful way to give me motivation and encounragment to continue working on the app.
 
