@@ -66,17 +66,25 @@ This project is under heavy development, there will be continous functions, feat
 - Show curated objects on the search page
 - Shared album with users on the same server
 
-# Development
+# System Requirement
 
-You can use docker compose for development, there are several services that compose Immich
+**OS**: Preferred Linux-based operating system (Ubuntu, Debian, MacOS...etc). I haven't tested with `Docker for Windows` as well as `WSL` on Windows
 
-1. NestJs
-2. PostgreSQL
-3. Redis
-4. Nginx
-5. TensorFlow
+**RAM**: At least 2GB, preffered 4GB.
 
-## Populate .env file
+**Cores**: At least 2 cores, preffered 4 cores.
+
+# Development and Testing out the application
+
+You can use docker compose for development and testing out the application, there are several services that compose Immich:
+
+1. **NestJs** - Backend of the application
+2. **PostgreSQL** - Main database of the application
+3. **Redis** - For sharing websocket instance between docker instances and background tasks message queue.
+4. **Nginx** - Load balancing and optimized file uploading.
+5. **TensorFlow** - Object Detection and Image Classification.
+
+## Step 1: Populate .env file
 
 Navigate to `docker` directory and run
 
@@ -90,15 +98,44 @@ Notice that if set `ENABLE_MAPBOX` to `true`, you will have to provide `MAPBOX_K
 
 Pay attention to the key `UPLOAD_LOCATION`, this directory must exist and is owned by the user that run the `docker-compose` command below.
 
+**Example**
+
+```bash
+# Database
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE_NAME=immich
+
+# Upload File Config
+UPLOAD_LOCATION=<put-the-path-of-the-upload-folder-here>
+
+# JWT SECRET
+JWT_SECRET=randomstringthatissolongandpowerfulthatnoonecanguess
+
+# MAPBOX
+## ENABLE_MAPBOX is either true of false -> if true, you have to provide MAPBOX_KEY
+ENABLE_MAPBOX=false
+MAPBOX_KEY=
+```
+
+## Step 2: Start the server
+
 To start, run
 
 ```bash
-docker-compose -f ./docker/docker-compose.yml up --build -V
+docker-compose -f ./docker/docker-compose.yml up 
 ```
+
+If you have a few thousand photos/videos, I suggest running docker-compose with scaling option for the `immich_server` container to handle high I/O load when using fast scrolling.
+
+```bash
+docker-compose -f ./docker/docker-compose.yml up --scale immich_server=5 
+```
+
 
 The server will be running at `http://your-ip:2283` through `Nginx`
 
-## Register User
+## Step 3: Register User
 
 Use the command below on your terminal to create user as we don't have user interface for this function yet.
 
@@ -111,7 +148,9 @@ curl --location --request POST 'http://your-server-ip:2283/auth/signUp' \
 }'
 ```
 
-## Run mobile app
+## Step 4: Run mobile app
+
+The app is distributed on several platforms below.
 
 ## F-Droid
 You can get the app on F-droid by clicking the image below.
@@ -123,11 +162,7 @@ You can get the app on F-droid by clicking the image below.
 
 ## Android
 
-#### Download the latest `apk` in the release tab and run on your phone. You can follow this guide on how to do that
-
-- [Run APK on Android](https://www.lifewire.com/install-apk-on-android-4177185)
-
-#### You can also download the app from Google Play Store [here](https://play.google.com/store/apps/details?id=app.alextran.immich) 
+#### Get the app on Google Play Store [here](https://play.google.com/store/apps/details?id=app.alextran.immich) 
 
 *The App version might be lagging behind the latest release due to the review process.*
 
@@ -137,7 +172,7 @@ You can get the app on F-droid by clicking the image below.
 
 ## iOS
 
-#### You can download the app from Apple AppStore [here](https://apps.apple.com/us/app/immich/id1613945652):
+#### Get the app on Apple AppStore [here](https://apps.apple.com/us/app/immich/id1613945652):
 
 *The App version might be lagging behind the latest release due to the review process.*
 
@@ -148,7 +183,9 @@ You can get the app on F-droid by clicking the image below.
 
 # Support
 
-If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsore**](https://github.com/sponsors/alextran1502).
+If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsore**](https://github.com/sponsors/alextran1502), or one time donation with Buy Me a coffee link below.
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/altran1502)
 
 This is also a meaningful way to give me motivation and encounragment to continue working on the app.
 
