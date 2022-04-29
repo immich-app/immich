@@ -40,6 +40,7 @@ class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
       return true;
     }
 
+    state = state.copyWith(editTitleText: "", isEditAlbum: false);
     return false;
   }
 }

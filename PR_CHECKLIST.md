@@ -6,7 +6,7 @@
 
 [ ] Up version in [docker/docker-compose.gpu.yml](/docker/docker-compose.gpu.yml) for `immich_server` service
 
-[ ] Up version in [docker/docker-compose.dev.yml](/docker/docker-compose.gpu.yml) for `immich_server` service
+[ ] Up version in [docker/docker-compose.dev.yml](/docker/docker-compose.dev.yml) for `immich_server` service
 
 [ ] Up version in [server/src/constants/server_version.constant.ts](/server/src/constants/server_version.constant.ts)
 
