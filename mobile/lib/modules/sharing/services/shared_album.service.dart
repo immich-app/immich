@@ -138,4 +138,23 @@ class SharedAlbumService {
       return false;
     }
   }
+
+  Future<bool> changeTitleAlbum(String albumId, String ownerId, String newAlbumTitle) async {
+    try {
+      Response res = await _networkService.patchRequest(url: 'shared/updateInfo', data: {
+        "albumId": albumId,
+        "ownerId": ownerId,
+        "albumName": newAlbumTitle,
+      });
+
+      if (res.statusCode != 200) {
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint("Error deleteAlbum  ${e.toString()}");
+      return false;
+    }
+  }
 }

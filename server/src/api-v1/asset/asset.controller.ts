@@ -14,6 +14,7 @@ import {
   Headers,
   Delete,
   Logger,
+  Patch,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';

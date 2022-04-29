@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
+import 'package:immich_mobile/modules/sharing/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -27,6 +28,8 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isMultiSelectionEnable = ref.watch(assetSelectionProvider).isMultiselectEnable;
     final selectedAssetsInAlbum = ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;
+    final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
+    final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
 
     void _onDeleteAlbumPressed(String albumId) async {
       ImmichLoadingOverlayController.appLoader.show();
@@ -150,6 +153,24 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
         return IconButton(
           onPressed: () => ref.watch(assetSelectionProvider.notifier).disableMultiselection(),
           icon: const Icon(Icons.close_rounded),
+          splashRadius: 25,
+        );
+      } else if (isEditAlbum) {
+        return IconButton(
+          onPressed: () async {
+            bool isSuccess =
+                await ref.watch(albumViewerProvider.notifier).changeAlbumTitle(albumId, userId, newAlbumTitle);
+
+            if (!isSuccess) {
+              ImmichToast.show(
+                context: context,
+                msg: "Failed to change album title",
+                gravity: ToastGravity.BOTTOM,
+                toastType: ToastType.error,
+              );
+            }
+          },
+          icon: const Icon(Icons.check_rounded),
           splashRadius: 25,
         );
       } else {

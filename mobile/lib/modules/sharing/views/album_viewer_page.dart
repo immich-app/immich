@@ -12,6 +12,7 @@ import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.da
 import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_appbar.dart';
+import 'package:immich_mobile/modules/sharing/ui/album_viewer_editable_title.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -26,6 +27,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    FocusNode titleFocusNode = useFocusNode();
     ScrollController _scrollController = useScrollController();
     AsyncValue<SharedAlbum> _albumInfo = ref.watch(sharedAlbumDetailProvider(albumId));
 
@@ -83,13 +85,18 @@ class AlbumViewerPage extends HookConsumerWidget {
       }
     }
 
-    Widget _buildTitle(String title) {
+    Widget _buildTitle(SharedAlbum albumInfo) {
       return Padding(
-        padding: const EdgeInsets.only(left: 16.0, top: 16),
-        child: Text(
-          title,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
+        padding: const EdgeInsets.only(left: 8, right: 8, top: 16),
+        child: userId == albumInfo.ownerId
+            ? AlbumViewerEditableTitle(
+                albumInfo: albumInfo,
+                titleFocusNode: titleFocusNode,
+              )
+            : Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(albumInfo.albumName, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              ),
       );
     }
 
@@ -124,7 +131,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTitle(albumInfo.albumName),
+            _buildTitle(albumInfo),
             _buildAlbumDateRange(albumInfo),
             SizedBox(
               height: 60,
@@ -204,31 +211,36 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget _buildBody(SharedAlbum albumInfo) {
-      return Stack(children: [
-        DraggableScrollbar.semicircle(
-          backgroundColor: Theme.of(context).primaryColor,
-          controller: _scrollController,
-          heightScrollThumb: 48.0,
-          child: CustomScrollView(
+      return GestureDetector(
+        onTap: () {
+          titleFocusNode.unfocus();
+        },
+        child: Stack(children: [
+          DraggableScrollbar.semicircle(
+            backgroundColor: Theme.of(context).primaryColor,
             controller: _scrollController,
-            slivers: [
-              _buildHeader(albumInfo),
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: ImmichSliverPersistentAppBarDelegate(
-                  minHeight: 50,
-                  maxHeight: 50,
-                  child: Container(
-                    color: immichBackgroundColor,
-                    child: _buildControlButton(albumInfo),
+            heightScrollThumb: 48.0,
+            child: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                _buildHeader(albumInfo),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: ImmichSliverPersistentAppBarDelegate(
+                    minHeight: 50,
+                    maxHeight: 50,
+                    child: Container(
+                      color: immichBackgroundColor,
+                      child: _buildControlButton(albumInfo),
+                    ),
                   ),
                 ),
-              ),
-              _buildImageGrid(albumInfo)
-            ],
+                _buildImageGrid(albumInfo)
+              ],
+            ),
           ),
-        ),
-      ]);
+        ]),
+      );
     }
 
     return Scaffold(
