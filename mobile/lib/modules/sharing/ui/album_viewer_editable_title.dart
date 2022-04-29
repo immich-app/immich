@@ -12,11 +12,9 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final titleTextEditController = useTextEditingController(text: albumInfo.albumName);
-    final isTitleEmpty = useState(false);
 
     void onFocusModeChange() {
       if (!titleFocusNode.hasFocus && titleTextEditController.text.isEmpty) {
-        print("No Focus");
         ref.watch(albumViewerProvider.notifier).setEditTitleText("Untitled");
         titleTextEditController.text = "Untitled";
       }
@@ -42,6 +40,7 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
       onTap: () {
         FocusScope.of(context).requestFocus(titleFocusNode);
 
+        ref.watch(albumViewerProvider.notifier).setEditTitleText(albumInfo.albumName);
         ref.watch(albumViewerProvider.notifier).enableEditAlbum();
 
         if (titleTextEditController.text == 'Untitled') {

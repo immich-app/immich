@@ -88,10 +88,15 @@ class AlbumViewerPage extends HookConsumerWidget {
     Widget _buildTitle(SharedAlbum albumInfo) {
       return Padding(
         padding: const EdgeInsets.only(left: 8, right: 8, top: 16),
-        child: AlbumViewerEditableTitle(
-          albumInfo: albumInfo,
-          titleFocusNode: titleFocusNode,
-        ),
+        child: userId == albumInfo.ownerId
+            ? AlbumViewerEditableTitle(
+                albumInfo: albumInfo,
+                titleFocusNode: titleFocusNode,
+              )
+            : Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(albumInfo.albumName, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              ),
       );
     }
 
