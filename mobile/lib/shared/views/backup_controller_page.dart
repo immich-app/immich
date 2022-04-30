@@ -35,7 +35,7 @@ class BackupControllerPage extends HookConsumerWidget {
 
     String backupAlbumId = Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).get(savedBackupInfoKey)?.assetEntityId ?? "";
 
-    AsyncSnapshot<List<AssetPathEntity>> assetEntities = useFuture(PhotoManager.getAssetPathList());
+    AsyncSnapshot<List<AssetPathEntity>> assetEntities = useFuture(useMemoized(PhotoManager.getAssetPathList, const []));
 
     saveAlbumId(String albumId) {
       backupAlbumId = albumId;
@@ -58,8 +58,6 @@ class BackupControllerPage extends HookConsumerWidget {
       ref.watch(websocketProvider.notifier).stopListenToEvent('on_upload_success');
       return null;
     }, []);
-
-
 
     Widget _buildStorageInformation() {
       return ListTile(
@@ -132,11 +130,11 @@ class BackupControllerPage extends HookConsumerWidget {
                       items: assetEntities.hasData ?
                       ((assetEntities.data as List<AssetPathEntity>)
                           .map((AssetPathEntity element) => {
-                        DropdownMenuItem(
-                          value: element.id,
-                          child: Text(element.name),
-                        )
-                      }.first).toList())
+                            DropdownMenuItem(
+                              value: element.id,
+                              child: Text(element.name),
+                            )
+                          }.first).toList())
                           : null,
                       value: assetEntities.hasData ? backupAlbumId : null,
                       onChanged: (albumId) {
