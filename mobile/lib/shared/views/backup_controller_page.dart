@@ -38,10 +38,6 @@ class BackupControllerPage extends HookConsumerWidget {
     AsyncSnapshot<List<AssetPathEntity>> assetEntities = useFuture(PhotoManager.getAssetPathList());
 
     saveAlbumId(String albumId) {
-      debugPrint("Saving");
-      if (backupAlbumId == "LOADING") {
-        debugPrint("AAA");
-      }
       backupAlbumId = albumId;
       Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).put(
           savedBackupInfoKey,
@@ -130,6 +126,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   children: [
                     DropdownButton<String>(
                       hint: const Text("Select album to backup"),
+                      icon: const Icon(Icons.photo),
                       isExpanded: true,
                       items: assetEntities.hasData ?
                       ((assetEntities.data as List<AssetPathEntity>)

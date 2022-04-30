@@ -12,6 +12,8 @@ import 'package:immich_mobile/shared/models/server_info.model.dart';
 import 'package:immich_mobile/shared/services/backup.service.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../models/hive_saved_backup_info.model.dart';
+
 class BackupNotifier extends StateNotifier<BackUpState> {
   BackupNotifier({this.ref})
       : super(
@@ -40,15 +42,40 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final StreamController _onAssetBackupStreamCtrl =
       StreamController.broadcast();
 
+  Future<AssetPathEntity?> _getBackupAlbum() async {
+
+
+    var backupAlbumBox = Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).get(savedBackupInfoKey);
+    if (backupAlbumBox == null) {
+      debugPrint("No album to backup saved");
+      return null;
+    }
+
+    List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
+        hasAll: true, type: RequestType.common);
+
+    if (albums.isEmpty) {
+      debugPrint("No Asset On Device");
+      return null;
+    }
+
+    String backupAlbumId = backupAlbumBox.assetEntityId;
+
+    try {
+      return albums.firstWhere((element) => element.id == backupAlbumId);
+    } on StateError catch (_) {
+      debugPrint("Saved album could not be found");
+      return null;
+    }
+  }
+
   void getBackupInfo() async {
     _updateServerInfo();
 
-    List<AssetPathEntity> list = await PhotoManager.getAssetPathList(
-        onlyAll: true, type: RequestType.common);
     List<String> didBackupAsset = await _backupService.getDeviceBackupAsset();
 
-    if (list.isEmpty) {
-      debugPrint("No Asset On Device");
+    var backupAlbum = await _getBackupAlbum();
+    if (backupAlbum == null) {
       state = state.copyWith(
           backupProgress: BackUpProgressEnum.idle,
           totalAssetCount: 0,
@@ -56,49 +83,44 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       return;
     }
 
-    int totalAsset = list[0].assetCount;
-
     state = state.copyWith(
-        totalAssetCount: totalAsset, assetOnDatabase: didBackupAsset.length);
+        totalAssetCount: backupAlbum.assetCount,
+        assetOnDatabase: didBackupAsset.length);
   }
 
   void startBackupProcess() async {
     _updateServerInfo();
 
-    state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
-
     var authResult = await PhotoManager.requestPermissionExtend();
     if (authResult.isAuth) {
       await PhotoManager.clearFileCache();
-      // await PhotoManager.presentLimited();
+
+      List<String> didBackupAsset = await _backupService.getDeviceBackupAsset();
+
       // Gather assets info
-      List<AssetPathEntity> list = await PhotoManager.getAssetPathList(
-          hasAll: true, type: RequestType.common);
+      var backupAlbum = await _getBackupAlbum();
+      if (backupAlbum == null) {
+        state = state.copyWith(
+            backupProgress: BackUpProgressEnum.idle,
+            totalAssetCount: 0,
+            assetOnDatabase: didBackupAsset.length);
+        return;
+      }
+
+      state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
       // Get device assets info from database
       // Compare and find different assets that has not been backing up
       // Backup those assets
-      List<String> backupAsset = await _backupService.getDeviceBackupAsset();
-
-      if (list.isEmpty) {
-        debugPrint("No Asset On Device - Abort Backup Process");
-        state = state.copyWith(
-            backupProgress: BackUpProgressEnum.idle,
-            totalAssetCount: 0,
-            assetOnDatabase: backupAsset.length);
-        return;
-      }
-
-      int totalAsset = list[0].assetCount;
+      int totalAsset = backupAlbum.assetCount;
       List<AssetEntity> currentAssets =
-          await list[0].getAssetListRange(start: 0, end: totalAsset);
+          await backupAlbum.getAssetListRange(start: 0, end: totalAsset);
 
       state = state.copyWith(
-          totalAssetCount: totalAsset, assetOnDatabase: backupAsset.length);
+          totalAssetCount: totalAsset, assetOnDatabase: didBackupAsset.length);
+
       // Remove item that has already been backed up
-      for (var backupAssetId in backupAsset) {
-        currentAssets.removeWhere((e) => e.id == backupAssetId);
-      }
+      currentAssets.removeWhere((e) => didBackupAsset.contains(e.id));
 
       if (currentAssets.isEmpty) {
         state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
