@@ -13,7 +13,6 @@ import 'package:immich_mobile/modules/home/ui/profile_drawer.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
-import 'package:sliver_tools/sliver_tools.dart';
 
 class HomePage extends HookConsumerWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -35,6 +34,19 @@ class HomePage extends HookConsumerWidget {
 
     void reloadAllAsset() {
       ref.read(assetProvider.notifier).getAllAsset();
+    }
+
+    _buildSelectedItemCountIndicator() {
+      return isMultiSelectEnable
+          ? DisableMultiSelectButton(
+              onPressed: ref.watch(homePageStateProvider.notifier).disableMultiSelect,
+              selectedItemCount: homePageState.selectedItems.length,
+            )
+          : Container();
+    }
+
+    _buildBottomAppBar() {
+      return isMultiSelectEnable ? const ControlBottomAppBar() : Container();
     }
 
     Widget _buildBody() {
@@ -70,6 +82,19 @@ class HomePage extends HookConsumerWidget {
         });
       }
 
+      _buildSliverAppBar() {
+        return isMultiSelectEnable
+            ? const SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 70,
+                  child: null,
+                ),
+              )
+            : ImmichSliverAppBar(
+                onPopBack: reloadAllAsset,
+              );
+      }
+
       return SafeArea(
         bottom: !isMultiSelectEnable,
         top: !isMultiSelectEnable,
@@ -81,38 +106,17 @@ class HomePage extends HookConsumerWidget {
               heightScrollThumb: 48.0,
               child: CustomScrollView(
                 controller: _scrollController,
-                slivers: [
-                  SliverAnimatedSwitcher(
-                    child: isMultiSelectEnable
-                        ? const SliverToBoxAdapter(
-                            child: SizedBox(
-                              height: 70,
-                              child: null,
-                            ),
-                          )
-                        : ImmichSliverAppBar(
-                            onPopBack: reloadAllAsset,
-                          ),
-                    duration: const Duration(milliseconds: 350),
-                  ),
-                  ..._imageGridGroup
-                ],
+                slivers: [_buildSliverAppBar(), ..._imageGridGroup],
               ),
             ),
-            isMultiSelectEnable
-                ? DisableMultiSelectButton(
-                    onPressed: ref.watch(homePageStateProvider.notifier).disableMultiSelect,
-                    selectedItemCount: homePageState.selectedItems.length,
-                  )
-                : Container(),
-            isMultiSelectEnable ? const ControlBottomAppBar() : Container(),
+            _buildSelectedItemCountIndicator(),
+            _buildBottomAppBar(),
           ],
         ),
       );
     }
 
     return Scaffold(
-      // key: _scaffoldKey,
       drawer: const ProfileDrawer(),
       body: _buildBody(),
     );

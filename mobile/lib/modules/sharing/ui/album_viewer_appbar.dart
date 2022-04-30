@@ -138,11 +138,13 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
         isScrollControlled: false,
         context: context,
         builder: (context) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildBottomSheetActionButton(),
-            ],
+          return SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildBottomSheetActionButton(),
+              ],
+            ),
           );
         },
       );

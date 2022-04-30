@@ -29,7 +29,6 @@ class ImmichSliverAppBar extends ConsumerWidget {
       floating: true,
       pinned: false,
       snap: false,
-      // backgroundColor: Colors.grey[200],
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
       leading: Builder(
         builder: (BuildContext context) {
