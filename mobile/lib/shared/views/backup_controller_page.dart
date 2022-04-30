@@ -1,13 +1,18 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/shared/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/shared/models/hive_saved_backup_info.model.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:photo_manager/photo_manager.dart';
+
+import '../../constants/hive_box.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
   const BackupControllerPage({Key? key}) : super(key: key);
@@ -16,6 +21,20 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState _backupState = ref.watch(backupProvider);
     AuthenticationState _authenticationState = ref.watch(authenticationProvider);
+
+    // Select default album if not set
+
+    bool hasBackupInfo = Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).containsKey(savedBackupInfoKey);
+    if (!hasBackupInfo) {
+      Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).put(
+          savedBackupInfoKey,
+          HiveSavedBackupInfo(
+            assetEntityId: "isAll",
+          )
+      );
+    }
+
+    AsyncSnapshot<List<AssetPathEntity>> assetEntities = useFuture(PhotoManager.getAssetPathList());
 
     bool shouldBackup = _backupState.totalAssetCount - _backupState.assetOnDatabase == 0 ? false : true;
 
@@ -87,6 +106,18 @@ class BackupControllerPage extends HookConsumerWidget {
                       style: TextStyle(fontSize: 14),
                     )
                   : Container(),
+              DropdownButton<String>(
+                items: assetEntities.data != null ?
+                    // [new DropdownMenuItem(child: Text("Loaded"))]
+                         assetEntities.data.map((element) => {
+                    //       return DropdownMenuItem<String>(
+                    //       value: element.id,
+                    //       child: Text(element.name),
+                    //     );
+                    // }).toList()
+                  : [new DropdownMenuItem(child: Text("Loading..."))],
+                onChanged: (_) {},
+              ),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: OutlinedButton(

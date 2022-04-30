@@ -73,7 +73,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       // await PhotoManager.presentLimited();
       // Gather assets info
       List<AssetPathEntity> list = await PhotoManager.getAssetPathList(
-          hasAll: true, onlyAll: true, type: RequestType.common);
+          hasAll: true, type: RequestType.common);
+
+      // debugPrint("ASDASD");
+      //
+      // list.forEach((element) {
+      //   debugPrint(element.name);
+      //   debugPrint(element.id);
+      // });
 
       // Get device assets info from database
       // Compare and find different assets that has not been backing up
