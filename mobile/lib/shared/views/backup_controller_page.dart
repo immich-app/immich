@@ -23,7 +23,6 @@ class BackupControllerPage extends HookConsumerWidget {
     AuthenticationState _authenticationState = ref.watch(authenticationProvider);
 
     // Select default album if not set
-
     bool hasBackupInfo = Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).containsKey(savedBackupInfoKey);
     if (!hasBackupInfo) {
       Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).put(
@@ -34,7 +33,23 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
+    String backupAlbumId = Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).get(savedBackupInfoKey)?.assetEntityId ?? "";
+
     AsyncSnapshot<List<AssetPathEntity>> assetEntities = useFuture(PhotoManager.getAssetPathList());
+
+    saveAlbumId(String albumId) {
+      debugPrint("Saving");
+      if (backupAlbumId == "LOADING") {
+        debugPrint("AAA");
+      }
+      backupAlbumId = albumId;
+      Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).put(
+          savedBackupInfoKey,
+          HiveSavedBackupInfo(
+            assetEntityId: albumId,
+          )
+      );
+    }
 
     bool shouldBackup = _backupState.totalAssetCount - _backupState.assetOnDatabase == 0 ? false : true;
 
@@ -46,6 +61,8 @@ class BackupControllerPage extends HookConsumerWidget {
       ref.watch(websocketProvider.notifier).stopListenToEvent('on_upload_success');
       return null;
     }, []);
+
+
 
     Widget _buildStorageInformation() {
       return ListTile(
@@ -106,27 +123,37 @@ class BackupControllerPage extends HookConsumerWidget {
                       style: TextStyle(fontSize: 14),
                     )
                   : Container(),
-              DropdownButton<String>(
-                items: assetEntities.data != null ?
-                    // [new DropdownMenuItem(child: Text("Loaded"))]
-                         assetEntities.data.map((element) => {
-                    //       return DropdownMenuItem<String>(
-                    //       value: element.id,
-                    //       child: Text(element.name),
-                    //     );
-                    // }).toList()
-                  : [new DropdownMenuItem(child: Text("Loading..."))],
-                onChanged: (_) {},
-              ),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: OutlinedButton(
-                  onPressed: () {
-                    isAutoBackup
-                        ? ref.watch(authenticationProvider.notifier).setAutoBackup(false)
-                        : ref.watch(authenticationProvider.notifier).setAutoBackup(true);
-                  },
-                  child: Text("Turn $backupBtnText Backup", style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DropdownButton<String>(
+                      hint: const Text("Select album to backup"),
+                      isExpanded: true,
+                      items: assetEntities.hasData ?
+                      ((assetEntities.data as List<AssetPathEntity>)
+                          .map((AssetPathEntity element) => {
+                        DropdownMenuItem(
+                          value: element.id,
+                          child: Text(element.name),
+                        )
+                      }.first).toList())
+                          : null,
+                      value: assetEntities.hasData ? backupAlbumId : null,
+                      onChanged: (albumId) {
+                        if (albumId != null) saveAlbumId(albumId);
+                      },
+                    ),
+                    OutlinedButton(
+                      onPressed: () {
+                        isAutoBackup
+                            ? ref.watch(authenticationProvider.notifier).setAutoBackup(false)
+                            : ref.watch(authenticationProvider.notifier).setAutoBackup(true);
+                      },
+                      child: Text("Turn $backupBtnText Backup", style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ),
               )
             ],
