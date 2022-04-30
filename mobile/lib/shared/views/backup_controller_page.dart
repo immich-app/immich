@@ -22,17 +22,6 @@ class BackupControllerPage extends HookConsumerWidget {
     BackUpState _backupState = ref.watch(backupProvider);
     AuthenticationState _authenticationState = ref.watch(authenticationProvider);
 
-    // Select default album if not set
-    bool hasBackupInfo = Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).containsKey(savedBackupInfoKey);
-    if (!hasBackupInfo) {
-      Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).put(
-          savedBackupInfoKey,
-          HiveSavedBackupInfo(
-            assetEntityId: "isAll",
-          )
-      );
-    }
-
     String backupAlbumId = Hive.box<HiveSavedBackupInfo>(hiveBackupInfoBox).get(savedBackupInfoKey)?.assetEntityId ?? "";
 
     AsyncSnapshot<List<AssetPathEntity>> assetEntities = useFuture(useMemoized(PhotoManager.getAssetPathList, const []));
@@ -91,6 +80,34 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
+    Widget     _buildAlbumSelectDropDownMenu() {
+      if (assetEntities.hasData) {
+        List<AssetPathEntity>? albums = assetEntities.data;
+
+        if (albums != null) {
+          return DropdownButton<String>(
+            hint: const Text("Select album to backup"),
+            icon: const Icon(Icons.photo),
+            isExpanded: true,
+            items: (albums.map(
+                  (AssetPathEntity album) => {
+                    DropdownMenuItem(
+                      value: album.id,
+                      child: Text(album.name),
+                    )
+                  }.first,
+                ).toList()),
+            value: backupAlbumId.isEmpty ? albums[0].id : backupAlbumId,
+            onChanged: (albumId) {
+              if (albumId != null) saveAlbumId(albumId);
+            },
+          );
+        }
+      }
+
+      return Container();
+    }
+
     ListTile _buildBackupController() {
       var backUpOption = _authenticationState.deviceInfo.isAutoBackup ? "on" : "off";
       var isAutoBackup = _authenticationState.deviceInfo.isAutoBackup;
@@ -123,24 +140,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    DropdownButton<String>(
-                      hint: const Text("Select album to backup"),
-                      icon: const Icon(Icons.photo),
-                      isExpanded: true,
-                      items: assetEntities.hasData ?
-                      ((assetEntities.data as List<AssetPathEntity>)
-                          .map((AssetPathEntity element) => {
-                            DropdownMenuItem(
-                              value: element.id,
-                              child: Text(element.name),
-                            )
-                          }.first).toList())
-                          : null,
-                      value: assetEntities.hasData ? backupAlbumId : null,
-                      onChanged: (albumId) {
-                        if (albumId != null) saveAlbumId(albumId);
-                      },
-                    ),
+                    _buildAlbumSelectDropDownMenu(),
                     OutlinedButton(
                       onPressed: () {
                         isAutoBackup
