@@ -19,9 +19,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       : super(
           BackUpState(
             backupProgress: BackUpProgressEnum.idle,
-            backingUpAssetCount: 0,
             assetOnDatabase: 0,
             totalAssetCount: 0,
+            remainderAssetCount: 0,
             progressInPercentage: 0,
             cancelToken: CancelToken(),
             serverInfo: ServerInfo(
@@ -79,12 +79,20 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(
           backupProgress: BackUpProgressEnum.idle,
           totalAssetCount: 0,
+          remainderAssetCount: 0,
           assetOnDatabase: didBackupAsset.length);
       return;
     }
 
+    // Find the number of remaining assets
+    int totalAsset = backupAlbum.assetCount;
+    List<AssetEntity> currentAssets =
+        await backupAlbum.getAssetListRange(start: 0, end: totalAsset);
+    currentAssets.removeWhere((e) => didBackupAsset.contains(e.id));
+
     state = state.copyWith(
         totalAssetCount: backupAlbum.assetCount,
+        remainderAssetCount: currentAssets.length,
         assetOnDatabase: didBackupAsset.length);
   }
 
@@ -97,12 +105,20 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(
           backupProgress: BackUpProgressEnum.idle,
           totalAssetCount: 0,
+          remainderAssetCount: 0,
           assetOnDatabase: didBackupAsset.length);
       return;
     }
 
+    // Find the number of remaining assets
+    int totalAsset = backupAlbum.assetCount;
+    List<AssetEntity> currentAssets =
+    await backupAlbum.getAssetListRange(start: 0, end: totalAsset);
+    currentAssets.removeWhere((e) => didBackupAsset.contains(e.id));
+
     state = state.copyWith(
         totalAssetCount: backupAlbum.assetCount,
+        remainderAssetCount: currentAssets.length,
         assetOnDatabase: didBackupAsset.length
     );
 
@@ -123,6 +139,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         state = state.copyWith(
             backupProgress: BackUpProgressEnum.idle,
             totalAssetCount: 0,
+            remainderAssetCount: 0,
             assetOnDatabase: didBackupAsset.length);
         return;
       }
@@ -134,11 +151,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       List<AssetEntity> currentAssets =
           await backupAlbum.getAssetListRange(start: 0, end: totalAsset);
 
-      state = state.copyWith(
-          backupProgress: BackUpProgressEnum.inProgress,
-          totalAssetCount: totalAsset,
-          assetOnDatabase: didBackupAsset.length
-      );
 
       // Remove item that has already been backed up
       currentAssets.removeWhere((e) => didBackupAsset.contains(e.id));
@@ -147,7 +159,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
       }
 
-      state = state.copyWith(backingUpAssetCount: currentAssets.length);
+      state = state.copyWith(
+          backupProgress: BackUpProgressEnum.inProgress,
+          totalAssetCount: totalAsset,
+          remainderAssetCount: currentAssets.length,
+          assetOnDatabase: didBackupAsset.length
+      );
 
       // Perform Backup
       state = state.copyWith(cancelToken: CancelToken());
@@ -166,10 +183,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   void _onAssetUploaded(String deviceAssetId, String deviceId) {
     state = state.copyWith(
-        backingUpAssetCount: state.backingUpAssetCount - 1,
+        remainderAssetCount: state.remainderAssetCount - 1,
         assetOnDatabase: state.assetOnDatabase + 1);
 
-    if (state.backingUpAssetCount == 0) {
+    if (state.remainderAssetCount == 0) {
       state = state.copyWith(
           backupProgress: BackUpProgressEnum.done, progressInPercentage: 0.0);
     }

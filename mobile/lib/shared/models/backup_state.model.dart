@@ -9,8 +9,8 @@ enum BackUpProgressEnum { idle, inProgress, done }
 class BackUpState {
   final BackUpProgressEnum backupProgress;
   final int totalAssetCount;
+  final int remainderAssetCount;
   final int assetOnDatabase;
-  final int backingUpAssetCount;
   final double progressInPercentage;
   final CancelToken cancelToken;
   final ServerInfo serverInfo;
@@ -18,8 +18,8 @@ class BackUpState {
   BackUpState({
     required this.backupProgress,
     required this.totalAssetCount,
+    required this.remainderAssetCount,
     required this.assetOnDatabase,
-    required this.backingUpAssetCount,
     required this.progressInPercentage,
     required this.cancelToken,
     required this.serverInfo,
@@ -28,8 +28,8 @@ class BackUpState {
   BackUpState copyWith({
     BackUpProgressEnum? backupProgress,
     int? totalAssetCount,
+    int? remainderAssetCount,
     int? assetOnDatabase,
-    int? backingUpAssetCount,
     double? progressInPercentage,
     CancelToken? cancelToken,
     ServerInfo? serverInfo,
@@ -37,8 +37,8 @@ class BackUpState {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,
       totalAssetCount: totalAssetCount ?? this.totalAssetCount,
+      remainderAssetCount: remainderAssetCount ?? this.remainderAssetCount,
       assetOnDatabase: assetOnDatabase ?? this.assetOnDatabase,
-      backingUpAssetCount: backingUpAssetCount ?? this.backingUpAssetCount,
       progressInPercentage: progressInPercentage ?? this.progressInPercentage,
       cancelToken: cancelToken ?? this.cancelToken,
       serverInfo: serverInfo ?? this.serverInfo,
@@ -47,7 +47,7 @@ class BackUpState {
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, totalAssetCount: $totalAssetCount, assetOnDatabase: $assetOnDatabase, backingUpAssetCount: $backingUpAssetCount, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo)';
+    return 'BackUpState(backupProgress: $backupProgress, totalAssetCount: $totalAssetCount, remainderAssetCount: $remainderAssetCount, assetOnDatabase: $assetOnDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo)';
   }
 
   @override
@@ -57,8 +57,8 @@ class BackUpState {
     return other is BackUpState &&
         other.backupProgress == backupProgress &&
         other.totalAssetCount == totalAssetCount &&
+        other.remainderAssetCount == remainderAssetCount &&
         other.assetOnDatabase == assetOnDatabase &&
-        other.backingUpAssetCount == backingUpAssetCount &&
         other.progressInPercentage == progressInPercentage &&
         other.cancelToken == cancelToken &&
         other.serverInfo == serverInfo;
@@ -68,8 +68,8 @@ class BackUpState {
   int get hashCode {
     return backupProgress.hashCode ^
         totalAssetCount.hashCode ^
+        remainderAssetCount.hashCode ^
         assetOnDatabase.hashCode ^
-        backingUpAssetCount.hashCode ^
         progressInPercentage.hashCode ^
         cancelToken.hashCode ^
         serverInfo.hashCode;

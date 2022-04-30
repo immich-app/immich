@@ -185,7 +185,7 @@ class BackupControllerPage extends HookConsumerWidget {
             ),
             BackupInfoCard(
               title: "Total",
-              subtitle: "All images and videos on the device",
+              subtitle: "All images and videos in the album to backup",
               info: "${_backupState.totalAssetCount}",
             ),
             BackupInfoCard(
@@ -195,8 +195,8 @@ class BackupControllerPage extends HookConsumerWidget {
             ),
             BackupInfoCard(
               title: "Remainder",
-              subtitle: "Images and videos that has not been backing up",
-              info: "${_backupState.totalAssetCount - _backupState.assetOnDatabase}", // todo this value is not correct
+              subtitle: "Images and videos of the album that has not been backed up",
+              info: "${_backupState.remainderAssetCount}",
             ),
             const Divider(),
             _buildBackupController(),
@@ -206,7 +206,7 @@ class BackupControllerPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                  "Asset that were being backup: ${_backupState.backingUpAssetCount} [${_backupState.progressInPercentage.toStringAsFixed(0)}%]"),
+                  "Asset that were being backup: ${_backupState.remainderAssetCount} [${_backupState.progressInPercentage.toStringAsFixed(0)}%]"),
             ),
             Padding(
               padding: const EdgeInsets.only(left: 8.0),

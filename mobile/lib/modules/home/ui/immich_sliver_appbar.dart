@@ -131,7 +131,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
                 ? Positioned(
                     bottom: 5,
                     child: Text(
-                      _backupState.backingUpAssetCount.toString(),
+                      _backupState.remainderAssetCount.toString(),
                       style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
                     ),
                   )
