@@ -88,6 +88,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         assetOnDatabase: didBackupAsset.length);
   }
 
+  void updateBackupState() async {
+    List<String> didBackupAsset = await _backupService.getDeviceBackupAsset();
+
+    // Gather assets info
+    var backupAlbum = await _getBackupAlbum();
+    if (backupAlbum == null) {
+      state = state.copyWith(
+          backupProgress: BackUpProgressEnum.idle,
+          totalAssetCount: 0,
+          assetOnDatabase: didBackupAsset.length);
+      return;
+    }
+
+    state = state.copyWith(
+        totalAssetCount: backupAlbum.assetCount,
+        assetOnDatabase: didBackupAsset.length
+    );
+
+  }
+
   void startBackupProcess() async {
     _updateServerInfo();
 
@@ -107,8 +127,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         return;
       }
 
-      state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
-
       // Get device assets info from database
       // Compare and find different assets that has not been backing up
       // Backup those assets
@@ -117,7 +135,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           await backupAlbum.getAssetListRange(start: 0, end: totalAsset);
 
       state = state.copyWith(
-          totalAssetCount: totalAsset, assetOnDatabase: didBackupAsset.length);
+          backupProgress: BackUpProgressEnum.inProgress,
+          totalAssetCount: totalAsset,
+          assetOnDatabase: didBackupAsset.length
+      );
 
       // Remove item that has already been backed up
       currentAssets.removeWhere((e) => didBackupAsset.contains(e.id));

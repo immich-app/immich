@@ -45,6 +45,7 @@ class BackupControllerPage extends HookConsumerWidget {
             assetEntityId: albumId,
           )
       );
+      ref.read(backupProvider.notifier).updateBackupState();
     }
 
     bool shouldBackup = _backupState.totalAssetCount - _backupState.assetOnDatabase == 0 ? false : true;
@@ -197,7 +198,7 @@ class BackupControllerPage extends HookConsumerWidget {
             BackupInfoCard(
               title: "Remainder",
               subtitle: "Images and videos that has not been backing up",
-              info: "${_backupState.totalAssetCount - _backupState.assetOnDatabase}",
+              info: "${_backupState.totalAssetCount - _backupState.assetOnDatabase}", // todo this value is not correct
             ),
             const Divider(),
             _buildBackupController(),
