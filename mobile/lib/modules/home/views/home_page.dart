@@ -100,13 +100,23 @@ class HomePage extends HookConsumerWidget {
         top: !isMultiSelectEnable,
         child: Stack(
           children: [
-            DraggableScrollbar.semicircle(
-              backgroundColor: Theme.of(context).primaryColor,
-              controller: _scrollController,
-              heightScrollThumb: 48.0,
-              child: CustomScrollView(
+            CustomScrollView(
+              slivers: [
+                _buildSliverAppBar(),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 50.0),
+              child: DraggableScrollbar.semicircle(
+                backgroundColor: Theme.of(context).primaryColor,
                 controller: _scrollController,
-                slivers: [_buildSliverAppBar(), ..._imageGridGroup],
+                heightScrollThumb: 48.0,
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    ..._imageGridGroup,
+                  ],
+                ),
               ),
             ),
             _buildSelectedItemCountIndicator(),

@@ -12,7 +12,7 @@ class ImageGrid extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SliverGrid(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: 4,
         crossAxisSpacing: 5.0,
         mainAxisSpacing: 5,
       ),

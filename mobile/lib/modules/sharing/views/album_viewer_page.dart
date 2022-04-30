@@ -215,31 +215,29 @@ class AlbumViewerPage extends HookConsumerWidget {
         onTap: () {
           titleFocusNode.unfocus();
         },
-        child: Stack(children: [
-          DraggableScrollbar.semicircle(
-            backgroundColor: Theme.of(context).primaryColor,
+        child: DraggableScrollbar.semicircle(
+          backgroundColor: Theme.of(context).primaryColor,
+          controller: _scrollController,
+          heightScrollThumb: 48.0,
+          child: CustomScrollView(
             controller: _scrollController,
-            heightScrollThumb: 48.0,
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                _buildHeader(albumInfo),
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: ImmichSliverPersistentAppBarDelegate(
-                    minHeight: 50,
-                    maxHeight: 50,
-                    child: Container(
-                      color: immichBackgroundColor,
-                      child: _buildControlButton(albumInfo),
-                    ),
+            slivers: [
+              _buildHeader(albumInfo),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: ImmichSliverPersistentAppBarDelegate(
+                  minHeight: 50,
+                  maxHeight: 50,
+                  child: Container(
+                    color: immichBackgroundColor,
+                    child: _buildControlButton(albumInfo),
                   ),
                 ),
-                _buildImageGrid(albumInfo)
-              ],
-            ),
+              ),
+              _buildImageGrid(albumInfo)
+            ],
           ),
-        ]),
+        ),
       );
     }
 
