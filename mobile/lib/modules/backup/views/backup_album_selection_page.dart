@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 class BackupAlbumSelectionPage extends HookConsumerWidget {
   const BackupAlbumSelectionPage({Key? key}) : super(key: key);
@@ -15,54 +18,75 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       return null;
     }, []);
 
+    _buildImageThumbnail(Uint8List? imageData, AssetPathEntity albumInfo) {
+      if (imageData != null) {
+        return Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5), // if you need this
+            side: const BorderSide(
+              color: Colors.black12,
+              width: 1,
+            ),
+          ),
+          elevation: 0,
+          borderOnForeground: false,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Image.memory(
+                    imageData,
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                  Column(
+                    children: [Text(albumInfo.name), Text(albumInfo.assetCount.toString())],
+                  )
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  TextButton(
+                    child: const Text('BUY TICKETS'),
+                    onPressed: () {/* ... */},
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    child: const Text('LISTEN'),
+                    onPressed: () {/* ... */},
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ),
+            ],
+          ),
+        );
+      }
+
+      return Image.asset(
+        'assets/immich-logo-no-outline.png',
+        width: 512,
+        height: 512,
+        fit: BoxFit.cover,
+      );
+    }
+
     _buildAlbumSelectionList() {
-      return GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 0,
-          mainAxisSpacing: 20,
-        ),
+      return ListView.builder(
+        // gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        //   crossAxisCount: 2,
+        //   crossAxisSpacing: 10,
+        //   mainAxisSpacing: 10,
+        // ),
         shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: availableAlbums.length,
         itemBuilder: ((context, index) {
           var thumbnailData = availableAlbums[index].thumbnailData;
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                image: DecorationImage(
-                  colorFilter: const ColorFilter.mode(Colors.black, BlendMode.difference),
-                  opacity: 0.8,
-                  image: thumbnailData != null
-                      ? MemoryImage(thumbnailData)
-                      : const AssetImage('assets/immich-logo-no-outline.png') as ImageProvider,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Column(
-                children: [
-                  const Text("AlbumNAme"),
-                  CheckboxListTile(
-                    title: Text(
-                      availableAlbums[index].albumEntity.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                        "Assets ${availableAlbums[index].albumEntity.assetCount} - ${availableAlbums[index].albumEntity.isAll}"),
-                    onChanged: (value) {
-                      print("Album ${availableAlbums[index].albumEntity.name}");
-                    },
-                    value: availableAlbums.contains(availableAlbums[index]),
-                  ),
-                ],
-              ),
-            ),
-          );
+          return _buildImageThumbnail(thumbnailData, availableAlbums[index].albumEntity);
         }),
       );
     }
@@ -80,6 +104,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         elevation: 0,
       ),
       body: ListView(
+        shrinkWrap: true,
         children: [
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
