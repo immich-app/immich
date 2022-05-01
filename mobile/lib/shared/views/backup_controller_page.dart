@@ -7,6 +7,7 @@ import 'package:immich_mobile/shared/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:immich_mobile/shared/ui/backup_info_card.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
@@ -22,6 +23,7 @@ class BackupControllerPage extends HookConsumerWidget {
     useEffect(() {
       if (_backupState.backupProgress != BackUpProgressEnum.inProgress) {
         ref.read(backupProvider.notifier).getBackupInfo();
+        ref.read(backupProvider.notifier).getAlbumsOnDevice();
       }
 
       ref.watch(websocketProvider.notifier).stopListenToEvent('on_upload_success');
@@ -129,6 +131,52 @@ class BackupControllerPage extends HookConsumerWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5), // if you need this
+                side: const BorderSide(
+                  color: Colors.black12,
+                  width: 1,
+                ),
+              ),
+              elevation: 0,
+              borderOnForeground: false,
+              child: ListTile(
+                minVerticalPadding: 15,
+                title: const Text("Backup Albums", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        "Selected albums to be backup",
+                        style: TextStyle(color: Color(0xFF808080), fontSize: 12),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          "Recent, One, Two, Three,Recent, One, Two, Three,Recent, One, Two, Three,Recent, One, Two, Three",
+                          style: TextStyle(color: Color(0xFF808080), fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                trailing: OutlinedButton(
+                  onPressed: () {},
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 16.0,
+                    ),
+                    child: Text(
+                      "Select",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             BackupInfoCard(
               title: "Total",
               subtitle: "All images and videos on the device",
@@ -185,53 +233,6 @@ class BackupControllerPage extends HookConsumerWidget {
                       ),
               ),
             )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class BackupInfoCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String info;
-  const BackupInfoCard({Key? key, required this.title, required this.subtitle, required this.info}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(5), // if you need this
-        side: const BorderSide(
-          color: Colors.black12,
-          width: 1,
-        ),
-      ),
-      elevation: 0,
-      borderOnForeground: false,
-      child: ListTile(
-        minVerticalPadding: 15,
-        isThreeLine: true,
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(
-            subtitle,
-            style: const TextStyle(color: Color(0xFF808080), fontSize: 12),
-          ),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              info,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const Text("assets"),
           ],
         ),
       ),

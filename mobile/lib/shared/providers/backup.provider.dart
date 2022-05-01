@@ -29,6 +29,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               diskUse: "0",
               diskUseRaw: 0,
             ),
+            availableAlbums: [],
           ),
         );
 
@@ -38,6 +39,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   void getAlbumsOnDevice() async {
     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(hasAll: true, type: RequestType.common);
+
+    state = state.copyWith(availableAlbums: albums);
   }
 
   void getBackupInfo() async {

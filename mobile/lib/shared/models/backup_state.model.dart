@@ -1,6 +1,6 @@
-import 'dart:convert';
-
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 import 'package:immich_mobile/shared/models/server_info.model.dart';
 
@@ -14,6 +14,7 @@ class BackUpState {
   final double progressInPercentage;
   final CancelToken cancelToken;
   final ServerInfo serverInfo;
+  final List<AssetPathEntity> availableAlbums;
 
   BackUpState({
     required this.backupProgress,
@@ -23,6 +24,7 @@ class BackUpState {
     required this.progressInPercentage,
     required this.cancelToken,
     required this.serverInfo,
+    required this.availableAlbums,
   });
 
   BackUpState copyWith({
@@ -33,6 +35,7 @@ class BackUpState {
     double? progressInPercentage,
     CancelToken? cancelToken,
     ServerInfo? serverInfo,
+    List<AssetPathEntity>? availableAlbums,
   }) {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,
@@ -42,17 +45,19 @@ class BackUpState {
       progressInPercentage: progressInPercentage ?? this.progressInPercentage,
       cancelToken: cancelToken ?? this.cancelToken,
       serverInfo: serverInfo ?? this.serverInfo,
+      availableAlbums: availableAlbums ?? this.availableAlbums,
     );
   }
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, totalAssetCount: $totalAssetCount, assetOnDatabase: $assetOnDatabase, backingUpAssetCount: $backingUpAssetCount, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo)';
+    return 'BackUpState(backupProgress: $backupProgress, totalAssetCount: $totalAssetCount, assetOnDatabase: $assetOnDatabase, backingUpAssetCount: $backingUpAssetCount, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
+    final listEquals = const DeepCollectionEquality().equals;
 
     return other is BackUpState &&
         other.backupProgress == backupProgress &&
@@ -61,7 +66,8 @@ class BackUpState {
         other.backingUpAssetCount == backingUpAssetCount &&
         other.progressInPercentage == progressInPercentage &&
         other.cancelToken == cancelToken &&
-        other.serverInfo == serverInfo;
+        other.serverInfo == serverInfo &&
+        listEquals(other.availableAlbums, availableAlbums);
   }
 
   @override
@@ -72,6 +78,7 @@ class BackUpState {
         backingUpAssetCount.hashCode ^
         progressInPercentage.hashCode ^
         cancelToken.hashCode ^
-        serverInfo.hashCode;
+        serverInfo.hashCode ^
+        availableAlbums.hashCode;
   }
 }
