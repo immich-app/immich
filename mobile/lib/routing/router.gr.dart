@@ -93,6 +93,10 @@ class _$AppRouter extends RootStackRouter {
           opaque: true,
           barrierDismissible: false);
     },
+    BackupAlbumSelectionRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const BackupAlbumSelectionPage());
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -149,7 +153,9 @@ class _$AppRouter extends RootStackRouter {
             path: '/album-viewer-page', guards: [authGuard]),
         RouteConfig(SelectAdditionalUserForSharingRoute.name,
             path: '/select-additional-user-for-sharing-page',
-            guards: [authGuard])
+            guards: [authGuard]),
+        RouteConfig(BackupAlbumSelectionRoute.name,
+            path: '/backup-album-selection-page', guards: [authGuard])
       ];
 }
 
@@ -356,6 +362,16 @@ class SelectAdditionalUserForSharingRouteArgs {
   String toString() {
     return 'SelectAdditionalUserForSharingRouteArgs{key: $key, albumInfo: $albumInfo}';
   }
+}
+
+/// generated route for
+/// [BackupAlbumSelectionPage]
+class BackupAlbumSelectionRoute extends PageRouteInfo<void> {
+  const BackupAlbumSelectionRoute()
+      : super(BackupAlbumSelectionRoute.name,
+            path: '/backup-album-selection-page');
+
+  static const String name = 'BackupAlbumSelectionRoute';
 }
 
 /// generated route for

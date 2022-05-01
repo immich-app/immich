@@ -5,9 +5,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
-import 'package:immich_mobile/shared/models/backup_state.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/shared/models/server_info.model.dart';
-import 'package:immich_mobile/shared/services/backup.service.dart';
+import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class BackupNotifier extends StateNotifier<BackUpState> {

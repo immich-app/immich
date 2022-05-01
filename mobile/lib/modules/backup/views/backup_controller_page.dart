@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
-import 'package:immich_mobile/shared/models/backup_state.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
-import 'package:immich_mobile/shared/ui/backup_info_card.dart';
+import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
@@ -17,7 +18,6 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState _backupState = ref.watch(backupProvider);
     AuthenticationState _authenticationState = ref.watch(authenticationProvider);
-
     bool shouldBackup = _backupState.totalAssetCount - _backupState.assetOnDatabase == 0 ? false : true;
 
     useEffect(() {
@@ -106,6 +106,57 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
+    _buildFolderSelectionTile() {
+      return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5), // if you need this
+          side: const BorderSide(
+            color: Colors.black12,
+            width: 1,
+          ),
+        ),
+        elevation: 0,
+        borderOnForeground: false,
+        child: ListTile(
+          minVerticalPadding: 15,
+          title: const Text("Backup Albums", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  "Selected albums to be backup",
+                  style: TextStyle(color: Color(0xFF808080), fontSize: 12),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    "Recent, One, Two, Three,Recent, One, Two, Three,Recent, One, Two, Three,Recent, One, Two, Three",
+                    style: TextStyle(color: Color(0xFF808080), fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          trailing: OutlinedButton(
+            onPressed: () {
+              AutoRouter.of(context).push(const BackupAlbumSelectionRoute());
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: 16.0,
+              ),
+              child: Text(
+                "Select",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -131,52 +182,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5), // if you need this
-                side: const BorderSide(
-                  color: Colors.black12,
-                  width: 1,
-                ),
-              ),
-              elevation: 0,
-              borderOnForeground: false,
-              child: ListTile(
-                minVerticalPadding: 15,
-                title: const Text("Backup Albums", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                subtitle: Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        "Selected albums to be backup",
-                        style: TextStyle(color: Color(0xFF808080), fontSize: 12),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          "Recent, One, Two, Three,Recent, One, Two, Three,Recent, One, Two, Three,Recent, One, Two, Three",
-                          style: TextStyle(color: Color(0xFF808080), fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                trailing: OutlinedButton(
-                  onPressed: () {},
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: 16.0,
-                    ),
-                    child: Text(
-                      "Select",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            _buildFolderSelectionTile(),
             BackupInfoCard(
               title: "Total",
               subtitle: "All images and videos on the device",

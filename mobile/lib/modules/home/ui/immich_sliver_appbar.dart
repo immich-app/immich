@@ -5,9 +5,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/backup_state.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
-import 'package:immich_mobile/shared/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 
 class ImmichSliverAppBar extends ConsumerWidget {
