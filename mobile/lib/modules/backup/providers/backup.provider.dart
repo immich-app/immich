@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
@@ -38,9 +39,22 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final ServerInfoService _serverInfoService = ServerInfoService();
 
   void getAlbumsOnDevice() async {
+    List<AvailableAlbum> availableAlbums = [];
     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(hasAll: true, type: RequestType.common);
 
-    state = state.copyWith(availableAlbums: albums);
+    for (AssetPathEntity album in albums) {
+      AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
+      var assetList = await album.getAssetListRange(start: 0, end: album.assetCount);
+
+      if (assetList.isNotEmpty) {
+        var thumbnailAsset = assetList.first;
+        var thumbnailData = await thumbnailAsset.thumbnailDataWithSize(const ThumbnailSize(512, 512));
+        availableAlbum = availableAlbum.copyWith(thumbnailData: thumbnailData);
+      }
+
+      availableAlbums.add(availableAlbum);
+    }
+    state = state.copyWith(availableAlbums: availableAlbums);
   }
 
   void getBackupInfo() async {

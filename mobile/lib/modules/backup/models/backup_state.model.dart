@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
-import 'package:photo_manager/photo_manager.dart';
 
+import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/shared/models/server_info.model.dart';
 
 enum BackUpProgressEnum { idle, inProgress, done }
@@ -14,7 +14,7 @@ class BackUpState {
   final double progressInPercentage;
   final CancelToken cancelToken;
   final ServerInfo serverInfo;
-  final List<AssetPathEntity> availableAlbums;
+  final List<AvailableAlbum> availableAlbums;
 
   BackUpState({
     required this.backupProgress,
@@ -35,7 +35,7 @@ class BackUpState {
     double? progressInPercentage,
     CancelToken? cancelToken,
     ServerInfo? serverInfo,
-    List<AssetPathEntity>? availableAlbums,
+    List<AvailableAlbum>? availableAlbums,
   }) {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,

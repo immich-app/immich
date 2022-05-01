@@ -23,7 +23,6 @@ class BackupControllerPage extends HookConsumerWidget {
     useEffect(() {
       if (_backupState.backupProgress != BackUpProgressEnum.inProgress) {
         ref.read(backupProvider.notifier).getBackupInfo();
-        ref.read(backupProvider.notifier).getAlbumsOnDevice();
       }
 
       ref.watch(websocketProvider.notifier).stopListenToEvent('on_upload_success');
