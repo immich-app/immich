@@ -1,11 +1,9 @@
-import 'dart:typed_data';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
 
 class BackupAlbumSelectionPage extends HookConsumerWidget {
   const BackupAlbumSelectionPage({Key? key}) : super(key: key);
@@ -18,76 +16,21 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       return null;
     }, []);
 
-    _buildImageThumbnail(Uint8List? imageData, AssetPathEntity albumInfo) {
-      if (imageData != null) {
-        return Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5), // if you need this
-            side: const BorderSide(
-              color: Colors.black12,
-              width: 1,
-            ),
-          ),
-          elevation: 0,
-          borderOnForeground: false,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Image.memory(
-                    imageData,
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
-                  Column(
-                    children: [Text(albumInfo.name), Text(albumInfo.assetCount.toString())],
-                  )
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  TextButton(
-                    child: const Text('BUY TICKETS'),
-                    onPressed: () {/* ... */},
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    child: const Text('LISTEN'),
-                    onPressed: () {/* ... */},
-                  ),
-                  const SizedBox(width: 8),
-                ],
-              ),
-            ],
-          ),
-        );
-      }
-
-      return Image.asset(
-        'assets/immich-logo-no-outline.png',
-        width: 512,
-        height: 512,
-        fit: BoxFit.cover,
-      );
-    }
-
     _buildAlbumSelectionList() {
-      return ListView.builder(
-        // gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        //   crossAxisCount: 2,
-        //   crossAxisSpacing: 10,
-        //   mainAxisSpacing: 10,
-        // ),
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: availableAlbums.length,
-        itemBuilder: ((context, index) {
-          var thumbnailData = availableAlbums[index].thumbnailData;
-
-          return _buildImageThumbnail(thumbnailData, availableAlbums[index].albumEntity);
-        }),
+      return SizedBox(
+        height: 265,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: availableAlbums.length,
+          physics: const BouncingScrollPhysics(),
+          itemBuilder: ((context, index) {
+            var thumbnailData = availableAlbums[index].thumbnailData;
+            return Padding(
+              padding: index == 0 ? const EdgeInsets.only(left: 16.00) : const EdgeInsets.all(0),
+              child: AlbumInfoCard(imageData: thumbnailData, albumInfo: availableAlbums[index].albumEntity),
+            );
+          }),
+        ),
       );
     }
 
@@ -104,16 +47,55 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         elevation: 0,
       ),
       body: ListView(
-        shrinkWrap: true,
         children: [
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             child: Text(
-              "Albums on device",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              "Selection Info",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
           ),
-          _buildAlbumSelectionList(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Wrap(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Chip(
+                    visualDensity: VisualDensity.compact,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                    label: const Text(
+                      "Recent",
+                      style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    backgroundColor: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Divider(),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            child: Text(
+              "Albums on device",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, bottom: 8),
+            child: Text(
+              "Total ${availableAlbums.length.toString()}",
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: _buildAlbumSelectionList(),
+          ),
         ],
       ),
     );
