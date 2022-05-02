@@ -106,6 +106,21 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     _buildFolderSelectionTile() {
+      getSelectedAlbumName() {
+        var text = "";
+        var albums = ref.watch(backupProvider).selectedBackupAlbums;
+
+        if (albums.isNotEmpty) {
+          for (var album in albums) {
+            text += "${album.name}, ";
+          }
+
+          return text.trim().substring(0, text.length - 2);
+        } else {
+          return "None Selected";
+        }
+      }
+
       return Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5), // if you need this
@@ -123,16 +138,16 @@ class BackupControllerPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(top: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
+              children: [
+                const Text(
                   "Selected albums to be backup",
                   style: TextStyle(color: Color(0xFF808080), fontSize: 12),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 8.0),
+                  padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    "Recent, One, Two, Three,Recent, One, Two, Three,Recent, One, Two, Three,Recent, One, Two, Three",
-                    style: TextStyle(color: Color(0xFF808080), fontSize: 12, fontWeight: FontWeight.bold),
+                    getSelectedAlbumName(),
+                    style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],

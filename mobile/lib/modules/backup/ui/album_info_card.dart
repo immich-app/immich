@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -15,6 +16,7 @@ class AlbumInfoCard extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final bool isSelected = ref.watch(backupProvider).selectedBackupAlbums.contains(albumInfo);
     ColorFilter selectedFilter = ColorFilter.mode(Colors.grey.withAlpha(200), BlendMode.darken);
     ColorFilter unselectedFilter = const ColorFilter.mode(Colors.black, BlendMode.color);
 
@@ -33,6 +35,12 @@ class AlbumInfoCard extends HookConsumerWidget {
     return GestureDetector(
       onTap: () {
         HapticFeedback.heavyImpact();
+
+        if (isSelected) {
+          ref.watch(backupProvider.notifier).removeAlbumForBackup(albumInfo);
+        } else {
+          ref.watch(backupProvider.notifier).addAlbumForBackup(albumInfo);
+        }
       },
       child: Card(
         margin: const EdgeInsets.all(1),
@@ -56,7 +64,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
                     image: DecorationImage(
-                      colorFilter: selectedFilter,
+                      colorFilter: isSelected ? selectedFilter : unselectedFilter,
                       image: imageData != null
                           ? MemoryImage(imageData!)
                           : const AssetImage('assets/immich-logo-no-outline.png') as ImageProvider,
@@ -65,7 +73,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                   ),
                   child: null,
                 ),
-                Positioned(bottom: 10, left: 25, child: _buildSelectedTextBox())
+                isSelected ? Positioned(bottom: 10, left: 25, child: _buildSelectedTextBox()) : Container(),
               ],
             ),
             Padding(

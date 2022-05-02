@@ -31,12 +31,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               diskUseRaw: 0,
             ),
             availableAlbums: [],
+            selectedBackupAlbums: {},
           ),
         );
 
   Ref? ref;
   final BackupService _backupService = BackupService();
   final ServerInfoService _serverInfoService = ServerInfoService();
+
+  void addAlbumForBackup(AssetPathEntity album) {
+    Set<AssetPathEntity> selected = {...state.selectedBackupAlbums, album};
+    state = state.copyWith(selectedBackupAlbums: selected);
+  }
+
+  void removeAlbumForBackup(AssetPathEntity album) {
+    Set<AssetPathEntity> currentSelectedAlbums = state.selectedBackupAlbums;
+
+    currentSelectedAlbums.removeWhere((a) => a == album);
+
+    state = state.copyWith(selectedBackupAlbums: currentSelectedAlbums);
+  }
 
   void getAlbumsOnDevice() async {
     List<AvailableAlbum> availableAlbums = [];

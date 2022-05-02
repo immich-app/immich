@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/shared/models/server_info.model.dart';
@@ -15,6 +16,7 @@ class BackUpState {
   final CancelToken cancelToken;
   final ServerInfo serverInfo;
   final List<AvailableAlbum> availableAlbums;
+  final Set<AssetPathEntity> selectedBackupAlbums;
 
   BackUpState({
     required this.backupProgress,
@@ -25,6 +27,7 @@ class BackUpState {
     required this.cancelToken,
     required this.serverInfo,
     required this.availableAlbums,
+    required this.selectedBackupAlbums,
   });
 
   BackUpState copyWith({
@@ -36,6 +39,7 @@ class BackUpState {
     CancelToken? cancelToken,
     ServerInfo? serverInfo,
     List<AvailableAlbum>? availableAlbums,
+    Set<AssetPathEntity>? selectedBackupAlbums,
   }) {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,
@@ -46,18 +50,19 @@ class BackUpState {
       cancelToken: cancelToken ?? this.cancelToken,
       serverInfo: serverInfo ?? this.serverInfo,
       availableAlbums: availableAlbums ?? this.availableAlbums,
+      selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
     );
   }
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, totalAssetCount: $totalAssetCount, assetOnDatabase: $assetOnDatabase, backingUpAssetCount: $backingUpAssetCount, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums)';
+    return 'BackUpState(backupProgress: $backupProgress, totalAssetCount: $totalAssetCount, assetOnDatabase: $assetOnDatabase, backingUpAssetCount: $backingUpAssetCount, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    final listEquals = const DeepCollectionEquality().equals;
+    final collectionEquals = const DeepCollectionEquality().equals;
 
     return other is BackUpState &&
         other.backupProgress == backupProgress &&
@@ -67,7 +72,8 @@ class BackUpState {
         other.progressInPercentage == progressInPercentage &&
         other.cancelToken == cancelToken &&
         other.serverInfo == serverInfo &&
-        listEquals(other.availableAlbums, availableAlbums);
+        collectionEquals(other.availableAlbums, availableAlbums) &&
+        collectionEquals(other.selectedBackupAlbums, selectedBackupAlbums);
   }
 
   @override
@@ -79,6 +85,7 @@ class BackUpState {
         progressInPercentage.hashCode ^
         cancelToken.hashCode ^
         serverInfo.hashCode ^
-        availableAlbums.hashCode;
+        availableAlbums.hashCode ^
+        selectedBackupAlbums.hashCode;
   }
 }

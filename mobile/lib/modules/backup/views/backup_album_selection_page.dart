@@ -10,6 +10,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final availableAlbums = ref.watch(backupProvider).availableAlbums;
+    final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
 
     useEffect(() {
       ref.read(backupProvider.notifier).getAlbumsOnDevice();
@@ -34,6 +35,23 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       );
     }
 
+    _buildAlbumNameChip() {
+      return selectedBackupAlbums.map((a) {
+        return Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: Chip(
+            visualDensity: VisualDensity.compact,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+            label: Text(
+              a.name,
+              style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: Theme.of(context).primaryColor,
+          ),
+        );
+      }).toList();
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -56,23 +74,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             ),
           ),
           // Selected Album Chips
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Wrap(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Chip(
-                    visualDensity: VisualDensity.compact,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                    label: const Text(
-                      "Recent",
-                      style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    backgroundColor: Theme.of(context).primaryColor,
-                  ),
-                ),
-              ],
+              children: [..._buildAlbumNameChip()],
             ),
           ),
 
@@ -97,9 +103,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       "Selected albums",
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey[700]),
                     ),
-                    trailing: const Text(
-                      "3",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    trailing: Text(
+                      selectedBackupAlbums.length.toString(),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                   ListTile(
