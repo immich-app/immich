@@ -41,6 +41,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   void addAlbumForBackup(AssetPathEntity album) {
     Set<AssetPathEntity> selected = {...state.selectedBackupAlbums, album};
+
     state = state.copyWith(selectedBackupAlbums: selected);
   }
 
