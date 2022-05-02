@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AlbumInfoCard extends HookConsumerWidget {
@@ -31,7 +33,6 @@ class AlbumInfoCard extends HookConsumerWidget {
     return GestureDetector(
       onTap: () {
         HapticFeedback.heavyImpact();
-        print("select");
       },
       child: Card(
         margin: const EdgeInsets.all(1),
@@ -68,7 +69,7 @@ class AlbumInfoCard extends HookConsumerWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 3.0),
+              padding: const EdgeInsets.only(top: 8.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -81,12 +82,13 @@ class AlbumInfoCard extends HookConsumerWidget {
                         children: [
                           Text(
                             albumInfo.name,
-                            style: TextStyle(fontSize: 14, color: Theme.of(context).primaryColor),
+                            style: TextStyle(
+                                fontSize: 14, color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(top: 2.0),
                             child: Text(
-                              albumInfo.assetCount.toString(),
+                              albumInfo.assetCount.toString() + (albumInfo.isAll ? " (ALL)" : ""),
                               style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                             ),
                           )
@@ -96,7 +98,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      print("View aalbum");
+                      AutoRouter.of(context).push(AlbumPreviewRoute(album: albumInfo));
                     },
                     icon: Icon(
                       Icons.image_outlined,

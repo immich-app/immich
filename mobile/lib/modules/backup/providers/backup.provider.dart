@@ -44,6 +44,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
+
       var assetList = await album.getAssetListRange(start: 0, end: album.assetCount);
 
       if (assetList.isNotEmpty) {

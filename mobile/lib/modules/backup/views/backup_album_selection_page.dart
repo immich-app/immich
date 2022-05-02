@@ -42,7 +42,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         ),
         title: const Text(
           "Select Albums",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         elevation: 0,
       ),
@@ -55,6 +55,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
           ),
+          // Selected Album Chips
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Wrap(
@@ -72,6 +73,48 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+            child: Card(
+              margin: const EdgeInsets.all(0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12), // if you need this
+                side: const BorderSide(
+                  color: Color(0xFFC9C9C9),
+                  width: 1,
+                ),
+              ),
+              elevation: 0,
+              borderOnForeground: false,
+              child: Column(
+                children: [
+                  ListTile(
+                    visualDensity: VisualDensity.compact,
+                    title: Text(
+                      "Selected albums",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey[700]),
+                    ),
+                    trailing: const Text(
+                      "3",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  ListTile(
+                    visualDensity: VisualDensity.compact,
+                    title: Text(
+                      "Total unique assets",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey[700]),
+                    ),
+                    trailing: const Text(
+                      "3000",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const Padding(

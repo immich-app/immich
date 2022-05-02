@@ -158,9 +158,10 @@ class BackupControllerPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
         title: const Text(
           "Backup",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
             onPressed: () {
