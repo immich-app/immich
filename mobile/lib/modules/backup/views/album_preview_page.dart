@@ -26,9 +26,17 @@ class AlbumPreviewPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text(
-          "${album.name} (${album.assetCount})",
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        title: Column(
+          children: [
+            Text(
+              "${album.name} (${album.assetCount})",
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              album.id,
+              style: TextStyle(fontSize: 10, color: Colors.grey[600], fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
         leading: IconButton(
           onPressed: () => AutoRouter.of(context).pop(),
@@ -37,7 +45,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
       ),
       body: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4,
+          crossAxisCount: 5,
           crossAxisSpacing: 2,
           mainAxisSpacing: 2,
         ),

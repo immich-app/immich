@@ -24,15 +24,39 @@ class AlbumInfoCard extends HookConsumerWidget {
     ColorFilter unselectedFilter = const ColorFilter.mode(Colors.black, BlendMode.color);
 
     _buildSelectedTextBox() {
-      return Chip(
-        visualDensity: VisualDensity.compact,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-        label: const Text(
-          "INCLUDED",
-          style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Theme.of(context).primaryColor,
-      );
+      if (isSelected) {
+        return Chip(
+          visualDensity: VisualDensity.compact,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          label: const Text(
+            "INCLUDED",
+            style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Theme.of(context).primaryColor,
+        );
+      } else if (isExcluded) {
+        return Chip(
+          visualDensity: VisualDensity.compact,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          label: const Text(
+            "EXCLUDED",
+            style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.red[300],
+        );
+      }
+
+      return Container();
+    }
+
+    _buildImageFilter() {
+      if (isSelected) {
+        return selectedFilter;
+      } else if (isExcluded) {
+        return excludedFilter;
+      } else {
+        return unselectedFilter;
+      }
     }
 
     return GestureDetector(
@@ -44,6 +68,9 @@ class AlbumInfoCard extends HookConsumerWidget {
         } else {
           ref.watch(backupProvider.notifier).addAlbumForBackup(albumInfo);
         }
+        print("INCLUDE ACTIONS");
+        print("Selected: ${ref.watch(backupProvider).selectedBackupAlbums.map((e) => e.name)}");
+        print("Excluded: ${ref.watch(backupProvider).excludedBackupAlbums.map((e) => e.name)}");
       },
       onDoubleTap: () {
         if (isExcluded) {
@@ -51,6 +78,9 @@ class AlbumInfoCard extends HookConsumerWidget {
         } else {
           ref.watch(backupProvider.notifier).addExcludedAlbumForBackup(albumInfo);
         }
+        print("EXCLUDE ACTIONS");
+        print("Selected: ${ref.watch(backupProvider).selectedBackupAlbums.map((e) => e.name)}");
+        print("Excluded: ${ref.watch(backupProvider).excludedBackupAlbums.map((e) => e.name)}");
       },
       child: Card(
         margin: const EdgeInsets.all(1),
@@ -74,7 +104,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
                     image: DecorationImage(
-                      colorFilter: isSelected ? selectedFilter : unselectedFilter,
+                      colorFilter: _buildImageFilter(),
                       image: imageData != null
                           ? MemoryImage(imageData!)
                           : const AssetImage('assets/immich-logo-no-outline.png') as ImageProvider,
@@ -83,7 +113,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                   ),
                   child: null,
                 ),
-                isSelected ? Positioned(bottom: 10, left: 25, child: _buildSelectedTextBox()) : Container(),
+                Positioned(bottom: 10, left: 25, child: _buildSelectedTextBox())
               ],
             ),
             Padding(

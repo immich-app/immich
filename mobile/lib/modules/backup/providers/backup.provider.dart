@@ -40,12 +40,27 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final BackupService _backupService = BackupService();
   final ServerInfoService _serverInfoService = ServerInfoService();
 
+  /// Album selection
+  /// Due to the overlapping assets across multiple albums on the device
+  /// We have method to include and exclude albums
+  /// The total unique assets will be used for backing mechanism
   void addAlbumForBackup(AssetPathEntity album) {
+    if (state.excludedBackupAlbums.contains(album)) {
+      removeExcludedAlbumForBackup(album);
+    }
+
     state = state.copyWith(selectedBackupAlbums: {...state.selectedBackupAlbums, album});
+
+    // TODO - Save to persistent storage
   }
 
   void addExcludedAlbumForBackup(AssetPathEntity album) {
+    if (state.selectedBackupAlbums.contains(album)) {
+      removeAlbumForBackup(album);
+    }
     state = state.copyWith(excludedBackupAlbums: {...state.excludedBackupAlbums, album});
+
+    // TODO - Save to persistent storage
   }
 
   void removeAlbumForBackup(AssetPathEntity album) {
@@ -54,6 +69,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     currentSelectedAlbums.removeWhere((a) => a == album);
 
     state = state.copyWith(selectedBackupAlbums: currentSelectedAlbums);
+
+    // TODO - Save to persistent storage
   }
 
   void removeExcludedAlbumForBackup(AssetPathEntity album) {
@@ -62,6 +79,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     currentExcludedAlbums.removeWhere((a) => a == album);
 
     state = state.copyWith(excludedBackupAlbums: currentExcludedAlbums);
+
+    // TODO - Save to persistent storage
   }
 
   void getAlbumsOnDevice() async {
