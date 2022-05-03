@@ -30,8 +30,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               diskUse: "0",
               diskUseRaw: 0,
             ),
-            availableAlbums: [],
-            selectedBackupAlbums: {},
+            availableAlbums: const [],
+            selectedBackupAlbums: const {},
+            excludedBackupAlbums: const {},
           ),
         );
 
@@ -40,9 +41,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final ServerInfoService _serverInfoService = ServerInfoService();
 
   void addAlbumForBackup(AssetPathEntity album) {
-    Set<AssetPathEntity> selected = {...state.selectedBackupAlbums, album};
+    state = state.copyWith(selectedBackupAlbums: {...state.selectedBackupAlbums, album});
+  }
 
-    state = state.copyWith(selectedBackupAlbums: selected);
+  void addExcludedAlbumForBackup(AssetPathEntity album) {
+    state = state.copyWith(excludedBackupAlbums: {...state.excludedBackupAlbums, album});
   }
 
   void removeAlbumForBackup(AssetPathEntity album) {
@@ -51,6 +54,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     currentSelectedAlbums.removeWhere((a) => a == album);
 
     state = state.copyWith(selectedBackupAlbums: currentSelectedAlbums);
+  }
+
+  void removeExcludedAlbumForBackup(AssetPathEntity album) {
+    Set<AssetPathEntity> currentExcludedAlbums = state.excludedBackupAlbums;
+
+    currentExcludedAlbums.removeWhere((a) => a == album);
+
+    state = state.copyWith(excludedBackupAlbums: currentExcludedAlbums);
   }
 
   void getAlbumsOnDevice() async {

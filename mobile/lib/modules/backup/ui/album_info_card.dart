@@ -17,7 +17,10 @@ class AlbumInfoCard extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isSelected = ref.watch(backupProvider).selectedBackupAlbums.contains(albumInfo);
-    ColorFilter selectedFilter = ColorFilter.mode(Colors.grey.withAlpha(200), BlendMode.darken);
+    final bool isExcluded = ref.watch(backupProvider).excludedBackupAlbums.contains(albumInfo);
+
+    ColorFilter selectedFilter = ColorFilter.mode(Theme.of(context).primaryColor.withAlpha(100), BlendMode.darken);
+    ColorFilter excludedFilter = ColorFilter.mode(Colors.red.withAlpha(175), BlendMode.darken);
     ColorFilter unselectedFilter = const ColorFilter.mode(Colors.black, BlendMode.color);
 
     _buildSelectedTextBox() {
@@ -25,7 +28,7 @@ class AlbumInfoCard extends HookConsumerWidget {
         visualDensity: VisualDensity.compact,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         label: const Text(
-          "SELECTED",
+          "INCLUDED",
           style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Theme.of(context).primaryColor,
@@ -34,12 +37,19 @@ class AlbumInfoCard extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.heavyImpact();
+        HapticFeedback.selectionClick();
 
         if (isSelected) {
           ref.watch(backupProvider.notifier).removeAlbumForBackup(albumInfo);
         } else {
           ref.watch(backupProvider.notifier).addAlbumForBackup(albumInfo);
+        }
+      },
+      onDoubleTap: () {
+        if (isExcluded) {
+          ref.watch(backupProvider.notifier).removeExcludedAlbumForBackup(albumInfo);
+        } else {
+          ref.watch(backupProvider.notifier).addExcludedAlbumForBackup(albumInfo);
         }
       },
       child: Card(

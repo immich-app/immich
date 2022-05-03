@@ -65,6 +65,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         elevation: 0,
       ),
       body: ListView(
+        physics: const ClampingScrollPhysics(),
         children: [
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -123,24 +124,68 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               ),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Divider(),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            child: Text(
-              "Albums on device",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+
+          ListTile(
+            title: Text(
+              "Albums on device (${availableAlbums.length.toString()})",
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                "Tap to include, double tap to exclude",
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ),
+            trailing: IconButton(
+              splashRadius: 16,
+              icon: Icon(
+                Icons.info,
+                size: 20,
+                color: Theme.of(context).primaryColor,
+              ),
+              onPressed: () {
+                // show the dialog
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 5,
+                      title: Text(
+                        'Selection Info',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      content: SingleChildScrollView(
+                        child: ListBody(
+                          children: [
+                            Text(
+                              'Assets can scatter across multiple albums. Thus, albums can be included or excluded during the backup process.',
+                              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // actions: [
+                      //   TextButton(
+                      //     child: const Text(
+                      //       'OK',
+                      //       style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      //     ),
+                      //     onPressed: () => Navigator.of(context).pop(),
+                      //   ),
+                      // ],
+                    );
+                  },
+                );
+              },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, bottom: 8),
-            child: Text(
-              "Total ${availableAlbums.length.toString()}",
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-            ),
-          ),
+
           Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: _buildAlbumSelectionList(),

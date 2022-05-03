@@ -37,6 +37,7 @@ dependencies:
   package_info_plus: ^1.4.0
   flutter_spinkit: ^5.1.0
   flutter_swipe_detector: ^2.0.0
+  equatable: ^2.0.3
 
 dev_dependencies:
   flutter_test:
