@@ -32,9 +32,12 @@ class AlbumPreviewPage extends HookConsumerWidget {
               "${album.name} (${album.assetCount})",
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
-            Text(
-              album.id,
-              style: TextStyle(fontSize: 10, color: Colors.grey[600], fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                "ID ${album.id}",
+                style: TextStyle(fontSize: 10, color: Colors.grey[600], fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
