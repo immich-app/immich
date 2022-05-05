@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
@@ -84,6 +85,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void getAlbumsOnDevice() async {
+    // Get all albums on the device
     List<AvailableAlbum> availableAlbums = [];
     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(hasAll: true, type: RequestType.common);
 
@@ -100,10 +102,60 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       availableAlbums.add(availableAlbum);
     }
+
     state = state.copyWith(availableAlbums: availableAlbums);
+
+    // Put persistent storage info into local state of the app
+    // Get local storage on selected backup album
+    Box<HiveBackupAlbums> backupAlbumInfoBox = Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
+    HiveBackupAlbums? backupAlbumInfo = backupAlbumInfoBox.get(
+      backupInfoKey,
+      defaultValue: HiveBackupAlbums(
+        selectedAlbumIds: [],
+        excludedAlbumsIds: [],
+      ),
+    );
+
+    if (backupAlbumInfo == null) {
+      debugPrint("[ERROR] getting Hive backup album infomation");
+      return;
+    }
+
+    // First time backup - set isAll album is the default one for backup.
+    if (backupAlbumInfo.selectedAlbumIds.isEmpty) {
+      debugPrint("First time backup setup recent album as default");
+
+      AssetPathEntity albumHasAllAssets = availableAlbums.where((album) => album.albumEntity.isAll).first.albumEntity;
+
+      backupAlbumInfoBox.put(
+        backupInfoKey,
+        HiveBackupAlbums(
+          selectedAlbumIds: [albumHasAllAssets.id],
+          excludedAlbumsIds: [],
+        ),
+      );
+
+      backupAlbumInfo = backupAlbumInfoBox.get(backupInfoKey);
+    }
+
+    // Generate AssetPathEntity from id to add to local state
+    try {
+      for (var selectedAlbumId in backupAlbumInfo!.selectedAlbumIds) {
+        var albumAsset = await AssetPathEntity.fromId(selectedAlbumId);
+        state = state.copyWith(selectedBackupAlbums: {...state.selectedBackupAlbums, albumAsset});
+      }
+
+      for (var excludedAlbumId in backupAlbumInfo.excludedAlbumsIds) {
+        var albumAsset = await AssetPathEntity.fromId(excludedAlbumId);
+        state = state.copyWith(excludedBackupAlbums: {...state.excludedBackupAlbums, albumAsset});
+      }
+    } catch (e) {
+      debugPrint("[ERROR] Failed to generate album from id $e");
+    }
   }
 
   void getBackupInfo() async {
+    getAlbumsOnDevice();
     _updateServerInfo();
 
     List<AssetPathEntity> list = await PhotoManager.getAssetPathList(onlyAll: true, type: RequestType.common);
