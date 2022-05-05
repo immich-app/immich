@@ -105,22 +105,55 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    _buildFolderSelectionTile() {
-      getSelectedAlbumName() {
-        var text = "";
-        var albums = ref.watch(backupProvider).selectedBackupAlbums;
+    Widget _buildSelectedAlbumName() {
+      var text = "Selected: ";
+      var albums = ref.watch(backupProvider).selectedBackupAlbums;
 
-        if (albums.isNotEmpty) {
-          for (var album in albums) {
-            text += "${album.name}, ";
-          }
-
-          return text.trim().substring(0, text.length - 2);
-        } else {
-          return "None Selected";
+      if (albums.isNotEmpty) {
+        for (var album in albums) {
+          text += "${album.name}, ";
         }
-      }
 
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(
+            text.trim().substring(0, text.length - 2),
+            style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        );
+      } else {
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(
+            "None selected",
+            style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        );
+      }
+    }
+
+    Widget _buildExcludedAlbumName() {
+      var text = "Excluded: ";
+      var albums = ref.watch(backupProvider).excludedBackupAlbums;
+
+      if (albums.isNotEmpty) {
+        for (var album in albums) {
+          text += "${album.name}, ";
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(
+            text.trim().substring(0, text.length - 2),
+            style: TextStyle(color: Colors.red[300], fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        );
+      } else {
+        return Container();
+      }
+    }
+
+    _buildFolderSelectionTile() {
       return Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5), // if you need this
@@ -140,16 +173,11 @@ class BackupControllerPage extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Selected albums to be backup",
+                  "Albums to be backup",
                   style: TextStyle(color: Color(0xFF808080), fontSize: 12),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    getSelectedAlbumName(),
-                    style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                ),
+                _buildSelectedAlbumName(),
+                _buildExcludedAlbumName()
               ],
             ),
           ),
@@ -183,7 +211,10 @@ class BackupControllerPage extends HookConsumerWidget {
               ref.watch(websocketProvider.notifier).listenUploadEvent();
               AutoRouter.of(context).pop(true);
             },
-            icon: const Icon(Icons.arrow_back_ios_rounded)),
+            splashRadius: 24,
+            icon: const Icon(
+              Icons.arrow_back_ios_rounded,
+            )),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -200,12 +231,12 @@ class BackupControllerPage extends HookConsumerWidget {
             _buildFolderSelectionTile(),
             BackupInfoCard(
               title: "Total",
-              subtitle: "All images and videos on the device",
+              subtitle: "All unique photos and videos from selected albums",
               info: "${_backupState.totalAssetCount}",
             ),
             BackupInfoCard(
               title: "Backup",
-              subtitle: "Images and videos of the device that are backup on server",
+              subtitle: "Photos and videos from selected albums that are backup",
               info: "${_backupState.assetOnDatabase}",
             ),
             BackupInfoCard(
