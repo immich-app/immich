@@ -18,7 +18,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           BackUpState(
             backupProgress: BackUpProgressEnum.idle,
             backingUpAssetCount: 0,
-            assetOnDatabase: 0,
+            assetOnDatabase: const [],
             totalAssetCount: 0,
             progressInPercentage: 0,
             cancelToken: CancelToken(),
@@ -173,14 +173,15 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
         totalAssetCount: 0,
-        assetOnDatabase: didBackupAsset.length,
+        assetOnDatabase: didBackupAsset,
         assetsToBeBackup: {},
       );
       return;
     } else {
+      print("Update asset on database $didBackupAsset");
       state = state.copyWith(
         totalAssetCount: assetsToBeBackup.length,
-        assetOnDatabase: didBackupAsset.length,
+        assetOnDatabase: didBackupAsset,
         assetsToBeBackup: assetsToBeBackup,
       );
     }
@@ -222,15 +223,15 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       if (state.assetsToBeBackup.isEmpty) {
         debugPrint("No Asset On Device - Abort Backup Process");
-        state = state.copyWith(
-            backupProgress: BackUpProgressEnum.idle, totalAssetCount: 0, assetOnDatabase: backupAsset.length);
+        state =
+            state.copyWith(backupProgress: BackUpProgressEnum.idle, totalAssetCount: 0, assetOnDatabase: backupAsset);
         return;
       }
 
       int totalAsset = state.assetsToBeBackup.length;
       Set<AssetEntity> currentAssets = state.assetsToBeBackup;
 
-      state = state.copyWith(totalAssetCount: totalAsset, assetOnDatabase: backupAsset.length);
+      state = state.copyWith(totalAssetCount: totalAsset, assetOnDatabase: backupAsset);
       // Remove item that has already been backed up
       for (var backupAssetId in backupAsset) {
         currentAssets.removeWhere((e) => e.id == backupAssetId);
@@ -256,8 +257,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void _onAssetUploaded(String deviceAssetId, String deviceId) {
-    state =
-        state.copyWith(backingUpAssetCount: state.backingUpAssetCount - 1, assetOnDatabase: state.assetOnDatabase + 1);
+    state = state.copyWith(
+        backingUpAssetCount: state.backingUpAssetCount - 1, assetOnDatabase: [...state.assetOnDatabase, deviceAssetId]);
 
     if (state.backingUpAssetCount == 0) {
       state = state.copyWith(backupProgress: BackUpProgressEnum.done, progressInPercentage: 0.0);
@@ -320,4 +321,28 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
 final backupProvider = StateNotifierProvider<BackupNotifier, BackUpState>((ref) {
   return BackupNotifier(ref: ref);
+});
+
+final selectedAlbumsDidBackupCountProvider = StateProvider((ref) {
+  Set<AssetEntity> assetsToBeBackup = Set.from(ref.watch(backupProvider).assetsToBeBackup);
+  print("assetsToBeBackup ${assetsToBeBackup.map((e) => e.id)}");
+  Set<String> assetsOnDatabase = Set.from(ref.watch(backupProvider).assetOnDatabase);
+  print("assetsOnDatabase $assetsOnDatabase");
+
+  for (var assetOnDevice in assetsToBeBackup) {
+    assetsOnDatabase.removeWhere((asset) => asset == assetOnDevice.id);
+  }
+
+  return assetsOnDatabase.length;
+});
+
+final selectedAlbumsRemainderBackupCountProvider = StateProvider((ref) {
+  var assetsToBeBackup = Set.from(ref.watch(backupProvider).assetsToBeBackup);
+  var assetsOnDatabase = Set.from(ref.watch(backupProvider).assetOnDatabase);
+
+  for (var assetOnDatabaseId in assetsOnDatabase) {
+    assetsToBeBackup.removeWhere((assetOnDevice) => assetOnDevice.id != assetOnDatabaseId);
+  }
+
+  return assetsToBeBackup.length;
 });

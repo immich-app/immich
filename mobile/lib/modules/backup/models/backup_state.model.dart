@@ -11,7 +11,7 @@ class BackUpState extends Equatable {
   // enum
   final BackUpProgressEnum backupProgress;
   final int totalAssetCount;
-  final int assetOnDatabase;
+  final List<String> assetOnDatabase;
   final int backingUpAssetCount;
   final double progressInPercentage;
   final CancelToken cancelToken;
@@ -38,7 +38,7 @@ class BackUpState extends Equatable {
   BackUpState copyWith({
     BackUpProgressEnum? backupProgress,
     int? totalAssetCount,
-    int? assetOnDatabase,
+    List<String>? assetOnDatabase,
     int? backingUpAssetCount,
     double? progressInPercentage,
     CancelToken? cancelToken,

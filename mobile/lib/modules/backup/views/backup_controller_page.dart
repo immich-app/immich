@@ -18,8 +18,9 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState _backupState = ref.watch(backupProvider);
     AuthenticationState _authenticationState = ref.watch(authenticationProvider);
-    bool shouldBackup = _backupState.totalAssetCount - _backupState.assetOnDatabase == 0 ? false : true;
-
+    bool shouldBackup = _backupState.totalAssetCount - _backupState.assetOnDatabase.length == 0 ? false : true;
+    final selectedAlbumsDidBackupCount = ref.watch(selectedAlbumsDidBackupCountProvider);
+    final selectedAlbumsRemainderBackupCount = ref.watch(selectedAlbumsRemainderBackupCountProvider);
     useEffect(() {
       if (_backupState.backupProgress != BackUpProgressEnum.inProgress) {
         ref.read(backupProvider.notifier).getBackupInfo();
@@ -237,12 +238,12 @@ class BackupControllerPage extends HookConsumerWidget {
             BackupInfoCard(
               title: "Backup",
               subtitle: "Photos and videos from selected albums that are backup",
-              info: "${_backupState.assetOnDatabase}",
+              info: "$selectedAlbumsDidBackupCount",
             ),
             BackupInfoCard(
               title: "Remainder",
               subtitle: "Images and videos that has not been backing up",
-              info: "${_backupState.totalAssetCount - _backupState.assetOnDatabase}",
+              info: "$selectedAlbumsRemainderBackupCount",
             ),
             const Divider(),
             _buildBackupController(),

@@ -12,6 +12,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final availableAlbums = ref.watch(backupProvider).availableAlbums;
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
+    final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
 
     useEffect(() {
       ref.read(backupProvider.notifier).getBackupAlbumsInfo();
@@ -42,7 +43,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       );
     }
 
-    _buildAlbumNameChip() {
+    _buildSelectedAlbumNameChip() {
       return selectedBackupAlbums.map((a) {
         return Padding(
           padding: const EdgeInsets.only(right: 8.0),
@@ -54,6 +55,23 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
             ),
             backgroundColor: Theme.of(context).primaryColor,
+          ),
+        );
+      }).toList();
+    }
+
+    _buildExcludedAlbumNameChip() {
+      return excludedBackupAlbums.map((a) {
+        return Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: Chip(
+            visualDensity: VisualDensity.compact,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+            label: Text(
+              a.name,
+              style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: Colors.red[300],
           ),
         );
       }).toList();
@@ -86,7 +104,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Wrap(
-              children: [..._buildAlbumNameChip()],
+              children: [..._buildSelectedAlbumNameChip(), ..._buildExcludedAlbumNameChip()],
             ),
           ),
 
