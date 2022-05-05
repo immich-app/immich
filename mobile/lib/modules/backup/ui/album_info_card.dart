@@ -20,7 +20,7 @@ class AlbumInfoCard extends HookConsumerWidget {
     final bool isExcluded = ref.watch(backupProvider).excludedBackupAlbums.contains(albumInfo);
 
     ColorFilter selectedFilter = ColorFilter.mode(Theme.of(context).primaryColor.withAlpha(100), BlendMode.darken);
-    ColorFilter excludedFilter = ColorFilter.mode(Colors.red.withAlpha(175), BlendMode.darken);
+    ColorFilter excludedFilter = ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
     ColorFilter unselectedFilter = const ColorFilter.mode(Colors.black, BlendMode.color);
 
     _buildSelectedTextBox() {
@@ -68,19 +68,15 @@ class AlbumInfoCard extends HookConsumerWidget {
         } else {
           ref.watch(backupProvider.notifier).addAlbumForBackup(albumInfo);
         }
-        print("INCLUDE ACTIONS");
-        print("Selected: ${ref.watch(backupProvider).selectedBackupAlbums.map((e) => e.name)}");
-        print("Excluded: ${ref.watch(backupProvider).excludedBackupAlbums.map((e) => e.name)}");
       },
       onDoubleTap: () {
+        HapticFeedback.selectionClick();
+
         if (isExcluded) {
           ref.watch(backupProvider.notifier).removeExcludedAlbumForBackup(albumInfo);
         } else {
           ref.watch(backupProvider.notifier).addExcludedAlbumForBackup(albumInfo);
         }
-        print("EXCLUDE ACTIONS");
-        print("Selected: ${ref.watch(backupProvider).selectedBackupAlbums.map((e) => e.name)}");
-        print("Excluded: ${ref.watch(backupProvider).excludedBackupAlbums.map((e) => e.name)}");
       },
       child: Card(
         margin: const EdgeInsets.all(1),
