@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class BackupAlbumSelectionPage extends HookConsumerWidget {
   const BackupAlbumSelectionPage({Key? key}) : super(key: key);
@@ -18,6 +19,12 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     }, []);
 
     _buildAlbumSelectionList() {
+      if (availableAlbums.isEmpty) {
+        return const Center(
+          child: ImmichLoadingIndicator(),
+        );
+      }
+
       return SizedBox(
         height: 265,
         child: ListView.builder(
@@ -170,15 +177,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                           ],
                         ),
                       ),
-                      // actions: [
-                      //   TextButton(
-                      //     child: const Text(
-                      //       'OK',
-                      //       style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                      //     ),
-                      //     onPressed: () => Navigator.of(context).pop(),
-                      //   ),
-                      // ],
                     );
                   },
                 );
