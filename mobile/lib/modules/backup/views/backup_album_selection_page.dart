@@ -14,7 +14,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
 
     useEffect(() {
-      ref.read(backupProvider.notifier).getAlbumsOnDevice();
+      ref.read(backupProvider.notifier).getBackupAlbumsInfo();
       return null;
     }, []);
 
@@ -122,9 +122,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       "Total unique assets",
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey[700]),
                     ),
-                    trailing: const Text(
-                      "3000",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    trailing: Text(
+                      ref.watch(backupProvider).assetsToBeBackup.length.toString(),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

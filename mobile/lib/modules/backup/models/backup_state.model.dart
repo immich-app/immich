@@ -19,6 +19,7 @@ class BackUpState extends Equatable {
   final List<AvailableAlbum> availableAlbums;
   final Set<AssetPathEntity> selectedBackupAlbums;
   final Set<AssetPathEntity> excludedBackupAlbums;
+  final Set<AssetEntity> assetsToBeBackup;
 
   const BackUpState({
     required this.backupProgress,
@@ -31,6 +32,7 @@ class BackUpState extends Equatable {
     required this.availableAlbums,
     required this.selectedBackupAlbums,
     required this.excludedBackupAlbums,
+    required this.assetsToBeBackup,
   });
 
   BackUpState copyWith({
@@ -44,6 +46,7 @@ class BackUpState extends Equatable {
     List<AvailableAlbum>? availableAlbums,
     Set<AssetPathEntity>? selectedBackupAlbums,
     Set<AssetPathEntity>? excludedBackupAlbums,
+    Set<AssetEntity>? assetsToBeBackup,
   }) {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,
@@ -56,12 +59,13 @@ class BackUpState extends Equatable {
       availableAlbums: availableAlbums ?? this.availableAlbums,
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
       excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
+      assetsToBeBackup: assetsToBeBackup ?? this.assetsToBeBackup,
     );
   }
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, totalAssetCount: $totalAssetCount, assetOnDatabase: $assetOnDatabase, backingUpAssetCount: $backingUpAssetCount, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums)';
+    return 'BackUpState(backupProgress: $backupProgress, totalAssetCount: $totalAssetCount, assetOnDatabase: $assetOnDatabase, backingUpAssetCount: $backingUpAssetCount, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, assetsToBeBackup: $assetsToBeBackup)';
   }
 
   @override
@@ -77,6 +81,7 @@ class BackUpState extends Equatable {
       availableAlbums,
       selectedBackupAlbums,
       excludedBackupAlbums,
+      assetsToBeBackup,
     ];
   }
 }
