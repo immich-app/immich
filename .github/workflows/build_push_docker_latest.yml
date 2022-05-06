@@ -17,7 +17,7 @@ jobs:
         with:
           ref: "main" # branch
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1.2.0
+        uses: docker/setup-qemu-action@v2.0.0
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1.6.0
@@ -44,7 +44,7 @@ jobs:
           with:
             ref: "main" # branch
         - name: Set up QEMU
-          uses: docker/setup-qemu-action@v1.2.0
+          uses: docker/setup-qemu-action@v2.0.0
         - name: Set up Docker Buildx
           id: buildx
           uses: docker/setup-buildx-action@v1.6.0
