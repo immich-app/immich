@@ -141,7 +141,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey[700]),
                     ),
                     trailing: Text(
-                      ref.watch(backupProvider).assetsToBeBackup.length.toString(),
+                      ref.watch(backupProvider).allUniqueAssets.length.toString(),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),

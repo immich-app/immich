@@ -16,13 +16,13 @@ class BackupControllerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    BackUpState _backupState = ref.watch(backupProvider);
+    BackUpState backupState = ref.watch(backupProvider);
     AuthenticationState _authenticationState = ref.watch(authenticationProvider);
-    bool shouldBackup = _backupState.totalAssetCount - _backupState.assetOnDatabase.length == 0 ? false : true;
-    final selectedAlbumsDidBackupCount = ref.watch(selectedAlbumsDidBackupCountProvider);
-    final selectedAlbumsRemainderBackupCount = ref.watch(selectedAlbumsRemainderBackupCountProvider);
+    bool shouldBackup =
+        backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length == 0 ? false : true;
+
     useEffect(() {
-      if (_backupState.backupProgress != BackUpProgressEnum.inProgress) {
+      if (backupState.backupProgress != BackUpProgressEnum.inProgress) {
         ref.read(backupProvider.notifier).getBackupInfo();
       }
 
@@ -48,13 +48,13 @@ class BackupControllerPage extends HookConsumerWidget {
               LinearPercentIndicator(
                 padding: const EdgeInsets.only(top: 8.0),
                 lineHeight: 5.0,
-                percent: _backupState.serverInfo.diskUsagePercentage / 100.0,
+                percent: backupState.serverInfo.diskUsagePercentage / 100.0,
                 backgroundColor: Colors.grey,
                 progressColor: Theme.of(context).primaryColor,
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
-                child: Text('${_backupState.serverInfo.diskUse} of ${_backupState.serverInfo.diskSize} used'),
+                child: Text('${backupState.serverInfo.diskUse} of ${backupState.serverInfo.diskSize} used'),
               ),
             ],
           ),
@@ -233,17 +233,17 @@ class BackupControllerPage extends HookConsumerWidget {
             BackupInfoCard(
               title: "Total",
               subtitle: "All unique photos and videos from selected albums",
-              info: "${_backupState.totalAssetCount}",
+              info: "${backupState.allUniqueAssets.length}",
             ),
             BackupInfoCard(
               title: "Backup",
               subtitle: "Photos and videos from selected albums that are backup",
-              info: "$selectedAlbumsDidBackupCount",
+              info: "${backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             BackupInfoCard(
               title: "Remainder",
-              subtitle: "Images and videos that has not been backing up",
-              info: "$selectedAlbumsRemainderBackupCount",
+              subtitle: "Photos and videos that has not been backing up from selected albums",
+              info: "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             const Divider(),
             _buildBackupController(),
@@ -253,14 +253,14 @@ class BackupControllerPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                  "Asset that were being backup: ${_backupState.backingUpAssetCount} [${_backupState.progressInPercentage.toStringAsFixed(0)}%]"),
+                  "Asset that were being backup: ${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length} [${backupState.progressInPercentage.toStringAsFixed(0)}%]"),
             ),
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
               child: Row(children: [
                 const Text("Backup Progress:"),
                 const Padding(padding: EdgeInsets.symmetric(horizontal: 2)),
-                _backupState.backupProgress == BackUpProgressEnum.inProgress
+                backupState.backupProgress == BackUpProgressEnum.inProgress
                     ? const CircularProgressIndicator.adaptive()
                     : const Text("Done"),
               ]),
@@ -268,7 +268,7 @@ class BackupControllerPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
-                child: _backupState.backupProgress == BackUpProgressEnum.inProgress
+                child: backupState.backupProgress == BackUpProgressEnum.inProgress
                     ? ElevatedButton(
                         style: ElevatedButton.styleFrom(primary: Colors.red[300]),
                         onPressed: () {

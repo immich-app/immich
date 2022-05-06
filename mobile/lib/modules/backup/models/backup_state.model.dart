@@ -10,78 +10,79 @@ enum BackUpProgressEnum { idle, inProgress, done }
 class BackUpState extends Equatable {
   // enum
   final BackUpProgressEnum backupProgress;
-  final int totalAssetCount;
-  final List<String> assetOnDatabase;
-  final int backingUpAssetCount;
+  final List<String> allAssetOnDatabase;
   final double progressInPercentage;
   final CancelToken cancelToken;
   final ServerInfo serverInfo;
+
+  /// All available albums on the device
   final List<AvailableAlbum> availableAlbums;
   final Set<AssetPathEntity> selectedBackupAlbums;
   final Set<AssetPathEntity> excludedBackupAlbums;
-  final Set<AssetEntity> assetsToBeBackup;
+
+  /// Assets that are not overlapping in selected backup albums and excluded backup albums
+  final Set<AssetEntity> allUniqueAssets;
+
+  /// All assets from the selected albums that have been backup
+  final Set<String> selectedAlbumsBackupAssetsIds;
 
   const BackUpState({
     required this.backupProgress,
-    required this.totalAssetCount,
-    required this.assetOnDatabase,
-    required this.backingUpAssetCount,
+    required this.allAssetOnDatabase,
     required this.progressInPercentage,
     required this.cancelToken,
     required this.serverInfo,
     required this.availableAlbums,
     required this.selectedBackupAlbums,
     required this.excludedBackupAlbums,
-    required this.assetsToBeBackup,
+    required this.allUniqueAssets,
+    required this.selectedAlbumsBackupAssetsIds,
   });
 
   BackUpState copyWith({
     BackUpProgressEnum? backupProgress,
-    int? totalAssetCount,
-    List<String>? assetOnDatabase,
-    int? backingUpAssetCount,
+    List<String>? allAssetOnDatabase,
     double? progressInPercentage,
     CancelToken? cancelToken,
     ServerInfo? serverInfo,
     List<AvailableAlbum>? availableAlbums,
     Set<AssetPathEntity>? selectedBackupAlbums,
     Set<AssetPathEntity>? excludedBackupAlbums,
-    Set<AssetEntity>? assetsToBeBackup,
+    Set<AssetEntity>? allUniqueAssets,
+    Set<String>? selectedAlbumsBackupAssetsIds,
   }) {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,
-      totalAssetCount: totalAssetCount ?? this.totalAssetCount,
-      assetOnDatabase: assetOnDatabase ?? this.assetOnDatabase,
-      backingUpAssetCount: backingUpAssetCount ?? this.backingUpAssetCount,
+      allAssetOnDatabase: allAssetOnDatabase ?? this.allAssetOnDatabase,
       progressInPercentage: progressInPercentage ?? this.progressInPercentage,
       cancelToken: cancelToken ?? this.cancelToken,
       serverInfo: serverInfo ?? this.serverInfo,
       availableAlbums: availableAlbums ?? this.availableAlbums,
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
       excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
-      assetsToBeBackup: assetsToBeBackup ?? this.assetsToBeBackup,
+      allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
+      selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
     );
   }
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, totalAssetCount: $totalAssetCount, assetOnDatabase: $assetOnDatabase, backingUpAssetCount: $backingUpAssetCount, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, assetsToBeBackup: $assetsToBeBackup)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetOnDatabase: $allAssetOnDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds)';
   }
 
   @override
   List<Object> get props {
     return [
       backupProgress,
-      totalAssetCount,
-      assetOnDatabase,
-      backingUpAssetCount,
+      allAssetOnDatabase,
       progressInPercentage,
       cancelToken,
       serverInfo,
       availableAlbums,
       selectedBackupAlbums,
       excludedBackupAlbums,
-      assetsToBeBackup,
+      allUniqueAssets,
+      selectedAlbumsBackupAssetsIds,
     ];
   }
 }
