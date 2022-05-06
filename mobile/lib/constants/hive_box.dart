@@ -11,5 +11,5 @@ const String hiveLoginInfoBox = "immichLoginInfoBox";
 const String savedLoginInfoKey = "immichSavedLoginInfoKey";
 
 // Backup Info
-const String hiveBackupInfoBox = "immichBackupInfoBox";
-const String backupInfoKey = "immichBackupInfoKey";
+const String hiveBackupInfoBox = "immichBackupAlbumInfoBox";
+const String backupInfoKey = "immichBackupAlbumInfoKey";

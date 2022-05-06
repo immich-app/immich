@@ -129,7 +129,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (backupAlbumInfo.selectedAlbumIds.isEmpty) {
       debugPrint("First time backup setup recent album as default");
 
-      AssetPathEntity albumHasAllAssets = availableAlbums.where((album) => album.albumEntity.isAll).first.albumEntity;
+      // Get album that contains all assets
+      var list = await PhotoManager.getAssetPathList(hasAll: true, onlyAll: true, type: RequestType.common);
+      AssetPathEntity albumHasAllAssets = list.first;
 
       backupAlbumInfoBox.put(
         backupInfoKey,

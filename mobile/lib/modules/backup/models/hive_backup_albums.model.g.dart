@@ -38,7 +38,5 @@ class HiveBackupAlbumsAdapter extends TypeAdapter<HiveBackupAlbums> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is HiveBackupAlbumsAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      other is HiveBackupAlbumsAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }

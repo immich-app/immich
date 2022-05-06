@@ -112,7 +112,11 @@ class BackupControllerPage extends HookConsumerWidget {
 
       if (albums.isNotEmpty) {
         for (var album in albums) {
-          text += "${album.name}, ";
+          if (album.name == "Recent" || album.name == "Recents") {
+            text += "${album.name} (ALL), ";
+          } else {
+            text += "${album.name}, ";
+          }
         }
 
         return Padding(
