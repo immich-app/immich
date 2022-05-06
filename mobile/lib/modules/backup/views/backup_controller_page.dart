@@ -113,7 +113,7 @@ class BackupControllerPage extends HookConsumerWidget {
       if (albums.isNotEmpty) {
         for (var album in albums) {
           if (album.name == "Recent" || album.name == "Recents") {
-            text += "${album.name} (ALL), ";
+            text += "${album.name} (All), ";
           } else {
             text += "${album.name}, ";
           }
