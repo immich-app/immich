@@ -85,8 +85,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   ///
-  ///
-  ///
+  /// Get all album on the device
+  /// Get all selected and excluded album from the user's persistent storage
+  /// If this is the first time performing backup - set the default selected album to be
+  /// the one that has all assets (Recent on Android, Recents on iOS)
   ///
   Future<void> getBackupAlbumsInfo() async {
     // Get all albums on the device

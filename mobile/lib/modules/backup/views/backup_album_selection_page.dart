@@ -186,7 +186,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
                 "Tap to include, double tap to exclude",
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             trailing: IconButton(
