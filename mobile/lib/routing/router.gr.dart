@@ -93,6 +93,16 @@ class _$AppRouter extends RootStackRouter {
           opaque: true,
           barrierDismissible: false);
     },
+    BackupAlbumSelectionRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const BackupAlbumSelectionPage());
+    },
+    AlbumPreviewRoute.name: (routeData) {
+      final args = routeData.argsAs<AlbumPreviewRouteArgs>();
+      return MaterialPageX<dynamic>(
+          routeData: routeData,
+          child: AlbumPreviewPage(key: args.key, album: args.album));
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -149,7 +159,11 @@ class _$AppRouter extends RootStackRouter {
             path: '/album-viewer-page', guards: [authGuard]),
         RouteConfig(SelectAdditionalUserForSharingRoute.name,
             path: '/select-additional-user-for-sharing-page',
-            guards: [authGuard])
+            guards: [authGuard]),
+        RouteConfig(BackupAlbumSelectionRoute.name,
+            path: '/backup-album-selection-page', guards: [authGuard]),
+        RouteConfig(AlbumPreviewRoute.name,
+            path: '/album-preview-page', guards: [authGuard])
       ];
 }
 
@@ -355,6 +369,40 @@ class SelectAdditionalUserForSharingRouteArgs {
   @override
   String toString() {
     return 'SelectAdditionalUserForSharingRouteArgs{key: $key, albumInfo: $albumInfo}';
+  }
+}
+
+/// generated route for
+/// [BackupAlbumSelectionPage]
+class BackupAlbumSelectionRoute extends PageRouteInfo<void> {
+  const BackupAlbumSelectionRoute()
+      : super(BackupAlbumSelectionRoute.name,
+            path: '/backup-album-selection-page');
+
+  static const String name = 'BackupAlbumSelectionRoute';
+}
+
+/// generated route for
+/// [AlbumPreviewPage]
+class AlbumPreviewRoute extends PageRouteInfo<AlbumPreviewRouteArgs> {
+  AlbumPreviewRoute({Key? key, required AssetPathEntity album})
+      : super(AlbumPreviewRoute.name,
+            path: '/album-preview-page',
+            args: AlbumPreviewRouteArgs(key: key, album: album));
+
+  static const String name = 'AlbumPreviewRoute';
+}
+
+class AlbumPreviewRouteArgs {
+  const AlbumPreviewRouteArgs({this.key, required this.album});
+
+  final Key? key;
+
+  final AssetPathEntity album;
+
+  @override
+  String toString() {
+    return 'AlbumPreviewRouteArgs{key: $key, album: $album}';
   }
 }
 

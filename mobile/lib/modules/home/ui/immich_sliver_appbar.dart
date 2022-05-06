@@ -5,9 +5,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/backup_state.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
-import 'package:immich_mobile/shared/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 
 class ImmichSliverAppBar extends ConsumerWidget {
@@ -130,7 +130,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
                 ? Positioned(
                     bottom: 5,
                     child: Text(
-                      _backupState.backingUpAssetCount.toString(),
+                      (_backupState.allUniqueAssets.length - _backupState.selectedAlbumsBackupAssetsIds.length)
+                          .toString(),
                       style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
                     ),
                   )

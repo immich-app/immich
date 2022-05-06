@@ -3,12 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
-import 'package:immich_mobile/shared/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
@@ -16,9 +17,13 @@ import 'constants/hive_box.dart';
 
 void main() async {
   await Hive.initFlutter();
+
   Hive.registerAdapter(HiveSavedLoginInfoAdapter());
+  Hive.registerAdapter(HiveBackupAlbumsAdapter());
+
   await Hive.openBox(userInfoBox);
   await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
+  await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

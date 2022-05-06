@@ -32,8 +32,9 @@ Loading ~4000 images/videos
 ## Screenshots
 
 <p align="left">
-  <img src="design/nsc1.png" width="150" title="Login With Custom URL">
-  <img src="design/nsc2.png" width="150" title="Backup Setting Info">
+  <img src="design/login-screen.png" width="150" title="Login With Custom URL">
+  <img src="design/backup-screen.png" width="150" title="Backup Setting Info">
+  <img src="design/selective-backup-screen.png" width="150" title="Backup Setting Info">
   <img src="design/home-screen.jpeg" width="150" title="Home Screen">
   <img src="design/search-screen.jpeg" width="150" title="Curated Search Info">
   <img src="design/shared-albums.png" width="150" title="Shared Albums">
@@ -50,10 +51,10 @@ This project is under heavy development, there will be continous functions, feat
 # Features
 
 - Upload and view assets (videos/images).
+- Auto Backup.
 - Download asset to local device.
 - Multi-user supported.
 - Quick navigation with drag scroll bar.
-- Auto Backup.
 - Support HEIC/HEIF Backup.
 - Extract and display EXIF info.
 - Real-time render from multi-device upload event.
@@ -65,14 +66,20 @@ This project is under heavy development, there will be continous functions, feat
 - Show curated places on the search page
 - Show curated objects on the search page
 - Shared album with users on the same server
+- Selective backup - albums can be included and excluded during the backup process.
+
 
 # System Requirement
 
-**OS**: Preferred Linux-based operating system (Ubuntu, Debian, MacOS...etc). I haven't tested with `Docker for Windows` as well as `WSL` on Windows
+**OS**: Preferred Linux-based operating system (Ubuntu, Debian, MacOS...etc). 
+
+I haven't tested with `Docker for Windows` as well as `WSL` on Windows
+
+*Raspberry Pi can be used but `microservices` container has to be comment out in `docker-compose` since TensorFlow has not been supported in Dockec image on arm64v7 yet.*
 
 **RAM**: At least 2GB, preffered 4GB.
 
-**Cores**: At least 2 cores, preffered 4 cores.
+**Core**: At least 2 cores, preffered 4 cores.
 
 # Development and Testing out the application
 

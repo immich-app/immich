@@ -7,7 +7,7 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class LoginForm extends HookConsumerWidget {

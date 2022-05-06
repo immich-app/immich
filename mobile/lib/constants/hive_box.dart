@@ -9,3 +9,7 @@ const String serverEndpointKey = 'immichBoxServerEndpoint';
 // Login Info
 const String hiveLoginInfoBox = "immichLoginInfoBox";
 const String savedLoginInfoKey = "immichSavedLoginInfoKey";
+
+// Backup Info
+const String hiveBackupInfoBox = "immichBackupAlbumInfoBox";
+const String backupInfoKey = "immichBackupAlbumInfoKey";

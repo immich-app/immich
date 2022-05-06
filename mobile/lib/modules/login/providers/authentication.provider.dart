@@ -6,7 +6,7 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/models/login_response.model.dart';
-import 'package:immich_mobile/shared/services/backup.service.dart';
+import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';

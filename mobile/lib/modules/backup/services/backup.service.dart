@@ -26,7 +26,7 @@ class BackupService {
     return result.cast<String>();
   }
 
-  backupAsset(List<AssetEntity> assetList, CancelToken cancelToken, Function(String, String) singleAssetDoneCb,
+  backupAsset(Set<AssetEntity> assetList, CancelToken cancelToken, Function(String, String) singleAssetDoneCb,
       Function(int, int) uploadProgress) async {
     var dio = Dio();
     dio.interceptors.add(AuthenticatedRequestInterceptor());

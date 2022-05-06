@@ -1,5 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/modules/backup/views/album_preview_page.dart';
+import 'package:immich_mobile/modules/backup/views/backup_album_selection_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
@@ -14,10 +16,11 @@ import 'package:immich_mobile/modules/sharing/views/select_user_for_sharing_page
 import 'package:immich_mobile/modules/sharing/views/sharing_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
-import 'package:immich_mobile/shared/views/backup_controller_page.dart';
+import 'package:immich_mobile/modules/backup/views/backup_controller_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 part 'router.gr.dart';
 
@@ -55,6 +58,8 @@ part 'router.gr.dart';
       guards: [AuthGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
+    AutoRoute(page: BackupAlbumSelectionPage, guards: [AuthGuard]),
+    AutoRoute(page: AlbumPreviewPage, guards: [AuthGuard]),
   ],
 )
 class AppRouter extends _$AppRouter {
