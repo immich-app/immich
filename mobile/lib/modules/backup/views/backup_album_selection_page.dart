@@ -1,10 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class BackupAlbumSelectionPage extends HookConsumerWidget {
   const BackupAlbumSelectionPage({Key? key}) : super(key: key);
@@ -44,34 +46,70 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     }
 
     _buildSelectedAlbumNameChip() {
-      return selectedBackupAlbums.map((a) {
+      return selectedBackupAlbums.map((album) {
+        void removeSelection() {
+          if (ref.watch(backupProvider).selectedBackupAlbums.length == 1) {
+            ImmichToast.show(
+              context: context,
+              msg: "Cannot remove the only album",
+              toastType: ToastType.error,
+              gravity: ToastGravity.BOTTOM,
+            );
+            return;
+          }
+
+          ref.watch(backupProvider.notifier).removeAlbumForBackup(album);
+        }
+
         return Padding(
           padding: const EdgeInsets.only(right: 8.0),
-          child: Chip(
-            visualDensity: VisualDensity.compact,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-            label: Text(
-              a.name,
-              style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+          child: GestureDetector(
+            onTap: removeSelection,
+            child: Chip(
+              visualDensity: VisualDensity.compact,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              label: Text(
+                album.name,
+                style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              backgroundColor: Theme.of(context).primaryColor,
+              deleteIconColor: Colors.white,
+              deleteIcon: const Icon(
+                Icons.cancel_rounded,
+                size: 15,
+              ),
+              onDeleted: removeSelection,
             ),
-            backgroundColor: Theme.of(context).primaryColor,
           ),
         );
       }).toList();
     }
 
     _buildExcludedAlbumNameChip() {
-      return excludedBackupAlbums.map((a) {
-        return Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: Chip(
-            visualDensity: VisualDensity.compact,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-            label: Text(
-              a.name,
-              style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+      return excludedBackupAlbums.map((album) {
+        void removeSelection() {
+          ref.watch(backupProvider.notifier).removeExcludedAlbumForBackup(album);
+        }
+
+        return GestureDetector(
+          onTap: removeSelection,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Chip(
+              visualDensity: VisualDensity.compact,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              label: Text(
+                album.name,
+                style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              backgroundColor: Colors.red[300],
+              deleteIconColor: Colors.white,
+              deleteIcon: const Icon(
+                Icons.cancel_rounded,
+                size: 15,
+              ),
+              onDeleted: removeSelection,
             ),
-            backgroundColor: Colors.red[300],
           ),
         );
       }).toList();
@@ -113,9 +151,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             child: Card(
               margin: const EdgeInsets.all(0),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12), // if you need this
+                borderRadius: BorderRadius.circular(5), // if you need this
                 side: const BorderSide(
-                  color: Color(0xFFC9C9C9),
+                  color: Color.fromARGB(255, 235, 235, 235),
                   width: 1,
                 ),
               ),
@@ -123,17 +161,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               borderOnForeground: false,
               child: Column(
                 children: [
-                  ListTile(
-                    visualDensity: VisualDensity.compact,
-                    title: Text(
-                      "Selected albums",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey[700]),
-                    ),
-                    trailing: Text(
-                      selectedBackupAlbums.length.toString(),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
                   ListTile(
                     visualDensity: VisualDensity.compact,
                     title: Text(

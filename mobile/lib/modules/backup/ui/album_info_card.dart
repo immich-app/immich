@@ -3,9 +3,11 @@ import 'dart:typed_data';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AlbumInfoCard extends HookConsumerWidget {
@@ -64,6 +66,16 @@ class AlbumInfoCard extends HookConsumerWidget {
         HapticFeedback.selectionClick();
 
         if (isSelected) {
+          if (ref.watch(backupProvider).selectedBackupAlbums.length == 1) {
+            ImmichToast.show(
+              context: context,
+              msg: "Cannot remove the only album",
+              toastType: ToastType.error,
+              gravity: ToastGravity.BOTTOM,
+            );
+            return;
+          }
+
           ref.watch(backupProvider.notifier).removeAlbumForBackup(albumInfo);
         } else {
           ref.watch(backupProvider.notifier).addAlbumForBackup(albumInfo);
@@ -75,6 +87,17 @@ class AlbumInfoCard extends HookConsumerWidget {
         if (isExcluded) {
           ref.watch(backupProvider.notifier).removeExcludedAlbumForBackup(albumInfo);
         } else {
+          if (ref.watch(backupProvider).selectedBackupAlbums.length == 1 &&
+              ref.watch(backupProvider).selectedBackupAlbums.contains(albumInfo)) {
+            ImmichToast.show(
+              context: context,
+              msg: "Cannot exclude the only album",
+              toastType: ToastType.error,
+              gravity: ToastGravity.BOTTOM,
+            );
+            return;
+          }
+
           ref.watch(backupProvider.notifier).addExcludedAlbumForBackup(albumInfo);
         }
       },
