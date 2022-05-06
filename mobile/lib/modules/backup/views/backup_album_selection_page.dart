@@ -82,7 +82,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             ),
           ),
         );
-      }).toList();
+      }).toSet();
     }
 
     _buildExcludedAlbumNameChip() {
@@ -112,7 +112,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             ),
           ),
         );
-      }).toList();
+      }).toSet();
     }
 
     return Scaffold(
