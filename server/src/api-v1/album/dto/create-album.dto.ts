@@ -1,7 +1,6 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
-import { AssetEntity } from '../../asset/entities/asset.entity';
 
-export class CreateSharedAlbumDto {
+export class CreateAlbumDto {
   @IsNotEmpty()
   albumName: string;
 

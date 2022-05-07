@@ -5,14 +5,14 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity } from '../asset/entities/asset.entity';
 import { UserEntity } from '../user/entities/user.entity';
 import { AddAssetsDto } from './dto/add-assets.dto';
-import { CreateSharedAlbumDto } from './dto/create-shared-album.dto';
+import { CreateAlbumDto } from './dto/create-album.dto';
 import { AssetAlbumEntity } from './entities/asset-album.entity';
 import { AlbumEntity } from './entities/album.entity';
 import { UserAlbumEntity } from './entities/user-album.entity';
 import _ from 'lodash';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { UpdateShareAlbumDto } from './dto/update-shared-album.dto';
+import { UpdateAlbumDto } from './dto/update-album.dto';
 
 @Injectable()
 export class AlbumService {
@@ -33,7 +33,7 @@ export class AlbumService {
     private userSharedAlbumRepository: Repository<UserAlbumEntity>,
   ) {}
 
-  async create(authUser: AuthUserDto, createSharedAlbumDto: CreateSharedAlbumDto) {
+  async create(authUser: AuthUserDto, createSharedAlbumDto: CreateAlbumDto) {
     return await getConnection().transaction(async (transactionalEntityManager) => {
       // Create album entity
       const newSharedAlbum = new AlbumEntity();
@@ -124,12 +124,12 @@ export class AlbumService {
     return albumInfo;
   }
 
-  async addUsersToAlbum(addUsersDto: AddUsersDto) {
+  async addUsersToAlbum(addUsersDto: AddUsersDto, albumId: string) {
     const newRecords: UserAlbumEntity[] = [];
 
     for (const sharedUserId of addUsersDto.sharedUserIds) {
       const newEntity = new UserAlbumEntity();
-      newEntity.albumId = addUsersDto.albumId;
+      newEntity.albumId = albumId;
       newEntity.sharedUserId = sharedUserId;
 
       newRecords.push(newEntity);
@@ -148,35 +148,35 @@ export class AlbumService {
 
   async removeUsersFromAlbum() {}
 
-  async removeAssetsFromAlbum(authUser: AuthUserDto, removeAssetsDto: RemoveAssetsDto) {
+  async removeAssetsFromAlbum(authUser: AuthUserDto, removeAssetsDto: RemoveAssetsDto, albumId: string) {
     let deleteAssetCount = 0;
-    const album = await this.sharedAlbumRepository.findOne({ id: removeAssetsDto.albumId });
+    const album = await this.sharedAlbumRepository.findOne({ id: albumId });
 
     if (album.ownerId != authUser.id) {
       throw new BadRequestException("You don't have permission to remove assets in this album");
     }
 
     for (const assetId of removeAssetsDto.assetIds) {
-      const res = await this.assetSharedAlbumRepository.delete({ albumId: removeAssetsDto.albumId, assetId: assetId });
+      const res = await this.assetSharedAlbumRepository.delete({ albumId: albumId, assetId: assetId });
       if (res.affected == 1) deleteAssetCount++;
     }
 
     return deleteAssetCount == removeAssetsDto.assetIds.length;
   }
 
-  async addAssetsToAlbum(addAssetsDto: AddAssetsDto) {
+  async addAssetsToAlbum(addAssetsDto: AddAssetsDto, albumId: string) {
     const newRecords: AssetAlbumEntity[] = [];
 
     for (const assetId of addAssetsDto.assetIds) {
       const newAssetSharedAlbum = new AssetAlbumEntity();
       newAssetSharedAlbum.assetId = assetId;
-      newAssetSharedAlbum.albumId = addAssetsDto.albumId;
+      newAssetSharedAlbum.albumId = albumId;
 
       newRecords.push(newAssetSharedAlbum);
     }
 
     // Add album thumbnail if not exist.
-    const album = await this.sharedAlbumRepository.findOne({ id: addAssetsDto.albumId });
+    const album = await this.sharedAlbumRepository.findOne({ id: albumId });
 
     if (!album.albumThumbnailAssetId && newRecords.length > 0) {
       album.albumThumbnailAssetId = newRecords[0].assetId;
@@ -186,12 +186,12 @@ export class AlbumService {
     return await this.assetSharedAlbumRepository.save([...newRecords]);
   }
 
-  async updateAlbumTitle(authUser: AuthUserDto, updateShareAlbumDto: UpdateShareAlbumDto) {
+  async updateAlbumTitle(authUser: AuthUserDto, updateShareAlbumDto: UpdateAlbumDto, albumId: string) {
     if (authUser.id != updateShareAlbumDto.ownerId) {
       throw new BadRequestException('Unauthorized to change album info');
     }
 
-    const sharedAlbum = await this.sharedAlbumRepository.findOne({ where: { id: updateShareAlbumDto.albumId } });
+    const sharedAlbum = await this.sharedAlbumRepository.findOne({ where: { id: albumId } });
     sharedAlbum.albumName = updateShareAlbumDto.albumName;
 
     return await this.sharedAlbumRepository.save(sharedAlbum);
