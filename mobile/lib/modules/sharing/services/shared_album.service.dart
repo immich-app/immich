@@ -12,9 +12,11 @@ class SharedAlbumService {
 
   Future<List<SharedAlbum>> getAllSharedAlbum() async {
     try {
-      var res = await _networkService.getRequest(url: 'shared/allSharedAlbums');
+      // TODO: maybe use query param to filter by shared: GET album?shared=true
+      var res = await _networkService.getRequest(url: 'album');
       List<dynamic> decodedData = jsonDecode(res.toString());
-      List<SharedAlbum> result = List.from(decodedData.map((e) => SharedAlbum.fromMap(e)));
+      List<SharedAlbum> result =
+          List.from(decodedData.map((e) => SharedAlbum.fromMap(e)));
 
       return result;
     } catch (e) {
@@ -24,9 +26,10 @@ class SharedAlbumService {
     return [];
   }
 
-  Future<bool> createSharedAlbum(String albumName, Set<ImmichAsset> assets, List<String> sharedUserIds) async {
+  Future<bool> createSharedAlbum(String albumName, Set<ImmichAsset> assets,
+      List<String> sharedUserIds) async {
     try {
-      var res = await _networkService.postRequest(url: 'shared/createAlbum', data: {
+      var res = await _networkService.postRequest(url: 'album', data: {
         "albumName": albumName,
         "sharedWithUserIds": sharedUserIds,
         "assetIds": assets.map((asset) => asset.id).toList(),
@@ -45,7 +48,7 @@ class SharedAlbumService {
 
   Future<SharedAlbum> getAlbumDetail(String albumId) async {
     try {
-      var res = await _networkService.getRequest(url: 'shared/$albumId');
+      var res = await _networkService.getRequest(url: 'album/$albumId');
       dynamic decodedData = jsonDecode(res.toString());
       SharedAlbum result = SharedAlbum.fromMap(decodedData);
 
@@ -55,9 +58,11 @@ class SharedAlbumService {
     }
   }
 
-  Future<bool> addAdditionalAssetToAlbum(Set<ImmichAsset> assets, String albumId) async {
+  Future<bool> addAdditionalAssetToAlbum(
+      Set<ImmichAsset> assets, String albumId) async {
     try {
-      var res = await _networkService.postRequest(url: 'shared/addAssets', data: {
+      var res =
+          await _networkService.putRequest(url: 'album/$albumId/assets', data: {
         "albumId": albumId,
         "assetIds": assets.map((asset) => asset.id).toList(),
       });
@@ -73,10 +78,11 @@ class SharedAlbumService {
     }
   }
 
-  Future<bool> addAdditionalUserToAlbum(List<String> sharedUserIds, String albumId) async {
+  Future<bool> addAdditionalUserToAlbum(
+      List<String> sharedUserIds, String albumId) async {
     try {
-      var res = await _networkService.postRequest(url: 'shared/addUsers', data: {
-        "albumId": albumId,
+      var res =
+          await _networkService.putRequest(url: 'album/$albumId/users', data: {
         "sharedUserIds": sharedUserIds,
       });
 
@@ -93,7 +99,7 @@ class SharedAlbumService {
 
   Future<bool> deleteAlbum(String albumId) async {
     try {
-      Response res = await _networkService.deleteRequest(url: 'shared/$albumId');
+      Response res = await _networkService.deleteRequest(url: 'album/$albumId');
 
       if (res.statusCode != 200) {
         return false;
@@ -108,7 +114,8 @@ class SharedAlbumService {
 
   Future<bool> leaveAlbum(String albumId) async {
     try {
-      Response res = await _networkService.deleteRequest(url: 'shared/leaveAlbum/$albumId');
+      Response res =
+          await _networkService.deleteRequest(url: 'album/$albumId/user/me');
 
       if (res.statusCode != 200) {
         return false;
@@ -121,10 +128,11 @@ class SharedAlbumService {
     }
   }
 
-  Future<bool> removeAssetFromAlbum(String albumId, List<String> assetIds) async {
+  Future<bool> removeAssetFromAlbum(
+      String albumId, List<String> assetIds) async {
     try {
-      Response res = await _networkService.deleteRequest(url: 'shared/removeAssets/', data: {
-        "albumId": albumId,
+      Response res = await _networkService
+          .deleteRequest(url: 'album/$albumId/assets', data: {
         "assetIds": assetIds,
       });
 
@@ -139,10 +147,11 @@ class SharedAlbumService {
     }
   }
 
-  Future<bool> changeTitleAlbum(String albumId, String ownerId, String newAlbumTitle) async {
+  Future<bool> changeTitleAlbum(
+      String albumId, String ownerId, String newAlbumTitle) async {
     try {
-      Response res = await _networkService.patchRequest(url: 'shared/updateInfo', data: {
-        "albumId": albumId,
+      Response res =
+          await _networkService.patchRequest(url: 'album/$albumId/', data: {
         "ownerId": ownerId,
         "albumName": newAlbumTitle,
       });

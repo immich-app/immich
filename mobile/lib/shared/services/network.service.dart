@@ -83,6 +83,25 @@ class NetworkService {
     }
   }
 
+  Future<dynamic> putRequest({required String url, dynamic data}) async {
+    try {
+      var dio = Dio();
+      dio.interceptors.add(AuthenticatedRequestInterceptor());
+
+      var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+      String validUrl = Uri.parse('$savedEndpoint/$url').toString();
+      Response res = await dio.put(validUrl, data: data);
+
+      return res;
+    } on DioError catch (e) {
+      debugPrint("DioError: ${e.response}");
+      return null;
+    } catch (e) {
+      debugPrint("ERROR BackupService: $e");
+      return null;
+    }
+  }
+
   Future<dynamic> patchRequest({required String url, dynamic data}) async {
     try {
       var dio = Dio();
