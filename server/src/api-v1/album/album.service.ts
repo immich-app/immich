@@ -6,16 +6,16 @@ import { AssetEntity } from '../asset/entities/asset.entity';
 import { UserEntity } from '../user/entities/user.entity';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { CreateSharedAlbumDto } from './dto/create-shared-album.dto';
-import { AssetSharedAlbumEntity } from './entities/asset-shared-album.entity';
-import { SharedAlbumEntity } from './entities/shared-album.entity';
-import { UserSharedAlbumEntity } from './entities/user-shared-album.entity';
+import { AssetAlbumEntity } from './entities/asset-album.entity';
+import { AlbumEntity } from './entities/album.entity';
+import { UserAlbumEntity } from './entities/user-album.entity';
 import _ from 'lodash';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateShareAlbumDto } from './dto/update-shared-album.dto';
 
 @Injectable()
-export class SharingService {
+export class AlbumService {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
@@ -23,20 +23,20 @@ export class SharingService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
 
-    @InjectRepository(SharedAlbumEntity)
-    private sharedAlbumRepository: Repository<SharedAlbumEntity>,
+    @InjectRepository(AlbumEntity)
+    private sharedAlbumRepository: Repository<AlbumEntity>,
 
-    @InjectRepository(AssetSharedAlbumEntity)
-    private assetSharedAlbumRepository: Repository<AssetSharedAlbumEntity>,
+    @InjectRepository(AssetAlbumEntity)
+    private assetSharedAlbumRepository: Repository<AssetAlbumEntity>,
 
-    @InjectRepository(UserSharedAlbumEntity)
-    private userSharedAlbumRepository: Repository<UserSharedAlbumEntity>,
+    @InjectRepository(UserAlbumEntity)
+    private userSharedAlbumRepository: Repository<UserAlbumEntity>,
   ) {}
 
   async create(authUser: AuthUserDto, createSharedAlbumDto: CreateSharedAlbumDto) {
     return await getConnection().transaction(async (transactionalEntityManager) => {
       // Create album entity
-      const newSharedAlbum = new SharedAlbumEntity();
+      const newSharedAlbum = new AlbumEntity();
       newSharedAlbum.ownerId = authUser.id;
       newSharedAlbum.albumName = createSharedAlbumDto.albumName;
 
@@ -44,7 +44,7 @@ export class SharingService {
 
       // Add shared users
       for (const sharedUserId of createSharedAlbumDto.sharedWithUserIds) {
-        const newSharedUser = new UserSharedAlbumEntity();
+        const newSharedUser = new UserAlbumEntity();
         newSharedUser.albumId = sharedAlbum.id;
         newSharedUser.sharedUserId = sharedUserId;
 
@@ -52,10 +52,10 @@ export class SharingService {
       }
 
       // Add shared assets
-      const newRecords: AssetSharedAlbumEntity[] = [];
+      const newRecords: AssetAlbumEntity[] = [];
 
       for (const assetId of createSharedAlbumDto.assetIds) {
-        const newAssetSharedAlbum = new AssetSharedAlbumEntity();
+        const newAssetSharedAlbum = new AssetAlbumEntity();
         newAssetSharedAlbum.assetId = assetId;
         newAssetSharedAlbum.albumId = sharedAlbum.id;
 
@@ -125,10 +125,10 @@ export class SharingService {
   }
 
   async addUsersToAlbum(addUsersDto: AddUsersDto) {
-    const newRecords: UserSharedAlbumEntity[] = [];
+    const newRecords: UserAlbumEntity[] = [];
 
     for (const sharedUserId of addUsersDto.sharedUserIds) {
-      const newEntity = new UserSharedAlbumEntity();
+      const newEntity = new UserAlbumEntity();
       newEntity.albumId = addUsersDto.albumId;
       newEntity.sharedUserId = sharedUserId;
 
@@ -165,10 +165,10 @@ export class SharingService {
   }
 
   async addAssetsToAlbum(addAssetsDto: AddAssetsDto) {
-    const newRecords: AssetSharedAlbumEntity[] = [];
+    const newRecords: AssetAlbumEntity[] = [];
 
     for (const assetId of addAssetsDto.assetIds) {
-      const newAssetSharedAlbum = new AssetSharedAlbumEntity();
+      const newAssetSharedAlbum = new AssetAlbumEntity();
       newAssetSharedAlbum.assetId = assetId;
       newAssetSharedAlbum.albumId = addAssetsDto.albumId;
 

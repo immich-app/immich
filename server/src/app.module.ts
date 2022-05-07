@@ -14,7 +14,7 @@ import { ImageOptimizeModule } from './modules/image-optimize/image-optimize.mod
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
-import { SharingModule } from './api-v1/sharing/sharing.module';
+import { AlbumModule } from './api-v1/album/album.module';
 
 @Module({
   imports: [
@@ -42,7 +42,7 @@ import { SharingModule } from './api-v1/sharing/sharing.module';
 
     CommunicationModule,
 
-    SharingModule,
+    AlbumModule,
   ],
   controllers: [],
   providers: [],

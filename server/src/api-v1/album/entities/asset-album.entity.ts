@@ -1,10 +1,10 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { AssetEntity } from '../../asset/entities/asset.entity';
-import { SharedAlbumEntity } from './shared-album.entity';
+import { AlbumEntity } from './album.entity';
 
 @Entity('asset_shared_album')
 @Unique('PK_unique_asset_in_album', ['albumId', 'assetId'])
-export class AssetSharedAlbumEntity {
+export class AssetAlbumEntity {
   @PrimaryGeneratedColumn()
   id: string;
 
@@ -14,12 +14,12 @@ export class AssetSharedAlbumEntity {
   @Column()
   assetId: string;
 
-  @ManyToOne(() => SharedAlbumEntity, (sharedAlbum) => sharedAlbum.sharedAssets, {
+  @ManyToOne(() => AlbumEntity, (sharedAlbum) => sharedAlbum.sharedAssets, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinColumn({ name: 'albumId' })
-  albumInfo: SharedAlbumEntity;
+  albumInfo: AlbumEntity;
 
   @ManyToOne(() => AssetEntity, {
     onDelete: 'CASCADE',
