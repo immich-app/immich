@@ -1,8 +1,8 @@
 version: "3.8"
 
 services:
-  immich_server:
-    image: altran1502/immich-server:v1.9.0_13-dev
+  immich-server:
+    image: altran1502/immich-server:latest
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     expose:
       - "3000"
@@ -16,11 +16,11 @@ services:
       - redis
       - database
     networks:
-      - immich_network
+      - immich-network
     restart: unless-stopped
 
-  immich_microservices:
-    image: altran1502/immich-microservices:v1.9.0_13-dev
+  immich-microservices:
+    image: altran1502/immich-microservices:latest
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     expose:
       - "3001"
@@ -33,14 +33,14 @@ services:
     depends_on:
       - database
     networks:
-      - immich_network
+      - immich-network
     restart: unless-stopped
 
   redis:
     container_name: immich_redis
     image: redis:6.2
     networks:
-      - immich_network
+      - immich-network
 
   database:
     container_name: immich_postgres
@@ -57,7 +57,7 @@ services:
     ports:
       - 5432:5432
     networks:
-      - immich_network
+      - immich-network
 
   nginx:
     container_name: proxy_nginx
@@ -70,11 +70,11 @@ services:
     logging:
       driver: none
     networks:
-      - immich_network
+      - immich-network
     depends_on:
-      - immich_server
+      - immich-server
 
 networks:
-  immich_network:
+  immich-network:
 volumes:
   pgdata:
