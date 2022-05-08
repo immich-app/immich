@@ -27,8 +27,8 @@ export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
   @Post()
-  async create(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createSharedAlbumDto: CreateAlbumDto) {
-    return this.albumService.create(authUser, createSharedAlbumDto);
+  async create(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createAlbumDto: CreateAlbumDto) {
+    return this.albumService.create(authUser, createAlbumDto);
   }
 
   @Put('/:albumId/users')
@@ -42,7 +42,7 @@ export class AlbumController {
   }
 
   @Get()
-  async getAllSharedAlbums(@GetAuthUser() authUser: AuthUserDto, @Query(ValidationPipe) query: GetAlbumsDto) {
+  async getAllAlbums(@GetAuthUser() authUser: AuthUserDto, @Query(ValidationPipe) query: GetAlbumsDto) {
     return this.albumService.getAllAlbums(authUser, query);
   }
 

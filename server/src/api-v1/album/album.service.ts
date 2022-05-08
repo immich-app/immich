@@ -28,25 +28,25 @@ export class AlbumService {
     private albumRepository: Repository<AlbumEntity>,
 
     @InjectRepository(AssetAlbumEntity)
-    private assetSharedAlbumRepository: Repository<AssetAlbumEntity>,
+    private assetAlbumRepository: Repository<AssetAlbumEntity>,
 
     @InjectRepository(UserAlbumEntity)
-    private userSharedAlbumRepository: Repository<UserAlbumEntity>,
+    private userAlbumRepository: Repository<UserAlbumEntity>,
   ) {}
 
-  async create(authUser: AuthUserDto, createSharedAlbumDto: CreateAlbumDto) {
+  async create(authUser: AuthUserDto, createAlbumDto: CreateAlbumDto) {
     return await getConnection().transaction(async (transactionalEntityManager) => {
       // Create album entity
-      const newSharedAlbum = new AlbumEntity();
-      newSharedAlbum.ownerId = authUser.id;
-      newSharedAlbum.albumName = createSharedAlbumDto.albumName;
+      const newAlbum = new AlbumEntity();
+      newAlbum.ownerId = authUser.id;
+      newAlbum.albumName = createAlbumDto.albumName;
 
-      const sharedAlbum = await transactionalEntityManager.save(newSharedAlbum);
+      const album = await transactionalEntityManager.save(newAlbum);
 
       // Add shared users
-      for (const sharedUserId of createSharedAlbumDto.sharedWithUserIds) {
+      for (const sharedUserId of createAlbumDto.sharedWithUserIds) {
         const newSharedUser = new UserAlbumEntity();
-        newSharedUser.albumId = sharedAlbum.id;
+        newSharedUser.albumId = album.id;
         newSharedUser.sharedUserId = sharedUserId;
 
         await transactionalEntityManager.save(newSharedUser);
@@ -55,22 +55,22 @@ export class AlbumService {
       // Add shared assets
       const newRecords: AssetAlbumEntity[] = [];
 
-      for (const assetId of createSharedAlbumDto.assetIds) {
-        const newAssetSharedAlbum = new AssetAlbumEntity();
-        newAssetSharedAlbum.assetId = assetId;
-        newAssetSharedAlbum.albumId = sharedAlbum.id;
+      for (const assetId of createAlbumDto.assetIds) {
+        const newAssetAlbum = new AssetAlbumEntity();
+        newAssetAlbum.assetId = assetId;
+        newAssetAlbum.albumId = album.id;
 
-        newRecords.push(newAssetSharedAlbum);
+        newRecords.push(newAssetAlbum);
       }
 
-      if (!sharedAlbum.albumThumbnailAssetId && newRecords.length > 0) {
-        sharedAlbum.albumThumbnailAssetId = newRecords[0].assetId;
-        await transactionalEntityManager.save(sharedAlbum);
+      if (!album.albumThumbnailAssetId && newRecords.length > 0) {
+        album.albumThumbnailAssetId = newRecords[0].assetId;
+        await transactionalEntityManager.save(album);
       }
 
       await transactionalEntityManager.save([...newRecords]);
 
-      return sharedAlbum;
+      return album;
     });
   }
 
@@ -85,7 +85,7 @@ export class AlbumService {
   }
 
   private async getSharedAlbums(sharedWithId: string) {
-    const albums = await this.userSharedAlbumRepository.find({
+    const albums = await this.userAlbumRepository.find({
       where: {
         sharedUserId: sharedWithId,
       },
@@ -113,7 +113,7 @@ export class AlbumService {
 
   async getAlbumInfo(authUser: AuthUserDto, albumId: string) {
     const albumOwner = await this.albumRepository.findOne({ where: { ownerId: authUser.id } });
-    const personShared = await this.userSharedAlbumRepository.findOne({
+    const personShared = await this.userAlbumRepository.findOne({
       where: { albumId: albumId, sharedUserId: authUser.id },
     });
 
@@ -149,7 +149,7 @@ export class AlbumService {
       newRecords.push(newEntity);
     }
 
-    return await this.userSharedAlbumRepository.save([...newRecords]);
+    return await this.userAlbumRepository.save([...newRecords]);
   }
 
   async deleteAlbum(authUser: AuthUserDto, albumId: string) {
@@ -157,7 +157,7 @@ export class AlbumService {
   }
 
   async leaveAlbum(authUser: AuthUserDto, albumId: string) {
-    return await this.userSharedAlbumRepository.delete({ albumId: albumId, sharedUserId: authUser.id });
+    return await this.userAlbumRepository.delete({ albumId: albumId, sharedUserId: authUser.id });
   }
 
   async removeUsersFromAlbum() {}
@@ -171,7 +171,7 @@ export class AlbumService {
     }
 
     for (const assetId of removeAssetsDto.assetIds) {
-      const res = await this.assetSharedAlbumRepository.delete({ albumId: albumId, assetId: assetId });
+      const res = await this.assetAlbumRepository.delete({ albumId: albumId, assetId: assetId });
       if (res.affected == 1) deleteAssetCount++;
     }
 
@@ -182,11 +182,11 @@ export class AlbumService {
     const newRecords: AssetAlbumEntity[] = [];
 
     for (const assetId of addAssetsDto.assetIds) {
-      const newAssetSharedAlbum = new AssetAlbumEntity();
-      newAssetSharedAlbum.assetId = assetId;
-      newAssetSharedAlbum.albumId = albumId;
+      const newAssetAlbum = new AssetAlbumEntity();
+      newAssetAlbum.assetId = assetId;
+      newAssetAlbum.albumId = albumId;
 
-      newRecords.push(newAssetSharedAlbum);
+      newRecords.push(newAssetAlbum);
     }
 
     // Add album thumbnail if not exist.
@@ -197,7 +197,7 @@ export class AlbumService {
       await this.albumRepository.save(album);
     }
 
-    return await this.assetSharedAlbumRepository.save([...newRecords]);
+    return await this.assetAlbumRepository.save([...newRecords]);
   }
 
   async updateAlbumTitle(authUser: AuthUserDto, updateShareAlbumDto: UpdateAlbumDto, albumId: string) {
@@ -205,9 +205,9 @@ export class AlbumService {
       throw new BadRequestException('Unauthorized to change album info');
     }
 
-    const sharedAlbum = await this.albumRepository.findOne({ where: { id: albumId } });
-    sharedAlbum.albumName = updateShareAlbumDto.albumName;
+    const album = await this.albumRepository.findOne({ where: { id: albumId } });
+    album.albumName = updateShareAlbumDto.albumName;
 
-    return await this.albumRepository.save(sharedAlbum);
+    return await this.albumRepository.save(album);
   }
 }

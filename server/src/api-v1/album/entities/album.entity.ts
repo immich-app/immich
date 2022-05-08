@@ -19,9 +19,9 @@ export class AlbumEntity {
   @Column({ comment: 'Asset ID to be used as thumbnail', nullable: true })
   albumThumbnailAssetId: string;
 
-  @OneToMany(() => UserAlbumEntity, (userSharedAlbums) => userSharedAlbums.albumInfo)
+  @OneToMany(() => UserAlbumEntity, (userAlbums) => userAlbums.albumInfo)
   sharedUsers: UserAlbumEntity[];
 
-  @OneToMany(() => AssetAlbumEntity, (assetSharedAlbumEntity) => assetSharedAlbumEntity.albumInfo)
+  @OneToMany(() => AssetAlbumEntity, (assetAlbumEntity) => assetAlbumEntity.albumInfo)
   sharedAssets: AssetAlbumEntity[];
 }

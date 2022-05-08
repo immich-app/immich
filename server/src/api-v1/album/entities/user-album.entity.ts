@@ -14,7 +14,7 @@ export class UserAlbumEntity {
   @Column()
   sharedUserId: string;
 
-  @ManyToOne(() => AlbumEntity, (sharedAlbum) => sharedAlbum.sharedUsers, {
+  @ManyToOne(() => AlbumEntity, (album) => album.sharedUsers, {
     onDelete: 'CASCADE',
     nullable: true,
   })
