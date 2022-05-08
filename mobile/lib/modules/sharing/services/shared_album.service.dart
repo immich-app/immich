@@ -12,7 +12,7 @@ class SharedAlbumService {
 
   Future<List<SharedAlbum>> getAllSharedAlbum() async {
     try {
-      // TODO: maybe use query param to filter by shared: GET album?shared=true
+      // TODO: currently this returns all albums. `owner: 'mine' | 'theirs' can be used for filtering`
       var res = await _networkService.getRequest(url: 'album');
       List<dynamic> decodedData = jsonDecode(res.toString());
       List<SharedAlbum> result =
