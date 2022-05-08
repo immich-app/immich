@@ -4,7 +4,7 @@ export class CreateAlbumDto {
   @IsNotEmpty()
   albumName: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   sharedWithUserIds: string[];
 
   @IsOptional()

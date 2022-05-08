@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ValidationPipe,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
@@ -7,6 +19,7 @@ import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
+import { GetAlbumsDto } from './dto/get-albums.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('album')
@@ -29,8 +42,8 @@ export class AlbumController {
   }
 
   @Get()
-  async getAllSharedAlbums(@GetAuthUser() authUser: AuthUserDto) {
-    return this.albumService.getAllSharedAlbums(authUser);
+  async getAllSharedAlbums(@GetAuthUser() authUser: AuthUserDto, @Query(ValidationPipe) query: GetAlbumsDto) {
+    return this.albumService.getAllAlbums(authUser, query);
   }
 
   @Get('/:albumId')
