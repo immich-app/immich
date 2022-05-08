@@ -156,8 +156,9 @@ export class AlbumService {
     return await this.albumRepository.delete({ id: albumId, ownerId: authUser.id });
   }
 
-  async leaveAlbum(authUser: AuthUserDto, albumId: string) {
-    return await this.userAlbumRepository.delete({ albumId: albumId, sharedUserId: authUser.id });
+  async removeUserFromAlbum(authUser: AuthUserDto, albumId: string, userId: string | 'me') {
+    const sharedUserId = userId == 'me' ? authUser.id : userId;
+    return await this.userAlbumRepository.delete({ albumId: albumId, sharedUserId });
   }
 
   async removeUsersFromAlbum() {}
