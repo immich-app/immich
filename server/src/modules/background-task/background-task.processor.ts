@@ -115,7 +115,7 @@ export class BackgroundTaskProcessor {
   async tagImage(job) {
     const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
 
-    const res = await axios.post('http://immich_microservices:3001/image-classifier/tagImage', {
+    const res = await axios.post('http://immich-microservices:3001/image-classifier/tagImage', {
       thumbnailPath: thumbnailPath,
     });
 
@@ -132,19 +132,24 @@ export class BackgroundTaskProcessor {
 
   @Process('detect-object')
   async detectObject(job) {
-    const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
+    try {
+      const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
 
-    const res = await axios.post('http://immich_microservices:3001/object-detection/detectObject', {
-      thumbnailPath: thumbnailPath,
-    });
-
-    if (res.status == 201 && res.data.length > 0) {
-      const smartInfo = new SmartInfoEntity();
-      smartInfo.assetId = asset.id;
-      smartInfo.objects = [...res.data];
-      await this.smartInfoRepository.upsert(smartInfo, {
-        conflictPaths: ['assetId'],
+      const res = await axios.post('http://immich-microservices:3001/object-detection/detectObject', {
+        thumbnailPath: thumbnailPath,
       });
+
+      if (res.status == 201 && res.data.length > 0) {
+        const smartInfo = new SmartInfoEntity();
+        smartInfo.assetId = asset.id;
+        smartInfo.objects = [...res.data];
+        await this.smartInfoRepository.upsert(smartInfo, {
+          conflictPaths: ['assetId'],
+        });
+      }
+    } catch (error) {
+      Logger.error(`Failed to trigger object detection pipe line ${error.toString()}`)
     }
+
   }
 }
