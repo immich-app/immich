@@ -42,14 +42,14 @@ packages:
       name: auto_route
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.2.4"
+    version: "4.0.0"
   auto_route_generator:
     dependency: "direct dev"
     description:
       name: auto_route_generator
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.2.3"
+    version: "4.0.0"
   badges:
     dependency: "direct main"
     description:
@@ -673,7 +673,7 @@ packages:
       name: percent_indicator
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.4.0"
+    version: "4.0.1"
   petitparser:
     dependency: transitive
     description:
@@ -687,7 +687,7 @@ packages:
       name: photo_manager
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.8"
+    version: "2.0.9"
   photo_view:
     dependency: "direct main"
     description:
@@ -1028,7 +1028,7 @@ packages:
       name: visibility_detector
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.2"
+    version: "0.3.2"
   wakelock:
     dependency: transitive
     description:
@@ -1115,4 +1115,4 @@ packages:
     version: "3.1.0"
 sdks:
   dart: ">=2.16.0 <3.0.0"
-  flutter: ">=2.10.0"
+  flutter: ">=2.10.5"
