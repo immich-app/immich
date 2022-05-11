@@ -1,0 +1,17 @@
+{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"lib": ["es2020", "DOM"],
+		"moduleResolution": "node",
+		"module": "es2020",
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"target": "es2020"
+	}
+}
