@@ -5,7 +5,7 @@ import { ImageClassifierService } from './image-classifier.service';
 export class ImageClassifierController {
   constructor(
     private readonly imageClassifierService: ImageClassifierService,
-  ) {}
+  ) { }
 
   @Post('/tagImage')
   async tagImage(@Body('thumbnailPath') thumbnailPath: string) {

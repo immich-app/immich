@@ -9,7 +9,7 @@ export class BackgroundTaskService {
   constructor(
     @InjectQueue('background-task')
     private backgroundTaskQueue: Queue,
-  ) {}
+  ) { }
 
   async extractExif(savedAsset: AssetEntity, fileName: string, fileSize: number) {
     await this.backgroundTaskQueue.add(
