@@ -17,6 +17,9 @@ services:
       - .env
     environment:
       - NODE_ENV=development
+      - DB_HOST=immich_postgres 
+      - REDIS_HOST=immich_redis
+      - MICROSERVICE_HOST=immich_microservices
     depends_on:
       - redis
       - database
@@ -39,6 +42,7 @@ services:
       - .env
     environment:
       - NODE_ENV=development
+      - DB_HOST=immich_postgres 
     depends_on:
       - database
     networks:

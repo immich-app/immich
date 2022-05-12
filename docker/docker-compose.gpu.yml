@@ -15,6 +15,10 @@ services:
       - /usr/src/app/node_modules
     env_file:
       - .env
+    environment:
+      - DB_HOST=immich_postgres 
+      - REDIS_HOST=immich_redis
+      - MICROSERVICE_HOST=immich_microservices
     depends_on:
       - redis
       - database
@@ -42,6 +46,8 @@ services:
       - /usr/src/app/node_modules
     env_file:
       - .env
+    environment:
+      - DB_HOST=immich_postgres 
     depends_on:
       - database
       - immich_server

@@ -1,7 +1,6 @@
 FROM node:16-bullseye-slim 
 
 ARG DEBIAN_FRONTEND=noninteractive
-ENV DB_HOST = immich_postgres 
 WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
