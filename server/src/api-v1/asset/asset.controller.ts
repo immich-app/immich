@@ -82,7 +82,7 @@ export class AssetController {
     @Response({ passthrough: true }) res: Res,
     @Query(ValidationPipe) query: ServeFileDto,
   ) {
-    return this.assetService.downloadFile(authUser, query, res);
+    return this.assetService.downloadFile(query, res);
   }
 
   @Get('/file')
@@ -93,6 +93,11 @@ export class AssetController {
     @Query(ValidationPipe) query: ServeFileDto,
   ): Promise<StreamableFile> {
     return this.assetService.serveFile(authUser, query, res, headers);
+  }
+
+  @Get('/thumbnail/:assetId')
+  async getAssetThumbnail(@Param('assetId') assetId: string): Promise<StreamableFile> {
+    return await this.assetService.getAssetThumbnail(assetId);
   }
 
   @Get('/allObjects')
