@@ -31,6 +31,12 @@ export class AuthService {
     return null;
   }
 
+  public async discoveryUrl() {
+    return {
+      discoveryUrl: process.env.OAUTH2_DISCOVERY_URL,
+    };
+  }
+
   public async login(loginCredential: LoginCredentialDto) {
     const validatedUser = await this.validateUser(loginCredential);
 
@@ -81,4 +87,5 @@ export class AuthService {
     const hash = await bcrypt.hash(inputPassword, salt);
     return hash === hasedPassword;
   }
+
 }

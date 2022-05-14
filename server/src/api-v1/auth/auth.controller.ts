@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, ValidationPipe } from '@nestjs/common';
+import {Body, Controller, Get, Post, UseGuards, ValidationPipe} from '@nestjs/common';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
@@ -8,6 +8,11 @@ import { SignUpDto } from './dto/sign-up.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Get('/discoveryUrl')
+  async discoveryUrl() {
+    return await this.authService.discoveryUrl();
+  }
 
   @Post('/login')
   async login(@Body(ValidationPipe) loginCredential: LoginCredentialDto) {
