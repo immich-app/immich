@@ -3,16 +3,13 @@
 </script>
 
 <script lang="ts">
-	import Counter from '$lib/Counter.svelte';
 </script>
 
 <svelte:head>
 	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+	<meta name="description" content="Immich Web Interface" />
 </svelte:head>
 
 <section>
 	<h1 class="text-3xl font-bold underline">Hello world!</h1>
-
-	<Counter />
 </section>
