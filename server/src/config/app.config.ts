@@ -11,6 +11,23 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_DATABASE_NAME: Joi.string().required(),
     UPLOAD_LOCATION: Joi.string().required(),
     JWT_SECRET: Joi.string().required(),
+    OAUTH2_ENABLE: Joi.boolean().optional(),
+    LOCAL_USERS_DISABLE: Joi.boolean().optional(),
+    OAUTH2_DISCOVERY_URL: Joi.any().when('OAUTH2_ENABLE', {
+      is: true,
+      then: Joi.string().required(),
+      otherwise: Joi.optional(),
+    }),
+    OAUTH2_CLIENT_ID: Joi.any().when('OAUTH2_ENABLE', {
+      is: true,
+      then: Joi.string().required(),
+      otherwise: Joi.optional(),
+    }),
+    OAUTH2_CLIENT_SECRET: Joi.any().when('OAUTH2_ENABLE', {
+      is: true,
+      then: Joi.string().required(),
+      otherwise: Joi.optional(),
+    }),
     ENABLE_MAPBOX: Joi.boolean().required().valid(true, false),
     MAPBOX_KEY: Joi.any().when('ENABLE_MAPBOX', {
       is: false,

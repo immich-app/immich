@@ -4,15 +4,11 @@ import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
+import {OAuthSignUpDto} from "./dto/oauth-sign-up.dto";
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @Get('/discoveryUrl')
-  async discoveryUrl() {
-    return await this.authService.discoveryUrl();
-  }
 
   @Post('/login')
   async login(@Body(ValidationPipe) loginCredential: LoginCredentialDto) {
@@ -31,4 +27,15 @@ export class AuthController {
       authStatus: true,
     };
   }
+
+  @Get('/discoveryUrl')
+  async discoveryUrl() {
+    return await this.authService.discoveryUrl();
+  }
+
+  @Post('/signUpOauth')
+  async signUpOauth(@Body(ValidationPipe) params: OAuthSignUpDto) {
+    return await this.authService.signUpOauth(params);
+  }
+
 }

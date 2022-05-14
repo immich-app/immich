@@ -8,12 +8,15 @@ export class UserEntity {
   @Column()
   email: string;
 
-  @Column({ select: false })
-  password: string;
+  @Column({ select: false, nullable: true })
+  password: string | null;
 
-  @Column({ select: false })
-  salt: string;
+  @Column({ select: false, nullable: true })
+  salt: string | null;
 
   @CreateDateColumn()
   createdAt: string;
+
+  @Column({default: true})
+  isLocalUser: boolean;
 }

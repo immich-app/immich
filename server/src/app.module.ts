@@ -15,6 +15,8 @@ import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
 import { SharingModule } from './api-v1/sharing/sharing.module';
+import {HttpModule} from "@nestjs/axios";
+import {AuthService} from "./api-v1/auth/auth.service";
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { SharingModule } from './api-v1/sharing/sharing.module';
     TypeOrmModule.forRoot(databaseConfig),
     UserModule,
     AssetModule,
+    HttpModule,
     AuthModule,
     ImmichJwtModule,
     DeviceInfoModule,

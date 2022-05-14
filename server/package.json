@@ -19,10 +19,11 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
+    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js --config src/config/database.config.ts"
   },
   "dependencies": {
     "@mapbox/mapbox-sdk": "^0.13.3",
+    "@nestjs/axios": "^0.0.7",
     "@nestjs/bull": "^0.4.2",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.1.6",
