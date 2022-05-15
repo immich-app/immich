@@ -5,6 +5,9 @@ module.exports = {
 			colors: {
 				'immich-primary': '#4250af',
 			},
+			fontFamily: {
+				'immich-title': ['Snowburst One', 'cursive'],
+			},
 		},
 	},
 	plugins: [],

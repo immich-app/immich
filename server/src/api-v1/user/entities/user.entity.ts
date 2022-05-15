@@ -6,6 +6,15 @@ export class UserEntity {
   id: string;
 
   @Column()
+  firstName: string;
+
+  @Column()
+  lastName: string;
+
+  @Column()
+  isAdmin: boolean;
+
+  @Column()
   email: string;
 
   @Column({ select: false })

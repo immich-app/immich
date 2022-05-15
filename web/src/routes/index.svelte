@@ -16,11 +16,11 @@
 </svelte:head>
 
 <section class="h-screen w-screen flex place-items-center place-content-center">
-	<div class="flex flex-col gap-4 text-center">
+	<div class="flex flex-col gap-8 text-center max-w-[400px]">
 		<div class="flex place-items-center place-content-center">
 			<img class="text-center" src="immich-logo.svg" height="200" width="200" alt="immich-logo" />
 		</div>
-		<h1 class="text-lg text-immich-primary font-bold">Welcome to Immich Web</h1>
+		<h1 class="text-4xl text-immich-primary font-bold font-immich-title">Welcome to Immich Web</h1>
 		<button
 			class="border px-4 py-2 rounded-md bg-immich-primary hover:bg-immich-primary/75 text-white font-bold"
 			on:click={onGettingStartedClicked}>Getting Started</button
