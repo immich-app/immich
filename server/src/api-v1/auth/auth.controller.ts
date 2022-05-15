@@ -4,7 +4,8 @@ import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import {OAuthSignUpDto} from "./dto/oauth-sign-up.dto";
+import {OAuthLoginDto} from "./dto/o-auth-login.dto";
+import {OAuthAccessTokenDto} from "./dto/o-auth-access-token.dto";
 
 @Controller('auth')
 export class AuthController {
@@ -28,14 +29,19 @@ export class AuthController {
     };
   }
 
-  @Get('/discoveryUrl')
-  async discoveryUrl() {
-    return await this.authService.discoveryUrl();
+  @Get('/loginParams')
+  async loginParams() {
+    return await this.authService.loginParams();
   }
 
-  @Post('/signUpOauth')
-  async signUpOauth(@Body(ValidationPipe) params: OAuthSignUpDto) {
-    return await this.authService.signUpOauth(params);
+  @Post('/oauth/accessToken')
+  async accessTokenOauth(@Body(ValidationPipe) params: OAuthAccessTokenDto) {
+    return await this.authService.accessTokenOauth(params);
+  }
+
+  @Post('/oauth/login')
+  async loginOauth(@Body(ValidationPipe) params: OAuthLoginDto) {
+    return await this.authService.loginOauth(params);
   }
 
 }

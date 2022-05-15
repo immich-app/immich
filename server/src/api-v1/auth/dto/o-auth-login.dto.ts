@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class OAuthSignUpDto {
+export class OAuthLoginDto {
   @IsNotEmpty()
   accessToken: string;
 }
