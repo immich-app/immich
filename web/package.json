@@ -15,6 +15,7 @@
   "devDependencies": {
     "@sveltejs/adapter-auto": "next",
     "@sveltejs/kit": "next",
+    "@types/bcrypt": "^5.0.0",
     "@types/cookie": "^0.4.1",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
@@ -36,6 +37,7 @@
   "dependencies": {
     "@fontsource/fira-mono": "^4.5.0",
     "@lukeed/uuid": "^2.0.0",
+    "bcrypt": "^5.0.1",
     "cookie": "^0.4.1"
   }
 }
