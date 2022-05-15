@@ -5,8 +5,8 @@ export class CreateAlbumDto {
   albumName: string;
 
   @IsOptional()
-  sharedWithUserIds: string[];
+  sharedWithUserIds?: string[];
 
   @IsOptional()
-  assetIds: string[];
+  assetIds?: string[];
 }

@@ -44,23 +44,27 @@ export class AlbumService {
       const album = await transactionalEntityManager.save(newAlbum);
 
       // Add shared users
-      for (const sharedUserId of createAlbumDto.sharedWithUserIds) {
-        const newSharedUser = new UserAlbumEntity();
-        newSharedUser.albumId = album.id;
-        newSharedUser.sharedUserId = sharedUserId;
+      if (createAlbumDto.sharedWithUserIds?.length) {
+        for (const sharedUserId of createAlbumDto.sharedWithUserIds) {
+          const newSharedUser = new UserAlbumEntity();
+          newSharedUser.albumId = album.id;
+          newSharedUser.sharedUserId = sharedUserId;
 
-        await transactionalEntityManager.save(newSharedUser);
+          await transactionalEntityManager.save(newSharedUser);
+        }
       }
 
       // Add shared assets
       const newRecords: AssetAlbumEntity[] = [];
 
-      for (const assetId of createAlbumDto.assetIds) {
-        const newAssetAlbum = new AssetAlbumEntity();
-        newAssetAlbum.assetId = assetId;
-        newAssetAlbum.albumId = album.id;
+      if (createAlbumDto.assetIds?.length) {
+        for (const assetId of createAlbumDto.assetIds) {
+          const newAssetAlbum = new AssetAlbumEntity();
+          newAssetAlbum.assetId = assetId;
+          newAssetAlbum.albumId = album.id;
 
-        newRecords.push(newAssetAlbum);
+          newRecords.push(newAssetAlbum);
+        }
       }
 
       if (!album.albumThumbnailAssetId && newRecords.length > 0) {
