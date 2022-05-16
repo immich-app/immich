@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
-import { clearDb, initDb, auth, getAuthUser } from './test-utils';
+import { clearDb, auth, getAuthUser } from './test-utils';
 import { databaseConfig } from '../src/config/database.config';
 import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
@@ -50,7 +50,6 @@ describe('Album', () => {
       const moduleFixture: TestingModule = await auth(builder).compile();
 
       app = moduleFixture.createNestApplication();
-      await initDb();
       await app.init();
     });
 
