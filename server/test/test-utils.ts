@@ -6,10 +6,6 @@ import { JwtAuthGuard } from '../src/modules/immich-jwt/guards/jwt-auth.guard';
 
 type CustomAuthCallback = () => AuthUserDto;
 
-export async function initDb() {
-  return getConnection().synchronize(true);
-}
-
 export async function clearDb() {
   const entities = getConnection().entityMetadatas;
   for (const entity of entities) {

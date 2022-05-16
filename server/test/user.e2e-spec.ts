@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
-import { clearDb, initDb, authCustom } from './test-utils';
+import { clearDb, authCustom } from './test-utils';
 import { databaseConfig } from '../src/config/database.config';
 import { UserModule } from '../src/api-v1/user/user.module';
 import { AuthModule } from '../src/api-v1/auth/auth.module';
@@ -55,7 +55,6 @@ describe('User', () => {
 
       app = moduleFixture.createNestApplication();
       authService = app.get(AuthService);
-      await initDb();
       await app.init();
     });
 
