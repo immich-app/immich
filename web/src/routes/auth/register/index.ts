@@ -1,4 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
+import { serverEndpoint } from '$lib/constants';
+
 export const post: RequestHandler = async ({ request }) => {
   const form = await request.formData();
 
@@ -7,8 +9,36 @@ export const post: RequestHandler = async ({ request }) => {
   const firstName = form.get('firstName')
   const lastName = form.get('lastName')
 
-  fetch('')
+  const payload = {
+    email,
+    password,
+    firstName,
+    lastName,
+    isAdmin: true,
+  }
 
-  console.log(email, password, firstName, lastName)
-  return {}
+  const res = await fetch(`${serverEndpoint}/auth/sign-up`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (res.status === 201) {
+    return {
+      status: 201,
+      body: {
+        success: 'Succesfully create admin account'
+      }
+    }
+  } else {
+    return {
+      status: 400,
+      body: {
+        error: await res.json()
+      }
+    }
+
+  }
 }

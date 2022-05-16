@@ -19,7 +19,7 @@
 </script>
 
 <svelte:head>
-	<title>Immich - Home</title>
+	<title>Immich | Welcome</title>
 	<meta name="description" content="Immich Web Interface" />
 </svelte:head>
 

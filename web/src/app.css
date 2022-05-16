@@ -14,3 +14,13 @@ body {
 	margin: 0;
 	background-color: #f6f8fe;
 }
+
+@layer utilities {
+  .immich-form-input {
+    @apply bg-slate-100 p-2 rounded-md focus:border-immich-primary text-sm
+  }
+
+  .immich-form-label {
+    @apply font-medium text-sm text-gray-500
+  }
+}

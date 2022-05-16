@@ -1,86 +1,11 @@
 <script lang="ts">
-	import { sendRegisterAdmin } from '$lib/auth_api';
-	export let error: string;
-	export let success: string;
-
-	const inputFormStyle = 'bg-slate-100 p-2 rounded-md focus:border-immich-primary text-sm';
-	const labelFormStyle = 'font-medium text-sm text-gray-500';
-
-	async function registerAdmin(event: SubmitEvent) {
-		error = '';
-
-		const formElement = event.target as HTMLFormElement;
-
-		const response = await sendRegisterAdmin(formElement);
-
-		if (response.error) {
-			error = response.error;
-		}
-
-		if (response.success) {
-			success = response.success;
-		}
-
-		formElement.reset();
-	}
+	import AdminRegistrationForm from '$lib/components/forms/AdminRegistrationForm.svelte';
 </script>
 
-<!-- <svelte:head>
+<svelte:head>
 	<title>Immich | Admin Registration</title>
-</svelte:head> -->
+</svelte:head>
 
 <section class="h-screen w-screen flex place-items-center place-content-center">
-	<div class="border bg-white p-4 shadow-sm w-[500px] rounded-md py-8">
-		<div class="flex flex-col place-items-center place-content-center gap-4 px-4">
-			<img class="text-center" src="/immich-logo.svg" height="100" width="100" alt="immich-logo" />
-			<h1 class="text-2xl text-immich-primary font-medium">Admin Registration</h1>
-			<p class="text-sm border rounded-md p-4 font-mono text-gray-600">
-				Since you are the first user on the system, you will be assigned as the Admin and are responsible for
-				administrative tasks.
-			</p>
-		</div>
-
-		<form on:submit|preventDefault={registerAdmin} method="post" action="" autocomplete="off">
-			<div class="m-4 flex flex-col gap-2">
-				<label class={labelFormStyle} for="email">Admin Email</label>
-				<input class={inputFormStyle} id="email" name="email" type="email" required />
-			</div>
-
-			<div class="m-4 flex flex-col gap-2">
-				<label class={labelFormStyle} for="password">Admin Password</label>
-				<input class={inputFormStyle} id="password" name="password" type="password" required />
-			</div>
-
-			<div class="m-4 flex flex-col gap-2">
-				<label class={labelFormStyle} for="password">First Name</label>
-				<input class={inputFormStyle} id="firstName" name="firstName" type="text" required />
-			</div>
-
-			<div class="m-4 flex flex-col gap-2">
-				<label class={labelFormStyle} for="password">Last Name</label>
-				<input class={inputFormStyle} id="lastName" name="lastName" type="text" required />
-			</div>
-
-			{#if error}
-				<p class="text-red-400">{error}</p>
-			{/if}
-
-			{#if success}
-				<div>
-					<p>Admin account has been registered</p>
-					<p>
-						<a href="/auth/login">Login</a>
-					</p>
-				</div>
-			{/if}
-
-			<div class="flex w-full">
-				<button
-					type="submit"
-					class="m-4 p-2 bg-immich-primary hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full"
-					>Sign Up</button
-				>
-			</div>
-		</form>
-	</div>
+	<AdminRegistrationForm />
 </section>
