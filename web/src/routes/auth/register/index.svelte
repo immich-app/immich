@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AdminRegistrationForm from '$lib/components/forms/AdminRegistrationForm.svelte';
+	import AdminRegistrationForm from '$lib/components/forms/admin-registration-form.svelte';
 </script>
 
 <svelte:head>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { sendRegisterAdmin } from '$lib/auth_api';
+	import { sendForm } from '$lib/auth-api';
 	let error: string;
 	let success: string;
 
@@ -8,7 +8,7 @@
 
 		const formElement = event.target as HTMLFormElement;
 
-		const response = await sendRegisterAdmin(formElement);
+		const response = await sendForm(formElement);
 
 		if (response.error) {
 			error = JSON.stringify(response.error);

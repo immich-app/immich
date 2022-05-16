@@ -5,7 +5,7 @@ type AdminRegistrationResult = Promise<{
 }>
 
 
-export async function sendRegisterAdmin(form: HTMLFormElement): AdminRegistrationResult {
+export async function sendForm(form: HTMLFormElement): AdminRegistrationResult {
 
   const response = await fetch(form.action, {
     method: form.method,
