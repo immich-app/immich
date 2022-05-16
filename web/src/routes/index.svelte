@@ -3,6 +3,7 @@
 </script>
 
 <script lang="ts">
+	import { serverEndpoint } from '$lib/constants';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -11,7 +12,8 @@
 	}
 
 	onMount(async () => {
-		const res = await fetch('http://immich-server/');
+		const res = await fetch(`${serverEndpoint}/server-info/ping`);
+
 		console.log(await res.json());
 	});
 </script>

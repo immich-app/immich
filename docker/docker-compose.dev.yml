@@ -51,8 +51,10 @@ services:
       context: ../web
       dockerfile: Dockerfile.dev
     command: npm run dev --host
+    env_file:
+      - .env
     ports:
-      - 3000:3000
+      - 3002:3002
       - 24678:24678
     volumes:
       - ../web:/usr/src/app

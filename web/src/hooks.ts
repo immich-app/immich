@@ -5,6 +5,7 @@ import * as cookie from 'cookie';
 export const handle: Handle = async ({ event, resolve }) => {
   // console.log("run handle hook", event);
 
+
   const cookies = cookie.parse(event.request.headers.get('cookie') || '');
   event.locals.userid = cookies['userid'] || uuid();
 
