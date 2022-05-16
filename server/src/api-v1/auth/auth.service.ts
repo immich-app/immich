@@ -14,7 +14,7 @@ export class AuthService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     private immichJwtService: ImmichJwtService,
-  ) {}
+  ) { }
 
   private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity> {
     const user = await this.userRepository.findOne(
@@ -44,6 +44,9 @@ export class AuthService {
       accessToken: await this.immichJwtService.generateToken(payload),
       userId: validatedUser.id,
       userEmail: validatedUser.email,
+      firstName: validatedUser.firstName,
+      lastName: validatedUser.lastName,
+      isAdmin: validatedUser.isAdmin,
     };
   }
 
@@ -54,10 +57,23 @@ export class AuthService {
       throw new BadRequestException('User exist');
     }
 
+    const adminUser = await this.userRepository.findOne({
+      where: {
+        isAdmin: true,
+      }
+    });
+
+    if (adminUser && signUpCrendential.isAdmin) {
+      throw new BadRequestException("Admin user already exists");
+    }
+
     const newUser = new UserEntity();
     newUser.email = signUpCrendential.email;
     newUser.salt = await bcrypt.genSalt();
     newUser.password = await this.hashPassword(signUpCrendential.password, newUser.salt);
+    newUser.firstName = signUpCrendential.firstName;
+    newUser.lastName = signUpCrendential.lastName;
+    newUser.isAdmin = signUpCrendential.isAdmin;
 
     try {
       const savedUser = await this.userRepository.save(newUser);
@@ -65,8 +81,11 @@ export class AuthService {
       return {
         id: savedUser.id,
         email: savedUser.email,
+        firstName: savedUser.firstName,
+        lastName: savedUser.lastName,
         createdAt: savedUser.createdAt,
       };
+
     } catch (e) {
       Logger.error('e', 'signUp');
       throw new InternalServerErrorException('Failed to register new user');
