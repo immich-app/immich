@@ -1,5 +1,19 @@
 <script context="module" lang="ts">
 	export const prerender = true;
+	import type { Load } from '@sveltejs/kit';
+
+	export const load: Load = ({ session }) => {
+		if (!session.user) {
+			// Check if admin exist to wherether navigating to login or registration
+
+			return {};
+		} else {
+			return {
+				status: 302,
+				redirect: '/dashboard',
+			};
+		}
+	};
 </script>
 
 <script lang="ts">

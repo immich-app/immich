@@ -4,12 +4,29 @@
 // for information about these interfaces
 declare namespace App {
   interface Locals {
-    isAuthenticated: boolean,
+    user?: {
+      userId: string,
+      userEmail: string,
+      accessToken: string,
+      firstName: string,
+      lastName: string,
+      isAdmin: boolean,
+    }
   }
 
   // interface Platform {}
 
-  // interface Session {}
+  interface Session {
+    user?: {
+      userId: string,
+      userEmail: string,
+      accessToken: string,
+      firstName: string,
+      lastName: string
+      isAdmin: boolean,
+    }
+  }
 
   // interface Stuff {}
 }
+

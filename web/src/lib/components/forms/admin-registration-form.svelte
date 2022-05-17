@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { sendForm } from '$lib/auth-api';
+	import { goto } from '$app/navigation';
+
+	import { sendRegistrationForm } from '$lib/auth-api';
 	let error: string;
 	let success: string;
 
@@ -8,7 +10,7 @@
 
 		const formElement = event.target as HTMLFormElement;
 
-		const response = await sendForm(formElement);
+		const response = await sendRegistrationForm(formElement);
 
 		if (response.error) {
 			error = JSON.stringify(response.error);
@@ -16,7 +18,7 @@
 
 		if (response.success) {
 			success = response.success;
-			formElement.reset();
+			goto('/auth/login');
 		}
 	}
 </script>

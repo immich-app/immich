@@ -10,7 +10,7 @@ export const handle: Handle = async ({ event, resolve, }) => {
     return await resolve(event)
   }
 
-  const { userId, accessToken } = JSON.parse(cookies.session);
+  const { userEmail, isAdmin, firstName, lastName, userId, accessToken } = JSON.parse(cookies.session);
 
   const res = await fetch(`${serverEndpoint}/auth/validateToken`, {
     method: 'POST',
@@ -20,12 +20,34 @@ export const handle: Handle = async ({ event, resolve, }) => {
   })
 
   if (res.status === 201) {
-    event.locals.isAuthenticated = true;
+    event.locals.user = {
+      userId,
+      accessToken,
+      firstName,
+      lastName,
+      isAdmin,
+      userEmail
+    };
   }
 
-  return await resolve(event);
+  const response = await resolve(event);
+
+  response.headers.set('Authorization', `Bearer ${accessToken}`);
+
+  return response;
 };
 
 export const getSession: GetSession = async ({ locals }) => {
-  console.log(locals, locals.isAuthenticated)
+  if (!locals.user) return {}
+
+  return {
+    user: {
+      userId: locals.user.userId,
+      accessToken: locals.user.accessToken,
+      firstName: locals.user.firstName,
+      lastName: locals.user.lastName,
+      isAdmin: locals.user.isAdmin,
+      userEmail: locals.user.userEmail
+    }
+  }
 }

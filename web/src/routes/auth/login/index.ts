@@ -37,11 +37,18 @@ export const post: RequestHandler = async ({ request }) => {
     return {
       status: 200,
       body: {
-        user: authUser.userEmail,
+        user: {
+          userId: authUser.userId,
+          accessToken: authUser.accessToken,
+          firstName: authUser.firstName,
+          lastName: authUser.lastName,
+          isAdmin: authUser.isAdmin,
+          userEmail: authUser.userEmail
+        },
         success: 'success'
       },
       headers: {
-        'Set-Cookie': cookie.serialize('session', JSON.stringify({ userId: authUser.userId, accessToken: authUser.accessToken }), {
+        'Set-Cookie': cookie.serialize('session', JSON.stringify({ userId: authUser.userId, accessToken: authUser.accessToken, firstName: authUser.firstName, lastName: authUser.lastName, isAdmin: authUser.isAdmin, userEmail: authUser.userEmail }), {
           // send cookie for every page
           path: '/',
 

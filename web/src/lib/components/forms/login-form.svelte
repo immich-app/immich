@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { goto, prefetch } from '$app/navigation';
 	import { session } from '$app/stores';
-	import { sendForm } from '$lib/auth-api';
+	import { sendLoginForm } from '$lib/auth-api';
 
 	let error: string;
 
@@ -9,16 +10,24 @@
 
 		const formElement = event.target as HTMLFormElement;
 
-		const response = await sendForm(formElement);
+		const response = await sendLoginForm(formElement);
 
 		if (response.error) {
-			error = JSON.stringify(response.error);
+			error = response.error;
 		}
 
-		console.log('sesstion', $session);
-		$session.user = response.user;
+		if (response.success) {
+			$session.user = {
+				accessToken: response.user!.accessToken,
+				firstName: response.user!.firstName,
+				lastName: response.user!.lastName,
+				isAdmin: response.user!.isAdmin,
+				userId: response.user!.userId,
+				userEmail: response.user!.userEmail,
+			};
 
-		// formElement.reset();
+			await goto('/dashboard');
+		}
 	}
 </script>
 
@@ -40,7 +49,7 @@
 		</div>
 
 		{#if error}
-			<p class="text-red-400">{error}</p>
+			<p class="text-red-400 pl-4">{error}</p>
 		{/if}
 
 		<div class="flex w-full">
