@@ -21,6 +21,8 @@
 <script lang="ts">
 	import type { AuthUser } from '$lib/models/auth-user';
 
+	import NavigationBar from '../../lib/components/shared/navigation-bar.svelte';
+
 	export let user: AuthUser;
 </script>
 
@@ -28,4 +30,16 @@
 	<title>Immich - Dashboard</title>
 </svelte:head>
 
-<h1 class="w-[300px]">Dashboard page {JSON.stringify(user.userEmail)}</h1>
+<section>
+	<NavigationBar {user} />
+
+	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
+	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
+	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
+	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
+	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
+	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
+	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
+	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
+	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
+</section>

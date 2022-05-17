@@ -3,4 +3,5 @@ export type AuthUser = {
   userEmail: string,
   firstName: string,
   lastName: string,
+  isAdmin: boolean,
 }

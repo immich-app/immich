@@ -58,7 +58,6 @@ export class AuthService {
       isAdmin = true
     }
 
-
     const registerUser = await this.userRepository.findOne({ email: signUpCrendential.email });
 
     if (registerUser) {
