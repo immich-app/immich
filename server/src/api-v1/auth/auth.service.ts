@@ -51,20 +51,18 @@ export class AuthService {
   }
 
   public async signUp(signUpCrendential: SignUpDto) {
+    let isAdmin = false;
+    const users = await this.userRepository.find();
+
+    if (users.length == 0) {
+      isAdmin = true
+    }
+
+
     const registerUser = await this.userRepository.findOne({ email: signUpCrendential.email });
 
     if (registerUser) {
       throw new BadRequestException('User exist');
-    }
-
-    const adminUser = await this.userRepository.findOne({
-      where: {
-        isAdmin: true,
-      }
-    });
-
-    if (adminUser && signUpCrendential.isAdmin) {
-      throw new BadRequestException("Admin user already exists");
     }
 
     const newUser = new UserEntity();
@@ -73,7 +71,7 @@ export class AuthService {
     newUser.password = await this.hashPassword(signUpCrendential.password, newUser.salt);
     newUser.firstName = signUpCrendential.firstName;
     newUser.lastName = signUpCrendential.lastName;
-    newUser.isAdmin = signUpCrendential.isAdmin;
+    newUser.isAdmin = isAdmin;
 
     try {
       const savedUser = await this.userRepository.save(newUser);

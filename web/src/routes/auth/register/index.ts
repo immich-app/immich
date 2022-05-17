@@ -14,7 +14,6 @@ export const post: RequestHandler = async ({ request }) => {
     password,
     firstName,
     lastName,
-    isAdmin: true,
   }
 
   const res = await fetch(`${serverEndpoint}/auth/sign-up`, {

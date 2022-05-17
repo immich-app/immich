@@ -12,7 +12,4 @@ export class SignUpDto {
 
   @IsNotEmpty()
   lastName: string;
-
-  @IsNotEmpty()
-  isAdmin: boolean;
 }

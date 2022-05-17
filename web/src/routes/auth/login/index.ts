@@ -41,7 +41,7 @@ export const post: RequestHandler = async ({ request }) => {
         success: 'success'
       },
       headers: {
-        'Set-Cookie': cookie.serialize('immich-session', authUser.userId, {
+        'Set-Cookie': cookie.serialize('session', JSON.stringify({ userId: authUser.userId, accessToken: authUser.accessToken }), {
           // send cookie for every page
           path: '/',
 
