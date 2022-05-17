@@ -2,11 +2,27 @@
 	export const prerender = true;
 	import type { Load } from '@sveltejs/kit';
 
-	export const load: Load = ({ session }) => {
+	export const load: Load = async ({ session, fetch }) => {
+		const res = await fetch(`${serverEndpoint}/user/count`);
+		const { userCount } = await res.json();
+
 		if (!session.user) {
 			// Check if admin exist to wherether navigating to login or registration
-
-			return {};
+			if (userCount != 0) {
+				return {
+					status: 200,
+					props: {
+						isAdminUserExist: true,
+					},
+				};
+			} else {
+				return {
+					status: 200,
+					props: {
+						isAdminUserExist: false,
+					},
+				};
+			}
 		} else {
 			return {
 				status: 302,
@@ -19,21 +35,16 @@
 <script lang="ts">
 	import { serverEndpoint } from '$lib/constants';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+
+	export let isAdminUserExist: boolean;
 
 	async function onGettingStartedClicked() {
-		goto('/auth/register');
+		isAdminUserExist ? goto('/auth/login') : goto('/auth/register');
 	}
-
-	onMount(async () => {
-		const res = await fetch(`${serverEndpoint}/server-info/ping`);
-
-		console.log(await res.json());
-	});
 </script>
 
 <svelte:head>
-	<title>Immich | Welcome</title>
+	<title>Immich - Welcome 🎉</title>
 	<meta name="description" content="Immich Web Interface" />
 </svelte:head>
 

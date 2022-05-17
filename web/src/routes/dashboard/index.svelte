@@ -2,7 +2,6 @@
 	import type { Load } from '@sveltejs/kit';
 
 	export const load: Load = ({ session }) => {
-		console.log('Checking dashboard session');
 		if (!session.user) {
 			return {
 				status: 302,
@@ -24,5 +23,9 @@
 
 	export let user: AuthUser;
 </script>
+
+<svelte:head>
+	<title>Immich - Dashboard</title>
+</svelte:head>
 
 <h1 class="w-[300px]">Dashboard page {JSON.stringify(user.userEmail)}</h1>

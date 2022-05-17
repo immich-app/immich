@@ -29,7 +29,7 @@
 		<h1 class="text-2xl text-immich-primary font-medium">Admin Registration</h1>
 		<p class="text-sm border rounded-md p-4 font-mono text-gray-600">
 			Since you are the first user on the system, you will be assigned as the Admin and are responsible for
-			administrative tasks.
+			administrative tasks, and additional users will be created by you.
 		</p>
 	</div>
 

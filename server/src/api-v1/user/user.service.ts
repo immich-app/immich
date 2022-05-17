@@ -11,11 +11,20 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-  ) {}
+  ) { }
 
   async getAllUsers(authUser: AuthUserDto) {
     return await this.userRepository.find({
       where: { id: Not(authUser.id) },
     });
+  }
+
+  async getUserCount() {
+    const users = await this.userRepository.find();
+
+    return {
+      userCount: users.length
+    }
+
   }
 }

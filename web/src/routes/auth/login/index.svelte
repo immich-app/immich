@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>Immich | Login</title>
+	<title>Immich - Login</title>
 </svelte:head>
 
 <section class="h-screen w-screen flex place-items-center place-content-center">
