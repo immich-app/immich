@@ -136,7 +136,7 @@ docker-compose -f ./docker/docker-compose.yml up
 If you have a few thousand photos/videos, I suggest running docker-compose with scaling option for the `immich_server` container to handle high I/O load when using fast scrolling.
 
 ```bash
-docker-compose -f ./docker/docker-compose.yml up --scale immich_server=5 
+docker-compose -f ./docker/docker-compose.yml up --scale immich-server=5 
 ```
 
 
