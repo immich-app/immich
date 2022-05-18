@@ -20,21 +20,23 @@
 
 <script lang="ts">
 	import type { AuthUser } from '$lib/models/auth-user';
+	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import SideBarButton from '$lib/components/admin/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
 	import { onMount } from 'svelte';
+	import UserManagement from '../../lib/components/admin/user-management.svelte';
 
-	let selectedAction = '';
+	let selectedAction: AdminSideBarSelection;
 
 	export let user: AuthUser;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
-		console.log('Button Clicked', buttonType.detail['actionType']);
+		selectedAction = buttonType.detail['actionType'] as AdminSideBarSelection;
 	};
 
 	onMount(() => {
-		selectedAction == 'USER';
+		selectedAction = AdminSideBarSelection.USER_MANAGEMENT;
 	});
 </script>
 
@@ -46,15 +48,26 @@
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
 	<section id="admin-sidebar" class="pt-8 pr-6">
-		<SideBarButton title="User" logo={AccountMultipleOutline} on:selected={onButtonClicked} />
+		<SideBarButton
+			title="User"
+			logo={AccountMultipleOutline}
+			actionType={AdminSideBarSelection.USER_MANAGEMENT}
+			isSelected={selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
+			on:selected={onButtonClicked}
+		/>
 	</section>
-	<section class="bg-green-200 overflow-y-scroll">
-		<div class="bg-blue-300 h-80 w-40">Content block</div>
-		<div class="bg-blue-300 h-80 w-40">Content block</div>
-		<div class="bg-blue-300 h-80 w-40">Content block</div>
-		<div class="bg-blue-300 h-80 w-40">Content block</div>
-		<div class="bg-blue-300 h-80 w-40">Content block</div>
-		<div class="bg-blue-300 h-80 w-40">Content block</div>
-		<div class="bg-blue-300 h-80 w-40">Content block</div>
+	<section class="overflow-y-scroll relative">
+		<div id="setting-title" class="pt-10 fixed w-full z-50 bg-immich-bg">
+			<h1 class="text-lg ml-8 mb-4 text-immich-primary">{selectedAction}</h1>
+			<hr />
+		</div>
+
+		<section id="setting-content" class="relative pt-[85px] flex place-content-center">
+			<section class="w-[640px] pt-4">
+				{#if selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
+					<UserManagement />
+				{/if}
+			</section>
+		</section>
 	</section>
 </section>

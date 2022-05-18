@@ -89,6 +89,39 @@ export class AuthService {
     }
   }
 
+  public async adminSignUp(signUpCrendential: SignUpDto) {
+    const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
+
+    if (adminUser) {
+      throw new BadRequestException('The server already has an admin')
+    }
+
+
+    const newAdminUser = new UserEntity();
+    newAdminUser.email = signUpCrendential.email;
+    newAdminUser.salt = await bcrypt.genSalt();
+    newAdminUser.password = await this.hashPassword(signUpCrendential.password, newAdminUser.salt);
+    newAdminUser.firstName = signUpCrendential.firstName;
+    newAdminUser.lastName = signUpCrendential.lastName;
+    newAdminUser.isAdmin = true;
+
+    try {
+      const savedNewAdminUserUser = await this.userRepository.save(newAdminUser);
+
+      return {
+        id: savedNewAdminUserUser.id,
+        email: savedNewAdminUserUser.email,
+        firstName: savedNewAdminUserUser.firstName,
+        lastName: savedNewAdminUserUser.lastName,
+        createdAt: savedNewAdminUserUser.createdAt,
+      };
+
+    } catch (e) {
+      Logger.error('e', 'signUp');
+      throw new InternalServerErrorException('Failed to register new admin user');
+    }
+  }
+
   private async hashPassword(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
   }

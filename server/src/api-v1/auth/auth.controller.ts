@@ -14,9 +14,9 @@ export class AuthController {
     return await this.authService.login(loginCredential);
   }
 
-  @Post('/sign-up')
-  async signUp(@Body(ValidationPipe) signUpCrendential: SignUpDto) {
-    return await this.authService.signUp(signUpCrendential);
+  @Post('/admin-sign-up')
+  async adminSignUp(@Body(ValidationPipe) signUpCrendential: SignUpDto) {
+    return await this.authService.adminSignUp(signUpCrendential);
   }
 
   @UseGuards(JwtAuthGuard)

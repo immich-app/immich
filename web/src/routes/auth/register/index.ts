@@ -16,7 +16,7 @@ export const post: RequestHandler = async ({ request }) => {
     lastName,
   }
 
-  const res = await fetch(`${serverEndpoint}/auth/sign-up`, {
+  const res = await fetch(`${serverEndpoint}/auth/admin-sign-up`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
