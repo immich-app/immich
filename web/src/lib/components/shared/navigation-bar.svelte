@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import type { AuthUser } from '$lib/models/auth-user';
+	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+
 	export let user: AuthUser;
 
 	let shouldShowAccountInfo = false;
@@ -12,10 +15,10 @@
 
 <section id="dashboard-navbar" class="fixed w-screen z-50 bg-immich-bg text-sm">
 	<div class="flex border place-items-center px-6 py-2 ">
-		<div class="flex gap-2 place-items-center">
+		<a class="flex gap-2 place-items-center hover:cursor-pointer" href="/dashboard">
 			<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" />
 			<h1 class="font-immich-title text-2xl text-immich-primary">Immich</h1>
-		</div>
+		</a>
 		<div class="flex-1 ml-24">
 			<div class="w-[50%] border rounded-md bg-gray-200 px-8 py-4">Search</div>
 		</div>
@@ -23,7 +26,12 @@
 			<!-- <div>Upload</div> -->
 
 			{#if user.isAdmin}
-				<button class="hover:text-immich-primary font-medium">Administration</button>
+				<a
+					class={`hover:text-immich-primary font-medium ${
+						$page.url.pathname == '/admin' && 'text-immich-primary underline'
+					}`}
+					href="/admin">Administration</a
+				>
 			{/if}
 
 			<div

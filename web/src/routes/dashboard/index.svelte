@@ -32,14 +32,4 @@
 
 <section>
 	<NavigationBar {user} />
-
-	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
-	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
-	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
-	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
-	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
-	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
-	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
-	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
-	<div class="bg-red-50 w-[500px] h-[500px]">Image</div>
 </section>
