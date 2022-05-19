@@ -24,4 +24,8 @@ body {
   .immich-form-label {
     @apply font-medium text-sm text-gray-500
   }
+
+  .immich-btn-primary {
+    @apply bg-immich-primary text-gray-100 border rounded-xl py-2 px-4 transition-all duration-150 hover:bg-immich-primary hover:shadow-lg text-sm font-medium
+  }
 }

@@ -19,11 +19,11 @@
 </script>
 
 <script lang="ts">
-	import type { AuthUser } from '$lib/models/auth-user';
+	import type { ImmichUser } from '$lib/models/immich-user';
 
 	import NavigationBar from '../../lib/components/shared/navigation-bar.svelte';
 
-	export let user: AuthUser;
+	export let user: ImmichUser;
 </script>
 
 <svelte:head>

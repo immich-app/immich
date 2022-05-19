@@ -1,4 +1,4 @@
-export type AuthUser = {
+export type ImmichUser = {
   id: string,
   userEmail: string,
   firstName: string,

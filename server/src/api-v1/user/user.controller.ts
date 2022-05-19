@@ -18,8 +18,8 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @UseGuards(AdminRolesGuard)
   @Post()
-  async createNewUser(@Body() createUserDto: CreateUserDto) {
-    return "create new user";
+  async createNewUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
+    return await this.userService.createUser(createUserDto);
   }
 
   @Get('/count')

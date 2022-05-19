@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import type { AuthUser } from '$lib/models/auth-user';
+	import type { ImmichUser } from '$lib/models/immich-user';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	export let user: AuthUser;
+	export let user: ImmichUser;
 
 	let shouldShowAccountInfo = false;
 

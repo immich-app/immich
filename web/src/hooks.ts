@@ -1,7 +1,7 @@
 import type { ExternalFetch, GetSession, Handle } from '@sveltejs/kit';
 import * as cookie from 'cookie';
 import { serverEndpoint } from '$lib/constants';
-
+import { session } from '$app/stores';
 export const handle: Handle = async ({ event, resolve, }) => {
 
   const cookies = cookie.parse(event.request.headers.get('cookie') || '');
@@ -52,10 +52,3 @@ export const getSession: GetSession = async ({ locals }) => {
   }
 }
 
-
-export const externalFetch: ExternalFetch = (request) => {
-
-  console.log("intercept")
-
-  return fetch(request);
-}
