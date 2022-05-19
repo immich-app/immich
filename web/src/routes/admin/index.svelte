@@ -23,19 +23,24 @@
 </script>
 
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { session } from '$app/stores';
+	import { fly, fade } from 'svelte/transition';
+
 	import type { ImmichUser } from '$lib/models/immich-user';
 	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import SideBarButton from '$lib/components/admin/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
-	import { onMount } from 'svelte';
-	import UserManagement from '../../lib/components/admin/user-management.svelte';
-	import FullScreenModal from '../../lib/components/shared/full-screen-modal.svelte';
+	import UserManagement from '$lib/components/admin/user-management.svelte';
+	import FullScreenModal from '$lib/components/shared/full-screen-modal.svelte';
+	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
 
 	let selectedAction: AdminSideBarSelection;
 
 	export let user: ImmichUser;
 	export let usersOnServer: Array<ImmichUser>;
+
 	let shouldShowCreateUserForm: boolean;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
@@ -45,6 +50,14 @@
 	onMount(() => {
 		selectedAction = AdminSideBarSelection.USER_MANAGEMENT;
 	});
+
+	const onUserCreated = async () => {
+		if ($session.user) {
+			usersOnServer = await get('user', $session.user.accessToken);
+		}
+
+		shouldShowCreateUserForm = false;
+	};
 </script>
 
 <svelte:head>
@@ -54,7 +67,11 @@
 <NavigationBar {user} />
 
 {#if shouldShowCreateUserForm}
-	<FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>Create User Form</FullScreenModal>
+	<FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>
+		<div in:fly={{ y: 50, duration: 250 }} out:fade={{ duration: 100 }}>
+			<CreateUserForm on:user-created={onUserCreated} />
+		</div>
+	</FullScreenModal>
 {/if}
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">

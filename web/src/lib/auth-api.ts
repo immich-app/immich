@@ -29,6 +29,7 @@ export async function sendRegistrationForm(form: HTMLFormElement): AdminRegistra
   })
 
   return await response.json()
+
 }
 
 

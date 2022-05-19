@@ -5,8 +5,8 @@
 	const dispatch = createEventDispatcher();
 </script>
 
-<section class="absolute w-full h-full bg-black/40 z-[100] flex place-items-center place-content-center">
-	<div class="bg-immich-bg z-[9999]" use:clickOutside on:outclick={() => dispatch('clickOutside')}>
+<section class="absolute w-full h-full bg-black/40 z-[100] flex place-items-center place-content-center ">
+	<div class="bg-immich-bg z-[9999] rounded-md" use:clickOutside on:outclick={() => dispatch('clickOutside')}>
 		<slot />
 	</div>
 </section>

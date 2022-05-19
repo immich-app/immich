@@ -50,44 +50,6 @@ export class AuthService {
     };
   }
 
-  public async signUp(signUpCrendential: SignUpDto) {
-    let isAdmin = false;
-    const users = await this.userRepository.find();
-
-    if (users.length == 0) {
-      isAdmin = true
-    }
-
-    const registerUser = await this.userRepository.findOne({ email: signUpCrendential.email });
-
-    if (registerUser) {
-      throw new BadRequestException('User exist');
-    }
-
-    const newUser = new UserEntity();
-    newUser.email = signUpCrendential.email;
-    newUser.salt = await bcrypt.genSalt();
-    newUser.password = await this.hashPassword(signUpCrendential.password, newUser.salt);
-    newUser.firstName = signUpCrendential.firstName;
-    newUser.lastName = signUpCrendential.lastName;
-    newUser.isAdmin = isAdmin;
-
-    try {
-      const savedUser = await this.userRepository.save(newUser);
-
-      return {
-        id: savedUser.id,
-        email: savedUser.email,
-        firstName: savedUser.firstName,
-        lastName: savedUser.lastName,
-        createdAt: savedUser.createdAt,
-      };
-
-    } catch (e) {
-      Logger.error('e', 'signUp');
-      throw new InternalServerErrorException('Failed to register new user');
-    }
-  }
 
   public async adminSignUp(signUpCrendential: SignUpDto) {
     const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });

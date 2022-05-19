@@ -13,7 +13,7 @@
 	};
 </script>
 
-<section id="dashboard-navbar" class="fixed w-screen z-50 bg-immich-bg text-sm">
+<section id="dashboard-navbar" class="fixed w-screen  z-[100] bg-immich-bg text-sm">
 	<div class="flex border place-items-center px-6 py-2 ">
 		<a class="flex gap-2 place-items-center hover:cursor-pointer" href="/dashboard">
 			<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" />

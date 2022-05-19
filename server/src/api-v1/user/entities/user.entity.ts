@@ -23,6 +23,12 @@ export class UserEntity {
   @Column({ select: false })
   salt: string;
 
+  @Column()
+  profileImagePath: string;
+
+  @Column()
+  isFirstLoggedIn: boolean;
+
   @CreateDateColumn()
   createdAt: string;
 }

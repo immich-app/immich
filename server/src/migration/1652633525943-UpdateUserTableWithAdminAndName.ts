@@ -5,14 +5,22 @@ export class UpdateUserTableWithAdminAndName1652633525943 implements MigrationIn
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       alter table users
-          add "firstName" varchar;
+          add column if not exists "firstName" varchar default '';
 
       alter table users
-          add "lastName" varchar;
+          add column if not exists "lastName" varchar default '';
 
       alter table users
-          add "isAdmin" bool default false;
+          add column if not exists "profileImagePath" varchar default '';
+
+      alter table users
+          add column if not exists "isAdmin" bool default false;
+      
+      alter table users
+          add column if not exists "isFirstLoggedIn" bool default true;
       `)
+
+
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
