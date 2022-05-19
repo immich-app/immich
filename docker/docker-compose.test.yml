@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  immich_server_test:
+    image: immich-server-dev:1.9.0
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    command: npm run test:e2e
+    expose:
+      - "3000"
+    volumes:
+      - ../server:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - .env.test
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - redis
+      - database
+    networks:
+      - immich_network_test
+
+
+  redis:
+    container_name: immich_redis_test
+    image: redis:6.2
+    networks:
+      - immich_network_test
+
+  database:
+    container_name: immich_postgres_test
+    image: postgres:14
+    env_file:
+      - .env.test
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      PG_DATA: /var/lib/postgresql/data
+    volumes:
+      - pgdata-test:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - immich_network_test
+
+networks:
+  immich_network_test:
+volumes:
+  pgdata-test:
