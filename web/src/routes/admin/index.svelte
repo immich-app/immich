@@ -30,11 +30,13 @@
 	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
 	import { onMount } from 'svelte';
 	import UserManagement from '../../lib/components/admin/user-management.svelte';
+	import FullScreenModal from '../../lib/components/shared/full-screen-modal.svelte';
 
 	let selectedAction: AdminSideBarSelection;
 
 	export let user: ImmichUser;
 	export let usersOnServer: Array<ImmichUser>;
+	let shouldShowCreateUserForm: boolean;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AdminSideBarSelection;
@@ -50,6 +52,10 @@
 </svelte:head>
 
 <NavigationBar {user} />
+
+{#if shouldShowCreateUserForm}
+	<FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>Create User Form</FullScreenModal>
+{/if}
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
 	<section id="admin-sidebar" class="pt-8 pr-6">
@@ -70,7 +76,7 @@
 		<section id="setting-content" class="relative pt-[85px] flex place-content-center">
 			<section class="w-[800px] pt-4">
 				{#if selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
-					<UserManagement {usersOnServer} />
+					<UserManagement {usersOnServer} on:createUser={() => (shouldShowCreateUserForm = true)} />
 				{/if}
 			</section>
 		</section>
