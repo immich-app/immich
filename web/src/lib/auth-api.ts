@@ -6,9 +6,26 @@ type AdminRegistrationResult = Promise<{
   }
 }>
 
+
+
 type LoginResult = Promise<{
   error?: string
   success?: string
+  needUpdate?: boolean
+  needSelectAdmin?: boolean
+  user?: {
+    accessToken: string
+    firstName: string
+    lastName: string
+    isAdmin: boolean
+    userId: string
+    userEmail: string
+  }
+}>
+
+type UpdateResult = Promise<{
+  error?: string
+  success?: string,
   user?: {
     accessToken: string
     firstName: string
@@ -34,6 +51,17 @@ export async function sendRegistrationForm(form: HTMLFormElement): AdminRegistra
 
 
 export async function sendLoginForm(form: HTMLFormElement): LoginResult {
+
+  const response = await fetch(form.action, {
+    method: form.method,
+    body: new FormData(form),
+    headers: { accept: 'application/json' },
+  })
+
+  return await response.json()
+}
+
+export async function sendUpdateForm(form: HTMLFormElement): UpdateResult {
 
   const response = await fetch(form.action, {
     method: form.method,

@@ -69,4 +69,47 @@ export class UserService {
   private async hashPassword(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
   }
+
+
+  async updateUser(authUser: AuthUserDto, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOne(authUser.id);
+
+    user.lastName = updateUserDto.lastName || user.lastName;
+    user.firstName = updateUserDto.firstName || user.firstName;
+    user.profileImagePath = updateUserDto.profileImagePath || user.profileImagePath;
+    user.isFirstLoggedIn = updateUserDto.isFirstLoggedIn || user.isFirstLoggedIn;
+
+    // If payload includes password - Create new password for user
+    if (updateUserDto.password) {
+      user.salt = await bcrypt.genSalt();
+      user.password = await this.hashPassword(updateUserDto.password, user.salt);
+    }
+
+    if (updateUserDto.isAdmin) {
+      const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } })
+
+      if (adminUser) {
+        throw new BadRequestException("Admin user exists")
+      }
+
+      user.isAdmin = true;
+    }
+
+    try {
+      const updatedUser = await this.userRepository.save(user);
+
+      return {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        isAdmin: updatedUser.isAdmin,
+        profileImagePath: updatedUser.profileImagePath,
+      };
+
+    } catch (e) {
+      Logger.error(e, 'Create new user');
+      throw new InternalServerErrorException('Failed to register new user');
+    }
+  }
 }

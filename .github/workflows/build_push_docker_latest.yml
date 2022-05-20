@@ -85,7 +85,7 @@ jobs:
           context: ./web
           file: ./web/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
-          target: "prod"
+          target: prod
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             altran1502/immich-web:latest

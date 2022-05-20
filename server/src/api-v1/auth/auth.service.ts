@@ -47,6 +47,8 @@ export class AuthService {
       firstName: validatedUser.firstName,
       lastName: validatedUser.lastName,
       isAdmin: validatedUser.isAdmin,
+      profileImagePath: validatedUser.profileImagePath,
+      isFirstLogin: validatedUser.isFirstLoggedIn
     };
   }
 

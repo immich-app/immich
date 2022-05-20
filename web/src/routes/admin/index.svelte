@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import { get } from '$lib/api';
+	import { getRequest } from '$lib/api';
 
 	export const load: Load = async ({ session, fetch }) => {
 		if (!session.user) {
@@ -10,7 +10,7 @@
 			};
 		}
 
-		const usersOnServer = await get('user', session.user.accessToken);
+		const usersOnServer = await getRequest('user', session.user.accessToken);
 
 		return {
 			status: 200,
@@ -25,7 +25,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
-	import { fly, fade } from 'svelte/transition';
 
 	import type { ImmichUser } from '$lib/models/immich-user';
 	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
@@ -53,7 +52,7 @@
 
 	const onUserCreated = async () => {
 		if ($session.user) {
-			usersOnServer = await get('user', $session.user.accessToken);
+			usersOnServer = await getRequest('user', $session.user.accessToken);
 		}
 
 		shouldShowCreateUserForm = false;
@@ -68,7 +67,7 @@
 
 {#if shouldShowCreateUserForm}
 	<FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>
-		<div in:fly={{ y: 50, duration: 250 }} out:fade={{ duration: 100 }}>
+		<div>
 			<CreateUserForm on:user-created={onUserCreated} />
 		</div>
 	</FullScreenModal>

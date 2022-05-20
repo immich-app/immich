@@ -3,7 +3,6 @@
 	import type { Load } from '@sveltejs/kit';
 
 	export const load: Load = async ({ session, fetch }) => {
-		console.log(serverEndpoint);
 		const res = await fetch(`${serverEndpoint}/user/count`);
 		const { userCount } = await res.json();
 

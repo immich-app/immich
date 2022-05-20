@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -12,4 +12,13 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   lastName: string;
+
+  @IsOptional()
+  profileImagePath: string;
+
+  @IsOptional()
+  isAdmin: boolean;
+
+  @IsOptional()
+  isFirstLoggedIn: boolean;
 }
