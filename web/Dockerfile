@@ -28,10 +28,8 @@ COPY --chown=node:node package*.json ./
 COPY --chown=node:node . .
 
 RUN npm install
-RUN npm run build
-
-WORKDIR /usr/src/app/build
 
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+
+# Issue build command in entrypoint.sh to capture user .env file instead of the builder .env file.

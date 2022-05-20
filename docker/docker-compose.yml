@@ -37,11 +37,8 @@ services:
     restart: always
 
   immich-web:
-    image: immich-web:latest
-    build:
-      context: ../web
-      dockerfile: Dockerfile
-      target: prod
+    image: altran1502/immich-web:latest
+    entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
       - .env
     ports:
