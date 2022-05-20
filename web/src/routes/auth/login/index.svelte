@@ -6,13 +6,20 @@
 	import UpdateForm from '../../../lib/components/forms/update-form.svelte';
 
 	let shouldShowUpdateForm = false;
+	let shouldShowSelectAdminForm = false;
 
 	const onLoginSuccess = () => {
+		console.log('navigate to dashboard after log');
 		goto('/dashboard');
 	};
 
 	const onNeedUpdate = () => {
 		shouldShowUpdateForm = true;
+	};
+
+	const onNeedSelectAdmin = () => {
+		console.log('onNeedSelectAdmin form');
+		shouldShowSelectAdminForm = true;
 	};
 </script>
 
@@ -21,9 +28,9 @@
 </svelte:head>
 
 <section class="h-screen w-screen flex place-items-center place-content-center">
-	{#if !shouldShowUpdateForm}
+	{#if !shouldShowUpdateForm && !shouldShowSelectAdminForm}
 		<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
-			<LoginForm on:success={onLoginSuccess} on:need-update={onNeedUpdate} />
+			<LoginForm on:success={onLoginSuccess} on:need-update={onNeedUpdate} on:need-select-admin={onNeedSelectAdmin} />
 		</div>
 	{/if}
 
@@ -31,5 +38,9 @@
 		<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
 			<UpdateForm on:success={onLoginSuccess} />
 		</div>
+	{/if}
+
+	{#if shouldShowSelectAdminForm}
+		<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>Select admin form</div>
 	{/if}
 </section>

@@ -24,8 +24,15 @@ export class UserService {
     });
   }
 
-  async getUserCount() {
-    const users = await this.userRepository.find();
+  async getUserCount(isAdmin: boolean) {
+    let users;
+
+    if (isAdmin) {
+      users = await this.userRepository.find({ where: { isAdmin: true } });
+    } else {
+      users = await this.userRepository.find();
+    }
+
 
     return {
       userCount: users.length

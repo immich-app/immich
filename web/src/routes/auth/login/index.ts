@@ -46,7 +46,7 @@ export const post: RequestHandler = async ({ request }) => {
 
     // check how many user on the server
     const { userCount } = await getRequest('user/count', '');
-
+    const adminUserCount = await getRequest('user/count?isAdmin=true', '')
     /**
      * Scenario 1 handler
      */
@@ -71,6 +71,44 @@ export const post: RequestHandler = async ({ request }) => {
               lastName: updatedUser.lastName,
               isAdmin: updatedUser.isAdmin,
               userEmail: updatedUser.email,
+            }), {
+            path: '/',
+            httpOnly: true,
+            sameSite: 'strict',
+            maxAge: 60 * 60 * 24 * 30,
+          })
+        }
+      }
+    }
+
+
+    /**
+    * Scenario 3 handler
+    */
+    if (userCount >= 2 && adminUserCount.userCount == 0) {
+      return {
+        status: 200,
+        body: {
+          needSelectAdmin: true,
+          user: {
+            userId: loggedInUser.userId,
+            accessToken: loggedInUser.accessToken,
+            firstName: loggedInUser.firstName,
+            lastName: loggedInUser.lastName,
+            isAdmin: loggedInUser.isAdmin,
+            userEmail: loggedInUser.userEmail
+          },
+          success: 'success'
+        },
+        headers: {
+          'Set-Cookie': cookie.serialize('session', JSON.stringify(
+            {
+              userId: loggedInUser.userId,
+              accessToken: loggedInUser.accessToken,
+              firstName: loggedInUser.firstName,
+              lastName: loggedInUser.lastName,
+              isAdmin: loggedInUser.isAdmin,
+              userEmail: loggedInUser.userEmail
             }), {
             path: '/',
             httpOnly: true,

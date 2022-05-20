@@ -18,6 +18,14 @@
 			error = response.error;
 		}
 
+		if (response.needUpdate) {
+			return dispatch('need-update');
+		}
+
+		if (response.needSelectAdmin) {
+			return dispatch('need-select-admin');
+		}
+
 		if (response.success) {
 			$session.user = {
 				accessToken: response.user!.accessToken,
@@ -28,11 +36,7 @@
 				userEmail: response.user!.userEmail,
 			};
 
-			dispatch('success');
-		}
-
-		if (response.needUpdate) {
-			dispatch('need-update');
+			return dispatch('success');
 		}
 	}
 </script>

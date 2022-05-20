@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe, Put, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { boolean } from 'joi';
 
 @Controller('user')
 export class UserController {
@@ -24,8 +25,9 @@ export class UserController {
   }
 
   @Get('/count')
-  async getUserCount() {
-    return await this.userService.getUserCount();
+  async getUserCount(@Query('isAdmin') isAdmin: boolean) {
+
+    return await this.userService.getUserCount(isAdmin);
   }
 
   @UseGuards(JwtAuthGuard)
