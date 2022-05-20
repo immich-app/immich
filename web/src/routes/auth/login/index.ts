@@ -82,7 +82,7 @@ export const post: RequestHandler = async ({ request }) => {
     }
 
     /**
-    * Scenario 1 handler
+    * Scenario 2 handler
     */
     if (loggedInUser.firstName === "" || loggedInUser.lastName === "") {
       return {

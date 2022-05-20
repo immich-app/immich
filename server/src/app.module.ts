@@ -15,6 +15,7 @@ import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
 import { SharingModule } from './api-v1/sharing/sharing.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -44,7 +45,7 @@ import { SharingModule } from './api-v1/sharing/sharing.module';
 
     SharingModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule implements NestModule {
