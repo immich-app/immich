@@ -14,6 +14,7 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "next",
+		"@sveltejs/adapter-node": "^1.0.0-next.73",
 		"@sveltejs/kit": "next",
 		"@types/bcrypt": "^5.0.0",
 		"@types/cookie": "^0.4.1",

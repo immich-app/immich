@@ -8,8 +8,8 @@
 
 	let shouldShowAccountInfo = false;
 
-	const getFirstLetter = (text: string) => {
-		return text.charAt(0).toUpperCase();
+	const getFirstLetter = (text?: string) => {
+		return text?.charAt(0).toUpperCase();
 	};
 </script>
 

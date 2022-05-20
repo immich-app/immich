@@ -46,10 +46,10 @@ services:
 
   immich-web:
     image: immich-web-dev:1.9.0
-    restart: on-failure
     build:
       context: ../web
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+      target: dev
     command: npm run dev --host
     env_file:
       - .env
@@ -61,7 +61,7 @@ services:
       - /usr/src/app/node_modules
     networks:
       - immich-network
-
+    restart: always
 
   redis:
     container_name: immich_redis

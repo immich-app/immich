@@ -1,7 +1,6 @@
 <script context="module" lang="ts">
-	export const prerender = true;
+	export const prerender = false;
 	import type { Load } from '@sveltejs/kit';
-
 	export const load: Load = async ({ session, fetch }) => {
 		const res = await fetch(`${serverEndpoint}/user/count`);
 		const { userCount } = await res.json();

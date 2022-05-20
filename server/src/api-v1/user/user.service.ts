@@ -18,6 +18,9 @@ export class UserService {
   async getAllUsers(authUser: AuthUserDto) {
     return await this.userRepository.find({
       where: { id: Not(authUser.id) },
+      order: {
+        createdAt: 'DESC'
+      }
     });
   }
 
