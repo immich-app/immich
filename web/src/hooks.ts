@@ -2,8 +2,9 @@ import type { ExternalFetch, GetSession, Handle } from '@sveltejs/kit';
 import * as cookie from 'cookie';
 import { serverEndpoint } from '$lib/constants';
 import { session } from '$app/stores';
-export const handle: Handle = async ({ event, resolve, }) => {
 
+
+export const handle: Handle = async ({ event, resolve, }) => {
   const cookies = cookie.parse(event.request.headers.get('cookie') || '');
 
   if (!cookies.session) {
@@ -32,12 +33,11 @@ export const handle: Handle = async ({ event, resolve, }) => {
 
   const response = await resolve(event);
 
-  response.headers.set('Authorization', `Bearer ${accessToken}`);
-
   return response;
 };
 
 export const getSession: GetSession = async ({ locals }) => {
+
   if (!locals.user) return {}
 
   return {

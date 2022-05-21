@@ -26,7 +26,7 @@
 		} else {
 			return {
 				status: 302,
-				redirect: '/dashboard',
+				redirect: '/photos',
 			};
 		}
 	};

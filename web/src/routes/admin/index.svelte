@@ -28,7 +28,7 @@
 
 	import type { ImmichUser } from '$lib/models/immich-user';
 	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import SideBarButton from '$lib/components/admin/side-bar-button.svelte';
+	import SideBarButton from '$lib/components/shared/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
 	import UserManagement from '$lib/components/admin/user-management.svelte';
@@ -83,7 +83,7 @@
 			on:selected={onButtonClicked}
 		/>
 	</section>
-	<section class="overflow-y-scroll relative">
+	<section class="overflow-y-auto relative">
 		<div id="setting-title" class="pt-10 fixed w-full z-50 bg-immich-bg">
 			<h1 class="text-lg ml-8 mb-4 text-immich-primary font-medium">{selectedAction}</h1>
 			<hr />

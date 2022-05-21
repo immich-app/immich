@@ -10,7 +10,7 @@
 	let shouldShowSelectAdminForm = false;
 
 	const onLoginSuccess = async () => {
-		goto('/dashboard');
+		goto('/photos');
 	};
 
 	const onNeedUpdate = () => {

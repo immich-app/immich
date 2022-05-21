@@ -56,7 +56,7 @@
 	</div>
 
 	<div class="text-xs m-4">USERS ON SERVER, CLICK TO SELECT ONE</div>
-	<div class="overflow-y-scroll rounded-md max-h-[300px] block border mx-4 px-4 py-2">
+	<div class="overflow-y-auto rounded-md max-h-[300px] block border mx-4 px-4 py-2">
 		{#each allUsers as user, i}
 			<div
 				class="p-4 flex justify-between place-items-center my-4 rounded-md hover:cursor-pointer shadow-sm bg-gray-50 hover:bg-gray-100"

@@ -17,7 +17,7 @@
 			<th class="text-center w-1/4 font-medium text-sm">Edit</th>
 		</tr>
 	</thead>
-	<tbody class="overflow-y-scroll rounded-md w-full max-h-[320px] block border">
+	<tbody class="overflow-y-auto rounded-md w-full max-h-[320px] block border">
 		{#each usersOnServer as user, i}
 			<tr
 				class={`text-center flex place-items-center w-full border-b h-[80px] ${

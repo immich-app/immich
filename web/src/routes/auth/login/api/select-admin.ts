@@ -25,7 +25,7 @@ export const post: RequestHandler = async ({ request, locals }) => {
       status: 200,
       body: { userInfo: res },
       headers: {
-        'Set-Cookie': cookie.serialize('immich-session', JSON.stringify(
+        'Set-Cookie': cookie.serialize('session', JSON.stringify(
           {
             id: res.id,
             accessToken: locals.user!.accessToken,
