@@ -53,7 +53,7 @@
 		<div class="flex place-items-center place-content-center ">
 			<img class="text-center" src="immich-logo.svg" height="200" width="200" alt="immich-logo" />
 		</div>
-		<h1 class="text-4xl text-immich-primary font-bold font-immich-title">Welcome to Immich Web</h1>
+		<h1 class="text-4xl text-immich-primary font-bold font-immich-title">Welcome to IMMICH Web</h1>
 		<button
 			class="border px-4 py-2 rounded-md bg-immich-primary hover:bg-immich-primary/75 text-white font-bold w-[200px]"
 			on:click={onGettingStartedClicked}>Getting Started</button

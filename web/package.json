@@ -18,6 +18,7 @@
 		"@sveltejs/kit": "next",
 		"@types/bcrypt": "^5.0.0",
 		"@types/cookie": "^0.4.1",
+		"@types/lodash": "^4.14.182",
 		"@typescript-eslint/eslint-plugin": "^5.10.1",
 		"@typescript-eslint/parser": "^5.10.1",
 		"autoprefixer": "^10.4.7",
@@ -36,10 +37,9 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@fontsource/fira-mono": "^4.5.0",
-		"@lukeed/uuid": "^2.0.0",
-		"bcrypt": "^5.0.1",
 		"cookie": "^0.4.2",
+		"lodash": "^4.17.21",
+		"moment": "^2.29.3",
 		"svelte-material-icons": "^2.0.2"
 	}
 }

@@ -16,10 +16,10 @@
 	<div class="flex border place-items-center px-6 py-2 ">
 		<a class="flex gap-2 place-items-center hover:cursor-pointer" href="/photos">
 			<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" />
-			<h1 class="font-immich-title text-2xl text-immich-primary">Immich</h1>
+			<h1 class="font-immich-title text-2xl text-immich-primary">IMMICH</h1>
 		</a>
 		<div class="flex-1 ml-24">
-			<div class="w-[50%] border rounded-md bg-gray-200 px-8 py-4">Search</div>
+			<input class="w-[50%] border rounded-md bg-gray-200 px-8 py-4" placeholder="Search - Coming soon" />
 		</div>
 		<section class="flex gap-6 place-items-center">
 			<!-- <div>Upload</div> -->

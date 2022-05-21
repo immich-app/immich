@@ -67,7 +67,7 @@ This project is under heavy development, there will be continous functions, feat
 - Show curated objects on the search page
 - Shared album with users on the same server
 - Selective backup - albums can be included and excluded during the backup process.
-
+- Web interface is available for administrative tasks (create new users) and view assets on the server - additional features are coming.
 
 # System Requirement
 

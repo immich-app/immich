@@ -26,17 +26,36 @@
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import { session } from '$app/stores';
+	import assetStore from '$lib/stores/assets';
+	import type { ImmichAsset } from '../../lib/models/immich-asset';
+	import ImmichThumbnail from '../../lib/components/photos/immich-thumbnail.svelte';
+	import moment from 'moment';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
+	let assets: ImmichAsset[] = [];
+	let assetsGroupByDate: ImmichAsset[][];
+
+	// Subscribe to store values
+	const assetsSub = assetStore.assets.subscribe((newAssets) => (assets = newAssets));
+	const assetsGroupByDateSub = assetStore.assetsGroupByDate.subscribe((value) => (assetsGroupByDate = value));
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AppSideBarSelection;
 	};
 
-	onMount(() => {
+	onMount(async () => {
 		selectedAction = AppSideBarSelection.PHOTOS;
+		if ($session.user) {
+			await assetStore.getAssetsInfo($session.user.accessToken);
+		}
+	});
+
+	onDestroy(() => {
+		assetsSub();
+		assetsGroupByDateSub();
 	});
 </script>
 
@@ -58,18 +77,31 @@
 			on:selected={onButtonClicked}
 		/>
 
-		<SideBarButton
+		<!-- <SideBarButton
 			title="Explore"
 			logo={Magnify}
 			actionType={AppSideBarSelection.EXPLORE}
 			isSelected={selectedAction === AppSideBarSelection.EXPLORE}
 			on:selected={onButtonClicked}
-		/>
+		/> -->
 	</section>
 
 	<section class="overflow-y-auto relative">
-		<section id="setting-content" class="relative pt-[85px]">
-			<section class="pt-4">Coming soon</section>
+		<section id="assets-content" class="relative pt-8">
+			<section id="image-grid" class="flex flex-wrap gap-8">
+				{#each assetsGroupByDate as assetsInDateGroup}
+					<div class="flex flex-col">
+						<p class="font-medium text-sm text-gray-500 mb-2">
+							{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
+						</p>
+						<div class=" flex flex-wrap gap-2">
+							{#each assetsInDateGroup as asset}
+								<ImmichThumbnail {asset} />
+							{/each}
+						</div>
+					</div>
+				{/each}
+			</section>
 		</section>
 	</section>
 </section>
