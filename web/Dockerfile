@@ -7,6 +7,8 @@ RUN chown node:node /usr/src/app
 
 COPY --chown=node:node package*.json ./
 
+RUN apk add --update-cache build-base python3 
+
 RUN npm install
 
 COPY --chown=node:node . .
