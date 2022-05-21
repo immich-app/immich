@@ -81,7 +81,7 @@ export const post: RequestHandler = async ({ request }) => {
           },
         },
         headers: {
-          'Set-Cookie': cookie.serialize('session', JSON.stringify(
+          'Set-Cookie': cookie.serialize('immich-session', JSON.stringify(
             {
               id: updatedUser.userId,
               accessToken: loggedInUser.accessToken,
@@ -119,7 +119,7 @@ export const post: RequestHandler = async ({ request }) => {
           success: 'success'
         },
         headers: {
-          'Set-Cookie': cookie.serialize('session', JSON.stringify(
+          'Set-Cookie': cookie.serialize('immich-session', JSON.stringify(
             {
               id: loggedInUser.userId,
               accessToken: loggedInUser.accessToken,
@@ -155,7 +155,7 @@ export const post: RequestHandler = async ({ request }) => {
           },
         },
         headers: {
-          'Set-Cookie': cookie.serialize('session', JSON.stringify(
+          'Set-Cookie': cookie.serialize('immich-session', JSON.stringify(
             {
               id: loggedInUser.userId,
               accessToken: loggedInUser.accessToken,
@@ -189,7 +189,7 @@ export const post: RequestHandler = async ({ request }) => {
         success: 'success'
       },
       headers: {
-        'Set-Cookie': cookie.serialize('session', JSON.stringify(
+        'Set-Cookie': cookie.serialize('immich-session', JSON.stringify(
           {
             id: loggedInUser.userId,
             accessToken: loggedInUser.accessToken,

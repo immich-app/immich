@@ -34,7 +34,7 @@ export const post: RequestHandler = async ({ request, locals }) => {
         success: 'Update user success'
       },
       headers: {
-        'Set-Cookie': cookie.serialize('session', JSON.stringify(
+        'Set-Cookie': cookie.serialize('immich-session', JSON.stringify(
           {
             id: updatedUser.id,
             accessToken: locals.user.accessToken,
