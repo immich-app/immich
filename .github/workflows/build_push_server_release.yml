@@ -110,7 +110,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push immich-server release
+      - name: Build and push immich-web release
         uses: docker/build-push-action@v3.0.0
         with:
           context: ./web

@@ -69,7 +69,7 @@
 
 	<section class="overflow-y-auto relative">
 		<section id="setting-content" class="relative pt-[85px]">
-			<section class="pt-4">Content</section>
+			<section class="pt-4">Coming soon</section>
 		</section>
 	</section>
 </section>

@@ -79,7 +79,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and Push Microservices
+      - name: Build and Push Web
         uses: docker/build-push-action@v3.0.0
         with:
           context: ./web

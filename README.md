@@ -86,10 +86,11 @@ I haven't tested with `Docker for Windows` as well as `WSL` on Windows
 You can use docker compose for development and testing out the application, there are several services that compose Immich:
 
 1. **NestJs** - Backend of the application
-2. **PostgreSQL** - Main database of the application
-3. **Redis** - For sharing websocket instance between docker instances and background tasks message queue.
-4. **Nginx** - Load balancing and optimized file uploading.
-5. **TensorFlow** - Object Detection and Image Classification.
+2. **SvelteKit** - Web frontend of the application
+3. **PostgreSQL** - Main database of the application
+4. **Redis** - For sharing websocket instance between docker instances and background tasks message queue.
+5. **Nginx** - Load balancing and optimized file uploading.
+6. **TensorFlow** - Object Detection and Image Classification.
 
 ## Step 1: Populate .env file
 
@@ -133,7 +134,7 @@ To start, run
 docker-compose -f ./docker/docker-compose.yml up 
 ```
 
-If you have a few thousand photos/videos, I suggest running docker-compose with scaling option for the `immich_server` container to handle high I/O load when using fast scrolling.
+If you have a few thousand photos/videos, I suggest running docker-compose with scaling option for the `immich_-erver` container to handle high I/O load when using fast scrolling.
 
 ```bash
 docker-compose -f ./docker/docker-compose.yml up --scale immich-server=5 
@@ -144,17 +145,17 @@ The server will be running at `http://your-ip:2283` through `Nginx`
 
 ## Step 3: Register User
 
-Use the command below on your terminal to create user as we don't have user interface for this function yet.
+Access the web interface at `http://your-ip:2285` to register an admin account.
 
-```bash
-curl --location --request POST 'http://your-server-ip:2283/auth/signUp' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "email": "testuser@email.com",
-    "password": "password"
-}'
-```
+<p align="left">
+  <img src="design/admin-registration-form.png" width="300" title="Admin Registration">
+<p/>
 
+Additional accounts on the server can be created by the admin account.
+
+<p align="left">
+  <img src="design/admin-interface.png" width="500" title="Admin User Management">
+<p/>
 ## Step 4: Run mobile app
 
 The app is distributed on several platforms below.
