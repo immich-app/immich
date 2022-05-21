@@ -31,6 +31,7 @@ Loading ~4000 images/videos
 
 ## Screenshots
 
+### Mobile client
 <p align="left">
   <img src="design/login-screen.png" width="150" title="Login With Custom URL">
   <img src="design/backup-screen.png" width="150" title="Backup Setting Info">
@@ -39,9 +40,12 @@ Loading ~4000 images/videos
   <img src="design/search-screen.jpeg" width="150" title="Curated Search Info">
   <img src="design/shared-albums.png" width="150" title="Shared Albums">
   <img src="design/nsc6.png" width="150" title="EXIF Info">
-
 </p>
 
+### Web client
+<p align="center">
+  <img src="design/dashboard_photos.jpeg" width="100%" title="Home Dashboard">
+</p>
 # Note
 
 **!! NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS !!**
