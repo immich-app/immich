@@ -3,7 +3,6 @@
 
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { getRequest, putRequest } from '../../api';
 	import type { ImmichUser } from '../../models/immich-user';
 	import Check from 'svelte-material-icons/Check.svelte';
 
@@ -27,8 +26,18 @@
 			}),
 		});
 
-		console.log('assign admin result', res);
 		if (res.status === 200) {
+			const data = await res.json();
+
+			$session.user = {
+				accessToken: '',
+				firstName: data.userInfo.firstName,
+				lastName: data.userInfo.lastName,
+				isAdmin: data.userInfo.isAdmin,
+				id: data.userInfo.id,
+				email: data.userInfo.email,
+			};
+
 			dispatch('success');
 		} else {
 			error = JSON.stringify(await res.json());

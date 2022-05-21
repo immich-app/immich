@@ -23,6 +23,7 @@ export const post: RequestHandler = async ({ request, locals }) => {
   if (res.id == locals.user!.id) {
     return {
       status: 200,
+      body: { userInfo: res },
       headers: {
         'Set-Cookie': cookie.serialize('session', JSON.stringify(
           {
@@ -43,6 +44,7 @@ export const post: RequestHandler = async ({ request, locals }) => {
   } else {
     return {
       status: 200,
+      body: { userInfo: { ...locals.user! } },
     }
   }
 

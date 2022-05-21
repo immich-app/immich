@@ -141,12 +141,18 @@ export const post: RequestHandler = async ({ request }) => {
     * Scenario 2 handler
     */
     if (loggedInUser.firstName == "" || loggedInUser.lastName == "") {
-      console.log(loggedInUser.firstName, loggedInUser.firstName == "");
-      console.log(loggedInUser.lastName, loggedInUser.firstName == "");
       return {
         status: 200,
         body: {
           needUpdate: true,
+          user: {
+            id: loggedInUser.userId,
+            accessToken: loggedInUser.accessToken,
+            firstName: loggedInUser.firstName,
+            lastName: loggedInUser.lastName,
+            isAdmin: loggedInUser.isAdmin,
+            email: loggedInUser.userEmail
+          },
         },
         headers: {
           'Set-Cookie': cookie.serialize('session', JSON.stringify(

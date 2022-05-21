@@ -10,10 +10,7 @@
 	let shouldShowSelectAdminForm = false;
 
 	const onLoginSuccess = async () => {
-		console.log('loggin success - go to dashboard');
-		const res = await goto('/dashboard');
-
-		console.log('navigate result', res);
+		goto('/dashboard');
 	};
 
 	const onNeedUpdate = () => {

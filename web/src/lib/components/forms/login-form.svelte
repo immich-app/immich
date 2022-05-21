@@ -13,31 +13,16 @@
 		const formElement = event.target as HTMLFormElement;
 
 		const response = await sendLoginForm(formElement);
+
 		if (response.error) {
 			error = response.error;
 		}
 
 		if (response.needUpdate) {
-			$session.user = {
-				accessToken: response.user!.accessToken,
-				firstName: response.user!.firstName,
-				lastName: response.user!.lastName,
-				isAdmin: response.user!.isAdmin,
-				id: response.user!.id,
-				email: response.user!.email,
-			};
 			return dispatch('need-update');
 		}
 
 		if (response.needSelectAdmin) {
-			$session.user = {
-				accessToken: response.user!.accessToken,
-				firstName: response.user!.firstName,
-				lastName: response.user!.lastName,
-				isAdmin: response.user!.isAdmin,
-				id: response.user!.id,
-				email: response.user!.email,
-			};
 			return dispatch('need-select-admin');
 		}
 
