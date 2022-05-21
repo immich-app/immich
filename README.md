@@ -156,6 +156,7 @@ Additional accounts on the server can be created by the admin account.
 <p align="left">
   <img src="design/admin-interface.png" width="500" title="Admin User Management">
 <p/>
+
 ## Step 4: Run mobile app
 
 The app is distributed on several platforms below.
