@@ -44,6 +44,24 @@ services:
     networks:
       - immich-network
 
+  immich-web:
+    image: immich-web-dev:1.9.0
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+      target: dev
+    command: npm run dev --host
+    env_file:
+      - .env
+    ports:
+      - 3002:3002
+      - 24678:24678
+    volumes:
+      - ../web:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - immich-network
+    restart: always
 
   redis:
     container_name: immich_redis

@@ -17,7 +17,7 @@ services:
       - database
     networks:
       - immich-network
-    restart: unless-stopped
+    restart: always
 
   immich-microservices:
     image: altran1502/immich-microservices:latest
@@ -34,13 +34,27 @@ services:
       - database
     networks:
       - immich-network
-    restart: unless-stopped
+    restart: always
+
+  immich-web:
+    image: altran1502/immich-web:latest
+    entrypoint: ["/bin/sh", "./entrypoint.sh"]
+    env_file:
+      - .env
+    ports:
+      - 2285:3000
+    networks:
+      - immich-network
+    restart: always
+
 
   redis:
     container_name: immich_redis
     image: redis:6.2
     networks:
       - immich-network
+    restart: always
+    
 
   database:
     container_name: immich_postgres
@@ -73,6 +87,7 @@ services:
       - immich-network
     depends_on:
       - immich-server
+    restart: always
 
 networks:
   immich-network:

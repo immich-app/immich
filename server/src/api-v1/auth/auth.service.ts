@@ -14,12 +14,12 @@ export class AuthService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     private immichJwtService: ImmichJwtService,
-  ) {}
+  ) { }
 
   private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity> {
     const user = await this.userRepository.findOne(
       { email: loginCredential.email },
-      { select: ['id', 'email', 'password', 'salt'] },
+      { select: ['id', 'email', 'password', 'salt', 'firstName', 'lastName', 'isAdmin'] },
     );
 
     const isAuthenticated = await this.validatePassword(user.password, loginCredential.password, user.salt);
@@ -44,32 +44,45 @@ export class AuthService {
       accessToken: await this.immichJwtService.generateToken(payload),
       userId: validatedUser.id,
       userEmail: validatedUser.email,
+      firstName: validatedUser.firstName,
+      lastName: validatedUser.lastName,
+      isAdmin: validatedUser.isAdmin,
+      profileImagePath: validatedUser.profileImagePath,
+      isFirstLogin: validatedUser.isFirstLoggedIn
     };
   }
 
-  public async signUp(signUpCrendential: SignUpDto) {
-    const registerUser = await this.userRepository.findOne({ email: signUpCrendential.email });
 
-    if (registerUser) {
-      throw new BadRequestException('User exist');
+  public async adminSignUp(signUpCrendential: SignUpDto) {
+    const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
+
+    if (adminUser) {
+      throw new BadRequestException('The server already has an admin')
     }
 
-    const newUser = new UserEntity();
-    newUser.email = signUpCrendential.email;
-    newUser.salt = await bcrypt.genSalt();
-    newUser.password = await this.hashPassword(signUpCrendential.password, newUser.salt);
+
+    const newAdminUser = new UserEntity();
+    newAdminUser.email = signUpCrendential.email;
+    newAdminUser.salt = await bcrypt.genSalt();
+    newAdminUser.password = await this.hashPassword(signUpCrendential.password, newAdminUser.salt);
+    newAdminUser.firstName = signUpCrendential.firstName;
+    newAdminUser.lastName = signUpCrendential.lastName;
+    newAdminUser.isAdmin = true;
 
     try {
-      const savedUser = await this.userRepository.save(newUser);
+      const savedNewAdminUserUser = await this.userRepository.save(newAdminUser);
 
       return {
-        id: savedUser.id,
-        email: savedUser.email,
-        createdAt: savedUser.createdAt,
+        id: savedNewAdminUserUser.id,
+        email: savedNewAdminUserUser.email,
+        firstName: savedNewAdminUserUser.firstName,
+        lastName: savedNewAdminUserUser.lastName,
+        createdAt: savedNewAdminUserUser.createdAt,
       };
+
     } catch (e) {
       Logger.error('e', 'signUp');
-      throw new InternalServerErrorException('Failed to register new user');
+      throw new InternalServerErrorException('Failed to register new admin user');
     }
   }
 

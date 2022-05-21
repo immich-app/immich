@@ -7,6 +7,8 @@ import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  app.enableCors();
+
   app.set('trust proxy');
 
   app.useWebSocketAdapter(new RedisIoAdapter(app));

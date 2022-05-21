@@ -8,7 +8,6 @@ on:
     branches: [main]
 
 jobs:
-
   build_and_push_server_latest:
     runs-on: ubuntu-latest
     steps:
@@ -37,28 +36,56 @@ jobs:
             altran1502/immich-server:latest
 
   build_and_push_microservice_latest:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v3
-          with:
-            ref: "main" # branch
-        - name: Set up QEMU
-          uses: docker/setup-qemu-action@v2.0.0
-        - name: Set up Docker Buildx
-          id: buildx
-          uses: docker/setup-buildx-action@v2.0.0
-        - name: Login to Docker Hub
-          uses: docker/login-action@v2
-          with:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_TOKEN }}
-        - name: Build and Push Microservices
-          uses: docker/build-push-action@v3.0.0
-          with:
-            context: ./microservices
-            file: ./microservices/Dockerfile
-            platforms: linux/arm/v7,linux/amd64
-            push: ${{ github.event_name != 'pull_request' }}
-            tags: |
-              altran1502/immich-microservices:latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: "main" # branch
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2.0.0
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2.0.0
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and Push Microservices
+        uses: docker/build-push-action@v3.0.0
+        with:
+          context: ./microservices
+          file: ./microservices/Dockerfile
+          platforms: linux/arm/v7,linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            altran1502/immich-microservices:latest
+
+  build_and_push_web_latest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: "main" # branch
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2.0.0
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2.0.0
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and Push Web
+        uses: docker/build-push-action@v3.0.0
+        with:
+          context: ./web
+          file: ./web/Dockerfile
+          platforms: linux/arm/v7,linux/amd64,linux/arm64
+          target: prod
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            altran1502/immich-web:latest
