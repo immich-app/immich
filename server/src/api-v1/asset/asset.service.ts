@@ -22,7 +22,7 @@ export class AssetService {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-  ) {}
+  ) { }
 
   public async updateThumbnailInfo(assetId: string, path: string) {
     return await this.assetRepository.update(assetId, {

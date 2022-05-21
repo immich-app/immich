@@ -23,7 +23,7 @@
 </main>
 
 <footer
-	class="text-sm fixed bottom-0 h-8 flex place-items-center place-content-center bg-immich-primary/10 w-screen font-mono gap-8 px-4 font-medium"
+	class="text-sm fixed bottom-0 h-8 flex place-items-center place-content-center bg-gray-50 w-screen font-mono gap-8 px-4 font-medium"
 >
 	<p class="">
 		Server URL <span class="text-immich-primary font-bold">{endpoint}</span>

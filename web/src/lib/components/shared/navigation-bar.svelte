@@ -19,7 +19,7 @@
 			<h1 class="font-immich-title text-2xl text-immich-primary">Immich</h1>
 		</a>
 		<div class="flex-1 ml-24">
-			<div class="w-[50%] border rounded-md bg-gray-200 px-8 py-4">Search</div>
+			<input class="w-[50%] border rounded-md bg-gray-200 px-8 py-4" placeholder="Search - Coming soon" />
 		</div>
 		<section class="flex gap-6 place-items-center">
 			<!-- <div>Upload</div> -->
