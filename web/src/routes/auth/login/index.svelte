@@ -4,21 +4,25 @@
 
 	import LoginForm from '$lib/components/forms/login-form.svelte';
 	import UpdateForm from '../../../lib/components/forms/update-form.svelte';
+	import SelectAdminForm from '../../../lib/components/forms/select-admin-form.svelte';
 
 	let shouldShowUpdateForm = false;
 	let shouldShowSelectAdminForm = false;
 
-	const onLoginSuccess = () => {
-		console.log('navigate to dashboard after log');
-		goto('/dashboard');
+	const onLoginSuccess = async () => {
+		console.log('loggin success - go to dashboard');
+		const res = await goto('/dashboard');
+
+		console.log('navigate result', res);
 	};
 
 	const onNeedUpdate = () => {
 		shouldShowUpdateForm = true;
+		shouldShowSelectAdminForm = false;
 	};
 
 	const onNeedSelectAdmin = () => {
-		console.log('onNeedSelectAdmin form');
+		shouldShowUpdateForm = false;
 		shouldShowSelectAdminForm = true;
 	};
 </script>
@@ -41,6 +45,8 @@
 	{/if}
 
 	{#if shouldShowSelectAdminForm}
-		<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>Select admin form</div>
+		<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
+			<SelectAdminForm on:success={onLoginSuccess} />
+		</div>
 	{/if}
 </section>

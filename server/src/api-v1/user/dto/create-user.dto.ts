@@ -21,4 +21,7 @@ export class CreateUserDto {
 
   @IsOptional()
   isFirstLoggedIn: boolean;
+
+  @IsOptional()
+  id: string;
 }

@@ -15,7 +15,12 @@ export class UserService {
     private userRepository: Repository<UserEntity>,
   ) { }
 
-  async getAllUsers(authUser: AuthUserDto) {
+  async getAllUsers(authUser: AuthUserDto, isAll: boolean) {
+
+    if (isAll) {
+      return await this.userRepository.find();
+    }
+
     return await this.userRepository.find({
       where: { id: Not(authUser.id) },
       order: {
@@ -78,8 +83,8 @@ export class UserService {
   }
 
 
-  async updateUser(authUser: AuthUserDto, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOne(authUser.id);
+  async updateUser(updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOne(updateUserDto.id);
 
     user.lastName = updateUserDto.lastName || user.lastName;
     user.firstName = updateUserDto.firstName || user.firstName;

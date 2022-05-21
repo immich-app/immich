@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import type { ImmichUser } from '$lib/models/immich-user';
-	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	export let user: ImmichUser;
@@ -52,7 +51,7 @@
 						class="absolute -bottom-12 right-5 border bg-gray-500 text-[12px] text-gray-100 p-2 rounded-md shadow-md"
 					>
 						<p>{user.firstName} {user.lastName}</p>
-						<p>{user.userEmail}</p>
+						<p>{user.email}</p>
 					</div>
 				{/if}
 			</div>

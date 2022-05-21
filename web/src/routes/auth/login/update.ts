@@ -12,6 +12,7 @@ export const post: RequestHandler = async ({ request, locals }) => {
 
   if (locals.user) {
     const updatedUser = await putRequest('user', {
+      id: locals.user.id,
       firstName,
       lastName
     }, locals.user.accessToken)
@@ -23,24 +24,24 @@ export const post: RequestHandler = async ({ request, locals }) => {
       status: 200,
       body: {
         user: {
-          userId: updatedUser.id,
+          id: updatedUser.id,
           accessToken: locals.user.accessToken,
           firstName: updatedUser.firstName,
           lastName: updatedUser.lastName,
           isAdmin: updatedUser.isAdmin,
-          userEmail: updatedUser.email,
+          email: updatedUser.email,
         },
         success: 'Update user success'
       },
       headers: {
         'Set-Cookie': cookie.serialize('session', JSON.stringify(
           {
-            userId: updatedUser.id,
+            id: updatedUser.id,
             accessToken: locals.user.accessToken,
             firstName: updatedUser.firstName,
             lastName: updatedUser.lastName,
             isAdmin: updatedUser.isAdmin,
-            userEmail: updatedUser.email,
+            email: updatedUser.email,
           }), {
           path: '/',
           httpOnly: true,

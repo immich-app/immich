@@ -5,8 +5,8 @@
 declare namespace App {
   interface Locals {
     user?: {
-      userId: string,
-      userEmail: string,
+      id: string,
+      email: string,
       accessToken: string,
       firstName: string,
       lastName: string,
@@ -18,8 +18,8 @@ declare namespace App {
 
   interface Session {
     user?: {
-      userId: string,
-      userEmail: string,
+      id: string,
+      email: string,
       accessToken: string,
       firstName: string,
       lastName: string

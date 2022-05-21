@@ -10,7 +10,7 @@ export const handle: Handle = async ({ event, resolve, }) => {
     return await resolve(event)
   }
 
-  const { userEmail, isAdmin, firstName, lastName, userId, accessToken } = JSON.parse(cookies.session);
+  const { email, isAdmin, firstName, lastName, id, accessToken } = JSON.parse(cookies.session);
 
   const res = await fetch(`${serverEndpoint}/auth/validateToken`, {
     method: 'POST',
@@ -21,12 +21,12 @@ export const handle: Handle = async ({ event, resolve, }) => {
 
   if (res.status === 201) {
     event.locals.user = {
-      userId,
+      id,
       accessToken,
       firstName,
       lastName,
       isAdmin,
-      userEmail
+      email
     };
   }
 
@@ -42,12 +42,12 @@ export const getSession: GetSession = async ({ locals }) => {
 
   return {
     user: {
-      userId: locals.user.userId,
+      id: locals.user.id,
       accessToken: locals.user.accessToken,
       firstName: locals.user.firstName,
       lastName: locals.user.lastName,
       isAdmin: locals.user.isAdmin,
-      userEmail: locals.user.userEmail
+      email: locals.user.email
     }
   }
 }

@@ -13,8 +13,8 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getAllUsers(@GetAuthUser() authUser: AuthUserDto) {
-    return await this.userService.getAllUsers(authUser);
+  async getAllUsers(@GetAuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean) {
+    return await this.userService.getAllUsers(authUser, isAll);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -32,7 +32,7 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Put()
-  async updateUser(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) updateUserDto: UpdateUserDto) {
-    return await this.userService.updateUser(authUser, updateUserDto)
+  async updateUser(@Body(ValidationPipe) updateUserDto: UpdateUserDto) {
+    return await this.userService.updateUser(updateUserDto)
   }
 }

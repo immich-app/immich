@@ -18,8 +18,8 @@ type LoginResult = Promise<{
     firstName: string
     lastName: string
     isAdmin: boolean
-    userId: string
-    userEmail: string
+    id: string
+    email: string
   }
 }>
 
@@ -31,8 +31,8 @@ type UpdateResult = Promise<{
     firstName: string
     lastName: string
     isAdmin: boolean
-    userId: string
-    userEmail: string
+    id: string
+    email: string
   }
 }>
 

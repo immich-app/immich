@@ -24,8 +24,8 @@
 				firstName: response.user!.firstName,
 				lastName: response.user!.lastName,
 				isAdmin: response.user!.isAdmin,
-				userId: response.user!.userId,
-				userEmail: response.user!.userEmail,
+				id: response.user!.id,
+				email: response.user!.email,
 			};
 
 			dispatch('success');

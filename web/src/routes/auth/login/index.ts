@@ -46,31 +46,49 @@ export const post: RequestHandler = async ({ request }) => {
 
     // check how many user on the server
     const { userCount } = await getRequest('user/count', '');
-    const adminUserCount = await getRequest('user/count?isAdmin=true', '')
+    const { userCount: adminUserCount } = await getRequest('user/count?isAdmin=true', '')
     /**
      * Scenario 1 handler
      */
     if (userCount == 1 && !loggedInUser.isAdmin) {
 
       const updatedUser = await putRequest('user', {
+        id: loggedInUser.userId,
         isAdmin: true
       }, loggedInUser.accessToken)
 
 
+      /**
+      * Scenario 2 handler for current admin user
+      */
+      let bodyResponse = { success: true, needUpdate: false }
+
+      if (loggedInUser.firstName == "" || loggedInUser.lastName == "") {
+        bodyResponse = { success: false, needUpdate: true }
+      }
+
       return {
         status: 200,
         body: {
-          needUpdate: true,
+          ...bodyResponse,
+          user: {
+            id: updatedUser.userId,
+            accessToken: loggedInUser.accessToken,
+            firstName: updatedUser.firstName,
+            lastName: updatedUser.lastName,
+            isAdmin: updatedUser.isAdmin,
+            email: updatedUser.email,
+          },
         },
         headers: {
           'Set-Cookie': cookie.serialize('session', JSON.stringify(
             {
-              userId: updatedUser.userId,
+              id: updatedUser.userId,
               accessToken: loggedInUser.accessToken,
               firstName: updatedUser.firstName,
               lastName: updatedUser.lastName,
               isAdmin: updatedUser.isAdmin,
-              userEmail: updatedUser.email,
+              email: updatedUser.email,
             }), {
             path: '/',
             httpOnly: true,
@@ -85,30 +103,30 @@ export const post: RequestHandler = async ({ request }) => {
     /**
     * Scenario 3 handler
     */
-    if (userCount >= 2 && adminUserCount.userCount == 0) {
+    if (userCount >= 2 && adminUserCount == 0) {
       return {
         status: 200,
         body: {
           needSelectAdmin: true,
           user: {
-            userId: loggedInUser.userId,
+            id: loggedInUser.userId,
             accessToken: loggedInUser.accessToken,
             firstName: loggedInUser.firstName,
             lastName: loggedInUser.lastName,
             isAdmin: loggedInUser.isAdmin,
-            userEmail: loggedInUser.userEmail
+            email: loggedInUser.userEmail
           },
           success: 'success'
         },
         headers: {
           'Set-Cookie': cookie.serialize('session', JSON.stringify(
             {
-              userId: loggedInUser.userId,
+              id: loggedInUser.userId,
               accessToken: loggedInUser.accessToken,
               firstName: loggedInUser.firstName,
               lastName: loggedInUser.lastName,
               isAdmin: loggedInUser.isAdmin,
-              userEmail: loggedInUser.userEmail
+              email: loggedInUser.userEmail
             }), {
             path: '/',
             httpOnly: true,
@@ -122,7 +140,9 @@ export const post: RequestHandler = async ({ request }) => {
     /**
     * Scenario 2 handler
     */
-    if (loggedInUser.firstName === "" || loggedInUser.lastName === "") {
+    if (loggedInUser.firstName == "" || loggedInUser.lastName == "") {
+      console.log(loggedInUser.firstName, loggedInUser.firstName == "");
+      console.log(loggedInUser.lastName, loggedInUser.firstName == "");
       return {
         status: 200,
         body: {
@@ -131,12 +151,12 @@ export const post: RequestHandler = async ({ request }) => {
         headers: {
           'Set-Cookie': cookie.serialize('session', JSON.stringify(
             {
-              userId: loggedInUser.userId,
+              id: loggedInUser.userId,
               accessToken: loggedInUser.accessToken,
               firstName: loggedInUser.firstName,
               lastName: loggedInUser.lastName,
               isAdmin: loggedInUser.isAdmin,
-              userEmail: loggedInUser.userEmail
+              email: loggedInUser.userEmail
             }), {
             path: '/',
             httpOnly: true,
@@ -153,24 +173,24 @@ export const post: RequestHandler = async ({ request }) => {
       status: 200,
       body: {
         user: {
-          userId: loggedInUser.userId,
+          id: loggedInUser.userId,
           accessToken: loggedInUser.accessToken,
           firstName: loggedInUser.firstName,
           lastName: loggedInUser.lastName,
           isAdmin: loggedInUser.isAdmin,
-          userEmail: loggedInUser.userEmail
+          email: loggedInUser.userEmail
         },
         success: 'success'
       },
       headers: {
         'Set-Cookie': cookie.serialize('session', JSON.stringify(
           {
-            userId: loggedInUser.userId,
+            id: loggedInUser.userId,
             accessToken: loggedInUser.accessToken,
             firstName: loggedInUser.firstName,
             lastName: loggedInUser.lastName,
             isAdmin: loggedInUser.isAdmin,
-            userEmail: loggedInUser.userEmail,
+            email: loggedInUser.userEmail,
           }), {
           // send cookie for every page
           path: '/',
