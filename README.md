@@ -109,37 +109,59 @@ Pay attention to the key `UPLOAD_LOCATION`, this directory must exist and is own
 **Example**
 
 ```bash
+###################################################################################
 # Database
+###################################################################################
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
 DB_DATABASE_NAME=immich
 
+###################################################################################
 # Upload File Config
+###################################################################################
 UPLOAD_LOCATION=<put-the-path-of-the-upload-folder-here>
 
+###################################################################################
 # JWT SECRET
+###################################################################################
 JWT_SECRET=randomstringthatissolongandpowerfulthatnoonecanguess
 
+###################################################################################
 # MAPBOX
-## ENABLE_MAPBOX is either true of false -> if true, you have to provide MAPBOX_KEY
+####################################################################################
+# ENABLE_MAPBOX is either true of false -> if true, you have to provide MAPBOX_KEY
 ENABLE_MAPBOX=false
 MAPBOX_KEY=
+
+###################################################################################
+# WEB
+###################################################################################
+# This is the URL of your vm/server where you host Immich, so that the web frontend
+# know where can it make the request to.
+# For example: If your server IP address is 10.1.11.50, the environment variable will
+# be VITE_SERVER_ENDPOINT=http://10.1.11.50:2283
+VITE_SERVER_ENDPOINT=http://192.168.1.216:2283
 ```
 
 ## Step 2: Start the server
 
-To start, run
+To **start**, run
 
 ```bash
 docker-compose -f ./docker/docker-compose.yml up 
 ```
 
-If you have a few thousand photos/videos, I suggest running docker-compose with scaling option for the `immich_-erver` container to handle high I/O load when using fast scrolling.
+If you have a few thousand photos/videos, I suggest running docker-compose with *scaling* option for the `immich_server` container to handle high I/O load when using fast scrolling.
 
 ```bash
 docker-compose -f ./docker/docker-compose.yml up --scale immich-server=5 
 ```
 
+To *update* docker-compose with newest image (if you have started the docker-compose previously)
+
+```bash
+docker-compose -f ./docker/docker-compose.yml pull && docker-compose -f ./docker/docker-compose.yml up
+```
 
 The server will be running at `http://your-ip:2283` through `Nginx`
 
