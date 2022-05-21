@@ -46,6 +46,7 @@ Loading ~4000 images/videos
 <p align="center">
   <img src="design/dashboard_photos.jpeg" width="100%" title="Home Dashboard">
 </p>
+
 # Note
 
 **!! NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS !!**
