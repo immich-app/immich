@@ -29,6 +29,8 @@ RUN chown node:node /usr/src/app
 COPY --chown=node:node package*.json ./
 COPY --chown=node:node . .
 
+RUN apk add --update-cache build-base python3 
+
 RUN npm install
 
 EXPOSE 3000
