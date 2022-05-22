@@ -114,7 +114,11 @@ export class AssetService {
   public async getAssetThumbnail(assetId: string) {
     const asset = await this.assetRepository.findOne({ id: assetId });
 
-    return new StreamableFile(createReadStream(asset.resizePath));
+    if (asset.webpPath != '') {
+      return new StreamableFile(createReadStream(asset.webpPath));
+    } else {
+      return new StreamableFile(createReadStream(asset.resizePath));
+    }
   }
 
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
@@ -132,7 +136,11 @@ export class AssetService {
       if (query.isThumb === 'false' || !query.isThumb) {
         file = createReadStream(asset.originalPath);
       } else {
-        file = createReadStream(asset.resizePath);
+        if (asset.webpPath != '') {
+          file = createReadStream(asset.webpPath);
+        } else {
+          file = createReadStream(asset.resizePath);
+        }
       }
 
       file.on('error', (error) => {
