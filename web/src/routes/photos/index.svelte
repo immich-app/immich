@@ -1,5 +1,6 @@
 <script context="module" lang="ts">
 	export const prerender = false;
+	export const hydrate = false;
 
 	import type { Load } from '@sveltejs/kit';
 
