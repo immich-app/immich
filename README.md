@@ -86,7 +86,7 @@ I haven't tested with `Docker for Windows` as well as `WSL` on Windows
 
 **Core**: At least 2 cores, preffered 4 cores.
 
-# Development and Testing out the application
+# Getting Started
 
 You can use docker compose for development and testing out the application, there are several services that compose Immich:
 
@@ -216,6 +216,17 @@ You can get the app on F-droid by clicking the image below.
 <p align="left">
   <img src="design/ios-qr-code.png" width="200" title="Apple App Store">
 <p/>
+
+
+# Development
+
+The development environment can be start from root of the project after populating the `.env` file with the command
+
+```bash
+make dev # required Makefile installed on the system.
+``` 
+
+All servers and web container are hot reload for quick feedback loop.
 
 # Support
 
