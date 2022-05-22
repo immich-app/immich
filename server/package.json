@@ -54,7 +54,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
-    "sharp": "^0.30.4",
+    "sharp": "^0.28.0",
     "socket.io-redis": "^6.1.1",
     "systeminformation": "^5.11.0",
     "typeorm": "^0.2.41"
