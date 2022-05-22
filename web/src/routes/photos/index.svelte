@@ -1,4 +1,6 @@
 <script context="module" lang="ts">
+	export const prerender = false;
+
 	import type { Load } from '@sveltejs/kit';
 
 	export const load: Load = ({ session }) => {
