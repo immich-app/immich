@@ -13,7 +13,7 @@ export class ImageConversionService {
     private assetRepository: Repository<AssetEntity>
   ) { }
 
-  @Cron(CronExpression.EVERY_10_MINUTES
+  @Cron(CronExpression.EVERY_5_MINUTES
     , {
       name: 'webp-conversion'
     })
