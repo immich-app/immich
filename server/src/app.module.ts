@@ -16,16 +16,26 @@ import { BackgroundTaskModule } from './modules/background-task/background-task.
 import { CommunicationModule } from './api-v1/communication/communication.module';
 import { SharingModule } from './api-v1/sharing/sharing.module';
 import { AppController } from './app.controller';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
+
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
+
     TypeOrmModule.forRoot(databaseConfig),
+
     UserModule,
+
     AssetModule,
+
     AuthModule,
+
     ImmichJwtModule,
+
     DeviceInfoModule,
+
     BullModule.forRootAsync({
       useFactory: async () => ({
         redis: {
@@ -44,6 +54,10 @@ import { AppController } from './app.controller';
     CommunicationModule,
 
     SharingModule,
+
+    ScheduleModule.forRoot(),
+
+    ScheduleTasksModule
   ],
   controllers: [AppController],
   providers: [],
