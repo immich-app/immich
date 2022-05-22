@@ -19,6 +19,7 @@
 		"@types/bcrypt": "^5.0.0",
 		"@types/cookie": "^0.4.1",
 		"@types/lodash": "^4.14.182",
+		"@types/lodash-es": "^4.17.6",
 		"@typescript-eslint/eslint-plugin": "^5.10.1",
 		"@typescript-eslint/parser": "^5.10.1",
 		"autoprefixer": "^10.4.7",
@@ -39,6 +40,7 @@
 	"dependencies": {
 		"cookie": "^0.4.2",
 		"lodash": "^4.17.21",
+		"lodash-es": "^4.17.21",
 		"moment": "^2.29.3",
 		"svelte-material-icons": "^2.0.2"
 	}
