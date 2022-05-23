@@ -39,7 +39,7 @@ import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.mod
     BullModule.forRootAsync({
       useFactory: async () => ({
         redis: {
-          host: 'immich_redis',
+          host: process.env.REDIS_HOSTNAME || 'immich_redis',
           port: 6379,
         },
       }),
