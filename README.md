@@ -51,7 +51,7 @@ Loading ~4000 images/videos
 
 **!! NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS !!**
 
-This project is under heavy development, there will be continous functions, features and api changes.
+This project is under heavy development, there will be continuous functions, features and api changes.
 
 # Features
 
@@ -72,15 +72,15 @@ This project is under heavy development, there will be continous functions, feat
 - Show curated objects on the search page
 - Shared album with users on the same server
 - Selective backup - albums can be included and excluded during the backup process.
-- Web interface is available for administrative tasks (create new users) and view assets on the server - additional features are coming.
+- Web interface is available for administrative tasks (creating new users) and viewing assets on the server - additional features are coming.
 
 # System Requirement
 
-**OS**: Preferred Linux-based operating system (Ubuntu, Debian, MacOS...etc). 
+**OS**: Preferred unix-based operating system (Ubuntu, Debian, MacOS...etc). 
 
 I haven't tested with `Docker for Windows` as well as `WSL` on Windows
 
-*Raspberry Pi can be used but `microservices` container has to be comment out in `docker-compose` since TensorFlow has not been supported in Dockec image on arm64v7 yet.*
+*Raspberry Pi can be used but `microservices` container has to be comment out in `docker-compose` since TensorFlow has not been supported in Docker image on arm64v7 yet.*
 
 **RAM**: At least 2GB, preffered 4GB.
 
@@ -220,7 +220,7 @@ You can get the app on F-droid by clicking the image below.
 
 # Development
 
-The development environment can be start from root of the project after populating the `.env` file with the command
+The development environment can be started from the root of the project after populating the `.env` file with the command:
 
 ```bash
 make dev # required Makefile installed on the system.
@@ -230,13 +230,13 @@ All servers and web container are hot reload for quick feedback loop.
 
 # Support
 
-If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsore**](https://github.com/sponsors/alextran1502), or one time donation with Buy Me a coffee link below.
+If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsor**](https://github.com/sponsors/alextran1502), or a one time donation with the Buy Me a coffee link below.
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/altran1502)
 
-This is also a meaningful way to give me motivation and encounragment to continue working on the app.
+This is also a meaningful way to give me motivation and encouragement to continue working on the app.
 
-Cheer! 🎉
+Cheers! 🎉
 
 # Known Issue
 
@@ -244,13 +244,13 @@ Cheer! 🎉
 
 *This is a known issue on RaspberryPi 4 arm64-v7 and incorrect Promox setup*
 
-TensorFlow doesn't run with older CPU architecture, it requires CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
+TensorFlow doesn't run with older CPU architecture, it requires a CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
  
 ```bash
 more /proc/cpuinfo | grep flags
 ``` 
   
-If you are running virtualization in Promox, the VM doesn't have the flag enable.
+If you are running virtualization in Promox, the VM doesn't have the flag enabled.
   
 You need to change the CPU type from `kvm64` to `host` under VMs hardware tab.
   
