@@ -93,7 +93,7 @@
 			<section id="image-grid" class="flex flex-wrap gap-8">
 				{#each assetsGroupByDate as assetsInDateGroup}
 					<div class="flex flex-col">
-						<p class="font-medium text-sm text-gray-500 mb-2">
+						<p class="font-medium text-sm text-immich-primary mb-2">
 							{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
 						</p>
 						<div class=" flex flex-wrap gap-2">
