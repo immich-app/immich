@@ -26,9 +26,12 @@
 	import NavigationBar from '../../lib/components/shared/navigation-bar.svelte';
 	import SideBarButton from '$lib/components/shared/side-bar-button.svelte';
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
+	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
+
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import { onDestroy, onMount } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import assetStore from '$lib/stores/assets';
 	import type { ImmichAsset } from '../../lib/models/immich-asset';
@@ -39,6 +42,12 @@
 	let selectedAction: AppSideBarSelection;
 	let assets: ImmichAsset[] = [];
 	let assetsGroupByDate: ImmichAsset[][];
+
+	let selectedGroupThumbnail: number | null;
+	let isMouseOverGroup: boolean;
+	$: if (isMouseOverGroup == false) {
+		selectedGroupThumbnail = null;
+	}
 
 	// Subscribe to store values
 	const assetsSub = assetStore.assets.subscribe((newAssets) => (assets = newAssets));
@@ -54,6 +63,12 @@
 			await assetStore.getAssetsInfo($session.user.accessToken);
 		}
 	});
+
+	const thumbnailMouseEventHandler = (event: CustomEvent) => {
+		const { selectedGroupIndex }: { selectedGroupIndex: number } = event.detail;
+
+		selectedGroupThumbnail = selectedGroupIndex;
+	};
 
 	onDestroy(() => {
 		assetsSub();
@@ -89,16 +104,34 @@
 	</section>
 
 	<section class="overflow-y-auto relative">
-		<section id="assets-content" class="relative pt-8">
+		<section id="assets-content" class="relative pt-8 pl-4">
 			<section id="image-grid" class="flex flex-wrap gap-8">
-				{#each assetsGroupByDate as assetsInDateGroup}
-					<div class="flex flex-col">
-						<p class="font-medium text-sm text-immich-primary mb-2">
+				{#each assetsGroupByDate as assetsInDateGroup, groupIndex}
+					<!-- Asset Group By Date -->
+					<div
+						class="flex flex-col"
+						on:mouseenter={() => (isMouseOverGroup = true)}
+						on:mouseleave={() => (isMouseOverGroup = false)}
+					>
+						<!-- Date group title -->
+						<p class="font-medium text-sm text-immich-primary mb-2 flex place-items-center h-6">
+							{#if selectedGroupThumbnail === groupIndex && isMouseOverGroup}
+								<div
+									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
+									out:fade={{ duration: 200 }}
+									class="inline-block px-2 hover:cursor-pointer"
+								>
+									<CheckCircle size="24" color="#757575" />
+								</div>
+							{/if}
+
 							{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
 						</p>
-						<div class=" flex flex-wrap gap-2">
+
+						<!-- image grid -->
+						<div class="flex flex-wrap gap-2">
 							{#each assetsInDateGroup as asset}
-								<ImmichThumbnail {asset} />
+								<ImmichThumbnail {asset} on:mouseEvent={thumbnailMouseEventHandler} {groupIndex} />
 							{/each}
 						</div>
 					</div>
