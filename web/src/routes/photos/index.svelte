@@ -118,7 +118,7 @@
 							{#if selectedGroupThumbnail === groupIndex && isMouseOverGroup}
 								<div
 									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
-									out:fade={{ duration: 200 }}
+									out:fly={{x : -24,  duration: 200 }}
 									class="inline-block px-2 hover:cursor-pointer"
 								>
 									<CheckCircle size="24" color="#757575" />
