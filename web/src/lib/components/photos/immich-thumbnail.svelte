@@ -8,7 +8,6 @@
 	import IntersectionObserver from '$lib/components/photos/intersection-observer.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
-	import { goto } from '$app/navigation';
 
 	const dispatch = createEventDispatcher();
 

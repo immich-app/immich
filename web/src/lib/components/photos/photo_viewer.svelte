@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page, session } from '$app/stores';
+	import { session } from '$app/stores';
 	import { serverEndpoint } from '$lib/constants';
 	import { fade } from 'svelte/transition';
 
@@ -9,10 +9,10 @@
 	export let assetId: string;
 	export let deviceId: string;
 	let assetInfo: ImmichAsset;
+
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
-		console.log(assetId, deviceId);
 		if ($session.user) {
 			const res = await fetch(serverEndpoint + '/asset/assetById/' + assetId, {
 				headers: {

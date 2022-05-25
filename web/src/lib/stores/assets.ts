@@ -20,6 +20,10 @@ export const assetsGroupByDate = derived(assets, ($assets) => {
 
 })
 
+export const flattenAssetGroupByDate = derived(assetsGroupByDate, ($assetsGroupByDate) => {
+  return $assetsGroupByDate.flat();
+})
+
 export const getAssetsInfo = async (accessToken: string) => {
   const res = await getRequest('asset', accessToken);
 

@@ -26,15 +26,15 @@
 
 	import NavigationBar from '../../lib/components/shared/navigation-bar.svelte';
 	import SideBarButton from '$lib/components/shared/side-bar-button.svelte';
-	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-
+	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
+	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { session } from '$app/stores';
-	import { assetsGroupByDate } from '$lib/stores/assets';
+	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ImmichThumbnail from '../../lib/components/photos/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import PhotoViewer from '../../lib/components/photos/photo_viewer.svelte';
@@ -51,8 +51,7 @@
 	let isShowAsset = false;
 	let viewDeviceId: string = '';
 	let viewAssetId: string = '';
-
-	// Subscribe to store values
+	let currentViewAssetIndex = 0;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AppSideBarSelection;
@@ -78,7 +77,25 @@
 		viewDeviceId = deviceId;
 		viewAssetId = assetId;
 
+		currentViewAssetIndex = $flattenAssetGroupByDate.findIndex((a) => a.id == assetId);
+
 		isShowAsset = true;
+	};
+
+	const navigateAssetForward = () => {
+		const nextAsset = $flattenAssetGroupByDate[currentViewAssetIndex + 1];
+		viewDeviceId = nextAsset.deviceId;
+		viewAssetId = nextAsset.id;
+
+		currentViewAssetIndex = currentViewAssetIndex + 1;
+	};
+
+	const navigateAssetBackward = () => {
+		const lastAsset = $flattenAssetGroupByDate[currentViewAssetIndex - 1];
+		viewDeviceId = lastAsset.deviceId;
+		viewAssetId = lastAsset.id;
+
+		currentViewAssetIndex = currentViewAssetIndex - 1;
 	};
 </script>
 
@@ -91,6 +108,7 @@
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
+	<!-- Sidebar -->
 	<section id="admin-sidebar" class="flex flex-col gap-4 pt-8 pr-6">
 		<SideBarButton
 			title="Photos"
@@ -99,16 +117,9 @@
 			isSelected={selectedAction === AppSideBarSelection.PHOTOS}
 			on:selected={onButtonClicked}
 		/>
-
-		<!-- <SideBarButton
-			title="Explore"
-			logo={Magnify}
-			actionType={AppSideBarSelection.EXPLORE}
-			isSelected={selectedAction === AppSideBarSelection.EXPLORE}
-			on:selected={onButtonClicked}
-		/> -->
 	</section>
 
+	<!-- Main Section -->
 	<section class="overflow-y-auto relative">
 		<section id="assets-content" class="relative pt-8 pl-4">
 			<section id="image-grid" class="flex flex-wrap gap-14">
@@ -134,7 +145,7 @@
 							{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
 						</p>
 
-						<!-- image grid -->
+						<!-- Image grid -->
 						<div class="flex flex-wrap gap-2">
 							{#each assetsInDateGroup as asset}
 								<ImmichThumbnail
@@ -152,8 +163,25 @@
 	</section>
 </section>
 
+<!-- Overlay Asset Viewer -->
 {#if isShowAsset}
-	<section class="absolute w-screen h-screen top-0 overflow-y-hidden bg-red-100/50 z-[9999] ">
-		<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={() => (isShowAsset = false)} />
+	<section
+		class="absolute w-screen h-screen top-0 overflow-y-hidden bg-black z-[9999] flex justify-between place-items-center"
+	>
+		<button
+			class=" rounded-full p-4 hover:bg-gray-500 hover:text-gray-700 bg-black text-gray-500 mx-4"
+			on:click={navigateAssetBackward}
+		>
+			<ChevronLeft size="48" />
+		</button>
+		{#key currentViewAssetIndex}
+			<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={() => (isShowAsset = false)} />
+		{/key}
+		<button
+			class=" rounded-full p-4 hover:bg-gray-500 hover:text-gray-700 bg-black text-gray-500 mx-4"
+			on:click={navigateAssetForward}
+		>
+			<ChevronRight size="48" />
+		</button>
 	</section>
 {/if}
