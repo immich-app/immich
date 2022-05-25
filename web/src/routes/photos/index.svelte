@@ -2,8 +2,9 @@
 	export const prerender = false;
 
 	import type { Load } from '@sveltejs/kit';
+	import { getAssetsInfo } from '$lib/stores/assets';
 
-	export const load: Load = ({ session }) => {
+	export const load: Load = async ({ session }) => {
 		if (!session.user) {
 			return {
 				status: 302,
@@ -33,15 +34,13 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { session } from '$app/stores';
-	import assetStore from '$lib/stores/assets';
-	import type { ImmichAsset } from '../../lib/models/immich-asset';
+	import { assetsGroupByDate } from '$lib/stores/assets';
 	import ImmichThumbnail from '../../lib/components/photos/immich-thumbnail.svelte';
 	import moment from 'moment';
+	import PhotoViewer from '../../lib/components/photos/photo_viewer.svelte';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
-	let assets: ImmichAsset[] = [];
-	let assetsGroupByDate: ImmichAsset[][];
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
@@ -49,9 +48,11 @@
 		selectedGroupThumbnail = null;
 	}
 
+	let isShowAsset = false;
+	let viewDeviceId: string = '';
+	let viewAssetId: string = '';
+
 	// Subscribe to store values
-	const assetsSub = assetStore.assets.subscribe((newAssets) => (assets = newAssets));
-	const assetsGroupByDateSub = assetStore.assetsGroupByDate.subscribe((value) => (assetsGroupByDate = value));
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AppSideBarSelection;
@@ -59,8 +60,9 @@
 
 	onMount(async () => {
 		selectedAction = AppSideBarSelection.PHOTOS;
+
 		if ($session.user) {
-			await assetStore.getAssetsInfo($session.user.accessToken);
+			await getAssetsInfo($session.user.accessToken);
 		}
 	});
 
@@ -70,10 +72,14 @@
 		selectedGroupThumbnail = selectedGroupIndex;
 	};
 
-	onDestroy(() => {
-		assetsSub();
-		assetsGroupByDateSub();
-	});
+	const viewAssetHandler = (event: CustomEvent) => {
+		const { assetId, deviceId }: { assetId: string; deviceId: string } = event.detail;
+
+		viewDeviceId = deviceId;
+		viewAssetId = assetId;
+
+		isShowAsset = true;
+	};
 </script>
 
 <svelte:head>
@@ -105,8 +111,8 @@
 
 	<section class="overflow-y-auto relative">
 		<section id="assets-content" class="relative pt-8 pl-4">
-			<section id="image-grid" class="flex flex-wrap gap-8">
-				{#each assetsGroupByDate as assetsInDateGroup, groupIndex}
+			<section id="image-grid" class="flex flex-wrap gap-14">
+				{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
 					<!-- Asset Group By Date -->
 					<div
 						class="flex flex-col"
@@ -118,7 +124,7 @@
 							{#if selectedGroupThumbnail === groupIndex && isMouseOverGroup}
 								<div
 									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
-									out:fly={{x : -24,  duration: 200 }}
+									out:fly={{ x: -24, duration: 200 }}
 									class="inline-block px-2 hover:cursor-pointer"
 								>
 									<CheckCircle size="24" color="#757575" />
@@ -131,7 +137,12 @@
 						<!-- image grid -->
 						<div class="flex flex-wrap gap-2">
 							{#each assetsInDateGroup as asset}
-								<ImmichThumbnail {asset} on:mouseEvent={thumbnailMouseEventHandler} {groupIndex} />
+								<ImmichThumbnail
+									{asset}
+									on:mouseEvent={thumbnailMouseEventHandler}
+									on:viewAsset={viewAssetHandler}
+									{groupIndex}
+								/>
 							{/each}
 						</div>
 					</div>
@@ -140,3 +151,9 @@
 		</section>
 	</section>
 </section>
+
+{#if isShowAsset}
+	<section class="absolute w-screen h-screen top-0 overflow-y-hidden bg-red-100/50 z-[9999] ">
+		<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} />
+	</section>
+{/if}

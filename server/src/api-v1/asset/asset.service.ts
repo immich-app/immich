@@ -133,6 +133,11 @@ export class AssetService {
         'Content-Type': asset.mimeType,
       });
 
+      if (query.isWeb) {
+        return new StreamableFile(createReadStream(asset.resizePath));
+      }
+
+
       if (query.isThumb === 'false' || !query.isThumb) {
         file = createReadStream(asset.originalPath);
       } else {

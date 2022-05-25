@@ -8,6 +8,7 @@
 	import IntersectionObserver from '$lib/components/photos/intersection-observer.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
+	import { goto } from '$app/navigation';
 
 	const dispatch = createEventDispatcher();
 
@@ -37,7 +38,6 @@
 	};
 
 	const loadVideoData = async () => {
-		console.log('load video data');
 		const videoUrl = `/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}`;
 		if ($session.user) {
 			const res = await fetch(serverEndpoint + videoUrl, {
@@ -79,6 +79,7 @@
 		class="h-[200px] w-[200px] bg-gray-100 relative hover:cursor-pointer"
 		on:mouseenter={() => (mouseOver = true)}
 		on:mouseleave={() => (mouseOver = false)}
+		on:click={() => dispatch('viewAsset', { assetId: asset.id, deviceId: asset.deviceId })}
 	>
 		{#if mouseOver}
 			<div
@@ -118,7 +119,7 @@
 
 		{#if mouseOver && asset.type === AssetType.VIDEO}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
-				<video autoplay class="border-2 border-red-600 h-[200px]" width="250px" bind:this={videoPlayerNode}>
+				<video autoplay class="border-2 h-[200px]" width="250px" bind:this={videoPlayerNode}>
 					<track kind="captions" />
 				</video>
 			</div>

@@ -1,0 +1,54 @@
+<script lang="ts">
+	import { page, session } from '$app/stores';
+	import { serverEndpoint } from '$lib/constants';
+	import { fade } from 'svelte/transition';
+
+	import type { ImmichAsset } from '$lib/models/immich-asset';
+	import { onMount } from 'svelte';
+
+	export let assetId: string;
+	export let deviceId: string;
+	let assetInfo: ImmichAsset;
+
+	onMount(async () => {
+		console.log(assetId, deviceId);
+		if ($session.user) {
+			const res = await fetch(serverEndpoint + '/asset/assetById/' + assetId, {
+				headers: {
+					Authorization: 'bearer ' + $session.user.accessToken,
+				},
+			});
+			assetInfo = await res.json();
+		}
+	});
+
+	const loadAssetData = async () => {
+		const assetUrl = `/asset/file?aid=${assetInfo.deviceAssetId}&did=${deviceId}&isWeb=true`;
+		if ($session.user) {
+			const res = await fetch(serverEndpoint + assetUrl, {
+				method: 'GET',
+				headers: {
+					Authorization: 'bearer ' + $session.user.accessToken,
+				},
+			});
+
+			const assetData = URL.createObjectURL(await res.blob());
+
+			return assetData;
+		}
+	};
+</script>
+
+{#if assetInfo}
+	{#await loadAssetData()}
+		<div>loading</div>
+	{:then assetData}
+		<img
+			in:fade={{ duration: 200 }}
+			src={assetData}
+			alt={assetId}
+			class="object-cover w-full transition-all duration-100 z-0"
+			loading="lazy"
+		/>
+	{/await}
+{/if}
