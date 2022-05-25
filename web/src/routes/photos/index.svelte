@@ -154,6 +154,6 @@
 
 {#if isShowAsset}
 	<section class="absolute w-screen h-screen top-0 overflow-y-hidden bg-red-100/50 z-[9999] ">
-		<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} />
+		<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={() => (isShowAsset = false)} />
 	</section>
 {/if}

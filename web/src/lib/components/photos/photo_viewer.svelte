@@ -4,11 +4,12 @@
 	import { fade } from 'svelte/transition';
 
 	import type { ImmichAsset } from '$lib/models/immich-asset';
-	import { onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 
 	export let assetId: string;
 	export let deviceId: string;
 	let assetInfo: ImmichAsset;
+	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
 		console.log(assetId, deviceId);
@@ -39,16 +40,20 @@
 	};
 </script>
 
-{#if assetInfo}
-	{#await loadAssetData()}
-		<div>loading</div>
-	{:then assetData}
-		<img
-			in:fade={{ duration: 200 }}
-			src={assetData}
-			alt={assetId}
-			class="object-cover w-full transition-all duration-100 z-0"
-			loading="lazy"
-		/>
-	{/await}
-{/if}
+<div on:click={() => dispatch('close')} class="bg-black h-screen">
+	{#if assetInfo}
+		{#await loadAssetData()}
+			<div>loading</div>
+		{:then assetData}
+			<div class="flex place-items-center place-content-center h-full">
+				<img
+					in:fade={{ duration: 200 }}
+					src={assetData}
+					alt={assetId}
+					class="object-cover h-full transition-all duration-100 z-0"
+					loading="lazy"
+				/>
+			</div>
+		{/await}
+	{/if}
+</div>
