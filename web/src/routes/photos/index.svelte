@@ -174,11 +174,12 @@
 		class="absolute w-screen h-screen top-0 overflow-y-hidden bg-black z-[9999] flex justify-between place-items-center"
 	>
 		<button
-			class=" rounded-full p-4 hover:bg-gray-500 hover:text-gray-700 bg-black text-gray-500 mx-4"
+			class="rounded-full p-4 hover:bg-gray-500 hover:text-gray-700  text-gray-500 mx-4"
 			on:click={navigateAssetBackward}
 		>
 			<ChevronLeft size="48" />
 		</button>
+
 		{#key currentViewAssetIndex}
 			{#if currentSelectedAsset.type == AssetType.IMAGE}
 				<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={() => (isShowAsset = false)} />
@@ -186,8 +187,9 @@
 				<div>View Video</div>
 			{/if}
 		{/key}
+
 		<button
-			class=" rounded-full p-4 hover:bg-gray-500 hover:text-gray-700 bg-black text-gray-500 mx-4"
+			class="rounded-full p-4 hover:bg-gray-500 hover:text-gray-700 bg-black text-gray-500 mx-4"
 			on:click={navigateAssetForward}
 		>
 			<ChevronRight size="48" />

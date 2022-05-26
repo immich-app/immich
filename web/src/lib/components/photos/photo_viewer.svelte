@@ -41,7 +41,7 @@
 	};
 </script>
 
-<div on:click={() => dispatch('close')} class="bg-black h-screen">
+<div on:click={() => dispatch('close')} class="h-screen">
 	{#if assetInfo}
 		{#await loadAssetData()}
 			<div class="flex place-items-center place-content-center h-full">
