@@ -13,7 +13,6 @@ import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
-import path from 'path';
 
 const fileInfo = promisify(stat);
 
@@ -154,7 +153,7 @@ export class AssetService {
       });
       return new StreamableFile(file);
     } else if (asset.type == AssetType.VIDEO) {
-      // Handle Handling Video
+      // Handle Video
       const { size } = await fileInfo(asset.originalPath);
       const range = headers.range;
 

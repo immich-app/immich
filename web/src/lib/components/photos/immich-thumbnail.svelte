@@ -116,12 +116,12 @@
 			{/await}
 		{/if}
 
-		{#if mouseOver && asset.type === AssetType.VIDEO}
+		<!-- {#if mouseOver && asset.type === AssetType.VIDEO}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
 				<video autoplay class="border-2 h-[200px]" width="250px" bind:this={videoPlayerNode}>
 					<track kind="captions" />
 				</video>
 			</div>
-		{/if}
+		{/if} -->
 	</div>
 </IntersectionObserver>

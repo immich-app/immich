@@ -13,6 +13,7 @@
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
+		console.log('Getting EXIF info');
 		if ($session.user) {
 			const res = await fetch(serverEndpoint + '/asset/assetById/' + assetId, {
 				headers: {
