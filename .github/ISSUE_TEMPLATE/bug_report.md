@@ -16,10 +16,10 @@ Note: Please search to see if an issue already exists for the bug you encountere
 A clear and concise description of what the bug is.
 
 **Task List**
-[ ] I have read throughly the README setup and installation instruction.
+[ ] I have read thoroughly the README setup and installation instructions.
 [ ] If my setup is different, I have included my docker-compose file.
 [ ] I have included my redacted `.env` file.
-[ ] I have included information of my machine, environment.
+[ ] I have included information on my machine, and environment.
 
 **To Reproduce**
 Steps to reproduce the behavior:
