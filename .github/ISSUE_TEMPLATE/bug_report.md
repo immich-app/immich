@@ -1,14 +1,25 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: "[BUG]"
-labels: bug
+title: '[BUG] <title>'
+labels: bug, need triage
 assignees: ''
 
 ---
 
+<!--
+Note: Please search to see if an issue already exists for the bug you encountered.
+-->
+
+
 **Describe the bug**
 A clear and concise description of what the bug is.
+
+**Task List**
+[ ] I have read throughly the README setup and installation instruction.
+[ ] If my setup is different, I have included my docker-compose file.
+[ ] I have included my redacted `.env` file.
+[ ] I have included information of my machine, environment.
 
 **To Reproduce**
 Steps to reproduce the behavior:
