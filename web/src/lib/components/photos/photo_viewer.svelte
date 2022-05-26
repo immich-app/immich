@@ -43,7 +43,9 @@
 <div on:click={() => dispatch('close')} class="bg-black h-screen">
 	{#if assetInfo}
 		{#await loadAssetData()}
-			<div>loading</div>
+			<div class="flex place-items-center place-content-center h-full">
+				<div>loading</div>
+			</div>
 		{:then assetData}
 			<div class="flex place-items-center place-content-center h-full">
 				<img

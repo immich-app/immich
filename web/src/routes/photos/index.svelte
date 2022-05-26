@@ -38,6 +38,8 @@
 	import ImmichThumbnail from '../../lib/components/photos/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import PhotoViewer from '../../lib/components/photos/photo_viewer.svelte';
+	import type { ImmichAsset } from '../../lib/models/immich-asset';
+	import { AssetType } from '../../lib/models/immich-asset';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -52,6 +54,7 @@
 	let viewDeviceId: string = '';
 	let viewAssetId: string = '';
 	let currentViewAssetIndex = 0;
+	let currentSelectedAsset: ImmichAsset;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AppSideBarSelection;
@@ -78,7 +81,7 @@
 		viewAssetId = assetId;
 
 		currentViewAssetIndex = $flattenAssetGroupByDate.findIndex((a) => a.id == assetId);
-
+		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
 		isShowAsset = true;
 	};
 
@@ -88,6 +91,7 @@
 		viewAssetId = nextAsset.id;
 
 		currentViewAssetIndex = currentViewAssetIndex + 1;
+		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
 	};
 
 	const navigateAssetBackward = () => {
@@ -96,6 +100,7 @@
 		viewAssetId = lastAsset.id;
 
 		currentViewAssetIndex = currentViewAssetIndex - 1;
+		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
 	};
 </script>
 
@@ -175,7 +180,11 @@
 			<ChevronLeft size="48" />
 		</button>
 		{#key currentViewAssetIndex}
-			<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={() => (isShowAsset = false)} />
+			{#if currentSelectedAsset.type == AssetType.IMAGE}
+				<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={() => (isShowAsset = false)} />
+			{:else}
+				<div>View Video</div>
+			{/if}
 		{/key}
 		<button
 			class=" rounded-full p-4 hover:bg-gray-500 hover:text-gray-700 bg-black text-gray-500 mx-4"
