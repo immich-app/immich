@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
 
-RUN apk add --update-cache build-base python3 libheif vips-dev vips
+RUN apk add --update-cache build-base python3 libheif vips-dev vips ffmpeg
 
 RUN npm install
 

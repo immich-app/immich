@@ -39,7 +39,7 @@ export class AssetController {
     private wsCommunicateionGateway: CommunicationGateway,
     private assetService: AssetService,
     private backgroundTaskService: BackgroundTaskService,
-  ) {}
+  ) { }
 
   @Post('upload')
   @UseInterceptors(

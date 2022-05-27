@@ -11,7 +11,7 @@
 		const response = await getRequest('server-info/ping', '');
 
 		if (response.res === 'pong') isServerOk = true;
-		if (response.statusCode === 404) isServerOk = false;
+		else isServerOk = false;
 	}, 10000);
 
 	onDestroy(() => clearInterval(pingServerInterval));

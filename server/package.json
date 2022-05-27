@@ -45,6 +45,7 @@
     "diskusage": "^1.1.3",
     "dotenv": "^14.2.0",
     "exifr": "^7.1.3",
+    "fluent-ffmpeg": "^2.1.2",
     "joi": "^17.5.0",
     "lodash": "^4.17.21",
     "passport": "^0.5.2",

@@ -4,9 +4,9 @@ import type { ImmichAsset } from '$lib/models/immich-asset'
 import lodash from 'lodash-es';
 import moment from 'moment';
 
-const assets = writable<ImmichAsset[]>([]);
+export const assets = writable<ImmichAsset[]>([]);
 
-const assetsGroupByDate = derived(assets, ($assets) => {
+export const assetsGroupByDate = derived(assets, ($assets) => {
 
   try {
     return lodash.chain($assets)
@@ -20,14 +20,14 @@ const assetsGroupByDate = derived(assets, ($assets) => {
 
 })
 
-const getAssetsInfo = async (accessToken: string) => {
+export const flattenAssetGroupByDate = derived(assetsGroupByDate, ($assetsGroupByDate) => {
+  return $assetsGroupByDate.flat();
+})
+
+export const getAssetsInfo = async (accessToken: string) => {
   const res = await getRequest('asset', accessToken);
 
   assets.set(res);
+
 }
 
-export default {
-  assets,
-  assetsGroupByDate,
-  getAssetsInfo,
-}

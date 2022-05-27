@@ -11,29 +11,35 @@ export const handle: Handle = async ({ event, resolve, }) => {
     return await resolve(event)
   }
 
-  const { email, isAdmin, firstName, lastName, id, accessToken } = JSON.parse(cookies.session);
+  try {
+    const { email, isAdmin, firstName, lastName, id, accessToken } = JSON.parse(cookies.session);
 
-  const res = await fetch(`${serverEndpoint}/auth/validateToken`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
+    const res = await fetch(`${serverEndpoint}/auth/validateToken`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+
+    if (res.status === 201) {
+      event.locals.user = {
+        id,
+        accessToken,
+        firstName,
+        lastName,
+        isAdmin,
+        email
+      };
     }
-  })
 
-  if (res.status === 201) {
-    event.locals.user = {
-      id,
-      accessToken,
-      firstName,
-      lastName,
-      isAdmin,
-      email
-    };
+    const response = await resolve(event);
+
+    return response;
+  } catch (error) {
+    console.log('Error parsing session', error);
+    return await resolve(event);
   }
 
-  const response = await resolve(event);
-
-  return response;
 };
 
 export const getSession: GetSession = async ({ locals }) => {
