@@ -40,6 +40,7 @@
 	import PhotoViewer from '../../lib/components/photos/photo_viewer.svelte';
 	import type { ImmichAsset } from '../../lib/models/immich-asset';
 	import { AssetType } from '../../lib/models/immich-asset';
+	import LoadingSpinner from '../../lib/components/shared/loading-spinner.svelte';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -184,7 +185,12 @@
 			{#if currentSelectedAsset.type == AssetType.IMAGE}
 				<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={() => (isShowAsset = false)} />
 			{:else}
-				<div>View Video</div>
+				<div
+					class="w-full h-full bg-immich-primary/10 flex flex-col place-items-center place-content-center "
+					on:click={() => (isShowAsset = false)}
+				>
+					<h1 class="animate-pulse font-bold text-4xl">Video viewer is under construction</h1>
+				</div>
 			{/if}
 		{/key}
 

@@ -5,6 +5,7 @@
 
 	import type { ImmichAsset } from '$lib/models/immich-asset';
 	import { createEventDispatcher, onMount } from 'svelte';
+	import LoadingSpinner from '../shared/loading-spinner.svelte';
 
 	export let assetId: string;
 	export let deviceId: string;
@@ -44,7 +45,7 @@
 	{#if assetInfo}
 		{#await loadAssetData()}
 			<div class="flex place-items-center place-content-center h-full">
-				<div>loading</div>
+				<LoadingSpinner />
 			</div>
 		{:then assetData}
 			<div class="flex place-items-center place-content-center h-full">
