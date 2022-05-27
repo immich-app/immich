@@ -45,12 +45,16 @@ class BackupControllerPage extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              LinearPercentIndicator(
+              Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                lineHeight: 5.0,
-                percent: backupState.serverInfo.diskUsagePercentage / 100.0,
-                backgroundColor: Colors.grey,
-                progressColor: Theme.of(context).primaryColor,
+                child: LinearPercentIndicator(
+                  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                  barRadius: const Radius.circular(2),
+                  lineHeight: 6.0,
+                  percent: backupState.serverInfo.diskUsagePercentage / 100.0,
+                  backgroundColor: Colors.grey,
+                  progressColor: Theme.of(context).primaryColor,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
