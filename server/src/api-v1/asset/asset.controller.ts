@@ -19,7 +19,7 @@ import {
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { multerOption } from '../../config/multer-option.config';
+import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
@@ -48,7 +48,7 @@ export class AssetController {
         { name: 'assetData', maxCount: 1 },
         { name: 'thumbnailData', maxCount: 1 },
       ],
-      multerOption,
+      assetUploadOption,
     ),
   )
   async uploadFile(

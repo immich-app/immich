@@ -6,7 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-
+import sharp from 'sharp';
 
 @Injectable()
 export class UserService {
@@ -123,5 +123,36 @@ export class UserService {
       Logger.error(e, 'Create new user');
       throw new InternalServerErrorException('Failed to register new user');
     }
+  }
+
+  async createProfileImage(authUser: AuthUserDto, fileInfo: Express.Multer.File) {
+    try {
+      // Convert file to jpeg
+      let filePath = ''
+      const fileSave = await sharp(fileInfo.path).webp().resize(512, 512).toFile(fileInfo.path + '.webp')
+
+      if (fileSave) {
+        filePath = fileInfo.path + '.webp';
+        await this.userRepository.update(authUser.id, {
+          profileImagePath: filePath
+        })
+      } else {
+        filePath = fileInfo.path;
+        await this.userRepository.update(authUser.id, {
+          profileImagePath: filePath
+
+        })
+      }
+
+
+      return {
+        userId: authUser.id,
+        profileImagePath: filePath
+      };
+    } catch (e) {
+      Logger.error(e, 'Create User Profile Image');
+      throw new InternalServerErrorException('Failed to create new user profile image');
+    }
+
   }
 }

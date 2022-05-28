@@ -19,7 +19,7 @@ export class AuthService {
   private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity> {
     const user = await this.userRepository.findOne(
       { email: loginCredential.email },
-      { select: ['id', 'email', 'password', 'salt', 'firstName', 'lastName', 'isAdmin'] },
+      { select: ['id', 'email', 'password', 'salt', 'firstName', 'lastName', 'isAdmin', 'profileImagePath', 'isFirstLoggedIn'] },
     );
 
     const isAuthenticated = await this.validatePassword(user.password, loginCredential.password, user.salt);
