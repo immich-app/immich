@@ -156,10 +156,15 @@ export class UserService {
   }
 
   async getUserProfileImage(userId: string, res: Res) {
-    const user = await this.userRepository.findOne({ id: userId })
-    res.set({
-      'Content-Type': 'image/webp',
-    });
-    return new StreamableFile(createReadStream(user.profileImagePath));
+    try {
+      const user = await this.userRepository.findOne({ id: userId })
+      res.set({
+        'Content-Type': 'image/webp',
+      });
+      return new StreamableFile(createReadStream(user.profileImagePath));
+    } catch (e) {
+      console.log("error getting user profile")
+    }
+
   }
 }
