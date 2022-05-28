@@ -6,14 +6,19 @@ class LogInReponse {
   final String userEmail;
   final String firstName;
   final String lastName;
+  final String profileImagePath;
   final bool isAdmin;
+  final bool isFirstLogin;
+
   LogInReponse({
     required this.accessToken,
     required this.userId,
     required this.userEmail,
     required this.firstName,
     required this.lastName,
+    required this.profileImagePath,
     required this.isAdmin,
+    required this.isFirstLogin,
   });
 
   LogInReponse copyWith({
@@ -22,7 +27,9 @@ class LogInReponse {
     String? userEmail,
     String? firstName,
     String? lastName,
+    String? profileImagePath,
     bool? isAdmin,
+    bool? isFirstLogin,
   }) {
     return LogInReponse(
       accessToken: accessToken ?? this.accessToken,
@@ -30,7 +37,9 @@ class LogInReponse {
       userEmail: userEmail ?? this.userEmail,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
+      profileImagePath: profileImagePath ?? this.profileImagePath,
       isAdmin: isAdmin ?? this.isAdmin,
+      isFirstLogin: isFirstLogin ?? this.isFirstLogin,
     );
   }
 
@@ -42,7 +51,9 @@ class LogInReponse {
     result.addAll({'userEmail': userEmail});
     result.addAll({'firstName': firstName});
     result.addAll({'lastName': lastName});
+    result.addAll({'profileImagePath': profileImagePath});
     result.addAll({'isAdmin': isAdmin});
+    result.addAll({'isFirstLogin': isFirstLogin});
 
     return result;
   }
@@ -54,7 +65,9 @@ class LogInReponse {
       userEmail: map['userEmail'] ?? '',
       firstName: map['firstName'] ?? '',
       lastName: map['lastName'] ?? '',
+      profileImagePath: map['profileImagePath'] ?? '',
       isAdmin: map['isAdmin'] ?? false,
+      isFirstLogin: map['isFirstLogin'] ?? false,
     );
   }
 
@@ -64,7 +77,7 @@ class LogInReponse {
 
   @override
   String toString() {
-    return 'LogInReponse(accessToken: $accessToken, userId: $userId, userEmail: $userEmail, firstName: $firstName, lastName: $lastName, isAdmin: $isAdmin)';
+    return 'LogInReponse(accessToken: $accessToken, userId: $userId, userEmail: $userEmail, firstName: $firstName, lastName: $lastName, profileImagePath: $profileImagePath, isAdmin: $isAdmin, isFirstLogin: $isFirstLogin)';
   }
 
   @override
@@ -77,7 +90,9 @@ class LogInReponse {
         other.userEmail == userEmail &&
         other.firstName == firstName &&
         other.lastName == lastName &&
-        other.isAdmin == isAdmin;
+        other.profileImagePath == profileImagePath &&
+        other.isAdmin == isAdmin &&
+        other.isFirstLogin == isFirstLogin;
   }
 
   @override
@@ -87,6 +102,8 @@ class LogInReponse {
         userEmail.hashCode ^
         firstName.hashCode ^
         lastName.hashCode ^
-        isAdmin.hashCode;
+        profileImagePath.hashCode ^
+        isAdmin.hashCode ^
+        isFirstLogin.hashCode;
   }
 }

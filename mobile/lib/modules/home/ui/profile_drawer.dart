@@ -1,7 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/home/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -16,10 +20,14 @@ class ProfileDrawer extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    String endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+    final profileImage = useState<Widget>(Container());
     AuthenticationState _authState = ref.watch(authenticationProvider);
     ServerInfoState _serverInfoState = ref.watch(serverInfoProvider);
 
     final appInfo = useState({});
+
+    // Widget profileImage = Container();
 
     _getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -30,19 +38,46 @@ class ProfileDrawer extends HookConsumerWidget {
       };
     }
 
+    _buildUserProfileImage() {
+      if (_authState.profileImagePath.isNotEmpty) {
+        profileImage.value = Image.network(
+          '$endpoint/user/profile-image/${_authState.userId}',
+          width: 55,
+        );
+      }
+
+      profileImage.value = const Image(
+        image: AssetImage('assets/immich-logo-no-outline.png'),
+        width: 60,
+        filterQuality: FilterQuality.high,
+      );
+    }
+
+    _pickUserProfileImage() async {
+      final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+      if (image != null) {
+        var success = await ref.watch(uploadProfileImageProvider.notifier).upload(image);
+
+        if (success) {
+          ref
+              .watch(authenticationProvider.notifier)
+              .updateUserProfileImagePath(ref.read(uploadProfileImageProvider).profileImagePath);
+
+          profileImage.value = Image.network(
+            '$endpoint/user/profile-image/${_authState.userId}',
+            width: 55,
+          );
+        }
+      }
+    }
+
     useEffect(() {
       _getPackageInfo();
-
+      _buildUserProfileImage();
       return null;
     }, []);
-
     return Drawer(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(5),
-          bottomRight: Radius.circular(5),
-        ),
-      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -58,10 +93,33 @@ class ProfileDrawer extends HookConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Image(
-                      image: AssetImage('assets/immich-logo-no-outline.png'),
-                      width: 55,
-                      filterQuality: FilterQuality.high,
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        profileImage.value,
+                        Positioned(
+                          top: -8,
+                          right: -8,
+                          child: GestureDetector(
+                            onTap: _pickUserProfileImage,
+                            child: Material(
+                              color: Colors.grey[50],
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50.0),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Icon(
+                                  Icons.edit,
+                                  color: Theme.of(context).primaryColor,
+                                  size: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const Padding(padding: EdgeInsets.all(8)),
                     Text(
@@ -108,7 +166,15 @@ class ProfileDrawer extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Card(
+              elevation: 0,
               color: Colors.grey[100],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5), // if you need this
+                side: const BorderSide(
+                  color: Color.fromARGB(101, 201, 201, 201),
+                  width: 1,
+                ),
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
                 child: Column(
