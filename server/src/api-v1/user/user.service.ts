@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
@@ -6,7 +6,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-
+import sharp from 'sharp';
+import { createReadStream } from 'fs';
+import { Response as Res } from 'express';
 
 @Injectable()
 export class UserService {
@@ -123,5 +125,41 @@ export class UserService {
       Logger.error(e, 'Create new user');
       throw new InternalServerErrorException('Failed to register new user');
     }
+  }
+
+  async createProfileImage(authUser: AuthUserDto, fileInfo: Express.Multer.File) {
+    try {
+      // Convert file to jpeg
+      let filePath = ''
+      const convertImageInfo = await sharp(fileInfo.path).webp().resize(512, 512).toFile(fileInfo.path + '.webp')
+
+      if (convertImageInfo) {
+        filePath = fileInfo.path + '.webp';
+        await this.userRepository.update(authUser.id, {
+          profileImagePath: filePath
+        })
+      } else {
+        filePath = fileInfo.path;
+        await this.userRepository.update(authUser.id, {
+          profileImagePath: filePath
+        })
+      }
+
+      return {
+        userId: authUser.id,
+        profileImagePath: filePath
+      };
+    } catch (e) {
+      Logger.error(e, 'Create User Profile Image');
+      throw new InternalServerErrorException('Failed to create new user profile image');
+    }
+  }
+
+  async getUserProfileImage(userId: string, res: Res) {
+    const user = await this.userRepository.findOne({ id: userId })
+    res.set({
+      'Content-Type': 'image/webp',
+    });
+    return new StreamableFile(createReadStream(user.profileImagePath));
   }
 }
