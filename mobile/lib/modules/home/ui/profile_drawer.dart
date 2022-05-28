@@ -13,6 +13,7 @@ import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class ProfileDrawer extends HookConsumerWidget {
@@ -21,10 +22,9 @@ class ProfileDrawer extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     String endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-    final profileImage = useState<Widget>(Container());
     AuthenticationState _authState = ref.watch(authenticationProvider);
     ServerInfoState _serverInfoState = ref.watch(serverInfoProvider);
-
+    final uploadProfileImageStatus = ref.watch(uploadProfileImageProvider).status;
     final appInfo = useState({});
 
     // Widget profileImage = Container();
@@ -39,18 +39,43 @@ class ProfileDrawer extends HookConsumerWidget {
     }
 
     _buildUserProfileImage() {
-      if (_authState.profileImagePath.isNotEmpty) {
-        profileImage.value = Image.network(
-          '$endpoint/user/profile-image/${_authState.userId}',
-          width: 55,
+      if (uploadProfileImageStatus == UploadProfileStatus.idle) {
+        if (_authState.profileImagePath.isNotEmpty) {
+          return CircleAvatar(
+            radius: 35,
+            backgroundImage: NetworkImage('$endpoint/user/profile-image/${_authState.userId}'),
+            backgroundColor: Colors.transparent,
+          );
+        } else {
+          return const CircleAvatar(
+            radius: 35,
+            backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
+            backgroundColor: Colors.transparent,
+          );
+        }
+      }
+
+      if (uploadProfileImageStatus == UploadProfileStatus.success) {
+        return CircleAvatar(
+          radius: 35,
+          backgroundImage: NetworkImage('$endpoint/user/profile-image/${_authState.userId}'),
+          backgroundColor: Colors.transparent,
         );
       }
 
-      profileImage.value = const Image(
-        image: AssetImage('assets/immich-logo-no-outline.png'),
-        width: 60,
-        filterQuality: FilterQuality.high,
-      );
+      if (uploadProfileImageStatus == UploadProfileStatus.failure) {
+        return const CircleAvatar(
+          radius: 35,
+          backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
+          backgroundColor: Colors.transparent,
+        );
+      }
+
+      if (uploadProfileImageStatus == UploadProfileStatus.loading) {
+        return const ImmichLoadingIndicator();
+      }
+
+      return Container();
     }
 
     _pickUserProfileImage() async {
@@ -63,11 +88,6 @@ class ProfileDrawer extends HookConsumerWidget {
           ref
               .watch(authenticationProvider.notifier)
               .updateUserProfileImagePath(ref.read(uploadProfileImageProvider).profileImagePath);
-
-          profileImage.value = Image.network(
-            '$endpoint/user/profile-image/${_authState.userId}',
-            width: 55,
-          );
         }
       }
     }
@@ -96,10 +116,16 @@ class ProfileDrawer extends HookConsumerWidget {
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        profileImage.value,
+                        Material(
+                          child: _buildUserProfileImage(),
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50.0),
+                          ),
+                        ),
                         Positioned(
-                          top: -8,
-                          right: -8,
+                          bottom: 0,
+                          right: -5,
                           child: GestureDetector(
                             onTap: _pickUserProfileImage,
                             child: Material(
