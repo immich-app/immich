@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe, Put, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe, Put, Query, UseInterceptors, UploadedFile, Response } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
@@ -7,6 +7,7 @@ import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { profileImageUploadOption } from '../../config/profile-image-upload.config';
+import { Response as Res } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -45,7 +46,9 @@ export class UserController {
   }
 
   @Get('/profile-image/:userId')
-  async getProfileImage(@Param('assetId') assetId: string) {
-
+  async getProfileImage(@Param('userId') userId: string,
+    @Response({ passthrough: true }) res: Res,
+  ) {
+    return await this.userService.getUserProfileImage(userId, res);
   }
 }

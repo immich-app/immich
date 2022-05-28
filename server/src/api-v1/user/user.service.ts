@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
@@ -7,6 +7,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import sharp from 'sharp';
+import { createReadStream } from 'fs';
+import { Response as Res } from 'express';
 
 @Injectable()
 export class UserService {
@@ -129,9 +131,9 @@ export class UserService {
     try {
       // Convert file to jpeg
       let filePath = ''
-      const fileSave = await sharp(fileInfo.path).webp().resize(512, 512).toFile(fileInfo.path + '.webp')
+      const convertImageInfo = await sharp(fileInfo.path).webp().resize(512, 512).toFile(fileInfo.path + '.webp')
 
-      if (fileSave) {
+      if (convertImageInfo) {
         filePath = fileInfo.path + '.webp';
         await this.userRepository.update(authUser.id, {
           profileImagePath: filePath
@@ -140,10 +142,8 @@ export class UserService {
         filePath = fileInfo.path;
         await this.userRepository.update(authUser.id, {
           profileImagePath: filePath
-
         })
       }
-
 
       return {
         userId: authUser.id,
@@ -153,6 +153,13 @@ export class UserService {
       Logger.error(e, 'Create User Profile Image');
       throw new InternalServerErrorException('Failed to create new user profile image');
     }
+  }
 
+  async getUserProfileImage(userId: string, res: Res) {
+    const user = await this.userRepository.findOne({ id: userId })
+    res.set({
+      'Content-Type': 'image/webp',
+    });
+    return new StreamableFile(createReadStream(user.profileImagePath));
   }
 }
