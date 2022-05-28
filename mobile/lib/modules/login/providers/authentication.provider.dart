@@ -20,6 +20,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
             isAuthenticated: false,
             userId: "",
             userEmail: "",
+            firstName: '',
+            lastName: '',
+            isAdmin: false,
             deviceInfo: DeviceInfoRemote(
               id: 0,
               userId: "",
@@ -76,6 +79,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         isAuthenticated: true,
         userId: payload.userId,
         userEmail: payload.userEmail,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        isAdmin: payload.isAdmin,
       );
 
       if (isSavedLoginInfo) {
@@ -117,6 +123,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       isAuthenticated: false,
       userId: "",
       userEmail: "",
+      firstName: '',
+      lastName: '',
+      isAdmin: false,
       deviceInfo: DeviceInfoRemote(
         id: 0,
         userId: "",

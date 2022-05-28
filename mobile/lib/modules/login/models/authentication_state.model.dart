@@ -8,6 +8,9 @@ class AuthenticationState {
   final String userId;
   final String userEmail;
   final bool isAuthenticated;
+  final String firstName;
+  final String lastName;
+  final bool isAdmin;
   final DeviceInfoRemote deviceInfo;
 
   AuthenticationState({
@@ -16,6 +19,9 @@ class AuthenticationState {
     required this.userId,
     required this.userEmail,
     required this.isAuthenticated,
+    required this.firstName,
+    required this.lastName,
+    required this.isAdmin,
     required this.deviceInfo,
   });
 
@@ -25,6 +31,9 @@ class AuthenticationState {
     String? userId,
     String? userEmail,
     bool? isAuthenticated,
+    String? firstName,
+    String? lastName,
+    bool? isAdmin,
     DeviceInfoRemote? deviceInfo,
   }) {
     return AuthenticationState(
@@ -33,24 +42,32 @@ class AuthenticationState {
       userId: userId ?? this.userId,
       userEmail: userEmail ?? this.userEmail,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      isAdmin: isAdmin ?? this.isAdmin,
       deviceInfo: deviceInfo ?? this.deviceInfo,
     );
   }
 
   @override
   String toString() {
-    return 'AuthenticationState(deviceId: $deviceId, deviceType: $deviceType, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, deviceInfo: $deviceInfo)';
+    return 'AuthenticationState(deviceId: $deviceId, deviceType: $deviceType, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, firstName: $firstName, lastName: $lastName, isAdmin: $isAdmin, deviceInfo: $deviceInfo)';
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'deviceId': deviceId,
-      'deviceType': deviceType,
-      'userId': userId,
-      'userEmail': userEmail,
-      'isAuthenticated': isAuthenticated,
-      'deviceInfo': deviceInfo.toMap(),
-    };
+    final result = <String, dynamic>{};
+
+    result.addAll({'deviceId': deviceId});
+    result.addAll({'deviceType': deviceType});
+    result.addAll({'userId': userId});
+    result.addAll({'userEmail': userEmail});
+    result.addAll({'isAuthenticated': isAuthenticated});
+    result.addAll({'firstName': firstName});
+    result.addAll({'lastName': lastName});
+    result.addAll({'isAdmin': isAdmin});
+    result.addAll({'deviceInfo': deviceInfo.toMap()});
+
+    return result;
   }
 
   factory AuthenticationState.fromMap(Map<String, dynamic> map) {
@@ -60,6 +77,9 @@ class AuthenticationState {
       userId: map['userId'] ?? '',
       userEmail: map['userEmail'] ?? '',
       isAuthenticated: map['isAuthenticated'] ?? false,
+      firstName: map['firstName'] ?? '',
+      lastName: map['lastName'] ?? '',
+      isAdmin: map['isAdmin'] ?? false,
       deviceInfo: DeviceInfoRemote.fromMap(map['deviceInfo']),
     );
   }
@@ -78,6 +98,9 @@ class AuthenticationState {
         other.userId == userId &&
         other.userEmail == userEmail &&
         other.isAuthenticated == isAuthenticated &&
+        other.firstName == firstName &&
+        other.lastName == lastName &&
+        other.isAdmin == isAdmin &&
         other.deviceInfo == deviceInfo;
   }
 
@@ -88,6 +111,9 @@ class AuthenticationState {
         userId.hashCode ^
         userEmail.hashCode ^
         isAuthenticated.hashCode ^
+        firstName.hashCode ^
+        lastName.hashCode ^
+        isAdmin.hashCode ^
         deviceInfo.hashCode;
   }
 }

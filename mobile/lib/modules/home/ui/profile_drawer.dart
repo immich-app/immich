@@ -55,18 +55,29 @@ class ProfileDrawer extends HookConsumerWidget {
                   color: Colors.grey[200],
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Image(
                       image: AssetImage('assets/immich-logo-no-outline.png'),
-                      width: 50,
+                      width: 55,
                       filterQuality: FilterQuality.high,
                     ),
                     const Padding(padding: EdgeInsets.all(8)),
                     Text(
-                      _authState.userEmail,
-                      style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
+                      "${_authState.firstName} ${_authState.lastName}",
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        _authState.userEmail,
+                        style: TextStyle(color: Colors.grey[800], fontSize: 12),
+                      ),
                     )
                   ],
                 ),
