@@ -1,7 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/home/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -9,17 +13,21 @@ import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'dart:math';
 
 class ProfileDrawer extends HookConsumerWidget {
   const ProfileDrawer({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    String endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     AuthenticationState _authState = ref.watch(authenticationProvider);
     ServerInfoState _serverInfoState = ref.watch(serverInfoProvider);
-
+    final uploadProfileImageStatus = ref.watch(uploadProfileImageProvider).status;
     final appInfo = useState({});
+    var dummmy = Random().nextInt(1024);
 
     _getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -30,19 +38,74 @@ class ProfileDrawer extends HookConsumerWidget {
       };
     }
 
+    _buildUserProfileImage() {
+      if (_authState.profileImagePath.isEmpty) {
+        return const CircleAvatar(
+          radius: 35,
+          backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
+          backgroundColor: Colors.transparent,
+        );
+      }
+
+      if (uploadProfileImageStatus == UploadProfileStatus.idle) {
+        if (_authState.profileImagePath.isNotEmpty) {
+          return CircleAvatar(
+            radius: 35,
+            backgroundImage: NetworkImage('$endpoint/user/profile-image/${_authState.userId}?d=${dummmy++}'),
+            backgroundColor: Colors.transparent,
+          );
+        } else {
+          return const CircleAvatar(
+            radius: 35,
+            backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
+            backgroundColor: Colors.transparent,
+          );
+        }
+      }
+
+      if (uploadProfileImageStatus == UploadProfileStatus.success) {
+        return CircleAvatar(
+          radius: 35,
+          backgroundImage: NetworkImage('$endpoint/user/profile-image/${_authState.userId}?d=${dummmy++}'),
+          backgroundColor: Colors.transparent,
+        );
+      }
+
+      if (uploadProfileImageStatus == UploadProfileStatus.failure) {
+        return const CircleAvatar(
+          radius: 35,
+          backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
+          backgroundColor: Colors.transparent,
+        );
+      }
+
+      if (uploadProfileImageStatus == UploadProfileStatus.loading) {
+        return const ImmichLoadingIndicator();
+      }
+
+      return Container();
+    }
+
+    _pickUserProfileImage() async {
+      final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery, maxHeight: 1024, maxWidth: 1024);
+
+      if (image != null) {
+        var success = await ref.watch(uploadProfileImageProvider.notifier).upload(image);
+
+        if (success) {
+          ref
+              .watch(authenticationProvider.notifier)
+              .updateUserProfileImagePath(ref.read(uploadProfileImageProvider).profileImagePath);
+        }
+      }
+    }
+
     useEffect(() {
       _getPackageInfo();
-
+      _buildUserProfileImage();
       return null;
     }, []);
-
     return Drawer(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(5),
-          bottomRight: Radius.circular(5),
-        ),
-      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -51,22 +114,60 @@ class ProfileDrawer extends HookConsumerWidget {
             padding: EdgeInsets.zero,
             children: [
               DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color.fromARGB(255, 216, 219, 238), Color.fromARGB(255, 226, 230, 231)],
+                    begin: Alignment.centerRight,
+                    end: Alignment.centerLeft,
+                  ),
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Image(
-                      image: AssetImage('assets/immich-logo-no-outline.png'),
-                      width: 50,
-                      filterQuality: FilterQuality.high,
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        _buildUserProfileImage(),
+                        Positioned(
+                          bottom: 0,
+                          right: -5,
+                          child: GestureDetector(
+                            onTap: _pickUserProfileImage,
+                            child: Material(
+                              color: Colors.grey[50],
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50.0),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Icon(
+                                  Icons.edit,
+                                  color: Theme.of(context).primaryColor,
+                                  size: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const Padding(padding: EdgeInsets.all(8)),
                     Text(
-                      _authState.userEmail,
-                      style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
+                      "${_authState.firstName} ${_authState.lastName}",
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        _authState.userEmail,
+                        style: TextStyle(color: Colors.grey[800], fontSize: 12),
+                      ),
                     )
                   ],
                 ),
@@ -97,7 +198,15 @@ class ProfileDrawer extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Card(
+              elevation: 0,
               color: Colors.grey[100],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5), // if you need this
+                side: const BorderSide(
+                  color: Color.fromARGB(101, 201, 201, 201),
+                  width: 1,
+                ),
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
                 child: Column(

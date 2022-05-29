@@ -7,7 +7,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import sharp from 'sharp';
-import { createReadStream } from 'fs';
+import { createReadStream, unlink, unlinkSync } from 'fs';
 import { Response as Res } from 'express';
 
 @Injectable()
@@ -129,25 +129,14 @@ export class UserService {
 
   async createProfileImage(authUser: AuthUserDto, fileInfo: Express.Multer.File) {
     try {
-      // Convert file to jpeg
-      let filePath = ''
-      const convertImageInfo = await sharp(fileInfo.path).webp().resize(512, 512).toFile(fileInfo.path + '.webp')
+      await this.userRepository.update(authUser.id, {
+        profileImagePath: fileInfo.path
+      })
 
-      if (convertImageInfo) {
-        filePath = fileInfo.path + '.webp';
-        await this.userRepository.update(authUser.id, {
-          profileImagePath: filePath
-        })
-      } else {
-        filePath = fileInfo.path;
-        await this.userRepository.update(authUser.id, {
-          profileImagePath: filePath
-        })
-      }
 
       return {
         userId: authUser.id,
-        profileImagePath: filePath
+        profileImagePath: fileInfo.path
       };
     } catch (e) {
       Logger.error(e, 'Create User Profile Image');
@@ -156,10 +145,22 @@ export class UserService {
   }
 
   async getUserProfileImage(userId: string, res: Res) {
-    const user = await this.userRepository.findOne({ id: userId })
-    res.set({
-      'Content-Type': 'image/webp',
-    });
-    return new StreamableFile(createReadStream(user.profileImagePath));
+    try {
+      const user = await this.userRepository.findOne({ id: userId })
+      if (!user.profileImagePath) {
+        console.log("empty return")
+        throw new BadRequestException('User does not have a profile image');
+      }
+
+      res.set({
+        'Content-Type': 'image/jpeg',
+      });
+
+      const fileStream = createReadStream(user.profileImagePath)
+      return new StreamableFile(fileStream);
+    } catch (e) {
+      console.log("error getting user profile")
+    }
+
   }
 }

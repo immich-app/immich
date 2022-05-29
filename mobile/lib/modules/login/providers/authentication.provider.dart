@@ -17,9 +17,14 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
           AuthenticationState(
             deviceId: "",
             deviceType: "",
-            isAuthenticated: false,
             userId: "",
             userEmail: "",
+            firstName: '',
+            lastName: '',
+            profileImagePath: '',
+            isAdmin: false,
+            isFirstLogin: false,
+            isAuthenticated: false,
             deviceInfo: DeviceInfoRemote(
               id: 0,
               userId: "",
@@ -76,6 +81,11 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         isAuthenticated: true,
         userId: payload.userId,
         userEmail: payload.userEmail,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        profileImagePath: payload.profileImagePath,
+        isAdmin: payload.isAdmin,
+        isFirstLoggedIn: payload.isFirstLogin,
       );
 
       if (isSavedLoginInfo) {
@@ -114,9 +124,14 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     state = AuthenticationState(
       deviceId: "",
       deviceType: "",
-      isAuthenticated: false,
       userId: "",
       userEmail: "",
+      firstName: '',
+      lastName: '',
+      profileImagePath: '',
+      isFirstLogin: false,
+      isAuthenticated: false,
+      isAdmin: false,
       deviceInfo: DeviceInfoRemote(
         id: 0,
         userId: "",
@@ -138,6 +153,10 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
     DeviceInfoRemote deviceInfoRemote = await _backupService.setAutoBackup(backupState, deviceId, deviceType);
     state = state.copyWith(deviceInfo: deviceInfoRemote);
+  }
+
+  updateUserProfileImagePath(String path) {
+    state = state.copyWith(profileImagePath: path);
   }
 }
 

@@ -1,12 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import type { ImmichUser } from '$lib/models/immich-user';
+	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import { serverEndpoint } from '../../constants';
 
 	export let user: ImmichUser;
 
 	let shouldShowAccountInfo = false;
+	let shouldShowProfileImage = false;
 
+	onMount(async () => {
+		const res = await fetch(`${serverEndpoint}/user/profile-image/${user.id}`);
+
+		if (res.status == 200) shouldShowProfileImage = true;
+	});
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
 	};
@@ -39,9 +47,17 @@
 				on:mouseleave={() => (shouldShowAccountInfo = false)}
 			>
 				<button
-					class="flex place-items-center place-content-center rounded-full bg-immich-primary/80 h-10 w-10 text-gray-100 hover:bg-immich-primary"
+					class="flex place-items-center place-content-center rounded-full bg-immich-primary/80 h-12 w-12 text-gray-100 hover:bg-immich-primary"
 				>
-					{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
+					{#if shouldShowProfileImage}
+						<img
+							src={`${serverEndpoint}/user/profile-image/${user.id}`}
+							alt="profile-img"
+							class="inline rounded-full h-12 w-12 object-cover shadow-md"
+						/>
+					{:else}
+						{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
+					{/if}
 				</button>
 
 				{#if shouldShowAccountInfo}
