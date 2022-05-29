@@ -109,7 +109,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
                   ? const Icon(Icons.backup_rounded)
                   : Badge(
                       padding: const EdgeInsets.all(4),
-                      elevation: 1,
+                      elevation: 2,
                       position: BadgePosition.bottomEnd(bottom: -4, end: -4),
                       badgeColor: Colors.white,
                       badgeContent: const Icon(
@@ -117,7 +117,6 @@ class ImmichSliverAppBar extends ConsumerWidget {
                         size: 8,
                       ),
                       child: const Icon(Icons.backup_rounded)),
-              tooltip: 'Backup Controller',
               onPressed: () async {
                 var onPop = await AutoRouter.of(context).push(const BackupControllerRoute());
 
