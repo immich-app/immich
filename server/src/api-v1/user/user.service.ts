@@ -147,10 +147,17 @@ export class UserService {
   async getUserProfileImage(userId: string, res: Res) {
     try {
       const user = await this.userRepository.findOne({ id: userId })
+      if (!user.profileImagePath) {
+        console.log("empty return")
+        throw new BadRequestException('User does not have a profile image');
+      }
+
       res.set({
         'Content-Type': 'image/jpeg',
       });
-      return new StreamableFile(createReadStream(user.profileImagePath));
+
+      const fileStream = createReadStream(user.profileImagePath)
+      return new StreamableFile(fileStream);
     } catch (e) {
       console.log("error getting user profile")
     }
