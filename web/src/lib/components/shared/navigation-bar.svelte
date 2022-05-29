@@ -11,7 +11,7 @@
 	let shouldShowProfileImage = false;
 
 	onMount(async () => {
-		const res = await fetch(`${serverEndpoint}/user/profile-image/${user.id}`);
+		const res = await fetch(`${serverEndpoint}/user/profile-image/${user.id}`, { method: 'GET' });
 
 		if (res.status == 200) shouldShowProfileImage = true;
 	});
