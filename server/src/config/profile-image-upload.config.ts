@@ -29,9 +29,10 @@ export const profileImageUploadOption: MulterOptions = {
     },
 
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
+
       const userId = req.user['id'];
 
-      cb(null, `${userId}`);
+      cb(null, `${userId}${extname(file.originalname)}`);
     },
   }),
 };
