@@ -15,6 +15,7 @@ import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'dart:math';
 
 class ProfileDrawer extends HookConsumerWidget {
   const ProfileDrawer({Key? key}) : super(key: key);
@@ -26,8 +27,7 @@ class ProfileDrawer extends HookConsumerWidget {
     ServerInfoState _serverInfoState = ref.watch(serverInfoProvider);
     final uploadProfileImageStatus = ref.watch(uploadProfileImageProvider).status;
     final appInfo = useState({});
-
-    // Widget profileImage = Container();
+    var dummmy = Random().nextInt(1024);
 
     _getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -39,11 +39,19 @@ class ProfileDrawer extends HookConsumerWidget {
     }
 
     _buildUserProfileImage() {
+      if (_authState.profileImagePath.isEmpty) {
+        return const CircleAvatar(
+          radius: 35,
+          backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
+          backgroundColor: Colors.transparent,
+        );
+      }
+
       if (uploadProfileImageStatus == UploadProfileStatus.idle) {
         if (_authState.profileImagePath.isNotEmpty) {
           return CircleAvatar(
             radius: 35,
-            backgroundImage: NetworkImage('$endpoint/user/profile-image/${_authState.userId}'),
+            backgroundImage: NetworkImage('$endpoint/user/profile-image/${_authState.userId}?d=${dummmy++}'),
             backgroundColor: Colors.transparent,
           );
         } else {
@@ -58,7 +66,7 @@ class ProfileDrawer extends HookConsumerWidget {
       if (uploadProfileImageStatus == UploadProfileStatus.success) {
         return CircleAvatar(
           radius: 35,
-          backgroundImage: NetworkImage('$endpoint/user/profile-image/${_authState.userId}'),
+          backgroundImage: NetworkImage('$endpoint/user/profile-image/${_authState.userId}?d=${dummmy++}'),
           backgroundColor: Colors.transparent,
         );
       }
@@ -79,7 +87,7 @@ class ProfileDrawer extends HookConsumerWidget {
     }
 
     _pickUserProfileImage() async {
-      final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
+      final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery, maxHeight: 1024, maxWidth: 1024);
 
       if (image != null) {
         var success = await ref.watch(uploadProfileImageProvider.notifier).upload(image);
@@ -106,8 +114,12 @@ class ProfileDrawer extends HookConsumerWidget {
             padding: EdgeInsets.zero,
             children: [
               DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color.fromARGB(255, 216, 219, 238), Color.fromARGB(255, 226, 230, 231)],
+                    begin: Alignment.centerRight,
+                    end: Alignment.centerLeft,
+                  ),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -116,13 +128,7 @@ class ProfileDrawer extends HookConsumerWidget {
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        Material(
-                          child: _buildUserProfileImage(),
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50.0),
-                          ),
-                        ),
+                        _buildUserProfileImage(),
                         Positioned(
                           bottom: 0,
                           right: -5,
