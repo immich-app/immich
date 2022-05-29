@@ -153,7 +153,6 @@ class ProfileDrawer extends HookConsumerWidget {
                         ),
                       ],
                     ),
-                    const Padding(padding: EdgeInsets.all(8)),
                     Text(
                       "${_authState.firstName} ${_authState.lastName}",
                       style: TextStyle(
@@ -162,12 +161,9 @@ class ProfileDrawer extends HookConsumerWidget {
                         fontSize: 24,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        _authState.userEmail,
-                        style: TextStyle(color: Colors.grey[800], fontSize: 12),
-                      ),
+                    Text(
+                      _authState.userEmail,
+                      style: TextStyle(color: Colors.grey[800], fontSize: 12),
                     )
                   ],
                 ),

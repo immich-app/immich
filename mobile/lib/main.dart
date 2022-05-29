@@ -103,6 +103,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
             title: 'Immich',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
+              useMaterial3: true,
               brightness: Brightness.light,
               primarySwatch: Colors.indigo,
               fontFamily: 'WorkSans',
