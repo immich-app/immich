@@ -153,9 +153,12 @@ class LoginButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
-        style: ButtonStyle(
+        style: ElevatedButton.styleFrom(
           visualDensity: VisualDensity.standard,
-          padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.symmetric(vertical: 10, horizontal: 25)),
+          primary: Theme.of(context).primaryColor,
+          onPrimary: Colors.grey[50],
+          elevation: 2,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
         ),
         onPressed: () async {
           // This will remove current cache asset state of previous user login.
