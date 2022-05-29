@@ -72,7 +72,8 @@ services:
       - 5432:5432
     networks:
       - immich-network
-
+    restart: always
+    
   nginx:
     container_name: proxy_nginx
     image: nginx:latest
