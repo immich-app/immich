@@ -48,7 +48,7 @@
 				<LoadingSpinner />
 			</div>
 		{:then assetData}
-			<div class="flex place-items-center place-content-center h-full">
+			<div class="flex place-items-center place-content-center h-full mt-16">
 				<img
 					in:fade={{ duration: 200 }}
 					src={assetData}
