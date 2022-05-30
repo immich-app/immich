@@ -96,6 +96,12 @@ class BackupControllerPage extends HookConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(
+                      width: 1,
+                      color: Color.fromARGB(255, 220, 220, 220),
+                    ),
+                  ),
                   onPressed: () {
                     isAutoBackup
                         ? ref.watch(authenticationProvider.notifier).setAutoBackup(false)
@@ -191,6 +197,13 @@ class BackupControllerPage extends HookConsumerWidget {
             ),
           ),
           trailing: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              enableFeedback: true,
+              side: const BorderSide(
+                width: 1,
+                color: Color.fromARGB(255, 220, 220, 220),
+              ),
+            ),
             onPressed: () {
               AutoRouter.of(context).push(const BackupAlbumSelectionRoute());
             },
@@ -278,13 +291,20 @@ class BackupControllerPage extends HookConsumerWidget {
               child: Container(
                 child: backupState.backupProgress == BackUpProgressEnum.inProgress
                     ? ElevatedButton(
-                        style: ElevatedButton.styleFrom(primary: Colors.red[300]),
+                        style: ElevatedButton.styleFrom(
+                          primary: Colors.red[300],
+                          onPrimary: Colors.grey[50],
+                        ),
                         onPressed: () {
                           ref.read(backupProvider.notifier).cancelBackup();
                         },
                         child: const Text("Cancel"),
                       )
                     : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: Theme.of(context).primaryColor,
+                          onPrimary: Colors.grey[50],
+                        ),
                         onPressed: shouldBackup
                             ? () {
                                 ref.read(backupProvider.notifier).startBackupProcess();

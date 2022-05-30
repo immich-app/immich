@@ -79,14 +79,14 @@ class SearchResultPage extends HookConsumerWidget {
       return Chip(
         label: Wrap(
           spacing: 5,
+          runAlignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          alignment: WrapAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 2.0),
-              child: Text(
-                currentSearchTerm.value,
-                style: TextStyle(color: Theme.of(context).primaryColor),
-                maxLines: 1,
-              ),
+            Text(
+              currentSearchTerm.value,
+              style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 13, fontWeight: FontWeight.bold),
+              maxLines: 1,
             ),
             Icon(
               Icons.close_rounded,
