@@ -82,11 +82,11 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.only(top: 16, left: 18, right: 18),
             child: OutlinedButton.icon(
-              style: ButtonStyle(
-                alignment: Alignment.centerLeft,
-                padding:
-                    MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.symmetric(vertical: 22, horizontal: 16)),
-              ),
+              style: OutlinedButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
+                  side: const BorderSide(color: Color.fromARGB(255, 206, 206, 206)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))),
               onPressed: _onSelectPhotosButtonPressed,
               icon: const Icon(Icons.add_rounded),
               label: Padding(

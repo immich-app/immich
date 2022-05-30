@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Snowburst+One&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Work Sans', sans-serif;
+}
+
+body {
+	min-height: 100vh;
+	margin: 0;
+	background-color: #f6f8fe;
+  color: #5f6368;
+}
+
+@layer utilities {
+  .immich-form-input {
+    @apply bg-slate-100 p-2 rounded-md focus:border-immich-primary text-sm
+  }
+
+  .immich-form-label {
+    @apply font-medium text-sm text-gray-500
+  }
+
+  .immich-btn-primary {
+    @apply bg-immich-primary text-gray-100 border rounded-xl py-2 px-4 transition-all duration-150 hover:bg-immich-primary hover:shadow-lg text-sm font-medium
+  }
+}

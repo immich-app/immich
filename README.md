@@ -31,6 +31,7 @@ Loading ~4000 images/videos
 
 ## Screenshots
 
+### Mobile client
 <p align="left">
   <img src="design/login-screen.png" width="150" title="Login With Custom URL">
   <img src="design/backup-screen.png" width="150" title="Backup Setting Info">
@@ -39,14 +40,18 @@ Loading ~4000 images/videos
   <img src="design/search-screen.jpeg" width="150" title="Curated Search Info">
   <img src="design/shared-albums.png" width="150" title="Shared Albums">
   <img src="design/nsc6.png" width="150" title="EXIF Info">
+</p>
 
+### Web client
+<p align="center">
+  <img src="design/dashboard_photos.jpeg" width="100%" title="Home Dashboard">
 </p>
 
 # Note
 
 **!! NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS !!**
 
-This project is under heavy development, there will be continous functions, features and api changes.
+This project is under heavy development, there will be continuous functions, features and api changes.
 
 # Features
 
@@ -67,29 +72,30 @@ This project is under heavy development, there will be continous functions, feat
 - Show curated objects on the search page
 - Shared album with users on the same server
 - Selective backup - albums can be included and excluded during the backup process.
-
+- Web interface is available for administrative tasks (creating new users) and viewing assets on the server - additional features are coming.
 
 # System Requirement
 
-**OS**: Preferred Linux-based operating system (Ubuntu, Debian, MacOS...etc). 
+**OS**: Preferred unix-based operating system (Ubuntu, Debian, MacOS...etc). 
 
 I haven't tested with `Docker for Windows` as well as `WSL` on Windows
 
-*Raspberry Pi can be used but `microservices` container has to be comment out in `docker-compose` since TensorFlow has not been supported in Dockec image on arm64v7 yet.*
+*Raspberry Pi can be used but `microservices` container has to be comment out in `docker-compose` since TensorFlow has not been supported in Docker image on arm64v7 yet.*
 
 **RAM**: At least 2GB, preffered 4GB.
 
 **Core**: At least 2 cores, preffered 4 cores.
 
-# Development and Testing out the application
+# Getting Started
 
 You can use docker compose for development and testing out the application, there are several services that compose Immich:
 
 1. **NestJs** - Backend of the application
-2. **PostgreSQL** - Main database of the application
-3. **Redis** - For sharing websocket instance between docker instances and background tasks message queue.
-4. **Nginx** - Load balancing and optimized file uploading.
-5. **TensorFlow** - Object Detection and Image Classification.
+2. **SvelteKit** - Web frontend of the application
+3. **PostgreSQL** - Main database of the application
+4. **Redis** - For sharing websocket instance between docker instances and background tasks message queue.
+5. **Nginx** - Load balancing and optimized file uploading.
+6. **TensorFlow** - Object Detection and Image Classification.
 
 ## Step 1: Populate .env file
 
@@ -108,52 +114,75 @@ Pay attention to the key `UPLOAD_LOCATION`, this directory must exist and is own
 **Example**
 
 ```bash
+###################################################################################
 # Database
+###################################################################################
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
 DB_DATABASE_NAME=immich
 
+###################################################################################
 # Upload File Config
+###################################################################################
 UPLOAD_LOCATION=<put-the-path-of-the-upload-folder-here>
 
+###################################################################################
 # JWT SECRET
+###################################################################################
 JWT_SECRET=randomstringthatissolongandpowerfulthatnoonecanguess
 
+###################################################################################
 # MAPBOX
-## ENABLE_MAPBOX is either true of false -> if true, you have to provide MAPBOX_KEY
+####################################################################################
+# ENABLE_MAPBOX is either true of false -> if true, you have to provide MAPBOX_KEY
 ENABLE_MAPBOX=false
 MAPBOX_KEY=
+
+###################################################################################
+# WEB
+###################################################################################
+# This is the URL of your vm/server where you host Immich, so that the web frontend
+# know where can it make the request to.
+# For example: If your server IP address is 10.1.11.50, the environment variable will
+# be VITE_SERVER_ENDPOINT=http://10.1.11.50:2283
+VITE_SERVER_ENDPOINT=http://192.168.1.216:2283
 ```
 
 ## Step 2: Start the server
 
-To start, run
+To **start**, run
 
 ```bash
 docker-compose -f ./docker/docker-compose.yml up 
 ```
 
-If you have a few thousand photos/videos, I suggest running docker-compose with scaling option for the `immich_server` container to handle high I/O load when using fast scrolling.
+If you have a few thousand photos/videos, I suggest running docker-compose with *scaling* option for the `immich_server` container to handle high I/O load when using fast scrolling.
 
 ```bash
-docker-compose -f ./docker/docker-compose.yml up --scale immich_server=5 
+docker-compose -f ./docker/docker-compose.yml up --scale immich-server=5 
 ```
 
+To *update* docker-compose with newest image (if you have started the docker-compose previously)
+
+```bash
+docker-compose -f ./docker/docker-compose.yml pull && docker-compose -f ./docker/docker-compose.yml up
+```
 
 The server will be running at `http://your-ip:2283` through `Nginx`
 
 ## Step 3: Register User
 
-Use the command below on your terminal to create user as we don't have user interface for this function yet.
+Access the web interface at `http://your-ip:2285` to register an admin account.
 
-```bash
-curl --location --request POST 'http://your-server-ip:2283/auth/signUp' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "email": "testuser@email.com",
-    "password": "password"
-}'
-```
+<p align="left">
+  <img src="design/admin-registration-form.png" width="300" title="Admin Registration">
+<p/>
+
+Additional accounts on the server can be created by the admin account.
+
+<p align="left">
+  <img src="design/admin-interface.png" width="500" title="Admin User Management">
+<p/>
 
 ## Step 4: Run mobile app
 
@@ -188,15 +217,26 @@ You can get the app on F-droid by clicking the image below.
   <img src="design/ios-qr-code.png" width="200" title="Apple App Store">
 <p/>
 
+
+# Development
+
+The development environment can be started from the root of the project after populating the `.env` file with the command:
+
+```bash
+make dev # required Makefile installed on the system.
+``` 
+
+All servers and web container are hot reload for quick feedback loop.
+
 # Support
 
-If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsore**](https://github.com/sponsors/alextran1502), or one time donation with Buy Me a coffee link below.
+If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsor**](https://github.com/sponsors/alextran1502), or a one time donation with the Buy Me a coffee link below.
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/altran1502)
 
-This is also a meaningful way to give me motivation and encounragment to continue working on the app.
+This is also a meaningful way to give me motivation and encouragement to continue working on the app.
 
-Cheer! 🎉
+Cheers! 🎉
 
 # Known Issue
 
@@ -204,13 +244,13 @@ Cheer! 🎉
 
 *This is a known issue on RaspberryPi 4 arm64-v7 and incorrect Promox setup*
 
-TensorFlow doesn't run with older CPU architecture, it requires CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
+TensorFlow doesn't run with older CPU architecture, it requires a CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
  
 ```bash
 more /proc/cpuinfo | grep flags
 ``` 
   
-If you are running virtualization in Promox, the VM doesn't have the flag enable.
+If you are running virtualization in Promox, the VM doesn't have the flag enabled.
   
 You need to change the CPU type from `kvm64` to `host` under VMs hardware tab.
   

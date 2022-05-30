@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  immich_server:
+  immich-server:
     image: immich-server-dev:1.9.0
     build:
       context: ../server
@@ -19,9 +19,9 @@ services:
       - redis
       - database
     networks:
-      - immich_network
+      - immich-network
 
-  immich_microservices:
+  immich-microservices:
     image: immich-microservices-dev:1.9.0
     build:
       context: ../microservices
@@ -46,13 +46,13 @@ services:
       - database
       - immich_server
     networks:
-      - immich_network
+      - immich-network
 
   redis:
     container_name: immich_redis
     image: redis:6.2
     networks:
-      - immich_network
+      - immich-network
 
   database:
     container_name: immich_postgres
@@ -69,7 +69,7 @@ services:
     ports:
       - 5432:5432
     networks:
-      - immich_network
+      - immich-network
 
   nginx:
     container_name: proxy_nginx
@@ -82,11 +82,11 @@ services:
     logging:
       driver: none
     networks:
-      - immich_network
+      - immich-network
     depends_on:
-      - immich_server
+      - immich-server
 
 networks:
-  immich_network:
+  immich-network:
 volumes:
   pgdata:

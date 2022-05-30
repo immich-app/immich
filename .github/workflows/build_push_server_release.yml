@@ -12,14 +12,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: "main" 
+          ref: "main"
           fetch-depth: 0
-    
-      - name: 'Get Previous tag'
+
+      - name: "Get Previous tag"
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
-            fallback: latest 
+          fallback: latest
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2.0.0
@@ -50,14 +50,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: "main" 
+          ref: "main"
           fetch-depth: 0
 
-      - name: 'Get Previous tag'
+      - name: "Get Previous tag"
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
-            fallback: latest 
+          fallback: latest
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2.0.0
@@ -80,4 +80,43 @@ jobs:
           platforms: linux/arm/v7,linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-              altran1502/immich-microservices:${{ steps.previoustag.outputs.tag }}
+            altran1502/immich-microservices:${{ steps.previoustag.outputs.tag }}
+
+  build_and_push_web_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: "main"
+          fetch-depth: 0
+
+      - name: "Get Previous tag"
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: latest
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2.0.0
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2.0.0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push immich-web release
+        uses: docker/build-push-action@v3.0.0
+        with:
+          context: ./web
+          file: ./web/Dockerfile
+          platforms: linux/arm/v7,linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          target: prod
+          tags: |
+            altran1502/immich-web:${{ steps.previoustag.outputs.tag }}

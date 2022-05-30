@@ -15,20 +15,30 @@ import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
 import { AlbumModule } from './api-v1/album/album.module';
+import { AppController } from './app.controller';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
+
     TypeOrmModule.forRoot(databaseConfig),
+
     UserModule,
+
     AssetModule,
+
     AuthModule,
+
     ImmichJwtModule,
+
     DeviceInfoModule,
+
     BullModule.forRootAsync({
       useFactory: async () => ({
         redis: {
-          host: 'immich_redis',
+          host: process.env.REDIS_HOSTNAME || 'immich_redis',
           port: 6379,
         },
       }),
@@ -43,8 +53,13 @@ import { AlbumModule } from './api-v1/album/album.module';
     CommunicationModule,
 
     AlbumModule,
+    SharingModule,
+
+    ScheduleModule.forRoot(),
+
+    ScheduleTasksModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule implements NestModule {
