@@ -1,12 +1,21 @@
-import { IsOptional, IsEnum } from 'class-validator';
-
-export enum Ownership {
-  Mine = 'mine',
-  Theirs = 'theirs',
-}
+import { Transform, Type } from 'class-transformer';
+import { IsOptional, IsBoolean } from 'class-validator';
 
 export class GetAlbumsDto {
   @IsOptional()
-  @IsEnum(Ownership)
-  owner?: Ownership;
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value == 'true') {
+      return true;
+    } else if (value == 'false') {
+      return false;
+    }
+    return value;
+  })
+  /**
+   * true: only shared albums
+   * false: only non-shared own albums
+   * undefined: shared and owned albums
+   */
+  shared?: boolean;
 }

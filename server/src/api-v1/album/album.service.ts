@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getConnection, Repository } from 'typeorm';
+import { getConnection, Repository, SelectQueryBuilder } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity } from '../asset/entities/asset.entity';
 import { UserEntity } from '../user/entities/user.entity';
@@ -14,6 +14,7 @@ import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
+import { Album, mapAlbum } from './response-dto/album';
 
 @Injectable()
 export class AlbumService {
@@ -78,41 +79,72 @@ export class AlbumService {
     });
   }
 
-  private async getOwnedAlbums(ownerId: string) {
-    return this.albumRepository.find({
-      where: { ownerId },
-      relations: ['sharedUsers', 'sharedUsers.userInfo'],
-      order: {
-        createdAt: 'DESC',
-      },
-    });
-  }
-
-  private async getSharedAlbums(sharedWithId: string) {
-    const albums = await this.userAlbumRepository.find({
-      where: {
-        sharedUserId: sharedWithId,
-      },
-      relations: ['albumInfo', 'albumInfo.sharedUsers', 'albumInfo.sharedUsers.userInfo'],
-      select: ['albumInfo'],
-    });
-    // TODO: do "order by" in query
-    return albums
-      .map((o) => o.albumInfo)
-      .sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
-  }
-
   /**
    * Get all shared album, including owned and shared one.
    * @param authUser AuthUserDto
    * @returns All Shared Album And Its Members
    */
-  async getAllAlbums(authUser: AuthUserDto, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]> {
-    const ownerFilter = getAlbumsDto.owner;
-    const myAlbums = !ownerFilter || ownerFilter == 'mine' ? await this.getOwnedAlbums(authUser.id) : [];
-    const sharedAlbums = !ownerFilter || ownerFilter == 'theirs' ? await this.getSharedAlbums(authUser.id) : [];
+  async getAllAlbums(authUser: AuthUserDto, getAlbumsDto: GetAlbumsDto): Promise<Album[]> {
+    const filteringByShared = typeof getAlbumsDto.shared == 'boolean';
+    const userId = authUser.id;
+    let query = this.albumRepository.createQueryBuilder('album');
 
-    return [...myAlbums, ...sharedAlbums];
+    const getSharedAlbumIdsSubQuery = (qb: SelectQueryBuilder<AlbumEntity>) => {
+      return qb
+        .subQuery()
+        .select('albumSub.id')
+        .from(AlbumEntity, 'albumSub')
+        .innerJoin('albumSub.sharedUsers', 'userAlbumSub')
+        .where('albumSub.ownerId = :ownerId', { ownerId: userId })
+        .getQuery();
+    };
+
+    if (filteringByShared) {
+      if (getAlbumsDto.shared) {
+        // shared albums
+        query = query
+          .innerJoinAndSelect('album.sharedUsers', 'sharedUser')
+          .innerJoinAndSelect('sharedUser.userInfo', 'userInfo')
+          .where((qb) => {
+            // owned and shared with other users
+            const subQuery = getSharedAlbumIdsSubQuery(qb);
+            return `album.id IN ${subQuery}`;
+          })
+          .orWhere((qb) => {
+            // shared with userId
+            const subQuery = qb
+              .subQuery()
+              .select('userAlbum.albumId')
+              .from(UserAlbumEntity, 'userAlbum')
+              .where('userAlbum.sharedUserId = :sharedUserId', { sharedUserId: userId })
+              .getQuery();
+            return `album.id IN ${subQuery}`;
+          });
+      } else {
+        // owned, not shared albums
+        query = query.where('album.ownerId = :ownerId', { ownerId: userId }).andWhere((qb) => {
+          const subQuery = getSharedAlbumIdsSubQuery(qb);
+          return `album.id NOT IN ${subQuery}`;
+        });
+      }
+    } else {
+      // owned and shared with userId
+      query = query
+        .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
+        .leftJoinAndSelect('sharedUser.userInfo', 'userInfo')
+        .where('album.ownerId = :ownerId', { ownerId: userId })
+        .orWhere((qb) => {
+          const subQuery = qb
+            .subQuery()
+            .select('userAlbum.albumId')
+            .from(UserAlbumEntity, 'userAlbum')
+            .where('userAlbum.sharedUserId = :sharedUserId', { sharedUserId: userId })
+            .getQuery();
+          return `album.id IN ${subQuery}`;
+        });
+    }
+    const albums = await query.orderBy('album.createdAt', 'DESC').getMany();
+    return albums.map((album) => mapAlbum(album));
   }
 
   async getAlbumInfo(authUser: AuthUserDto, albumId: string) {

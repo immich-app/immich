@@ -2,11 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
-import { clearDb, auth, getAuthUser } from './test-utils';
+import { clearDb, getAuthUser, authCustom } from './test-utils';
 import { databaseConfig } from '../src/config/database.config';
 import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
+import { AuthUserDto } from '../src/decorators/auth-user.decorator';
+import { AuthService } from '../src/api-v1/auth/auth.service';
+import { AuthModule } from '../src/api-v1/auth/auth.module';
 
 function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   return request(app.getHttpServer()).post('/album').send(data);
@@ -41,15 +44,18 @@ describe('Album', () => {
   });
 
   describe('with auth', () => {
-    const authUser = Object.freeze(getAuthUser());
+    let authUser: AuthUserDto;
+    let authService: AuthService;
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [AlbumModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [AlbumModule, AuthModule, TypeOrmModule.forRoot(databaseConfig)],
       });
-      const moduleFixture: TestingModule = await auth(builder).compile();
+      authUser = getAuthUser(); // set default auth user
+      const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 
       app = moduleFixture.createNestApplication();
+      authService = app.get(AuthService);
       await app.init();
     });
 
@@ -74,24 +80,69 @@ describe('Album', () => {
     });
 
     describe('with albums in DB', () => {
-      const ownAlbumOne = 'firstAlbum';
-      const ownAlbumTwo = 'secondAlbum';
+      const userOneShared = 'userOneShared';
+      const userOneNotShared = 'userOneNotShared';
+      const userTwoShared = 'userTwoShared';
+      const userTwoNotShared = 'userTwoNotShared';
+      let userOne: AuthUserDto;
+      let userTwo: AuthUserDto;
 
       beforeAll(async () => {
-        return Promise.allSettled([
-          _createAlbum(app, { albumName: ownAlbumOne }),
-          _createAlbum(app, { albumName: ownAlbumTwo }),
+        // setup users
+        const result = await Promise.all([
+          authService.signUp({ email: 'one@test.com', password: '1234' }),
+          authService.signUp({ email: 'two@test.com', password: '1234' }),
         ]);
+        userOne = result[0];
+        userTwo = result[1];
+        // add user one albums
+        authUser = userOne;
+        await Promise.all([
+          _createAlbum(app, { albumName: userOneShared, sharedWithUserIds: [userTwo.id] }),
+          _createAlbum(app, { albumName: userOneNotShared }),
+        ]);
+        // add user two albums
+        authUser = userTwo;
+        await Promise.all([
+          _createAlbum(app, { albumName: userTwoShared, sharedWithUserIds: [userOne.id] }),
+          _createAlbum(app, { albumName: userTwoNotShared }),
+        ]);
+        // set user one as authed for next requests
+        authUser = userOne;
       });
 
-      it('returns the album collection', async () => {
+      it('returns the album collection including owned and shared', async () => {
         const { status, body } = await request(app.getHttpServer()).get('/album');
+        expect(status).toEqual(200);
+        expect(body).toHaveLength(3);
+        expect(body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ ownerId: userOne.id, albumName: userOneShared, shared: true }),
+            expect.objectContaining({ ownerId: userOne.id, albumName: userOneNotShared, shared: false }),
+            expect.objectContaining({ ownerId: userTwo.id, albumName: userTwoShared, shared: true }),
+          ]),
+        );
+      });
+
+      it('returns the album collection filtered by shared', async () => {
+        const { status, body } = await request(app.getHttpServer()).get('/album?shared=true');
         expect(status).toEqual(200);
         expect(body).toHaveLength(2);
         expect(body).toEqual(
           expect.arrayContaining([
-            expect.objectContaining({ ownerId: authUser.id, albumName: ownAlbumOne }),
-            expect.objectContaining({ ownerId: authUser.id, albumName: ownAlbumTwo }),
+            expect.objectContaining({ ownerId: userOne.id, albumName: userOneShared, shared: true }),
+            expect.objectContaining({ ownerId: userTwo.id, albumName: userTwoShared, shared: true }),
+          ]),
+        );
+      });
+
+      it('returns the album collection filtered by NOT shared', async () => {
+        const { status, body } = await request(app.getHttpServer()).get('/album?shared=false');
+        expect(status).toEqual(200);
+        expect(body).toHaveLength(1);
+        expect(body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ ownerId: userOne.id, albumName: userOneNotShared, shared: false }),
           ]),
         );
       });

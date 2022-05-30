@@ -51,7 +51,10 @@ export class AlbumController {
   }
 
   @Get()
-  async getAllAlbums(@GetAuthUser() authUser: AuthUserDto, @Query(ValidationPipe) query: GetAlbumsDto) {
+  async getAllAlbums(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Query(new ValidationPipe({ transform: true })) query: GetAlbumsDto,
+  ) {
     return this.albumService.getAllAlbums(authUser, query);
   }
 
