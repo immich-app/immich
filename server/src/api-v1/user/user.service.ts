@@ -148,8 +148,6 @@ export class UserService {
     try {
       const user = await this.userRepository.findOne({ id: userId })
 
-
-
       if (!user.profileImagePath) {
         // throw new BadRequestException('User does not have a profile image');
         res.status(404).send('User does not have a profile image');
