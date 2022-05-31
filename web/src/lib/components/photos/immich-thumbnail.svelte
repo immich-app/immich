@@ -4,7 +4,6 @@
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { serverEndpoint } from '../../constants';
-
 	import IntersectionObserver from '$lib/components/photos/intersection-observer.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
@@ -107,7 +106,6 @@
 				<div class="bg-immich-primary/10 h-[200px] w-[200px] flex place-items-center place-content-center">...</div>
 			{:then imageData}
 				<img
-					in:fade={{ duration: 200 }}
 					src={imageData}
 					alt={asset.id}
 					class="object-cover h-[200px] w-[200px] transition-all duration-100 z-0"

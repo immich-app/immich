@@ -49,13 +49,7 @@
 			</div>
 		{:then assetData}
 			<div class="flex place-items-center place-content-center h-full select-none">
-				<img
-					in:fade={{ duration: 200 }}
-					src={assetData}
-					alt={assetId}
-					class="object-cover h-full transition-all duration-100 z-0"
-					loading="lazy"
-				/>
+				<img src={assetData} alt={assetId} class="object-cover h-full transition-all duration-100 z-0" loading="lazy" />
 			</div>
 		{/await}
 	{/if}

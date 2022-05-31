@@ -2,6 +2,9 @@
 	import { createEventDispatcher } from 'svelte';
 
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+	import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
 	import type { ImmichAsset } from '../../models/immich-asset';
 	import CircleIconButton from '../shared/circle_icon_button.svelte';
 
@@ -16,5 +19,9 @@
 	<div>
 		<CircleIconButton logo={ArrowLeft} on:click={backButtonHandler} />
 	</div>
-	<div class="text-white">Button</div>
+	<div class="text-white flex gap-2">
+		<CircleIconButton logo={InformationOutline} on:click={() => console.log('Options')} />
+		<CircleIconButton logo={TrashCanOutline} on:click={() => console.log('Options')} />
+		<CircleIconButton logo={DotsVertical} on:click={() => console.log('Options')} />
+	</div>
 </div>
