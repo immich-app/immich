@@ -15,3 +15,5 @@ export const databaseConfig: TypeOrmModuleOptions = {
   },
   migrationsRun: true,
 };
+
+export default databaseConfig;

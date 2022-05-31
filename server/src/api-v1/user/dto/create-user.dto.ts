@@ -14,14 +14,14 @@ export class CreateUserDto {
   lastName: string;
 
   @IsOptional()
-  profileImagePath: string;
+  profileImagePath?: string;
 
   @IsOptional()
-  isAdmin: boolean;
+  isAdmin?: boolean;
 
   @IsOptional()
-  isFirstLoggedIn: boolean;
+  isFirstLoggedIn?: boolean;
 
   @IsOptional()
-  id: string;
+  id?: string;
 }
