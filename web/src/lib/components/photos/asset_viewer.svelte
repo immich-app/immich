@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 
 	import AsserViewerNavBar from './asser_viewer_nav_bar.svelte';
 	import { flattenAssetGroupByDate } from '$lib/stores/assets';
@@ -15,11 +15,30 @@
 	let viewDeviceId: string;
 	let viewAssetId: string;
 
+	let halfLeftHover = false;
+	let halfRightHover = false;
+
 	onMount(() => {
 		viewAssetId = selectedAsset.id;
 		viewDeviceId = selectedAsset.deviceId;
 		pushState(viewAssetId);
+
+		document.addEventListener('keydown', (keyInfo) => handleKeyboardPress(keyInfo.key));
 	});
+
+	onDestroy(() => {
+		document.removeEventListener('keydown', (b) => {
+			console.log('destroyed', b);
+		});
+	});
+
+	const handleKeyboardPress = (key: string) => {
+		switch (key) {
+			case 'Escape':
+				closeViewer();
+				return;
+		}
+	};
 
 	const closeViewer = () => {
 		history.pushState(null, '', `/photos`);
@@ -55,16 +74,30 @@
 
 <section
 	id="immich-asset-viewer"
-	class="absolute w-screen h-screen top-0 overflow-y-hidden bg-black z-[9999] flex justify-between place-items-center"
+	class="absolute w-screen h-screen top-0 overflow-y-hidden bg-black z-[999] flex justify-between place-items-center"
 >
-	<AsserViewerNavBar />
+	<AsserViewerNavBar asset={selectedAsset} on:goBack={closeViewer} />
 
-	<button
-		class="rounded-full p-4 hover:bg-gray-500 hover:text-gray-700  text-gray-500 mx-4"
+	<div
+		id="left-navigation-area"
+		class="absolute left-0 top-0 bg-transparent w-1/3 h-full z-[1000] flex place-items-center hover:cursor-pointer"
+		on:mouseenter={() => {
+			halfLeftHover = true;
+			halfRightHover = false;
+		}}
+		on:mouseleave={() => {
+			halfLeftHover = false;
+		}}
 		on:click={navigateAssetBackward}
 	>
-		<ChevronLeft size="48" />
-	</button>
+		<button
+			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700  text-gray-500 mx-4"
+			class:button-hover={halfLeftHover}
+			on:click={navigateAssetBackward}
+		>
+			<ChevronLeft size="36" />
+		</button>
+	</div>
 
 	{#key selectedIndex}
 		{#if viewAssetId && viewDeviceId}
@@ -81,10 +114,31 @@
 		{/if}
 	{/key}
 
-	<button
-		class="rounded-full p-4 hover:bg-gray-500 hover:text-gray-700 bg-black text-gray-500 mx-4"
+	<div
+		id="right-navigation-area"
+		class="absolute right-0 top-0 bg-transparent w-1/3 h-full z-[1000] flex justify-end place-items-center hover:cursor-pointer"
 		on:click={navigateAssetForward}
+		on:mouseenter={() => {
+			halfLeftHover = false;
+			halfRightHover = true;
+		}}
+		on:mouseleave={() => {
+			halfRightHover = false;
+		}}
 	>
-		<ChevronRight size="48" />
-	</button>
+		<button
+			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4"
+			class:button-hover={halfRightHover}
+			on:click={navigateAssetForward}
+		>
+			<ChevronRight size="36" />
+		</button>
+	</div>
 </section>
+
+<style>
+	.button-hover {
+		background-color: rgb(107 114 128 / var(--tw-bg-opacity));
+		color: rgb(55 65 81 / var(--tw-text-opacity));
+	}
+</style>

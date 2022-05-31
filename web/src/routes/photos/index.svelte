@@ -116,7 +116,7 @@
 						on:mouseleave={() => (isMouseOverGroup = false)}
 					>
 						<!-- Date group title -->
-						<p class="font-medium text-sm text-immich-primary mb-2 flex place-items-center h-6">
+						<p class="font-semibold text-sm text-immich-primary mb-2 flex place-items-center h-6">
 							{#if selectedGroupThumbnail === groupIndex && isMouseOverGroup}
 								<div
 									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}

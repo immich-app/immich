@@ -41,14 +41,14 @@
 	};
 </script>
 
-<div on:click={() => dispatch('close')} class="h-screen">
+<div class="h-screen w-screen">
 	{#if assetInfo}
 		{#await loadAssetData()}
 			<div class="flex place-items-center place-content-center h-full">
 				<LoadingSpinner />
 			</div>
 		{:then assetData}
-			<div class="flex place-items-center place-content-center h-full mt-16">
+			<div class="flex place-items-center place-content-center h-full select-none">
 				<img
 					in:fade={{ duration: 200 }}
 					src={assetData}
