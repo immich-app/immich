@@ -50,7 +50,7 @@
 		{#await loadAssetData()}
 			<LoadingSpinner />
 		{:then assetData}
-			<img src={assetData} alt={assetId} class="object-fill" loading="lazy" />
+			<img src={assetData} alt={assetId} class="object-contain  h-full" loading="lazy" />
 		{/await}
 	{/if}
 </div>

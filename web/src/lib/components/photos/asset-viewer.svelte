@@ -155,6 +155,8 @@ grid grid-rows-[64px_1fr] grid-cols-4 transition-all duration-200`}
 			class="bg-blue-400/50 col-start-5 w-[360px] row-span-full"
 		>
 			This is a detail panel
+
+			{exifInfo.city}
 		</div>
 	{/if}
 </section>
