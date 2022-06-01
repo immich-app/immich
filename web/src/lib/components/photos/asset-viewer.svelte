@@ -8,6 +8,7 @@
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import { AssetType, type ImmichAsset, type ImmichExif } from '../../models/immich-asset';
 	import PhotoViewer from './photo-viewer.svelte';
+	import DetailPanel from './detail-panel.svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -84,15 +85,14 @@
 <!-- ${isShowDetail && 'grid-cols-4'} -->
 <section
 	id="immich-asset-viewer"
-	class={`absolute h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] 
-grid grid-rows-[64px_1fr] grid-cols-4 transition-all duration-200`}
+	class="absolute h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4  "
 >
-	<div class="av-navbar-area transition-transform duration-200 z-[1000]">
+	<div class="av-navbar-area z-[1000] transition-transform">
 		<AsserViewerNavBar asset={selectedAsset} on:goBack={closeViewer} on:showDetail={showDetailInfoHandler} />
 	</div>
 
 	<div
-		class="av-left-navigation-area bg-green-300/50 z-[1000] flex place-items-center hover:cursor-pointer w-3/4"
+		class="av-left-navigation-area z-[1000] flex place-items-center hover:cursor-pointer w-3/4"
 		on:mouseenter={() => {
 			halfLeftHover = true;
 			halfRightHover = false;
@@ -111,7 +111,7 @@ grid grid-rows-[64px_1fr] grid-cols-4 transition-all duration-200`}
 		</button>
 	</div>
 
-	<div class="av-viewer-area transition-transform duration-200">
+	<div class="av-viewer-area">
 		{#key selectedIndex}
 			{#if viewAssetId && viewDeviceId}
 				{#if selectedAsset.type == AssetType.IMAGE}
@@ -129,7 +129,7 @@ grid grid-rows-[64px_1fr] grid-cols-4 transition-all duration-200`}
 	</div>
 
 	<div
-		class="av-right-navigation-area bg-red-300/50 z-[1000] flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end"
+		class="av-right-navigation-area  z-[1000] flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end"
 		on:click={navigateAssetForward}
 		on:mouseenter={() => {
 			halfLeftHover = false;
@@ -150,13 +150,12 @@ grid grid-rows-[64px_1fr] grid-cols-4 transition-all duration-200`}
 
 	{#if isShowDetail}
 		<div
-			transition:fly={{ x: 100, duration: 200 }}
+			transition:fly={{ duration: 150 }}
 			id="detail-panel"
-			class="bg-blue-400/50 col-start-5 w-[360px] row-span-full"
+			class="bg-immich-bg w-[360px] row-span-full transition-all "
+			translate="yes"
 		>
-			This is a detail panel
-
-			{exifInfo.city}
+			<DetailPanel {exifInfo} assetInfo={selectedAsset} />
 		</div>
 	{/if}
 </section>
