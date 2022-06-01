@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-
-	import AsserViewerNavBar from './asser_viewer_nav_bar.svelte';
+	import { fly, slide } from 'svelte/transition';
+	import { elasticInOut } from 'svelte/easing';
+	import AsserViewerNavBar from './asser-viewer-nav-bar.svelte';
 	import { flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-	import { AssetType, type ImmichAsset } from '../../models/immich-asset';
-	import PhotoViewer from './photo_viewer.svelte';
+	import { AssetType, type ImmichAsset, type ImmichExif } from '../../models/immich-asset';
+	import PhotoViewer from './photo-viewer.svelte';
+
 	const dispatch = createEventDispatcher();
 
 	export let selectedAsset: ImmichAsset;
@@ -17,6 +19,8 @@
 
 	let halfLeftHover = false;
 	let halfRightHover = false;
+	let isShowDetail = false;
+	let exifInfo: ImmichExif;
 
 	onMount(() => {
 		viewAssetId = selectedAsset.id;
@@ -70,17 +74,25 @@
 		// changes the current URL in the address bar but doesn't perform any SvelteKit navigation
 		history.pushState(null, '', `/photos/${assetId}`);
 	};
+
+	const showDetailInfoHandler = () => {
+		isShowDetail = !isShowDetail;
+		console.log(isShowDetail);
+	};
 </script>
 
+<!-- ${isShowDetail && 'grid-cols-4'} -->
 <section
 	id="immich-asset-viewer"
-	class="absolute w-screen h-screen top-0 overflow-y-hidden bg-black z-[999] flex justify-between place-items-center"
+	class={`absolute h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] 
+grid grid-rows-[64px_1fr] grid-cols-4 transition-all duration-200`}
 >
-	<AsserViewerNavBar asset={selectedAsset} on:goBack={closeViewer} />
+	<div class="av-navbar-area transition-transform duration-200 z-[1000]">
+		<AsserViewerNavBar asset={selectedAsset} on:goBack={closeViewer} on:showDetail={showDetailInfoHandler} />
+	</div>
 
 	<div
-		id="left-navigation-area"
-		class="absolute left-0 top-0 bg-transparent w-1/3 h-full z-[1000] flex place-items-center hover:cursor-pointer"
+		class="av-left-navigation-area bg-green-300/50 z-[1000] flex place-items-center hover:cursor-pointer w-3/4"
 		on:mouseenter={() => {
 			halfLeftHover = true;
 			halfRightHover = false;
@@ -99,24 +111,25 @@
 		</button>
 	</div>
 
-	{#key selectedIndex}
-		{#if viewAssetId && viewDeviceId}
-			{#if selectedAsset.type == AssetType.IMAGE}
-				<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={closeViewer} />
-			{:else}
-				<div
-					class="w-full h-full bg-immich-primary/10 flex flex-col place-items-center place-content-center "
-					on:click={closeViewer}
-				>
-					<h1 class="animate-pulse font-bold text-4xl">Video viewer is under construction</h1>
-				</div>
+	<div class="av-viewer-area transition-transform duration-200">
+		{#key selectedIndex}
+			{#if viewAssetId && viewDeviceId}
+				{#if selectedAsset.type == AssetType.IMAGE}
+					<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={closeViewer} bind:exifInfo />
+				{:else}
+					<div
+						class="w-full h-full bg-immich-primary/10 flex flex-col place-items-center place-content-center "
+						on:click={closeViewer}
+					>
+						<h1 class="animate-pulse font-bold text-4xl">Video viewer is under construction</h1>
+					</div>
+				{/if}
 			{/if}
-		{/if}
-	{/key}
+		{/key}
+	</div>
 
 	<div
-		id="right-navigation-area"
-		class="absolute right-0 top-0 bg-transparent w-1/3 h-full z-[1000] flex justify-end place-items-center hover:cursor-pointer"
+		class="av-right-navigation-area bg-red-300/50 z-[1000] flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end"
 		on:click={navigateAssetForward}
 		on:mouseenter={() => {
 			halfLeftHover = false;
@@ -134,11 +147,41 @@
 			<ChevronRight size="36" />
 		</button>
 	</div>
+
+	{#if isShowDetail}
+		<div
+			transition:fly={{ x: 100, duration: 200 }}
+			id="detail-panel"
+			class="bg-blue-400/50 col-start-5 w-[360px] row-span-full"
+		>
+			This is a detail panel
+		</div>
+	{/if}
 </section>
 
 <style>
 	.button-hover {
 		background-color: rgb(107 114 128 / var(--tw-bg-opacity));
 		color: rgb(55 65 81 / var(--tw-text-opacity));
+	}
+
+	.av-navbar-area {
+		grid-row: 1 / span 1;
+		grid-column: 1 / span 4;
+	}
+
+	.av-viewer-area {
+		grid-row: 1 / span end;
+		grid-column: 1 / span 4;
+	}
+
+	.av-left-navigation-area {
+		grid-row: 2 / span end;
+		grid-column: 1 / span 2;
+	}
+
+	.av-right-navigation-area {
+		grid-row: 2 / span end;
+		grid-column: 3 / span 2;
 	}
 </style>

@@ -3,13 +3,15 @@
 	import { serverEndpoint } from '$lib/constants';
 	import { fade } from 'svelte/transition';
 
-	import type { ImmichAsset } from '$lib/models/immich-asset';
+	import type { ImmichAsset, ImmichExif } from '$lib/models/immich-asset';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import LoadingSpinner from '../shared/loading-spinner.svelte';
 
 	export let assetId: string;
 	export let deviceId: string;
+
 	let assetInfo: ImmichAsset;
+	export let exifInfo: ImmichExif;
 
 	const dispatch = createEventDispatcher();
 
@@ -21,6 +23,8 @@
 				},
 			});
 			assetInfo = await res.json();
+
+			if (assetInfo.exifInfo) exifInfo = assetInfo.exifInfo;
 		}
 	});
 
@@ -41,16 +45,12 @@
 	};
 </script>
 
-<div class="h-screen w-screen">
+<div class="flex place-items-center place-content-center h-full select-none">
 	{#if assetInfo}
 		{#await loadAssetData()}
-			<div class="flex place-items-center place-content-center h-full">
-				<LoadingSpinner />
-			</div>
+			<LoadingSpinner />
 		{:then assetData}
-			<div class="flex place-items-center place-content-center h-full select-none">
-				<img src={assetData} alt={assetId} class="object-cover h-full transition-all duration-100 z-0" loading="lazy" />
-			</div>
+			<img src={assetData} alt={assetId} class="object-fill" loading="lazy" />
 		{/await}
 	{/if}
 </div>
