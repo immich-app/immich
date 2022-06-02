@@ -6,7 +6,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    command: bash -c "npm run typeorm migration:run && npm run test:e2e"
+    command: npm run test:e2e
     expose:
       - "3000"
     volumes:

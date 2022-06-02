@@ -93,13 +93,23 @@ describe('User', () => {
           expect.arrayContaining([
             {
               email: userOneEmail,
+              firstName: 'one',
+              lastName: 'test',
               id: expect.anything(),
               createdAt: expect.anything(),
+              isAdmin: false,
+              isFirstLoggedIn: true,
+              profileImagePath: '',
             },
             {
               email: userTwoEmail,
+              firstName: 'two',
+              lastName: 'test',
               id: expect.anything(),
               createdAt: expect.anything(),
+              isAdmin: false,
+              isFirstLoggedIn: true,
+              profileImagePath: '',
             },
           ]),
         );
