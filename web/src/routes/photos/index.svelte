@@ -31,16 +31,12 @@
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import { onMount } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ImmichThumbnail from '../../lib/components/photos/immich-thumbnail.svelte';
 	import moment from 'moment';
-	import PhotoViewer from '../../lib/components/photos/photo-viewer.svelte';
 	import type { ImmichAsset } from '../../lib/models/immich-asset';
-	import { AssetType } from '../../lib/models/immich-asset';
-	import LoadingSpinner from '../../lib/components/shared/loading-spinner.svelte';
-	import AsserViewerNavBar from '../../lib/components/photos/asser-viewer-nav-bar.svelte';
 	import AssetViewer from '../../lib/components/photos/asset-viewer.svelte';
 
 	export let user: ImmichUser;

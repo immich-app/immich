@@ -18,6 +18,7 @@
 		"@sveltejs/kit": "next",
 		"@types/bcrypt": "^5.0.0",
 		"@types/cookie": "^0.4.1",
+		"@types/leaflet": "^1.7.10",
 		"@types/lodash": "^4.14.182",
 		"@types/lodash-es": "^4.17.6",
 		"@typescript-eslint/eslint-plugin": "^5.10.1",
@@ -39,6 +40,7 @@
 	"type": "module",
 	"dependencies": {
 		"cookie": "^0.4.2",
+		"leaflet": "^1.8.0",
 		"lodash": "^4.17.21",
 		"lodash-es": "^4.17.21",
 		"moment": "^2.29.3",

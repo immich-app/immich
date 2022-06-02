@@ -11,7 +11,6 @@
 	export let deviceId: string;
 
 	let assetInfo: ImmichAsset;
-	export let exifInfo: ImmichExif;
 
 	const dispatch = createEventDispatcher();
 
@@ -23,8 +22,6 @@
 				},
 			});
 			assetInfo = await res.json();
-
-			if (assetInfo.exifInfo) exifInfo = assetInfo.exifInfo;
 		}
 	});
 
@@ -45,12 +42,18 @@
 	};
 </script>
 
-<div class="flex place-items-center place-content-center h-full select-none">
+<div transition:fade={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
 	{#if assetInfo}
 		{#await loadAssetData()}
 			<LoadingSpinner />
 		{:then assetData}
-			<img src={assetData} alt={assetId} class="object-contain  h-full" loading="lazy" />
+			<img
+				transition:fade={{ duration: 150 }}
+				src={assetData}
+				alt={assetId}
+				class="object-contain h-full transition-all"
+				loading="lazy"
+			/>
 		{/await}
 	{/if}
 </div>

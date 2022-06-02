@@ -115,7 +115,7 @@
 		{#key selectedIndex}
 			{#if viewAssetId && viewDeviceId}
 				{#if selectedAsset.type == AssetType.IMAGE}
-					<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={closeViewer} bind:exifInfo />
+					<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={closeViewer} />
 				{:else}
 					<div
 						class="w-full h-full bg-immich-primary/10 flex flex-col place-items-center place-content-center "
@@ -155,7 +155,7 @@
 			class="bg-immich-bg w-[360px] row-span-full transition-all "
 			translate="yes"
 		>
-			<DetailPanel {exifInfo} assetInfo={selectedAsset} />
+			<DetailPanel asset={selectedAsset} on:close={() => (isShowDetail = false)} />
 		</div>
 	{/if}
 </section>
