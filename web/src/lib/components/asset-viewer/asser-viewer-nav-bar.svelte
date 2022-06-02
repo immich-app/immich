@@ -6,27 +6,17 @@
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-	import type { ImmichAsset, ImmichExif } from '../../models/immich-asset';
 	import CircleIconButton from '../shared/circle_icon_button.svelte';
-
-	export let asset: ImmichAsset;
-
 	const dispatch = createEventDispatcher();
-
-	const backButtonHandler = () => dispatch('goBack');
-
-	const handleShowExtraInformation = () => {
-		dispatch('showDetail');
-	};
 </script>
 
-<div class="h-16 bg-black/5 flex justify-between place-items-center px-6 transition-transform duration-200 z-[9999]">
+<div class="h-16 bg-black/5 flex justify-between place-items-center px-3 transition-transform duration-200 z-[9999]">
 	<div>
-		<CircleIconButton logo={ArrowLeft} on:click={backButtonHandler} />
+		<CircleIconButton logo={ArrowLeft} on:click={() => dispatch('goBack')} />
 	</div>
 	<div class="text-white flex gap-2">
-		<CircleIconButton logo={CloudDownloadOutline} on:click={() => console.log('Options')} />
+		<CircleIconButton logo={CloudDownloadOutline} on:click={() => dispatch('download')} />
 		<!-- <CircleIconButton logo={DotsVertical} on:click={() => console.log('Options')} /> -->
-		<CircleIconButton logo={InformationOutline} on:click={handleShowExtraInformation} />
+		<CircleIconButton logo={InformationOutline} on:click={() => dispatch('showDetail')} />
 	</div>
 </div>

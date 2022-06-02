@@ -9,6 +9,9 @@
 	import { AssetType, type ImmichAsset, type ImmichExif } from '../../models/immich-asset';
 	import PhotoViewer from './photo-viewer.svelte';
 	import DetailPanel from './detail-panel.svelte';
+	import { session } from '$app/stores';
+	import { serverEndpoint } from '../../constants';
+	import axios from 'axios';
 
 	const dispatch = createEventDispatcher();
 
@@ -86,21 +89,59 @@
 
 	const showDetailInfoHandler = () => {
 		isShowDetail = !isShowDetail;
-		console.log(isShowDetail);
+	};
+
+	const downloadFile = async () => {
+		if ($session.user) {
+			const url = `${serverEndpoint}/asset/download?aid=${selectedAsset.deviceAssetId}&did=${selectedAsset.deviceId}&isThumb=false`;
+
+			console.log('download ', url);
+			try {
+				const res = await axios.get(url, {
+					responseType: 'blob',
+					headers: {
+						Authorization: 'Bearer ' + $session.user.accessToken,
+					},
+					onDownloadProgress: (progressEvent) => {
+						if (progressEvent.lengthComputable) {
+							const total = progressEvent.total;
+							const current = progressEvent.loaded;
+							let percentCompleted = Math.floor((current / total) * 100);
+
+							console.log('completed: ', percentCompleted);
+						}
+					},
+				});
+
+				if (res.status === 200) {
+					const imageName = selectedAsset.exifInfo?.imageName ? selectedAsset.exifInfo?.imageName : selectedAsset.id;
+					const fileUrl = URL.createObjectURL(new Blob([res.data]));
+					const anchor = document.createElement('a');
+					anchor.href = fileUrl;
+					anchor.download = imageName + '.' + selectedAsset.originalPath.split('.')[1];
+					document.body.appendChild(anchor);
+					anchor.click();
+					document.body.removeChild(anchor);
+
+					URL.revokeObjectURL(fileUrl);
+				}
+			} catch (e) {
+				console.log('Error downloading file ', e);
+			}
+		}
 	};
 </script>
 
-<!-- ${isShowDetail && 'grid-cols-4'} -->
 <section
 	id="immich-asset-viewer"
 	class="absolute h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4  "
 >
-	<div class="av-navbar-area z-[1000] transition-transform">
-		<AsserViewerNavBar asset={selectedAsset} on:goBack={closeViewer} on:showDetail={showDetailInfoHandler} />
+	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
+		<AsserViewerNavBar on:goBack={closeViewer} on:showDetail={showDetailInfoHandler} on:download={downloadFile} />
 	</div>
 
 	<div
-		class="av-left-navigation-area z-[1000] flex place-items-center hover:cursor-pointer w-3/4"
+		class="row-start-2 row-span-end col-start-1- col-span-full z-[1000] flex place-items-center hover:cursor-pointer w-3/4"
 		on:mouseenter={() => {
 			halfLeftHover = true;
 			halfRightHover = false;
@@ -112,14 +153,14 @@
 	>
 		<button
 			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700  text-gray-500 mx-4"
-			class:button-hover={halfLeftHover}
+			class:navigation-button-hover={halfLeftHover}
 			on:click={navigateAssetBackward}
 		>
 			<ChevronLeft size="36" />
 		</button>
 	</div>
 
-	<div class="av-viewer-area">
+	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key selectedIndex}
 			{#if viewAssetId && viewDeviceId}
 				{#if selectedAsset.type == AssetType.IMAGE}
@@ -137,7 +178,7 @@
 	</div>
 
 	<div
-		class="av-right-navigation-area  z-[1000] flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end"
+		class="row-start-2 row-span-full col-start-3 col-span-2 z-[1000] flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end"
 		on:click={navigateAssetForward}
 		on:mouseenter={() => {
 			halfLeftHover = false;
@@ -149,7 +190,7 @@
 	>
 		<button
 			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4"
-			class:button-hover={halfRightHover}
+			class:navigation-button-hover={halfRightHover}
 			on:click={navigateAssetForward}
 		>
 			<ChevronRight size="36" />
@@ -169,28 +210,9 @@
 </section>
 
 <style>
-	.button-hover {
+	.navigation-button-hover {
 		background-color: rgb(107 114 128 / var(--tw-bg-opacity));
 		color: rgb(55 65 81 / var(--tw-text-opacity));
-	}
-
-	.av-navbar-area {
-		grid-row: 1 / span 1;
-		grid-column: 1 / span 4;
-	}
-
-	.av-viewer-area {
-		grid-row: 1 / span end;
-		grid-column: 1 / span 4;
-	}
-
-	.av-left-navigation-area {
-		grid-row: 2 / span end;
-		grid-column: 1 / span 2;
-	}
-
-	.av-right-navigation-area {
-		grid-row: 2 / span end;
-		grid-column: 3 / span 2;
+		transition: all 150ms;
 	}
 </style>

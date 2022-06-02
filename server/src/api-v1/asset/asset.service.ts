@@ -104,8 +104,18 @@ export class AssetService {
     const asset = await this.findOne(query.did, query.aid);
 
     if (query.isThumb === 'false' || !query.isThumb) {
+      const { size } = await fileInfo(asset.originalPath);
+      res.set({
+        'Content-Type': asset.mimeType,
+        'Content-Length': size,
+      });
       file = createReadStream(asset.originalPath);
     } else {
+      const { size } = await fileInfo(asset.resizePath);
+      res.set({
+        'Content-Type': 'image/jpeg',
+        'Content-Length': size,
+      });
       file = createReadStream(asset.resizePath);
     }
 
