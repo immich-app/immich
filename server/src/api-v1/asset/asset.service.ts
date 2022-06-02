@@ -61,13 +61,17 @@ export class AssetService {
     return res;
   }
 
-  public async getAllAssetsNoPagination(authUser: AuthUserDto) {
+  public async getAllAssets(authUser: AuthUserDto) {
     try {
-      return await this.assetRepository
-        .createQueryBuilder('a')
-        .where('a."userId" = :userId', { userId: authUser.id })
-        .orderBy('a."createdAt"::date', 'DESC')
-        .getMany();
+      return await this.assetRepository.find({
+        where: {
+          userId: authUser.id
+        },
+        relations: ['exifInfo'],
+        order: {
+          createdAt: 'DESC'
+        }
+      })
     } catch (e) {
       Logger.error(e, 'getAllAssets');
     }
