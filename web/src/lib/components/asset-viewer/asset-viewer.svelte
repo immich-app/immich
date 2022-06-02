@@ -95,8 +95,11 @@
 		if ($session.user) {
 			const url = `${serverEndpoint}/asset/download?aid=${selectedAsset.deviceAssetId}&did=${selectedAsset.deviceId}&isThumb=false`;
 
-			console.log('download ', url);
 			try {
+				const imageName = selectedAsset.exifInfo?.imageName ? selectedAsset.exifInfo?.imageName : selectedAsset.id;
+				const imageExtension = selectedAsset.originalPath.split('.')[1];
+				const imageFileName = imageName + '.' + imageExtension;
+
 				const res = await axios.get(url, {
 					responseType: 'blob',
 					headers: {
@@ -108,17 +111,19 @@
 							const current = progressEvent.loaded;
 							let percentCompleted = Math.floor((current / total) * 100);
 
-							console.log('completed: ', percentCompleted);
+							if (!(percentCompleted % 10)) {
+								console.log('completed: ', percentCompleted);
+							}
 						}
 					},
 				});
 
 				if (res.status === 200) {
-					const imageName = selectedAsset.exifInfo?.imageName ? selectedAsset.exifInfo?.imageName : selectedAsset.id;
 					const fileUrl = URL.createObjectURL(new Blob([res.data]));
 					const anchor = document.createElement('a');
 					anchor.href = fileUrl;
-					anchor.download = imageName + '.' + selectedAsset.originalPath.split('.')[1];
+					anchor.download = imageFileName;
+
 					document.body.appendChild(anchor);
 					anchor.click();
 					document.body.removeChild(anchor);
