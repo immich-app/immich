@@ -4,7 +4,7 @@
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { serverEndpoint } from '../../constants';
-	import IntersectionObserver from '$lib/components/photos/intersection-observer.svelte';
+	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 

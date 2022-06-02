@@ -34,10 +34,10 @@
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
-	import ImmichThumbnail from '../../lib/components/photos/immich-thumbnail.svelte';
+	import ImmichThumbnail from '../../lib/components/asset-viewer/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import type { ImmichAsset } from '../../lib/models/immich-asset';
-	import AssetViewer from '../../lib/components/photos/asset-viewer.svelte';
+	import AssetViewer from '../../lib/components/asset-viewer/asset-viewer.svelte';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;

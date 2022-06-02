@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import type { ImmichUser } from '$lib/models/immich-user';
 	import { onMount } from 'svelte';
@@ -15,8 +16,14 @@
 
 		if (res.status == 200) shouldShowProfileImage = true;
 	});
+
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
+	};
+
+	const navigateToAdmin = () => {
+		console.log('Navigating to admin page');
+		goto('/admin');
 	};
 </script>
 
@@ -33,11 +40,11 @@
 			<!-- <div>Upload</div> -->
 
 			{#if user.isAdmin}
-				<a
+				<button
 					class={`hover:text-immich-primary font-medium ${
 						$page.url.pathname == '/admin' && 'text-immich-primary underline'
 					}`}
-					href="/admin">Administration</a
+					on:click={navigateToAdmin}>Administration</button
 				>
 			{/if}
 
