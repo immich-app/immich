@@ -21,7 +21,6 @@
 	let halfLeftHover = false;
 	let halfRightHover = false;
 	let isShowDetail = false;
-	let exifInfo: ImmichExif;
 
 	onMount(() => {
 		viewAssetId = selectedAsset.id;
@@ -41,6 +40,15 @@
 		switch (key) {
 			case 'Escape':
 				closeViewer();
+				return;
+			case 'i':
+				isShowDetail = !isShowDetail;
+				return;
+			case 'ArrowLeft':
+				navigateAssetBackward();
+				return;
+			case 'ArrowRight':
+				navigateAssetForward();
 				return;
 		}
 	};
