@@ -1,9 +1,20 @@
+<script context="module" lang="ts">
+	import type { Load } from '@sveltejs/kit';
+
+	export const load: Load = async ({ url }) => ({ props: { url } });
+</script>
+
 <script lang="ts">
+	import '../app.css';
+
+	import { fly, slide, blur } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 	import { getRequest } from '$lib/api';
 	import { onDestroy } from 'svelte';
-	import '../app.css';
-	import { serverEndpoint } from '../lib/constants';
+	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
+	import { serverEndpoint } from '$lib/constants';
 
+	export let url: string;
 	let endpoint = serverEndpoint;
 	let isServerOk = true;
 
@@ -18,7 +29,12 @@
 </script>
 
 <main>
-	<slot />
+	{#key url}
+		<div transition:blur={{ duration: 250 }}>
+			<slot />
+			<DownloadPanel />
+		</div>
+	{/key}
 </main>
 
 <footer

@@ -61,13 +61,17 @@ export class AssetService {
     return res;
   }
 
-  public async getAllAssetsNoPagination(authUser: AuthUserDto) {
+  public async getAllAssets(authUser: AuthUserDto) {
     try {
-      return await this.assetRepository
-        .createQueryBuilder('a')
-        .where('a."userId" = :userId', { userId: authUser.id })
-        .orderBy('a."createdAt"::date', 'DESC')
-        .getMany();
+      return await this.assetRepository.find({
+        where: {
+          userId: authUser.id
+        },
+        relations: ['exifInfo'],
+        order: {
+          createdAt: 'DESC'
+        }
+      })
     } catch (e) {
       Logger.error(e, 'getAllAssets');
     }
@@ -100,8 +104,18 @@ export class AssetService {
     const asset = await this.findOne(query.did, query.aid);
 
     if (query.isThumb === 'false' || !query.isThumb) {
+      const { size } = await fileInfo(asset.originalPath);
+      res.set({
+        'Content-Type': asset.mimeType,
+        'Content-Length': size,
+      });
       file = createReadStream(asset.originalPath);
     } else {
+      const { size } = await fileInfo(asset.resizePath);
+      res.set({
+        'Content-Type': 'image/jpeg',
+        'Content-Length': size,
+      });
       file = createReadStream(asset.resizePath);
     }
 

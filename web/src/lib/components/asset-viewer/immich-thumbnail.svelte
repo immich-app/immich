@@ -4,8 +4,7 @@
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { serverEndpoint } from '../../constants';
-
-	import IntersectionObserver from '$lib/components/photos/intersection-observer.svelte';
+	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 
@@ -57,6 +56,7 @@
 			return videoData;
 		}
 	};
+
 	const parseVideoDuration = (duration: string) => {
 		const timePart = duration.split(':');
 		const hours = timePart[0];
@@ -71,11 +71,21 @@
 	};
 
 	onDestroy(() => URL.revokeObjectURL(imageContent));
+
+	const getSize = () => {
+		if (asset.exifInfo?.orientation === 'Rotate 90 CW') {
+			return 'w-[176px] h-[235px]';
+		} else if (asset.exifInfo?.orientation === 'Horizontal (normal)') {
+			return 'w-[313px] h-[235px]';
+		} else {
+			return 'w-[235px] h-[235px]';
+		}
+	};
 </script>
 
 <IntersectionObserver once={true} let:intersecting>
 	<div
-		class="h-[200px] w-[200px] bg-gray-100 relative hover:cursor-pointer"
+		class={`bg-gray-100 relative hover:cursor-pointer ${getSize()}`}
 		on:mouseenter={() => (mouseOver = true)}
 		on:mouseleave={() => (mouseOver = false)}
 		on:click={() => dispatch('viewAsset', { assetId: asset.id, deviceId: asset.deviceId })}
@@ -104,13 +114,12 @@
 
 		{#if intersecting}
 			{#await loadImageData()}
-				<div class="bg-immich-primary/10 h-[200px] w-[200px] flex place-items-center place-content-center">...</div>
+				<div class={`bg-immich-primary/10 ${getSize()} flex place-items-center place-content-center`}>...</div>
 			{:then imageData}
 				<img
-					in:fade={{ duration: 200 }}
 					src={imageData}
 					alt={asset.id}
-					class="object-cover h-[200px] w-[200px] transition-all duration-100 z-0"
+					class={`object-cover ${getSize()} transition-all duration-100 z-0`}
 					loading="lazy"
 				/>
 			{/await}
