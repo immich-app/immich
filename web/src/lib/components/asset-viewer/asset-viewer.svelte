@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import { fly, slide } from 'svelte/transition';
-	import { elasticInOut } from 'svelte/easing';
 	import AsserViewerNavBar from './asser-viewer-nav-bar.svelte';
 	import { flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
@@ -12,6 +11,7 @@
 	import { session } from '$app/stores';
 	import { serverEndpoint } from '../../constants';
 	import axios from 'axios';
+	import { downloadAssets } from '$lib/stores/download';
 
 	const dispatch = createEventDispatcher();
 
@@ -100,6 +100,12 @@
 				const imageExtension = selectedAsset.originalPath.split('.')[1];
 				const imageFileName = imageName + '.' + imageExtension;
 
+				// If assets is already download -> return;
+				if ($downloadAssets[imageFileName]) {
+					return;
+				}
+				$downloadAssets[imageFileName] = 0;
+
 				const res = await axios.get(url, {
 					responseType: 'blob',
 					headers: {
@@ -111,9 +117,7 @@
 							const current = progressEvent.loaded;
 							let percentCompleted = Math.floor((current / total) * 100);
 
-							if (!(percentCompleted % 10)) {
-								console.log('completed: ', percentCompleted);
-							}
+							$downloadAssets[imageFileName] = percentCompleted;
 						}
 					},
 				});
@@ -129,6 +133,13 @@
 					document.body.removeChild(anchor);
 
 					URL.revokeObjectURL(fileUrl);
+
+					// Remove item from download list
+					setTimeout(() => {
+						const copy = $downloadAssets;
+						delete copy[imageFileName];
+						$downloadAssets = copy;
+					}, 2000);
 				}
 			} catch (e) {
 				console.log('Error downloading file ', e);

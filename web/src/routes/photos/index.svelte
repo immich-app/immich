@@ -38,6 +38,7 @@
 	import moment from 'moment';
 	import type { ImmichAsset } from '../../lib/models/immich-asset';
 	import AssetViewer from '../../lib/components/asset-viewer/asset-viewer.svelte';
+	import DownloadPanel from '../../lib/components/asset-viewer/download-panel.svelte';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -112,7 +113,7 @@
 						on:mouseleave={() => (isMouseOverGroup = false)}
 					>
 						<!-- Date group title -->
-						<p class="font-semibold text-sm text-immich-primary mb-2 flex place-items-center h-6">
+						<p class="font-medium text-sm text-black mb-2 flex place-items-center h-6">
 							{#if selectedGroupThumbnail === groupIndex && isMouseOverGroup}
 								<div
 									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
