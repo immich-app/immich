@@ -67,8 +67,6 @@
 					calculateVideoDurationIntervalHandler = setInterval(() => {
 						videoProgress = getVideoDurationInString(Math.round(videoPlayerNode.currentTime));
 					}, 1000);
-
-					// videoPlayerNode.muted = false;
 				};
 
 				return videoData;
@@ -85,6 +83,7 @@
 
 		return minuteText + ':' + secondText;
 	};
+
 	const parseVideoDuration = (duration: string) => {
 		const timePart = duration.split(':');
 		const hours = timePart[0];
@@ -150,6 +149,7 @@
 			</div>
 		{/if}
 
+		<!-- Playback and info -->
 		{#if asset.type === AssetType.VIDEO}
 			<div class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10">
 				{#if isThumbnailVideoPlaying}
@@ -161,6 +161,7 @@
 						{parseVideoDuration(asset.duration)}
 					</span>
 				{/if}
+
 				{#if mouseOver}
 					{#if isThumbnailVideoPlaying}
 						<span in:fly={{ x: 25, duration: 500 }}>
@@ -179,11 +180,13 @@
 			</div>
 		{/if}
 
+		<!-- Thumbnail -->
 		{#if intersecting}
 			{#await loadImageData()}
 				<div class={`bg-immich-primary/10 ${getSize()} flex place-items-center place-content-center`}>...</div>
 			{:then imageData}
 				<img
+					in:fade={{ duration: 250 }}
 					src={imageData}
 					alt={asset.id}
 					class={`object-cover ${getSize()} transition-all duration-100 z-0`}
