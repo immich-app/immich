@@ -23,7 +23,6 @@ export class VideoConversionService {
     private videoEncodingQueue: Queue
   ) { }
 
-  private jobCount = 0;
 
   // time ffmpeg -i 15065f4a-47ff-4aed-8c3e-c9fcf1840531.mov -crf 35 -preset ultrafast -vcodec libx264 -acodec mp3 -vf "scale=1280:-1" 15065f4a-47ff-4aed-8c3e-c9fcf1840531.mp4
   @Cron(CronExpression.EVERY_MINUTE
@@ -47,16 +46,5 @@ export class VideoConversionService {
       const asset = assets[0];
       await this.videoEncodingQueue.add('to-mp4', { asset }, { jobId: asset.id },)
     }
-    // const basePath = APP_UPLOAD_LOCATION;
-    // const encodedVideoPath = `${basePath}/${assets[0].userId}/encoded-video`;
-
-    // if (!existsSync(encodedVideoPath)) {
-    //   mkdirSync(encodedVideoPath, { recursive: true });
-    // }
-
-    // this.videoEncodingQueue.
-    // console.log(await this.videoEncodingQueue.getJobs(['delayed']))
-    // console.log(await this.videoEncodingQueue.getJobCounts());
-    // this.videoEncodingQueue.add('to-mp4', { number: this.jobCount++ }, { jobId: randomUUID() },)
   }
 }

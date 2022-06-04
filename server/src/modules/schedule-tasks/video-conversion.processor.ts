@@ -37,13 +37,16 @@ export class VideoConversionProcessor {
           '-preset ultrafast',
           '-vcodec libx264',
           '-acodec mp3',
-          '-vf scale=1280:-1'
+          '-vf scale=1280:-2'
         ])
         .output(savedEncodedPath)
-        .on('start', (cmd) => Logger.log("start converting", 'convertToMp4'))
-        .on('error', (err, stdout, stderr) => Logger.error('Cannot process video: ', 'convertToMp4'))
+        .on('start', () => Logger.log("Start Converting", 'VideoConversionMOV2MP4'))
+        .on('error', (a, b, c) => {
+          Logger.error('Cannot Convert Video', 'VideoConversionMOV2MP4')
+          console.log(a, b, c)
+        })
         .on('end', async () => {
-          Logger.log(`Converting Success ${latestAssetInfo.id}`, 'convertToMp4')
+          Logger.log(`Converting Success ${latestAssetInfo.id}`, 'VideoConversionMOV2MP4')
           await this.assetRepository.update({ id: latestAssetInfo.id }, { encodedVideoPath: savedEncodedPath });
         }).run();
     }
