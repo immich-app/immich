@@ -1,11 +1,3 @@
-<script lang="ts">
-	// Height in pixel
-	export let height = 32;
-
-	// Width in pixel
-	export let width = 32;
-</script>
-
 <div>
 	<svg
 		role="status"

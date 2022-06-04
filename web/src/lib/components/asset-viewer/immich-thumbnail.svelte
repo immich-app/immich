@@ -39,24 +39,27 @@
 	const loadVideoData = async () => {
 		const videoUrl = `/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isWeb=true`;
 		if ($session.user) {
-			const res = await fetch(serverEndpoint + videoUrl, {
-				method: 'GET',
-				headers: {
-					Authorization: 'bearer ' + $session.user.accessToken,
-				},
-			});
+			try {
+				const res = await fetch(serverEndpoint + videoUrl, {
+					method: 'GET',
+					headers: {
+						Authorization: 'bearer ' + $session.user.accessToken,
+					},
+				});
 
-			const videoData = URL.createObjectURL(await res.blob());
+				const videoData = URL.createObjectURL(await res.blob());
+				videoPlayerNode.src = videoData;
 
-			videoPlayerNode.src = videoData;
+				videoPlayerNode.load();
 
-			videoPlayerNode.load();
+				videoPlayerNode.oncanplay = () => {
+					videoPlayerNode.muted = true;
+					videoPlayerNode.play();
+					videoPlayerNode.muted = false;
+				};
 
-			videoPlayerNode.oncanplay = () => {
-				console.log('Can play video');
-			};
-
-			return videoData;
+				URL.revokeObjectURL(videoData);
+			} catch (e) {}
 		}
 	};
 
@@ -73,7 +76,9 @@
 		}
 	};
 
-	onDestroy(() => URL.revokeObjectURL(imageContent));
+	onDestroy(() => {
+		URL.revokeObjectURL(imageContent);
+	});
 
 	const getSize = () => {
 		if (asset.exifInfo?.orientation === 'Rotate 90 CW') {
@@ -96,7 +101,7 @@
 		{#if mouseOver}
 			<div
 				in:fade={{ duration: 200 }}
-				class="w-full h-full bg-gradient-to-b from-gray-800/50 via-white/0 to-white/0 absolute p-2"
+				class="w-full  bg-gradient-to-b from-gray-800/50 via-white/0 to-white/0 absolute p-2  z-10"
 			>
 				<div
 					on:mouseenter={() => (mouseOverIcon = true)}
@@ -109,11 +114,10 @@
 		{/if}
 
 		{#if asset.type === AssetType.VIDEO}
-			<div class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center">
+			<div class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10">
 				{parseVideoDuration(asset.duration)}
-
 				{#if mouseOver}
-					<LoadingSpinner height={24} width={24} />
+					<LoadingSpinner />
 				{:else}
 					<PlayCircleOutline size="24" />
 				{/if}
@@ -135,7 +139,7 @@
 
 		{#if mouseOver && asset.type === AssetType.VIDEO}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
-				<video autoplay class="h-full object-cover" width="250px" bind:this={videoPlayerNode}>
+				<video class="h-full object-cover" width="250px" bind:this={videoPlayerNode}>
 					<track kind="captions" />
 				</video>
 			</div>
