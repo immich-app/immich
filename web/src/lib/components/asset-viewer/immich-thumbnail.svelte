@@ -62,12 +62,13 @@
 				videoPlayerNode.oncanplay = () => {
 					videoPlayerNode.muted = true;
 					videoPlayerNode.play();
-					videoPlayerNode.muted = false;
 
 					isThumbnailVideoPlaying = true;
 					calculateVideoDurationIntervalHandler = setInterval(() => {
 						videoProgress = getVideoDurationInString(Math.round(videoPlayerNode.currentTime));
 					}, 1000);
+
+					// videoPlayerNode.muted = false;
 				};
 
 				return videoData;
@@ -193,7 +194,7 @@
 
 		{#if mouseOver && asset.type === AssetType.VIDEO}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
-				<video class="h-full object-cover" width="250px" bind:this={videoPlayerNode}>
+				<video muted class="h-full object-cover" width="250px" bind:this={videoPlayerNode}>
 					<track kind="captions" />
 				</video>
 			</div>
