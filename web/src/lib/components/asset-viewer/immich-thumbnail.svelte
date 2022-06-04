@@ -7,6 +7,7 @@
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
+	import LoadingSpinner from '../shared/loading-spinner.svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -36,7 +37,7 @@
 	};
 
 	const loadVideoData = async () => {
-		const videoUrl = `/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}`;
+		const videoUrl = `/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isWeb=true`;
 		if ($session.user) {
 			const res = await fetch(serverEndpoint + videoUrl, {
 				method: 'GET',
@@ -48,7 +49,9 @@
 			const videoData = URL.createObjectURL(await res.blob());
 
 			videoPlayerNode.src = videoData;
+
 			videoPlayerNode.load();
+
 			videoPlayerNode.oncanplay = () => {
 				console.log('Can play video');
 			};
@@ -108,7 +111,12 @@
 		{#if asset.type === AssetType.VIDEO}
 			<div class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center">
 				{parseVideoDuration(asset.duration)}
-				<PlayCircleOutline size="24" />
+
+				{#if mouseOver}
+					<LoadingSpinner height={24} width={24} />
+				{:else}
+					<PlayCircleOutline size="24" />
+				{/if}
 			</div>
 		{/if}
 
@@ -125,12 +133,12 @@
 			{/await}
 		{/if}
 
-		<!-- {#if mouseOver && asset.type === AssetType.VIDEO}
+		{#if mouseOver && asset.type === AssetType.VIDEO}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
-				<video autoplay class="border-2 h-[200px]" width="250px" bind:this={videoPlayerNode}>
+				<video autoplay class="h-full object-cover" width="250px" bind:this={videoPlayerNode}>
 					<track kind="captions" />
 				</video>
 			</div>
-		{/if} -->
+		{/if}
 	</div>
 </IntersectionObserver>
