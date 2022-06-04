@@ -11,6 +11,7 @@ import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
+import ffmpeg from 'fluent-ffmpeg';
 
 const fileInfo = promisify(stat);
 
