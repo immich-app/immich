@@ -19,6 +19,7 @@
 		"@types/axios": "^0.14.0",
 		"@types/bcrypt": "^5.0.0",
 		"@types/cookie": "^0.4.1",
+		"@types/fluent-ffmpeg": "^2.1.20",
 		"@types/leaflet": "^1.7.10",
 		"@types/lodash": "^4.14.182",
 		"@types/lodash-es": "^4.17.6",

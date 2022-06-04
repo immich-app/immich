@@ -11,6 +11,7 @@ import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
+import ffmpeg from 'fluent-ffmpeg';
 
 const fileInfo = promisify(stat);
 
@@ -185,7 +186,15 @@ export class AssetService {
 
     } else if (asset.type == AssetType.VIDEO) {
       // Handle Video
-      const { size } = await fileInfo(asset.originalPath);
+      let videoPath = asset.originalPath;
+      let mimeType = asset.mimeType;
+
+      if (query.isWeb && asset.mimeType == 'video/quicktime') {
+        videoPath = asset.encodedVideoPath == '' ? asset.originalPath : asset.encodedVideoPath;
+        mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
+      }
+
+      const { size } = await fileInfo(videoPath);
       const range = headers.range;
 
       if (range) {
@@ -220,20 +229,22 @@ export class AssetService {
           'Content-Range': `bytes ${start}-${end}/${size}`,
           'Accept-Ranges': 'bytes',
           'Content-Length': end - start + 1,
-          'Content-Type': asset.mimeType,
+          'Content-Type': mimeType,
         });
 
-        const videoStream = createReadStream(asset.originalPath, { start: start, end: end });
+
+        const videoStream = createReadStream(videoPath, { start: start, end: end });
 
         return new StreamableFile(videoStream);
 
 
       } else {
+
         res.set({
-          'Content-Type': asset.mimeType,
+          'Content-Type': mimeType,
         });
 
-        return new StreamableFile(createReadStream(asset.originalPath));
+        return new StreamableFile(createReadStream(videoPath));
       }
     }
   }

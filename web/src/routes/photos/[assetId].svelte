@@ -4,7 +4,6 @@
 	import type { Load } from '@sveltejs/kit';
 
 	export const load: Load = async ({ session }) => {
-		console.log('navigating to unknown paage');
 		if (!session.user) {
 			return {
 				status: 302,

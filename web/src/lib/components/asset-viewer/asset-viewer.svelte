@@ -12,10 +12,12 @@
 	import { serverEndpoint } from '../../constants';
 	import axios from 'axios';
 	import { downloadAssets } from '$lib/stores/download';
+	import VideoViewer from './video-viewer.svelte';
 
 	const dispatch = createEventDispatcher();
 
 	export let selectedAsset: ImmichAsset;
+
 	export let selectedIndex: number;
 
 	let viewDeviceId: string;
@@ -157,7 +159,9 @@
 	</div>
 
 	<div
-		class="row-start-2 row-span-end col-start-1- col-span-full z-[1000] flex place-items-center hover:cursor-pointer w-3/4"
+		class={`row-start-2 row-span-end col-start-1 col-span-2 flex place-items-center hover:cursor-pointer w-3/4 ${
+			selectedAsset.type == 'VIDEO' ? '' : 'z-[999]'
+		}`}
 		on:mouseenter={() => {
 			halfLeftHover = true;
 			halfRightHover = false;
@@ -168,7 +172,7 @@
 		on:click={navigateAssetBackward}
 	>
 		<button
-			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700  text-gray-500 mx-4"
+			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000]  text-gray-500 mx-4"
 			class:navigation-button-hover={halfLeftHover}
 			on:click={navigateAssetBackward}
 		>
@@ -182,19 +186,16 @@
 				{#if selectedAsset.type == AssetType.IMAGE}
 					<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={closeViewer} />
 				{:else}
-					<div
-						class="w-full h-full bg-immich-primary/10 flex flex-col place-items-center place-content-center "
-						on:click={closeViewer}
-					>
-						<h1 class="animate-pulse font-bold text-4xl">Video viewer is under construction</h1>
-					</div>
+					<VideoViewer assetId={viewAssetId} on:close={closeViewer} />
 				{/if}
 			{/if}
 		{/key}
 	</div>
 
 	<div
-		class="row-start-2 row-span-full col-start-3 col-span-2 z-[1000] flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end"
+		class={`row-start-2 row-span-full col-start-3 col-span-2 flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end ${
+			selectedAsset.type == 'VIDEO' ? '' : 'z-[500]'
+		}`}
 		on:click={navigateAssetForward}
 		on:mouseenter={() => {
 			halfLeftHover = false;
@@ -205,7 +206,7 @@
 		}}
 	>
 		<button
-			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4"
+			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4 z-[1000]"
 			class:navigation-button-hover={halfRightHover}
 			on:click={navigateAssetForward}
 		>
