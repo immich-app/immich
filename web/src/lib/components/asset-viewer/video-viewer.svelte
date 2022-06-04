@@ -12,7 +12,9 @@
 	let asset: ImmichAsset;
 
 	const dispatch = createEventDispatcher();
+
 	let videoPlayerNode: HTMLVideoElement;
+	let isVideoLoading = true;
 
 	onMount(async () => {
 		if ($session.user) {
@@ -28,6 +30,7 @@
 	});
 
 	const loadVideoData = async () => {
+		isVideoLoading = true;
 		const videoUrl = `/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isWeb=true`;
 		if ($session.user) {
 			try {
@@ -47,6 +50,8 @@
 					videoPlayerNode.muted = true;
 					videoPlayerNode.play();
 					videoPlayerNode.muted = false;
+
+					isVideoLoading = false;
 				};
 
 				return videoData;
@@ -57,8 +62,14 @@
 
 <div transition:fade={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
 	{#if asset}
-		<video controls class="h-full object-contain border border-green-400 " bind:this={videoPlayerNode}>
+		<video controls class="h-full object-contain" bind:this={videoPlayerNode}>
 			<track kind="captions" />
 		</video>
+
+		{#if isVideoLoading}
+			<div class="absolute w-full h-full bg-black/50 flex place-items-center place-content-center">
+				<LoadingSpinner />
+			</div>
+		{/if}
 	{/if}
 </div>

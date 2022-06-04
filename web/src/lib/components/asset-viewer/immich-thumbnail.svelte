@@ -2,11 +2,12 @@
 	import { AssetType, type ImmichAsset } from '../../models/immich-asset';
 	import { session } from '$app/stores';
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, fly, slide } from 'svelte/transition';
 	import { serverEndpoint } from '../../constants';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
+	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
 	import LoadingSpinner from '../shared/loading-spinner.svelte';
 
 	const dispatch = createEventDispatcher();
@@ -14,12 +15,17 @@
 	export let asset: ImmichAsset;
 	export let groupIndex: number;
 
-	let imageContent: string;
+	let imageData: string;
+	let videoData: string;
+
 	let mouseOver: boolean = false;
 	$: dispatch('mouseEvent', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
 	let mouseOverIcon: boolean = false;
 	let videoPlayerNode: HTMLVideoElement;
+	let isThumbnailVideoPlaying = false;
+	let calculateVideoDurationIntervalHandler: NodeJS.Timer;
+	let videoProgress = '00:00';
 
 	const loadImageData = async () => {
 		if ($session.user) {
@@ -30,13 +36,14 @@
 				},
 			});
 
-			imageContent = URL.createObjectURL(await res.blob());
+			imageData = URL.createObjectURL(await res.blob());
 
-			return imageContent;
+			return imageData;
 		}
 	};
 
 	const loadVideoData = async () => {
+		isThumbnailVideoPlaying = false;
 		const videoUrl = `/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isWeb=true`;
 		if ($session.user) {
 			try {
@@ -47,7 +54,7 @@
 					},
 				});
 
-				const videoData = URL.createObjectURL(await res.blob());
+				videoData = URL.createObjectURL(await res.blob());
 				videoPlayerNode.src = videoData;
 
 				videoPlayerNode.load();
@@ -56,13 +63,27 @@
 					videoPlayerNode.muted = true;
 					videoPlayerNode.play();
 					videoPlayerNode.muted = false;
+
+					isThumbnailVideoPlaying = true;
+					calculateVideoDurationIntervalHandler = setInterval(() => {
+						videoProgress = getVideoDurationInString(Math.round(videoPlayerNode.currentTime));
+					}, 1000);
 				};
 
-				URL.revokeObjectURL(videoData);
+				return videoData;
 			} catch (e) {}
 		}
 	};
 
+	const getVideoDurationInString = (currentTime: number) => {
+		const minute = Math.floor(currentTime / 60);
+		const second = currentTime % 60;
+
+		const minuteText = minute >= 10 ? `${minute}` : `0${minute}`;
+		const secondText = second >= 10 ? `${second}` : `0${second}`;
+
+		return minuteText + ':' + secondText;
+	};
 	const parseVideoDuration = (duration: string) => {
 		const timePart = duration.split(':');
 		const hours = timePart[0];
@@ -77,7 +98,7 @@
 	};
 
 	onDestroy(() => {
-		URL.revokeObjectURL(imageContent);
+		URL.revokeObjectURL(imageData);
 	});
 
 	const getSize = () => {
@@ -89,13 +110,28 @@
 			return 'w-[235px] h-[235px]';
 		}
 	};
+
+	const handleMouseOverThumbnail = () => {
+		mouseOver = true;
+	};
+
+	const handleMouseLeaveThumbnail = () => {
+		mouseOver = false;
+		URL.revokeObjectURL(videoData);
+
+		if (calculateVideoDurationIntervalHandler) {
+			clearInterval(calculateVideoDurationIntervalHandler);
+		}
+		isThumbnailVideoPlaying = false;
+		videoProgress = '00:00';
+	};
 </script>
 
 <IntersectionObserver once={true} let:intersecting>
 	<div
 		class={`bg-gray-100 relative hover:cursor-pointer ${getSize()}`}
-		on:mouseenter={() => (mouseOver = true)}
-		on:mouseleave={() => (mouseOver = false)}
+		on:mouseenter={handleMouseOverThumbnail}
+		on:mouseleave={handleMouseLeaveThumbnail}
 		on:click={() => dispatch('viewAsset', { assetId: asset.id, deviceId: asset.deviceId })}
 	>
 		{#if mouseOver}
@@ -115,11 +151,29 @@
 
 		{#if asset.type === AssetType.VIDEO}
 			<div class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10">
-				{parseVideoDuration(asset.duration)}
-				{#if mouseOver}
-					<LoadingSpinner />
+				{#if isThumbnailVideoPlaying}
+					<span in:fly={{ x: -25, duration: 500 }}>
+						{videoProgress}
+					</span>
 				{:else}
-					<PlayCircleOutline size="24" />
+					<span in:fade={{ duration: 500 }}>
+						{parseVideoDuration(asset.duration)}
+					</span>
+				{/if}
+				{#if mouseOver}
+					{#if isThumbnailVideoPlaying}
+						<span in:fly={{ x: 25, duration: 500 }}>
+							<PauseCircleOutline size="24" />
+						</span>
+					{:else}
+						<span in:fade={{ duration: 250 }}>
+							<LoadingSpinner />
+						</span>
+					{/if}
+				{:else}
+					<span in:fade={{ duration: 500 }}>
+						<PlayCircleOutline size="24" />
+					</span>
 				{/if}
 			</div>
 		{/if}
