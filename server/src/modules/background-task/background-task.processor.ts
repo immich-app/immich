@@ -115,7 +115,7 @@ export class BackgroundTaskProcessor {
   async tagImage(job) {
     const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
 
-    const res = await axios.post('http://immich-microservices:3001/image-classifier/tagImage', {
+    const res = await axios.post('http://immich-machine-learning:3001/image-classifier/tag-image', {
       thumbnailPath: thumbnailPath,
     });
 
@@ -135,7 +135,7 @@ export class BackgroundTaskProcessor {
     try {
       const { thumbnailPath, asset }: { thumbnailPath: string; asset: AssetEntity } = job.data;
 
-      const res = await axios.post('http://immich-microservices:3001/object-detection/detectObject', {
+      const res = await axios.post('http://immich-machine-learning:3001/object-detection/detect-object', {
         thumbnailPath: thumbnailPath,
       });
 

@@ -8,7 +8,7 @@ export class ObjectDetectionController {
     private readonly objectDetectionService: ObjectDetectionService,
   ) { }
 
-  @Post('/detectObject')
+  @Post('/detect-object')
   async detectObject(@Body('thumbnailPath') thumbnailPath: string) {
     return await this.objectDetectionService.detectObject(thumbnailPath);
   }

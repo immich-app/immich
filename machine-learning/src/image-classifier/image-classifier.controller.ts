@@ -7,7 +7,7 @@ export class ImageClassifierController {
     private readonly imageClassifierService: ImageClassifierService,
   ) { }
 
-  @Post('/tagImage')
+  @Post('/tag-image')
   async tagImage(@Body('thumbnailPath') thumbnailPath: string) {
     return await this.imageClassifierService.tagImage(thumbnailPath);
   }
