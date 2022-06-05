@@ -16,7 +16,7 @@ import {
   Logger,
   Patch,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-jwt/guards/immich-auth.guard';
 import { AssetService } from './asset.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerOption } from '../../config/multer-option.config';
@@ -32,7 +32,7 @@ import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { CommunicationGateway } from '../communication/communication.gateway';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(ImmichAuthGuard)
 @Controller('asset')
 export class AssetController {
   constructor(

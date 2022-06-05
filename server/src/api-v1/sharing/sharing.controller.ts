@@ -1,14 +1,14 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe, Query } from '@nestjs/common';
 import { SharingService } from './sharing.service';
 import { CreateSharedAlbumDto } from './dto/create-shared-album.dto';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-jwt/guards/immich-auth.guard';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateShareAlbumDto } from './dto/update-shared-album.dto';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(ImmichAuthGuard)
 @Controller('shared')
 export class SharingController {
   constructor(private readonly sharingService: SharingService) {}

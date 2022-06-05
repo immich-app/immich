@@ -1,6 +1,6 @@
 import {Body, Controller, Get, Post, UseGuards, ValidationPipe} from '@nestjs/common';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-jwt/guards/immich-auth.guard';
 import { AuthService } from './auth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -21,11 +21,13 @@ export class AuthController {
     return await this.authService.signUp(signUpCrendential);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ImmichAuthGuard)
   @Post('/validateToken')
   async validateToken(@GetAuthUser() authUser: AuthUserDto) {
     return {
       authStatus: true,
+      email: authUser.email,
+      id: authUser.id,
     };
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {Injectable, Logger, UnauthorizedException} from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { JwtPayloadDto } from '../../../api-v1/auth/dto/jwt-payload.dto';
 import { UserEntity } from '../../../api-v1/user/entities/user.entity';
 import { jwtSecret } from '../../../constants/jwt.constant';
+import * as util from "util";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -21,10 +22,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayloadDto) {
+
+    Logger.log('Trying to validate JWT token', 'JWT STRATEGY');
+
     const { userId } = payload;
     const user = await this.usersRepository.findOne({ id: userId });
 
-    if (!user) {
+    if (!user || !user.isLocalUser) {
       throw new UnauthorizedException('Failure to validate JWT payload');
     }
 

@@ -33,15 +33,13 @@ export class AuthService {
     private httpService: HttpService,
   ) {}
 
-  private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity> {
+  private async validateLocalUser(loginCredential: LoginCredentialDto): Promise<UserEntity> {
     const user = await this.userRepository.findOne(
       { email: loginCredential.email },
       { select: ['id', 'email', 'password', 'salt'] },
     );
 
     if (!user) throw new BadRequestException('Incorrect email or password');
-
-    // todo differentiate between local users and oauth
 
     const isAuthenticated = await this.validatePassword(user.password, loginCredential.password, user.salt);
 
@@ -50,6 +48,36 @@ export class AuthService {
     }
 
     return null;
+  }
+
+  // todo similar to AuthService.loginOauth (loginOauth is not actually required)
+  public async validateUserOauth(params: OAuthLoginDto) {
+    if (process.env.OAUTH2_ENABLE !== 'true') throw new BadRequestException("OAuth2.0/OIDC authentication not enabled!");
+
+    const userinfoEndpoint = await this.getUserinfoEndpoint();
+
+    const headersRequest = {
+      'Authorization': `Bearer ${params.accessToken}`,
+    };
+
+    const response = await lastValueFrom(await this.httpService
+        .get(userinfoEndpoint, { headers: headersRequest }))
+        .catch((e) => Logger.log(e, "AUTH")) as AxiosResponse;
+
+    if (!response || response.status !== 200) {
+      throw new UnauthorizedException('Cannot validate token');
+    }
+
+    Logger.debug("Called userinfo endpoint", "AUTH");
+
+    const email = response.data['email'];
+    if (!email || email === "") throw new BadRequestException("User email not found", "AUTH");
+
+    Logger.debug(email);
+
+    const user = await this.userRepository.findOne({ email: email });
+
+    return user;
   }
 
   public async loginParams() {
@@ -183,7 +211,7 @@ export class AuthService {
   public async login(loginCredential: LoginCredentialDto) {
     if (process.env.LOCAL_USERS_DISABLE === 'true') throw new BadRequestException("Local users not allowed!");
 
-    const validatedUser = await this.validateUser(loginCredential);
+    const validatedUser = await this.validateLocalUser(loginCredential);
     if (!validatedUser) throw new BadRequestException('Incorrect email or password');
 
     return await this._login(validatedUser);

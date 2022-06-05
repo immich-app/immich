@@ -16,7 +16,6 @@ import { BackgroundTaskModule } from './modules/background-task/background-task.
 import { CommunicationModule } from './api-v1/communication/communication.module';
 import { SharingModule } from './api-v1/sharing/sharing.module';
 import {HttpModule} from "@nestjs/axios";
-import {AuthService} from "./api-v1/auth/auth.service";
 
 @Module({
   imports: [
