@@ -43,6 +43,7 @@
 	"dependencies": {
 		"axios": "^0.27.2",
 		"cookie": "^0.4.2",
+		"exifr": "^7.1.3",
 		"leaflet": "^1.8.0",
 		"lodash": "^4.17.21",
 		"lodash-es": "^4.17.21",

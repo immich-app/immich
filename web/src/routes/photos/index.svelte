@@ -40,6 +40,7 @@
 	import AssetViewer from '../../lib/components/asset-viewer/asset-viewer.svelte';
 	import DownloadPanel from '../../lib/components/asset-viewer/download-panel.svelte';
 	import StatusBox from '../../lib/components/shared/status-box.svelte';
+	import * as exifr from 'exifr';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -78,7 +79,37 @@
 		currentViewAssetIndex = $flattenAssetGroupByDate.findIndex((a) => a.id == assetId);
 		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
 		isShowAsset = true;
-		// pushState(assetId);
+	};
+
+	const uploadClickedHandler = async () => {
+		try {
+			let fileSelector = document.createElement('input');
+
+			fileSelector.type = 'file';
+			fileSelector.multiple = true;
+			fileSelector.accept = 'image/*,video/*';
+
+			fileSelector.onchange = async (e: any) => {
+				try {
+					const files = Array.from<File>(e.target.files);
+
+					const acceptedFile = files.filter(
+						(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image',
+					);
+					// const exifs = await exifr.parse(files[0] as File);
+					// const thumbnailData = await exifr.thumbnail(files[0]);
+					console.log(acceptedFile);
+					// console.log(exifs);
+					// console.log('Thumbnail Data ', thumbnailData);
+				} catch (e) {
+					console.log('Error processing file ', e);
+				}
+			};
+
+			fileSelector.click();
+		} catch (e) {
+			console.log('Error seelcting file', e);
+		}
 	};
 </script>
 
@@ -87,7 +118,7 @@
 </svelte:head>
 
 <section>
-	<NavigationBar {user} />
+	<NavigationBar {user} on:uploadClicked={uploadClickedHandler} />
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
