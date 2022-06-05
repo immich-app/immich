@@ -59,7 +59,14 @@
 
 				videoPlayerNode.load();
 
+				videoPlayerNode.onloadeddata = () => {
+					console.log('first frame load');
+				};
+				videoPlayerNode.oncanplaythrough = () => {
+					console.log('can play through');
+				};
 				videoPlayerNode.oncanplay = () => {
+					console.log('can play');
 					videoPlayerNode.muted = true;
 					videoPlayerNode.play();
 
@@ -119,9 +126,8 @@
 		mouseOver = false;
 		URL.revokeObjectURL(videoData);
 
-		if (calculateVideoDurationIntervalHandler) {
-			clearInterval(calculateVideoDurationIntervalHandler);
-		}
+		clearInterval(calculateVideoDurationIntervalHandler);
+
 		isThumbnailVideoPlaying = false;
 		videoProgress = '00:00';
 	};
@@ -197,7 +203,7 @@
 
 		{#if mouseOver && asset.type === AssetType.VIDEO}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
-				<video muted class="h-full object-cover" width="250px" bind:this={videoPlayerNode}>
+				<video muted autoplay preload="none" class="h-full object-cover" width="250px" bind:this={videoPlayerNode}>
 					<track kind="captions" />
 				</video>
 			</div>

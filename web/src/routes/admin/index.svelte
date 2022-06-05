@@ -34,6 +34,7 @@
 	import UserManagement from '$lib/components/admin/user-management.svelte';
 	import FullScreenModal from '$lib/components/shared/full-screen-modal.svelte';
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
+	import StatusBox from '../../lib/components/shared/status-box.svelte';
 
 	let selectedAction: AdminSideBarSelection;
 
@@ -74,7 +75,7 @@
 {/if}
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
-	<section id="admin-sidebar" class="pt-8 pr-6">
+	<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col justify-between">
 		<SideBarButton
 			title="User"
 			logo={AccountMultipleOutline}
@@ -82,6 +83,10 @@
 			isSelected={selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
 			on:selected={onButtonClicked}
 		/>
+
+		<div class="mb-6">
+			<StatusBox />
+		</div>
 	</section>
 	<section class="overflow-y-auto relative">
 		<div id="setting-title" class="pt-10 fixed w-full z-50 bg-immich-bg">

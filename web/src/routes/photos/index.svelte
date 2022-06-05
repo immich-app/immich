@@ -39,6 +39,7 @@
 	import type { ImmichAsset } from '../../lib/models/immich-asset';
 	import AssetViewer from '../../lib/components/asset-viewer/asset-viewer.svelte';
 	import DownloadPanel from '../../lib/components/asset-viewer/download-panel.svelte';
+	import StatusBox from '../../lib/components/shared/status-box.svelte';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -91,7 +92,7 @@
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
 	<!-- Sidebar -->
-	<section id="admin-sidebar" class="flex flex-col gap-4 pt-8 pr-6">
+	<section id="admin-sidebar" class="flex flex-col justify-between gap-4 pt-8 pr-6">
 		<SideBarButton
 			title="Photos"
 			logo={ImageOutline}
@@ -99,6 +100,12 @@
 			isSelected={selectedAction === AppSideBarSelection.PHOTOS}
 			on:selected={onButtonClicked}
 		/>
+
+		<!-- Status Box -->
+
+		<div class="mb-6">
+			<StatusBox />
+		</div>
 	</section>
 
 	<!-- Main Section -->

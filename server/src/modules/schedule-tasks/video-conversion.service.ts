@@ -24,7 +24,6 @@ export class VideoConversionService {
   ) { }
 
 
-  // time ffmpeg -i 15065f4a-47ff-4aed-8c3e-c9fcf1840531.mov -crf 35 -preset ultrafast -vcodec libx264 -acodec mp3 -vf "scale=1280:-1" 15065f4a-47ff-4aed-8c3e-c9fcf1840531.mp4
   @Cron(CronExpression.EVERY_MINUTE
     , {
       name: 'video-encoding'
