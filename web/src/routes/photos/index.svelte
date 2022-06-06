@@ -92,7 +92,7 @@
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
 	<!-- Sidebar -->
-	<section id="admin-sidebar" class="flex flex-col justify-between gap-4 pt-8 pr-6">
+	<section id="sidebar" class="flex flex-col gap-4 pt-8 pr-6">
 		<SideBarButton
 			title="Photos"
 			logo={ImageOutline}
@@ -103,7 +103,7 @@
 
 		<!-- Status Box -->
 
-		<div class="mb-6">
+		<div class="mb-6 mt-auto">
 			<StatusBox />
 		</div>
 	</section>
