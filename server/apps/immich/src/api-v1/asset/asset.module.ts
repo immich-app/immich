@@ -13,6 +13,14 @@ import { CommunicationModule } from '../communication/communication.module';
     CommunicationModule,
     BackgroundTaskModule,
     TypeOrmModule.forFeature([AssetEntity]),
+    BullModule.registerQueue({
+      name: 'asset-uploaded-queue',
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
   ],
   controllers: [AssetController],
   providers: [AssetService, BackgroundTaskService],

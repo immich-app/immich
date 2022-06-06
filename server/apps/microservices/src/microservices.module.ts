@@ -1,12 +1,14 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DatabaseModule } from '../../../libs/database/src';
-import { AssetEntity } from '../../../libs/database/src/entities/asset.entity';
-import { ExifEntity } from '../../../libs/database/src/entities/exif.entity';
-import { SmartInfoEntity } from '../../../libs/database/src/entities/smart-info.entity';
-import { UserEntity } from '../../../libs/database/src/entities/user.entity';
+import { DatabaseModule } from '@app/database';
+import { AssetEntity } from '@app/database/entities/asset.entity';
+import { ExifEntity } from '@app/database/entities/exif.entity';
+import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
+import { UserEntity } from '@app/database/entities/user.entity';
 import { MicroservicesService } from './microservices.service';
+import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
+import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 
 @Module({
   imports: [
@@ -21,16 +23,23 @@ import { MicroservicesService } from './microservices.service';
       }),
     }),
     BullModule.registerQueue({
-      name: 'thumbnail-queue',
+      name: 'thumbnail-generator-queue',
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
         removeOnFail: false,
       },
     }),
-
+    BullModule.registerQueue({
+      name: 'asset-uploaded-queue',
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
   ],
   controllers: [],
-  providers: [MicroservicesService],
+  providers: [MicroservicesService, AssetUploadedProcessor, ThumbnailGeneratorProcessor],
 })
 export class MicroservicesModule { }

@@ -41,6 +41,9 @@ export class AssetController {
     private wsCommunicateionGateway: CommunicationGateway,
     private assetService: AssetService,
     private backgroundTaskService: BackgroundTaskService,
+
+    @InjectQueue('asset-uploaded-queue')
+    private assetUploadedQueue: Queue,
   ) { }
 
   @Post('upload')
@@ -78,7 +81,9 @@ export class AssetController {
 
         // Since the Exif is generated based on raw file - this task can be done regardless of the status of the 
         // thumbnail images.
+
         await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
+        await this.assetUploadedQueue.add('asset-uploaded', { asset: savedAsset }, { jobId: savedAsset.id })
 
         this.wsCommunicateionGateway.server.to(savedAsset.userId).emit('on_upload_success', JSON.stringify(savedAsset));
       } catch (e) {

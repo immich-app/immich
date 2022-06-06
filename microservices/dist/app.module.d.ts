@@ -1,2 +1,0 @@
-export declare class AppModule {
-}
