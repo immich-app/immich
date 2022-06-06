@@ -21,6 +21,7 @@
 			map.removeLayer(marker);
 			map.setView([asset.exifInfo?.latitude || 0, asset.exifInfo?.longitude || 0], 17);
 			marker = leaflet.marker([asset.exifInfo?.latitude || 0, asset.exifInfo?.longitude || 0]);
+			marker.bindPopup(`${asset.exifInfo?.latitude || 0},${asset.exifInfo?.longitude || 0}`);
 			map.addLayer(marker);
 		}
 	}
@@ -38,6 +39,7 @@
 				.addTo(map);
 
 			marker = leaflet.marker([asset.exifInfo?.latitude || 0, asset.exifInfo?.longitude || 0]);
+			marker.bindPopup(`${asset.exifInfo?.latitude || 0},${asset.exifInfo?.longitude || 0}`);
 
 			map.addLayer(marker);
 		}
