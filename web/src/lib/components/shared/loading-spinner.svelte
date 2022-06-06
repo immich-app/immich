@@ -1,7 +1,7 @@
 <div>
 	<svg
 		role="status"
-		class="w-8 h-8 mr-2 text-gray-400 animate-spin dark:text-gray-600 fill-immich-primary"
+		class={`w-[24px] h-[24px] text-gray-400 animate-spin dark:text-gray-600 fill-immich-primary`}
 		viewBox="0 0 100 101"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"

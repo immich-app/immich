@@ -3,12 +3,13 @@
 	import { serverEndpoint } from '$lib/constants';
 	import { fade } from 'svelte/transition';
 
-	import type { ImmichAsset } from '$lib/models/immich-asset';
+	import type { ImmichAsset, ImmichExif } from '$lib/models/immich-asset';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import LoadingSpinner from '../shared/loading-spinner.svelte';
 
 	export let assetId: string;
 	export let deviceId: string;
+
 	let assetInfo: ImmichAsset;
 
 	const dispatch = createEventDispatcher();
@@ -41,22 +42,18 @@
 	};
 </script>
 
-<div on:click={() => dispatch('close')} class="h-screen">
+<div transition:fade={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
 	{#if assetInfo}
 		{#await loadAssetData()}
-			<div class="flex place-items-center place-content-center h-full">
-				<LoadingSpinner />
-			</div>
+			<LoadingSpinner />
 		{:then assetData}
-			<div class="flex place-items-center place-content-center h-full">
-				<img
-					in:fade={{ duration: 200 }}
-					src={assetData}
-					alt={assetId}
-					class="object-cover h-full transition-all duration-100 z-0"
-					loading="lazy"
-				/>
-			</div>
+			<img
+				transition:fade={{ duration: 150 }}
+				src={assetData}
+				alt={assetId}
+				class="object-contain h-full transition-all"
+				loading="lazy"
+			/>
 		{/await}
 	{/if}
 </div>

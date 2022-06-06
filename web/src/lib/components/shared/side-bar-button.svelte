@@ -18,8 +18,8 @@
 
 <div
 	on:click={onButtonClicked}
-	class={`flex gap-4 place-items-center pl-5 py-3 rounded-tr-xl rounded-br-xl hover:bg-gray-200 hover:text-immich-primary hover:cursor-pointer
-    ${isSelected && 'bg-immich-primary/10 text-immich-primary hover:bg-immich-primary/50'}
+	class={`flex gap-4 place-items-center pl-5 py-3 rounded-tr-full rounded-br-full hover:bg-gray-200 hover:text-immich-primary hover:cursor-pointer
+    ${isSelected && 'bg-immich-primary/10 text-immich-primary hover:bg-immich-primary/25'}
   `}
 >
 	<svelte:component this={logo} size="24" />
