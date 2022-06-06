@@ -66,8 +66,18 @@ export class AssetController {
           await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);
           await this.backgroundTaskService.tagImage(uploadFiles.thumbnailData[0].path, savedAsset);
           await this.backgroundTaskService.detectObject(uploadFiles.thumbnailData[0].path, savedAsset);
+
+          // TODO - generate wepb
+
+        } else {
+          // generating thumbnail
+          // Then
+          // Tag image - queue will be put in from the microservice side.
+          // Object Detection - queue will be put in from the microservice side.
         }
 
+        // Since the Exif is generated based on raw file - this task can be done regardless of the status of the 
+        // thumbnail images.
         await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
 
         this.wsCommunicateionGateway.server.to(savedAsset.userId).emit('on_upload_success', JSON.stringify(savedAsset));
