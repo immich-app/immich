@@ -75,7 +75,7 @@
 {/if}
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
-	<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col justify-between">
+	<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col">
 		<SideBarButton
 			title="User"
 			logo={AccountMultipleOutline}
@@ -84,7 +84,7 @@
 			on:selected={onButtonClicked}
 		/>
 
-		<div class="mb-6">
+		<div class="mb-6 mt-auto">
 			<StatusBox />
 		</div>
 	</section>

@@ -77,9 +77,7 @@
 		<div class="text-xs">
 			<p class="text-sm font-medium text-immich-primary">Server</p>
 
-			<div class="border p-2 rounded-md bg-gray-200 mt-2">
-				<p class="text-immich-primary font-medium">{endpoint}</p>
-			</div>
+			<input class="border p-2 rounded-md bg-gray-200 mt-2 text-immich-primary font-medium" value="{endpoint}" disabled="true">
 			<div class="flex justify-items-center justify-between mt-2">
 				<p>Status</p>
 
