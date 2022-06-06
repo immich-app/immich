@@ -1,4 +1,4 @@
-import { UserEntity } from '../entities/user.entity';
+import { UserEntity } from '../../../../../../libs/database/src/entities/user.entity';
 
 export interface User {
   id: string;
