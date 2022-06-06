@@ -2,9 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, Logger }
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../api-v1/user/entities/user.entity';
 import { Repository } from 'typeorm';
-import { HttpService } from '@nestjs/axios';
 import * as bcrypt from 'bcrypt';
-import { JwtPayloadDto } from '../../api-v1/auth/dto/jwt-payload.dto';
 
 @Injectable()
 export class ImmichAuthService {

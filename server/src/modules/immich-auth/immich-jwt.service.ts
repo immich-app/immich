@@ -53,6 +53,7 @@ export class ImmichJwtService {
             'isAdmin',
             'profileImagePath',
             'isFirstLoggedIn',
+            'isLocalUser',
           ],
         },
     );
