@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 import { clearDb, authCustom } from './test-utils';
-import { databaseConfig } from '../src/config/database.config';
+import { databaseConfig } from '../../../libs/database/src/config/database.config';
 import { UserModule } from '../src/api-v1/user/user.module';
 import { AuthModule } from '../src/api-v1/auth/auth.module';
 import { AuthService } from '../src/api-v1/auth/auth.service';

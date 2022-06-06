@@ -1,9 +1,17 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DatabaseModule } from '../../../libs/database/src';
+import { AssetEntity } from '../../../libs/database/src/entities/asset.entity';
+import { ExifEntity } from '../../../libs/database/src/entities/exif.entity';
+import { SmartInfoEntity } from '../../../libs/database/src/entities/smart-info.entity';
+import { UserEntity } from '../../../libs/database/src/entities/user.entity';
 import { MicroservicesService } from './microservices.service';
 
 @Module({
   imports: [
+    DatabaseModule,
+    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         redis: {
