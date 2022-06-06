@@ -6,7 +6,6 @@ import { Repository } from 'typeorm';
 import { JwtPayloadDto } from '../../../api-v1/auth/dto/jwt-payload.dto';
 import { UserEntity } from '../../../api-v1/user/entities/user.entity';
 import { jwtSecret } from '../../../constants/jwt.constant';
-import * as util from "util";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {

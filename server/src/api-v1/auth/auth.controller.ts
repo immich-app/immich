@@ -1,10 +1,9 @@
 import {Body, Controller, Get, Post, UseGuards, ValidationPipe} from '@nestjs/common';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { ImmichAuthGuard } from '../../modules/immich-jwt/guards/immich-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { AuthService } from './auth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import {OAuthLoginDto} from "./dto/o-auth-login.dto";
 import {OAuthAccessTokenDto} from "./dto/o-auth-access-token.dto";
 
 @Controller('auth')
@@ -39,11 +38,6 @@ export class AuthController {
   @Post('/oauth/accessToken')
   async accessTokenOauth(@Body(ValidationPipe) params: OAuthAccessTokenDto) {
     return await this.authService.accessTokenOauth(params);
-  }
-
-  @Post('/oauth/login')
-  async loginOauth(@Body(ValidationPipe) params: OAuthLoginDto) {
-    return await this.authService.loginOauth(params);
   }
 
 }

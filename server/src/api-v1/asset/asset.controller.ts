@@ -16,7 +16,7 @@ import {
   Logger,
   Patch,
 } from '@nestjs/common';
-import { ImmichAuthGuard } from '../../modules/immich-jwt/guards/immich-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { AssetService } from './asset.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerOption } from '../../config/multer-option.config';

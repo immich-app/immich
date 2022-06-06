@@ -5,7 +5,10 @@ import { AppModule } from './app.module';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: ['debug', 'log', 'warn', 'error'],
+  });
 
   app.set('trust proxy');
 

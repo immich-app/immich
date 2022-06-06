@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe, Query } from '@nestjs/common';
 import { SharingService } from './sharing.service';
 import { CreateSharedAlbumDto } from './dto/create-shared-album.dto';
-import { ImmichAuthGuard } from '../../modules/immich-jwt/guards/immich-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';

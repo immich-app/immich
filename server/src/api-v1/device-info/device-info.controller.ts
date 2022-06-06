@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { ImmichAuthGuard } from '../../modules/immich-jwt/guards/immich-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { DeviceInfoService } from './device-info.service';
 import { CreateDeviceInfoDto } from './dto/create-device-info.dto';
 import { UpdateDeviceInfoDto } from './dto/update-device-info.dto';

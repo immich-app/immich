@@ -4,7 +4,7 @@ import { databaseConfig } from './config/database.config';
 import { UserModule } from './api-v1/user/user.module';
 import { AssetModule } from './api-v1/asset/asset.module';
 import { AuthModule } from './api-v1/auth/auth.module';
-import { ImmichJwtModule } from './modules/immich-jwt/immich-jwt.module';
+import { ImmichAuthModule } from './modules/immich-auth/immich-auth.module';
 import { DeviceInfoModule } from './api-v1/device-info/device-info.module';
 import { AppLoggerMiddleware } from './middlewares/app-logger.middleware';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -25,7 +25,7 @@ import {HttpModule} from "@nestjs/axios";
     AssetModule,
     HttpModule,
     AuthModule,
-    ImmichJwtModule,
+    ImmichAuthModule,
     DeviceInfoModule,
     BullModule.forRootAsync({
       useFactory: async () => ({
