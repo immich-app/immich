@@ -6,19 +6,18 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import sharp from 'sharp';
-import { createReadStream, unlink, unlinkSync } from 'fs';
+import { createReadStream } from 'fs';
 import { Response as Res } from 'express';
+import { mapUser, User } from './response-dto/user';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-  ) { }
+  ) {}
 
   async getAllUsers(authUser: AuthUserDto, isAll: boolean) {
-
     if (isAll) {
       return await this.userRepository.find();
     }
@@ -26,8 +25,8 @@ export class UserService {
     return await this.userRepository.find({
       where: { id: Not(authUser.id) },
       order: {
-        createdAt: 'DESC'
-      }
+        createdAt: 'DESC',
+      },
     });
   }
 
@@ -40,14 +39,12 @@ export class UserService {
       users = await this.userRepository.find();
     }
 
-
     return {
-      userCount: users.length
-    }
-
+      userCount: users.length,
+    };
   }
 
-  async createUser(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
     const user = await this.userRepository.findOne({ where: { email: createUserDto.email } });
 
     if (user) {
@@ -62,18 +59,10 @@ export class UserService {
     newUser.lastName = createUserDto.lastName;
     newUser.isAdmin = false;
 
-
     try {
       const savedUser = await this.userRepository.save(newUser);
 
-      return {
-        id: savedUser.id,
-        email: savedUser.email,
-        firstName: savedUser.firstName,
-        lastName: savedUser.lastName,
-        createdAt: savedUser.createdAt,
-      };
-
+      return mapUser(savedUser);
     } catch (e) {
       Logger.error(e, 'Create new user');
       throw new InternalServerErrorException('Failed to register new user');
@@ -83,7 +72,6 @@ export class UserService {
   private async hashPassword(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
   }
-
 
   async updateUser(updateUserDto: UpdateUserDto) {
     const user = await this.userRepository.findOne(updateUserDto.id);
@@ -100,10 +88,10 @@ export class UserService {
     }
 
     if (updateUserDto.isAdmin) {
-      const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } })
+      const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
 
       if (adminUser) {
-        throw new BadRequestException("Admin user exists")
+        throw new BadRequestException('Admin user exists');
       }
 
       user.isAdmin = true;
@@ -120,7 +108,6 @@ export class UserService {
         isAdmin: updatedUser.isAdmin,
         profileImagePath: updatedUser.profileImagePath,
       };
-
     } catch (e) {
       Logger.error(e, 'Create new user');
       throw new InternalServerErrorException('Failed to register new user');
@@ -130,13 +117,12 @@ export class UserService {
   async createProfileImage(authUser: AuthUserDto, fileInfo: Express.Multer.File) {
     try {
       await this.userRepository.update(authUser.id, {
-        profileImagePath: fileInfo.path
-      })
-
+        profileImagePath: fileInfo.path,
+      });
 
       return {
         userId: authUser.id,
-        profileImagePath: fileInfo.path
+        profileImagePath: fileInfo.path,
       };
     } catch (e) {
       Logger.error(e, 'Create User Profile Image');
@@ -146,7 +132,7 @@ export class UserService {
 
   async getUserProfileImage(userId: string, res: Res) {
     try {
-      const user = await this.userRepository.findOne({ id: userId })
+      const user = await this.userRepository.findOne({ id: userId });
 
       if (!user.profileImagePath) {
         // throw new BadRequestException('User does not have a profile image');
@@ -157,11 +143,10 @@ export class UserService {
       res.set({
         'Content-Type': 'image/jpeg',
       });
-      const fileStream = createReadStream(user.profileImagePath)
+      const fileStream = createReadStream(user.profileImagePath);
       return new StreamableFile(fileStream);
     } catch (e) {
-      console.log("error getting user profile")
+      console.log('error getting user profile');
     }
-
   }
 }

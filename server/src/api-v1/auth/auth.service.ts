@@ -7,6 +7,7 @@ import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { JwtPayloadDto } from './dto/jwt-payload.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import * as bcrypt from 'bcrypt';
+import { mapUser, User } from '../user/response-dto/user';
 
 @Injectable()
 export class AuthService {
@@ -14,12 +15,24 @@ export class AuthService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     private immichJwtService: ImmichJwtService,
-  ) { }
+  ) {}
 
   private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity> {
     const user = await this.userRepository.findOne(
       { email: loginCredential.email },
-      { select: ['id', 'email', 'password', 'salt', 'firstName', 'lastName', 'isAdmin', 'profileImagePath', 'isFirstLoggedIn'] },
+      {
+        select: [
+          'id',
+          'email',
+          'password',
+          'salt',
+          'firstName',
+          'lastName',
+          'isAdmin',
+          'profileImagePath',
+          'isFirstLoggedIn',
+        ],
+      },
     );
 
     const isAuthenticated = await this.validatePassword(user.password, loginCredential.password, user.salt);
@@ -48,38 +61,29 @@ export class AuthService {
       lastName: validatedUser.lastName,
       isAdmin: validatedUser.isAdmin,
       profileImagePath: validatedUser.profileImagePath,
-      isFirstLogin: validatedUser.isFirstLoggedIn
+      isFirstLogin: validatedUser.isFirstLoggedIn,
     };
   }
 
-
-  public async adminSignUp(signUpCrendential: SignUpDto) {
+  public async adminSignUp(signUpCredential: SignUpDto): Promise<User> {
     const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
 
     if (adminUser) {
-      throw new BadRequestException('The server already has an admin')
+      throw new BadRequestException('The server already has an admin');
     }
 
-
     const newAdminUser = new UserEntity();
-    newAdminUser.email = signUpCrendential.email;
+    newAdminUser.email = signUpCredential.email;
     newAdminUser.salt = await bcrypt.genSalt();
-    newAdminUser.password = await this.hashPassword(signUpCrendential.password, newAdminUser.salt);
-    newAdminUser.firstName = signUpCrendential.firstName;
-    newAdminUser.lastName = signUpCrendential.lastName;
+    newAdminUser.password = await this.hashPassword(signUpCredential.password, newAdminUser.salt);
+    newAdminUser.firstName = signUpCredential.firstName;
+    newAdminUser.lastName = signUpCredential.lastName;
     newAdminUser.isAdmin = true;
 
     try {
       const savedNewAdminUserUser = await this.userRepository.save(newAdminUser);
 
-      return {
-        id: savedNewAdminUserUser.id,
-        email: savedNewAdminUserUser.email,
-        firstName: savedNewAdminUserUser.firstName,
-        lastName: savedNewAdminUserUser.lastName,
-        createdAt: savedNewAdminUserUser.createdAt,
-      };
-
+      return mapUser(savedNewAdminUserUser);
     } catch (e) {
       Logger.error('e', 'signUp');
       throw new InternalServerErrorException('Failed to register new admin user');
