@@ -11,7 +11,7 @@ stage:
 	docker-compose -f ./docker/docker-compose.staging.yml up --build -V --remove-orphans
 
 test-e2e:
-	docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --abort-on-container-exit --exit-code-from immich_server_test
+	docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich_server_test --remove-orphans
 
 prod:
 	docker-compose -f ./docker/docker-compose.yml up --build -V --remove-orphans

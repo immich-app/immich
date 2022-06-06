@@ -65,7 +65,7 @@ import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.mod
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     if (process.env.NODE_ENV == 'development') {
-      consumer.apply(AppLoggerMiddleware).forRoutes('*');
+      // consumer.apply(AppLoggerMiddleware).forRoutes('*');
     }
   }
 }

@@ -1,38 +1,24 @@
+<script context="module" lang="ts">
+	import type { Load } from '@sveltejs/kit';
+
+	export const load: Load = async ({ url }) => ({ props: { url } });
+</script>
+
 <script lang="ts">
-	import { getRequest } from '$lib/api';
-	import { onDestroy } from 'svelte';
 	import '../app.css';
-	import { serverEndpoint } from '../lib/constants';
 
-	let endpoint = serverEndpoint;
-	let isServerOk = true;
+	import { blur } from 'svelte/transition';
 
-	const pingServerInterval = setInterval(async () => {
-		const response = await getRequest('server-info/ping', '');
+	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
 
-		if (response.res === 'pong') isServerOk = true;
-		else isServerOk = false;
-	}, 10000);
-
-	onDestroy(() => clearInterval(pingServerInterval));
+	export let url: string;
 </script>
 
 <main>
-	<slot />
+	{#key url}
+		<div transition:blur={{ duration: 250 }}>
+			<slot />
+			<DownloadPanel />
+		</div>
+	{/key}
 </main>
-
-<footer
-	class="text-sm fixed bottom-0 h-8 flex place-items-center place-content-center bg-gray-50 w-screen font-mono gap-8 px-4 font-medium"
->
-	<p class="">
-		Server URL <span class="text-immich-primary font-bold">{endpoint}</span>
-	</p>
-	<p class="">
-		Server Status
-		{#if isServerOk}
-			<span class="text-immich-primary font-bold">OK</span>
-		{:else}
-			<span class="text-red-500 font-bold">OFFLINE</span>
-		{/if}
-	</p>
-</footer>

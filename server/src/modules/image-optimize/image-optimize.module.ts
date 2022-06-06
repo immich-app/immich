@@ -33,4 +33,4 @@ import { AssetOptimizeService } from './image-optimize.service';
   providers: [AssetOptimizeService, ImageOptimizeProcessor, BackgroundTaskService],
   exports: [AssetOptimizeService],
 })
-export class ImageOptimizeModule {}
+export class ImageOptimizeModule { }

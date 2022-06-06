@@ -123,7 +123,7 @@ export class AssetController {
 
   @Get('/')
   async getAllAssets(@GetAuthUser() authUser: AuthUserDto) {
-    return await this.assetService.getAllAssetsNoPagination(authUser);
+    return await this.assetService.getAllAssets(authUser);
   }
 
   @Get('/:deviceId')

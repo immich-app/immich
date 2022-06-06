@@ -17,9 +17,10 @@ import { BackgroundTaskService } from './background-task.service';
         removeOnFail: false,
       },
     }),
+
     TypeOrmModule.forFeature([AssetEntity, ExifEntity, SmartInfoEntity]),
   ],
   providers: [BackgroundTaskService, BackgroundTaskProcessor],
   exports: [BackgroundTaskService],
 })
-export class BackgroundTaskModule {}
+export class BackgroundTaskModule { }

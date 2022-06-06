@@ -5,14 +5,13 @@ import request from 'supertest';
 import { clearDb, authCustom } from './test-utils';
 import { databaseConfig } from '../src/config/database.config';
 import { UserModule } from '../src/api-v1/user/user.module';
-import { AuthModule } from '../src/api-v1/auth/auth.module';
-import { AuthService } from '../src/api-v1/auth/auth.service';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
-import { SignUpDto } from '../src/api-v1/auth/dto/sign-up.dto';
-import { AuthUserDto } from '../src/decorators/auth-user.decorator';
+import { UserService } from '../src/api-v1/user/user.service';
+import { CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
+import { User } from '../src/api-v1/user/response-dto/user';
 
-function _createUser(authService: AuthService, data: SignUpDto) {
-  return authService.signUp(data);
+function _createUser(userService: UserService, data: CreateUserDto) {
+  return userService.createUser(data);
 }
 
 describe('User', () => {
@@ -44,17 +43,17 @@ describe('User', () => {
   });
 
   describe('with auth', () => {
-    let authService: AuthService;
-    let authUser: AuthUserDto;
+    let userService: UserService;
+    let authUser: User;
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [UserModule, AuthModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [UserModule, TypeOrmModule.forRoot(databaseConfig)],
       });
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 
       app = moduleFixture.createNestApplication();
-      authService = app.get(AuthService);
+      userService = app.get(UserService);
       await app.init();
     });
 
@@ -65,9 +64,24 @@ describe('User', () => {
 
       beforeAll(async () => {
         await Promise.allSettled([
-          _createUser(authService, { email: authUserEmail, password: '1234' }).then((user) => (authUser = user)),
-          _createUser(authService, { email: userOneEmail, password: '1234' }),
-          _createUser(authService, { email: userTwoEmail, password: '1234' }),
+          _createUser(userService, {
+            firstName: 'auth-user',
+            lastName: 'test',
+            email: authUserEmail,
+            password: '1234',
+          }).then((user) => (authUser = user)),
+          _createUser(userService, {
+            firstName: 'one',
+            lastName: 'test',
+            email: userOneEmail,
+            password: '1234',
+          }),
+          _createUser(userService, {
+            firstName: 'two',
+            lastName: 'test',
+            email: userTwoEmail,
+            password: '1234',
+          }),
         ]);
       });
 
@@ -79,13 +93,23 @@ describe('User', () => {
           expect.arrayContaining([
             {
               email: userOneEmail,
+              firstName: 'one',
+              lastName: 'test',
               id: expect.anything(),
               createdAt: expect.anything(),
+              isAdmin: false,
+              isFirstLoggedIn: true,
+              profileImagePath: '',
             },
             {
               email: userTwoEmail,
+              firstName: 'two',
+              lastName: 'test',
               id: expect.anything(),
               createdAt: expect.anything(),
+              isAdmin: false,
+              isFirstLoggedIn: true,
+              profileImagePath: '',
             },
           ]),
         );
