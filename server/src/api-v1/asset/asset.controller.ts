@@ -41,8 +41,6 @@ export class AssetController {
     private wsCommunicateionGateway: CommunicationGateway,
     private assetService: AssetService,
     private backgroundTaskService: BackgroundTaskService,
-    @InjectQueue('thumbnail-queue')
-    private thumbnailQueue: Queue,
   ) { }
 
   @Post('upload')
@@ -63,8 +61,6 @@ export class AssetController {
     for (const file of uploadFiles.assetData) {
       try {
         const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
-
-
 
         if (uploadFiles.thumbnailData != null && savedAsset) {
           await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);

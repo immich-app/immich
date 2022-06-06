@@ -11,33 +11,8 @@ import { CommunicationModule } from '../communication/communication.module';
 @Module({
   imports: [
     CommunicationModule,
-
-    BullModule.registerQueue({
-      name: 'optimize',
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
-      },
-    }),
-    BullModule.registerQueue({
-      name: 'background-task',
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
-      },
-    }),
-    BullModule.registerQueue({
-      name: 'thumbnail-queue',
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
-      },
-    }),
-    TypeOrmModule.forFeature([AssetEntity]),
     BackgroundTaskModule,
+    TypeOrmModule.forFeature([AssetEntity]),
   ],
   controllers: [AssetController],
   providers: [AssetService, BackgroundTaskService],

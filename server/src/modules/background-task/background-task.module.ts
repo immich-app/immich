@@ -17,10 +17,17 @@ import { BackgroundTaskService } from './background-task.service';
         removeOnFail: false,
       },
     }),
-
+    BullModule.registerQueue({
+      name: 'thumbnail-queue',
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
     TypeOrmModule.forFeature([AssetEntity, ExifEntity, SmartInfoEntity]),
   ],
   providers: [BackgroundTaskService, BackgroundTaskProcessor],
-  exports: [BackgroundTaskService],
+  exports: [BackgroundTaskService, BullModule],
 })
 export class BackgroundTaskModule { }

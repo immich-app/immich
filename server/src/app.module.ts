@@ -54,7 +54,7 @@ import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.mod
 
     ScheduleModule.forRoot(),
 
-    ScheduleTasksModule
+    ScheduleTasksModule,
   ],
   controllers: [AppController],
   providers: [],
