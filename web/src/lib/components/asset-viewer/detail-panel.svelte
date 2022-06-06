@@ -131,7 +131,7 @@
 					<p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
 					<div class="flex text-sm gap-2">
 						<p>{`f/${asset.exifInfo.fNumber}` || ''}</p>
-						<p>{`1/${1 / asset.exifInfo.exposureTime}` || ''}</p>
+						<p>{`1/${Math.floor(1 / asset.exifInfo.exposureTime)}` || ''}</p>
 						<p>{`${asset.exifInfo.focalLength}mm` || ''}</p>
 						<p>{`ISO${asset.exifInfo.iso}` || ''}</p>
 					</div>
