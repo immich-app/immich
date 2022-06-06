@@ -31,6 +31,8 @@ import { BackgroundTaskService } from '../../modules/background-task/background-
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { CommunicationGateway } from '../communication/communication.gateway';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @UseGuards(JwtAuthGuard)
 @Controller('asset')
@@ -39,6 +41,8 @@ export class AssetController {
     private wsCommunicateionGateway: CommunicationGateway,
     private assetService: AssetService,
     private backgroundTaskService: BackgroundTaskService,
+    @InjectQueue('thumbnail-queue')
+    private thumbnailQueue: Queue,
   ) { }
 
   @Post('upload')
@@ -59,6 +63,8 @@ export class AssetController {
     for (const file of uploadFiles.assetData) {
       try {
         const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
+
+        this.thumbnailQueue.add('generate-thumbnail', { savedAsset }, { jobId: savedAsset.id });
 
         if (uploadFiles.thumbnailData != null && savedAsset) {
           await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);

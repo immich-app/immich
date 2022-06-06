@@ -30,6 +30,14 @@ import { CommunicationModule } from '../communication/communication.module';
         removeOnFail: false,
       },
     }),
+    BullModule.registerQueue({
+      name: 'thumbnail-queue',
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
     TypeOrmModule.forFeature([AssetEntity]),
     ImageOptimizeModule,
     BackgroundTaskModule,
