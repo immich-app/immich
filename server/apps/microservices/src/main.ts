@@ -7,11 +7,11 @@ async function bootstrap() {
 
   await app.listen(3000, () => {
     if (process.env.NODE_ENV == 'development') {
-      Logger.log('Running Immich Microservices in DEVELOPMENT environment', 'IMMICH MICROSERVICES');
+      Logger.log('Running Immich Microservices in DEVELOPMENT environment', 'ImmichMicroservice');
     }
 
     if (process.env.NODE_ENV == 'production') {
-      Logger.log('Running Immich Microservices in PRODUCTION environment', 'IMMICH MICROSERVICES');
+      Logger.log('Running Immich Microservices in PRODUCTION environment', 'ImmichMicroservice');
     }
   });
 }

@@ -15,11 +15,11 @@ async function bootstrap() {
 
   await app.listen(3000, () => {
     if (process.env.NODE_ENV == 'development') {
-      Logger.log('Running Immich Server in DEVELOPMENT environment', 'IMMICH SERVER');
+      Logger.log('Running Immich Server in DEVELOPMENT environment', 'ImmichServer');
     }
 
     if (process.env.NODE_ENV == 'production') {
-      Logger.log('Running Immich Server in PRODUCTION environment', 'IMMICH SERVER');
+      Logger.log('Running Immich Server in PRODUCTION environment', 'ImmichServer');
     }
   });
 }

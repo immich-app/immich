@@ -6,9 +6,7 @@ import { databaseConfig } from './config/database.config';
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
   ],
-  providers: [
-
-  ],
+  providers: [],
   exports: [TypeOrmModule],
 })
 export class DatabaseModule { }
