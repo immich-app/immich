@@ -10,11 +10,13 @@ async function bootstrap() {
     logger: ['debug', 'log', 'warn', 'error'],
   });
 
+  app.enableCors();
+
   app.set('trust proxy');
 
   app.useWebSocketAdapter(new RedisIoAdapter(app));
 
-  await app.listen(3000, () => {
+  await app.listen(process.env.PORT || 3000, () => {
     if (process.env.NODE_ENV == 'development') {
       Logger.log('Running Immich Server in DEVELOPMENT environment', 'IMMICH SERVER');
     }

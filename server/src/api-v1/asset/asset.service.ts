@@ -1,19 +1,17 @@
 import { BadRequestException, Injectable, Logger, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetEntity, AssetType } from './entities/asset.entity';
 import _ from 'lodash';
-import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
-import { GetAllAssetReponseDto } from './dto/get-all-asset-response.dto';
 import { createReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
-import path from 'path';
+import ffmpeg from 'fluent-ffmpeg';
 
 const fileInfo = promisify(stat);
 
@@ -22,7 +20,7 @@ export class AssetService {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-  ) {}
+  ) { }
 
   public async updateThumbnailInfo(assetId: string, path: string) {
     return await this.assetRepository.update(assetId, {
@@ -64,13 +62,17 @@ export class AssetService {
     return res;
   }
 
-  public async getAllAssetsNoPagination(authUser: AuthUserDto) {
+  public async getAllAssets(authUser: AuthUserDto) {
     try {
-      return await this.assetRepository
-        .createQueryBuilder('a')
-        .where('a."userId" = :userId', { userId: authUser.id })
-        .orderBy('a."createdAt"::date', 'DESC')
-        .getMany();
+      return await this.assetRepository.find({
+        where: {
+          userId: authUser.id
+        },
+        relations: ['exifInfo'],
+        order: {
+          createdAt: 'DESC'
+        }
+      })
     } catch (e) {
       Logger.error(e, 'getAllAssets');
     }
@@ -103,8 +105,18 @@ export class AssetService {
     const asset = await this.findOne(query.did, query.aid);
 
     if (query.isThumb === 'false' || !query.isThumb) {
+      const { size } = await fileInfo(asset.originalPath);
+      res.set({
+        'Content-Type': asset.mimeType,
+        'Content-Length': size,
+      });
       file = createReadStream(asset.originalPath);
     } else {
+      const { size } = await fileInfo(asset.resizePath);
+      res.set({
+        'Content-Type': 'image/jpeg',
+        'Content-Length': size,
+      });
       file = createReadStream(asset.resizePath);
     }
 
@@ -114,35 +126,75 @@ export class AssetService {
   public async getAssetThumbnail(assetId: string) {
     const asset = await this.assetRepository.findOne({ id: assetId });
 
-    return new StreamableFile(createReadStream(asset.resizePath));
+    if (asset.webpPath != '') {
+      return new StreamableFile(createReadStream(asset.webpPath));
+    } else {
+      return new StreamableFile(createReadStream(asset.resizePath));
+    }
   }
 
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
     let file = null;
     const asset = await this.findOne(query.did, query.aid);
+
     if (!asset) {
       throw new BadRequestException('Asset does not exist');
     }
+
+
     // Handle Sending Images
     if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
-      res.set({
-        'Content-Type': asset.mimeType,
-      });
+      /**
+       * Serve file viewer on the web
+       */
+      if (query.isWeb) {
+        res.set({
+          'Content-Type': 'image/jpeg',
+        });
+        return new StreamableFile(createReadStream(asset.resizePath));
+      }
 
+
+      /**
+       * Serve thumbnail image for both web and mobile app
+       */
       if (query.isThumb === 'false' || !query.isThumb) {
+        res.set({
+          'Content-Type': asset.mimeType,
+        });
         file = createReadStream(asset.originalPath);
       } else {
-        file = createReadStream(asset.resizePath);
+        if (asset.webpPath != '') {
+          res.set({
+            'Content-Type': 'image/webp',
+          });
+          file = createReadStream(asset.webpPath);
+        } else {
+          res.set({
+            'Content-Type': 'image/jpeg',
+          });
+          file = createReadStream(asset.resizePath);
+        }
       }
 
       file.on('error', (error) => {
         Logger.log(`Cannot create read stream ${error}`);
         return new BadRequestException('Cannot Create Read Stream');
       });
+
       return new StreamableFile(file);
+
     } else if (asset.type == AssetType.VIDEO) {
-      // Handle Handling Video
-      const { size } = await fileInfo(asset.originalPath);
+      // Handle Video
+      let videoPath = asset.originalPath;
+      let mimeType = asset.mimeType;
+
+      if (query.isWeb && asset.mimeType == 'video/quicktime') {
+        videoPath = asset.encodedVideoPath == '' ? asset.originalPath : asset.encodedVideoPath;
+        mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
+      }
+
+      const { size } = await fileInfo(videoPath);
       const range = headers.range;
 
       if (range) {
@@ -177,18 +229,22 @@ export class AssetService {
           'Content-Range': `bytes ${start}-${end}/${size}`,
           'Accept-Ranges': 'bytes',
           'Content-Length': end - start + 1,
-          'Content-Type': asset.mimeType,
+          'Content-Type': mimeType,
         });
 
-        const videoStream = createReadStream(asset.originalPath, { start: start, end: end });
+
+        const videoStream = createReadStream(videoPath, { start: start, end: end });
 
         return new StreamableFile(videoStream);
+
+
       } else {
+
         res.set({
-          'Content-Type': asset.mimeType,
+          'Content-Type': mimeType,
         });
 
-        return new StreamableFile(createReadStream(asset.originalPath));
+        return new StreamableFile(createReadStream(videoPath));
       }
     }
   }

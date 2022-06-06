@@ -13,15 +13,14 @@ class AlbumActionOutlinedButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: OutlinedButton.icon(
-        style: ButtonStyle(
-          padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.symmetric(vertical: 0, horizontal: 10)),
-          shape: MaterialStateProperty.resolveWith<OutlinedBorder>(
-            (_) => RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(25),
-            ),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
           ),
-          side: MaterialStateProperty.resolveWith<BorderSide>(
-            (_) => const BorderSide(width: 1, color: Color.fromARGB(255, 158, 158, 158)),
+          side: const BorderSide(
+            width: 1,
+            color: Color.fromARGB(255, 215, 215, 215),
           ),
         ),
         icon: Icon(iconData, size: 15),

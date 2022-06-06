@@ -3,10 +3,14 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConfig } from '../../config/jwt.config';
+import {ImmichAuthModule} from "../../modules/immich-auth/immich-auth.module";
+import {ImmichAuthService} from "../../modules/immich-auth/immich-auth.service";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity]), ImmichAuthModule, JwtModule.register(jwtConfig)],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, ImmichAuthService],
 })
-export class UserModule {}
+export class UserModule { }

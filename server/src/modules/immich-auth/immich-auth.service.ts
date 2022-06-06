@@ -14,15 +14,18 @@ export class ImmichAuthService {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  async createUser(email: string, localUser: boolean, password: string | null) {
+  async createUser(email: string, localUser: boolean, password: string | null, firstName = "", lastName = "", isAdmin = false) {
     const registerUser = await this.userRepository.findOne({ email: email });
 
     if (registerUser) {
-      throw new BadRequestException('User exist');
+      throw new BadRequestException('User already exists');
     }
 
     const newUser = new UserEntity();
     newUser.email = email;
+    newUser.firstName = firstName;
+    newUser.lastName = lastName;
+    newUser.isAdmin = isAdmin;
     if (localUser) {
       if (password === null) throw new InternalServerErrorException();
       newUser.salt = await bcrypt.genSalt();
@@ -32,16 +35,20 @@ export class ImmichAuthService {
       newUser.isLocalUser = false;
     }
 
-    try {
-      return await this.userRepository.save(newUser);
-    } catch (e) {
-      Logger.error(e, 'signUp');
-      throw new InternalServerErrorException('Failed to register new user');
+    return await this.userRepository.save(newUser);
+  }
+
+  async createAdmin(email: string, localUser: boolean, password: string | null, firstName = "", lastName = "") {
+    const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
+
+    if (adminUser) {
+      throw new BadRequestException('Admin user already exists');
     }
+
+    return await this.createUser(email, localUser, password, firstName, lastName, true);
   }
 
   private static async hashPassword(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
   }
-
 }

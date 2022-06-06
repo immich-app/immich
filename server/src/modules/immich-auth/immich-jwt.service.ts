@@ -7,7 +7,6 @@ import { UserEntity } from '../../api-v1/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ImmichAuthService } from './immich-auth.service';
-import * as util from 'util';
 
 @Injectable()
 export class ImmichJwtService {
@@ -42,11 +41,21 @@ export class ImmichJwtService {
 
   private async validateLocalUser(email: string, password: string): Promise<UserEntity> {
     const user = await this.userRepository.findOne(
-      { email: email },
-      { select: ['id', 'email', 'password', 'salt', 'isLocalUser'] },
+        { email: email },
+        {
+          select: [
+            'id',
+            'email',
+            'password',
+            'salt',
+            'firstName',
+            'lastName',
+            'isAdmin',
+            'profileImagePath',
+            'isFirstLoggedIn',
+          ],
+        },
     );
-
-    console.log(util.inspect(user));
 
     if (!user || !user.isLocalUser) throw new BadRequestException('Incorrect email or password');
 
@@ -70,6 +79,11 @@ export class ImmichJwtService {
       accessToken: await this.generateToken(payload),
       userId: validatedUser.id,
       userEmail: validatedUser.email,
+      firstName: validatedUser.firstName,
+      lastName: validatedUser.lastName,
+      isAdmin: validatedUser.isAdmin,
+      profileImagePath: validatedUser.profileImagePath,
+      isFirstLogin: validatedUser.isFirstLoggedIn,
     };
   }
 
@@ -78,7 +92,11 @@ export class ImmichJwtService {
     return hash === hashedPassword;
   }
 
-  async signUp(email: string, isLocalUser: boolean, password: string) {
-    return await this.immichAuthService.createUser(email, isLocalUser, password);
+  async signUp(email: string, password: string) {
+    return await this.immichAuthService.createUser(email, true, password);
+  }
+
+  async signUpAdmin(email: string, password: string, firstName: string, lastName: string) {
+    return await this.immichAuthService.createAdmin(email, true, password, firstName, lastName);
   }
 }

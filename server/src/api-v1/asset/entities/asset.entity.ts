@@ -26,6 +26,12 @@ export class AssetEntity {
   @Column({ nullable: true })
   resizePath: string;
 
+  @Column({ nullable: true })
+  webpPath: string;
+
+  @Column({ nullable: true })
+  encodedVideoPath: string;
+
   @Column()
   createdAt: string;
 

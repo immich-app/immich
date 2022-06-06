@@ -13,4 +13,8 @@ export class ServeFileDto {
   @IsOptional()
   @IsBooleanString()
   isThumb: string;
+
+  @IsOptional()
+  @IsBooleanString()
+  isWeb: string;
 }

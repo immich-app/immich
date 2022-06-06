@@ -19,7 +19,7 @@ import {
 import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { AssetService } from './asset.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { multerOption } from '../../config/multer-option.config';
+import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
@@ -39,7 +39,7 @@ export class AssetController {
     private wsCommunicateionGateway: CommunicationGateway,
     private assetService: AssetService,
     private backgroundTaskService: BackgroundTaskService,
-  ) {}
+  ) { }
 
   @Post('upload')
   @UseInterceptors(
@@ -48,7 +48,7 @@ export class AssetController {
         { name: 'assetData', maxCount: 1 },
         { name: 'thumbnailData', maxCount: 1 },
       ],
-      multerOption,
+      assetUploadOption,
     ),
   )
   async uploadFile(
@@ -123,7 +123,7 @@ export class AssetController {
 
   @Get('/')
   async getAllAssets(@GetAuthUser() authUser: AuthUserDto) {
-    return await this.assetService.getAllAssetsNoPagination(authUser);
+    return await this.assetService.getAllAssets(authUser);
   }
 
   @Get('/:deviceId')

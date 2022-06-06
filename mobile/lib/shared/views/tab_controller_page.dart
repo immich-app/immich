@@ -19,26 +19,32 @@ class TabControllerPage extends ConsumerWidget {
       ],
       builder: (context, child, animation) {
         final tabsRouter = AutoTabsRouter.of(context);
-        return Scaffold(
-          body: FadeTransition(
-            opacity: animation,
-            child: child,
+        return WillPopScope(
+          onWillPop: () async {
+            tabsRouter.setActiveIndex(0);
+            return false;
+          },
+          child: Scaffold(
+            body: FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+            bottomNavigationBar: isMultiSelectEnable
+                ? null
+                : BottomNavigationBar(
+                    selectedLabelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    unselectedLabelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    currentIndex: tabsRouter.activeIndex,
+                    onTap: (index) {
+                      tabsRouter.setActiveIndex(index);
+                    },
+                    items: const [
+                      BottomNavigationBarItem(label: 'Photos', icon: Icon(Icons.photo)),
+                      BottomNavigationBarItem(label: 'Search', icon: Icon(Icons.search)),
+                      BottomNavigationBarItem(label: 'Sharing', icon: Icon(Icons.group_outlined)),
+                    ],
+                  ),
           ),
-          bottomNavigationBar: isMultiSelectEnable
-              ? null
-              : BottomNavigationBar(
-                  selectedLabelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  unselectedLabelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  currentIndex: tabsRouter.activeIndex,
-                  onTap: (index) {
-                    tabsRouter.setActiveIndex(index);
-                  },
-                  items: const [
-                    BottomNavigationBarItem(label: 'Photos', icon: Icon(Icons.photo)),
-                    BottomNavigationBarItem(label: 'Search', icon: Icon(Icons.search)),
-                    BottomNavigationBarItem(label: 'Sharing', icon: Icon(Icons.group_outlined)),
-                  ],
-                ),
         );
       },
     );

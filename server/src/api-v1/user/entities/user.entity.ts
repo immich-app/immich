@@ -6,6 +6,15 @@ export class UserEntity {
   id: string;
 
   @Column()
+  firstName: string;
+
+  @Column()
+  lastName: string;
+
+  @Column()
+  isAdmin: boolean;
+
+  @Column()
   email: string;
 
   @Column({ select: false, nullable: true })
@@ -13,6 +22,12 @@ export class UserEntity {
 
   @Column({ select: false, nullable: true })
   salt: string | null;
+
+  @Column()
+  profileImagePath: string;
+
+  @Column()
+  isFirstLoggedIn: boolean;
 
   @CreateDateColumn()
   createdAt: string;

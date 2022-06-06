@@ -15,23 +15,36 @@ import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
 import { SharingModule } from './api-v1/sharing/sharing.module';
-import {HttpModule} from "@nestjs/axios";
+import { HttpModule } from "@nestjs/axios";
+import { AppController } from './app.controller';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
+
     TypeOrmModule.forRoot(databaseConfig),
+
     UserModule,
+
     AssetModule,
+
     HttpModule,
+
     AuthModule,
+
     ImmichAuthModule,
+
+    AuthModule,
+
     DeviceInfoModule,
+
     BullModule.forRootAsync({
       useFactory: async () => ({
         redis: {
-          host: 'immich_redis',
-          port: 6379,
+          host: process.env.REDIS_HOSTNAME || 'immich_redis',
+          port: parseInt(process.env.REDIS_PORT) || 6379,
         },
       }),
     }),
@@ -45,14 +58,18 @@ import {HttpModule} from "@nestjs/axios";
     CommunicationModule,
 
     SharingModule,
+
+    ScheduleModule.forRoot(),
+
+    ScheduleTasksModule
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     if (process.env.NODE_ENV == 'development') {
-      consumer.apply(AppLoggerMiddleware).forRoutes('*');
+      // consumer.apply(AppLoggerMiddleware).forRoutes('*');
     }
   }
 }
