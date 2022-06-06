@@ -28,12 +28,12 @@ export class Oauth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
         super(async (req, callback) => {
 
             if (process.env.OAUTH2_ENABLE !== 'true') throw new BadRequestException("OAuth2.0/OIDC authentication not enabled!");
-            Logger.debug('Trying OAuth2/OIDC authentication', 'OAUTH2 STRATEGY');
+            Logger.verbose('Trying OAuth2/OIDC authentication', 'OAUTH2 STRATEGY');
 
             const authHeader = req.headers['authorization'];
 
             if (authHeader == undefined || !authHeader.startsWith("Bearer ")) {
-                Logger.debug("No bearer token");
+                Logger.verbose("No bearer token");
                 callback(null, null, "No authorization token");
                 return;
             }
@@ -44,14 +44,14 @@ export class Oauth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
                 accessToken: token,
             }).then((user) => {
                 if (user && !user.isLocalUser) {
-                    Logger.debug(`Authorized user: ${user.email}`);
+                    Logger.verbose(`Authorized user: ${user.email}`);
                     callback(null, user);
                 } else {
-                    Logger.debug("User not found or not local");
+                    Logger.verbose("User not found or not local");
                     callback(null, null, "Cannot validate local user with OAuth2");
                 }
             }).catch((err) => {
-                    Logger.debug(`Cannot validate local user with OAuth2: ${err}`);
+                    Logger.verbose(`Cannot validate local user with OAuth2: ${err}`);
                     callback(null, null, "Cannot validate local user with OAuth2");
                 }
             );

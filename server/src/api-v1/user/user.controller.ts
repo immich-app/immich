@@ -19,8 +19,8 @@ export class UserController {
     return await this.userService.getAllUsers(authUser, isAll);
   }
 
-  @UseGuards(ImmichAuthGuard)
   @UseGuards(AdminRolesGuard)
+  @UseGuards(ImmichAuthGuard)
   @Post()
   async createNewUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
     return await this.userService.createUser(createUserDto);
