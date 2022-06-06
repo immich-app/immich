@@ -8,8 +8,6 @@
   },
   "moduleNameMapper": {
     "@app/database/config/(.*)": "<rootDir>../../../libs/database/src/config/$1",
-    "@app/database/config": "<rootDir>../../../libs/database/src/config",
-    "@app/database/entities/(.*)": "<rootDir>../../../libs/database/src/entities/$1",
-    "@app/database/entities": "<rootDir>../../../libs/database/src/entities"
+    "@app/database/entities/(.*)": "<rootDir>../../../libs/database/src/entities/$1"
   }
 }
