@@ -40,7 +40,7 @@ export class AuthService {
             params.clientId = process.env.OAUTH2_CLIENT_ID;
         }
 
-        if (process.env.LOCAL_USERS_DISABLE) {
+        if (process.env.LOCAL_USERS_DISABLE === 'true') {
             params.localAuth = false;
         }
 
