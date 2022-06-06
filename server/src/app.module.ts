@@ -10,7 +10,6 @@ import { AppLoggerMiddleware } from './middlewares/app-logger.middleware';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { immichAppConfig } from './config/app.config';
 import { BullModule } from '@nestjs/bull';
-import { ImageOptimizeModule } from './modules/image-optimize/image-optimize.module';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
@@ -44,8 +43,6 @@ import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.mod
         },
       }),
     }),
-
-    ImageOptimizeModule,
 
     ServerInfoModule,
 

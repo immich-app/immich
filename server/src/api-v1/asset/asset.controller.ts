@@ -64,7 +64,7 @@ export class AssetController {
       try {
         const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
-        this.thumbnailQueue.add('generate-thumbnail', { savedAsset }, { jobId: savedAsset.id });
+
 
         if (uploadFiles.thumbnailData != null && savedAsset) {
           await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);

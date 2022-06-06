@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
-import { ThumbnailProcessor } from './thumbnail-generation.processor';
+import { ThumbnailProcessor } from './services/thumbnail/thumbnail.processor';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { databaseConfig } from './config/database.config';
 
 @Module({
   imports: [
+    TypeOrmModule.forRoot(databaseConfig),
+
     BullModule.forRootAsync({
       useFactory: async () => ({
         redis: {

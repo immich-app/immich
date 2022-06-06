@@ -8,14 +8,14 @@ async function bootstrap() {
   await app.listen(3001, () => {
     if (process.env.NODE_ENV == 'development') {
       Logger.log(
-        'Running Immich Microservices in DEVELOPMENT environment',
+        'Running Immich Machine Learning in DEVELOPMENT environment',
         'IMMICH MICROSERVICES',
       );
     }
 
     if (process.env.NODE_ENV == 'production') {
       Logger.log(
-        'Running Immich Microservices in PRODUCTION environment',
+        'Running Immich Machine Learning in PRODUCTION environment',
         'IMMICH MICROSERVICES',
       );
     }
