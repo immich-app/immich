@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from './entities/user.entity';
+import { UserEntity } from '@app/database/entities/user.entity';
 import { ImmichJwtModule } from '../../modules/immich-jwt/immich-jwt.module';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { JwtModule } from '@nestjs/jwt';

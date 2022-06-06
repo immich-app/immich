@@ -17,14 +17,15 @@ import { SharingModule } from './api-v1/sharing/sharing.module';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
+import { DatabaseModule } from '@app/database';
 
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
 
-    TypeOrmModule.forRoot(databaseConfig),
-
+    // TypeOrmModule.forRoot(databaseConfig),
+    DatabaseModule,
     UserModule,
 
     AssetModule,

@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
+import { AssetEntity } from '@app/database/entities/asset.entity';
 import sharp from 'sharp';
 
 @Injectable()

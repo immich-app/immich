@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
-import { AssetType } from '../entities/asset.entity';
+import { AssetType } from '@app/database/entities/asset.entity';
 
 export class CreateAssetDto {
   @IsNotEmpty()

@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
-import { DeviceType } from '../entities/device-info.entity';
+import { DeviceType } from '@app/database/entities/device-info.entity';
 
 export class CreateDeviceInfoDto {
   @IsNotEmpty()

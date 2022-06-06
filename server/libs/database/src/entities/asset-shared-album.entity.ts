@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { AssetEntity } from '../../asset/entities/asset.entity';
+import { AssetEntity } from './asset.entity';
 import { SharedAlbumEntity } from './shared-album.entity';
 
 @Entity('asset_shared_album')

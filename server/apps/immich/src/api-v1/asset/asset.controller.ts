@@ -23,7 +23,7 @@ import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { AssetEntity } from './entities/asset.entity';
+import { AssetEntity } from '@app/database/entities/asset.entity';
 import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { Response as Res } from 'express';
 import { GetNewAssetQueryDto } from './dto/get-new-asset-query.dto';

@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserEntity } from '../api-v1/user/entities/user.entity';
+import { UserEntity } from '@app/database/entities/user.entity';
 import { ImmichJwtService } from '../modules/immich-jwt/immich-jwt.service';
 
 @Injectable()

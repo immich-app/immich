@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { AssetEntity, AssetType } from './entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import _ from 'lodash';
 import { createReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';

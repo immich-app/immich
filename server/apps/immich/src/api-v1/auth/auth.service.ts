@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserEntity } from '../user/entities/user.entity';
+import { UserEntity } from '@app/database/entities/user.entity';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { JwtPayloadDto } from './dto/jwt-payload.dto';

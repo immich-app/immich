@@ -2,13 +2,13 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import { InjectRepository } from '@nestjs/typeorm';
 import { getConnection, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity } from '../asset/entities/asset.entity';
-import { UserEntity } from '../user/entities/user.entity';
+import { AssetEntity } from '@app/database/entities/asset.entity';
+import { UserEntity } from '@app/database/entities/user.entity';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { CreateSharedAlbumDto } from './dto/create-shared-album.dto';
-import { AssetSharedAlbumEntity } from './entities/asset-shared-album.entity';
-import { SharedAlbumEntity } from './entities/shared-album.entity';
-import { UserSharedAlbumEntity } from './entities/user-shared-album.entity';
+import { AssetSharedAlbumEntity } from '@app/database/entities/asset-shared-album.entity';
+import { SharedAlbumEntity } from '@app/database/entities/shared-album.entity';
+import { UserSharedAlbumEntity } from '@app/database/entities/user-shared-album.entity';
 import _ from 'lodash';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
@@ -31,7 +31,7 @@ export class SharingService {
 
     @InjectRepository(UserSharedAlbumEntity)
     private userSharedAlbumRepository: Repository<UserSharedAlbumEntity>,
-  ) {}
+  ) { }
 
   async create(authUser: AuthUserDto, createSharedAlbumDto: CreateSharedAlbumDto) {
     return await getConnection().transaction(async (transactionalEntityManager) => {
@@ -146,7 +146,7 @@ export class SharingService {
     return await this.userSharedAlbumRepository.delete({ albumId: albumId, sharedUserId: authUser.id });
   }
 
-  async removeUsersFromAlbum() {}
+  async removeUsersFromAlbum() { }
 
   async removeAssetsFromAlbum(authUser: AuthUserDto, removeAssetsDto: RemoveAssetsDto) {
     let deleteAssetCount = 0;

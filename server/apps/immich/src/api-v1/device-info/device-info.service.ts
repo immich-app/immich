@@ -4,14 +4,14 @@ import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateDeviceInfoDto } from './dto/create-device-info.dto';
 import { UpdateDeviceInfoDto } from './dto/update-device-info.dto';
-import { DeviceInfoEntity } from './entities/device-info.entity';
+import { DeviceInfoEntity } from '@app/database/entities/device-info.entity';
 
 @Injectable()
 export class DeviceInfoService {
   constructor(
     @InjectRepository(DeviceInfoEntity)
     private deviceRepository: Repository<DeviceInfoEntity>,
-  ) {}
+  ) { }
 
   async create(createDeviceInfoDto: CreateDeviceInfoDto, authUser: AuthUserDto) {
     const res = await this.deviceRepository.findOne({

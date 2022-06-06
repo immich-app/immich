@@ -2,7 +2,7 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetModule } from '../../api-v1/asset/asset.module';
-import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
+import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ImageConversionService } from './image-conversion.service';
 import { VideoConversionProcessor } from './video-conversion.processor';
 import { VideoConversionService } from './video-conversion.service';

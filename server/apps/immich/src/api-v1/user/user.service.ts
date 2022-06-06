@@ -4,7 +4,7 @@ import { Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserEntity } from './entities/user.entity';
+import { UserEntity } from '@app/database/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import sharp from 'sharp';
 import { createReadStream, unlink, unlinkSync } from 'fs';

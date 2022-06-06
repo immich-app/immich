@@ -13,7 +13,14 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "baseUrl": "./",
-    "paths": {}
+    "paths": {
+      "@app/database": [
+        "libs/database/src"
+      ],
+      "@app/database/*": [
+        "libs/database/src/*"
+      ]
+    }
   },
   "exclude": [
     "dist",

@@ -2,15 +2,15 @@ import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job, Queue } from 'bull';
 import { Repository } from 'typeorm';
-import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
+import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ConfigService } from '@nestjs/config';
 import exifr from 'exifr';
 import { readFile } from 'fs/promises';
 import fs from 'fs';
 import { Logger } from '@nestjs/common';
-import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
+import { ExifEntity } from '@app/database/entities/exif.entity';
 import axios from 'axios';
-import { SmartInfoEntity } from '../../api-v1/asset/entities/smart-info.entity';
+import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
 import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
 

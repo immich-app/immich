@@ -25,6 +25,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/microservices/tsconfig.app.json"
       }
+    },
+    "database": {
+      "type": "library",
+      "root": "libs/database",
+      "entryFile": "index",
+      "sourceRoot": "libs/database/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/database/tsconfig.lib.json"
+      }
     }
   }
 }

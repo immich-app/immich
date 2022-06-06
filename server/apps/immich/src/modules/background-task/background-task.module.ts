@@ -1,9 +1,9 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
-import { ExifEntity } from '../../api-v1/asset/entities/exif.entity';
-import { SmartInfoEntity } from '../../api-v1/asset/entities/smart-info.entity';
+import { AssetEntity } from '@app/database/entities/asset.entity';
+import { ExifEntity } from '@app/database/entities/exif.entity';
+import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import { BackgroundTaskProcessor } from './background-task.processor';
 import { BackgroundTaskService } from './background-task.service';
 

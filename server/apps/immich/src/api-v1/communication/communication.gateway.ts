@@ -4,7 +4,7 @@ import { Socket, Server } from 'socket.io';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from '../user/entities/user.entity';
+import { UserEntity } from '@app/database/entities/user.entity';
 import { Repository } from 'typeorm';
 
 @WebSocketGateway()
@@ -14,7 +14,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
 
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-  ) {}
+  ) { }
 
   @WebSocketServer() server: Server;
 

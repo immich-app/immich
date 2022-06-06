@@ -20,6 +20,7 @@ import { MicroservicesService } from './microservices.service';
         removeOnFail: false,
       },
     }),
+
   ],
   controllers: [],
   providers: [MicroservicesService],

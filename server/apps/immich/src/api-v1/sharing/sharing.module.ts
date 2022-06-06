@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { SharingService } from './sharing.service';
 import { SharingController } from './sharing.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AssetEntity } from '../asset/entities/asset.entity';
-import { UserEntity } from '../user/entities/user.entity';
-import { SharedAlbumEntity } from './entities/shared-album.entity';
-import { AssetSharedAlbumEntity } from './entities/asset-shared-album.entity';
-import { UserSharedAlbumEntity } from './entities/user-shared-album.entity';
+import { AssetEntity } from '@app/database/entities/asset.entity';
+import { UserEntity } from '@app/database/entities/user.entity';
+import { AssetSharedAlbumEntity } from '@app/database/entities/asset-shared-album.entity';
+import { SharedAlbumEntity } from '@app/database/entities/shared-album.entity';
+import { UserSharedAlbumEntity } from '@app/database/entities/user-shared-album.entity';
+
 
 @Module({
   imports: [
@@ -21,4 +22,4 @@ import { UserSharedAlbumEntity } from './entities/user-shared-album.entity';
   controllers: [SharingController],
   providers: [SharingService],
 })
-export class SharingModule {}
+export class SharingModule { }

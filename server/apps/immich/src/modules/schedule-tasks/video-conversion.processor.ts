@@ -2,7 +2,7 @@ import { Process, Processor } from '@nestjs/bull';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
 import { Repository } from 'typeorm';
-import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
+import { AssetEntity } from '@app/database/entities/asset.entity';
 import { existsSync, mkdirSync } from 'fs';
 import { APP_UPLOAD_LOCATION } from '../../constants/upload_location.constant';
 import ffmpeg from 'fluent-ffmpeg';

@@ -2,7 +2,7 @@ import { InjectQueue } from '@nestjs/bull/dist/decorators';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
 import { randomUUID } from 'node:crypto';
-import { AssetEntity } from '../../api-v1/asset/entities/asset.entity';
+import { AssetEntity } from '@app/database/entities/asset.entity';
 
 @Injectable()
 export class BackgroundTaskService {
