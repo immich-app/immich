@@ -1,13 +1,9 @@
-import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
-import { ThumbnailProcessor } from './services/thumbnail/thumbnail.processor';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { databaseConfig } from './config/database.config';
+import { Module } from '@nestjs/common';
+import { MicroservicesService } from './microservices.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(databaseConfig),
-
     BullModule.forRootAsync({
       useFactory: async () => ({
         redis: {
@@ -26,6 +22,6 @@ import { databaseConfig } from './config/database.config';
     }),
   ],
   controllers: [],
-  providers: [ThumbnailProcessor],
+  providers: [MicroservicesService],
 })
-export class AppModule { }
+export class MicroservicesModule { }

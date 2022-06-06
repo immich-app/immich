@@ -6,7 +6,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    entrypoint: ["/bin/sh", "./entrypoint.sh"]
+    entrypoint: ["/bin/sh", "./start-server.sh"]
     expose:
       - "3000"
     volumes:
@@ -25,9 +25,9 @@ services:
   immich-microservices:
     image: immich-microservices-staging:latest
     build:
-      context: ../microservices
+      context: ../server
       dockerfile: Dockerfile
-    entrypoint: ["/bin/sh", "./entrypoint.sh"]
+    entrypoint: ["/bin/sh", "./start-microservices.sh"]
     expose:
       - "3001"
     volumes:

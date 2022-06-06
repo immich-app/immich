@@ -1,9 +1,9 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { MicroservicesModule } from './microservices.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(MicroservicesModule);
 
   await app.listen(3000, () => {
     if (process.env.NODE_ENV == 'development') {
