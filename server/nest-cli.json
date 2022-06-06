@@ -4,7 +4,7 @@
   "monorepo": true,
   "root": "apps/immich",
   "compilerOptions": {
-    "webpack": true,
+    "webpack": false,
     "tsConfigPath": "apps/immich/tsconfig.app.json"
   },
   "projects": {
