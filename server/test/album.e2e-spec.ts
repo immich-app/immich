@@ -8,8 +8,8 @@ import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
-import { AuthService } from '../src/api-v1/auth/auth.service';
-import { AuthModule } from '../src/api-v1/auth/auth.module';
+import { UserService } from '../src/api-v1/user/user.service';
+import { UserModule } from '../src/api-v1/user/user.module';
 
 function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   return request(app.getHttpServer()).post('/album').send(data);
@@ -45,17 +45,17 @@ describe('Album', () => {
 
   describe('with auth', () => {
     let authUser: AuthUserDto;
-    let authService: AuthService;
+    let userService: UserService;
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [AlbumModule, AuthModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [AlbumModule, UserModule, TypeOrmModule.forRoot(databaseConfig)],
       });
       authUser = getAuthUser(); // set default auth user
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 
       app = moduleFixture.createNestApplication();
-      authService = app.get(AuthService);
+      userService = app.get(UserService);
       await app.init();
     });
 
@@ -90,8 +90,18 @@ describe('Album', () => {
       beforeAll(async () => {
         // setup users
         const result = await Promise.all([
-          authService.signUp({ email: 'one@test.com', password: '1234' }),
-          authService.signUp({ email: 'two@test.com', password: '1234' }),
+          userService.createUser({
+            email: 'one@test.com',
+            password: '1234',
+            firstName: 'one',
+            lastName: 'test',
+          }),
+          userService.createUser({
+            email: 'two@test.com',
+            password: '1234',
+            firstName: 'two',
+            lastName: 'test',
+          }),
         ]);
         userOne = result[0];
         userTwo = result[1];
