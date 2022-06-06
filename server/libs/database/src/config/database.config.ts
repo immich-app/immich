@@ -13,3 +13,5 @@ export const databaseConfig: TypeOrmModuleOptions = {
   migrationsRun: true,
   autoLoadEntities: true,
 };
+
+export default databaseConfig;
