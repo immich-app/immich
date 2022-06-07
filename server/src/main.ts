@@ -7,7 +7,7 @@ import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 async function bootstrap() {
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger: ['debug', 'log', 'warn', 'error'],
+    logger: process.env.NODE_ENV === 'development' ? ['verbose'] : ['log', 'warn', 'error'],
   });
 
   app.enableCors();
@@ -17,11 +17,11 @@ async function bootstrap() {
   app.useWebSocketAdapter(new RedisIoAdapter(app));
 
   await app.listen(process.env.PORT || 3000, () => {
-    if (process.env.NODE_ENV == 'development') {
+    if (process.env.NODE_ENV === 'development') {
       Logger.log('Running Immich Server in DEVELOPMENT environment', 'IMMICH SERVER');
     }
 
-    if (process.env.NODE_ENV == 'production') {
+    if (process.env.NODE_ENV === 'production') {
       Logger.log('Running Immich Server in PRODUCTION environment', 'IMMICH SERVER');
     }
   });
