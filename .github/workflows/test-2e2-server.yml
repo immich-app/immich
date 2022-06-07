@@ -1,0 +1,21 @@
+name: [Test] Server - E2E
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-server-2e2:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 
+
+    - name: Start containers
+      run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich_server_test --remove-orphans
