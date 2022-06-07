@@ -33,7 +33,7 @@ jobs:
         with:
           context: ./server
           file: ./server/Dockerfile
-          platforms: linux/amd64
+          platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: ${{ github.event_name == 'pull_request' }}
           tags: |
             altran1502/immich-server:staging
@@ -61,7 +61,7 @@ jobs:
         with:
           context: ./machine-learning
           file: ./machine-learning/Dockerfile
-          platforms: linux/amd64
+          platforms: linux/arm/v7,linux/amd64
           push: ${{ github.event_name == 'pull_request' }}
           tags: |
             altran1502/immich-machine-learning:staging
@@ -88,7 +88,7 @@ jobs:
         with:
           context: ./web
           file: ./web/Dockerfile
-          platforms: linux/amd64
+          platforms: linux/arm/v7,linux/amd64,linux/arm64
           target: prod
           push: ${{ github.event_name == 'pull_request' }}
           tags: |

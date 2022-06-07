@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   # This image include both the server and microservices - the two containers can be slitted into separated
@@ -34,7 +32,7 @@ jobs:
           context: ./server
           file: ./server/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: |
             altran1502/immich-server:latest
 
@@ -62,7 +60,7 @@ jobs:
           context: ./machine-learning
           file: ./machine-learning/Dockerfile
           platforms: linux/arm/v7,linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: |
             altran1502/immich-machine-learning:latest
 
@@ -90,6 +88,6 @@ jobs:
           file: ./web/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           target: prod
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: |
             altran1502/immich-web:latest
