@@ -49,4 +49,16 @@ export class ImmichAuthService {
   private static async hashPassword(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
   }
+
+  public static getEnabledStrategies() {
+  if (process.env.OAUTH2_ENABLE === 'true') {
+    if (process.env.LOCAL_USERS_DISABLE === 'true') {
+      return ['oauth2'];
+    } else {
+      return ['jwt', 'oauth2'];
+    }
+  } else {
+    return ['jwt'];
+  }
+}
 }
