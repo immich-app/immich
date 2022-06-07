@@ -17,5 +17,5 @@ jobs:
         with:
           fetch-depth: 0 
 
-    - name: Start containers
-      run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich_server_test --remove-orphans
+      - name: Start containers
+        run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich_server_test --remove-orphans
