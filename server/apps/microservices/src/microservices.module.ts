@@ -9,6 +9,7 @@ import { UserEntity } from '@app/database/entities/user.entity';
 import { MicroservicesService } from './microservices.service';
 import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
+import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
 @Module({
   imports: [
@@ -38,8 +39,16 @@ import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
         removeOnFail: false,
       },
     }),
+    BullModule.registerQueue({
+      name: 'metadata-extraction-queue',
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
   ],
   controllers: [],
-  providers: [MicroservicesService, AssetUploadedProcessor, ThumbnailGeneratorProcessor],
+  providers: [MicroservicesService, AssetUploadedProcessor, ThumbnailGeneratorProcessor, MetadataExtractionProcessor],
 })
 export class MicroservicesModule {}

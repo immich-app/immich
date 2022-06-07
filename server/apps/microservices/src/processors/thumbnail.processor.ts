@@ -11,6 +11,7 @@ export class ThumbnailGeneratorProcessor {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
+
   @Process('generate-jpeg-thumbnail')
   async generateJPEGThumbnail(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
