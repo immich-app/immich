@@ -29,22 +29,27 @@ export class AssetUploadedProcessor {
    */
   @Process('asset-uploaded')
   async processUploadedVideo(job: Job) {
-    const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
+    const {
+      asset,
+      fileName,
+      fileSize,
+      hasThumbnail,
+    }: { asset: AssetEntity; fileName: string; fileSize: number; hasThumbnail: boolean } = job.data;
 
-    const recentAsset = await this.assetRepository.findOne({ id: asset.id });
-
-    // Generate Webp path
-    if (!recentAsset.webpPath && recentAsset.resizePath) {
-      this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset: recentAsset }, { jobId: asset.id });
+    if (hasThumbnail) {
+      // The jobs below depends on the existence of jpeg thumbnail
+      await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add('tag-image', { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
+    } else {
+      // Generate Thumbnail -> Then generate webp, tag image and detect object
     }
-
-    // Generate Thumbnail
 
     // Extract Metadata/Exif
     await this.metadataExtractionQueue.add(
       'exif-extraction',
       {
-        savedAsset: recentAsset,
+        asset,
         fileName,
         fileSize,
       },

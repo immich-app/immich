@@ -6,6 +6,7 @@ import { AssetEntity } from '@app/database/entities/asset.entity';
 import sharp from 'sharp';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ImageConversionService {
@@ -35,7 +36,7 @@ export class ImageConversionService {
     }
 
     for (const asset of assets) {
-      await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset: asset }, { jobId: asset.id });
+      await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset: asset }, { jobId: randomUUID() });
     }
   }
 }

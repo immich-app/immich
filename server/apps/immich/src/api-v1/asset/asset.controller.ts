@@ -66,27 +66,23 @@ export class AssetController {
         const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
         if (uploadFiles.thumbnailData != null && savedAsset) {
-          await this.assetService.updateThumbnailInfo(savedAsset.id, uploadFiles.thumbnailData[0].path);
-          await this.backgroundTaskService.tagImage(uploadFiles.thumbnailData[0].path, savedAsset);
-          await this.backgroundTaskService.detectObject(uploadFiles.thumbnailData[0].path, savedAsset);
+          const assetWithThumbnail = await this.assetService.updateThumbnailInfo(
+            savedAsset,
+            uploadFiles.thumbnailData[0].path,
+          );
 
-          // TODO - generate wepb
+          await this.assetUploadedQueue.add(
+            'asset-uploaded',
+            { asset: assetWithThumbnail, fileName: file.originalname, fileSize: file.size, hasThumbnail: true },
+            { jobId: savedAsset.id },
+          );
         } else {
-          // generating thumbnail
-          // Then
-          // Tag image - queue will be put in from the microservice side.
-          // Object Detection - queue will be put in from the microservice side.
+          await this.assetUploadedQueue.add(
+            'asset-uploaded',
+            { asset: savedAsset, fileName: file.originalname, fileSize: file.size, hasThumbnail: false },
+            { jobId: savedAsset.id },
+          );
         }
-
-        // Since the Exif is generated based on raw file - this task can be done regardless of the status of the
-        // thumbnail images.
-
-        // await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
-        await this.assetUploadedQueue.add(
-          'asset-uploaded',
-          { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
-          { jobId: savedAsset.id },
-        );
 
         this.wsCommunicateionGateway.server.to(savedAsset.userId).emit('on_upload_success', JSON.stringify(savedAsset));
       } catch (e) {

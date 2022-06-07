@@ -3,12 +3,14 @@ import { Job } from 'bull';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { Repository } from 'typeorm/repository/Repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ExifEntity } from '../../../../libs/database/src/entities/exif.entity';
+import { ExifEntity } from '@app/database/entities/exif.entity';
 import exifr from 'exifr';
 import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
 import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
 import { readFile } from 'fs/promises';
 import { Logger } from '@nestjs/common';
+import axios from 'axios';
+import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 
 @Processor('metadata-extraction-queue')
 export class MetadataExtractionProcessor {
@@ -20,6 +22,9 @@ export class MetadataExtractionProcessor {
 
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
+
+    @InjectRepository(SmartInfoEntity)
+    private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {
     if (process.env.ENABLE_MAPBOX) {
       this.geocodingClient = mapboxGeocoding({
@@ -31,14 +36,14 @@ export class MetadataExtractionProcessor {
   @Process('exif-extraction')
   async extractExifInfo(job: Job) {
     try {
-      const { savedAsset, fileName, fileSize }: { savedAsset: AssetEntity; fileName: string; fileSize: number } =
-        job.data;
-      const fileBuffer = await readFile(savedAsset.originalPath);
+      const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
+
+      const fileBuffer = await readFile(asset.originalPath);
 
       const exifData = await exifr.parse(fileBuffer);
 
       const newExif = new ExifEntity();
-      newExif.assetId = savedAsset.id;
+      newExif.assetId = asset.id;
       newExif.make = exifData['Make'] || null;
       newExif.model = exifData['Model'] || null;
       newExif.imageName = fileName || null;
@@ -79,6 +84,48 @@ export class MetadataExtractionProcessor {
       await this.exifRepository.save(newExif);
     } catch (e) {
       Logger.error(`Error extracting EXIF ${e.toString()}`, 'extractExif');
+    }
+  }
+
+  @Process('tag-image')
+  async tagImage(job: Job) {
+    const { asset }: { asset: AssetEntity } = job.data;
+
+    const res = await axios.post('http://immich-machine-learning:3001/image-classifier/tag-image', {
+      thumbnailPath: asset.resizePath,
+    });
+
+    if (res.status == 201 && res.data.length > 0) {
+      const smartInfo = new SmartInfoEntity();
+      smartInfo.assetId = asset.id;
+      smartInfo.tags = [...res.data];
+
+      await this.smartInfoRepository.upsert(smartInfo, {
+        conflictPaths: ['assetId'],
+      });
+    }
+  }
+
+  @Process('detect-object')
+  async detectObject(job: Job) {
+    try {
+      const { asset }: { asset: AssetEntity } = job.data;
+
+      const res = await axios.post('http://immich-machine-learning:3001/object-detection/detect-object', {
+        thumbnailPath: asset.resizePath,
+      });
+
+      if (res.status == 201 && res.data.length > 0) {
+        const smartInfo = new SmartInfoEntity();
+        smartInfo.assetId = asset.id;
+        smartInfo.objects = [...res.data];
+
+        await this.smartInfoRepository.upsert(smartInfo, {
+          conflictPaths: ['assetId'],
+        });
+      }
+    } catch (error) {
+      Logger.error(`Failed to trigger object detection pipe line ${error.toString()}`);
     }
   }
 }

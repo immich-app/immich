@@ -22,10 +22,16 @@ export class AssetService {
     private assetRepository: Repository<AssetEntity>,
   ) {}
 
-  public async updateThumbnailInfo(assetId: string, path: string) {
-    return await this.assetRepository.update(assetId, {
-      resizePath: path,
-    });
+  public async updateThumbnailInfo(asset: AssetEntity, thumbnailPath: string): Promise<AssetEntity> {
+    const updatedAsset = await this.assetRepository
+      .createQueryBuilder('assets')
+      .update<AssetEntity>(AssetEntity, { ...asset, resizePath: thumbnailPath })
+      .where('assets.id = :id', { id: asset.id })
+      .returning('*')
+      .updateEntity(true)
+      .execute();
+
+    return updatedAsset.raw[0];
   }
 
   public async createUserAsset(authUser: AuthUserDto, assetInfo: CreateAssetDto, path: string, mimeType: string) {
@@ -126,7 +132,7 @@ export class AssetService {
   public async getAssetThumbnail(assetId: string) {
     const asset = await this.assetRepository.findOne({ id: assetId });
 
-    if (asset.webpPath != '') {
+    if (asset.webpPath || asset.webpPath != '') {
       return new StreamableFile(createReadStream(asset.webpPath));
     } else {
       return new StreamableFile(createReadStream(asset.resizePath));
@@ -162,7 +168,7 @@ export class AssetService {
         });
         file = createReadStream(asset.originalPath);
       } else {
-        if (asset.webpPath != '') {
+        if (asset.webpPath || asset.webpPath != '') {
           res.set({
             'Content-Type': 'image/webp',
           });
