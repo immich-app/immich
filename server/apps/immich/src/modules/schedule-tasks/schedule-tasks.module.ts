@@ -24,6 +24,15 @@ import { VideoConversionService } from './video-conversion.service';
         removeOnFail: false,
       },
     }),
+
+    BullModule.registerQueue({
+      name: 'thumbnail-generator-queue',
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
   ],
   providers: [ImageConversionService, VideoConversionService, VideoConversionProcessor],
 })
