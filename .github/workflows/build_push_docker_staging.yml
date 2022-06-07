@@ -1,4 +1,4 @@
-name: Build and Push Docker Image - Latest
+name: Build and Push Docker Image - Staging
 
 on:
   workflow_dispatch:
