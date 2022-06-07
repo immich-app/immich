@@ -19,7 +19,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { DatabaseModule } from '@app/database';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),

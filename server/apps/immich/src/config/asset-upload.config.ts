@@ -56,5 +56,3 @@ export const assetUploadOption: MulterOptions = {
     },
   }),
 };
-
-

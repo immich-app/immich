@@ -13,37 +13,33 @@ import { randomUUID } from 'crypto';
 
 @Injectable()
 export class VideoConversionService {
-
-
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
     @InjectQueue('video-conversion')
-    private videoEncodingQueue: Queue
-  ) { }
+    private videoEncodingQueue: Queue,
+  ) {}
 
-
-  @Cron(CronExpression.EVERY_MINUTE
-    , {
-      name: 'video-encoding'
-    })
+  @Cron(CronExpression.EVERY_MINUTE, {
+    name: 'video-encoding',
+  })
   async mp4Conversion() {
     const assets = await this.assetRepository.find({
       where: {
         type: 'VIDEO',
         mimeType: 'video/quicktime',
-        encodedVideoPath: ''
+        encodedVideoPath: '',
       },
       order: {
-        createdAt: 'DESC'
+        createdAt: 'DESC',
       },
-      take: 1
+      take: 1,
     });
 
     if (assets.length > 0) {
       const asset = assets[0];
-      await this.videoEncodingQueue.add('to-mp4', { asset }, { jobId: asset.id },)
+      await this.videoEncodingQueue.add('to-mp4', { asset }, { jobId: asset.id });
     }
   }
 }

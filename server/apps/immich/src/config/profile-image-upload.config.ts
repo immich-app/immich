@@ -24,17 +24,13 @@ export const profileImageUploadOption: MulterOptions = {
         mkdirSync(profileImageLocation, { recursive: true });
       }
 
-
       cb(null, profileImageLocation);
     },
 
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
-
       const userId = req.user['id'];
 
       cb(null, `${userId}${extname(file.originalname)}`);
     },
   }),
 };
-
-

@@ -42,4 +42,4 @@ import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
   controllers: [],
   providers: [MicroservicesService, AssetUploadedProcessor, ThumbnailGeneratorProcessor],
 })
-export class MicroservicesModule { }
+export class MicroservicesModule {}

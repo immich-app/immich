@@ -1,4 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe, Put, Query, UseInterceptors, UploadedFile, Response } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ValidationPipe,
+  Put,
+  Query,
+  UseInterceptors,
+  UploadedFile,
+  Response,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
@@ -11,7 +26,7 @@ import { Response as Res } from 'express';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -28,14 +43,13 @@ export class UserController {
 
   @Get('/count')
   async getUserCount(@Query('isAdmin') isAdmin: boolean) {
-
     return await this.userService.getUserCount(isAdmin);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put()
   async updateUser(@Body(ValidationPipe) updateUserDto: UpdateUserDto) {
-    return await this.userService.updateUser(updateUserDto)
+    return await this.userService.updateUser(updateUserDto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -46,9 +60,7 @@ export class UserController {
   }
 
   @Get('/profile-image/:userId')
-  async getProfileImage(@Param('userId') userId: string,
-    @Response({ passthrough: true }) res: Res,
-  ) {
+  async getProfileImage(@Param('userId') userId: string, @Response({ passthrough: true }) res: Res) {
     return await this.userService.getUserProfileImage(userId, res);
   }
 }

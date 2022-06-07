@@ -10,11 +10,10 @@ import { Logger } from '@nestjs/common';
 
 @Processor('video-conversion')
 export class VideoConversionProcessor {
-
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-  ) { }
+  ) {}
 
   @Process('to-mp4')
   async convertToMp4(job: Job) {
@@ -28,29 +27,24 @@ export class VideoConversionProcessor {
     }
 
     const latestAssetInfo = await this.assetRepository.findOne({ id: asset.id });
-    const savedEncodedPath = encodedVideoPath + "/" + latestAssetInfo.id + '.mp4'
+    const savedEncodedPath = encodedVideoPath + '/' + latestAssetInfo.id + '.mp4';
 
     if (latestAssetInfo.encodedVideoPath == '') {
       ffmpeg(latestAssetInfo.originalPath)
-        .outputOptions([
-          '-crf 23',
-          '-preset ultrafast',
-          '-vcodec libx264',
-          '-acodec mp3',
-          '-vf scale=1280:-2'
-        ])
+        .outputOptions(['-crf 23', '-preset ultrafast', '-vcodec libx264', '-acodec mp3', '-vf scale=1280:-2'])
         .output(savedEncodedPath)
-        .on('start', () => Logger.log("Start Converting", 'VideoConversionMOV2MP4'))
+        .on('start', () => Logger.log('Start Converting', 'VideoConversionMOV2MP4'))
         .on('error', (a, b, c) => {
-          Logger.error('Cannot Convert Video', 'VideoConversionMOV2MP4')
-          console.log(a, b, c)
+          Logger.error('Cannot Convert Video', 'VideoConversionMOV2MP4');
+          console.log(a, b, c);
         })
         .on('end', async () => {
-          Logger.log(`Converting Success ${latestAssetInfo.id}`, 'VideoConversionMOV2MP4')
+          Logger.log(`Converting Success ${latestAssetInfo.id}`, 'VideoConversionMOV2MP4');
           await this.assetRepository.update({ id: latestAssetInfo.id }, { encodedVideoPath: savedEncodedPath });
-        }).run();
+        })
+        .run();
     }
 
-    return {}
+    return {};
   }
 }

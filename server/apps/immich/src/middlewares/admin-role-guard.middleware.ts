@@ -8,16 +8,18 @@ import { ImmichJwtService } from '../modules/immich-jwt/immich-jwt.service';
 
 @Injectable()
 export class AdminRolesGuard implements CanActivate {
-  constructor(private reflector: Reflector, private jwtService: ImmichJwtService,
+  constructor(
+    private reflector: Reflector,
+    private jwtService: ImmichJwtService,
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
     if (request.headers['authorization']) {
-      const bearerToken = request.headers['authorization'].split(" ")[1]
+      const bearerToken = request.headers['authorization'].split(' ')[1];
       const { userId } = await this.jwtService.validateToken(bearerToken);
 
       const user = await this.userRepository.findOne(userId);

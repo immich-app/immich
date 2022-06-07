@@ -11,4 +11,4 @@ import { UserEntity } from '@app/database/entities/user.entity';
   providers: [ImmichJwtService, JwtStrategy],
   exports: [ImmichJwtService],
 })
-export class ImmichJwtModule { }
+export class ImmichJwtModule {}

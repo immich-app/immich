@@ -16,7 +16,7 @@ import { VideoConversionService } from './video-conversion.service';
       name: 'video-conversion',
       limiter: {
         max: 1,
-        duration: 60000
+        duration: 60000,
       },
       defaultJobOptions: {
         attempts: 3,
@@ -25,6 +25,6 @@ import { VideoConversionService } from './video-conversion.service';
       },
     }),
   ],
-  providers: [ImageConversionService, VideoConversionService, VideoConversionProcessor,],
+  providers: [ImageConversionService, VideoConversionService, VideoConversionProcessor],
 })
-export class ScheduleTasksModule { }
+export class ScheduleTasksModule {}

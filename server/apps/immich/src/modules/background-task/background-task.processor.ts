@@ -148,8 +148,7 @@ export class BackgroundTaskProcessor {
         });
       }
     } catch (error) {
-      Logger.error(`Failed to trigger object detection pipe line ${error.toString()}`)
+      Logger.error(`Failed to trigger object detection pipe line ${error.toString()}`);
     }
-
   }
 }

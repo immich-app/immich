@@ -13,4 +13,4 @@ import { UserEntity } from '@app/database/entities/user.entity';
   providers: [CommunicationGateway, CommunicationService, ImmichJwtService],
   exports: [CommunicationGateway],
 })
-export class CommunicationModule { }
+export class CommunicationModule {}

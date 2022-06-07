@@ -1,7 +1,6 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class UpdateUserTableWithAdminAndName1652633525943 implements MigrationInterface {
-
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       alter table users
@@ -18,9 +17,7 @@ export class UpdateUserTableWithAdminAndName1652633525943 implements MigrationIn
       
       alter table users
           add column if not exists "isFirstLoggedIn" bool default true;
-      `)
-
-
+      `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -36,5 +33,4 @@ export class UpdateUserTableWithAdminAndName1652633525943 implements MigrationIn
         
         `);
   }
-
 }

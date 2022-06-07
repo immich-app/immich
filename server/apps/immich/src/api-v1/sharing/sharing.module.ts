@@ -8,7 +8,6 @@ import { AssetSharedAlbumEntity } from '@app/database/entities/asset-shared-albu
 import { SharedAlbumEntity } from '@app/database/entities/shared-album.entity';
 import { UserSharedAlbumEntity } from '@app/database/entities/user-shared-album.entity';
 
-
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -22,4 +21,4 @@ import { UserSharedAlbumEntity } from '@app/database/entities/user-shared-album.
   controllers: [SharingController],
   providers: [SharingService],
 })
-export class SharingModule { }
+export class SharingModule {}

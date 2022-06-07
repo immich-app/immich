@@ -9,4 +9,4 @@ import { DeviceInfoEntity } from '@app/database/entities/device-info.entity';
   controllers: [DeviceInfoController],
   providers: [DeviceInfoService],
 })
-export class DeviceInfoModule { }
+export class DeviceInfoModule {}

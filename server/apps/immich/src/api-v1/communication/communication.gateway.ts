@@ -14,7 +14,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
 
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-  ) { }
+  ) {}
 
   @WebSocketServer() server: Server;
 

@@ -4,6 +4,6 @@ import { ServerInfoController } from './server-info.controller';
 
 @Module({
   controllers: [ServerInfoController],
-  providers: [ServerInfoService]
+  providers: [ServerInfoService],
 })
 export class ServerInfoModule {}

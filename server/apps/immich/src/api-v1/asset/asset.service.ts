@@ -66,13 +66,13 @@ export class AssetService {
     try {
       return await this.assetRepository.find({
         where: {
-          userId: authUser.id
+          userId: authUser.id,
         },
         relations: ['exifInfo'],
         order: {
-          createdAt: 'DESC'
-        }
-      })
+          createdAt: 'DESC',
+        },
+      });
     } catch (e) {
       Logger.error(e, 'getAllAssets');
     }
@@ -141,7 +141,6 @@ export class AssetService {
       throw new BadRequestException('Asset does not exist');
     }
 
-
     // Handle Sending Images
     if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
       /**
@@ -153,7 +152,6 @@ export class AssetService {
         });
         return new StreamableFile(createReadStream(asset.resizePath));
       }
-
 
       /**
        * Serve thumbnail image for both web and mobile app
@@ -183,7 +181,6 @@ export class AssetService {
       });
 
       return new StreamableFile(file);
-
     } else if (asset.type == AssetType.VIDEO) {
       // Handle Video
       let videoPath = asset.originalPath;
@@ -232,14 +229,10 @@ export class AssetService {
           'Content-Type': mimeType,
         });
 
-
         const videoStream = createReadStream(videoPath, { start: start, end: end });
 
         return new StreamableFile(videoStream);
-
-
       } else {
-
         res.set({
           'Content-Type': mimeType,
         });

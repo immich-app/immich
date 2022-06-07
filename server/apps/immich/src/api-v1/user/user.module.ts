@@ -13,4 +13,4 @@ import { jwtConfig } from '../../config/jwt.config';
   controllers: [UserController],
   providers: [UserService, ImmichJwtService],
 })
-export class UserModule { }
+export class UserModule {}

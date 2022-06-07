@@ -7,11 +7,10 @@ import sharp from 'sharp';
 
 @Injectable()
 export class ImageConversionService {
-
   constructor(
     @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>
-  ) { }
+    private assetRepository: Repository<AssetEntity>,
+  ) {}
 
   // @Cron(CronExpression.EVERY_5_MINUTES
   //   , {
@@ -27,12 +26,10 @@ export class ImageConversionService {
   //     take: 500
   //   });
 
-
   //   if (assets.length == 0) {
   //     Logger.log('All assets has webp file - aborting task', 'ImageConversionService')
   //     return;
   //   }
-
 
   //   for (const asset of assets) {
   //     const resizePath = asset.resizePath;

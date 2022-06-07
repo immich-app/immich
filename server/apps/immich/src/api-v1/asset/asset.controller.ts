@@ -44,7 +44,7 @@ export class AssetController {
 
     @InjectQueue('asset-uploaded-queue')
     private assetUploadedQueue: Queue,
-  ) { }
+  ) {}
 
   @Post('upload')
   @UseInterceptors(
@@ -71,7 +71,6 @@ export class AssetController {
           await this.backgroundTaskService.detectObject(uploadFiles.thumbnailData[0].path, savedAsset);
 
           // TODO - generate wepb
-
         } else {
           // generating thumbnail
           // Then
@@ -79,11 +78,11 @@ export class AssetController {
           // Object Detection - queue will be put in from the microservice side.
         }
 
-        // Since the Exif is generated based on raw file - this task can be done regardless of the status of the 
+        // Since the Exif is generated based on raw file - this task can be done regardless of the status of the
         // thumbnail images.
 
         await this.backgroundTaskService.extractExif(savedAsset, file.originalname, file.size);
-        await this.assetUploadedQueue.add('asset-uploaded', { asset: savedAsset }, { jobId: savedAsset.id })
+        await this.assetUploadedQueue.add('asset-uploaded', { asset: savedAsset }, { jobId: savedAsset.id });
 
         this.wsCommunicateionGateway.server.to(savedAsset.userId).emit('on_upload_success', JSON.stringify(savedAsset));
       } catch (e) {

@@ -7,13 +7,10 @@ import sharp from 'sharp';
 
 @Processor('thumbnail-generator-queue')
 export class ThumbnailGeneratorProcessor {
-
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-  ) {
-
-  }
+  ) {}
   @Process('generate-jpeg-thumbnail')
   async generateJPEGThumbnail(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
@@ -21,22 +18,19 @@ export class ThumbnailGeneratorProcessor {
     console.log(asset);
   }
 
-
   @Process('generate-webp-thumbnail')
   async generateWepbThumbnail(job: Job) {
-
     const { asset }: { asset: AssetEntity } = job.data;
 
-    const webpPath = asset.resizePath.replace('jpeg', 'webp')
+    const webpPath = asset.resizePath.replace('jpeg', 'webp');
 
-    sharp(asset.resizePath).resize(250).webp().toFile(webpPath, (err, info) => {
-
-      if (!err) {
-        this.assetRepository.update({ id: asset.id }, { webpPath: webpPath })
-      }
-
-    });
+    sharp(asset.resizePath)
+      .resize(250)
+      .webp()
+      .toFile(webpPath, (err, info) => {
+        if (!err) {
+          this.assetRepository.update({ id: asset.id }, { webpPath: webpPath });
+        }
+      });
   }
-
-
 }

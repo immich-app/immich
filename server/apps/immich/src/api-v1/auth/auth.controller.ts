@@ -7,7 +7,7 @@ import { SignUpDto } from './dto/sign-up.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('/login')
   async login(@Body(ValidationPipe) loginCredential: LoginCredentialDto) {

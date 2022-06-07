@@ -11,7 +11,7 @@ export class DeviceInfoService {
   constructor(
     @InjectRepository(DeviceInfoEntity)
     private deviceRepository: Repository<DeviceInfoEntity>,
-  ) { }
+  ) {}
 
   async create(createDeviceInfoDto: CreateDeviceInfoDto, authUser: AuthUserDto) {
     const res = await this.deviceRepository.findOne({

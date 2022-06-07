@@ -30,4 +30,4 @@ import { BackgroundTaskService } from './background-task.service';
   providers: [BackgroundTaskService, BackgroundTaskProcessor],
   exports: [BackgroundTaskService, BullModule],
 })
-export class BackgroundTaskModule { }
+export class BackgroundTaskModule {}

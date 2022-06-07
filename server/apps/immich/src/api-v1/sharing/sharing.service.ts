@@ -31,7 +31,7 @@ export class SharingService {
 
     @InjectRepository(UserSharedAlbumEntity)
     private userSharedAlbumRepository: Repository<UserSharedAlbumEntity>,
-  ) { }
+  ) {}
 
   async create(authUser: AuthUserDto, createSharedAlbumDto: CreateSharedAlbumDto) {
     return await getConnection().transaction(async (transactionalEntityManager) => {
@@ -146,7 +146,7 @@ export class SharingService {
     return await this.userSharedAlbumRepository.delete({ albumId: albumId, sharedUserId: authUser.id });
   }
 
-  async removeUsersFromAlbum() { }
+  async removeUsersFromAlbum() {}
 
   async removeAssetsFromAlbum(authUser: AuthUserDto, removeAssetsDto: RemoveAssetsDto) {
     let deleteAssetCount = 0;
