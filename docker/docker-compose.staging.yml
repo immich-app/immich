@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   immich-server:
-    image: immich-server-staging:latest
+    image: immich-server:staging
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -23,7 +23,7 @@ services:
     restart: always
 
   immich-microservices:
-    image: immich-microservices-staging:latest
+    image: immich-microservices:staging
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -42,6 +42,27 @@ services:
       - immich-network
     restart: always
 
+  immich-machine-learning:
+    image: immich-machine-learning:staging
+    build:
+      context: ../machine-learning
+      dockerfile: Dockerfile
+    entrypoint: ["/bin/sh", "./entrypoint.sh"]
+    expose:
+      - "3001"
+    volumes:
+      - ../machine-learning:/usr/src/app
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /usr/src/app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - database
+    networks:
+      - immich-network
+
   immich-web:
     image: immich-web-staging:latest
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
@@ -57,14 +78,12 @@ services:
       - immich-network
     restart: always
 
-
   redis:
     container_name: immich_redis
     image: redis:6.2
     networks:
       - immich-network
     restart: always
-    
 
   database:
     container_name: immich_postgres
