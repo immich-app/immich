@@ -13,6 +13,7 @@ import {SignUpDto} from './dto/sign-up.dto';
 import {OAuthAccessTokenDto} from "./dto/o-auth-access-token.dto";
 import { ImmichOauth2Service } from '../../modules/immich-auth/immich-oauth2.service';
 import { mapUser, User } from '../user/response-dto/user';
+import {AuthUserDto} from "../../decorators/auth-user.decorator";
 
 
 @Injectable()
@@ -48,23 +49,13 @@ export class AuthService {
 
     }
 
-    // todo remove if not needed anymore
-    public async signUp(signUpCrendential: SignUpDto) {
-        if (process.env.LOCAL_USERS_DISABLE === 'true') throw new BadRequestException("Local users not allowed!");
+    async validateToken(authUser: AuthUserDto) {
+        const user = await this.userRepository.findOne({ where: { email: authUser.email } });
 
-        try {
-            const user = await this.immichJwtService.signUp(signUpCrendential.email, signUpCrendential.password);
-
-            return {
-                id: user.id,
-                email: user.email,
-                createdAt: user.createdAt,
-                isLocalUser: user.isLocalUser,
-            };
-        } catch (e) {
-            Logger.error(`Failed to register new user: ${e}`, 'AUTH');
-            throw new InternalServerErrorException('Failed to register new user');
-        }
+        return {
+            authStatus: true,
+            user: mapUser(user),
+        };
     }
 
     public async adminSignUp(signUpCredential: SignUpDto): Promise<User> {
@@ -83,17 +74,6 @@ export class AuthService {
         if (process.env.LOCAL_USERS_DISABLE === 'true') throw new BadRequestException("Local users not allowed!");
 
         return this.immichJwtService.validate(loginCredential.email, loginCredential.password);
-    }
-
-    async accessTokenOauth(params: OAuthAccessTokenDto) {
-        if (process.env.OAUTH2_ENABLE !== 'true') throw new BadRequestException("OAuth2.0/OIDC authentication not enabled!");
-
-        const [accessToken, refreshToken] = await this.immichOauth2Service.getAccessTokenFromAuthCode(params.code, params.redirect_uri);
-
-        return {
-            access_token: accessToken,
-            refresh_token: refreshToken,
-        }
     }
 
 }

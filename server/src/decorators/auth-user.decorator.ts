@@ -12,10 +12,8 @@ export const GetAuthUser = createParamDecorator((data, ctx: ExecutionContext): A
 
   const { id, email } = req.user as UserEntity;
 
-  const authUser: any = {
+  return {
     id: id.toString(),
     email,
   };
-
-  return authUser;
 });

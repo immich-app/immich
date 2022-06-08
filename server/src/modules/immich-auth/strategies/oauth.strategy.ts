@@ -1,20 +1,14 @@
 import {
     BadRequestException,
-    ImATeapotException,
-    Inject,
-    Injectable,
-    InternalServerErrorException,
-    Logger,
-    UnauthorizedException,
+    Injectable, Logger, UnauthorizedException,
 } from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {InjectRepository} from '@nestjs/typeorm';
-import {Strategy} from 'passport-custom';
+import {ExtractJwt, Strategy} from 'passport-jwt';
 import {Repository} from 'typeorm';
-import {AuthService} from "../../../api-v1/auth/auth.service";
 import {UserEntity} from '../../../api-v1/user/entities/user.entity';
+import {JwtPayloadDto} from "../../../api-v1/auth/dto/jwt-payload.dto";
 import * as util from "util";
-import {validate} from "class-validator";
 import {ImmichOauth2Service} from "../immich-oauth2.service";
 
 @Injectable()
@@ -22,41 +16,19 @@ export class Oauth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
     constructor(
         @InjectRepository(UserEntity)
         private usersRepository: Repository<UserEntity>,
-        @Inject(ImmichOauth2Service)
-        private oauth2Service: ImmichOauth2Service,
+        private immichOauth2Service: ImmichOauth2Service,
     ) {
-        super(async (req, callback) => {
-
-            if (process.env.OAUTH2_ENABLE !== 'true') throw new BadRequestException("OAuth2.0/OIDC authentication not enabled!");
-            Logger.verbose('Trying OAuth2/OIDC authentication', 'OAUTH2 STRATEGY');
-
-            const authHeader = req.headers['authorization'];
-
-            if (authHeader == undefined || !authHeader.startsWith("Bearer ")) {
-                Logger.verbose("No bearer token");
-                callback(null, null, "No authorization token");
-                return;
-            }
-
-            const token = authHeader.substring(7, authHeader.length);
-
-            await this.oauth2Service.validateUserOauth({
-                accessToken: token,
-            }).then((user) => {
-                if (user && !user.isLocalUser) {
-                    Logger.verbose(`Authorized user: ${user.email}`);
-                    callback(null, user);
-                } else {
-                    Logger.verbose("User not found or not local");
-                    callback(null, null, "Cannot validate local user with OAuth2");
-                }
-            }).catch((err) => {
-                    Logger.verbose(`Cannot validate local user with OAuth2: ${err}`);
-                    callback(null, null, "Cannot validate local user with OAuth2");
-                }
-            );
-
+        super({
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            ignoreExpiration: false,
+            secretOrKey: Buffer.from(process.env.OAUTH2_CERTIFICATE, 'base64').toString('ascii'),
+            audience: process.env.OAUTH2_CLIENT_ID,
         });
+    }
+
+    async validate(payload: any) {
+        Logger.verbose('Trying to validate OIDC id_token', 'OAUTH2 STRATEGY');
+        return await this.immichOauth2Service.validateUserOauth(payload);
     }
 
 }

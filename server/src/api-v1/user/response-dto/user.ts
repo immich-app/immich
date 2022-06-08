@@ -6,6 +6,7 @@ export interface User {
   firstName: string;
   lastName: string;
   createdAt: string;
+  isAdmin: boolean;
 }
 
 export function mapUser(entity: UserEntity): User {
@@ -15,5 +16,6 @@ export function mapUser(entity: UserEntity): User {
     firstName: entity.firstName,
     lastName: entity.lastName,
     createdAt: entity.createdAt,
+    isAdmin: entity.isAdmin,
   };
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../api-v1/user/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -51,14 +51,14 @@ export class ImmichAuthService {
   }
 
   public static getEnabledStrategies() {
-  if (process.env.OAUTH2_ENABLE === 'true') {
-    if (process.env.LOCAL_USERS_DISABLE === 'true') {
-      return ['oauth2'];
+    if (process.env.OAUTH2_ENABLE === 'true') {
+      if (process.env.LOCAL_USERS_DISABLE === 'true') {
+        return ['oauth2'];
+      } else {
+        return ['jwt', 'oauth2'];
+      }
     } else {
-      return ['jwt', 'oauth2'];
+      return ['jwt'];
     }
-  } else {
-    return ['jwt'];
   }
-}
 }

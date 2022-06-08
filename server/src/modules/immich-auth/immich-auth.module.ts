@@ -11,7 +11,7 @@ import {Oauth2Strategy} from "./strategies/oauth.strategy";
 import { ImmichAuthService } from './immich-auth.service';
 
 @Module({
-  imports: [JwtModule.register(jwtConfig), TypeOrmModule.forFeature([UserEntity]), HttpModule],
+  imports: [JwtModule.register(jwtConfig), TypeOrmModule.forFeature([UserEntity])],
   providers: [ImmichJwtService, ImmichOauth2Service, ImmichAuthService, JwtStrategy, Oauth2Strategy],
   exports: [ImmichJwtService, ImmichOauth2Service, ImmichAuthService],
 })

@@ -21,7 +21,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayloadDto) {
-    // todo skip if local users are disabled
     Logger.verbose('Trying to validate JWT token', 'JWT STRATEGY');
 
     const { userId } = payload;
