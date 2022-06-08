@@ -22,7 +22,6 @@
 	};
 
 	const navigateToAdmin = () => {
-		console.log('Navigating to admin page');
 		goto('/admin');
 	};
 </script>
