@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, StreamableFile } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
@@ -107,35 +107,45 @@ export class AssetService {
   }
 
   public async downloadFile(query: ServeFileDto, res: Res) {
-    let file = null;
-    const asset = await this.findOne(query.did, query.aid);
+    try {
+      let file = null;
+      const asset = await this.findOne(query.did, query.aid);
 
-    if (query.isThumb === 'false' || !query.isThumb) {
-      const { size } = await fileInfo(asset.originalPath);
-      res.set({
-        'Content-Type': asset.mimeType,
-        'Content-Length': size,
-      });
-      file = createReadStream(asset.originalPath);
-    } else {
-      const { size } = await fileInfo(asset.resizePath);
-      res.set({
-        'Content-Type': 'image/jpeg',
-        'Content-Length': size,
-      });
-      file = createReadStream(asset.resizePath);
+      if (query.isThumb === 'false' || !query.isThumb) {
+        const { size } = await fileInfo(asset.originalPath);
+        res.set({
+          'Content-Type': asset.mimeType,
+          'Content-Length': size,
+        });
+        file = createReadStream(asset.originalPath);
+      } else {
+        const { size } = await fileInfo(asset.resizePath);
+        res.set({
+          'Content-Type': 'image/jpeg',
+          'Content-Length': size,
+        });
+        file = createReadStream(asset.resizePath);
+      }
+
+      return new StreamableFile(file);
+    } catch (e) {
+      Logger.error('Error download asset ', e);
+      throw new InternalServerErrorException(`Failed to download asset ${e}`, 'DownloadFile');
     }
-
-    return new StreamableFile(file);
   }
 
   public async getAssetThumbnail(assetId: string) {
-    const asset = await this.assetRepository.findOne({ id: assetId });
+    try {
+      const asset = await this.assetRepository.findOne({ id: assetId });
 
-    if (asset.webpPath || asset.webpPath != '') {
-      return new StreamableFile(createReadStream(asset.webpPath));
-    } else {
-      return new StreamableFile(createReadStream(asset.resizePath));
+      if (asset.webpPath || asset.webpPath != '') {
+        return new StreamableFile(createReadStream(asset.webpPath));
+      } else {
+        return new StreamableFile(createReadStream(asset.resizePath));
+      }
+    } catch (e) {
+      Logger.error('Error serving asset thumbnail ', e);
+      throw new InternalServerErrorException('Failed to serve asset thumbnail', 'GetAssetThumbnail');
     }
   }
 
@@ -159,91 +169,101 @@ export class AssetService {
         return new StreamableFile(createReadStream(asset.resizePath));
       }
 
-      /**
-       * Serve thumbnail image for both web and mobile app
-       */
-      if (query.isThumb === 'false' || !query.isThumb) {
-        res.set({
-          'Content-Type': asset.mimeType,
-        });
-        file = createReadStream(asset.originalPath);
-      } else {
-        if (asset.webpPath || asset.webpPath != '') {
+      try {
+        /**
+         * Serve thumbnail image for both web and mobile app
+         */
+        if (query.isThumb === 'false' || !query.isThumb) {
           res.set({
-            'Content-Type': 'image/webp',
+            'Content-Type': asset.mimeType,
           });
-          file = createReadStream(asset.webpPath);
+          file = createReadStream(asset.originalPath);
+        } else {
+          if (asset.webpPath || asset.webpPath != '') {
+            res.set({
+              'Content-Type': 'image/webp',
+            });
+            file = createReadStream(asset.webpPath);
+          } else {
+            res.set({
+              'Content-Type': 'image/jpeg',
+            });
+            file = createReadStream(asset.resizePath);
+          }
+        }
+
+        file.on('error', (error) => {
+          Logger.log(`Cannot create read stream ${error}`);
+          return new BadRequestException('Cannot Create Read Stream');
+        });
+
+        return new StreamableFile(file);
+      } catch (e) {
+        Logger.error('Error serving IMAGE asset ', e);
+        throw new InternalServerErrorException(`Failed to serve image asset ${e}`, 'ServeFile');
+      }
+    } else if (asset.type == AssetType.VIDEO) {
+      try {
+        // Handle Video
+        let videoPath = asset.originalPath;
+        let mimeType = asset.mimeType;
+
+        if (query.isWeb && asset.mimeType == 'video/quicktime') {
+          videoPath = asset.encodedVideoPath == '' ? asset.originalPath : asset.encodedVideoPath;
+          mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
+        }
+
+        const { size } = await fileInfo(videoPath);
+        const range = headers.range;
+
+        if (range) {
+          /** Extracting Start and End value from Range Header */
+          let [start, end] = range.replace(/bytes=/, '').split('-');
+          start = parseInt(start, 10);
+          end = end ? parseInt(end, 10) : size - 1;
+
+          if (!isNaN(start) && isNaN(end)) {
+            start = start;
+            end = size - 1;
+          }
+          if (isNaN(start) && !isNaN(end)) {
+            start = size - end;
+            end = size - 1;
+          }
+
+          // Handle unavailable range request
+          if (start >= size || end >= size) {
+            console.error('Bad Request');
+            // Return the 416 Range Not Satisfiable.
+            res.status(416).set({
+              'Content-Range': `bytes */${size}`,
+            });
+
+            throw new BadRequestException('Bad Request Range');
+          }
+
+          /** Sending Partial Content With HTTP Code 206 */
+
+          res.status(206).set({
+            'Content-Range': `bytes ${start}-${end}/${size}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': end - start + 1,
+            'Content-Type': mimeType,
+          });
+
+          const videoStream = createReadStream(videoPath, { start: start, end: end });
+
+          return new StreamableFile(videoStream);
         } else {
           res.set({
-            'Content-Type': 'image/jpeg',
-          });
-          file = createReadStream(asset.resizePath);
-        }
-      }
-
-      file.on('error', (error) => {
-        Logger.log(`Cannot create read stream ${error}`);
-        return new BadRequestException('Cannot Create Read Stream');
-      });
-
-      return new StreamableFile(file);
-    } else if (asset.type == AssetType.VIDEO) {
-      // Handle Video
-      let videoPath = asset.originalPath;
-      let mimeType = asset.mimeType;
-
-      if (query.isWeb && asset.mimeType == 'video/quicktime') {
-        videoPath = asset.encodedVideoPath == '' ? asset.originalPath : asset.encodedVideoPath;
-        mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
-      }
-
-      const { size } = await fileInfo(videoPath);
-      const range = headers.range;
-
-      if (range) {
-        /** Extracting Start and End value from Range Header */
-        let [start, end] = range.replace(/bytes=/, '').split('-');
-        start = parseInt(start, 10);
-        end = end ? parseInt(end, 10) : size - 1;
-
-        if (!isNaN(start) && isNaN(end)) {
-          start = start;
-          end = size - 1;
-        }
-        if (isNaN(start) && !isNaN(end)) {
-          start = size - end;
-          end = size - 1;
-        }
-
-        // Handle unavailable range request
-        if (start >= size || end >= size) {
-          console.error('Bad Request');
-          // Return the 416 Range Not Satisfiable.
-          res.status(416).set({
-            'Content-Range': `bytes */${size}`,
+            'Content-Type': mimeType,
           });
 
-          throw new BadRequestException('Bad Request Range');
+          return new StreamableFile(createReadStream(videoPath));
         }
-
-        /** Sending Partial Content With HTTP Code 206 */
-
-        res.status(206).set({
-          'Content-Range': `bytes ${start}-${end}/${size}`,
-          'Accept-Ranges': 'bytes',
-          'Content-Length': end - start + 1,
-          'Content-Type': mimeType,
-        });
-
-        const videoStream = createReadStream(videoPath, { start: start, end: end });
-
-        return new StreamableFile(videoStream);
-      } else {
-        res.set({
-          'Content-Type': mimeType,
-        });
-
-        return new StreamableFile(createReadStream(videoPath));
+      } catch (e) {
+        Logger.error('Error serving VIDEO asset ', e);
+        throw new InternalServerErrorException(`Failed to serve video asset ${e}`, 'ServeFile');
       }
     }
   }
