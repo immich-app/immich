@@ -1,6 +1,6 @@
-import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { InjectQueue, OnQueueActive, OnQueueCompleted, OnQueueWaiting, Process, Processor } from '@nestjs/bull';
 import { Job, Queue } from 'bull';
-import { AssetEntity } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
@@ -13,6 +13,9 @@ export class AssetUploadedProcessor {
 
     @InjectQueue('metadata-extraction-queue')
     private metadataExtractionQueue: Queue,
+
+    @InjectQueue('video-conversion-queue')
+    private videoConversionQueue: Queue,
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
@@ -45,15 +48,20 @@ export class AssetUploadedProcessor {
       // Generate Thumbnail -> Then generate webp, tag image and detect object
     }
 
-    // Extract Metadata/Exif
-    await this.metadataExtractionQueue.add(
-      'exif-extraction',
-      {
-        asset,
-        fileName,
-        fileSize,
-      },
-      { jobId: randomUUID() },
-    );
+    // Video Conversion
+    if (asset.type == AssetType.VIDEO) {
+      await this.videoConversionQueue.add('mp4-conversion', { asset }, { jobId: randomUUID() });
+    } else {
+      // Extract Metadata/Exif for Images - Currently the library cannot extract EXIF for video yet
+      await this.metadataExtractionQueue.add(
+        'exif-extraction',
+        {
+          asset,
+          fileName,
+          fileSize,
+        },
+        { jobId: randomUUID() },
+      );
+    }
   }
 }

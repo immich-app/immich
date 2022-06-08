@@ -11,7 +11,6 @@ import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
-import ffmpeg from 'fluent-ffmpeg';
 
 const fileInfo = promisify(stat);
 
@@ -138,7 +137,7 @@ export class AssetService {
     try {
       const asset = await this.assetRepository.findOne({ id: assetId });
 
-      if (asset.webpPath || asset.webpPath != '') {
+      if (asset.webpPath && asset.webpPath.length > 0) {
         return new StreamableFile(createReadStream(asset.webpPath));
       } else {
         return new StreamableFile(createReadStream(asset.resizePath));
@@ -179,10 +178,11 @@ export class AssetService {
           });
           file = createReadStream(asset.originalPath);
         } else {
-          if (asset.webpPath || asset.webpPath != '') {
+          if (asset.webpPath && asset.webpPath.length > 0) {
             res.set({
               'Content-Type': 'image/webp',
             });
+
             file = createReadStream(asset.webpPath);
           } else {
             res.set({

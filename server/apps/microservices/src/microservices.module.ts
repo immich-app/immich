@@ -10,6 +10,7 @@ import { MicroservicesService } from './microservices.service';
 import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
+import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
 
 @Module({
   imports: [
@@ -47,8 +48,22 @@ import { MetadataExtractionProcessor } from './processors/metadata-extraction.pr
         removeOnFail: false,
       },
     }),
+    BullModule.registerQueue({
+      name: 'video-conversion-queue',
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
   ],
   controllers: [],
-  providers: [MicroservicesService, AssetUploadedProcessor, ThumbnailGeneratorProcessor, MetadataExtractionProcessor],
+  providers: [
+    MicroservicesService,
+    AssetUploadedProcessor,
+    ThumbnailGeneratorProcessor,
+    MetadataExtractionProcessor,
+    VideoTranscodeProcessor,
+  ],
 })
 export class MicroservicesModule {}
