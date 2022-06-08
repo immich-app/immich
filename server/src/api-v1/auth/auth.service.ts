@@ -10,10 +10,9 @@ import {UserEntity} from '../user/entities/user.entity';
 import {LoginCredentialDto} from './dto/login-credential.dto';
 import {ImmichJwtService} from '../../modules/immich-auth/immich-jwt.service';
 import {SignUpDto} from './dto/sign-up.dto';
-import {OAuthAccessTokenDto} from "./dto/o-auth-access-token.dto";
-import { ImmichOauth2Service } from '../../modules/immich-auth/immich-oauth2.service';
 import { mapUser, User } from '../user/response-dto/user';
 import {AuthUserDto} from "../../decorators/auth-user.decorator";
+import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
@@ -23,7 +22,7 @@ export class AuthService {
         @InjectRepository(UserEntity)
         private userRepository: Repository<UserEntity>,
         private immichJwtService: ImmichJwtService,
-        private immichOauth2Service: ImmichOauth2Service,
+        private configService: ConfigService,
     ) {}
 
     public async loginParams() {
@@ -35,13 +34,13 @@ export class AuthService {
             clientId: null,
         };
 
-        if (process.env.OAUTH2_ENABLE === 'true') {
+        if (this.configService.get<boolean>('OAUTH2_ENABLE') === true) {
             params.oauth2 = true;
-            params.discoveryUrl = process.env.OAUTH2_DISCOVERY_URL;
-            params.clientId = process.env.OAUTH2_CLIENT_ID;
+            params.discoveryUrl =  this.configService.get<string>('OAUTH2_DISCOVERY_URL');
+            params.clientId = this.configService.get<string>('OAUTH2_CLIENT_ID');
         }
 
-        if (process.env.LOCAL_USERS_DISABLE === 'true') {
+        if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) {
             params.localAuth = false;
         }
 
@@ -59,7 +58,7 @@ export class AuthService {
     }
 
     public async adminSignUp(signUpCredential: SignUpDto): Promise<User> {
-        if (process.env.LOCAL_USERS_DISABLE === 'true') throw new BadRequestException("Local users not allowed!");
+        if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) throw new BadRequestException("Local users not allowed!");
 
         try {
             const adminUser = await this.immichJwtService.signUpAdmin(signUpCredential.email, signUpCredential.password, signUpCredential.firstName, signUpCredential.lastName);
@@ -71,7 +70,7 @@ export class AuthService {
     }
 
     public async login(loginCredential: LoginCredentialDto) {
-        if (process.env.LOCAL_USERS_DISABLE === 'true') throw new BadRequestException("Local users not allowed!");
+        if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) throw new BadRequestException("Local users not allowed!");
 
         return this.immichJwtService.validate(loginCredential.email, loginCredential.password);
     }

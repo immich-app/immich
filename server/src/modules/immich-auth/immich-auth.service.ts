@@ -51,6 +51,7 @@ export class ImmichAuthService {
   }
 
   public static getEnabledStrategies() {
+    // sadly it's not possible to use ConfigService in a static context :(
     if (process.env.OAUTH2_ENABLE === 'true') {
       if (process.env.LOCAL_USERS_DISABLE === 'true') {
         return ['oauth2'];

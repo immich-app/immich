@@ -1,15 +1,14 @@
 import {
-    BadRequestException,
-    Injectable, Logger, UnauthorizedException,
+    Injectable,
+    Logger,
 } from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {InjectRepository} from '@nestjs/typeorm';
 import {ExtractJwt, Strategy} from 'passport-jwt';
 import {Repository} from 'typeorm';
 import {UserEntity} from '../../../api-v1/user/entities/user.entity';
-import {JwtPayloadDto} from "../../../api-v1/auth/dto/jwt-payload.dto";
-import * as util from "util";
 import {ImmichOauth2Service} from "../immich-oauth2.service";
+import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class Oauth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
@@ -17,12 +16,13 @@ export class Oauth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
         @InjectRepository(UserEntity)
         private usersRepository: Repository<UserEntity>,
         private immichOauth2Service: ImmichOauth2Service,
+        private configService: ConfigService,
     ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: Buffer.from(process.env.OAUTH2_CERTIFICATE, 'base64').toString('ascii'),
-            audience: process.env.OAUTH2_CLIENT_ID,
+            secretOrKey: Buffer.from(configService.get<string>('OAUTH2_CERTIFICATE'), 'base64').toString('ascii'),
+            audience: configService.get<string>('OAUTH2_CLIENT_ID'),
         });
     }
 
