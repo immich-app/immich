@@ -17,7 +17,7 @@ export const immichAppConfig: ConfigModuleOptions = {
       then: Joi.optional(),
       otherwise: Joi.optional().valid(false),
     }),
-    OAUTH2_DISCOVERY_URL: Joi.any().when('OAUTH2_ENABLE', {
+    OAUTH2_AUTHORIZE_URL: Joi.any().when('OAUTH2_ENABLE', {
       is: true,
       then: Joi.string().required(),
       otherwise: Joi.optional().valid(null, ''),

@@ -26,17 +26,16 @@ export class AuthService {
     ) {}
 
     public async loginParams() {
-
         const params = {
             localAuth: true,
             oauth2: false,
-            discoveryUrl: null,
+            authorizeUrl: null,
             clientId: null,
         };
 
         if (this.configService.get<boolean>('OAUTH2_ENABLE') === true) {
             params.oauth2 = true;
-            params.discoveryUrl =  this.configService.get<string>('OAUTH2_DISCOVERY_URL');
+            params.authorizeUrl =  this.configService.get<string>('OAUTH2_AUTHORIZE_URL');
             params.clientId = this.configService.get<string>('OAUTH2_CLIENT_ID');
         }
 
