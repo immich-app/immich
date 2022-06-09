@@ -109,7 +109,7 @@ class NetworkService {
 
       String validUrl = Uri.parse('$savedEndpoint/server-info/ping').toString();
 
-      debugPrint("pint server at url $validUrl");
+      debugPrint("Ping server at url $validUrl");
       Response res = await dio.get(validUrl);
       var jsonRespsonse = jsonDecode(res.toString());
 

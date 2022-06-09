@@ -1,13 +1,8 @@
-import {BadRequestException, Injectable, Logger, UnauthorizedException} from '@nestjs/common';
-import {HttpService} from "@nestjs/axios";
-import {OAuthLoginDto} from "../../api-v1/auth/dto/o-auth-login.dto";
-import {lastValueFrom} from "rxjs";
-import {AxiosResponse} from "axios";
+import {BadRequestException, Injectable, Logger} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {UserEntity} from "../../api-v1/user/entities/user.entity";
 import {Repository} from "typeorm";
 import { ImmichAuthService } from './immich-auth.service';
-import util from "util";
 
 @Injectable()
 export class ImmichOauth2Service {

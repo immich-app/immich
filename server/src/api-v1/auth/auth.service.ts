@@ -29,13 +29,13 @@ export class AuthService {
         const params = {
             localAuth: true,
             oauth2: false,
-            authorizeUrl: null,
+            discoveryUrl: null,
             clientId: null,
         };
 
         if (this.configService.get<boolean>('OAUTH2_ENABLE') === true) {
             params.oauth2 = true;
-            params.authorizeUrl =  this.configService.get<string>('OAUTH2_AUTHORIZE_URL');
+            params.discoveryUrl =  this.configService.get<string>('OAUTH2_DISCOVERY_URL');
             params.clientId = this.configService.get<string>('OAUTH2_CLIENT_ID');
         }
 
@@ -52,7 +52,7 @@ export class AuthService {
 
         return {
             authStatus: true,
-            user: mapUser(user),
+            ...mapUser(user),
         };
     }
 

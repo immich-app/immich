@@ -7,6 +7,8 @@ export interface User {
   lastName: string;
   createdAt: string;
   isAdmin: boolean;
+  profileImagePath: string;
+  isFirstLogin: boolean;
 }
 
 export function mapUser(entity: UserEntity): User {
@@ -17,5 +19,7 @@ export function mapUser(entity: UserEntity): User {
     lastName: entity.lastName,
     createdAt: entity.createdAt,
     isAdmin: entity.isAdmin,
+    profileImagePath: entity.profileImagePath,
+    isFirstLogin: entity.isFirstLoggedIn,
   };
 }

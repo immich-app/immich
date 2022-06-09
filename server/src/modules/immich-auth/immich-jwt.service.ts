@@ -7,6 +7,7 @@ import { UserEntity } from '../../api-v1/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ImmichAuthService } from './immich-auth.service';
+import {mapUser} from "../../api-v1/user/response-dto/user";
 
 @Injectable()
 export class ImmichJwtService {
@@ -78,13 +79,7 @@ export class ImmichJwtService {
 
     return {
       accessToken: await this.generateToken(payload),
-      userId: validatedUser.id,
-      userEmail: validatedUser.email,
-      firstName: validatedUser.firstName,
-      lastName: validatedUser.lastName,
-      isAdmin: validatedUser.isAdmin,
-      profileImagePath: validatedUser.profileImagePath,
-      isFirstLogin: validatedUser.isFirstLoggedIn,
+      ...mapUser(validatedUser),
     };
   }
 

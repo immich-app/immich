@@ -1,7 +1,8 @@
 // Access token
 const String userInfoBox = "immichBoxUserInfo"; // Box
 const String accessTokenKey = "immichBoxAccessTokenKey"; // Key 1
-const String deviceIdKey = 'immichBoxDeviceIdKey'; // Key 2
+const String refreshTokenKey = "immichBoxRefreshTokenKey"; // Key 2
+const String deviceIdKey = 'immichBoxDeviceIdKey'; // Key 3
 
 // Server endpoint
 const String serverEndpointKey = 'immichBoxServerEndpoint';

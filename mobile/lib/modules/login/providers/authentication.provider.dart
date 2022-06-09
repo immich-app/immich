@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -5,8 +7,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
+import 'package:immich_mobile/modules/login/models/login_params_response.model.dart';
 import 'package:immich_mobile/modules/login/models/login_response.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
+import 'package:immich_mobile/modules/login/models/validate_token_response.model.dart';
+import 'package:immich_mobile/modules/login/providers/local_auth.provider.dart';
+import 'package:immich_mobile/modules/login/providers/oauth2.provider.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
@@ -69,38 +75,59 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       deviceType: deviceInfo["deviceType"],
     );
 
+    LoginParamsResponse loginParams;
+
+    try {
+      Response res = await _networkService.getRequest(url: 'auth/loginParams');
+      loginParams = LoginParamsResponse.fromJson(res.toString());
+    } catch (e) {
+      return false;
+    }
+
     // Make sign-in request
     try {
-      Response res = await _networkService.postRequest(url: 'auth/login', data: {'email': email, 'password': password});
 
-      var payload = LogInReponse.fromJson(res.toString());
+      bool loggedIn = false;
 
-      Hive.box(userInfoBox).put(accessTokenKey, payload.accessToken);
-
-      state = state.copyWith(
-        isAuthenticated: true,
-        userId: payload.userId,
-        userEmail: payload.userEmail,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        profileImagePath: payload.profileImagePath,
-        isAdmin: payload.isAdmin,
-        isFirstLoggedIn: payload.isFirstLogin,
-      );
-
-      if (isSavedLoginInfo) {
-        // Save login info to local storage
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
-          savedLoginInfoKey,
-          HiveSavedLoginInfo(
-              email: email,
-              password: password,
-              isSaveLogin: true,
-              serverUrl: Hive.box(userInfoBox).get(serverEndpointKey)),
-        );
-      } else {
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey);
+      if (loginParams.oauth2 == true && email == '' && password == '') {
+        loggedIn |= await OAuth2Provider.tryLogin(loginParams.discoveryUrl, loginParams.clientId);
       }
+
+      if (!loggedIn) {
+        loggedIn |= await LocalAuthProvider.tryLogin(email, password, _networkService);
+      }
+
+      if (loggedIn == true) {
+
+        Response res = await _networkService.postRequest(url: 'auth/validateToken');
+        var payload = ValidateTokenReponse.fromJson(res.toString());
+
+        state = state.copyWith(
+          isAuthenticated: true,
+          userId: payload.id,
+          userEmail: payload.email,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          profileImagePath: payload.profileImagePath,
+          isAdmin: payload.isAdmin,
+          isFirstLoggedIn: payload.isFirstLogin,
+        );
+
+        if (isSavedLoginInfo) {
+          // Save login info to local storage
+          Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
+            savedLoginInfoKey,
+            HiveSavedLoginInfo(
+                email: email,
+                password: password,
+                isSaveLogin: true,
+                serverUrl: Hive.box(userInfoBox).get(serverEndpointKey)),
+          );
+        } else {
+          Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey);
+        }
+      }
+
     } catch (e) {
       return false;
     }
