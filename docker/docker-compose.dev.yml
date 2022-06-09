@@ -6,8 +6,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    # command: npm run start:dev immich
-    entrypoint: ["/bin/sh", "./entrypoint.sh"]
+    command: npm run start:dev immich
     expose:
       - "3000"
     volumes:

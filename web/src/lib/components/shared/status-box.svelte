@@ -99,10 +99,10 @@
 			</div>
 		</div>
 	</div>
-	<div>
+	<!-- <div>
 		<hr class="ml-5 my-4" />
 	</div>
 	<button class="text-xs ml-5 underline hover:cursor-pointer text-immich-primary" on:click={() => goto('/changelog')}
 		>Changelog</button
-	>
+	> -->
 </div>

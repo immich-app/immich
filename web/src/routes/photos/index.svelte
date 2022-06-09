@@ -3,6 +3,7 @@
 
 	import type { Load } from '@sveltejs/kit';
 	import { getAssetsInfo } from '$lib/stores/assets';
+	import { checkAppVersion } from '$lib/utils/check-app-version';
 
 	export const load: Load = async ({ session }) => {
 		if (!session.user) {

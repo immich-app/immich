@@ -1,6 +1,5 @@
 import { Controller, Get, Res, Headers } from '@nestjs/common';
 import { Response } from 'express';
-import changelog from './changelog/changelog.json';
 @Controller()
 export class AppController {
   constructor() {}
@@ -10,10 +9,5 @@ export class AppController {
     const host = headers.host;
 
     return res.redirect(`http://${host}:2285`);
-  }
-
-  @Get('changelog')
-  async getChangelog() {
-    return changelog;
   }
 }
