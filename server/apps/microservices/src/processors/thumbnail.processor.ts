@@ -19,7 +19,7 @@ export class ThumbnailGeneratorProcessor {
     console.log(asset);
   }
 
-  @Process('generate-webp-thumbnail')
+  @Process({ name: 'generate-webp-thumbnail', concurrency: 2 })
   async generateWepbThumbnail(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
 

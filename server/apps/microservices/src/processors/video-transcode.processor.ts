@@ -41,7 +41,9 @@ export class VideoTranscodeProcessor {
       ffmpeg(asset.originalPath)
         .outputOptions(['-crf 23', '-preset ultrafast', '-vcodec libx264', '-acodec mp3', '-vf scale=1280:-2'])
         .output(savedEncodedPath)
-        .on('start', () => Logger.log('Start Converting', 'mp4Conversion'))
+        .on('start', () => {
+          Logger.log('Start Converting', 'mp4Conversion');
+        })
         .on('error', (error, b, c) => {
           Logger.error(`Cannot Convert Video ${error}`, 'mp4Conversion');
           reject();

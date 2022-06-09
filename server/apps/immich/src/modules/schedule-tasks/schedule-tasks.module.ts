@@ -6,7 +6,25 @@ import { ScheduleTasksService } from './schedule-tasks.service';
 import { MicroservicesModule } from '../../../../microservices/src/microservices.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AssetEntity]), MicroservicesModule],
+  imports: [
+    TypeOrmModule.forFeature([AssetEntity]),
+    BullModule.registerQueue({
+      name: 'video-conversion-queue',
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
+    BullModule.registerQueue({
+      name: 'thumbnail-generator-queue',
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
+  ],
   providers: [ScheduleTasksService],
 })
 export class ScheduleTasksModule {}

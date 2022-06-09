@@ -65,6 +65,6 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     MetadataExtractionProcessor,
     VideoTranscodeProcessor,
   ],
-  exports: [BullModule],
+  exports: [],
 })
 export class MicroservicesModule {}
