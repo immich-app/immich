@@ -4,6 +4,7 @@
 	"scripts": {
 		"dev": "svelte-kit dev --host 0.0.0.0 --port 3002",
 		"build": "svelte-kit build",
+		"start": "node ./build/index.js",
 		"package": "svelte-kit package",
 		"preview": "svelte-kit preview",
 		"prepare": "svelte-kit sync",

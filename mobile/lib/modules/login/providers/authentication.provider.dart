@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -99,6 +100,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       if (loggedIn == true) {
 
+        debugPrint("Retrieving user details");
+
         Response res = await _networkService.postRequest(url: 'auth/validateToken');
         var payload = ValidateTokenReponse.fromJson(res.toString());
 
@@ -127,6 +130,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
           Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey);
         }
       }
+
+      return loggedIn;
 
     } catch (e) {
       return false;

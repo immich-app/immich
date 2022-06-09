@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 
@@ -8,6 +9,7 @@ import '../models/login_response.model.dart';
 class LocalAuthProvider {
 
   static Future<bool> tryLogin(String email, String password, NetworkService _ns) async {
+    debugPrint('Trying local auth');
     try {
       Response res = await _ns.postRequest(
           url: 'auth/login', data: {'email': email, 'password': password});

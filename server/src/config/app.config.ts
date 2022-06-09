@@ -19,7 +19,9 @@ export const immichAppConfig: ConfigModuleOptions = {
     }),
     OAUTH2_DISCOVERY_URL: Joi.any().when('OAUTH2_ENABLE', {
       is: true,
-      then: Joi.string().required(),
+      then: Joi.string().required().uri({
+        scheme: ['https'],
+      }),
       otherwise: Joi.optional().valid(null, ''),
     }),
     OAUTH2_CLIENT_ID: Joi.any().when('OAUTH2_ENABLE', {

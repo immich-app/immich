@@ -10,6 +10,9 @@ class OAuth2Provider {
 
   static Future<bool> tryLogin(String discoveryUrl, String clientId) async {
     debugPrint("Trying OAuth2/OIDC auth");
+
+    if (!discoveryUrl.startsWith("https://")) return false;
+
     var oAuth2Token = await OAuth2Provider.getToken(discoveryUrl, clientId);
     if (oAuth2Token == null) {
       debugPrint("OAuth2/OIDC auth failed");
@@ -25,14 +28,18 @@ class OAuth2Provider {
   }
 
   static Future<AuthorizationTokenResponse?> getToken(discoveryUrl, clientId) async {
-    return await appAuth.authorizeAndExchangeCode(
-      AuthorizationTokenRequest(
-        clientId,
-        oAuth2RedirectUri,
-        discoveryUrl: discoveryUrl,
-        scopes: ['openid','profile', 'email'],
-      ),
-    );
+    try {
+      return await appAuth.authorizeAndExchangeCode(
+        AuthorizationTokenRequest(
+          clientId,
+          oAuth2RedirectUri,
+          discoveryUrl: discoveryUrl,
+          scopes: ['openid', 'profile', 'email'],
+        ),
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
 }
