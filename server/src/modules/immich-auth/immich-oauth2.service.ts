@@ -19,20 +19,31 @@ export class ImmichOauth2Service {
 
     const user = await this.userRepository.findOne({ email: email });
 
+    const firstName = payload.given_name || '';
+    const lastName = payload.family_name || '';
+    const isAdmin = !!payload?.groups.includes('immich_admin');
+
     if (!user) {
       Logger.log(`User with email ${email} does not exist, signing up`, "OAUTH2");
-
-      const firstName = payload.given_name || '';
-      const lastName = payload.family_name || '';
-
-      // todo is admin is checked only when user is created
-      // should update to check everytime ?
-      const isAdmin = !!payload?.groups.includes('immich_admin');
 
       return await this.immichAuthService.createUser(email, false, null, firstName, lastName, isAdmin);
     }
 
-    const validatedUser = await this.userRepository.findOne({ email: email });
+    let validatedUser = await this.userRepository.findOne({ email: email });
+
+    if (validatedUser.isAdmin !== isAdmin ||
+        validatedUser.firstName !== firstName ||
+        validatedUser.lastName !== lastName) {
+
+        Logger.log(`User with email ${email} has changed, updating`, "OAUTH2");
+
+        validatedUser.firstName = firstName;
+        validatedUser.lastName = lastName;
+        validatedUser.isAdmin = isAdmin;
+
+        validatedUser = await this.userRepository.save(validatedUser);
+    }
+
     Logger.verbose(`Validated user with email ${email}`, "OAUTH2");
     return validatedUser;
   }
