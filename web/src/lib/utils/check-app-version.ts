@@ -15,28 +15,36 @@ export const checkAppVersion = async (): Promise<CheckAppVersionReponse> => {
 		},
 	});
 
-	const latestRelease = (await res.json()) as GithubRelease;
-	const appVersion = localStorage.getItem('appVersion');
+	if (res.status == 200) {
+		const latestRelease = (await res.json()) as GithubRelease;
+		const appVersion = localStorage.getItem('appVersion');
 
-	if (!appVersion) {
-		return {
-			shouldShowAnnouncement: true,
-			remoteVersion: latestRelease.tag_name,
-			localVersion: 'empty',
-		};
-	}
+		if (!appVersion) {
+			return {
+				shouldShowAnnouncement: true,
+				remoteVersion: latestRelease.tag_name,
+				localVersion: 'empty',
+			};
+		}
 
-	if (appVersion != latestRelease.tag_name) {
+		if (appVersion != latestRelease.tag_name) {
+			return {
+				shouldShowAnnouncement: true,
+				remoteVersion: latestRelease.tag_name,
+				localVersion: appVersion,
+			};
+		}
+
 		return {
-			shouldShowAnnouncement: true,
+			shouldShowAnnouncement: false,
 			remoteVersion: latestRelease.tag_name,
 			localVersion: appVersion,
 		};
+	} else {
+		return {
+			shouldShowAnnouncement: false,
+			remoteVersion: '0',
+			localVersion: '0',
+		};
 	}
-
-	return {
-		shouldShowAnnouncement: false,
-		remoteVersion: latestRelease.tag_name,
-		localVersion: appVersion,
-	};
 };
