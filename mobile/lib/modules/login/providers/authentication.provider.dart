@@ -12,8 +12,8 @@ import 'package:immich_mobile/modules/login/models/login_params_response.model.d
 import 'package:immich_mobile/modules/login/models/login_response.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/validate_token_response.model.dart';
-import 'package:immich_mobile/modules/login/providers/local_auth.provider.dart';
-import 'package:immich_mobile/modules/login/providers/oauth2.provider.dart';
+import 'package:immich_mobile/modules/login/services/local_auth.service.dart';
+import 'package:immich_mobile/modules/login/services/oauth2.service.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
@@ -91,47 +91,44 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       bool loggedIn = false;
 
       if (loginParams.oauth2 == true && email == '' && password == '') {
-        loggedIn |= await OAuth2Provider.tryLogin(loginParams.discoveryUrl, loginParams.clientId);
+        loggedIn |= await OAuth2Service.tryLogin(loginParams.discoveryUrl, loginParams.clientId);
       }
 
-      if (!loggedIn) {
-        loggedIn |= await LocalAuthProvider.tryLogin(email, password, _networkService);
+      if (loginParams.localAuth == true &&  !loggedIn) {
+        loggedIn |= await LocalAuthService.tryLogin(email, password, _networkService);
       }
 
-      if (loggedIn == true) {
+      if (!loggedIn) return false;
 
-        debugPrint("Retrieving user details");
+      debugPrint("Retrieving user details");
 
-        Response res = await _networkService.postRequest(url: 'auth/validateToken');
-        var payload = ValidateTokenReponse.fromJson(res.toString());
+      Response res = await _networkService.postRequest(url: 'auth/validateToken');
+      var payload = ValidateTokenReponse.fromJson(res.toString());
 
-        state = state.copyWith(
-          isAuthenticated: true,
-          userId: payload.id,
-          userEmail: payload.email,
-          firstName: payload.firstName,
-          lastName: payload.lastName,
-          profileImagePath: payload.profileImagePath,
-          isAdmin: payload.isAdmin,
-          isFirstLoggedIn: payload.isFirstLogin,
+      state = state.copyWith(
+        isAuthenticated: true,
+        userId: payload.id,
+        userEmail: payload.email,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        profileImagePath: payload.profileImagePath,
+        isAdmin: payload.isAdmin,
+        isFirstLoggedIn: payload.isFirstLogin,
+      );
+
+      if (isSavedLoginInfo) {
+        // Save login info to local storage
+        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
+          savedLoginInfoKey,
+          HiveSavedLoginInfo(
+              email: email,
+              password: password,
+              isSaveLogin: true,
+              serverUrl: Hive.box(userInfoBox).get(serverEndpointKey)),
         );
-
-        if (isSavedLoginInfo) {
-          // Save login info to local storage
-          Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
-            savedLoginInfoKey,
-            HiveSavedLoginInfo(
-                email: email,
-                password: password,
-                isSaveLogin: true,
-                serverUrl: Hive.box(userInfoBox).get(serverEndpointKey)),
-          );
-        } else {
-          Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey);
-        }
+      } else {
+        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey);
       }
-
-      return loggedIn;
 
     } catch (e) {
       return false;

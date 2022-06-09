@@ -6,14 +6,14 @@ import '../../../constants/hive_box.dart';
 const FlutterAppAuth appAuth = FlutterAppAuth();
 const oAuth2RedirectUri = 'app.alextran.immich://login-callback';
 
-class OAuth2Provider {
+class OAuth2Service {
 
   static Future<bool> tryLogin(String discoveryUrl, String clientId) async {
     debugPrint("Trying OAuth2/OIDC auth");
 
     if (!discoveryUrl.startsWith("https://")) return false;
 
-    var oAuth2Token = await OAuth2Provider.getToken(discoveryUrl, clientId);
+    var oAuth2Token = await OAuth2Service.getToken(discoveryUrl, clientId);
     if (oAuth2Token == null) {
       debugPrint("OAuth2/OIDC auth failed");
       return false;

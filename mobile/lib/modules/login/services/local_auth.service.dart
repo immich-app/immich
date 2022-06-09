@@ -6,7 +6,7 @@ import 'package:immich_mobile/shared/services/network.service.dart';
 import '../../../constants/hive_box.dart';
 import '../models/login_response.model.dart';
 
-class LocalAuthProvider {
+class LocalAuthService {
 
   static Future<bool> tryLogin(String email, String password, NetworkService _ns) async {
     debugPrint('Trying local auth');
