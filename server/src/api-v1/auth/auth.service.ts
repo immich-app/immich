@@ -17,7 +17,7 @@ export class AuthService {
     private immichJwtService: ImmichJwtService,
   ) {}
 
-  private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity> {
+  private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity | null> {
     const user = await this.userRepository.findOne(
       { email: loginCredential.email },
       {
@@ -35,9 +35,13 @@ export class AuthService {
       },
     );
 
+    if (!user) {
+      return null;
+    }
+
     const isAuthenticated = await this.validatePassword(user.password, loginCredential.password, user.salt);
 
-    if (user && isAuthenticated) {
+    if (isAuthenticated) {
       return user;
     }
 
