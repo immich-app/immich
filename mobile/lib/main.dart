@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
+import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'constants/hive_box.dart';
 
 void main() async {
@@ -53,6 +54,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
         ref.watch(assetProvider.notifier).getAllAsset();
         ref.watch(serverInfoProvider.notifier).getServerVersion();
 
+        VersionAnnouncementOverlayController.appLoader.show();
         break;
 
       case AppLifecycleState.inactive:
@@ -121,6 +123,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
             routerDelegate: _immichRouter.delegate(navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
           ),
           const ImmichLoadingOverlay(),
+          const VersionAnnouncementOverlay(),
         ],
       ),
     );
