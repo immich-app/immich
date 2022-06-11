@@ -8,15 +8,15 @@ import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.da
 import 'package:immich_mobile/modules/sharing/providers/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/user_info.model.dart';
+import 'package:immich_mobile/shared/models/user.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SelectUserForSharingPage extends HookConsumerWidget {
   const SelectUserForSharingPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedUsersList = useState<Set<UserInfo>>({});
-    AsyncValue<List<UserInfo>> suggestedShareUsers = ref.watch(suggestedSharedUsersProvider);
+    final sharedUsersList = useState<Set<User>>({});
+    AsyncValue<List<User>> suggestedShareUsers = ref.watch(suggestedSharedUsersProvider);
 
     _createSharedAlbum() async {
       var isSuccess = await SharedAlbumService().createSharedAlbum(
@@ -36,7 +36,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       const ScaffoldMessenger(child: SnackBar(content: Text('Failed to create album')));
     }
 
-    _buildTileIcon(UserInfo user) {
+    _buildTileIcon(User user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
@@ -53,7 +53,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       }
     }
 
-    _buildUserList(List<UserInfo> users) {
+    _buildUserList(List<User> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {

@@ -39,7 +39,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       if (albumInfo.sharedAssets != null && albumInfo.sharedAssets!.isNotEmpty) {
         ref
             .watch(assetSelectionProvider.notifier)
-            .addNewAssets(albumInfo.sharedAssets!.map((e) => e.assetInfo).toList());
+            .addNewAssets(albumInfo.sharedAssets!.toList());
       }
 
       ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(true);
@@ -103,8 +103,8 @@ class AlbumViewerPage extends HookConsumerWidget {
     Widget _buildAlbumDateRange(SharedAlbum albumInfo) {
       if (albumInfo.sharedAssets != null && albumInfo.sharedAssets!.isNotEmpty) {
         String startDate = "";
-        DateTime parsedStartDate = DateTime.parse(albumInfo.sharedAssets!.first.assetInfo.createdAt);
-        DateTime parsedEndDate = DateTime.parse(albumInfo.sharedAssets!.last.assetInfo.createdAt);
+        DateTime parsedStartDate = DateTime.parse(albumInfo.sharedAssets!.first.createdAt);
+        DateTime parsedEndDate = DateTime.parse(albumInfo.sharedAssets!.last.createdAt);
 
         if (parsedStartDate.year == parsedEndDate.year) {
           startDate = DateFormat('LLL d').format(parsedStartDate);
@@ -174,7 +174,7 @@ class AlbumViewerPage extends HookConsumerWidget {
             ),
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                return AlbumViewerThumbnail(asset: albumInfo.sharedAssets![index].assetInfo);
+                return AlbumViewerThumbnail(asset: albumInfo.sharedAssets![index]);
               },
               childCount: albumInfo.sharedAssets?.length,
             ),

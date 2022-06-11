@@ -147,7 +147,7 @@ export class AlbumService {
     return albums.map((album) => mapAlbum(album));
   }
 
-  async getAlbumInfo(authUser: AuthUserDto, albumId: string) {
+  async getAlbumInfo(authUser: AuthUserDto, albumId: string): Promise<Album> {
     const albumOwner = await this.albumRepository.findOne({ where: { ownerId: authUser.id } });
     const personShared = await this.userAlbumRepository.findOne({
       where: { albumId: albumId, sharedUserId: authUser.id },
@@ -171,7 +171,7 @@ export class AlbumService {
 
     albumInfo.sharedAssets = sortedSharedAsset;
 
-    return albumInfo;
+    return mapAlbum(albumInfo);
   }
 
   async addUsersToAlbum(addUsersDto: AddUsersDto, albumId: string) {

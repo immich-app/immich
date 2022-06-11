@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 
-import 'package:immich_mobile/modules/sharing/models/shared_asset.model.dart';
-import 'package:immich_mobile/modules/sharing/models/shared_user.model.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:immich_mobile/shared/models/user.model.dart';
 
 class SharedAlbum {
   final String id;
@@ -11,8 +11,8 @@ class SharedAlbum {
   final String albumName;
   final String createdAt;
   final String? albumThumbnailAssetId;
-  final List<SharedUsers> sharedUsers;
-  final List<SharedAssets>? sharedAssets;
+  final List<User> sharedUsers;
+  final List<ImmichAsset>? sharedAssets;
 
   SharedAlbum({
     required this.id,
@@ -30,8 +30,8 @@ class SharedAlbum {
     String? albumName,
     String? createdAt,
     String? albumThumbnailAssetId,
-    List<SharedUsers>? sharedUsers,
-    List<SharedAssets>? sharedAssets,
+    List<User>? sharedUsers,
+    List<ImmichAsset>? sharedAssets,
   }) {
     return SharedAlbum(
       id: id ?? this.id,
@@ -69,9 +69,9 @@ class SharedAlbum {
       albumName: map['albumName'] ?? '',
       createdAt: map['createdAt'] ?? '',
       albumThumbnailAssetId: map['albumThumbnailAssetId'],
-      sharedUsers: List<SharedUsers>.from(map['sharedUsers']?.map((x) => SharedUsers.fromMap(x))),
+      sharedUsers: List<User>.from(map['sharedUsers']?.map((x) => User.fromMap(x))),
       sharedAssets: map['sharedAssets'] != null
-          ? List<SharedAssets>.from(map['sharedAssets']?.map((x) => SharedAssets.fromMap(x)))
+          ? List<ImmichAsset>.from(map['sharedAssets']?.map((x) => ImmichAsset.fromMap(x)))
           : null,
     );
   }

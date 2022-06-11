@@ -16,8 +16,8 @@ export interface Asset {
   isFavorite: boolean;
   mimeType: string | null;
   duration: string | null;
-  exifInfo: Exif;
-  smartInfo: SmartInfo;
+  exifInfo?: Exif;
+  smartInfo?: SmartInfo;
 }
 
 export function mapAsset(entity: AssetEntity): Asset {
@@ -34,7 +34,7 @@ export function mapAsset(entity: AssetEntity): Asset {
     isFavorite: entity.isFavorite,
     mimeType: entity.mimeType,
     duration: entity.duration,
-    exifInfo: mapExif(entity.exifInfo),
-    smartInfo: mapSmartInfo(entity.smartInfo),
+    exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
+    smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
   };
 }

@@ -53,7 +53,6 @@ import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.mod
     CommunicationModule,
 
     AlbumModule,
-    SharingModule,
 
     ScheduleModule.forRoot(),
 
