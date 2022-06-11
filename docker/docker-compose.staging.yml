@@ -2,10 +2,7 @@ version: "3.8"
 
 services:
   immich-server:
-    image: immich-server:staging
-    build:
-      context: ../server
-      dockerfile: Dockerfile
+    image: altran1502/immich-server:staging
     entrypoint: ["/bin/sh", "./start-server.sh"]
     expose:
       - "3000"
@@ -23,11 +20,24 @@ services:
     restart: always
 
   immich-microservices:
-    image: immich-microservices:staging
-    build:
-      context: ../server
-      dockerfile: Dockerfile
+    image: altran1502/immich-server:staging
     entrypoint: ["/bin/sh", "./start-microservices.sh"]
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - redis
+      - database
+    networks:
+      - immich-network
+    restart: always
+
+  immich-machine-learning:
+    image: altran1502/immich-machine-learning:staging
+    entrypoint: ["/bin/sh", "./entrypoint.sh"]
     expose:
       - "3001"
     volumes:
@@ -42,34 +52,9 @@ services:
       - immich-network
     restart: always
 
-  immich-machine-learning:
-    image: immich-machine-learning:staging
-    build:
-      context: ../machine-learning
-      dockerfile: Dockerfile
-    entrypoint: ["/bin/sh", "./entrypoint.sh"]
-    expose:
-      - "3001"
-    volumes:
-      - ../machine-learning:/usr/src/app
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /usr/src/app/node_modules
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - database
-    networks:
-      - immich-network
-
   immich-web:
-    image: immich-web-staging:latest
+    image: altran1502/immich-web:staging
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
-    build:
-      context: ../web
-      dockerfile: Dockerfile
-      target: prod
     env_file:
       - .env
     ports:
@@ -101,6 +86,7 @@ services:
       - 5432:5432
     networks:
       - immich-network
+    restart: always
 
   nginx:
     container_name: proxy_nginx

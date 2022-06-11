@@ -87,7 +87,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process('tag-image')
+  @Process({ name: 'tag-image', concurrency: 2 })
   async tagImage(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
 
@@ -106,7 +106,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process('detect-object')
+  @Process({ name: 'detect-object', concurrency: 2 })
   async detectObject(job: Job) {
     try {
       const { asset }: { asset: AssetEntity } = job.data;
