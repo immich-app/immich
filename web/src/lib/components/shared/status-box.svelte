@@ -5,6 +5,7 @@
 	import Cloud from 'svelte-material-icons/Cloud.svelte';
 	import Dns from 'svelte-material-icons/Dns.svelte';
 	import LoadingSpinner from './loading-spinner.svelte';
+	import { goto } from '$app/navigation';
 
 	type ServerInfoType = {
 		diskAvailable: string;
@@ -77,7 +78,11 @@
 		<div class="text-xs">
 			<p class="text-sm font-medium text-immich-primary">Server</p>
 
-			<input class="border p-2 rounded-md bg-gray-200 mt-2 text-immich-primary font-medium" value="{endpoint}" disabled="true">
+			<input
+				class="border p-2 rounded-md bg-gray-200 mt-2 text-immich-primary font-medium"
+				value={endpoint}
+				disabled={true}
+			/>
 			<div class="flex justify-items-center justify-between mt-2">
 				<p>Status</p>
 
@@ -94,4 +99,10 @@
 			</div>
 		</div>
 	</div>
+	<!-- <div>
+		<hr class="ml-5 my-4" />
+	</div>
+	<button class="text-xs ml-5 underline hover:cursor-pointer text-immich-primary" on:click={() => goto('/changelog')}
+		>Changelog</button
+	> -->
 </div>

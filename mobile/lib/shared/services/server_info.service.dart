@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/mapbox_info.model.dart';
 import 'package:immich_mobile/shared/models/server_version.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
@@ -13,15 +14,16 @@ class ServerInfoService {
     return ServerInfo.fromJson(response.toString());
   }
 
-  Future<MapboxInfo> getMapboxInfo() async {
-    Response response = await _networkService.getRequest(url: 'server-info/mapbox');
-
-    return MapboxInfo.fromJson(response.toString());
-  }
-
   Future<ServerVersion?> getServerVersion() async {
-    Response response = await _networkService.getRequest(url: 'server-info/version');
+    try {
+      Response response =
+          await _networkService.getRequest(url: 'server-info/version');
 
-    return ServerVersion.fromJson(response.toString());
+      return ServerVersion.fromJson(response.toString());
+    } catch (e) {
+      debugPrint("Error getting server info");
+    }
+
+    return null;
   }
 }

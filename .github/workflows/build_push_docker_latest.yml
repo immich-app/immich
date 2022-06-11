@@ -4,17 +4,16 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
-  build_and_push_server_latest:
+  # This image include both the server and microservices - the two containers can be slitted into separated
+  # service with its coressponding entry file.
+  build_and_push_server_monorepo_latest:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          # ref: "main" # branch
           fetch-depth: 0
 
       - name: Set up QEMU
@@ -27,23 +26,22 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push Immich
+      - name: Build and push Immich Mono Repo
         uses: docker/build-push-action@v3.0.0
         with:
           context: ./server
           file: ./server/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: |
             altran1502/immich-server:latest
 
-  build_and_push_microservice_latest:
+  build_and_push_machine_learning_latest:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          # ref: "main" # branch
           fetch-depth: 0
 
       - name: Set up QEMU
@@ -56,15 +54,15 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and Push Microservices
+      - name: Build and Push Machine Learning
         uses: docker/build-push-action@v3.0.0
         with:
-          context: ./microservices
-          file: ./microservices/Dockerfile
+          context: ./machine-learning
+          file: ./machine-learning/Dockerfile
           platforms: linux/arm/v7,linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: |
-            altran1502/immich-microservices:latest
+            altran1502/immich-machine-learning:latest
 
   build_and_push_web_latest:
     runs-on: ubuntu-latest
@@ -72,7 +70,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          # ref: "main" # branch
           fetch-depth: 0
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2.0.0
@@ -91,6 +88,6 @@ jobs:
           file: ./web/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           target: prod
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: |
             altran1502/immich-web:latest

@@ -1,8 +1,0 @@
-opencv-python==4.5.5.64
-fastapi>=0.68.0,<0.69.0
-pydantic>=1.8.0,<2.0.0
-uvicorn>=0.15.0,<0.16.0
-tensorflow==2.8.0
-numpy==1.22.2
-pillow==9.0.1
-tf2_yolov4==0.1.0
