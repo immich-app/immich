@@ -50,7 +50,7 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
     var box = Hive.box(hiveGithubReleaseInfoBox);
 
     box.put(githubReleaseInfoKey, state);
-    VersionAnnouncementOverlayController.appLoader.show();
+    VersionAnnouncementOverlayController.appLoader.hide();
   }
 }
 

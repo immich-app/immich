@@ -45,20 +45,15 @@ class ImmichApp extends ConsumerStatefulWidget {
   _ImmichAppState createState() => _ImmichAppState();
 }
 
-class _ImmichAppState extends ConsumerState<ImmichApp>
-    with WidgetsBindingObserver {
+class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
         debugPrint("[APP STATE] resumed");
-        ref
-            .watch(appStateProvider.notifier)
-            .state = AppStateEnum.resumed;
+        ref.watch(appStateProvider.notifier).state = AppStateEnum.resumed;
 
-        var isAuthenticated = ref
-            .watch(authenticationProvider)
-            .isAuthenticated;
+        var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
 
         if (isAuthenticated) {
           ref.watch(backupProvider.notifier).resumeBackup();
@@ -74,9 +69,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp>
 
       case AppLifecycleState.inactive:
         debugPrint("[APP STATE] inactive");
-        ref
-            .watch(appStateProvider.notifier)
-            .state = AppStateEnum.inactive;
+        ref.watch(appStateProvider.notifier).state = AppStateEnum.inactive;
         ref.watch(websocketProvider.notifier).disconnect();
         ref.watch(backupProvider.notifier).cancelBackup();
 
@@ -84,16 +77,12 @@ class _ImmichAppState extends ConsumerState<ImmichApp>
 
       case AppLifecycleState.paused:
         debugPrint("[APP STATE] paused");
-        ref
-            .watch(appStateProvider.notifier)
-            .state = AppStateEnum.paused;
+        ref.watch(appStateProvider.notifier).state = AppStateEnum.paused;
         break;
 
       case AppLifecycleState.detached:
         debugPrint("[APP STATE] detached");
-        ref
-            .watch(appStateProvider.notifier)
-            .state = AppStateEnum.detached;
+        ref.watch(appStateProvider.notifier).state = AppStateEnum.detached;
         break;
     }
   }
@@ -118,6 +107,8 @@ class _ImmichAppState extends ConsumerState<ImmichApp>
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Stack(
@@ -130,8 +121,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp>
               brightness: Brightness.light,
               primarySwatch: Colors.indigo,
               fontFamily: 'WorkSans',
-              snackBarTheme: const SnackBarThemeData(
-                  contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
+              snackBarTheme: const SnackBarThemeData(contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
               scaffoldBackgroundColor: immichBackgroundColor,
               appBarTheme: const AppBarTheme(
                 backgroundColor: immichBackgroundColor,
@@ -142,8 +132,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp>
               ),
             ),
             routeInformationParser: _immichRouter.defaultRouteParser(),
-            routerDelegate: _immichRouter.delegate(
-                navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
+            routerDelegate: _immichRouter.delegate(navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
           ),
           const ImmichLoadingOverlay(),
           const VersionAnnouncementOverlay(),
