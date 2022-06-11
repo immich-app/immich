@@ -14,22 +14,16 @@ class ServerInfoService {
     return ServerInfo.fromJson(response.toString());
   }
 
-  Future<MapboxInfo> getMapboxInfo() async {
-    Response response = await _networkService.getRequest(url: 'server-info/mapbox');
-
-    return MapboxInfo.fromJson(response.toString());
-  }
-
   Future<ServerVersion?> getServerVersion() async {
     try {
-    Response response = await _networkService.getRequest(url: 'server-info/version');
+      Response response =
+          await _networkService.getRequest(url: 'server-info/version');
 
-    return ServerVersion.fromJson(response.toString());
+      return ServerVersion.fromJson(response.toString());
     } catch (e) {
       debugPrint("Error getting server info");
     }
-    
-    return null;
 
+    return null;
   }
 }

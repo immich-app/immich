@@ -11,7 +11,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     void goToReleaseNote() async {
-      final Uri _url = Uri.parse('https://github.com/alextran1502/immich/releases/latest');
+      final Uri _url =
+          Uri.parse('https://github.com/alextran1502/immich/releases/latest');
       await launchUrl(_url);
     }
 
@@ -20,7 +21,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
     }
 
     return ValueListenableBuilder<bool>(
-      valueListenable: VersionAnnouncementOverlayController.appLoader.loaderShowingNotifier,
+      valueListenable:
+          VersionAnnouncementOverlayController.appLoader.loaderShowingNotifier,
       builder: (context, shouldShow, child) {
         if (shouldShow) {
           return Scaffold(
@@ -50,10 +52,14 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                               child: RichText(
                                 text: TextSpan(
                                   style: const TextStyle(
-                                      fontSize: 14, fontFamily: 'WorkSans', color: Colors.black87, height: 1.2),
+                                      fontSize: 14,
+                                      fontFamily: 'WorkSans',
+                                      color: Colors.black87,
+                                      height: 1.2),
                                   children: <TextSpan>[
                                     const TextSpan(
-                                      text: 'Hi friend, there is a new release of',
+                                      text:
+                                          'Hi friend, there is a new release of',
                                     ),
                                     const TextSpan(
                                       text: ' Immich ',
@@ -64,14 +70,16 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                       ),
                                     ),
                                     const TextSpan(
-                                      text: "please take your time to visit the ",
+                                      text:
+                                          "please take your time to visit the ",
                                     ),
                                     TextSpan(
                                       text: "release note",
                                       style: const TextStyle(
                                         decoration: TextDecoration.underline,
                                       ),
-                                      recognizer: TapGestureRecognizer()..onTap = goToReleaseNote,
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = goToReleaseNote,
                                     ),
                                     const TextSpan(
                                       text:
@@ -90,7 +98,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                     primary: Colors.indigo,
                                     onPrimary: Colors.grey[50],
                                     elevation: 2,
-                                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10, horizontal: 25),
                                   ),
                                   onPressed: onAcknowledgeTapped,
                                   child: const Text(
@@ -118,7 +127,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
 }
 
 class VersionAnnouncementOverlayController {
-  static final VersionAnnouncementOverlayController appLoader = VersionAnnouncementOverlayController();
+  static final VersionAnnouncementOverlayController appLoader =
+      VersionAnnouncementOverlayController();
   ValueNotifier<bool> loaderShowingNotifier = ValueNotifier(false);
   ValueNotifier<String> loaderTextNotifier = ValueNotifier('error message');
 

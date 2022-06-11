@@ -11,6 +11,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
@@ -26,6 +27,7 @@ void main() async {
   await Hive.openBox(userInfoBox);
   await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
   await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
+  await Hive.openBox(hiveGithubReleaseInfoBox);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -50,9 +52,13 @@ class _ImmichAppState extends ConsumerState<ImmichApp>
     switch (state) {
       case AppLifecycleState.resumed:
         debugPrint("[APP STATE] resumed");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.resumed;
+        ref
+            .watch(appStateProvider.notifier)
+            .state = AppStateEnum.resumed;
 
-        var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
+        var isAuthenticated = ref
+            .watch(authenticationProvider)
+            .isAuthenticated;
 
         if (isAuthenticated) {
           ref.watch(backupProvider.notifier).resumeBackup();
@@ -62,13 +68,15 @@ class _ImmichAppState extends ConsumerState<ImmichApp>
 
         ref.watch(websocketProvider.notifier).connect();
 
-        VersionAnnouncementOverlayController.appLoader.show();
-        
+        ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+
         break;
 
       case AppLifecycleState.inactive:
         debugPrint("[APP STATE] inactive");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.inactive;
+        ref
+            .watch(appStateProvider.notifier)
+            .state = AppStateEnum.inactive;
         ref.watch(websocketProvider.notifier).disconnect();
         ref.watch(backupProvider.notifier).cancelBackup();
 
@@ -76,12 +84,16 @@ class _ImmichAppState extends ConsumerState<ImmichApp>
 
       case AppLifecycleState.paused:
         debugPrint("[APP STATE] paused");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.paused;
+        ref
+            .watch(appStateProvider.notifier)
+            .state = AppStateEnum.paused;
         break;
 
       case AppLifecycleState.detached:
         debugPrint("[APP STATE] detached");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.detached;
+        ref
+            .watch(appStateProvider.notifier)
+            .state = AppStateEnum.detached;
         break;
     }
   }
