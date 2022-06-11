@@ -19,11 +19,6 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
 
   final ServerInfoService _serverInfoService = ServerInfoService();
 
-  getMapboxInfo() async {
-    MapboxInfo mapboxInfoRes = await _serverInfoService.getMapboxInfo();
-    state = state.copyWith(mapboxInfo: mapboxInfoRes);
-  }
-
   getServerVersion() async {
     ServerVersion? serverVersion = await _serverInfoService.getServerVersion();
 

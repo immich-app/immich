@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
+import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
@@ -50,12 +51,19 @@ class _ImmichAppState extends ConsumerState<ImmichApp>
       case AppLifecycleState.resumed:
         debugPrint("[APP STATE] resumed");
         ref.watch(appStateProvider.notifier).state = AppStateEnum.resumed;
-        ref.watch(backupProvider.notifier).resumeBackup();
+
+        var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
+
+        if (isAuthenticated) {
+          ref.watch(backupProvider.notifier).resumeBackup();
+          ref.watch(assetProvider.notifier).getAllAsset();
+          ref.watch(serverInfoProvider.notifier).getServerVersion();
+        }
+
         ref.watch(websocketProvider.notifier).connect();
-        ref.watch(assetProvider.notifier).getAllAsset();
-        ref.watch(serverInfoProvider.notifier).getServerVersion();
 
         VersionAnnouncementOverlayController.appLoader.show();
+        
         break;
 
       case AppLifecycleState.inactive:
@@ -126,7 +134,7 @@ class _ImmichAppState extends ConsumerState<ImmichApp>
                 navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
           ),
           const ImmichLoadingOverlay(),
-          VersionAnnouncementOverlay(),
+          const VersionAnnouncementOverlay(),
         ],
       ),
     );
