@@ -3,7 +3,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssetEntity } from '@app/database/entities/asset.entity';
-import sharp from 'sharp';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { randomUUID } from 'crypto';

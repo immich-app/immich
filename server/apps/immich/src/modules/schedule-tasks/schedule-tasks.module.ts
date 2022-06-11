@@ -3,12 +3,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ScheduleTasksService } from './schedule-tasks.service';
+import { MicroservicesModule } from '../../../../microservices/src/microservices.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AssetEntity]),
     BullModule.registerQueue({
-      name: 'thumbnail-generator-queue',
+      name: 'video-conversion-queue',
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
@@ -16,7 +17,7 @@ import { ScheduleTasksService } from './schedule-tasks.service';
       },
     }),
     BullModule.registerQueue({
-      name: 'video-conversion-queue',
+      name: 'thumbnail-generator-queue',
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
