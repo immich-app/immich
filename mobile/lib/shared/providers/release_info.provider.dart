@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -32,17 +30,12 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
         debugPrint("Remote release veresion $latestTagVersion");
 
         if (localReleaseVersion == null && latestTagVersion.isNotEmpty) {
-          box.put(githubReleaseInfoKey, latestTagVersion);
           VersionAnnouncementOverlayController.appLoader.show();
-
           return;
         }
 
-        if (latestTagVersion.isNotEmpty &&
-            localReleaseVersion != latestTagVersion) {
-          box.put(githubReleaseInfoKey, latestTagVersion);
+        if (latestTagVersion.isNotEmpty && localReleaseVersion != latestTagVersion) {
           VersionAnnouncementOverlayController.appLoader.show();
-
           return;
         }
       }
@@ -52,7 +45,13 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
       state = "";
     }
   }
+
+  void acknowledgeNewVersion() {
+    var box = Hive.box(hiveGithubReleaseInfoBox);
+
+    box.put(githubReleaseInfoKey, state);
+    VersionAnnouncementOverlayController.appLoader.show();
+  }
 }
 
-final releaseInfoProvider = StateNotifierProvider<ReleaseInfoNotifier, String>(
-    (ref) => ReleaseInfoNotifier());
+final releaseInfoProvider = StateNotifierProvider<ReleaseInfoNotifier, String>((ref) => ReleaseInfoNotifier());
