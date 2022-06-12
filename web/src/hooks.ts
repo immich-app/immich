@@ -3,58 +3,54 @@ import * as cookie from 'cookie';
 import { serverEndpoint } from '$lib/constants';
 import { session } from '$app/stores';
 
+export const handle: Handle = async ({ event, resolve }) => {
+	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
 
-export const handle: Handle = async ({ event, resolve, }) => {
-  const cookies = cookie.parse(event.request.headers.get('cookie') || '');
+	if (!cookies.session) {
+		return await resolve(event);
+	}
 
-  if (!cookies.session) {
-    return await resolve(event)
-  }
+	try {
+		const { email, isAdmin, firstName, lastName, id, accessToken } = JSON.parse(cookies.session);
 
-  try {
-    const { email, isAdmin, firstName, lastName, id, accessToken } = JSON.parse(cookies.session);
+		const res = await fetch(`${serverEndpoint}/auth/validateToken`, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+			},
+		});
 
-    const res = await fetch(`${serverEndpoint}/auth/validateToken`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
-    })
+		if (res.status === 201) {
+			event.locals.user = {
+				id,
+				accessToken,
+				firstName,
+				lastName,
+				isAdmin,
+				email,
+			};
+		}
 
-    if (res.status === 201) {
-      event.locals.user = {
-        id,
-        accessToken,
-        firstName,
-        lastName,
-        isAdmin,
-        email
-      };
-    }
+		const response = await resolve(event);
 
-    const response = await resolve(event);
-
-    return response;
-  } catch (error) {
-    console.log('Error parsing session', error);
-    return await resolve(event);
-  }
-
+		return response;
+	} catch (error) {
+		console.log('Error parsing session', error);
+		return await resolve(event);
+	}
 };
 
 export const getSession: GetSession = async ({ locals }) => {
+	if (!locals.user) return {};
 
-  if (!locals.user) return {}
-
-  return {
-    user: {
-      id: locals.user.id,
-      accessToken: locals.user.accessToken,
-      firstName: locals.user.firstName,
-      lastName: locals.user.lastName,
-      isAdmin: locals.user.isAdmin,
-      email: locals.user.email
-    }
-  }
-}
-
+	return {
+		user: {
+			id: locals.user.id,
+			accessToken: locals.user.accessToken,
+			firstName: locals.user.firstName,
+			lastName: locals.user.lastName,
+			isAdmin: locals.user.isAdmin,
+			email: locals.user.email,
+		},
+	};
+};

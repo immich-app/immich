@@ -1,0 +1,13 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "@app/database/config/(.*)": "<rootDir>../../../libs/database/src/config/$1",
+    "@app/database/entities/(.*)": "<rootDir>../../../libs/database/src/entities/$1"
+  }
+}
