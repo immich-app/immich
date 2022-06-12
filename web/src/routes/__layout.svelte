@@ -7,7 +7,6 @@
 		if (browser) {
 			const { shouldShowAnnouncement, localVersion, remoteVersion } = await checkAppVersion();
 
-			console.log('Recheck');
 			return { props: { url, shouldShowAnnouncement, localVersion, remoteVersion } };
 		} else {
 			return {
