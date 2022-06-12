@@ -1,7 +1,7 @@
 export class ServerInfoDto {
-  diskSize: String;
-  diskUse: String;
-  diskAvailable: String;
+  diskSize: string;
+  diskUse: string;
+  diskAvailable: string;
   diskSizeRaw: number;
   diskUseRaw: number;
   diskAvailableRaw: number;
