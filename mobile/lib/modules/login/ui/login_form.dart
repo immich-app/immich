@@ -96,12 +96,20 @@ class ServerEndpointInput extends StatelessWidget {
 
   const ServerEndpointInput({Key? key, required this.controller}) : super(key: key);
 
+  String? _validateInput(String? url) {
+    if (url == null) return null;
+    if (!url.startsWith(RegExp(r'https?://'))) return 'Please specify http:// or https://';
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       decoration: const InputDecoration(
           labelText: 'Server Endpoint URL', border: OutlineInputBorder(), hintText: 'http://your-server-ip:port'),
+      validator: _validateInput,
+      autovalidateMode: AutovalidateMode.always,
     );
   }
 }
@@ -111,12 +119,22 @@ class EmailInput extends StatelessWidget {
 
   const EmailInput({Key? key, required this.controller}) : super(key: key);
 
+  String? _validateInput(String? email) {
+    if (email == null || email == '') return null;
+    if (email.endsWith(' ')) return 'Trailing whitespace';
+    if (email.startsWith(' ')) return 'Leading whitespace';
+    if (email.contains(' ') || !email.contains('@')) return 'Invalid Email';
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       decoration:
           const InputDecoration(labelText: 'Email', border: OutlineInputBorder(), hintText: 'youremail@email.com'),
+      validator: _validateInput,
+      autovalidateMode: AutovalidateMode.always,
     );
   }
 }
