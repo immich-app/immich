@@ -11,6 +11,7 @@ import { readFile } from 'fs/promises';
 import { Logger } from '@nestjs/common';
 import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Processor('metadata-extraction-queue')
 export class MetadataExtractionProcessor {
@@ -26,7 +27,7 @@ export class MetadataExtractionProcessor {
     @InjectRepository(SmartInfoEntity)
     private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {
-    if (process.env.ENABLE_MAPBOX) {
+    if (process.env.ENABLE_MAPBOX == 'true') {
       this.geocodingClient = mapboxGeocoding({
         accessToken: process.env.MAPBOX_KEY,
       });
