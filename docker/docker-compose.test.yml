@@ -40,7 +40,7 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
       PG_DATA: /var/lib/postgresql/data
     volumes:
-      - pgdata-test:/var/lib/postgresql/data
+      - /var/lib/postgresql/data
     ports:
       - 5432:5432
     networks:
@@ -48,5 +48,3 @@ services:
 
 networks:
   immich_network_test:
-volumes:
-  pgdata-test:

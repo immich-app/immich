@@ -13,3 +13,7 @@ const String savedLoginInfoKey = "immichSavedLoginInfoKey";
 // Backup Info
 const String hiveBackupInfoBox = "immichBackupAlbumInfoBox";
 const String backupInfoKey = "immichBackupAlbumInfoKey";
+
+// Github Release Info
+const String hiveGithubReleaseInfoBox = "immichGithubReleaseInfoBox";
+const String githubReleaseInfoKey = "immichGithubReleaseInfoKey";

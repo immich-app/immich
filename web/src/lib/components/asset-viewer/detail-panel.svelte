@@ -15,33 +15,43 @@
 	let marker: any;
 
 	export let asset: ImmichAsset;
-	$: {
-		// Redraw map
-		if (map && leaflet) {
-			map.removeLayer(marker);
-			map.setView([asset.exifInfo?.latitude || 0, asset.exifInfo?.longitude || 0], 17);
-			marker = leaflet.marker([asset.exifInfo?.latitude || 0, asset.exifInfo?.longitude || 0]);
-			map.addLayer(marker);
-		}
+	$: if (asset.exifInfo) {
+		drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
 	}
 
 	onMount(async () => {
 		if (browser) {
+			if (asset.exifInfo) {
+				await drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
+			}
+		}
+	});
+
+	async function drawMap(lat: number, lon: number) {
+		if (!leaflet) {
 			// @ts-ignore
 			leaflet = await import('leaflet');
-			map = leaflet.map('map').setView([asset.exifInfo?.latitude || 0, asset.exifInfo?.longitude || 0], 17);
+		}
 
+		if (!map) {
+			map = leaflet.map('map');
 			leaflet
 				.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 				})
 				.addTo(map);
-
-			marker = leaflet.marker([asset.exifInfo?.latitude || 0, asset.exifInfo?.longitude || 0]);
-
-			map.addLayer(marker);
 		}
-	});
+
+		if (marker) {
+			map.removeLayer(marker);
+		}
+
+		map.setView([lat || 0, lon || 0], 17);
+
+		marker = leaflet.marker([lat || 0, lon || 0]);
+		marker.bindPopup(`${(lat || 0).toFixed(7)},${(lon || 0).toFixed(7)}`);
+		map.addLayer(marker);
+	}
 
 	const dispatch = createEventDispatcher();
 	const getHumanReadableString = (sizeInByte: number) => {
@@ -131,7 +141,7 @@
 					<p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
 					<div class="flex text-sm gap-2">
 						<p>{`f/${asset.exifInfo.fNumber}` || ''}</p>
-						<p>{`1/${1 / asset.exifInfo.exposureTime}` || ''}</p>
+						<p>{`1/${Math.floor(1 / asset.exifInfo.exposureTime)}` || ''}</p>
 						<p>{`${asset.exifInfo.focalLength}mm` || ''}</p>
 						<p>{`ISO${asset.exifInfo.iso}` || ''}</p>
 					</div>
