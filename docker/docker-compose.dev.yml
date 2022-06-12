@@ -6,7 +6,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    command: npm run start:dev
+    command: npm run start:dev immich
     expose:
       - "3000"
     volumes:
@@ -23,16 +23,35 @@ services:
     networks:
       - immich-network
 
-  immich-microservices:
-    image: immich-microservices-dev:1.9.0
+  immich-machine-learning:
+    image: immich-machine-learning-dev:1.9.0
     build:
-      context: ../microservices
+      context: ../machine-learning
       dockerfile: Dockerfile
     command: npm run start:dev
     expose:
       - "3001"
     volumes:
-      - ../microservices:/usr/src/app
+      - ../machine-learning:/usr/src/app
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /usr/src/app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - database
+    networks:
+      - immich-network
+
+  immich-microservices:
+    image: immich-microservices:1.9.0
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    command: npm run start:dev microservices
+    volumes:
+      - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
     env_file:

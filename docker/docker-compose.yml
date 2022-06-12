@@ -3,7 +3,7 @@ version: "3.8"
 services:
   immich-server:
     image: altran1502/immich-server:latest
-    entrypoint: ["/bin/sh", "./entrypoint.sh"]
+    entrypoint: ["/bin/sh", "./start-server.sh"]
     expose:
       - "3000"
     volumes:
@@ -20,7 +20,23 @@ services:
     restart: always
 
   immich-microservices:
-    image: altran1502/immich-microservices:latest
+    image: altran1502/immich-server:latest
+    entrypoint: ["/bin/sh", "./start-microservices.sh"]
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - redis
+      - database
+    networks:
+      - immich-network
+    restart: always
+
+  immich-machine-learning:
+    image: altran1502/immich-machine-learning:latest
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     expose:
       - "3001"
@@ -47,14 +63,12 @@ services:
       - immich-network
     restart: always
 
-
   redis:
     container_name: immich_redis
     image: redis:6.2
     networks:
       - immich-network
     restart: always
-    
 
   database:
     container_name: immich_postgres
@@ -73,7 +87,7 @@ services:
     networks:
       - immich-network
     restart: always
-    
+
   nginx:
     container_name: proxy_nginx
     image: nginx:latest

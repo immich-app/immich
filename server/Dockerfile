@@ -1,4 +1,4 @@
-FROM node:16-alpine3.14
+FROM node:16-alpine3.14 as core
 
 ARG DEBIAN_FRONTEND=noninteractive
 
