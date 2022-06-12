@@ -7,6 +7,7 @@
 		if (browser) {
 			const { shouldShowAnnouncement, localVersion, remoteVersion } = await checkAppVersion();
 
+			console.log('Recheck');
 			return { props: { url, shouldShowAnnouncement, localVersion, remoteVersion } };
 		} else {
 			return {
@@ -38,7 +39,7 @@
 			<DownloadPanel />
 
 			{#if shouldShowAnnouncement}
-				<AnnouncementBox {localVersion} {remoteVersion} />
+				<AnnouncementBox {localVersion} {remoteVersion} on:close={() => (shouldShowAnnouncement = false)} />
 			{/if}
 		</div>
 	{/key}

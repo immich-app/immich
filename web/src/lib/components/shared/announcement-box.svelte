@@ -7,10 +7,12 @@
 	export let localVersion: string;
 	export let remoteVersion: string;
 
+	const dispatch = createEventDispatcher();
+
 	const acknowledgeClickHandler = () => {
 		localStorage.setItem('appVersion', remoteVersion);
 
-		goto($page.url.pathname);
+		dispatch('close');
 	};
 </script>
 
