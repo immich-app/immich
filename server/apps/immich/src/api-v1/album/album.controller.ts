@@ -36,18 +36,20 @@ export class AlbumController {
 
   @Put('/:albumId/users')
   async addUsers(
+    @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) addUsersDto: AddUsersDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
   ) {
-    return this.albumService.addUsersToAlbum(addUsersDto, albumId);
+    return this.albumService.addUsersToAlbum(authUser, addUsersDto, albumId);
   }
 
   @Put('/:albumId/assets')
   async addAssets(
+    @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) addAssetsDto: AddAssetsDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
   ) {
-    return this.albumService.addAssetsToAlbum(addAssetsDto, albumId);
+    return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId);
   }
 
   @Get()

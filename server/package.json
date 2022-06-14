@@ -92,6 +92,7 @@
     "typescript": "^4.3.5"
   },
   "jest": {
+    "clearMocks": true,
     "moduleFileExtensions": [
       "js",
       "json",
