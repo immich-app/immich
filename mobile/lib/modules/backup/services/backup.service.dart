@@ -13,6 +13,7 @@ import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
+import 'package:http/http.dart' as http;
 
 class BackupService {
   final NetworkService _networkService = NetworkService();
@@ -35,8 +36,7 @@ class BackupService {
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
 
-    MultipartFile assetRawUploadData;
-    MultipartFile thumbnailUploadData;
+    http.MultipartFile? thumbnailUploadData;
 
     for (var entity in assetList) {
       try {
@@ -47,35 +47,27 @@ class BackupService {
         }
 
         if (file != null) {
-          FormData formData;
           String originalFileName = await entity.titleAsync;
           String fileNameWithoutPath = originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
           var mimeType = FileHelper.getMimeType(file.path);
-          assetRawUploadData = await MultipartFile.fromFile(
-            file.path,
+          var fileStream = file.openRead();
+          var assetRawUploadData = http.MultipartFile(
+            "assetData",
+            fileStream,
+            file.lengthSync(),
             filename: fileNameWithoutPath,
             contentType: MediaType(
               mimeType["type"],
               mimeType["subType"],
             ),
           );
-          formData = FormData.fromMap({
-            'deviceAssetId': entity.id,
-            'deviceId': deviceId,
-            'assetType': _getAssetType(entity.type),
-            'createdAt': entity.createDateTime.toIso8601String(),
-            'modifiedAt': entity.modifiedDateTime.toIso8601String(),
-            'isFavorite': entity.isFavorite,
-            'fileExtension': fileExtension,
-            'duration': entity.videoDuration,
-            'assetData': [assetRawUploadData]
-          });
 
           // Build thumbnail multipart data
           var thumbnailData = await entity.thumbnailDataWithSize(const ThumbnailSize(1440, 2560));
           if (thumbnailData != null) {
-            thumbnailUploadData = MultipartFile.fromBytes(
+            thumbnailUploadData = http.MultipartFile.fromBytes(
+              "thumbnailData",
               List.from(thumbnailData),
               filename: fileNameWithoutPath,
               contentType: MediaType(
@@ -83,39 +75,33 @@ class BackupService {
                 "jpeg",
               ),
             );
-
-            // Send thumbnail data if it is exist
-            formData = FormData.fromMap({
-              'deviceAssetId': entity.id,
-              'deviceId': deviceId,
-              'assetType': _getAssetType(entity.type),
-              'createdAt': entity.createDateTime.toIso8601String(),
-              'modifiedAt': entity.modifiedDateTime.toIso8601String(),
-              'isFavorite': entity.isFavorite,
-              'fileExtension': fileExtension,
-              'duration': entity.videoDuration,
-              'thumbnailData': [thumbnailUploadData],
-              'assetData': [assetRawUploadData]
-            });
           }
 
-          Response res = await dio.post(
-            '$savedEndpoint/asset/upload',
-            data: formData,
-            cancelToken: cancelToken,
-            onSendProgress: (sent, total) => uploadProgress(sent, total),
-          );
+          var box = Hive.box(userInfoBox);
+
+          var req = http.MultipartRequest('POST', Uri.parse('$savedEndpoint/asset/upload'));
+          req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
+
+          req.fields['deviceAssetId'] = entity.id;
+          req.fields['deviceId'] = deviceId;
+          req.fields['assetType'] = _getAssetType(entity.type);
+          req.fields['createdAt'] = entity.createDateTime.toIso8601String();
+          req.fields['modifiedAt'] = entity.modifiedDateTime.toIso8601String();
+          req.fields['isFavorite'] = entity.isFavorite.toString();
+          req.fields['fileExtension'] = fileExtension;
+          req.fields['duration'] = entity.videoDuration.toString();
+
+          if(thumbnailUploadData != null) {
+            req.files.add(thumbnailUploadData);
+          }
+          req.files.add(assetRawUploadData);
+
+          var res = await req.send();
 
           if (res.statusCode == 201) {
             singleAssetDoneCb(entity.id, deviceId);
           }
         }
-      } on DioError catch (e) {
-        debugPrint("DioError backupAsset: ${e.response}");
-        if (e.type == DioErrorType.cancel || e.type == DioErrorType.other) {
-          return;
-        }
-        continue;
       } catch (e) {
         debugPrint("ERROR backupAsset: ${e.toString()}");
         continue;
