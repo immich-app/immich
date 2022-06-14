@@ -88,7 +88,7 @@
 
 			fileSelector.type = 'file';
 			fileSelector.multiple = true;
-			fileSelector.accept = 'image/*,video/*';
+			fileSelector.accept = 'image/*,video/*,.heic,.heif';
 
 			fileSelector.onchange = async (e: any) => {
 				try {
@@ -97,11 +97,41 @@
 					const acceptedFile = files.filter(
 						(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image',
 					);
-					// const exifs = await exifr.parse(files[0] as File);
-					// const thumbnailData = await exifr.thumbnail(files[0]);
-					console.log(acceptedFile);
-					// console.log(exifs);
-					// console.log('Thumbnail Data ', thumbnailData);
+
+					for (const asset of acceptedFile) {
+						const assetType = asset.type.split('/')[0].toUpperCase();
+						const fileExtension = asset.type.split('/')[1];
+						const formData = new FormData();
+
+						// Create and add Unique ID of asset on the device
+						formData.append('deviceAssetId', 'web' + '-' + asset.name + '-' + asset.lastModified);
+
+						// Get device id - for web -> use WEB
+						formData.append('deviceId', 'WEB');
+
+						// Get asset type
+						formData.append('assetType', assetType);
+
+						// Get Asset Created Date
+						// formData.append('createdAt', asset.lastMod)
+
+						// Get Asset Modified At
+						formData.append('modifiedAt', new Date(asset.lastModified).toISOString());
+
+						// Set Asset is Favorite to false
+						formData.append('isFavorite', 'false');
+
+						// Get asset duration
+						// formData.append('duration', '')
+
+						// Get asset file extension
+						formData.append('fileExtension', fileExtension);
+
+						// Get asset binary data.
+						// formData.append('assetData', '')
+
+						formData.forEach((v, k) => console.log(k, v));
+					}
 				} catch (e) {
 					console.log('Error processing file ', e);
 				}
