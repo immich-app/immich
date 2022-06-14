@@ -79,7 +79,7 @@ class BackupService {
 
           var box = Hive.box(userInfoBox);
 
-          var req = http.MultipartRequest('POST', Uri.parse('$savedEndpoint/asset/upload'));
+          var req = MultipartRequest('POST', Uri.parse('$savedEndpoint/asset/upload'), onProgress: ((bytes, totalBytes) => uploadProgress(bytes, totalBytes)));
           req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
 
           req.fields['deviceAssetId'] = entity.id;
@@ -97,7 +97,7 @@ class BackupService {
           req.files.add(assetRawUploadData);
 
           var res = await req.send();
-
+          
           if (res.statusCode == 201) {
             singleAssetDoneCb(entity.id, deviceId);
           }
@@ -134,5 +134,38 @@ class BackupService {
     });
 
     return DeviceInfoRemote.fromJson(res.toString());
+  }
+}
+
+
+class MultipartRequest extends http.MultipartRequest {
+  /// Creates a new [MultipartRequest].
+  MultipartRequest(
+    String method,
+    Uri url, {
+    required this.onProgress,
+  }) : super(method, url);
+
+  final void Function(int bytes, int totalBytes) onProgress;
+
+  /// Freezes all mutable fields and returns a
+  /// single-subscription [http.ByteStream]
+  /// that will emit the request body.
+  @override
+  http.ByteStream finalize() {
+    final byteStream = super.finalize();
+
+    final total = contentLength;
+    var bytes = 0;
+
+    final t = StreamTransformer.fromHandlers(
+      handleData: (List<int> data, EventSink<List<int>> sink) {
+        bytes += data.length;
+        onProgress.call(bytes, total);
+        sink.add(data);
+      },
+    );
+    final stream = byteStream.transform(t);
+    return http.ByteStream(stream);
   }
 }
