@@ -67,7 +67,7 @@
 		</video>
 
 		{#if isVideoLoading}
-			<div class="absolute w-full h-full bg-black/50 flex place-items-center place-content-center">
+			<div class="absolute flex place-items-center place-content-center">
 				<LoadingSpinner />
 			</div>
 		{/if}

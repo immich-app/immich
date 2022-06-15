@@ -5,7 +5,7 @@ dev-update:
 	docker-compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
 dev-scale:
-	docker-compose -f ./docker/docker-compose.dev.yml up --build -V  --scale immich_server=3 --remove-orphans
+	docker-compose -f ./docker/docker-compose.dev.yml up --build -V  --scale immich-server=3 --remove-orphans
 
 stage:
 	docker-compose -f ./docker/docker-compose.staging.yml up --build -V --remove-orphans
@@ -17,4 +17,4 @@ prod:
 	docker-compose -f ./docker/docker-compose.yml up --build -V --remove-orphans
 
 prod-scale:
-	docker-compose -f ./docker/docker-compose.yml up --build -V --scale immich_server=3 --scale immich_microservices=3 --remove-orphans
+	docker-compose -f ./docker/docker-compose.yml up --build -V --scale immich-server=5 --scale immich-microservices=3 --remove-orphans
