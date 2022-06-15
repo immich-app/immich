@@ -100,6 +100,7 @@ describe('User', () => {
               isAdmin: false,
               isFirstLoggedIn: true,
               profileImagePath: '',
+              isLocalUser: true,
             },
             {
               email: userTwoEmail,
@@ -110,6 +111,7 @@ describe('User', () => {
               isAdmin: false,
               isFirstLoggedIn: true,
               profileImagePath: '',
+              isLocalUser: true,
             },
           ]),
         );
