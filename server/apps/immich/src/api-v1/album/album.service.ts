@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -30,9 +30,9 @@ export class AlbumService {
     const isOwner = album.ownerId == authUser.id;
 
     if (validateIsOwner && !isOwner) {
-      throw new UnauthorizedException('Unauthorized Album Access');
+      throw new ForbiddenException('Unauthorized Album Access');
     } else if (!isOwner && !album.sharedUsers.some((user) => user.sharedUserId == authUser.id)) {
-      throw new UnauthorizedException('Unauthorized Album Access');
+      throw new ForbiddenException('Unauthorized Album Access');
     }
     return album;
   }
@@ -70,24 +70,27 @@ export class AlbumService {
 
   async removeUserFromAlbum(authUser: AuthUserDto, albumId: string, userId: string | 'me'): Promise<void> {
     const sharedUserId = userId == 'me' ? authUser.id : userId;
-    const album = await this._getAlbum({ authUser, albumId });
+    const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
+    if (album.ownerId != authUser.id && authUser.id != sharedUserId) {
+      throw new ForbiddenException('Cannot remove a user from a album that is not owned');
+    }
+    if (album.ownerId == sharedUserId) {
+      throw new BadRequestException('The owner of the album cannot be removed');
+    }
     await this._albumRepository.removeUser(album, sharedUserId);
   }
 
   // async removeUsersFromAlbum() {}
 
-  async removeAssetsFromAlbum(
-    authUser: AuthUserDto,
-    removeAssetsDto: RemoveAssetsDto,
-    albumId: string,
-  ): Promise<boolean> {
+  async removeAssetsFromAlbum(authUser: AuthUserDto, removeAssetsDto: RemoveAssetsDto, albumId: string): Promise<void> {
     const album = await this._getAlbum({ authUser, albumId });
-    return this._albumRepository.removeAssets(album, removeAssetsDto);
+    await this._albumRepository.removeAssets(album, removeAssetsDto);
   }
 
-  async addAssetsToAlbum(authUser: AuthUserDto, addAssetsDto: AddAssetsDto, albumId: string) {
+  async addAssetsToAlbum(authUser: AuthUserDto, addAssetsDto: AddAssetsDto, albumId: string): Promise<Album> {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-    return this._albumRepository.addAssets(album, addAssetsDto);
+    const updatedAlbum = await this._albumRepository.addAssets(album, addAssetsDto);
+    return mapAlbum(updatedAlbum);
   }
 
   async updateAlbumTitle(authUser: AuthUserDto, updateAlbumDto: UpdateAlbumDto, albumId: string): Promise<Album> {

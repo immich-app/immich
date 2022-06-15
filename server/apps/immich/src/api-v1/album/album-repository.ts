@@ -195,6 +195,7 @@ export class AlbumRepository implements IAlbumRepository {
       if (res.affected == 1) deleteAssetCount++;
     }
 
+    // TODO: No need to return boolean if using a singe delete query
     return deleteAssetCount == removeAssetsDto.assetIds.length;
   }
 
