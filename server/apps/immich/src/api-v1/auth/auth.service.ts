@@ -25,8 +25,6 @@ export class AuthService {
       private configService: ConfigService,
   ) {}
 
-  // todo validateUser() needed ?
-
   public async loginParams() {
     const params = {
       localAuth: true,
