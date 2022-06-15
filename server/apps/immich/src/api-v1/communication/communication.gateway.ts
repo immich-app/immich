@@ -1,5 +1,4 @@
 import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { CommunicationService } from './communication.service';
 import { Socket, Server } from 'socket.io';
 import { ImmichJwtService } from '../../modules/immich-auth/immich-jwt.service';
 import { Logger } from '@nestjs/common';

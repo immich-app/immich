@@ -1,13 +1,9 @@
-import {Body, Controller, Get, Logger, Post, UseGuards, ValidationPipe} from '@nestjs/common';
+import {Body, Controller, Get, Post, UseGuards, ValidationPipe} from '@nestjs/common';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { AuthService } from './auth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import {OAuthAccessTokenDto} from "./dto/o-auth-access-token.dto";
-import {mapUser} from "../user/response-dto/user";
-import {ImmichAuthService} from "../../modules/immich-auth/immich-auth.service";
-import util from "util";
 
 @Controller('auth')
 export class AuthController {

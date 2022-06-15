@@ -1,6 +1,5 @@
-import { createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { UserEntity } from '@app/database/entities/user.entity';
-// import { AuthUserDto } from './dto/auth-user.dto';
 
 export class AuthUserDto {
   id: string;

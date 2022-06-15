@@ -88,10 +88,6 @@ export class ImmichJwtService {
     return hash === hashedPassword;
   }
 
-  async signUp(email: string, password: string) {
-    return await this.immichAuthService.createUser(email, true, password);
-  }
-
   async signUpAdmin(email: string, password: string, firstName: string, lastName: string) {
     return await this.immichAuthService.createAdmin(email, true, password, firstName, lastName);
   }
