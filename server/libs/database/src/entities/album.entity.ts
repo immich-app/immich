@@ -2,7 +2,7 @@ import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } f
 import { AssetAlbumEntity } from './asset-album.entity';
 import { UserAlbumEntity } from './user-album.entity';
 
-@Entity('shared_albums')
+@Entity('albums')
 export class AlbumEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
