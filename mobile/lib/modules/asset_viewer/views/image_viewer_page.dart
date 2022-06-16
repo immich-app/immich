@@ -64,11 +64,7 @@ class ImageViewerPage extends HookConsumerWidget {
           ref.watch(imageViewerStateProvider.notifier).downloadAsset(asset, context);
         },
       ),
-      body: GestureDetector(
-        onLongPress: () {
-          showInfo();
-        },
-        child: SafeArea(
+      body: SafeArea(
           child: Stack(
             children: [
               Center(
@@ -78,6 +74,8 @@ class ImageViewerPage extends HookConsumerWidget {
                       thumbnailUrl: thumbnailUrl,
                       imageUrl: imageUrl,
                       authToken: "Bearer ${box.get(accessTokenKey)}",
+                      onSwipeDown: () => AutoRouter.of(context).pop(),
+                      onSwipeUp: () => showInfo(),
                   )
                 ),
               ),
@@ -88,7 +86,6 @@ class ImageViewerPage extends HookConsumerWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }

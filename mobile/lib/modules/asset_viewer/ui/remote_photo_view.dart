@@ -14,6 +14,8 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   late CachedNetworkImageProvider _imageProvider;
   _RemoteImageStatus _status = _RemoteImageStatus.empty;
 
+  static const int swipeThreshold = 100;
+
   @override
   Widget build(BuildContext context) {
     bool allowMoving = _status == _RemoteImageStatus.full;
@@ -22,7 +24,17 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
         imageProvider: _imageProvider,
         minScale: PhotoViewComputedScale.contained,
         maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
+        enablePanAlways: true,
+        onScaleEnd: _onScaleListener
     );
+  }
+
+  void _onScaleListener(BuildContext context, ScaleEndDetails details, PhotoViewControllerValue controllerValue) {
+    if (controllerValue.position.dy > swipeThreshold) {
+      widget.onSwipeDown();
+    } else if (controllerValue.position.dy < -swipeThreshold) {
+      widget.onSwipeUp();
+    }
   }
 
   CachedNetworkImageProvider _authorizedImageProvider(String url) {
@@ -69,11 +81,21 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 }
 
 class RemotePhotoView extends StatefulWidget {
-  const RemotePhotoView({ Key? key, required this.thumbnailUrl, required this.imageUrl, required this.authToken }) : super(key: key);
+  const RemotePhotoView({
+    Key? key,
+    required this.thumbnailUrl,
+    required this.imageUrl,
+    required this.authToken,
+    required this.onSwipeDown,
+    required this.onSwipeUp
+  }) : super(key: key);
 
   final String thumbnailUrl;
   final String imageUrl;
   final String authToken;
+
+  final void Function() onSwipeDown;
+  final void Function() onSwipeUp;
 
   @override
   State<StatefulWidget> createState() {
