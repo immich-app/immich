@@ -76,6 +76,10 @@ export class AssetController {
             { asset: assetWithThumbnail, fileName: file.originalname, fileSize: file.size, hasThumbnail: true },
             { jobId: savedAsset.id },
           );
+
+          this.wsCommunicateionGateway.server
+            .to(savedAsset.userId)
+            .emit('on_upload_success', JSON.stringify(savedAsset));
         } else {
           await this.assetUploadedQueue.add(
             'asset-uploaded',
@@ -83,8 +87,6 @@ export class AssetController {
             { jobId: savedAsset.id },
           );
         }
-
-        this.wsCommunicateionGateway.server.to(savedAsset.userId).emit('on_upload_success', JSON.stringify(savedAsset));
       } catch (e) {
         Logger.error(`Error receiving upload file ${e}`);
       }

@@ -11,9 +11,11 @@ import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
+import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
 
 @Module({
   imports: [
+    CommunicationModule,
     DatabaseModule,
     TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
     BullModule.forRootAsync({

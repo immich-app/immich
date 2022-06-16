@@ -13,7 +13,6 @@ export async function fileUploader(asset: File, accessToken: string) {
 		if (assetType !== 'VIDEO') {
 			exifData = await exifr.parse(asset);
 		}
-		console.log('Upload =======', asset.name);
 
 		const createdAt =
 			exifData && exifData.DateTimeOriginal != null

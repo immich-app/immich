@@ -46,6 +46,7 @@ export class AssetUploadedProcessor {
       await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
     } else {
       // Generate Thumbnail -> Then generate webp, tag image and detect object
+      await this.thumbnailGeneratorQueue.add('generate-jpeg-thumbnail', { asset }, { jobId: randomUUID() });
     }
 
     // Video Conversion
