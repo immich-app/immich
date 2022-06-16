@@ -66,7 +66,7 @@ export async function fileUploader(asset: File, accessToken: string) {
 			// event.loaded returns how many bytes are downloaded
 			// event.total returns the total number of bytes
 			// event.total is only available if server sends `Content-Length` header
-			console.log(`UPLOAD ${event.loaded} of ${event.total} bytes`);
+			console.log(`${asset.name} UPLOAD ${event.loaded} of ${event.total} bytes`);
 		};
 
 		request.open('POST', `${serverEndpoint}/asset/upload`);
