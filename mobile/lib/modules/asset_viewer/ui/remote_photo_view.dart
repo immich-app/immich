@@ -11,15 +11,11 @@ enum _RemoteImageStatus {
 }
 
 class _RemotePhotoViewState extends State<RemotePhotoView> {
-  CachedNetworkImageProvider? _imageProvider;
+  late CachedNetworkImageProvider _imageProvider;
   _RemoteImageStatus _status = _RemoteImageStatus.empty;
 
   @override
   Widget build(BuildContext context) {
-    if (_status == _RemoteImageStatus.empty || _imageProvider == null) {
-      return const CircularProgressIndicator();
-    }
-
     bool allowMoving = _status == _RemoteImageStatus.full;
 
     return PhotoView(
@@ -53,6 +49,8 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
   void _loadImages() {
     CachedNetworkImageProvider thumbnailProvider = _authorizedImageProvider(widget.thumbnailUrl);
+    _imageProvider = thumbnailProvider;
+
     thumbnailProvider.resolve(const ImageConfiguration()).addListener(ImageStreamListener((ImageInfo imageInfo, _) {
       _performStateTransition(_RemoteImageStatus.thumbnail, thumbnailProvider);
     }));
