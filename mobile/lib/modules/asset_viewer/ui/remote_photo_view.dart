@@ -21,7 +21,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     return PhotoView(
         imageProvider: _imageProvider,
         minScale: PhotoViewComputedScale.contained,
-        maxScale: allowMoving ? null : PhotoViewComputedScale.contained,
+        maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
     );
   }
 
