@@ -41,7 +41,7 @@
 	import AssetViewer from '../../lib/components/asset-viewer/asset-viewer.svelte';
 	import DownloadPanel from '../../lib/components/asset-viewer/download-panel.svelte';
 	import StatusBox from '../../lib/components/shared/status-box.svelte';
-	import * as exifr from 'exifr';
+	import { fileUploader } from '../../lib/utils/file-uploader';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -83,63 +83,35 @@
 	};
 
 	const uploadClickedHandler = async () => {
-		try {
-			let fileSelector = document.createElement('input');
+		if ($session.user) {
+			try {
+				let fileSelector = document.createElement('input');
 
-			fileSelector.type = 'file';
-			fileSelector.multiple = true;
-			fileSelector.accept = 'image/*,video/*,.heic,.heif';
+				fileSelector.type = 'file';
+				fileSelector.multiple = true;
+				fileSelector.accept = 'image/*,video/*,.heic,.heif';
 
-			fileSelector.onchange = async (e: any) => {
-				try {
-					const files = Array.from<File>(e.target.files);
+				fileSelector.onchange = async (e: any) => {
+					try {
+						const files = Array.from<File>(e.target.files);
 
-					const acceptedFile = files.filter(
-						(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image',
-					);
+						const acceptedFile = files.filter(
+							(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image',
+						);
 
-					for (const asset of acceptedFile) {
-						const assetType = asset.type.split('/')[0].toUpperCase();
-						const fileExtension = asset.type.split('/')[1];
-						const formData = new FormData();
-
-						// Create and add Unique ID of asset on the device
-						formData.append('deviceAssetId', 'web' + '-' + asset.name + '-' + asset.lastModified);
-
-						// Get device id - for web -> use WEB
-						formData.append('deviceId', 'WEB');
-
-						// Get asset type
-						formData.append('assetType', assetType);
-
-						// Get Asset Created Date
-						// formData.append('createdAt', asset.lastMod)
-
-						// Get Asset Modified At
-						formData.append('modifiedAt', new Date(asset.lastModified).toISOString());
-
-						// Set Asset is Favorite to false
-						formData.append('isFavorite', 'false');
-
-						// Get asset duration
-						// formData.append('duration', '')
-
-						// Get asset file extension
-						formData.append('fileExtension', fileExtension);
-
-						// Get asset binary data.
-						// formData.append('assetData', '')
-
-						formData.forEach((v, k) => console.log(k, v));
+						for (const asset of acceptedFile) {
+							const assetType = asset.type.split('/')[0];
+							await fileUploader(asset, $session.user!.accessToken);
+						}
+					} catch (e) {
+						console.log('Error processing file ', e);
 					}
-				} catch (e) {
-					console.log('Error processing file ', e);
-				}
-			};
+				};
 
-			fileSelector.click();
-		} catch (e) {
-			console.log('Error seelcting file', e);
+				fileSelector.click();
+			} catch (e) {
+				console.log('Error seelcting file', e);
+			}
 		}
 	};
 </script>
