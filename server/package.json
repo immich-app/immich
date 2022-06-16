@@ -68,6 +68,7 @@
     "@types/bull": "^3.15.7",
     "@types/cron": "^2.0.0",
     "@types/express": "^4.17.13",
+    "@types/fluent-ffmpeg": "^2.1.20",
     "@types/imagemin": "^8.0.0",
     "@types/jest": "27.0.2",
     "@types/lodash": "^4.14.178",

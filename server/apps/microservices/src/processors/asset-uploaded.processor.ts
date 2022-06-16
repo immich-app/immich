@@ -64,5 +64,10 @@ export class AssetUploadedProcessor {
         { jobId: randomUUID() },
       );
     }
+
+    // Extract video duration if uploaded from the web
+    if (asset.type == AssetType.VIDEO && asset.duration == '0:00:00.000000') {
+      await this.metadataExtractionQueue.add('extract-video-length', { asset }, { jobId: randomUUID() });
+    }
   }
 }
