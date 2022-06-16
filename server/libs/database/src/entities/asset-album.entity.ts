@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique }
 import { AlbumEntity } from './album.entity';
 import { AssetEntity } from './asset.entity';
 
-@Entity('asset_shared_album')
+@Entity('asset_album')
 @Unique('PK_unique_asset_in_album', ['albumId', 'assetId'])
 export class AssetAlbumEntity {
   @PrimaryGeneratedColumn()
