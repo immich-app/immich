@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_stat
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
@@ -63,11 +64,8 @@ class ImageViewerPage extends HookConsumerWidget {
           ref.watch(imageViewerStateProvider.notifier).downloadAsset(asset, context);
         },
       ),
-      body: SwipeDetector(
-        onSwipeDown: (_) {
-          AutoRouter.of(context).pop();
-        },
-        onSwipeUp: (_) {
+      body: GestureDetector(
+        onLongPress: () {
           showInfo();
         },
         child: SafeArea(
@@ -76,51 +74,11 @@ class ImageViewerPage extends HookConsumerWidget {
               Center(
                 child: Hero(
                   tag: heroTag,
-                  child: CachedNetworkImage(
-                    fit: BoxFit.cover,
-                    imageUrl: imageUrl,
-                    httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-                    fadeInDuration: const Duration(milliseconds: 250),
-                    errorWidget: (context, url, error) => ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 300),
-                      child: Wrap(
-                        spacing: 32,
-                        runSpacing: 32,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          const Text(
-                            "Failed To Render Image - Possibly Corrupted Data",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                          ),
-                          SingleChildScrollView(
-                            child: Text(
-                              error.toString(),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 12, color: Colors.grey[400]),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    placeholder: (context, url) {
-                      return CachedNetworkImage(
-                        cacheKey: thumbnailUrl,
-                        fit: BoxFit.cover,
-                        imageUrl: thumbnailUrl,
-                        httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-                        placeholderFadeInDuration: const Duration(milliseconds: 0),
-                        progressIndicatorBuilder: (context, url, downloadProgress) => Transform.scale(
-                          scale: 0.2,
-                          child: CircularProgressIndicator(value: downloadProgress.progress),
-                        ),
-                        errorWidget: (context, url, error) => Icon(
-                          Icons.error,
-                          color: Colors.grey[300],
-                        ),
-                      );
-                    },
-                  ),
+                  child: RemotePhotoView(
+                      thumbnailUrl: thumbnailUrl,
+                      imageUrl: imageUrl,
+                      authToken: "Bearer ${box.get(accessTokenKey)}",
+                  )
                 ),
               ),
               if (downloadAssetStatus == DownloadAssetStatus.loading)
