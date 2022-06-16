@@ -148,18 +148,18 @@ export class AlbumRepository implements IAlbumRepository {
   async get(albumId: string): Promise<AlbumEntity | undefined> {
     const album = await this.albumRepository.findOne({
       where: { id: albumId },
-      relations: ['sharedUsers', 'sharedUsers.userInfo', 'sharedAssets', 'sharedAssets.assetInfo'],
+      relations: ['sharedUsers', 'sharedUsers.userInfo', 'assets', 'assets.assetInfo'],
     });
 
     if (!album) {
       return;
     }
     // TODO: sort in query
-    const sortedSharedAsset = album.sharedAssets.sort(
+    const sortedSharedAsset = album.assets.sort(
       (a, b) => new Date(a.assetInfo.createdAt).valueOf() - new Date(b.assetInfo.createdAt).valueOf(),
     );
 
-    album.sharedAssets = sortedSharedAsset;
+    album.assets = sortedSharedAsset;
 
     return album;
   }

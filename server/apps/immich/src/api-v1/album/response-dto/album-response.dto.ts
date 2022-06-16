@@ -10,7 +10,7 @@ export interface AlbumResponseDto {
   albumThumbnailAssetId: string | null;
   shared: boolean;
   sharedUsers: User[];
-  sharedAssets: AssetResponseDto[];
+  assets: AssetResponseDto[];
 }
 
 export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
@@ -23,6 +23,6 @@ export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
     ownerId: entity.ownerId,
     sharedUsers,
     shared: sharedUsers.length > 0,
-    sharedAssets: entity.sharedAssets?.map((assetAlbum) => mapAsset(assetAlbum.assetInfo)) || [],
+    assets: entity.assets?.map((assetAlbum) => mapAsset(assetAlbum.assetInfo)) || [],
   };
 }

@@ -24,7 +24,7 @@ describe('Album service', () => {
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
     albumEntity.sharedUsers = [];
-    albumEntity.sharedAssets = [];
+    albumEntity.assets = [];
 
     return albumEntity;
   };
@@ -35,7 +35,7 @@ describe('Album service', () => {
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
-    albumEntity.sharedAssets = [];
+    albumEntity.assets = [];
     albumEntity.sharedUsers = [
       {
         id: '99',
@@ -59,7 +59,7 @@ describe('Album service', () => {
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
-    albumEntity.sharedAssets = [];
+    albumEntity.assets = [];
     albumEntity.sharedUsers = [
       {
         id: '99',
@@ -95,7 +95,7 @@ describe('Album service', () => {
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
     albumEntity.sharedUsers = [];
-    albumEntity.sharedAssets = [];
+    albumEntity.assets = [];
 
     return albumEntity;
   };
@@ -156,7 +156,7 @@ describe('Album service', () => {
       id: '0001',
       ownerId,
       shared: false,
-      sharedAssets: [],
+      assets: [],
       sharedUsers: [],
     };
     await expect(sut.getAlbumInfo(authUser, albumId)).resolves.toEqual(expectedResult);

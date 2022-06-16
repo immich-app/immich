@@ -23,5 +23,5 @@ export class AlbumEntity {
   sharedUsers: UserAlbumEntity[];
 
   @OneToMany(() => AssetAlbumEntity, (assetAlbumEntity) => assetAlbumEntity.albumInfo)
-  sharedAssets: AssetAlbumEntity[];
+  assets: AssetAlbumEntity[];
 }

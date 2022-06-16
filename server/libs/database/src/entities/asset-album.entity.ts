@@ -14,7 +14,7 @@ export class AssetAlbumEntity {
   @Column()
   assetId: string;
 
-  @ManyToOne(() => AlbumEntity, (album) => album.sharedAssets, {
+  @ManyToOne(() => AlbumEntity, (album) => album.assets, {
     onDelete: 'CASCADE',
     nullable: true,
   })
