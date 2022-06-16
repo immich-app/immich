@@ -367,7 +367,7 @@ describe('Album service', () => {
         },
         albumEntity.id,
       ),
-    ).resolves.toEqual(true);
+    ).resolves.toBeUndefined();
     expect(albumRepositoryMock.removeAssets).toHaveBeenCalledTimes(1);
     expect(albumRepositoryMock.removeAssets).toHaveBeenCalledWith(albumEntity, {
       assetIds: ['1'],
@@ -387,7 +387,7 @@ describe('Album service', () => {
         },
         albumEntity.id,
       ),
-    ).resolves.toEqual(true);
+    ).resolves.toBeUndefined();
     expect(albumRepositoryMock.removeAssets).toHaveBeenCalledTimes(1);
     expect(albumRepositoryMock.removeAssets).toHaveBeenCalledWith(albumEntity, {
       assetIds: ['1'],
