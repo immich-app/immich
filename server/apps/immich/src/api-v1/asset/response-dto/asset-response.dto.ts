@@ -1,8 +1,8 @@
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
-import { Exif, mapExif } from './exif';
-import { SmartInfo, mapSmartInfo } from './smart-info';
+import { ExifResponseDto, mapExif } from './exif-response.dto';
+import { SmartInfoResponseDto, mapSmartInfo } from './smart-info-response.dto';
 
-export interface Asset {
+export interface AssetResponseDto {
   id: string;
   deviceAssetId: string;
   ownerId: string;
@@ -15,11 +15,11 @@ export interface Asset {
   isFavorite: boolean;
   mimeType: string | null;
   duration: string | null;
-  exifInfo?: Exif;
-  smartInfo?: SmartInfo;
+  exifInfo?: ExifResponseDto;
+  smartInfo?: SmartInfoResponseDto;
 }
 
-export function mapAsset(entity: AssetEntity): Asset {
+export function mapAsset(entity: AssetEntity): AssetResponseDto {
   return {
     id: entity.id,
     deviceAssetId: entity.deviceAssetId,

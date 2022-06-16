@@ -7,7 +7,7 @@ import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
-import { Album, mapAlbum } from './response-dto/album';
+import { AlbumResponseDto, mapAlbum } from './response-dto/album-response.dto';
 import { ALBUM_REPOSITORY, IAlbumRepository } from './album-repository';
 
 @Injectable()
@@ -37,7 +37,7 @@ export class AlbumService {
     return album;
   }
 
-  async create(authUser: AuthUserDto, createAlbumDto: CreateAlbumDto): Promise<Album> {
+  async create(authUser: AuthUserDto, createAlbumDto: CreateAlbumDto): Promise<AlbumResponseDto> {
     const albumEntity = await this._albumRepository.create(authUser.id, createAlbumDto);
     return mapAlbum(albumEntity);
   }
@@ -47,17 +47,17 @@ export class AlbumService {
    * @param authUser AuthUserDto
    * @returns All Shared Album And Its Members
    */
-  async getAllAlbums(authUser: AuthUserDto, getAlbumsDto: GetAlbumsDto): Promise<Album[]> {
+  async getAllAlbums(authUser: AuthUserDto, getAlbumsDto: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     const albums = await this._albumRepository.getList(authUser.id, getAlbumsDto);
     return albums.map((album) => mapAlbum(album));
   }
 
-  async getAlbumInfo(authUser: AuthUserDto, albumId: string): Promise<Album> {
+  async getAlbumInfo(authUser: AuthUserDto, albumId: string): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     return mapAlbum(album);
   }
 
-  async addUsersToAlbum(authUser: AuthUserDto, addUsersDto: AddUsersDto, albumId: string): Promise<Album> {
+  async addUsersToAlbum(authUser: AuthUserDto, addUsersDto: AddUsersDto, albumId: string): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId });
     const updatedAlbum = await this._albumRepository.addSharedUsers(album, addUsersDto);
     return mapAlbum(updatedAlbum);
@@ -87,13 +87,21 @@ export class AlbumService {
     await this._albumRepository.removeAssets(album, removeAssetsDto);
   }
 
-  async addAssetsToAlbum(authUser: AuthUserDto, addAssetsDto: AddAssetsDto, albumId: string): Promise<Album> {
+  async addAssetsToAlbum(
+    authUser: AuthUserDto,
+    addAssetsDto: AddAssetsDto,
+    albumId: string,
+  ): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     const updatedAlbum = await this._albumRepository.addAssets(album, addAssetsDto);
     return mapAlbum(updatedAlbum);
   }
 
-  async updateAlbumTitle(authUser: AuthUserDto, updateAlbumDto: UpdateAlbumDto, albumId: string): Promise<Album> {
+  async updateAlbumTitle(
+    authUser: AuthUserDto,
+    updateAlbumDto: UpdateAlbumDto,
+    albumId: string,
+  ): Promise<AlbumResponseDto> {
     // TODO: this should not come from request DTO. To be removed from here and DTO
     // if (authUser.id != updateAlbumDto.ownerId) {
     //   throw new BadRequestException('Unauthorized to change album info');

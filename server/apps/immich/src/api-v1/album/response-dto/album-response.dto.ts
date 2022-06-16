@@ -1,10 +1,8 @@
 import { AlbumEntity } from '../../../../../../libs/database/src/entities/album.entity';
-import { mapUser } from '../../user/response-dto/user';
-import { mapAsset } from '../../asset/response-dto/asset';
-import { Asset } from '../../asset/response-dto/asset';
-import { User } from '../../user/response-dto/user';
+import { User, mapUser } from '../../user/response-dto/user';
+import { AssetResponseDto, mapAsset } from '../../asset/response-dto/asset-response.dto';
 
-export interface Album {
+export interface AlbumResponseDto {
   id: string;
   ownerId: string;
   albumName: string;
@@ -12,10 +10,10 @@ export interface Album {
   albumThumbnailAssetId: string | null;
   shared: boolean;
   sharedUsers: User[];
-  sharedAssets: Asset[];
+  sharedAssets: AssetResponseDto[];
 }
 
-export function mapAlbum(entity: AlbumEntity): Album {
+export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
   const sharedUsers = entity.sharedUsers?.map((userAlbum) => mapUser(userAlbum.userInfo)) || [];
   return {
     albumName: entity.albumName,

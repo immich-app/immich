@@ -1,6 +1,6 @@
 import { ExifEntity } from '@app/database/entities/exif.entity';
 
-export interface Exif {
+export interface ExifResponseDto {
   id: string;
   make: string | null;
   model: string | null;
@@ -23,7 +23,7 @@ export interface Exif {
   country: string | null;
 }
 
-export function mapExif(entity: ExifEntity): Exif {
+export function mapExif(entity: ExifEntity): ExifResponseDto {
   return {
     id: entity.id,
     make: entity.make,

@@ -3,7 +3,7 @@ import { IAlbumRepository } from './album-repository';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity } from '@app/database/entities/album.entity';
-import { Album } from './response-dto/album';
+import { AlbumResponseDto } from './response-dto/album-response.dto';
 
 describe('Album service', () => {
   let sut: AlbumService;
@@ -149,7 +149,7 @@ describe('Album service', () => {
     const albumEntity = _getOwnedAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
-    const expectedResult: Album = {
+    const expectedResult: AlbumResponseDto = {
       albumName: 'name',
       albumThumbnailAssetId: undefined,
       createdAt: 'date',
