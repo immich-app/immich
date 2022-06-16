@@ -22,7 +22,7 @@ class NetworkService {
     } on DioError catch (e) {
       debugPrint("DioError: ${e.response}");
     } catch (e) {
-      debugPrint("ERROR getRequest: ${e.toString()}");
+      debugPrint("ERROR deleteRequest: ${e.toString()}");
     }
   }
 
@@ -78,7 +78,7 @@ class NetworkService {
       debugPrint("DioError: ${e.response}");
       return null;
     } catch (e) {
-      debugPrint("ERROR BackupService: $e");
+      debugPrint("ERROR PostRequest: $e");
       return null;
     }
   }
@@ -97,7 +97,7 @@ class NetworkService {
       debugPrint("DioError: ${e.response}");
       return null;
     } catch (e) {
-      debugPrint("ERROR BackupService: $e");
+      debugPrint("ERROR PutRequest: $e");
       return null;
     }
   }
@@ -116,7 +116,7 @@ class NetworkService {
     } on DioError catch (e) {
       debugPrint("DioError: ${e.response}");
     } catch (e) {
-      debugPrint("ERROR BackupService: $e");
+      debugPrint("ERROR PatchRequest: $e");
     }
   }
 
@@ -141,7 +141,7 @@ class NetworkService {
       debugPrint("[PING SERVER] DioError: ${e.response} - $e");
       return false;
     } catch (e) {
-      debugPrint("ERROR BackupService: $e");
+      debugPrint("ERROR PingServer: $e");
       return false;
     }
   }
