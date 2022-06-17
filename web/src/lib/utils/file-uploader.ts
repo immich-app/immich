@@ -19,8 +19,10 @@ export async function fileUploader(asset: File, accessToken: string) {
 				? new Date(exifData.DateTimeOriginal).toISOString()
 				: new Date(asset.lastModified).toISOString();
 
+		const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
+
 		// Create and add Unique ID of asset on the device
-		formData.append('deviceAssetId', 'web' + '-' + asset.name + '-' + asset.lastModified);
+		formData.append('deviceAssetId', deviceAssetId);
 
 		// Get device id - for web -> use WEB
 		formData.append('deviceId', 'WEB');
@@ -63,9 +65,6 @@ export async function fileUploader(asset: File, accessToken: string) {
 
 		// listen for `progress` event
 		request.upload.onprogress = (event) => {
-			// event.loaded returns how many bytes are downloaded
-			// event.total returns the total number of bytes
-			// event.total is only available if server sends `Content-Length` header
 			console.log(`${asset.name} UPLOAD ${event.loaded} of ${event.total} bytes`);
 		};
 

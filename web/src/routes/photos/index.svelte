@@ -92,19 +92,14 @@
 				fileSelector.accept = 'image/*,video/*,.heic,.heif';
 
 				fileSelector.onchange = async (e: any) => {
-					try {
-						const files = Array.from<File>(e.target.files);
+					const files = Array.from<File>(e.target.files);
 
-						const acceptedFile = files.filter(
-							(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image',
-						);
+					const acceptedFile = files.filter(
+						(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image',
+					);
 
-						for (const asset of acceptedFile) {
-							const assetType = asset.type.split('/')[0];
-							await fileUploader(asset, $session.user!.accessToken);
-						}
-					} catch (e) {
-						console.log('Error processing file ', e);
+					for (const asset of acceptedFile) {
+						await fileUploader(asset, $session.user!.accessToken);
 					}
 				};
 
