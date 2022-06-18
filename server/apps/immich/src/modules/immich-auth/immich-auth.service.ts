@@ -41,8 +41,10 @@ export class ImmichAuthService {
         this.wsTokenMap.delete(userId);
       } else {
         if (token === wsToken.token) {
-          Logger.verbose(`Validating WS token for ${userId}`, "ImmichWSAuth");
-          return this.userRepository.findOne( {id: userId});
+          const user = this.userRepository.findOne( {id: userId});
+          this.wsTokenMap.delete(userId);
+          Logger.verbose(`Validated WS token for ${userId}`, "ImmichWSAuth");
+          return user;
         }
       }
     }
