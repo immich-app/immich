@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+import 'package:cancellation_token_http/http.dart';
 import 'package:equatable/equatable.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -12,7 +12,7 @@ class BackUpState extends Equatable {
   final BackUpProgressEnum backupProgress;
   final List<String> allAssetOnDatabase;
   final double progressInPercentage;
-  final CancelToken cancelToken;
+  final CancellationToken cancelToken;
   final ServerInfo serverInfo;
 
   /// All available albums on the device
@@ -43,7 +43,7 @@ class BackUpState extends Equatable {
     BackUpProgressEnum? backupProgress,
     List<String>? allAssetOnDatabase,
     double? progressInPercentage,
-    CancelToken? cancelToken,
+    CancellationToken? cancelToken,
     ServerInfo? serverInfo,
     List<AvailableAlbum>? availableAlbums,
     Set<AssetPathEntity>? selectedBackupAlbums,

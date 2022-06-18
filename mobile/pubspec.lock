@@ -141,6 +141,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.1"
+  cancellation_token:
+    dependency: transitive
+    description:
+      name: cancellation_token
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.4.0"
+  cancellation_token_http:
+    dependency: "direct main"
+    description:
+      name: cancellation_token_http
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.0"
   characters:
     dependency: transitive
     description:
@@ -437,7 +451,7 @@ packages:
     source: hosted
     version: "0.15.0"
   http:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http
       url: "https://pub.dartlang.org"
