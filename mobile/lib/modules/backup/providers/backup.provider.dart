@@ -1,3 +1,4 @@
+import 'package:cancellation_token_http/http.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -19,7 +20,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             backupProgress: BackUpProgressEnum.idle,
             allAssetOnDatabase: const [],
             progressInPercentage: 0,
-            cancelToken: CancelToken(),
+            cancelToken: CancellationToken(),
             serverInfo: ServerInfo(
               diskAvailable: "0",
               diskAvailableRaw: 0,
@@ -266,7 +267,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
 
       // Perform Backup
-      state = state.copyWith(cancelToken: CancelToken());
+      state = state.copyWith(cancelToken: CancellationToken());
       _backupService.backupAsset(assetsWillBeBackup, state.cancelToken, _onAssetUploaded, _onUploadProgress);
     } else {
       PhotoManager.openSetting();
@@ -274,7 +275,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void cancelBackup() {
-    state.cancelToken.cancel('Cancel Backup');
+    state.cancelToken.cancel();
     state = state.copyWith(backupProgress: BackUpProgressEnum.idle, progressInPercentage: 0.0);
   }
 

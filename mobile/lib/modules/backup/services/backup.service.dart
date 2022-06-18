@@ -8,12 +8,11 @@ import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
-import 'package:immich_mobile/utils/dio_http_interceptor.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
-import 'package:http/http.dart' as http;
+import 'package:cancellation_token_http/http.dart' as http;
 
 class BackupService {
   final NetworkService _networkService = NetworkService();
@@ -27,7 +26,7 @@ class BackupService {
     return result.cast<String>();
   }
 
-  backupAsset(Set<AssetEntity> assetList, CancelToken cancelToken, Function(String, String) singleAssetDoneCb,
+  backupAsset(Set<AssetEntity> assetList, http.CancellationToken cancelToken, Function(String, String) singleAssetDoneCb,
       Function(int, int) uploadProgress) async {
     var dio = Dio();
     dio.interceptors.add(AuthenticatedRequestInterceptor());
@@ -96,12 +95,14 @@ class BackupService {
           }
           req.files.add(assetRawUploadData);
 
-          var res = await req.send();
-          
+          var res = await req.send(cancellationToken: cancelToken);
+
           if (res.statusCode == 201) {
             singleAssetDoneCb(entity.id, deviceId);
           }
         }
+      } on http.CancelledException {
+        debugPrint("Backup was cancelled by the user");
       } catch (e) {
         debugPrint("ERROR backupAsset: ${e.toString()}");
         continue;
