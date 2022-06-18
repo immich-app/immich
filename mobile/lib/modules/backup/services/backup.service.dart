@@ -26,9 +26,8 @@ class BackupService {
     return result.cast<String>();
   }
 
-  backupAsset(Set<AssetEntity> assetList, http.CancellationToken cancelToken, Function(String, String) singleAssetDoneCb,
-      Function(int, int) uploadProgress) async {
-
+  backupAsset(Set<AssetEntity> assetList, http.CancellationToken cancelToken,
+      Function(String, String) singleAssetDoneCb, Function(int, int) uploadProgress) async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
@@ -76,7 +75,8 @@ class BackupService {
 
           var box = Hive.box(userInfoBox);
 
-          var req = MultipartRequest('POST', Uri.parse('$savedEndpoint/asset/upload'), onProgress: ((bytes, totalBytes) => uploadProgress(bytes, totalBytes)));
+          var req = MultipartRequest('POST', Uri.parse('$savedEndpoint/asset/upload'),
+              onProgress: ((bytes, totalBytes) => uploadProgress(bytes, totalBytes)));
           req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
 
           req.fields['deviceAssetId'] = entity.id;
@@ -88,7 +88,7 @@ class BackupService {
           req.fields['fileExtension'] = fileExtension;
           req.fields['duration'] = entity.videoDuration.toString();
 
-          if(thumbnailUploadData != null) {
+          if (thumbnailUploadData != null) {
             req.files.add(thumbnailUploadData);
           }
           req.files.add(assetRawUploadData);
@@ -101,6 +101,7 @@ class BackupService {
         }
       } on http.CancelledException {
         debugPrint("Backup was cancelled by the user");
+        return;
       } catch (e) {
         debugPrint("ERROR backupAsset: ${e.toString()}");
         continue;
@@ -135,7 +136,6 @@ class BackupService {
     return DeviceInfoRemote.fromJson(res.toString());
   }
 }
-
 
 class MultipartRequest extends http.MultipartRequest {
   /// Creates a new [MultipartRequest].
