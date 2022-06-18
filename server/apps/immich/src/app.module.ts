@@ -11,7 +11,7 @@ import { BullModule } from '@nestjs/bull';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
-import { SharingModule } from './api-v1/sharing/sharing.module';
+import { AlbumModule } from './api-v1/album/album.module';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
@@ -47,7 +47,7 @@ import { DatabaseModule } from '@app/database';
 
     CommunicationModule,
 
-    SharingModule,
+    AlbumModule,
 
     ScheduleModule.forRoot(),
 

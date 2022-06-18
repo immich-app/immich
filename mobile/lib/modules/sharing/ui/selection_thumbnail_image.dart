@@ -86,63 +86,60 @@ class SelectionThumbnailImage extends HookConsumerWidget {
           }
         }
       },
-      child: Hero(
-        tag: asset.id,
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(border: drawBorderColor()),
-              child: CachedNetworkImage(
-                cacheKey: "${asset.id}-${cacheKey.value}",
-                width: 150,
-                height: 150,
-                memCacheHeight: asset.type == 'IMAGE' ? 150 : 150,
-                fit: BoxFit.cover,
-                imageUrl: thumbnailRequestUrl,
-                httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-                fadeInDuration: const Duration(milliseconds: 250),
-                progressIndicatorBuilder: (context, url, downloadProgress) => Transform.scale(
-                  scale: 0.2,
-                  child: CircularProgressIndicator(value: downloadProgress.progress),
-                ),
-                errorWidget: (context, url, error) {
-                  return Icon(
-                    Icons.image_not_supported_outlined,
-                    color: Theme.of(context).primaryColor,
-                  );
-                },
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(border: drawBorderColor()),
+            child: CachedNetworkImage(
+              cacheKey: "${asset.id}-${cacheKey.value}",
+              width: 150,
+              height: 150,
+              memCacheHeight: asset.type == 'IMAGE' ? 150 : 150,
+              fit: BoxFit.cover,
+              imageUrl: thumbnailRequestUrl,
+              httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+              fadeInDuration: const Duration(milliseconds: 250),
+              progressIndicatorBuilder: (context, url, downloadProgress) => Transform.scale(
+                scale: 0.2,
+                child: CircularProgressIndicator(value: downloadProgress.progress),
               ),
+              errorWidget: (context, url, error) {
+                return Icon(
+                  Icons.image_not_supported_outlined,
+                  color: Theme.of(context).primaryColor,
+                );
+              },
             ),
-            Padding(
-              padding: const EdgeInsets.all(3.0),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: _buildSelectionIcon(asset),
-              ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: _buildSelectionIcon(asset),
             ),
-            asset.type == 'IMAGE'
-                ? Container()
-                : Positioned(
-                    bottom: 5,
-                    right: 5,
-                    child: Row(
-                      children: [
-                        Text(
-                          asset.duration.toString().substring(0, 7),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                          ),
-                        ),
-                        const Icon(
-                          Icons.play_circle_outline_rounded,
+          ),
+          asset.type == 'IMAGE'
+              ? Container()
+              : Positioned(
+                  bottom: 5,
+                  right: 5,
+                  child: Row(
+                    children: [
+                      Text(
+                        asset.duration.toString().substring(0, 7),
+                        style: const TextStyle(
                           color: Colors.white,
+                          fontSize: 10,
                         ),
-                      ],
-                    ),
-                  )
-          ],
-        ),
+                      ),
+                      const Icon(
+                        Icons.play_circle_outline_rounded,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                )
+        ],
       ),
     );
   }

@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/suggested_shared_users.provider.dart';
-import 'package:immich_mobile/shared/models/user_info.model.dart';
+import 'package:immich_mobile/shared/models/user.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
@@ -14,14 +14,14 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<UserInfo>> suggestedShareUsers = ref.watch(suggestedSharedUsersProvider);
-    final sharedUsersList = useState<Set<UserInfo>>({});
+    AsyncValue<List<User>> suggestedShareUsers = ref.watch(suggestedSharedUsersProvider);
+    final sharedUsersList = useState<Set<User>>({});
 
     _addNewUsersHandler() {
       AutoRouter.of(context).pop(sharedUsersList.value.map((e) => e.id).toList());
     }
 
-    _buildTileIcon(UserInfo user) {
+    _buildTileIcon(User user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
@@ -38,7 +38,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
       }
     }
 
-    _buildUserList(List<UserInfo> users) {
+    _buildUserList(List<User> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
@@ -120,7 +120,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
       body: suggestedShareUsers.when(
         data: (users) {
           for (var sharedUsers in albumInfo.sharedUsers) {
-            users.removeWhere((u) => u.id == sharedUsers.sharedUserId || u.id == albumInfo.ownerId);
+            users.removeWhere((u) => u.id == sharedUsers.id || u.id == albumInfo.ownerId);
           }
 
           return _buildUserList(users);
