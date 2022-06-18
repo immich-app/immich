@@ -9,7 +9,6 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_USERNAME: Joi.string().required(),
     DB_PASSWORD: Joi.string().required(),
     DB_DATABASE_NAME: Joi.string().required(),
-    UPLOAD_LOCATION: Joi.string().required(),
     JWT_SECRET: Joi.string().required(),
     ENABLE_MAPBOX: Joi.boolean().required().valid(true, false),
     MAPBOX_KEY: Joi.any().when('ENABLE_MAPBOX', {
