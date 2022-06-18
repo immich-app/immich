@@ -13,7 +13,7 @@ function createUploadStore() {
 	const { subscribe } = uploadAssets;
 
 	const isUploading = derived(uploadAssets, ($uploadAssets) => {
-		$uploadAssets.length > 0 ? true : false;
+		return $uploadAssets.length > 0 ? true : false;
 	});
 
 	const addNewUploadAsset = (newAsset: UploadAsset) => {
