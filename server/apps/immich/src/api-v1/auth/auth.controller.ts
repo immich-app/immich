@@ -25,6 +25,12 @@ export class AuthController {
     return await this.authService.validateToken(authUser);
   }
 
+  @UseGuards(ImmichAuthGuard)
+  @Post('/wsToken')
+  async getWsToken(@GetAuthUser() authUser: AuthUserDto) {
+    return await this.authService.getWsToken(authUser.id);
+  }
+
   @Get('/loginParams')
   async loginParams() {
     return await this.authService.loginParams();

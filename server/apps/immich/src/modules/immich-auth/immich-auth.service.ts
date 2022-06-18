@@ -1,8 +1,16 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {BadRequestException, Injectable, InternalServerErrorException, Logger} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {UserEntity} from "@app/database/entities/user.entity";
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import * as crypto from "crypto";
+
+type WsToken = {
+  token: string;
+  expiry: number;
+};
+
+const WS_TOKEN_VALIDITY = 30; // in seconds
 
 @Injectable()
 export class ImmichAuthService {
@@ -10,7 +18,36 @@ export class ImmichAuthService {
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-  ) {}
+  ) {};
+
+  // maps a userId to a valid WS token
+  private wsTokenMap = new Map<string, WsToken>();
+
+  async generateWsToken(userId: string): Promise<string> {
+    Logger.verbose(`Generating WS token for ${userId}`, "ImmichWSAuth");
+    const newWsToken: WsToken = {
+      token: crypto.randomBytes(64).toString('hex'),
+      expiry: Date.now() + WS_TOKEN_VALIDITY * 1000,
+    };
+
+    this.wsTokenMap.set(userId, newWsToken);
+
+    return newWsToken.token;
+  };
+
+  async validateWsToken(token: string): Promise<UserEntity> {
+    Logger.verbose(`Validating WS token ${token}`, "ImmichWSAuth");
+    for (const [userId, wsToken] of this.wsTokenMap) {
+      if (Date.now() > wsToken.expiry) {
+        this.wsTokenMap.delete(userId);
+      } else {
+        if (token === wsToken.token) {
+          return this.userRepository.findOne( {id: userId});
+        }
+      }
+    }
+    return null;
+  }
 
   async createUser(email: string, localUser: boolean, password: string | null, firstName = "", lastName = "", isAdmin = false) {
     const registerUser = await this.userRepository.findOne({ email: email });
@@ -62,4 +99,7 @@ export class ImmichAuthService {
       return ['jwt'];
     }
   }
+
+
+
 }

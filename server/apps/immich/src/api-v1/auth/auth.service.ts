@@ -13,6 +13,7 @@ import {SignUpDto} from './dto/sign-up.dto';
 import { mapUser, User } from '../user/response-dto/user';
 import {AuthUserDto} from "../../decorators/auth-user.decorator";
 import { ConfigService } from '@nestjs/config';
+import {ImmichAuthService} from "../../modules/immich-auth/immich-auth.service";
 
 
 @Injectable()
@@ -21,6 +22,7 @@ export class AuthService {
   constructor(
       @InjectRepository(UserEntity)
       private userRepository: Repository<UserEntity>,
+      private immichAuthService: ImmichAuthService,
       private immichJwtService: ImmichJwtService,
       private configService: ConfigService,
   ) {}
@@ -56,6 +58,12 @@ export class AuthService {
     };
   }
 
+  async getWsToken(userId: string) {
+    return {
+      wsToken: await this.immichAuthService.generateWsToken(userId),
+    };
+  }
+
   public async adminSignUp(signUpCredential: SignUpDto): Promise<User> {
     if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) throw new BadRequestException("Local users not allowed!");
 
@@ -73,5 +81,4 @@ export class AuthService {
 
     return this.immichJwtService.validate(loginCredential.email, loginCredential.password);
   }
-
 }
