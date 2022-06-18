@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-class ImmichAsset {
+import 'package:equatable/equatable.dart';
+
+class ImmichAsset extends Equatable {
   final String id;
   final String deviceAssetId;
   final String userId;
@@ -13,7 +15,7 @@ class ImmichAsset {
   final String originalPath;
   final String resizePath;
 
-  ImmichAsset({
+  const ImmichAsset({
     required this.id,
     required this.deviceAssetId,
     required this.userId,
@@ -56,19 +58,23 @@ class ImmichAsset {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'deviceAssetId': deviceAssetId,
-      'userId': userId,
-      'deviceId': deviceId,
-      'type': type,
-      'createdAt': createdAt,
-      'modifiedAt': modifiedAt,
-      'isFavorite': isFavorite,
-      'duration': duration,
-      'originalPath': originalPath,
-      'resizePath': resizePath,
-    };
+    final result = <String, dynamic>{};
+
+    result.addAll({'id': id});
+    result.addAll({'deviceAssetId': deviceAssetId});
+    result.addAll({'userId': userId});
+    result.addAll({'deviceId': deviceId});
+    result.addAll({'type': type});
+    result.addAll({'createdAt': createdAt});
+    result.addAll({'modifiedAt': modifiedAt});
+    result.addAll({'isFavorite': isFavorite});
+    if (duration != null) {
+      result.addAll({'duration': duration});
+    }
+    result.addAll({'originalPath': originalPath});
+    result.addAll({'resizePath': resizePath});
+
+    return result;
   }
 
   factory ImmichAsset.fromMap(Map<String, dynamic> map) {
@@ -97,35 +103,7 @@ class ImmichAsset {
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is ImmichAsset &&
-        other.id == id &&
-        other.deviceAssetId == deviceAssetId &&
-        other.userId == userId &&
-        other.deviceId == deviceId &&
-        other.type == type &&
-        other.createdAt == createdAt &&
-        other.modifiedAt == modifiedAt &&
-        other.isFavorite == isFavorite &&
-        other.duration == duration &&
-        other.originalPath == originalPath &&
-        other.resizePath == resizePath;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^
-        deviceAssetId.hashCode ^
-        userId.hashCode ^
-        deviceId.hashCode ^
-        type.hashCode ^
-        createdAt.hashCode ^
-        modifiedAt.hashCode ^
-        isFavorite.hashCode ^
-        duration.hashCode ^
-        originalPath.hashCode ^
-        resizePath.hashCode;
+  List<Object> get props {
+    return [id];
   }
 }

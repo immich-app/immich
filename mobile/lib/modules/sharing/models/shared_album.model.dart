@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 
-import 'package:immich_mobile/modules/sharing/models/shared_asset.model.dart';
-import 'package:immich_mobile/modules/sharing/models/shared_user.model.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:immich_mobile/shared/models/user.model.dart';
 
 class SharedAlbum {
   final String id;
@@ -11,8 +11,8 @@ class SharedAlbum {
   final String albumName;
   final String createdAt;
   final String? albumThumbnailAssetId;
-  final List<SharedUsers> sharedUsers;
-  final List<SharedAssets>? sharedAssets;
+  final List<User> sharedUsers;
+  final List<ImmichAsset>? assets;
 
   SharedAlbum({
     required this.id,
@@ -21,7 +21,7 @@ class SharedAlbum {
     required this.createdAt,
     required this.albumThumbnailAssetId,
     required this.sharedUsers,
-    this.sharedAssets,
+    this.assets,
   });
 
   SharedAlbum copyWith({
@@ -30,8 +30,8 @@ class SharedAlbum {
     String? albumName,
     String? createdAt,
     String? albumThumbnailAssetId,
-    List<SharedUsers>? sharedUsers,
-    List<SharedAssets>? sharedAssets,
+    List<User>? sharedUsers,
+    List<ImmichAsset>? assets,
   }) {
     return SharedAlbum(
       id: id ?? this.id,
@@ -40,7 +40,7 @@ class SharedAlbum {
       createdAt: createdAt ?? this.createdAt,
       albumThumbnailAssetId: albumThumbnailAssetId ?? this.albumThumbnailAssetId,
       sharedUsers: sharedUsers ?? this.sharedUsers,
-      sharedAssets: sharedAssets ?? this.sharedAssets,
+      assets: assets ?? this.assets,
     );
   }
 
@@ -55,8 +55,8 @@ class SharedAlbum {
       result.addAll({'albumThumbnailAssetId': albumThumbnailAssetId});
     }
     result.addAll({'sharedUsers': sharedUsers.map((x) => x.toMap()).toList()});
-    if (sharedAssets != null) {
-      result.addAll({'sharedAssets': sharedAssets!.map((x) => x.toMap()).toList()});
+    if (assets != null) {
+      result.addAll({'assets': assets!.map((x) => x.toMap()).toList()});
     }
 
     return result;
@@ -69,9 +69,9 @@ class SharedAlbum {
       albumName: map['albumName'] ?? '',
       createdAt: map['createdAt'] ?? '',
       albumThumbnailAssetId: map['albumThumbnailAssetId'],
-      sharedUsers: List<SharedUsers>.from(map['sharedUsers']?.map((x) => SharedUsers.fromMap(x))),
-      sharedAssets: map['sharedAssets'] != null
-          ? List<SharedAssets>.from(map['sharedAssets']?.map((x) => SharedAssets.fromMap(x)))
+      sharedUsers: List<User>.from(map['sharedUsers']?.map((x) => User.fromMap(x))),
+      assets: map['assets'] != null
+          ? List<ImmichAsset>.from(map['assets']?.map((x) => ImmichAsset.fromMap(x)))
           : null,
     );
   }
@@ -82,7 +82,7 @@ class SharedAlbum {
 
   @override
   String toString() {
-    return 'SharedAlbum(id: $id, ownerId: $ownerId, albumName: $albumName, createdAt: $createdAt, albumThumbnailAssetId: $albumThumbnailAssetId, sharedUsers: $sharedUsers, sharedAssets: $sharedAssets)';
+    return 'SharedAlbum(id: $id, ownerId: $ownerId, albumName: $albumName, createdAt: $createdAt, albumThumbnailAssetId: $albumThumbnailAssetId, sharedUsers: $sharedUsers, assets: $assets)';
   }
 
   @override
@@ -97,7 +97,7 @@ class SharedAlbum {
         other.createdAt == createdAt &&
         other.albumThumbnailAssetId == albumThumbnailAssetId &&
         listEquals(other.sharedUsers, sharedUsers) &&
-        listEquals(other.sharedAssets, sharedAssets);
+        listEquals(other.assets, assets);
   }
 
   @override
@@ -108,6 +108,6 @@ class SharedAlbum {
         createdAt.hashCode ^
         albumThumbnailAssetId.hashCode ^
         sharedUsers.hashCode ^
-        sharedAssets.hashCode;
+        assets.hashCode;
   }
 }

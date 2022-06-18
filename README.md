@@ -259,5 +259,5 @@ You need to change the CPU type from `kvm64` to `host` under VMs hardware tab.
 `Hardware > Processors > Edit > Advanced > Type (dropdown menu) > host`
  
 Otherwise you can:
-- edit `docker-compose.yml` file and comment the whole `immich_microservices` service **which will disable machine learning features like object detection and image classification**
+- edit `docker-compose.yml` file and comment the whole `immich-machine-learning` service **which will disable machine learning features like object detection and image classification**
 - switch to a different VM/desktop with different architecture.
