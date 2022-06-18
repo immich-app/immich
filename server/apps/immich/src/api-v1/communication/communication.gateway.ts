@@ -21,7 +21,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
   }
 
   async handleConnection(client: Socket, ...args: any[]) {
-    Logger.log(`New websocket connection: ${client.id}`, 'NewWebSocketConnection');
+    Logger.verbose(`New websocket connection: ${client.id}`, 'NewWebSocketConnection');
     const accessToken = client.handshake.headers.authorization.split(' ')[1];
     const user: UserEntity | null = await this.immichAuthService.validateWsToken(accessToken);
 
@@ -31,6 +31,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
       return;
     }
 
+    Logger.log(`New webocket connection (client id: ${client.id}, user id: ${user.id})`);
     client.join(user.id);
   }
 }

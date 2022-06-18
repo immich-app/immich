@@ -36,12 +36,12 @@ export class ImmichAuthService {
   };
 
   async validateWsToken(token: string): Promise<UserEntity> {
-    Logger.verbose(`Validating WS token ${token}`, "ImmichWSAuth");
     for (const [userId, wsToken] of this.wsTokenMap) {
       if (Date.now() > wsToken.expiry) {
         this.wsTokenMap.delete(userId);
       } else {
         if (token === wsToken.token) {
+          Logger.verbose(`Validating WS token for ${userId}`, "ImmichWSAuth");
           return this.userRepository.findOne( {id: userId});
         }
       }
