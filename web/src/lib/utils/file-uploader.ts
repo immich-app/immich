@@ -1,5 +1,7 @@
 import * as exifr from 'exifr';
 import { serverEndpoint } from '../constants';
+import { uploadAssetsStore } from '$lib/stores/upload';
+import type { UploadAsset } from '../models/upload-asset';
 
 export async function fileUploader(asset: File, accessToken: string) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
@@ -49,6 +51,18 @@ export async function fileUploader(asset: File, accessToken: string) {
 		formData.append('assetData', asset);
 
 		const request = new XMLHttpRequest();
+
+		request.upload.onloadstart = () => {
+			const newUploadAsset: UploadAsset = {
+				id: deviceAssetId,
+				file: asset,
+				progress: 0,
+				fileExtension: fileExtension,
+			};
+
+			uploadAssetsStore.addNewUploadAsset(newUploadAsset);
+		};
+
 		request.upload.onload = () => {
 			console.log(`The transfer is completed: ${request.status} ${request.response}`);
 		};
@@ -65,7 +79,8 @@ export async function fileUploader(asset: File, accessToken: string) {
 
 		// listen for `progress` event
 		request.upload.onprogress = (event) => {
-			console.log(`${asset.name} UPLOAD ${event.loaded} of ${event.total} bytes`);
+			const percentComplete = Math.floor((event.loaded / event.total) * 100);
+			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 		};
 
 		request.open('POST', `${serverEndpoint}/asset/upload`);
