@@ -28,8 +28,6 @@ class BackupService {
 
   backupAsset(Set<AssetEntity> assetList, http.CancellationToken cancelToken, Function(String, String) singleAssetDoneCb,
       Function(int, int) uploadProgress) async {
-    var dio = Dio();
-    dio.interceptors.add(AuthenticatedRequestInterceptor());
 
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
