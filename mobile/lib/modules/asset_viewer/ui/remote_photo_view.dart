@@ -9,6 +9,7 @@ enum _RemoteImageStatus { empty, thumbnail, full }
 class _RemotePhotoViewState extends State<RemotePhotoView> {
   late CachedNetworkImageProvider _imageProvider;
   _RemoteImageStatus _status = _RemoteImageStatus.empty;
+  bool _zoomedIn = false;
 
   static const int swipeThreshold = 100;
 
@@ -21,16 +22,24 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
         minScale: PhotoViewComputedScale.contained,
         maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
         enablePanAlways: true,
+        scaleStateChangedCallback: _scaleStateChanged,
         onScaleEnd: _onScaleListener);
   }
 
   void _onScaleListener(BuildContext context, ScaleEndDetails details,
       PhotoViewControllerValue controllerValue) {
+    // Disable swipe events when zoomed in
+    if (_zoomedIn) return;
+
     if (controllerValue.position.dy > swipeThreshold) {
       widget.onSwipeDown();
     } else if (controllerValue.position.dy < -swipeThreshold) {
       widget.onSwipeUp();
     }
+  }
+
+  void _scaleStateChanged(PhotoViewScaleState state) {
+    _zoomedIn = state == PhotoViewScaleState.zoomedIn;
   }
 
   CachedNetworkImageProvider _authorizedImageProvider(String url) {
