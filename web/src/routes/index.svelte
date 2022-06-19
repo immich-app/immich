@@ -35,6 +35,7 @@
 <script lang="ts">
 	import { serverEndpoint } from '$lib/constants';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	export let isAdminUserExist: boolean;
 

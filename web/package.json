@@ -23,6 +23,7 @@
 		"@types/leaflet": "^1.7.10",
 		"@types/lodash": "^4.14.182",
 		"@types/lodash-es": "^4.17.6",
+		"@types/socket.io-client": "^3.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.10.1",
 		"@typescript-eslint/parser": "^5.10.1",
 		"autoprefixer": "^10.4.7",
@@ -48,6 +49,7 @@
 		"lodash": "^4.17.21",
 		"lodash-es": "^4.17.21",
 		"moment": "^2.29.3",
+		"socket.io-client": "^4.5.1",
 		"svelte-material-icons": "^2.0.2"
 	}
 }

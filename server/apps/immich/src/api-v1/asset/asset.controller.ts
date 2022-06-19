@@ -79,7 +79,7 @@ export class AssetController {
 
           this.wsCommunicateionGateway.server
             .to(savedAsset.userId)
-            .emit('on_upload_success', JSON.stringify(savedAsset));
+            .emit('on_upload_success', JSON.stringify(assetWithThumbnail));
         } else {
           await this.assetUploadedQueue.add(
             'asset-uploaded',

@@ -42,6 +42,7 @@
 	import DownloadPanel from '../../lib/components/asset-viewer/download-panel.svelte';
 	import StatusBox from '../../lib/components/shared/status-box.svelte';
 	import { fileUploader } from '../../lib/utils/file-uploader';
+	import { connectWebsocket } from '../../lib/stores/websocket';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -65,6 +66,8 @@
 
 		if ($session.user) {
 			await getAssetsInfo($session.user.accessToken);
+
+			connectWebsocket($session.user.accessToken);
 		}
 	});
 

@@ -97,7 +97,8 @@
 				<div id="upload-item-list" class="max-h-[400px] overflow-y-auto pr-2 rounded-lg">
 					{#each $uploadAssetsStore as uploadAsset}
 						<div
-							transition:fade={{ duration: 250 }}
+							in:fade={{ duration: 250 }}
+							out:fade={{ duration: 100 }}
 							class="text-xs mt-3 rounded-lg bg-immich-bg grid grid-cols-[70px_auto] gap-2 h-[70px]"
 						>
 							<div class="relative">
