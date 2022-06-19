@@ -52,7 +52,6 @@
 					method: 'GET',
 					headers: {
 						Authorization: 'bearer ' + $session.user.accessToken,
-						'Accept-Range': 'bytes',
 					},
 				});
 
