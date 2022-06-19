@@ -5,7 +5,7 @@ import { assets } from './assets';
 
 export const openWebsocketConnection = (accessToken: string) => {
 	const websocket = io(serverEndpoint, {
-		transports: ['websocket', 'polling'],
+		transports: ['polling'],
 		reconnection: true,
 		forceNew: true,
 		autoConnect: true,
