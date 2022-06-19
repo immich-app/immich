@@ -64,17 +64,19 @@ export async function fileUploader(asset: File, accessToken: string) {
 		};
 
 		request.upload.onload = () => {
-			console.log(`The transfer is completed: ${request.status} ${request.response}`);
+			setTimeout(() => {
+				uploadAssetsStore.removeUploadAsset(deviceAssetId);
+			}, 5000);
 		};
 
 		// listen for `error` event
 		request.upload.onerror = () => {
-			console.error('Download failed.');
+			uploadAssetsStore.removeUploadAsset(deviceAssetId);
 		};
 
 		// listen for `abort` event
 		request.upload.onabort = () => {
-			console.error('Download cancelled.');
+			uploadAssetsStore.removeUploadAsset(deviceAssetId);
 		};
 
 		// listen for `progress` event

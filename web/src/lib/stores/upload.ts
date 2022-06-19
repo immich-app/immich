@@ -1,12 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import type { UploadAsset } from '../models/upload-asset';
 
-export const uploadAssets = writable<Array<UploadAsset>>([]);
-
-export const isUploading = derived(uploadAssets, ($uploadAssets) => {
-	$uploadAssets.length > 0 ? true : false;
-});
-
 function createUploadStore() {
 	const uploadAssets = writable<Array<UploadAsset>>([]);
 
@@ -35,11 +29,16 @@ function createUploadStore() {
 		});
 	};
 
+	const removeUploadAsset = (id: string) => {
+		uploadAssets.update((uploadingAsset) => uploadingAsset.filter((a) => a.id != id));
+	};
+
 	return {
 		subscribe,
 		isUploading,
 		addNewUploadAsset,
 		updateProgress,
+		removeUploadAsset,
 	};
 }
 

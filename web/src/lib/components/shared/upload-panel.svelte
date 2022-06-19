@@ -4,9 +4,9 @@
 	import { uploadAssetsStore } from '$lib/stores/upload';
 	import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
-	import type { UploadAsset } from '../../models/upload-asset';
+	import type { UploadAsset } from '$lib/models/upload-asset';
 
-	let showDetail = false;
+	let showDetail = true;
 
 	let uploadLength = 0;
 
@@ -14,13 +14,15 @@
 		const extension = a.fileExtension.toLowerCase();
 
 		if (extension == 'jpeg' || extension == 'jpg' || extension == 'png') {
-			const imgData = await a.file.arrayBuffer();
-			const arrayBufferView = new Uint8Array(imgData);
-			const blob = new Blob([arrayBufferView], { type: 'image/jpeg' });
-			const urlCreator = window.URL || window.webkitURL;
-			const imageUrl = urlCreator.createObjectURL(blob);
-			const img: any = document.getElementById(`${a.id}`);
-			img.src = imageUrl;
+			try {
+				const imgData = await a.file.arrayBuffer();
+				const arrayBufferView = new Uint8Array(imgData);
+				const blob = new Blob([arrayBufferView], { type: 'image/jpeg' });
+				const urlCreator = window.URL || window.webkitURL;
+				const imageUrl = urlCreator.createObjectURL(blob);
+				const img: any = document.getElementById(`${a.id}`);
+				img.src = imageUrl;
+			} catch (e) {}
 		}
 	};
 
@@ -62,6 +64,14 @@
 		}
 	}
 
+	$: {
+		if (showDetail) {
+			$uploadAssetsStore.map((asset) => {
+				showUploadImageThumbnail(asset);
+			});
+		}
+	}
+
 	let isUploading = false;
 
 	uploadAssetsStore.isUploading.subscribe((value) => (isUploading = value));
@@ -87,7 +97,7 @@
 				<div id="upload-item-list" class="max-h-[400px] overflow-y-auto pr-2 rounded-lg">
 					{#each $uploadAssetsStore as uploadAsset}
 						<div
-							in:fade={{ duration: 250 }}
+							transition:fade={{ duration: 250 }}
 							class="text-xs mt-3 rounded-lg bg-immich-bg grid grid-cols-[70px_auto] gap-2 h-[70px]"
 						>
 							<div class="relative">
