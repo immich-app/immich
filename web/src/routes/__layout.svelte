@@ -22,8 +22,8 @@
 	import { blur } from 'svelte/transition';
 
 	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
-	import FullScreenModal from '../lib/components/shared/full-screen-modal.svelte';
-	import AnnouncementBox from '../lib/components/shared/announcement-box.svelte';
+	import AnnouncementBox from '$lib/components/shared/announcement-box.svelte';
+	import UploadPanel from '$lib/components/shared/upload-panel.svelte';
 
 	export let url: string;
 	export let shouldShowAnnouncement: boolean;
@@ -36,7 +36,7 @@
 		<div transition:blur={{ duration: 250 }}>
 			<slot />
 			<DownloadPanel />
-
+			<UploadPanel />
 			{#if shouldShowAnnouncement}
 				<AnnouncementBox {localVersion} {remoteVersion} on:close={() => (shouldShowAnnouncement = false)} />
 			{/if}

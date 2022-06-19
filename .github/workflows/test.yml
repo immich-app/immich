@@ -1,0 +1,17 @@
+name: Test
+on:
+  pull_request:
+  push: { branches: master }
+
+jobs:
+  test-server-e2e:
+    name: Run test suite
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run Immich Server 2E2 Test
+        run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --abort-on-container-exit --exit-code-from immich_server_test

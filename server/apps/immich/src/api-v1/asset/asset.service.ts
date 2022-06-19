@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
@@ -72,6 +72,7 @@ export class AssetService {
       return await this.assetRepository.find({
         where: {
           userId: authUser.id,
+          resizePath: Not(IsNull()),
         },
         relations: ['exifInfo'],
         order: {
@@ -380,5 +381,16 @@ export class AssetService {
       `,
       [authUser.id],
     );
+  }
+
+  async checkDuplicatedAsset(authUser: AuthUserDto, deviceAssetId: string) {
+    const res = await this.assetRepository.findOne({
+      where: {
+        deviceAssetId,
+        userId: authUser.id,
+      },
+    });
+
+    return res ? true : false;
   }
 }

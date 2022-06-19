@@ -60,6 +60,7 @@ services:
       - NODE_ENV=development
     depends_on:
       - database
+      - immich-server
     networks:
       - immich-network
 

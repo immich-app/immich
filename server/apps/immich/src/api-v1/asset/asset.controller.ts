@@ -15,6 +15,7 @@ import {
   Delete,
   Logger,
   Patch,
+  HttpCode,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
@@ -76,6 +77,10 @@ export class AssetController {
             { asset: assetWithThumbnail, fileName: file.originalname, fileSize: file.size, hasThumbnail: true },
             { jobId: savedAsset.id },
           );
+
+          this.wsCommunicateionGateway.server
+            .to(savedAsset.userId)
+            .emit('on_upload_success', JSON.stringify(assetWithThumbnail));
         } else {
           await this.assetUploadedQueue.add(
             'asset-uploaded',
@@ -83,8 +88,6 @@ export class AssetController {
             { jobId: savedAsset.id },
           );
         }
-
-        this.wsCommunicateionGateway.server.to(savedAsset.userId).emit('on_upload_success', JSON.stringify(savedAsset));
       } catch (e) {
         Logger.error(`Error receiving upload file ${e}`);
       }
@@ -170,5 +173,21 @@ export class AssetController {
     await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
 
     return result;
+  }
+
+  /**
+   * Check duplicated asset before uploading - for Web upload used
+   */
+  @Post('/check')
+  @HttpCode(200)
+  async checkDuplicateAsset(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) { deviceAssetId }: { deviceAssetId: string },
+  ) {
+    const res = await this.assetService.checkDuplicatedAsset(authUser, deviceAssetId);
+
+    return {
+      isExist: res,
+    };
   }
 }
