@@ -382,4 +382,15 @@ export class AssetService {
       [authUser.id],
     );
   }
+
+  async checkDuplicatedAsset(authUser: AuthUserDto, deviceAssetId: string) {
+    const res = await this.assetRepository.findOne({
+      where: {
+        deviceAssetId,
+        userId: authUser.id,
+      },
+    });
+
+    return res ? true : false;
+  }
 }

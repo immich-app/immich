@@ -50,6 +50,24 @@ export async function fileUploader(asset: File, accessToken: string) {
 		// Get asset binary data.
 		formData.append('assetData', asset);
 
+		// Check if asset upload on server before performing upload
+		const res = await fetch(serverEndpoint + '/asset/check', {
+			method: 'POST',
+			body: JSON.stringify({ deviceAssetId }),
+			headers: {
+				Authorization: 'Bearer ' + accessToken,
+				'Content-Type': 'application/json',
+			},
+		});
+
+		if (res.status === 200) {
+			const { isExist } = await res.json();
+
+			if (isExist) {
+				return;
+			}
+		}
+
 		const request = new XMLHttpRequest();
 
 		request.upload.onloadstart = () => {
@@ -66,7 +84,7 @@ export async function fileUploader(asset: File, accessToken: string) {
 		request.upload.onload = () => {
 			setTimeout(() => {
 				uploadAssetsStore.removeUploadAsset(deviceAssetId);
-			}, 5000);
+			}, 2500);
 		};
 
 		// listen for `error` event

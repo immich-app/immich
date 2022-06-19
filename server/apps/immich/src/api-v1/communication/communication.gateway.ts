@@ -22,12 +22,12 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
   handleDisconnect(client: Socket) {
     client.leave(client.nsp.name);
 
-    Logger.log(`Client ${client.id} disconnected`);
+    Logger.log(`Client ${client.id} disconnected from Websocket`, 'WebsocketConnectionEvent');
   }
 
   async handleConnection(client: Socket, ...args: any[]) {
     try {
-      Logger.log(`New websocket connection: ${client.id}`, 'NewWebSocketConnection');
+      Logger.log(`New websocket connection: ${client.id}`, 'WebsocketConnectionEvent');
 
       const accessToken = client.handshake.headers.authorization.split(' ')[1];
 

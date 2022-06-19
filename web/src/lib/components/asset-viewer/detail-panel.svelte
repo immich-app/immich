@@ -91,7 +91,7 @@
 			<Close size="24" color="#232323" />
 		</button>
 
-		<p class="text-black text-lg">Info</p>
+		<p class="text-immich-fg text-lg">Info</p>
 	</div>
 
 	<div class="px-4 py-4">

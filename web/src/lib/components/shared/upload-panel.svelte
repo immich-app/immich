@@ -78,7 +78,11 @@
 </script>
 
 {#if isUploading}
-	<div class="absolute right-6 bottom-6 z-[10000]">
+	<div
+		in:fade={{ duration: 250 }}
+		out:fade={{ duration: 250, delay: 1000 }}
+		class="absolute right-6 bottom-6 z-[10000]"
+	>
 		{#if showDetail}
 			<div
 				in:scale={{ duration: 250, easing: quartInOut }}

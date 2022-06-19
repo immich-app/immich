@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import type { ImmichUser } from '$lib/models/immich-user';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, fly, slide } from 'svelte/transition';
 	import { postRequest } from '../../api';
 	import { serverEndpoint } from '../../constants';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
@@ -44,7 +44,7 @@
 </script>
 
 <section id="dashboard-navbar" class="fixed w-screen  z-[100] bg-immich-bg text-sm">
-	<div class="flex border place-items-center px-6 py-2 ">
+	<div class="flex border-b place-items-center px-6 py-2 ">
 		<a class="flex gap-2 place-items-center hover:cursor-pointer" href="/photos">
 			<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" />
 			<h1 class="font-immich-title text-2xl text-immich-primary">IMMICH</h1>
@@ -53,13 +53,16 @@
 			<input class="w-[50%] border rounded-md bg-gray-200 px-8 py-4" placeholder="Search - Coming soon" />
 		</div>
 		<section class="flex gap-4 place-items-center">
-			<button
-				on:click={() => dispatch('uploadClicked')}
-				class="flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5 p-2 rounded-lg font-medium"
-			>
-				<TrayArrowUp size="20" />
-				<span> Upload </span>
-			</button>
+			{#if $page.url.pathname !== '/admin'}
+				<button
+					in:fly={{ x: 50, duration: 250 }}
+					on:click={() => dispatch('uploadClicked')}
+					class="flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5 p-2 rounded-lg font-medium"
+				>
+					<TrayArrowUp size="20" />
+					<span> Upload </span>
+				</button>
+			{/if}
 
 			{#if user.isAdmin}
 				<button

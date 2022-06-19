@@ -15,6 +15,7 @@ import {
   Delete,
   Logger,
   Patch,
+  HttpCode,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
@@ -172,5 +173,21 @@ export class AssetController {
     await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
 
     return result;
+  }
+
+  /**
+   * Check duplicated asset before uploading - for Web upload used
+   */
+  @Post('/check')
+  @HttpCode(200)
+  async checkDuplicateAsset(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) { deviceAssetId }: { deviceAssetId: string },
+  ) {
+    const res = await this.assetService.checkDuplicatedAsset(authUser, deviceAssetId);
+
+    return {
+      isExist: res,
+    };
   }
 }

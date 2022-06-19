@@ -42,7 +42,7 @@
 	import DownloadPanel from '../../lib/components/asset-viewer/download-panel.svelte';
 	import StatusBox from '../../lib/components/shared/status-box.svelte';
 	import { fileUploader } from '../../lib/utils/file-uploader';
-	import { connectWebsocket } from '../../lib/stores/websocket';
+	import { openWebsocketConnection } from '../../lib/stores/websocket';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -67,7 +67,7 @@
 		if ($session.user) {
 			await getAssetsInfo($session.user.accessToken);
 
-			connectWebsocket($session.user.accessToken);
+			openWebsocketConnection($session.user.accessToken);
 		}
 	});
 
@@ -122,7 +122,7 @@
 	<NavigationBar {user} on:uploadClicked={uploadClickedHandler} />
 </section>
 
-<section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
+<section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
 	<!-- Sidebar -->
 	<section id="sidebar" class="flex flex-col gap-4 pt-8 pr-6">
 		<SideBarButton
@@ -142,7 +142,7 @@
 
 	<!-- Main Section -->
 	<section class="overflow-y-auto relative">
-		<section id="assets-content" class="relative pt-8 pl-4">
+		<section id="assets-content" class="relative pt-8 pl-4 mb-12 bg-immich-bg">
 			<section id="image-grid" class="flex flex-wrap gap-14">
 				{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
 					<!-- Asset Group By Date -->
@@ -152,7 +152,7 @@
 						on:mouseleave={() => (isMouseOverGroup = false)}
 					>
 						<!-- Date group title -->
-						<p class="font-medium text-sm text-black mb-2 flex place-items-center h-6">
+						<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
 							{#if selectedGroupThumbnail === groupIndex && isMouseOverGroup}
 								<div
 									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
@@ -167,7 +167,7 @@
 						</p>
 
 						<!-- Image grid -->
-						<div class="flex flex-wrap gap-1">
+						<div class="flex flex-wrap gap-[2px]">
 							{#each assetsInDateGroup as asset}
 								<ImmichThumbnail
 									{asset}

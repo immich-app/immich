@@ -3,7 +3,7 @@ import { serverEndpoint } from '../constants';
 import type { ImmichAsset } from '../models/immich-asset';
 import { assets } from './assets';
 
-export const connectWebsocket = (accessToken: string) => {
+export const openWebsocketConnection = (accessToken: string) => {
 	const websocket = io(serverEndpoint, {
 		transports: ['polling'],
 		reconnection: true,
@@ -24,7 +24,7 @@ const listenToEvent = (socket: Socket) => {
 		assets.update((assets) => [...assets, newUploadedAsset]);
 	});
 
-	socket.on('error', (data) => {
-		console.log('Cannot connect websocket', data);
+	socket.on('error', (e) => {
+		console.log('Websocket Error', e);
 	});
 };
