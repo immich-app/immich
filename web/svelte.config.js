@@ -10,6 +10,13 @@ const config = {
 		methodOverride: {
 			allowed: ['PATCH', 'DELETE'],
 		},
+		vite: {
+			resolve: {
+				alias: {
+					'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',
+				},
+			},
+		},
 	},
 };
 

@@ -244,7 +244,7 @@ export class AssetService {
           }
 
           /** Sending Partial Content With HTTP Code 206 */
-
+          console.log('send partial', end - start + 1);
           res.status(206).set({
             'Content-Range': `bytes ${start}-${end}/${size}`,
             'Accept-Ranges': 'bytes',
