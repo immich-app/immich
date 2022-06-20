@@ -4,8 +4,6 @@ services:
   immich-server:
     image: altran1502/immich-server:latest
     entrypoint: ["/bin/sh", "./start-server.sh"]
-    expose:
-      - "3000"
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
@@ -34,8 +32,6 @@ services:
   immich-machine-learning:
     image: altran1502/immich-machine-learning:latest
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
-    expose:
-      - "3001"
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
@@ -51,8 +47,6 @@ services:
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
       - .env
-    ports:
-      - 2285:3000
     restart: always
 
   redis:
@@ -72,8 +66,6 @@ services:
       PG_DATA: /var/lib/postgresql/data
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
     restart: always
 
   nginx:
@@ -90,7 +82,5 @@ services:
       - immich-server
     restart: always
 
-networks:
-  immich-network:
 volumes:
   pgdata:
