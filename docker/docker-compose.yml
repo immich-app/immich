@@ -15,8 +15,6 @@ services:
     depends_on:
       - redis
       - database
-    networks:
-      - immich-network
     restart: always
 
   immich-microservices:
@@ -31,8 +29,6 @@ services:
     depends_on:
       - redis
       - database
-    networks:
-      - immich-network
     restart: always
 
   immich-machine-learning:
@@ -48,8 +44,6 @@ services:
       - NODE_ENV=production
     depends_on:
       - database
-    networks:
-      - immich-network
     restart: always
 
   immich-web:
@@ -59,15 +53,11 @@ services:
       - .env
     ports:
       - 2285:3000
-    networks:
-      - immich-network
     restart: always
 
   redis:
     container_name: immich_redis
     image: redis:6.2
-    networks:
-      - immich-network
     restart: always
 
   database:
@@ -82,8 +72,8 @@ services:
       PG_DATA: /var/lib/postgresql/data
     volumes:
       - pgdata:/var/lib/postgresql/data
-    networks:
-      - immich-network
+    ports:
+      - 5432:5432
     restart: always
 
   nginx:
@@ -96,8 +86,6 @@ services:
       - 2284:443
     logging:
       driver: none
-    networks:
-      - immich-network
     depends_on:
       - immich-server
     restart: always
