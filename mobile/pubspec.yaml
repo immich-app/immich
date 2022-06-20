@@ -30,7 +30,7 @@ dependencies:
   chewie: ^1.2.2
   sliver_tools: ^0.2.5
   badges: ^2.0.2
-  photo_view: ^0.13.0
+  photo_view: ^0.14.0
   socket_io_client: ^2.0.0-beta.4-nullsafety.0
   flutter_map: ^0.14.0
   flutter_udid: ^2.0.0
