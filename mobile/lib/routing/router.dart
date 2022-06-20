@@ -18,6 +18,7 @@ import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/modules/backup/views/backup_controller_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
+import 'package:immich_mobile/shared/views/splash_screen.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -27,8 +28,9 @@ part 'router.gr.dart';
 @MaterialAutoRouter(
   replaceInRouteName: 'Page,Route',
   routes: <AutoRoute>[
-    AutoRoute(page: LoginPage, initial: true),
-    AutoRoute(
+    AutoRoute(page: SplashScreenPage, initial: true),
+    AutoRoute(page: LoginPage),
+    CustomRoute(
       page: TabControllerPage,
       guards: [AuthGuard],
       children: [
@@ -36,6 +38,7 @@ part 'router.gr.dart';
         AutoRoute(page: SearchPage, guards: [AuthGuard]),
         AutoRoute(page: SharingPage, guards: [AuthGuard])
       ],
+      transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
     AutoRoute(page: ImageViewerPage, guards: [AuthGuard]),
     AutoRoute(page: VideoViewerPage, guards: [AuthGuard]),

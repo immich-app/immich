@@ -67,7 +67,7 @@ class LoginForm extends HookConsumerWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                 enableFeedback: true,
                 title: const Text(
-                  "Save login",
+                  "Stay logged in",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
                 ),
                 value: isSaveLoginInfo.value,
