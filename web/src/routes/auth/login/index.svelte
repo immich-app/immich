@@ -5,6 +5,56 @@
 	import LoginForm from '$lib/components/forms/login-form.svelte';
 	import UpdateForm from '../../../lib/components/forms/update-form.svelte';
 	import SelectAdminForm from '../../../lib/components/forms/select-admin-form.svelte';
+	import {
+		AuthorizationNotifier,
+		AuthorizationRequest,
+		AuthorizationServiceConfiguration,
+		FetchRequestor,
+		RedirectRequestHandler
+	} from "@openid/appauth";
+	import {onMount} from "svelte";
+	import {serverEndpoint} from "../../../lib/constants";
+
+	let config: AuthorizationServiceConfiguration;
+	let localLoginEnabled = true;
+	let oauth2LoginEnabled = false;
+	let oauth2ClientId: string;
+
+	onMount(async () => {
+
+		const resLoginParams = await fetch(`${serverEndpoint}/auth/loginParams`);
+
+		if (!resLoginParams.ok) {
+			console.log('Cannot get login params');
+			return;
+		}
+
+		const {localAuth, oauth2, discoveryUrl, clientId} = await resLoginParams.json();
+		localLoginEnabled = localAuth;
+		oauth2LoginEnabled = oauth2;
+		oauth2ClientId = clientId;
+
+		if (!oauth2LoginEnabled) {
+			return;
+		}
+
+		const resDiscovery = await fetch(discoveryUrl);
+
+		if (resDiscovery.status !== 200) {
+			console.log('Cannot fetch OIDC discovery');
+			return;
+		}
+
+		const { issuer } = await resDiscovery.json();
+
+		AuthorizationServiceConfiguration.fetchFromIssuer(
+				issuer,
+				new FetchRequestor()
+		).then(response => {
+			console.log("Fetched service configuration", response);
+			config = response;
+		});
+	})
 
 	let shouldShowUpdateForm = false;
 	let shouldShowSelectAdminForm = false;
@@ -22,6 +72,20 @@
 		shouldShowUpdateForm = false;
 		shouldShowSelectAdminForm = true;
 	};
+
+	const onOAuth2Login = () => {
+		const request = new AuthorizationRequest({
+			client_id: oauth2ClientId,
+			redirect_uri: `${window.location.origin}/auth/callback`,
+			scope: 'profile openid email',
+			response_type: 'id_token',
+			state: undefined, // generate random state for CSRF protection
+		});
+
+		let handler = new RedirectRequestHandler();
+
+		handler.performAuthorizationRequest(config, request);
+	};
 </script>
 
 <svelte:head>
@@ -31,7 +95,12 @@
 <section class="h-screen w-screen flex place-items-center place-content-center">
 	{#if !shouldShowUpdateForm && !shouldShowSelectAdminForm}
 		<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
-			<LoginForm on:success={onLoginSuccess} on:need-update={onNeedUpdate} on:need-select-admin={onNeedSelectAdmin} />
+			<LoginForm on:success={onLoginSuccess}
+					   on:need-update={onNeedUpdate}
+					   on:need-select-admin={onNeedSelectAdmin}
+					   on:oauth2-login={onOAuth2Login}
+					   {localLoginEnabled}
+					   {oauth2LoginEnabled} />
 		</div>
 	{/if}
 
