@@ -24,9 +24,10 @@ class ProfileDrawer extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     String endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-    AuthenticationState _authState = ref.watch(authenticationProvider);
-    ServerInfoState _serverInfoState = ref.watch(serverInfoProvider);
-    final uploadProfileImageStatus = ref.watch(uploadProfileImageProvider).status;
+    AuthenticationState authState = ref.watch(authenticationProvider);
+    ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
+    final uploadProfileImageStatus =
+        ref.watch(uploadProfileImageProvider).status;
     final appInfo = useState({});
     var dummmy = Random().nextInt(1024);
 
@@ -40,7 +41,7 @@ class ProfileDrawer extends HookConsumerWidget {
     }
 
     _buildUserProfileImage() {
-      if (_authState.profileImagePath.isEmpty) {
+      if (authState.profileImagePath.isEmpty) {
         return const CircleAvatar(
           radius: 35,
           backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
@@ -49,10 +50,11 @@ class ProfileDrawer extends HookConsumerWidget {
       }
 
       if (uploadProfileImageStatus == UploadProfileStatus.idle) {
-        if (_authState.profileImagePath.isNotEmpty) {
+        if (authState.profileImagePath.isNotEmpty) {
           return CircleAvatar(
             radius: 35,
-            backgroundImage: NetworkImage('$endpoint/user/profile-image/${_authState.userId}?d=${dummmy++}'),
+            backgroundImage: NetworkImage(
+                '$endpoint/user/profile-image/${authState.userId}?d=${dummmy++}'),
             backgroundColor: Colors.transparent,
           );
         } else {
@@ -67,7 +69,8 @@ class ProfileDrawer extends HookConsumerWidget {
       if (uploadProfileImageStatus == UploadProfileStatus.success) {
         return CircleAvatar(
           radius: 35,
-          backgroundImage: NetworkImage('$endpoint/user/profile-image/${_authState.userId}?d=${dummmy++}'),
+          backgroundImage: NetworkImage(
+              '$endpoint/user/profile-image/${authState.userId}?d=${dummmy++}'),
           backgroundColor: Colors.transparent,
         );
       }
@@ -88,15 +91,16 @@ class ProfileDrawer extends HookConsumerWidget {
     }
 
     _pickUserProfileImage() async {
-      final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery, maxHeight: 1024, maxWidth: 1024);
+      final XFile? image = await ImagePicker().pickImage(
+          source: ImageSource.gallery, maxHeight: 1024, maxWidth: 1024);
 
       if (image != null) {
-        var success = await ref.watch(uploadProfileImageProvider.notifier).upload(image);
+        var success =
+            await ref.watch(uploadProfileImageProvider.notifier).upload(image);
 
         if (success) {
-          ref
-              .watch(authenticationProvider.notifier)
-              .updateUserProfileImagePath(ref.read(uploadProfileImageProvider).profileImagePath);
+          ref.watch(authenticationProvider.notifier).updateUserProfileImagePath(
+              ref.read(uploadProfileImageProvider).profileImagePath);
         }
       }
     }
@@ -117,7 +121,10 @@ class ProfileDrawer extends HookConsumerWidget {
               DrawerHeader(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color.fromARGB(255, 216, 219, 238), Color.fromARGB(255, 226, 230, 231)],
+                    colors: [
+                      Color.fromARGB(255, 216, 219, 238),
+                      Color.fromARGB(255, 226, 230, 231)
+                    ],
                     begin: Alignment.centerRight,
                     end: Alignment.centerLeft,
                   ),
@@ -155,7 +162,7 @@ class ProfileDrawer extends HookConsumerWidget {
                       ],
                     ),
                     Text(
-                      "${_authState.firstName} ${_authState.lastName}",
+                      "${authState.firstName} ${authState.lastName}",
                       style: TextStyle(
                         color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.bold,
@@ -163,7 +170,7 @@ class ProfileDrawer extends HookConsumerWidget {
                       ),
                     ),
                     Text(
-                      _authState.userEmail,
+                      authState.userEmail,
                       style: TextStyle(color: Colors.grey[800], fontSize: 12),
                     )
                   ],
@@ -177,10 +184,14 @@ class ProfileDrawer extends HookConsumerWidget {
                 ),
                 title: const Text(
                   "Sign Out",
-                  style: TextStyle(color: Colors.black54, fontSize: 14, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
                 ),
                 onTap: () async {
-                  bool res = await ref.read(authenticationProvider.notifier).logout();
+                  bool res =
+                      await ref.read(authenticationProvider.notifier).logout();
 
                   if (res) {
                     ref.watch(backupProvider.notifier).cancelBackup();
@@ -206,19 +217,22 @@ class ProfileDrawer extends HookConsumerWidget {
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        _serverInfoState.isVersionMismatch
-                            ? _serverInfoState.versionMismatchErrorMessage
+                        serverInfoState.isVersionMismatch
+                            ? serverInfoState.versionMismatchErrorMessage
                             : "Client and Server are up-to-date",
                         textAlign: TextAlign.center,
-                        style:
-                            TextStyle(fontSize: 11, color: Theme.of(context).primaryColor, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                     const Divider(),
@@ -256,7 +270,7 @@ class ProfileDrawer extends HookConsumerWidget {
                           ),
                         ),
                         Text(
-                          "${_serverInfoState.serverVersion.major}.${_serverInfoState.serverVersion.minor}.${_serverInfoState.serverVersion.patch}",
+                          "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}",
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[500],

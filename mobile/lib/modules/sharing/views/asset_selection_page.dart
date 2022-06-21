@@ -13,13 +13,15 @@ class AssetSelectionPage extends HookConsumerWidget {
   const AssetSelectionPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ScrollController _scrollController = useScrollController();
+    ScrollController scrollController = useScrollController();
     var assetGroupMonthYear = ref.watch(assetGroupByMonthYearProvider);
-    final selectedAssets = ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
-    final newAssetsForAlbum = ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
+    final selectedAssets =
+        ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
+    final newAssetsForAlbum =
+        ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
     final isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
-    List<Widget> _imageGridGroup = [];
+    List<Widget> imageGridGroup = [];
 
     String _buildAssetCountText() {
       if (isAlbumExist) {
@@ -31,19 +33,20 @@ class AssetSelectionPage extends HookConsumerWidget {
 
     Widget _buildBody() {
       assetGroupMonthYear.forEach((monthYear, assetGroup) {
-        _imageGridGroup.add(MonthGroupTitle(month: monthYear, assetGroup: assetGroup));
-        _imageGridGroup.add(AssetGridByMonth(assetGroup: assetGroup));
+        imageGridGroup
+            .add(MonthGroupTitle(month: monthYear, assetGroup: assetGroup));
+        imageGridGroup.add(AssetGridByMonth(assetGroup: assetGroup));
       });
 
       return Stack(
         children: [
           DraggableScrollbar.semicircle(
             backgroundColor: Theme.of(context).primaryColor,
-            controller: _scrollController,
+            controller: scrollController,
             heightScrollThumb: 48.0,
             child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [..._imageGridGroup],
+              controller: scrollController,
+              slivers: [...imageGridGroup],
             ),
           ),
         ],
@@ -71,7 +74,8 @@ class AssetSelectionPage extends HookConsumerWidget {
               ),
         centerTitle: false,
         actions: [
-          (!isAlbumExist && selectedAssets.isNotEmpty) || (isAlbumExist && newAssetsForAlbum.isNotEmpty)
+          (!isAlbumExist && selectedAssets.isNotEmpty) ||
+                  (isAlbumExist && newAssetsForAlbum.isNotEmpty)
               ? TextButton(
                   onPressed: () {
                     var payload = AssetSelectionPageResult(

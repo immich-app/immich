@@ -34,7 +34,8 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
           return;
         }
 
-        if (latestTagVersion.isNotEmpty && localReleaseVersion != latestTagVersion) {
+        if (latestTagVersion.isNotEmpty &&
+            localReleaseVersion != latestTagVersion) {
           VersionAnnouncementOverlayController.appLoader.show();
           return;
         }
@@ -54,4 +55,5 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
   }
 }
 
-final releaseInfoProvider = StateNotifierProvider<ReleaseInfoNotifier, String>((ref) => ReleaseInfoNotifier());
+final releaseInfoProvider = StateNotifierProvider<ReleaseInfoNotifier, String>(
+    (ref) => ReleaseInfoNotifier());

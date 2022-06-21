@@ -42,10 +42,11 @@ class ImmichApp extends ConsumerStatefulWidget {
   const ImmichApp({Key? key}) : super(key: key);
 
   @override
-  _ImmichAppState createState() => _ImmichAppState();
+  ImmichAppState createState() => ImmichAppState();
 }
 
-class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserver {
+class ImmichAppState extends ConsumerState<ImmichApp>
+    with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
@@ -121,7 +122,8 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
               brightness: Brightness.light,
               primarySwatch: Colors.indigo,
               fontFamily: 'WorkSans',
-              snackBarTheme: const SnackBarThemeData(contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
+              snackBarTheme: const SnackBarThemeData(
+                  contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
               scaffoldBackgroundColor: immichBackgroundColor,
               appBarTheme: const AppBarTheme(
                 backgroundColor: immichBackgroundColor,
@@ -132,7 +134,8 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
               ),
             ),
             routeInformationParser: _immichRouter.defaultRouteParser(),
-            routerDelegate: _immichRouter.delegate(navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
+            routerDelegate: _immichRouter.delegate(
+                navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
           ),
           const ImmichLoadingOverlay(),
           const VersionAnnouncementOverlay(),
