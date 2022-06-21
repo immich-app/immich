@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 
 class DisableMultiSelectButton extends ConsumerWidget {
   const DisableMultiSelectButton({
@@ -36,7 +35,8 @@ class DisableMultiSelectButton extends ConsumerWidget {
                   icon: const Icon(Icons.close_rounded),
                   label: Text(
                     selectedItemCount.toString(),
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 18),
                   )),
             ),
           ),

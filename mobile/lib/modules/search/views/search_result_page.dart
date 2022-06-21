@@ -24,12 +24,13 @@ class SearchResultPage extends HookConsumerWidget {
     final isNewSearch = useState(false);
     final currentSearchTerm = useState(searchTerm);
 
-    List<Widget> _imageGridGroup = [];
+    final List<Widget> _imageGridGroup = [];
 
     useEffect(() {
       searchFocusNode = FocusNode();
 
-      Future.delayed(Duration.zero, () => ref.read(searchResultPageProvider.notifier).search(searchTerm));
+      Future.delayed(Duration.zero,
+          () => ref.read(searchResultPageProvider.notifier).search(searchTerm));
       return () => searchFocusNode.dispose();
     }, []);
 
@@ -85,7 +86,10 @@ class SearchResultPage extends HookConsumerWidget {
           children: [
             Text(
               currentSearchTerm.value,
-              style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 13, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold),
               maxLines: 1,
             ),
             Icon(
@@ -192,7 +196,9 @@ class SearchResultPage extends HookConsumerWidget {
         child: Stack(
           children: [
             _buildSearchResult(),
-            isNewSearch.value ? SearchSuggestionList(onSubmitted: _onSearchSubmitted) : Container(),
+            isNewSearch.value
+                ? SearchSuggestionList(onSubmitted: _onSearchSubmitted)
+                : Container(),
           ],
         ),
       ),
