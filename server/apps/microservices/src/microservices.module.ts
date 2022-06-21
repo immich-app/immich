@@ -11,6 +11,9 @@ import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
+import { AssetModule } from '../../immich/src/api-v1/asset/asset.module';
+import { CommunicationGateway } from '../../immich/src/api-v1/communication/communication.gateway';
+import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
 
 @Module({
   imports: [
@@ -56,6 +59,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
         removeOnFail: false,
       },
     }),
+    CommunicationModule,
   ],
   controllers: [],
   providers: [

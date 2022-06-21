@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/teamcity/http/immichci.little-home.net/s/Immich_BuildAndPublishIOSToTestFlight.svg?style=for-the-badge&label=iOS&logo=teamcity&logoColor=000000&labelColor=ececec" alt="iOS Build"/>
   </a>
   <a href="https://actions-badge.atrox.dev/alextran1502/immich/goto?ref=main">
-    <img alt="Build Status" src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Falextran1502%2Fimmich%2Fbadge%3Fref%3Dmain&style=for-the-badge&label=Server Docker&logo=docker&labelColor=ececec" />
+    <img alt="Build Status" src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Falextran1502%2Fimmich%2Fbadge%3Fref%3Dmain&style=for-the-badge&label=Github Action&logo=github&labelColor=ececec&logoColor=000000" />
   </a>
   <a href="https://discord.gg/rxnyVTXGbM">
     <img src="https://img.shields.io/discord/979116623879368755.svg?label=Immich%20Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Immich Discord"/>
@@ -25,7 +25,7 @@
 
 # Immich
 
-Self-hosted photo and video backup solution directly from your mobile phone.
+**High performance self-hosted photo and video backup solution.**
 
 ![](https://media.giphy.com/media/y8ZeaAigGmNvlSoKhU/giphy.gif)
 
@@ -33,7 +33,7 @@ Loading ~4000 images/videos
 
 ## Screenshots
 
-### Mobile client
+### Mobile
 <p align="left">
   <img src="design/login-screen.png" width="150" title="Login With Custom URL">
   <img src="design/backup-screen.png" width="150" title="Backup Setting Info">
@@ -44,9 +44,10 @@ Loading ~4000 images/videos
   <img src="design/nsc6.png" width="150" title="EXIF Info">
 </p>
 
-### Web client
-<p align="center">
-  <img src="design/dashboard_photos.jpeg" width="100%" title="Home Dashboard">
+### Web
+<p align="left">
+  <img src="design/web-home.jpeg"  width="49%" title="Home Dashboard">
+  <img src="design/web-detail.jpeg" width="49%" title="Detail">
 </p>
 
 # Note
@@ -55,26 +56,22 @@ Loading ~4000 images/videos
 
 This project is under heavy development, there will be continuous functions, features and api changes.
 
-# Features
+# Features 
 
-- Upload and view assets (videos/images).
-- Auto Backup.
-- Download asset to local device.
-- Multi-user supported.
-- Quick navigation with drag scroll bar.
-- Support HEIC/HEIF Backup.
-- Extract and display EXIF info.
-- Real-time render from multi-device upload event.
-- Image Tagging/Classification based on ImageNet dataset
-- Object detection based on COCO SSD.
-- Search assets based on tags and exif data (lens, make, model, orientation)
-- [Optional] Reverse geocoding using Mapbox (Generous free-tier of 100,000 search/month)
-- Show asset's location information on map (OpenStreetMap).
-- Show curated places on the search page
-- Show curated objects on the search page
-- Shared album with users on the same server
-- Selective backup - albums can be included and excluded during the backup process.
-- Web interface is available for administrative tasks (creating new users) and viewing assets on the server - additional features are coming.
+|  | Mobile | Web |
+| - | - | - |
+| Upload and view videos and photos | Yes | Yes
+| Auto backup when app is opened | Yes | N/A
+| Selective album(s) for backup | Yes | N/A
+| Download photos and videos to local device | Yes | Yes
+| Multi-user support | Yes | Yes
+| Shared Albums | Yes | No
+| Quick navigation with draggable scrollbar | Yes | Yes
+| Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes | Yes
+| Metadata view (EXIF, map) | Yes | Yes
+| Search by metadata, objects and image tags | Yes | No
+| Administrative functions (user management) | No | Yes
+
 
 # System Requirement
 
@@ -97,7 +94,7 @@ You can use docker compose for development and testing out the application, ther
 3. **PostgreSQL** - Main database of the application
 4. **Redis** - For sharing websocket instance between docker instances and background tasks message queue.
 5. **Nginx** - Load balancing and optimized file uploading.
-6. **TensorFlow** - Object Detection and Image Classification.
+6. **TensorFlow** - Object Detection (COCO SSD) and Image Classification (ImageNet).
 
 ## Step 1: Populate .env file
 

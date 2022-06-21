@@ -1,25 +1,33 @@
 import 'dart:convert';
 
-class UserInfo {
+class User {
   final String id;
   final String email;
   final String createdAt;
+  final String firstName;
+  final String lastName;
 
-  UserInfo({
+  User({
     required this.id,
     required this.email,
     required this.createdAt,
+    required this.firstName,
+    required this.lastName,
   });
 
-  UserInfo copyWith({
+  User copyWith({
     String? id,
     String? email,
     String? createdAt,
+    String? firstName,
+    String? lastName,
   }) {
-    return UserInfo(
+    return User(
       id: id ?? this.id,
       email: email ?? this.email,
       createdAt: createdAt ?? this.createdAt,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
     );
   }
 
@@ -33,17 +41,19 @@ class UserInfo {
     return result;
   }
 
-  factory UserInfo.fromMap(Map<String, dynamic> map) {
-    return UserInfo(
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(
       id: map['id'] ?? '',
       email: map['email'] ?? '',
       createdAt: map['createdAt'] ?? '',
+      firstName: map['firstName'] ?? '',
+      lastName: map['lastName'] ?? '',
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory UserInfo.fromJson(String source) => UserInfo.fromMap(json.decode(source));
+  factory User.fromJson(String source) => User.fromMap(json.decode(source));
 
   @override
   String toString() => 'UserInfo(id: $id, email: $email, createdAt: $createdAt)';
@@ -52,7 +62,12 @@ class UserInfo {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is UserInfo && other.id == id && other.email == email && other.createdAt == createdAt;
+    return other is User &&
+      other.id == id &&
+      other.email == email &&
+      other.createdAt == createdAt &&
+      other.firstName == firstName &&
+      other.lastName == lastName;
   }
 
   @override

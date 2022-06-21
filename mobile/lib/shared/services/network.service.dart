@@ -22,7 +22,7 @@ class NetworkService {
     } on DioError catch (e) {
       debugPrint("DioError: ${e.response}");
     } catch (e) {
-      debugPrint("ERROR getRequest: ${e.toString()}");
+      debugPrint("ERROR deleteRequest: ${e.toString()}");
     }
   }
 
@@ -78,7 +78,26 @@ class NetworkService {
       debugPrint("DioError: ${e.response}");
       return null;
     } catch (e) {
-      debugPrint("ERROR BackupService: $e");
+      debugPrint("ERROR PostRequest: $e");
+      return null;
+    }
+  }
+
+  Future<dynamic> putRequest({required String url, dynamic data}) async {
+    try {
+      var dio = Dio();
+      dio.interceptors.add(AuthenticatedRequestInterceptor());
+
+      var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+      String validUrl = Uri.parse('$savedEndpoint/$url').toString();
+      Response res = await dio.put(validUrl, data: data);
+
+      return res;
+    } on DioError catch (e) {
+      debugPrint("DioError: ${e.response}");
+      return null;
+    } catch (e) {
+      debugPrint("ERROR PutRequest: $e");
       return null;
     }
   }
@@ -97,7 +116,7 @@ class NetworkService {
     } on DioError catch (e) {
       debugPrint("DioError: ${e.response}");
     } catch (e) {
-      debugPrint("ERROR BackupService: $e");
+      debugPrint("ERROR PatchRequest: $e");
     }
   }
 
@@ -122,7 +141,7 @@ class NetworkService {
       debugPrint("[PING SERVER] DioError: ${e.response} - $e");
       return false;
     } catch (e) {
-      debugPrint("ERROR BackupService: $e");
+      debugPrint("ERROR PingServer: $e");
       return false;
     }
   }

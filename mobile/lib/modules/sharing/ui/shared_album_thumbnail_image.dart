@@ -23,32 +23,29 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
       onTap: () {
         // debugPrint("View ${asset.id}");
       },
-      child: Hero(
-        tag: asset.id,
-        child: Stack(
-          children: [
-            CachedNetworkImage(
-              cacheKey: "${asset.id}-${cacheKey.value}",
-              width: 500,
-              height: 500,
-              memCacheHeight: asset.type == 'IMAGE' ? 500 : 500,
-              fit: BoxFit.cover,
-              imageUrl: thumbnailRequestUrl,
-              httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-              fadeInDuration: const Duration(milliseconds: 250),
-              progressIndicatorBuilder: (context, url, downloadProgress) => Transform.scale(
-                scale: 0.2,
-                child: CircularProgressIndicator(value: downloadProgress.progress),
-              ),
-              errorWidget: (context, url, error) {
-                return Icon(
-                  Icons.image_not_supported_outlined,
-                  color: Theme.of(context).primaryColor,
-                );
-              },
+      child: Stack(
+        children: [
+          CachedNetworkImage(
+            cacheKey: "${asset.id}-${cacheKey.value}",
+            width: 500,
+            height: 500,
+            memCacheHeight: asset.type == 'IMAGE' ? 500 : 500,
+            fit: BoxFit.cover,
+            imageUrl: thumbnailRequestUrl,
+            httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+            fadeInDuration: const Duration(milliseconds: 250),
+            progressIndicatorBuilder: (context, url, downloadProgress) => Transform.scale(
+              scale: 0.2,
+              child: CircularProgressIndicator(value: downloadProgress.progress),
             ),
-          ],
-        ),
+            errorWidget: (context, url, error) {
+              return Icon(
+                Icons.image_not_supported_outlined,
+                color: Theme.of(context).primaryColor,
+              );
+            },
+          ),
+        ],
       ),
     );
   }

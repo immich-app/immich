@@ -8,11 +8,11 @@ import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
-import 'package:immich_mobile/utils/dio_http_interceptor.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
+import 'package:cancellation_token_http/http.dart' as http;
 
 class BackupService {
   final NetworkService _networkService = NetworkService();
@@ -26,17 +26,13 @@ class BackupService {
     return result.cast<String>();
   }
 
-  backupAsset(Set<AssetEntity> assetList, CancelToken cancelToken, Function(String, String) singleAssetDoneCb,
-      Function(int, int) uploadProgress) async {
-    var dio = Dio();
-    dio.interceptors.add(AuthenticatedRequestInterceptor());
-
+  backupAsset(Set<AssetEntity> assetList, http.CancellationToken cancelToken,
+      Function(String, String) singleAssetDoneCb, Function(int, int) uploadProgress) async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
 
-    MultipartFile assetRawUploadData;
-    MultipartFile thumbnailUploadData;
+    http.MultipartFile? thumbnailUploadData;
 
     for (var entity in assetList) {
       try {
@@ -47,35 +43,27 @@ class BackupService {
         }
 
         if (file != null) {
-          FormData formData;
           String originalFileName = await entity.titleAsync;
           String fileNameWithoutPath = originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
           var mimeType = FileHelper.getMimeType(file.path);
-          assetRawUploadData = await MultipartFile.fromFile(
-            file.path,
+          var fileStream = file.openRead();
+          var assetRawUploadData = http.MultipartFile(
+            "assetData",
+            fileStream,
+            file.lengthSync(),
             filename: fileNameWithoutPath,
             contentType: MediaType(
               mimeType["type"],
               mimeType["subType"],
             ),
           );
-          formData = FormData.fromMap({
-            'deviceAssetId': entity.id,
-            'deviceId': deviceId,
-            'assetType': _getAssetType(entity.type),
-            'createdAt': entity.createDateTime.toIso8601String(),
-            'modifiedAt': entity.modifiedDateTime.toIso8601String(),
-            'isFavorite': entity.isFavorite,
-            'fileExtension': fileExtension,
-            'duration': entity.videoDuration,
-            'assetData': [assetRawUploadData]
-          });
 
           // Build thumbnail multipart data
           var thumbnailData = await entity.thumbnailDataWithSize(const ThumbnailSize(1440, 2560));
           if (thumbnailData != null) {
-            thumbnailUploadData = MultipartFile.fromBytes(
+            thumbnailUploadData = http.MultipartFile.fromBytes(
+              "thumbnailData",
               List.from(thumbnailData),
               filename: fileNameWithoutPath,
               contentType: MediaType(
@@ -83,39 +71,37 @@ class BackupService {
                 "jpeg",
               ),
             );
-
-            // Send thumbnail data if it is exist
-            formData = FormData.fromMap({
-              'deviceAssetId': entity.id,
-              'deviceId': deviceId,
-              'assetType': _getAssetType(entity.type),
-              'createdAt': entity.createDateTime.toIso8601String(),
-              'modifiedAt': entity.modifiedDateTime.toIso8601String(),
-              'isFavorite': entity.isFavorite,
-              'fileExtension': fileExtension,
-              'duration': entity.videoDuration,
-              'thumbnailData': [thumbnailUploadData],
-              'assetData': [assetRawUploadData]
-            });
           }
 
-          Response res = await dio.post(
-            '$savedEndpoint/asset/upload',
-            data: formData,
-            cancelToken: cancelToken,
-            onSendProgress: (sent, total) => uploadProgress(sent, total),
-          );
+          var box = Hive.box(userInfoBox);
+
+          var req = MultipartRequest('POST', Uri.parse('$savedEndpoint/asset/upload'),
+              onProgress: ((bytes, totalBytes) => uploadProgress(bytes, totalBytes)));
+          req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
+
+          req.fields['deviceAssetId'] = entity.id;
+          req.fields['deviceId'] = deviceId;
+          req.fields['assetType'] = _getAssetType(entity.type);
+          req.fields['createdAt'] = entity.createDateTime.toIso8601String();
+          req.fields['modifiedAt'] = entity.modifiedDateTime.toIso8601String();
+          req.fields['isFavorite'] = entity.isFavorite.toString();
+          req.fields['fileExtension'] = fileExtension;
+          req.fields['duration'] = entity.videoDuration.toString();
+
+          if (thumbnailUploadData != null) {
+            req.files.add(thumbnailUploadData);
+          }
+          req.files.add(assetRawUploadData);
+
+          var res = await req.send(cancellationToken: cancelToken);
 
           if (res.statusCode == 201) {
             singleAssetDoneCb(entity.id, deviceId);
           }
         }
-      } on DioError catch (e) {
-        debugPrint("DioError backupAsset: ${e.response}");
-        if (e.type == DioErrorType.cancel || e.type == DioErrorType.other) {
-          return;
-        }
-        continue;
+      } on http.CancelledException {
+        debugPrint("Backup was cancelled by the user");
+        return;
       } catch (e) {
         debugPrint("ERROR backupAsset: ${e.toString()}");
         continue;
@@ -148,5 +134,37 @@ class BackupService {
     });
 
     return DeviceInfoRemote.fromJson(res.toString());
+  }
+}
+
+class MultipartRequest extends http.MultipartRequest {
+  /// Creates a new [MultipartRequest].
+  MultipartRequest(
+    String method,
+    Uri url, {
+    required this.onProgress,
+  }) : super(method, url);
+
+  final void Function(int bytes, int totalBytes) onProgress;
+
+  /// Freezes all mutable fields and returns a
+  /// single-subscription [http.ByteStream]
+  /// that will emit the request body.
+  @override
+  http.ByteStream finalize() {
+    final byteStream = super.finalize();
+
+    final total = contentLength;
+    var bytes = 0;
+
+    final t = StreamTransformer.fromHandlers(
+      handleData: (List<int> data, EventSink<List<int>> sink) {
+        bytes += data.length;
+        onProgress.call(bytes, total);
+        sink.add(data);
+      },
+    );
+    final stream = byteStream.transform(t);
+    return http.ByteStream(stream);
   }
 }

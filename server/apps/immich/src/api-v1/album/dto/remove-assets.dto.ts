@@ -1,9 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class AddAssetsDto {
-  @IsNotEmpty()
-  albumId: string;
-
+export class RemoveAssetsDto {
   @IsNotEmpty()
   assetIds: string[];
 }

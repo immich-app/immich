@@ -24,6 +24,6 @@ import { CommunicationModule } from '../communication/communication.module';
   ],
   controllers: [AssetController],
   providers: [AssetService, BackgroundTaskService],
-  exports: [],
+  exports: [AssetService],
 })
 export class AssetModule {}

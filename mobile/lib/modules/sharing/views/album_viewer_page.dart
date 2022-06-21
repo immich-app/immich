@@ -36,10 +36,10 @@ class AlbumViewerPage extends HookConsumerWidget {
     /// Find out if the assets in album exist on the device
     /// If they exist, add to selected asset state to show they are already selected.
     void _onAddPhotosPressed(SharedAlbum albumInfo) async {
-      if (albumInfo.sharedAssets != null && albumInfo.sharedAssets!.isNotEmpty) {
+      if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty) {
         ref
             .watch(assetSelectionProvider.notifier)
-            .addNewAssets(albumInfo.sharedAssets!.map((e) => e.assetInfo).toList());
+            .addNewAssets(albumInfo.assets!.toList());
       }
 
       ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(true);
@@ -101,10 +101,10 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget _buildAlbumDateRange(SharedAlbum albumInfo) {
-      if (albumInfo.sharedAssets != null && albumInfo.sharedAssets!.isNotEmpty) {
+      if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty) {
         String startDate = "";
-        DateTime parsedStartDate = DateTime.parse(albumInfo.sharedAssets!.first.assetInfo.createdAt);
-        DateTime parsedEndDate = DateTime.parse(albumInfo.sharedAssets!.last.assetInfo.createdAt);
+        DateTime parsedStartDate = DateTime.parse(albumInfo.assets!.first.createdAt);
+        DateTime parsedEndDate = DateTime.parse(albumInfo.assets!.last.createdAt);
 
         if (parsedStartDate.year == parsedEndDate.year) {
           startDate = DateFormat('LLL d').format(parsedStartDate);
@@ -163,7 +163,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget _buildImageGrid(SharedAlbum albumInfo) {
-      if (albumInfo.sharedAssets != null && albumInfo.sharedAssets!.isNotEmpty) {
+      if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 10.0),
           sliver: SliverGrid(
@@ -174,9 +174,9 @@ class AlbumViewerPage extends HookConsumerWidget {
             ),
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                return AlbumViewerThumbnail(asset: albumInfo.sharedAssets![index].assetInfo);
+                return AlbumViewerThumbnail(asset: albumInfo.assets![index]);
               },
-              childCount: albumInfo.sharedAssets?.length,
+              childCount: albumInfo.assets?.length,
             ),
           ),
         );

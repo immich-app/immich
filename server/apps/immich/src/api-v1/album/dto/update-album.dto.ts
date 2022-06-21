@@ -1,9 +1,9 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class AddUsersDto {
+export class UpdateAlbumDto {
   @IsNotEmpty()
-  albumId: string;
+  albumName: string;
 
   @IsNotEmpty()
-  sharedUserIds: string[];
+  ownerId: string;
 }

@@ -12,6 +12,8 @@ import { Logger } from '@nestjs/common';
 import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import { ConfigService } from '@nestjs/config';
+import ffmpeg from 'fluent-ffmpeg';
+// import moment from 'moment';
 
 @Processor('metadata-extraction-queue')
 export class MetadataExtractionProcessor {
@@ -128,5 +130,28 @@ export class MetadataExtractionProcessor {
     } catch (error) {
       Logger.error(`Failed to trigger object detection pipe line ${error.toString()}`);
     }
+  }
+
+  @Process({ name: 'extract-video-length', concurrency: 2 })
+  async extractVideoLength(job: Job) {
+    const { asset }: { asset: AssetEntity } = job.data;
+
+    ffmpeg.ffprobe(asset.originalPath, async (err, data) => {
+      if (!err) {
+        if (data.format.duration) {
+          const videoDurationInSecond = parseInt(data.format.duration.toString(), 0);
+
+          const hours = Math.floor(videoDurationInSecond / 3600);
+          const minutes = Math.floor((videoDurationInSecond - hours * 3600) / 60);
+          const seconds = videoDurationInSecond - hours * 3600 - minutes * 60;
+
+          const durationString = `${hours}:${minutes < 10 ? '0' + minutes.toString() : minutes}:${
+            seconds < 10 ? '0' + seconds.toString() : seconds
+          }.000000`;
+
+          await this.assetRepository.update({ id: asset.id }, { duration: durationString });
+        }
+      }
+    });
   }
 }

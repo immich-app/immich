@@ -46,6 +46,7 @@ export class AssetUploadedProcessor {
       await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
     } else {
       // Generate Thumbnail -> Then generate webp, tag image and detect object
+      await this.thumbnailGeneratorQueue.add('generate-jpeg-thumbnail', { asset }, { jobId: randomUUID() });
     }
 
     // Video Conversion
@@ -62,6 +63,11 @@ export class AssetUploadedProcessor {
         },
         { jobId: randomUUID() },
       );
+    }
+
+    // Extract video duration if uploaded from the web
+    if (asset.type == AssetType.VIDEO && asset.duration == '0:00:00.000000') {
+      await this.metadataExtractionQueue.add('extract-video-length', { asset }, { jobId: randomUUID() });
     }
   }
 }

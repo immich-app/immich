@@ -45,6 +45,7 @@
 	const loadVideoData = async () => {
 		isThumbnailVideoPlaying = false;
 		const videoUrl = `/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isWeb=true`;
+
 		if ($session.user) {
 			try {
 				const res = await fetch(serverEndpoint + videoUrl, {
@@ -55,16 +56,20 @@
 				});
 
 				videoData = URL.createObjectURL(await res.blob());
+
 				videoPlayerNode.src = videoData;
+				// videoPlayerNode.src = videoData + '#t=0,5';
 
 				videoPlayerNode.load();
 
 				videoPlayerNode.onloadeddata = () => {
 					console.log('first frame load');
 				};
+
 				videoPlayerNode.oncanplaythrough = () => {
 					console.log('can play through');
 				};
+
 				videoPlayerNode.oncanplay = () => {
 					console.log('can play');
 					videoPlayerNode.muted = true;
