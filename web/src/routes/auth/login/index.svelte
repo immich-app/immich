@@ -44,7 +44,11 @@
 			return;
 		}
 
-		const { issuer } = await resDiscovery.json();
+		// todo return issuer directly from backend
+		let { issuer } = await resDiscovery.json();
+
+		if (issuer.endsWith('/'))
+			issuer = issuer.substring(0, issuer.length-1);
 
 		AuthorizationServiceConfiguration.fetchFromIssuer(
 				issuer,

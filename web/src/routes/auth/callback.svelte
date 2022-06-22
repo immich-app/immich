@@ -10,9 +10,11 @@
     } from "@openid/appauth";
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
+    import {serverEndpoint} from "../../lib/constants";
 
     let accessToken: string;
     let refreshToken: string; // todo use refresh token to renew id_token
+    let redirectUri: string;
 
     const makeRefreshTokenRequest = async (code: string, codeVerifier: string|undefined, clientId: string, redirectUri: string) => {
         let authConfig = JSON.parse(localStorage.getItem('oauth2Config'));
@@ -34,6 +36,20 @@
             .then(response => {
                 accessToken = response.idToken;
                 refreshToken = response.refreshToken;
+            })
+            .then(async () => {
+                let data = new URLSearchParams({
+                    'id_token': accessToken,
+                    'refresh_token': refreshToken,
+                });
+
+                await fetch(redirectUri, {
+                    method: 'POST',
+                    headers: new Headers({
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }),
+                    body: data,
+                });
             });
     }
 
@@ -48,6 +64,8 @@
                     codeVerifier = request.internal.code_verifier;
                 }
 
+                redirectUri = request.redirectUri;
+
                 makeRefreshTokenRequest(response.code, codeVerifier, request.clientId, request.redirectUri)
                     .then(() => {
                         console.log("Authentication with OAuth2 complete!");
@@ -57,7 +75,5 @@
 
         handler.setAuthorizationNotifier(notifier);
         await handler.completeAuthorizationRequestIfPossible();
-
-        await goto('/photos');
     });
 </script>
