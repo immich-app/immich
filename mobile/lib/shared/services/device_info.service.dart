@@ -4,8 +4,8 @@ import 'dart:io' show Platform;
 class DeviceInfoService {
   Future<Map<String, dynamic>> getDeviceInfo() async {
     // Get device info
-    String deviceId = await FlutterUdid.consistentUdid;
-    String deviceType = "";
+    var deviceId = await FlutterUdid.consistentUdid;
+    var deviceType = "";
 
     if (Platform.isAndroid) {
       deviceType = "ANDROID";
