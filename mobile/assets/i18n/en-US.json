@@ -1,0 +1,6 @@
+{
+  "login_button_text": "Login",
+  "save_login": "Save Login",
+  "login_endpoint_url": "Server Endpoint URL",
+  "login_endpoint_hint": "http://your-server-ip:port"
+}

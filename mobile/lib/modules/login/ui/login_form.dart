@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive/hive.dart';
@@ -67,9 +68,9 @@ class LoginForm extends HookConsumerWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                 enableFeedback: true,
                 title: const Text(
-                  "Save login",
+                  "save_login",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
-                ),
+                ).tr(),
                 value: isSaveLoginInfo.value,
                 onChanged: (switchValue) {
                   if (switchValue != null) {
@@ -106,8 +107,8 @@ class ServerEndpointInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
-          labelText: 'Server Endpoint URL', border: OutlineInputBorder(), hintText: 'http://your-server-ip:port'),
+      decoration: InputDecoration(
+          labelText: 'login_endpoint_url'.tr(), border: OutlineInputBorder(), hintText: 'login_endpoint_hint'.tr()),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -193,14 +194,14 @@ class LoginButton extends ConsumerWidget {
           } else {
             ImmichToast.show(
               context: context,
-              msg: "Error logging you in, check server url, email and password!",
+              msg: "login_failed".tr(),
               toastType: ToastType.error,
             );
           }
         },
         child: const Text(
-          "Login",
+          "login_button_text",
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ));
+        ).tr());
   }
 }

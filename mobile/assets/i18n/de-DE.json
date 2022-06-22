@@ -1,0 +1,6 @@
+{
+  "login_button_text": "Anmelden",
+  "save_login": "Angemeldet bleiben",
+  "login_endpoint_url": "Server URL",
+  "login_endpoint_hint": "http://dein-server:port"
+}
