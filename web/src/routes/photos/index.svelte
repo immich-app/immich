@@ -43,6 +43,7 @@
 	import StatusBox from '../../lib/components/shared/status-box.svelte';
 	import { fileUploader } from '../../lib/utils/file-uploader';
 	import { openWebsocketConnection } from '../../lib/stores/websocket';
+	import {serverEndpoint} from "../../lib/constants";
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -67,7 +68,20 @@
 		if ($session.user) {
 			await getAssetsInfo($session.user.accessToken);
 
-			openWebsocketConnection($session.user.accessToken);
+			const res = await fetch(`${serverEndpoint}/auth/wsToken`, {
+				method: 'POST',
+				headers: new Headers({
+					'Authorization': `Bearer ${$session.user.accessToken}`,
+				}),
+			});
+
+			if (res.ok) {
+				const { wsToken } = await res.json();
+				openWebsocketConnection(wsToken);
+			} else {
+				console.log("Could not get websocket auth token");
+			}
+
 		}
 	});
 
