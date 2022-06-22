@@ -45,9 +45,40 @@ def generate_language_files():
         generate_mobile_translations(language_code, translations)
 
 
+def get_translation_keys(translations):
+    return [i.get_key() for i in translations]
+
+
+def check_keys():
+    en_us_keys = get_translation_keys(parse_language_json(os.path.join('translations', 'en-US.json')))
+
+    ok = True
+
+    for file in glob.glob(os.path.join('translations', '*.json'), recursive=False):
+        keys = get_translation_keys(parse_language_json(file))
+
+        for k in en_us_keys:
+            if k not in keys:
+                logging.error('File %s: missing key %s', file, k)
+                ok = False
+
+        for k in keys:
+            if k not in en_us_keys:
+                logging.error('File %s: contains unused key %s', file, k)
+                ok = False
+
+    if ok:
+        logging.info('No key errors found!')
+
+    return ok
+
+
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)s : %(message)s', level=logging.DEBUG)
 
     if len(sys.argv) < 2:
         generate_language_files()
+
+    elif sys.argv[1] == 'check-keys':
+        sys.exit(0 if check_keys() else 1)
 
