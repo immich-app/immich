@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 
 class DeviceInfoRemote {
   final int id;
@@ -66,7 +65,8 @@ class DeviceInfoRemote {
 
   String toJson() => json.encode(toMap());
 
-  factory DeviceInfoRemote.fromJson(String source) => DeviceInfoRemote.fromMap(json.decode(source));
+  factory DeviceInfoRemote.fromJson(String source) =>
+      DeviceInfoRemote.fromMap(json.decode(source));
 
   @override
   String toString() {

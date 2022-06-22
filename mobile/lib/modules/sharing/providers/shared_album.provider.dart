@@ -8,7 +8,8 @@ class SharedAlbumNotifier extends StateNotifier<List<SharedAlbum>> {
   final SharedAlbumService _sharedAlbumService = SharedAlbumService();
 
   getAllSharedAlbums() async {
-    List<SharedAlbum> sharedAlbums = await _sharedAlbumService.getAllSharedAlbum();
+    List<SharedAlbum> sharedAlbums =
+        await _sharedAlbumService.getAllSharedAlbum();
 
     state = sharedAlbums;
   }
@@ -35,7 +36,8 @@ class SharedAlbumNotifier extends StateNotifier<List<SharedAlbum>> {
     }
   }
 
-  Future<bool> removeAssetFromAlbum(String albumId, List<String> assetIds) async {
+  Future<bool> removeAssetFromAlbum(
+      String albumId, List<String> assetIds) async {
     var res = await _sharedAlbumService.removeAssetFromAlbum(albumId, assetIds);
 
     if (res) {
@@ -46,12 +48,14 @@ class SharedAlbumNotifier extends StateNotifier<List<SharedAlbum>> {
   }
 }
 
-final sharedAlbumProvider = StateNotifierProvider<SharedAlbumNotifier, List<SharedAlbum>>((ref) {
+final sharedAlbumProvider =
+    StateNotifierProvider<SharedAlbumNotifier, List<SharedAlbum>>((ref) {
   return SharedAlbumNotifier();
 });
 
-final sharedAlbumDetailProvider = FutureProvider.autoDispose.family<SharedAlbum, String>((ref, albumId) async {
-  final SharedAlbumService _sharedAlbumService = SharedAlbumService();
+final sharedAlbumDetailProvider = FutureProvider.autoDispose
+    .family<SharedAlbum, String>((ref, albumId) async {
+  final SharedAlbumService sharedAlbumService = SharedAlbumService();
 
-  return await _sharedAlbumService.getAlbumDetail(albumId);
+  return await sharedAlbumService.getAlbumDetail(albumId);
 });

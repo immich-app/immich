@@ -46,37 +46,45 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
       }
     }
 
-    final List<String> result = await PhotoManager.editor.deleteWithIds(deleteIdList);
+    // final List<String> result = await PhotoManager.editor.deleteWithIds(deleteIdList);
+    await PhotoManager.editor.deleteWithIds(deleteIdList);
 
     // Delete asset on server
-    List<DeleteAssetResponse>? deleteAssetResult = await _assetService.deleteAssets(deleteAssets);
+    List<DeleteAssetResponse>? deleteAssetResult =
+        await _assetService.deleteAssets(deleteAssets);
     if (deleteAssetResult == null) {
       return;
     }
 
     for (var asset in deleteAssetResult) {
       if (asset.status == 'success') {
-        state = state.where((immichAsset) => immichAsset.id != asset.id).toList();
+        state =
+            state.where((immichAsset) => immichAsset.id != asset.id).toList();
       }
     }
   }
 }
 
-final assetProvider = StateNotifierProvider<AssetNotifier, List<ImmichAsset>>((ref) {
+final assetProvider =
+    StateNotifierProvider<AssetNotifier, List<ImmichAsset>>((ref) {
   return AssetNotifier(ref);
 });
 
 final assetGroupByDateTimeProvider = StateProvider((ref) {
   var assets = ref.watch(assetProvider);
 
-  assets.sortByCompare<DateTime>((e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
-  return assets.groupListsBy((element) => DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)));
+  assets.sortByCompare<DateTime>(
+      (e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
+  return assets.groupListsBy((element) =>
+      DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)));
 });
 
 final assetGroupByMonthYearProvider = StateProvider((ref) {
   var assets = ref.watch(assetProvider);
 
-  assets.sortByCompare<DateTime>((e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
+  assets.sortByCompare<DateTime>(
+      (e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
 
-  return assets.groupListsBy((element) => DateFormat('MMMM, y').format(DateTime.parse(element.createdAt)));
+  return assets.groupListsBy((element) =>
+      DateFormat('MMMM, y').format(DateTime.parse(element.createdAt)));
 });
