@@ -1,3 +1,4 @@
+date_format,"E, LLL d, y • HH:mm"
 login_button_text,Anmelden
 save_login,Angemeldet bleiben
 login_endpoint_url,Server URL
@@ -33,3 +34,7 @@ share_err_album,Fehler beim Erstellen des Albums
 share_empty_list,LEERE LISTE
 share_description,Erstelle geteilte Alben um Fotos und Videos mit Menschen aus deinem Netzwerk zu teilen.
 share_album,Geteilte Alben
+asset_description,Beschreibung hinzufügen...
+asset_location,STANDORT
+asset_details,DETAILS
+asset_err_corrupted,Fehler bei der Darstellung - Daten sind beschädigt

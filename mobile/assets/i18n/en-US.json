@@ -1,4 +1,5 @@
 {
+  "date_format": "E, LLL d, y \u2022 h:mm a",
   "login_button_text": "Login",
   "save_login": "Save Login",
   "login_endpoint_url": "Server Endpoint URL",
@@ -33,5 +34,9 @@
   "share_err_album": "Failed to create album",
   "share_empty_list": "EMPTY LIST",
   "share_description": "Create shared albums to share photos and videos with people in your network.",
-  "share_album": "Shared albums"
+  "share_album": "Shared albums",
+  "asset_description": "Add Description...",
+  "asset_location": "LOCATION",
+  "asset_details": "DETAILS",
+  "asset_err_corrupted": "Failed To Render Image - Possibly Corrupted Data"
 }
