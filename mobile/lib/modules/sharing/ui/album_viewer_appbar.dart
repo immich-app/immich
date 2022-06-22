@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -41,7 +42,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       } else {
         ImmichToast.show(
           context: context,
-          msg: "Failed to delete album",
+          msg: "share_err_delete".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -61,7 +62,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
         Navigator.pop(context);
         ImmichToast.show(
           context: context,
-          msg: "Failed to leave album",
+          msg: "share_err_leave".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -86,7 +87,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
         Navigator.pop(context);
         ImmichToast.show(
           context: context,
-          msg: "There are problems in removing assets from album",
+          msg: "share_err_remove".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -101,9 +102,9 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           return ListTile(
             leading: const Icon(Icons.delete_sweep_rounded),
             title: const Text(
-              'Remove from album',
+              'share_remove',
               style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            ).tr(),
             onTap: () => _onRemoveFromAlbumPressed(albumId),
           );
         } else {
@@ -114,18 +115,18 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           return ListTile(
             leading: const Icon(Icons.delete_forever_rounded),
             title: const Text(
-              'Delete album',
+              'share_delete',
               style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            ).tr(),
             onTap: () => _onDeleteAlbumPressed(albumId),
           );
         } else {
           return ListTile(
             leading: const Icon(Icons.person_remove_rounded),
             title: const Text(
-              'Leave album',
+              'share_leave',
               style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            ).tr(),
             onTap: () => _onLeaveAlbumPressed(albumId),
           );
         }
@@ -166,7 +167,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
             if (!isSuccess) {
               ImmichToast.show(
                 context: context,
-                msg: "Failed to change album title",
+                msg: "share_err_title".tr(),
                 gravity: ToastGravity.BOTTOM,
                 toastType: ToastType.error,
               );

@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -33,7 +34,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         AutoRouter.of(context).navigate(const TabControllerRoute(children: [SharingRoute()]));
       }
 
-      const ScaffoldMessenger(child: SnackBar(content: Text('Failed to create album')));
+      ScaffoldMessenger(child: SnackBar(content: Text('share_err_album').tr()));
     }
 
     _buildTileIcon(User user) {
@@ -76,12 +77,12 @@ class SelectUserForSharingPage extends HookConsumerWidget {
           Wrap(
             children: [...usersChip],
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'Suggestions',
+              'share_suggestions',
               style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
-            ),
+            ).tr(),
           ),
           ListView.builder(
             shrinkWrap: true,
@@ -111,9 +112,9 @@ class SelectUserForSharingPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Invite to album',
+          'share_invite',
           style: TextStyle(color: Colors.black),
-        ),
+        ).tr(),
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
@@ -126,9 +127,9 @@ class SelectUserForSharingPage extends HookConsumerWidget {
           TextButton(
               onPressed: sharedUsersList.value.isEmpty ? null : _createSharedAlbum,
               child: const Text(
-                "Create Album",
+                "share_create_album",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ))
+              ).tr())
         ],
       ),
       body: suggestedShareUsers.when(

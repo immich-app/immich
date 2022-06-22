@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -48,9 +49,9 @@ class SharingSliverAppBar extends StatelessWidget {
                       size: 20,
                     ),
                     label: const Text(
-                      "Create shared album",
+                      "create_shared_album",
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                    ),
+                    ).tr(),
                   ),
                 ),
               ),
@@ -68,9 +69,9 @@ class SharingSliverAppBar extends StatelessWidget {
                       size: 20,
                     ),
                     label: const Text(
-                      "Share with partner",
+                      "share_partner",
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                    ),
+                    ).tr(),
                   ),
                 ),
               )
