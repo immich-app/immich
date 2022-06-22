@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import csv
 import glob
 import os
 import logging
 import json
+import sys
 
 
 class Translation:
@@ -20,9 +20,9 @@ class Translation:
         return self.translation
 
 
-def parse_language_csv(filename):
+def parse_language_json(filename):
     with open(filename, 'r') as file:
-        return [Translation(t) for t in csv.reader(file, delimiter=',', quotechar='"')]
+        return [Translation(t) for t in json.load(file).items()]
 
 
 def generate_mobile_translations(lang, translations):
@@ -35,11 +35,11 @@ def generate_mobile_translations(lang, translations):
 
 
 def generate_language_files():
-    for file in glob.glob(os.path.join('translations', '*.csv'), recursive=False):
-        language_code = os.path.basename(file)[:-4]
+    for file in glob.glob(os.path.join('translations', '*.json'), recursive=False):
+        language_code = os.path.basename(file)[:-5]
         logging.info('Language Code: %s', language_code)
 
-        translations = parse_language_csv(file)
+        translations = parse_language_json(file)
         logging.debug(translations)
 
         generate_mobile_translations(language_code, translations)
@@ -47,4 +47,7 @@ def generate_language_files():
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)s : %(message)s', level=logging.DEBUG)
-    generate_language_files()
+
+    if len(sys.argv) < 2:
+        generate_language_files()
+
