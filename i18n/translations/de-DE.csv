@@ -2,3 +2,11 @@ login_button_text,Anmelden
 save_login,Angemeldet bleiben
 login_endpoint_url,Server URL
 login_endpoint_hint,http://dein-server:port
+login_err_trailing_whitespace,Abschließendes Leerzeichen
+login_err_leading_whitespace,Führendes Leerzeichen
+login_err_invalid_email,Ungültige Email-Adresse
+login_err_http,Muss mit http:// oder https:// starten
+login_label_email,Email-Adresse
+login_email_hint,deine@email.com
+login_label_password,Passwort
+login_password_hint,passwort

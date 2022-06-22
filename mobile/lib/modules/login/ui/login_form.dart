@@ -18,7 +18,7 @@ class LoginForm extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final usernameController = useTextEditingController.fromValue(TextEditingValue.empty);
     final passwordController = useTextEditingController.fromValue(TextEditingValue.empty);
-    final serverEndpointController = useTextEditingController(text: 'http://your-server-ip:2283');
+    final serverEndpointController = useTextEditingController(text: 'login_endpoint_hint'.tr());
     final isSaveLoginInfo = useState<bool>(false);
 
     useEffect(() {
@@ -99,7 +99,7 @@ class ServerEndpointInput extends StatelessWidget {
 
   String? _validateInput(String? url) {
     if (url == null) return null;
-    if (!url.startsWith(RegExp(r'https?://'))) return 'Please specify http:// or https://';
+    if (!url.startsWith(RegExp(r'https?://'))) return 'login_err_http'.tr();
     return null;
   }
 
@@ -122,9 +122,9 @@ class EmailInput extends StatelessWidget {
 
   String? _validateInput(String? email) {
     if (email == null || email == '') return null;
-    if (email.endsWith(' ')) return 'Trailing whitespace';
-    if (email.startsWith(' ')) return 'Leading whitespace';
-    if (email.contains(' ') || !email.contains('@')) return 'Invalid Email';
+    if (email.endsWith(' ')) return 'login_err_trailing_whitespace'.tr();
+    if (email.startsWith(' ')) return 'login_err_leading_whitespace'.tr();
+    if (email.contains(' ') || !email.contains('@')) return 'login_err_invalid_email'.tr();
     return null;
   }
 
@@ -133,7 +133,7 @@ class EmailInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       decoration:
-          const InputDecoration(labelText: 'Email', border: OutlineInputBorder(), hintText: 'youremail@email.com'),
+          InputDecoration(labelText: 'login_label_email'.tr(), border: OutlineInputBorder(), hintText: 'login_email_hint'.tr()),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -150,7 +150,7 @@ class PasswordInput extends StatelessWidget {
     return TextFormField(
       obscureText: true,
       controller: controller,
-      decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder(), hintText: 'password'),
+      decoration: InputDecoration(labelText: 'login_label_password'.tr(), border: OutlineInputBorder(), hintText: 'login_password_hint'.tr()),
     );
   }
 }

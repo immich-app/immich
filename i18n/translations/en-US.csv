@@ -2,3 +2,11 @@ login_button_text,Login
 save_login,Save Login
 login_endpoint_url,Server Endpoint URL
 login_endpoint_hint,http://your-server-ip:port
+login_err_trailing_whitespace,Trailing whitespace
+login_err_leading_whitespace,Leading whitespace
+login_err_invalid_email,Invalid Email
+login_err_http,Please specify http:// or https://
+login_label_email,Email
+login_email_hint,youremail@email.com
+login_label_password,Password
+login_password_hint,password
