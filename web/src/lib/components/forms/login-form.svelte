@@ -43,7 +43,6 @@
 	}
 
 	async function loginOauth2() {
-		console.log('oauth2-login event');
 		return dispatch('oauth2-login');
 	}
 </script>
@@ -55,7 +54,7 @@
 	</div>
 
 	{#if localLoginEnabled}
-		<form on:submit|preventDefault={login} method="post" action="" autocomplete="off">
+		<form on:submit|preventDefault={login} method="post" action="" autocomplete="off" >
 			<div class="m-4 flex flex-col gap-2">
 				<label class="immich-form-label" for="email">Email</label>
 				<input class="immich-form-input" id="email" name="email" type="email" required />
@@ -74,8 +73,7 @@
 				<button
 					type="submit"
 					class="m-4 p-2 bg-immich-primary hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full font-semibold"
-					>Login</button
-				>
+					>Login</button>
 			</div>
 		</form>
 	{/if}

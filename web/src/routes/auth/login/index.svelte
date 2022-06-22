@@ -6,16 +6,15 @@
 	import UpdateForm from '../../../lib/components/forms/update-form.svelte';
 	import SelectAdminForm from '../../../lib/components/forms/select-admin-form.svelte';
 	import {
-		AuthorizationNotifier,
 		AuthorizationRequest,
 		AuthorizationServiceConfiguration,
-		FetchRequestor,
+		FetchRequestor, LocalStorageBackend,
 		RedirectRequestHandler
 	} from "@openid/appauth";
 	import {onMount} from "svelte";
 	import {serverEndpoint} from "../../../lib/constants";
 
-	let config: AuthorizationServiceConfiguration;
+	let authConfig: AuthorizationServiceConfiguration;
 	let localLoginEnabled = true;
 	let oauth2LoginEnabled = false;
 	let oauth2ClientId: string;
@@ -40,7 +39,7 @@
 
 		const resDiscovery = await fetch(discoveryUrl);
 
-		if (resDiscovery.status !== 200) {
+		if (!resDiscovery.ok) {
 			console.log('Cannot fetch OIDC discovery');
 			return;
 		}
@@ -51,8 +50,9 @@
 				issuer,
 				new FetchRequestor()
 		).then(response => {
+			authConfig = response;
+			localStorage.setItem('oauth2Config', JSON.stringify(authConfig));
 			console.log("Fetched service configuration", response);
-			config = response;
 		});
 	})
 
@@ -78,13 +78,13 @@
 			client_id: oauth2ClientId,
 			redirect_uri: `${window.location.origin}/auth/callback`,
 			scope: 'profile openid email',
-			response_type: 'id_token',
+			response_type: 'code id_token token',
 			state: undefined, // generate random state for CSRF protection
 		});
 
-		let handler = new RedirectRequestHandler();
+		let handler = new RedirectRequestHandler(new LocalStorageBackend(window.localStorage));
 
-		handler.performAuthorizationRequest(config, request);
+		handler.performAuthorizationRequest(authConfig, request);
 	};
 </script>
 
