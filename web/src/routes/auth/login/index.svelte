@@ -28,7 +28,7 @@
 			return;
 		}
 
-		const {localAuth, oauth2, discoveryUrl, clientId} = await resLoginParams.json();
+		let {localAuth, oauth2, issuer, clientId} = await resLoginParams.json();
 		localLoginEnabled = localAuth;
 		oauth2LoginEnabled = oauth2;
 		oauth2ClientId = clientId;
@@ -36,16 +36,6 @@
 		if (!oauth2LoginEnabled) {
 			return;
 		}
-
-		const resDiscovery = await fetch(discoveryUrl);
-
-		if (!resDiscovery.ok) {
-			console.log('Cannot fetch OIDC discovery');
-			return;
-		}
-
-		// todo return issuer directly from backend
-		let { issuer } = await resDiscovery.json();
 
 		if (issuer.endsWith('/'))
 			issuer = issuer.substring(0, issuer.length-1);

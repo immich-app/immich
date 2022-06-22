@@ -67,6 +67,7 @@
                 makeRefreshTokenRequest(response.code, codeVerifier, request.clientId, request.redirectUri)
                     .then(() => {
                         console.log("Authentication with OAuth2 complete!");
+                        // todo redirect to home page
                     });
             }
         });

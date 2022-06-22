@@ -31,13 +31,13 @@ export class AuthService {
     const params = {
       localAuth: true,
       oauth2: false,
-      discoveryUrl: null,
+      issuer: null,
       clientId: null,
     };
 
     if (this.configService.get<boolean>('OAUTH2_ENABLE') === true) {
       params.oauth2 = true;
-      params.discoveryUrl =  this.configService.get<string>('OAUTH2_DISCOVERY_URL');
+      params.issuer =  this.configService.get<string>('OAUTH2_ISSUER');
       params.clientId = this.configService.get<string>('OAUTH2_CLIENT_ID');
     }
 

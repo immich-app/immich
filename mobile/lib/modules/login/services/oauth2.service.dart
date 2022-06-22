@@ -8,12 +8,12 @@ const oAuth2RedirectUri = 'app.alextran.immich://login-callback';
 
 class OAuth2Service {
 
-  static Future<bool> tryLogin(String discoveryUrl, String clientId) async {
+  static Future<bool> tryLogin(String issuer, String clientId) async {
     debugPrint("Trying OAuth2/OIDC auth");
 
-    if (!discoveryUrl.startsWith("https://")) return false;
+    if (!issuer.startsWith("https://")) return false;
 
-    var oAuth2Token = await OAuth2Service.getToken(discoveryUrl, clientId);
+    var oAuth2Token = await OAuth2Service.getToken(issuer, clientId);
     if (oAuth2Token == null) {
       debugPrint("OAuth2/OIDC auth failed");
       return false;
@@ -27,13 +27,13 @@ class OAuth2Service {
     return true;
   }
 
-  static Future<AuthorizationTokenResponse?> getToken(discoveryUrl, clientId) async {
+  static Future<AuthorizationTokenResponse?> getToken(issuer, clientId) async {
     try {
       return await appAuth.authorizeAndExchangeCode(
         AuthorizationTokenRequest(
           clientId,
           oAuth2RedirectUri,
-          discoveryUrl: discoveryUrl,
+          issuer: issuer,
           scopes: ['openid', 'profile', 'email'],
         ),
       );

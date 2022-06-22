@@ -3,26 +3,26 @@ import 'dart:convert';
 class LoginParamsResponse {
   final bool localAuth;
   final bool oauth2;
-  final String discoveryUrl;
+  final String issuer;
   final String clientId;
 
   LoginParamsResponse({
     required this.localAuth,
     required this.oauth2,
-    required this.discoveryUrl,
+    required this.issuer,
     required this.clientId,
   });
 
   LoginParamsResponse copyWith({
     bool? localAuth,
     bool? oauth2,
-    String? discoveryUrl,
+    String? issuer,
     String? clientId,
   }) {
     return LoginParamsResponse(
       localAuth: localAuth ?? this.localAuth,
       oauth2: oauth2 ?? this.oauth2,
-      discoveryUrl: discoveryUrl ?? this.discoveryUrl,
+      issuer: issuer ?? this.issuer,
       clientId: clientId ?? this.clientId,
     );
   }
@@ -32,7 +32,7 @@ class LoginParamsResponse {
 
     result.addAll({'localAuth': localAuth});
     result.addAll({'oauth2': oauth2});
-    result.addAll({'discoveryUrl': discoveryUrl});
+    result.addAll({'issuer': issuer});
     result.addAll({'clientId': clientId});
 
     return result;
@@ -41,14 +41,14 @@ class LoginParamsResponse {
   factory LoginParamsResponse.fromMap(Map<String, dynamic> map) {
 
     if (map['oauth2'] == true) {
-      if (map['discoveryUrl'] == null) throw Exception("No discovery found in response");
+      if (map['issuer'] == null) throw Exception("No issuer found in response");
       if (map['clientId'] == null) throw Exception("No client id found in response");
     }
 
     return LoginParamsResponse(
       localAuth: map['localAuth'] ?? false,
       oauth2: map['oauth2'] ?? false,
-      discoveryUrl: map['discoveryUrl'] ?? '',
+      issuer: map['issuer'] ?? '',
       clientId: map['clientId'] ?? '',
     );
   }
@@ -59,7 +59,7 @@ class LoginParamsResponse {
 
   @override
   String toString() {
-    return 'LoginParamsResponse(localAuth: $localAuth, oauth2: $oauth2, discoveryUrl: $discoveryUrl, clientId: $clientId)';
+    return 'LoginParamsResponse(localAuth: $localAuth, oauth2: $oauth2, issuer: $issuer, clientId: $clientId)';
   }
 
   @override
@@ -69,7 +69,7 @@ class LoginParamsResponse {
     return other is LoginParamsResponse &&
         other.localAuth == localAuth &&
         other.oauth2 == oauth2 &&
-        other.discoveryUrl == discoveryUrl &&
+        other.issuer == issuer &&
         other.clientId == clientId;
   }
 
@@ -77,7 +77,7 @@ class LoginParamsResponse {
   int get hashCode {
     return localAuth.hashCode ^
            oauth2.hashCode ^
-           discoveryUrl.hashCode ^
+           issuer.hashCode ^
            clientId.hashCode;
   }
 }
