@@ -9,6 +9,8 @@
         TokenRequest
     } from "@openid/appauth";
     import { onMount } from "svelte";
+    import { goto } from "$app/navigation";
+    import {session} from "$app/stores";
 
     let accessToken: string;
     let refreshToken: string;
@@ -29,7 +31,7 @@
             }
         });
 
-        (new BaseTokenRequestHandler(new FetchRequestor()))
+        await (new BaseTokenRequestHandler(new FetchRequestor()))
             .performTokenRequest(authConfig, request)
             .then(response => {
                 accessToken = response.idToken;
@@ -38,16 +40,27 @@
             .then(async () => {
                 let data = new URLSearchParams({
                     'id_token': accessToken,
-                    'refresh_token': refreshToken,
                 });
 
-                await fetch(redirectUri, {
+                const res = await fetch(redirectUri, {
                     method: 'POST',
                     headers: new Headers({
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json',
                     }),
                     body: data,
                 });
+
+                const response = await res.json();
+
+                $session.user = {
+                    accessToken: accessToken,
+                    firstName: response.user!.firstName,
+                    lastName: response.user!.lastName,
+                    isAdmin: response.user!.isAdmin,
+                    id: response.user!.id,
+                    email: response.user!.email,
+                };
             });
     }
 
@@ -65,9 +78,9 @@
                 redirectUri = request.redirectUri;
 
                 makeRefreshTokenRequest(response.code, codeVerifier, request.clientId, request.redirectUri)
-                    .then(() => {
+                    .then(async () => {
                         console.log("Authentication with OAuth2 complete!");
-                        // todo redirect to home page
+                        await goto('/photos');
                     });
             }
         });
