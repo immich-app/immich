@@ -150,6 +150,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   Future<bool> logout() async {
     Hive.box(userInfoBox).delete(accessTokenKey);
+    Hive.box(userInfoBox).delete(refreshTokenKey);
+    Hive.box(userInfoBox).delete(oauth2ClientIdKey);
+    Hive.box(userInfoBox).delete(oAuth2RedirectUri);
     state = AuthenticationState(
       deviceId: "",
       deviceType: "",
@@ -173,6 +176,24 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     );
 
     return true;
+  }
+
+  Future<bool> refreshLogin() async {
+    var refreshedOAuth2Token = await OAuth2Service.refreshToken();
+
+    if (refreshedOAuth2Token) {
+      return true;
+    }
+
+    HiveSavedLoginInfo? loginInfo = Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
+
+    var isAuthenticated = await LocalAuthService.tryLogin(loginInfo!.email, loginInfo.password, _networkService);
+
+    if (isAuthenticated) {
+      return true;
+    }
+
+    return false;
   }
 
   setAutoBackup(bool backupState) async {

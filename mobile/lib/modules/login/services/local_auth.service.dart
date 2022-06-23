@@ -15,6 +15,9 @@ class LocalAuthService {
           url: 'auth/login', data: {'email': email, 'password': password});
       var payload = LogInReponse.fromJson(res.toString());
       Hive.box(userInfoBox).put(accessTokenKey, payload.accessToken);
+      Hive.box(userInfoBox).delete(refreshTokenKey);
+      Hive.box(userInfoBox).delete(oauth2ClientIdKey);
+      Hive.box(userInfoBox).delete(oauth2IssuerKey);
       return true;
     } catch (e) {
       return false;

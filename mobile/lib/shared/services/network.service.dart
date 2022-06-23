@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/utils/authentication_http_interceptor.dart';
-import 'package:immich_mobile/utils/refresh_oauth_http_interceptor.dart';
 
 class NetworkService {
 
@@ -14,7 +13,6 @@ class NetworkService {
     var dio = Dio();
 
     dio.interceptors.add(AuthenticatedRequestInterceptor());
-    dio.interceptors.add(RefreshOAuthTokenInterceptor());
 
     return dio;
   }
@@ -31,6 +29,7 @@ class NetworkService {
       }
     } on DioError catch (e) {
       debugPrint("DioError: ${e.response}");
+
     } catch (e) {
       debugPrint("ERROR deleteRequest: ${e.toString()}");
     }
