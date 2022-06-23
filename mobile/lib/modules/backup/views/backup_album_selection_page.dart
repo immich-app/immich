@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -51,7 +52,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           if (ref.watch(backupProvider).selectedBackupAlbums.length == 1) {
             ImmichToast.show(
               context: context,
-              msg: "Cannot remove the only album",
+              msg: "backup_err_only_album".tr(),
               toastType: ToastType.error,
               gravity: ToastGravity.BOTTOM,
             );
@@ -122,20 +123,20 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         title: const Text(
-          "Select Albums",
+          "backup_select_albums",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
+        ).tr(),
         elevation: 0,
       ),
       body: ListView(
         physics: const ClampingScrollPhysics(),
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            child: Text(
-              "Selection Info",
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            child: const Text(
+              "backup_selection_info",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
+            ).tr(),
           ),
           // Selected Album Chips
 
@@ -164,9 +165,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   ListTile(
                     visualDensity: VisualDensity.compact,
                     title: Text(
-                      "Total unique assets",
+                      "backup_total_assets",
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey[700]),
-                    ),
+                    ).tr(),
                     trailing: Text(
                       ref.watch(backupProvider).allUniqueAssets.length.toString(),
                       style: const TextStyle(fontWeight: FontWeight.bold),
@@ -179,19 +180,19 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
           ListTile(
             title: Text(
-              "Albums on device (${availableAlbums.length.toString()})",
+              "backup_albums_device".tr() + "(${availableAlbums.length.toString()})",
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             subtitle: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
-                "Tap to include, double tap to exclude",
+                "backup_albums_tap",
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
+              ).tr(),
             ),
             trailing: IconButton(
               splashRadius: 16,
@@ -209,20 +210,20 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 5,
                       title: Text(
-                        'Selection Info',
+                        'backup_selection_info',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).primaryColor,
                         ),
-                      ),
+                      ).tr(),
                       content: SingleChildScrollView(
                         child: ListBody(
                           children: [
                             Text(
-                              'Assets can scatter across multiple albums. Thus, albums can be included or excluded during the backup process.',
+                              'backup_info_assets_scatter',
                               style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                            ),
+                            ).tr(),
                           ],
                         ),
                       ),
