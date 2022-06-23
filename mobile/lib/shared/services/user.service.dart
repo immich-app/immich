@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -12,8 +13,12 @@ import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/utils/dio_http_interceptor.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 
+final userServiceProvider =
+    Provider((ref) => UserService(ref.watch(networkServiceProvider)));
+
 class UserService {
-  final NetworkService _networkService = NetworkService();
+  final NetworkService _networkService;
+  UserService(this._networkService);
 
   Future<List<User>> getAllUsersInfo() async {
     try {

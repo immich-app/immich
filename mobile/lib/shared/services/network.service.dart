@@ -4,11 +4,11 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
-import 'package:http_parser/http_parser.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/utils/dio_http_interceptor.dart';
-import 'package:immich_mobile/utils/files_helper.dart';
+
+final networkServiceProvider = Provider((_) => NetworkService());
 
 class NetworkService {
   late final Dio dio;

@@ -50,37 +50,46 @@ class UploadProfileImageState {
 
   String toJson() => json.encode(toMap());
 
-  factory UploadProfileImageState.fromJson(String source) => UploadProfileImageState.fromMap(json.decode(source));
+  factory UploadProfileImageState.fromJson(String source) =>
+      UploadProfileImageState.fromMap(json.decode(source));
 
   @override
-  String toString() => 'UploadProfileImageState(status: $status, profileImagePath: $profileImagePath)';
+  String toString() =>
+      'UploadProfileImageState(status: $status, profileImagePath: $profileImagePath)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is UploadProfileImageState && other.status == status && other.profileImagePath == profileImagePath;
+    return other is UploadProfileImageState &&
+        other.status == status &&
+        other.profileImagePath == profileImagePath;
   }
 
   @override
   int get hashCode => status.hashCode ^ profileImagePath.hashCode;
 }
 
-class UploadProfileImageNotifier extends StateNotifier<UploadProfileImageState> {
-  UploadProfileImageNotifier()
+class UploadProfileImageNotifier
+    extends StateNotifier<UploadProfileImageState> {
+  UploadProfileImageNotifier(this._userSErvice)
       : super(UploadProfileImageState(
           profileImagePath: '',
           status: UploadProfileStatus.idle,
         ));
 
+  final UserService _userSErvice;
+
   Future<bool> upload(XFile file) async {
     state = state.copyWith(status: UploadProfileStatus.loading);
 
-    var res = await UserService().uploadProfileImage(file);
+    var res = await _userSErvice.uploadProfileImage(file);
 
     if (res != null) {
       debugPrint("Succesfully upload profile image");
-      state = state.copyWith(status: UploadProfileStatus.success, profileImagePath: res.profileImagePath);
+      state = state.copyWith(
+          status: UploadProfileStatus.success,
+          profileImagePath: res.profileImagePath);
       return true;
     }
 
@@ -90,4 +99,5 @@ class UploadProfileImageNotifier extends StateNotifier<UploadProfileImageState> 
 }
 
 final uploadProfileImageProvider =
-    StateNotifierProvider<UploadProfileImageNotifier, UploadProfileImageState>(((ref) => UploadProfileImageNotifier()));
+    StateNotifierProvider<UploadProfileImageNotifier, UploadProfileImageState>(
+        ((ref) => UploadProfileImageNotifier(ref.watch(userServiceProvider))));

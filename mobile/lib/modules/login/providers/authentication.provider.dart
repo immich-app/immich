@@ -12,7 +12,8 @@ import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
-  AuthenticationNotifier(this.ref)
+  AuthenticationNotifier(
+      this._deviceInfoService, this._backupService, this._networkService)
       : super(
           AuthenticationState(
             deviceId: "",
@@ -37,12 +38,12 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
           ),
         );
 
-  final Ref ref;
-  final DeviceInfoService _deviceInfoService = DeviceInfoService();
-  final BackupService _backupService = BackupService();
-  final NetworkService _networkService = NetworkService();
+  final DeviceInfoService _deviceInfoService;
+  final BackupService _backupService;
+  final NetworkService _networkService;
 
-  Future<bool> login(String email, String password, String serverEndpoint, bool isSavedLoginInfo) async {
+  Future<bool> login(String email, String password, String serverEndpoint,
+      bool isSavedLoginInfo) async {
     // Store server endpoint to Hive and test endpoint
     if (serverEndpoint[serverEndpoint.length - 1] == "/") {
       var validUrl = serverEndpoint.substring(0, serverEndpoint.length - 1);
@@ -71,7 +72,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
     // Make sign-in request
     try {
-      Response res = await _networkService.postRequest(url: 'auth/login', data: {'email': email, 'password': password});
+      Response res = await _networkService.postRequest(
+          url: 'auth/login', data: {'email': email, 'password': password});
 
       var payload = LogInReponse.fromJson(res.toString());
 
@@ -99,7 +101,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
               serverUrl: Hive.box(userInfoBox).get(serverEndpointKey)),
         );
       } else {
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey);
+        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
+            .delete(savedLoginInfoKey);
       }
     } catch (e) {
       return false;
@@ -107,8 +110,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
     // Register device info
     try {
-      Response res = await _networkService
-          .postRequest(url: 'device-info', data: {'deviceId': state.deviceId, 'deviceType': state.deviceType});
+      Response res = await _networkService.postRequest(
+          url: 'device-info',
+          data: {'deviceId': state.deviceId, 'deviceType': state.deviceType});
 
       DeviceInfoRemote deviceInfo = DeviceInfoRemote.fromJson(res.toString());
       state = state.copyWith(deviceInfo: deviceInfo);
@@ -151,7 +155,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     var deviceId = deviceInfo["deviceId"];
     var deviceType = deviceInfo["deviceType"];
 
-    DeviceInfoRemote deviceInfoRemote = await _backupService.setAutoBackup(backupState, deviceId, deviceType);
+    DeviceInfoRemote deviceInfoRemote =
+        await _backupService.setAutoBackup(backupState, deviceId, deviceType);
     state = state.copyWith(deviceInfo: deviceInfoRemote);
   }
 
@@ -160,6 +165,11 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   }
 }
 
-final authenticationProvider = StateNotifierProvider<AuthenticationNotifier, AuthenticationState>((ref) {
-  return AuthenticationNotifier(ref);
+final authenticationProvider =
+    StateNotifierProvider<AuthenticationNotifier, AuthenticationState>((ref) {
+  return AuthenticationNotifier(
+    ref.watch(deviceInfoServiceProvider),
+    ref.watch(backupServiceProvider),
+    ref.watch(networkServiceProvider),
+  );
 });

@@ -7,7 +7,7 @@ import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
-  ServerInfoNotifier()
+  ServerInfoNotifier(this._serverInfoService)
       : super(
           ServerInfoState(
             mapboxInfo: MapboxInfo(isEnable: false, mapboxSecret: ""),
@@ -18,7 +18,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
           ),
         );
 
-  final ServerInfoService _serverInfoService = ServerInfoService();
+  final ServerInfoService _serverInfoService;
 
   getServerVersion() async {
     ServerVersion? serverVersion = await _serverInfoService.getServerVersion();
@@ -79,5 +79,5 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
 
 final serverInfoProvider =
     StateNotifierProvider<ServerInfoNotifier, ServerInfoState>((ref) {
-  return ServerInfoNotifier();
+  return ServerInfoNotifier(ref.watch(serverInfoServiceProvider));
 });

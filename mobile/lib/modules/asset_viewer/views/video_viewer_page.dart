@@ -21,13 +21,14 @@ class VideoViewerPage extends HookConsumerWidget {
   final String videoUrl;
   final ImmichAsset asset;
   ImmichAssetWithExif? assetDetail;
-  final AssetService _assetService = AssetService();
 
-  VideoViewerPage({Key? key, required this.videoUrl, required this.asset}) : super(key: key);
+  VideoViewerPage({Key? key, required this.videoUrl, required this.asset})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final downloadAssetStatus = ref.watch(imageViewerStateProvider).downloadAssetStatus;
+    final downloadAssetStatus =
+        ref.watch(imageViewerStateProvider).downloadAssetStatus;
 
     String jwtToken = Hive.box(userInfoBox).get(accessTokenKey);
 
@@ -44,7 +45,8 @@ class VideoViewerPage extends HookConsumerWidget {
     }
 
     getAssetExif() async {
-      assetDetail = await _assetService.getAssetById(asset.id);
+      assetDetail =
+          await ref.watch(assetServiceProvider).getAssetById(asset.id);
     }
 
     useEffect(() {
@@ -60,7 +62,9 @@ class VideoViewerPage extends HookConsumerWidget {
           showInfo();
         },
         onDownloadPressed: () {
-          ref.watch(imageViewerStateProvider.notifier).downloadAsset(asset, context);
+          ref
+              .watch(imageViewerStateProvider.notifier)
+              .downloadAsset(asset, context);
         },
       ),
       body: SwipeDetector(
@@ -93,7 +97,8 @@ class VideoThumbnailPlayer extends StatefulWidget {
   final String url;
   final String? jwtToken;
 
-  const VideoThumbnailPlayer({Key? key, required this.url, this.jwtToken}) : super(key: key);
+  const VideoThumbnailPlayer({Key? key, required this.url, this.jwtToken})
+      : super(key: key);
 
   @override
   State<VideoThumbnailPlayer> createState() => _VideoThumbnailPlayerState();
@@ -111,8 +116,8 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
 
   Future<void> initializePlayer() async {
     try {
-      videoPlayerController =
-          VideoPlayerController.network(widget.url, httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"});
+      videoPlayerController = VideoPlayerController.network(widget.url,
+          httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"});
 
       await videoPlayerController.initialize();
       _createChewieController();
@@ -142,7 +147,8 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return chewieController != null && chewieController!.videoPlayerController.value.isInitialized
+    return chewieController != null &&
+            chewieController!.videoPlayerController.value.isInitialized
         ? SizedBox(
             child: Chewie(
               controller: chewieController!,

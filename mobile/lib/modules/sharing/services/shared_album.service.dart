@@ -3,12 +3,17 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 
+final sharedAlbumServiceProvider =
+    Provider((ref) => SharedAlbumService(ref.watch(networkServiceProvider)));
+
 class SharedAlbumService {
-  final NetworkService _networkService = NetworkService();
+  final NetworkService _networkService;
+  SharedAlbumService(this._networkService);
 
   Future<List<SharedAlbum>> getAllSharedAlbum() async {
     try {
