@@ -60,7 +60,7 @@
   "backup_backup_sub": "Photos and videos from selected albums that are backup",
   "backup_remainder": "Remainder",
   "backup_remainder_sub": "Photos and videos that has not been backing up from selected albums",
-  "backup_assets": "Asset that were being backup: ",
+  "backup_assets": "Asset that were being backup: {}",
   "backup_progress": "Backup Progress:",
   "backup_done": "Done",
   "backup_cancel": "Cancel",
@@ -71,7 +71,11 @@
   "backup_select_albums": "Select Albums",
   "backup_selection_info": "Selection Info",
   "backup_total_assets": "Total unique assets",
-  "backup_albums_device": "Albums on device ",
+  "backup_albums_device": "Albums on device ({})",
   "backup_albums_tap": "Tap to include, double tap to exclude",
-  "backup_info_assets_scatter": "Assets can scatter across multiple albums. Thus, albums can be included or excluded during the backup process."
+  "backup_info_assets_scatter": "Assets can scatter across multiple albums. Thus, albums can be included or excluded during the backup process.",
+  "backup_storage_format": "{} of {} used",
+  "nav_photos": "Photos",
+  "nav_search": "Search",
+  "nav_sharing": "Sharing"
 }

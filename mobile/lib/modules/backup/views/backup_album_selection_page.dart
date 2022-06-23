@@ -180,7 +180,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
           ListTile(
             title: Text(
-              "backup_albums_device".tr() + "(${availableAlbums.length.toString()})",
+              "backup_albums_device".tr(args: [availableAlbums.length.toString()]),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             subtitle: Padding(

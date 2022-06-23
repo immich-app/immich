@@ -59,7 +59,7 @@ class BackupControllerPage extends HookConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
-                child: Text('${backupState.serverInfo.diskUse} of ${backupState.serverInfo.diskSize} used'),
+                child: Text('backup_storage_format').tr(args: [backupState.serverInfo.diskUse, backupState.serverInfo.diskSize]),
               ),
             ],
           ),
@@ -275,7 +275,7 @@ class BackupControllerPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                  "backup_assets".tr() + "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length} [${backupState.progressInPercentage.toStringAsFixed(0)}%]"),
+                  "backup_assets".tr(args: ["${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length} [${backupState.progressInPercentage.toStringAsFixed(0)}%]"])),
             ),
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
