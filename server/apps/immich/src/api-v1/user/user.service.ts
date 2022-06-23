@@ -9,12 +9,14 @@ import * as bcrypt from 'bcrypt';
 import { createReadStream } from 'fs';
 import { Response as Res } from 'express';
 import { mapUser, User } from './response-dto/user';
+import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
+    private configService: ConfigService,
   ) {}
 
   async getAllUsers(authUser: AuthUserDto, isAll: boolean) {
@@ -45,6 +47,8 @@ export class UserService {
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
+    if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) throw new BadRequestException("Local users not allowed!");
+
     const user = await this.userRepository.findOne({ where: { email: createUserDto.email } });
 
     if (user) {
