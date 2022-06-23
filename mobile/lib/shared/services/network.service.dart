@@ -5,13 +5,23 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/utils/dio_http_interceptor.dart';
+import 'package:immich_mobile/utils/authentication_http_interceptor.dart';
+import 'package:immich_mobile/utils/refresh_oauth_http_interceptor.dart';
 
 class NetworkService {
+
+  Future<Dio> baseHttpClient() async {
+    var dio = Dio();
+
+    dio.interceptors.add(AuthenticatedRequestInterceptor());
+    dio.interceptors.add(RefreshOAuthTokenInterceptor());
+
+    return dio;
+  }
+
   Future<dynamic> deleteRequest({required String url, dynamic data}) async {
     try {
-      var dio = Dio();
-      dio.interceptors.add(AuthenticatedRequestInterceptor());
+      var dio = await baseHttpClient();
 
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       Response res = await dio.delete('$savedEndpoint/$url', data: data);
@@ -28,8 +38,7 @@ class NetworkService {
 
   Future<dynamic> getRequest({required String url, bool isByteResponse = false, bool isStreamReponse = false}) async {
     try {
-      var dio = Dio();
-      dio.interceptors.add(AuthenticatedRequestInterceptor());
+      var dio = await baseHttpClient();
 
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
 
@@ -66,8 +75,7 @@ class NetworkService {
 
   Future<dynamic> postRequest({required String url, dynamic data}) async {
     try {
-      var dio = Dio();
-      dio.interceptors.add(AuthenticatedRequestInterceptor());
+      var dio = await baseHttpClient();
 
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       String validUrl = Uri.parse('$savedEndpoint/$url').toString();
@@ -85,8 +93,7 @@ class NetworkService {
 
   Future<dynamic> putRequest({required String url, dynamic data}) async {
     try {
-      var dio = Dio();
-      dio.interceptors.add(AuthenticatedRequestInterceptor());
+      var dio = await baseHttpClient();
 
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       String validUrl = Uri.parse('$savedEndpoint/$url').toString();
@@ -104,8 +111,7 @@ class NetworkService {
 
   Future<dynamic> patchRequest({required String url, dynamic data}) async {
     try {
-      var dio = Dio();
-      dio.interceptors.add(AuthenticatedRequestInterceptor());
+      var dio = await baseHttpClient();
 
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
 

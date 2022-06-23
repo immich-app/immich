@@ -8,7 +8,6 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/upload_profile_image_repsonse.model.dart';
 import 'package:immich_mobile/shared/models/user.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
-import 'package:immich_mobile/utils/dio_http_interceptor.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:http_parser/http_parser.dart';
 
@@ -30,8 +29,7 @@ class UserService {
   }
 
   Future<UploadProfileImageResponse?> uploadProfileImage(XFile image) async {
-    var dio = Dio();
-    dio.interceptors.add(AuthenticatedRequestInterceptor());
+    var dio = await _networkService.baseHttpClient();
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     var mimeType = FileHelper.getMimeType(image.path);
 
