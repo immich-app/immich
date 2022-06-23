@@ -54,7 +54,7 @@
                 const response = await res.json();
 
                 $session.user = {
-                    accessToken: accessToken,
+                    accessToken: response.user!.accessToken,
                     firstName: response.user!.firstName,
                     lastName: response.user!.lastName,
                     isAdmin: response.user!.isAdmin,
