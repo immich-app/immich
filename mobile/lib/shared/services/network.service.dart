@@ -136,34 +136,4 @@ class NetworkService {
       return false;
     }
   }
-
-  Future<Response?> uploadProfileImage(XFile image) async {
-    String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-    var mimeType = FileHelper.getMimeType(image.path);
-
-    final imageData = MultipartFile.fromBytes(
-      await image.readAsBytes(),
-      filename: image.name,
-      contentType: MediaType(
-        mimeType["type"],
-        mimeType["subType"],
-      ),
-    );
-
-    final formData = FormData.fromMap({'file': imageData});
-
-    try {
-      var res = await dio.post(
-        '$savedEndpoint/user/profile-image',
-        data: formData,
-      );
-      return res;
-    } on DioError catch (e) {
-      debugPrint("Error uploading file: ${e.response}");
-      return null;
-    } catch (e) {
-      debugPrint("Error uploading file: $e");
-      return null;
-    }
-  }
 }
