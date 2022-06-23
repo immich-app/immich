@@ -9,25 +9,25 @@ class ImmichLoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
-      valueListenable: ImmichLoadingOverlayController.appLoader.loaderShowingNotifier,
+      valueListenable:
+          ImmichLoadingOverlayController.appLoader.loaderShowingNotifier,
       builder: (context, shouldShow, child) {
-        if (shouldShow) {
-          return const Scaffold(
-            backgroundColor: Colors.black54,
-            body: Center(
-              child: ImmichLoadingIndicator(),
-            ),
-          );
-        } else {
-          return Container();
-        }
+        return shouldShow
+            ? const Scaffold(
+                backgroundColor: Colors.black54,
+                body: Center(
+                  child: ImmichLoadingIndicator(),
+                ),
+              )
+            : const SizedBox();
       },
     );
   }
 }
 
 class ImmichLoadingOverlayController {
-  static final ImmichLoadingOverlayController appLoader = ImmichLoadingOverlayController();
+  static final ImmichLoadingOverlayController appLoader =
+      ImmichLoadingOverlayController();
   ValueNotifier<bool> loaderShowingNotifier = ValueNotifier(false);
   ValueNotifier<String> loaderTextNotifier = ValueNotifier('error message');
 

@@ -4,15 +4,22 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/utils/dio_http_interceptor.dart';
+import 'package:immich_mobile/utils/files_helper.dart';
 
 class NetworkService {
+  late final Dio dio;
+
+  NetworkService() {
+    dio = Dio();
+    dio.interceptors.add(AuthenticatedRequestInterceptor());
+  }
+
   Future<dynamic> deleteRequest({required String url, dynamic data}) async {
     try {
-      var dio = Dio();
-      dio.interceptors.add(AuthenticatedRequestInterceptor());
-
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       Response res = await dio.delete('$savedEndpoint/$url', data: data);
 
@@ -26,11 +33,11 @@ class NetworkService {
     }
   }
 
-  Future<dynamic> getRequest({required String url, bool isByteResponse = false, bool isStreamReponse = false}) async {
+  Future<dynamic> getRequest(
+      {required String url,
+      bool isByteResponse = false,
+      bool isStreamReponse = false}) async {
     try {
-      var dio = Dio();
-      dio.interceptors.add(AuthenticatedRequestInterceptor());
-
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
 
       if (isByteResponse) {
@@ -66,12 +73,9 @@ class NetworkService {
 
   Future<dynamic> postRequest({required String url, dynamic data}) async {
     try {
-      var dio = Dio();
-      dio.interceptors.add(AuthenticatedRequestInterceptor());
-
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-      String validUrl = Uri.parse('$savedEndpoint/$url').toString();
-      Response res = await dio.post(validUrl, data: data);
+      var validUrl = Uri.parse('$savedEndpoint/$url').toString();
+      var res = await dio.post(validUrl, data: data);
 
       return res;
     } on DioError catch (e) {
@@ -85,12 +89,9 @@ class NetworkService {
 
   Future<dynamic> putRequest({required String url, dynamic data}) async {
     try {
-      var dio = Dio();
-      dio.interceptors.add(AuthenticatedRequestInterceptor());
-
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-      String validUrl = Uri.parse('$savedEndpoint/$url').toString();
-      Response res = await dio.put(validUrl, data: data);
+      var validUrl = Uri.parse('$savedEndpoint/$url').toString();
+      var res = await dio.put(validUrl, data: data);
 
       return res;
     } on DioError catch (e) {
@@ -104,13 +105,9 @@ class NetworkService {
 
   Future<dynamic> patchRequest({required String url, dynamic data}) async {
     try {
-      var dio = Dio();
-      dio.interceptors.add(AuthenticatedRequestInterceptor());
-
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-
-      String validUrl = Uri.parse('$savedEndpoint/$url').toString();
-      Response res = await dio.patch(validUrl, data: data);
+      var validUrl = Uri.parse('$savedEndpoint/$url').toString();
+      var res = await dio.patch(validUrl, data: data);
 
       return res;
     } on DioError catch (e) {
@@ -122,21 +119,15 @@ class NetworkService {
 
   Future<bool> pingServer() async {
     try {
-      var dio = Dio();
-
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-
-      String validUrl = Uri.parse('$savedEndpoint/server-info/ping').toString();
+      var validUrl = Uri.parse('$savedEndpoint/server-info/ping').toString();
 
       debugPrint("ping server at url $validUrl");
-      Response res = await dio.get(validUrl);
+
+      var res = await dio.get(validUrl);
       var jsonRespsonse = jsonDecode(res.toString());
 
-      if (jsonRespsonse["res"] == "pong") {
-        return true;
-      } else {
-        return false;
-      }
+      return jsonRespsonse["res"] == "pong";
     } on DioError catch (e) {
       debugPrint("[PING SERVER] DioError: ${e.response} - $e");
       return false;

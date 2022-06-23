@@ -33,12 +33,12 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
   deleteAssets(Set<ImmichAsset> deleteAssets) async {
     var deviceInfo = await _deviceInfoService.getDeviceInfo();
     var deviceId = deviceInfo["deviceId"];
-    List<String> deleteIdList = [];
+    var deleteIdList = <String>[];
     // Delete asset from device
     for (var asset in deleteAssets) {
       // Delete asset on device if present
       if (asset.deviceId == deviceId) {
-        AssetEntity? localAsset = await AssetEntity.fromId(asset.deviceAssetId);
+        var localAsset = await AssetEntity.fromId(asset.deviceAssetId);
 
         if (localAsset != null) {
           deleteIdList.add(localAsset.id);

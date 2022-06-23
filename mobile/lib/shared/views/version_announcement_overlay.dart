@@ -85,7 +85,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                     const TextSpan(
                                       text:
                                           " and ensure your docker-compose and .env setup is up-to-date to prevent any misconfigurations, especially if you use WatchTower or any mechanism that handles updating your server application automatically.",
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
@@ -93,23 +93,24 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                             Padding(
                               padding: const EdgeInsets.only(top: 16.0),
                               child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    shape: const StadiumBorder(),
-                                    visualDensity: VisualDensity.standard,
-                                    primary: Colors.indigo,
-                                    onPrimary: Colors.grey[50],
-                                    elevation: 2,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10, horizontal: 25),
+                                style: ElevatedButton.styleFrom(
+                                  shape: const StadiumBorder(),
+                                  visualDensity: VisualDensity.standard,
+                                  primary: Colors.indigo,
+                                  onPrimary: Colors.grey[50],
+                                  elevation: 2,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 25),
+                                ),
+                                onPressed: onAcknowledgeTapped,
+                                child: const Text(
+                                  "Acknowledge",
+                                  style: TextStyle(
+                                    fontSize: 14,
                                   ),
-                                  onPressed: onAcknowledgeTapped,
-                                  child: const Text(
-                                    "Acknowledge",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                    ),
-                                  )),
-                            )
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),

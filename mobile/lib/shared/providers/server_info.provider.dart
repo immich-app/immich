@@ -11,7 +11,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
       : super(
           ServerInfoState(
             mapboxInfo: MapboxInfo(isEnable: false, mapboxSecret: ""),
-            serverVersion: ServerVersion(major: 0, patch: 0, minor: 0, build: 0),
+            serverVersion:
+                ServerVersion(major: 0, patch: 0, minor: 0, build: 0),
             isVersionMismatch: false,
             versionMismatchErrorMessage: "",
           ),
@@ -33,7 +34,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
 
     state = state.copyWith(serverVersion: serverVersion);
 
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    var packageInfo = await PackageInfo.fromPlatform();
 
     Map<String, int> appVersion = _getDetailVersion(packageInfo.version);
 
@@ -57,7 +58,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
       return;
     }
 
-    state = state.copyWith(isVersionMismatch: false, versionMismatchErrorMessage: "");
+    state = state.copyWith(
+        isVersionMismatch: false, versionMismatchErrorMessage: "");
   }
 
   Map<String, int> _getDetailVersion(String version) {
@@ -75,6 +77,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   }
 }
 
-final serverInfoProvider = StateNotifierProvider<ServerInfoNotifier, ServerInfoState>((ref) {
+final serverInfoProvider =
+    StateNotifierProvider<ServerInfoNotifier, ServerInfoState>((ref) {
   return ServerInfoNotifier();
 });
