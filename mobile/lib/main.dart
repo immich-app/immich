@@ -4,18 +4,19 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
-import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
+
 import 'constants/hive_box.dart';
 
 void main() async {
@@ -39,13 +40,14 @@ void main() async {
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
-  const ImmichApp({Key? key}) : super(key: key);
+  const ImmichApp({super.key});
 
   @override
-  _ImmichAppState createState() => _ImmichAppState();
+  ImmichAppState createState() => ImmichAppState();
 }
 
-class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserver {
+class ImmichAppState extends ConsumerState<ImmichApp>
+    with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
@@ -121,7 +123,8 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
               brightness: Brightness.light,
               primarySwatch: Colors.indigo,
               fontFamily: 'WorkSans',
-              snackBarTheme: const SnackBarThemeData(contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
+              snackBarTheme: const SnackBarThemeData(
+                  contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
               scaffoldBackgroundColor: immichBackgroundColor,
               appBarTheme: const AppBarTheme(
                 backgroundColor: immichBackgroundColor,
@@ -132,7 +135,8 @@ class _ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserv
               ),
             ),
             routeInformationParser: _immichRouter.defaultRouteParser(),
-            routerDelegate: _immichRouter.delegate(navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
+            routerDelegate: _immichRouter.delegate(
+                navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
           ),
           const ImmichLoadingOverlay(),
           const VersionAnnouncementOverlay(),

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -5,7 +7,10 @@ import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
   const TopControlAppBar(
-      {Key? key, required this.asset, required this.onMoreInfoPressed, required this.onDownloadPressed})
+      {Key? key,
+      required this.asset,
+      required this.onMoreInfoPressed,
+      required this.onDownloadPressed})
       : super(key: key);
 
   final ImmichAsset asset;
@@ -42,9 +47,11 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
           iconSize: iconSize,
           splashRadius: iconSize,
           onPressed: () {
-            print("favorite");
+            log("favorite");
           },
-          icon: asset.isFavorite ? const Icon(Icons.favorite_rounded) : const Icon(Icons.favorite_border_rounded),
+          icon: asset.isFavorite
+              ? const Icon(Icons.favorite_rounded)
+              : const Icon(Icons.favorite_border_rounded),
         ),
         IconButton(
             iconSize: iconSize,

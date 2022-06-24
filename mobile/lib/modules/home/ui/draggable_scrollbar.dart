@@ -81,7 +81,8 @@ class DraggableScrollbar extends StatefulWidget {
     this.labelTextBuilder,
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
-        scrollThumbBuilder = _thumbRRectBuilder(scrollThumbKey, alwaysVisibleScrollThumb),
+        scrollThumbBuilder =
+            _thumbRRectBuilder(scrollThumbKey, alwaysVisibleScrollThumb),
         super(key: key);
 
   DraggableScrollbar.arrows({
@@ -98,7 +99,8 @@ class DraggableScrollbar extends StatefulWidget {
     this.labelTextBuilder,
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
-        scrollThumbBuilder = _thumbArrowBuilder(scrollThumbKey, alwaysVisibleScrollThumb),
+        scrollThumbBuilder =
+            _thumbArrowBuilder(scrollThumbKey, alwaysVisibleScrollThumb),
         super(key: key);
 
   DraggableScrollbar.semicircle({
@@ -115,11 +117,12 @@ class DraggableScrollbar extends StatefulWidget {
     this.labelTextBuilder,
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
-        scrollThumbBuilder = _thumbSemicircleBuilder(heightScrollThumb * 0.6, scrollThumbKey, alwaysVisibleScrollThumb),
+        scrollThumbBuilder = _thumbSemicircleBuilder(
+            heightScrollThumb * 0.6, scrollThumbKey, alwaysVisibleScrollThumb),
         super(key: key);
 
   @override
-  _DraggableScrollbarState createState() => _DraggableScrollbarState();
+  DraggableScrollbarState createState() => DraggableScrollbarState();
 
   static buildScrollThumbAndLabel(
       {required Widget scrollThumb,
@@ -137,9 +140,9 @@ class DraggableScrollbar extends StatefulWidget {
             children: [
               ScrollLabel(
                 animation: labelAnimation,
-                child: labelText,
                 backgroundColor: backgroundColor,
                 constraints: labelConstraints,
+                child: labelText,
               ),
               scrollThumb,
             ],
@@ -154,7 +157,8 @@ class DraggableScrollbar extends StatefulWidget {
     );
   }
 
-  static ScrollThumbBuilder _thumbSemicircleBuilder(double width, Key? scrollThumbKey, bool alwaysVisibleScrollThumb) {
+  static ScrollThumbBuilder _thumbSemicircleBuilder(
+      double width, Key? scrollThumbKey, bool alwaysVisibleScrollThumb) {
     return (
       Color backgroundColor,
       Animation<double> thumbAnimation,
@@ -168,15 +172,15 @@ class DraggableScrollbar extends StatefulWidget {
         foregroundPainter: ArrowCustomPainter(Colors.white),
         child: Material(
           elevation: 4.0,
-          child: Container(
-            constraints: BoxConstraints.tight(Size(width, height)),
-          ),
           color: backgroundColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(height),
             bottomLeft: Radius.circular(height),
             topRight: const Radius.circular(4.0),
             bottomRight: const Radius.circular(4.0),
+          ),
+          child: Container(
+            constraints: BoxConstraints.tight(Size(width, height)),
           ),
         ),
       );
@@ -193,7 +197,8 @@ class DraggableScrollbar extends StatefulWidget {
     };
   }
 
-  static ScrollThumbBuilder _thumbArrowBuilder(Key? scrollThumbKey, bool alwaysVisibleScrollThumb) {
+  static ScrollThumbBuilder _thumbArrowBuilder(
+      Key? scrollThumbKey, bool alwaysVisibleScrollThumb) {
     return (
       Color backgroundColor,
       Animation<double> thumbAnimation,
@@ -203,6 +208,7 @@ class DraggableScrollbar extends StatefulWidget {
       BoxConstraints? labelConstraints,
     }) {
       final scrollThumb = ClipPath(
+        clipper: ArrowClipper(),
         child: Container(
           height: height,
           width: 20.0,
@@ -213,7 +219,6 @@ class DraggableScrollbar extends StatefulWidget {
             ),
           ),
         ),
-        clipper: ArrowClipper(),
       );
 
       return buildScrollThumbAndLabel(
@@ -228,7 +233,8 @@ class DraggableScrollbar extends StatefulWidget {
     };
   }
 
-  static ScrollThumbBuilder _thumbRRectBuilder(Key? scrollThumbKey, bool alwaysVisibleScrollThumb) {
+  static ScrollThumbBuilder _thumbRRectBuilder(
+      Key? scrollThumbKey, bool alwaysVisibleScrollThumb) {
     return (
       Color backgroundColor,
       Animation<double> thumbAnimation,
@@ -239,13 +245,13 @@ class DraggableScrollbar extends StatefulWidget {
     }) {
       final scrollThumb = Material(
         elevation: 4.0,
+        color: backgroundColor,
+        borderRadius: const BorderRadius.all(Radius.circular(7.0)),
         child: Container(
           constraints: BoxConstraints.tight(
             Size(16.0, height),
           ),
         ),
-        color: backgroundColor,
-        borderRadius: const BorderRadius.all(Radius.circular(7.0)),
       );
 
       return buildScrollThumbAndLabel(
@@ -267,7 +273,8 @@ class ScrollLabel extends StatelessWidget {
   final Text child;
 
   final BoxConstraints? constraints;
-  static const BoxConstraints _defaultConstraints = BoxConstraints.tightFor(width: 72.0, height: 28.0);
+  static const BoxConstraints _defaultConstraints =
+      BoxConstraints.tightFor(width: 72.0, height: 28.0);
 
   const ScrollLabel({
     Key? key,
@@ -298,7 +305,8 @@ class ScrollLabel extends StatelessWidget {
   }
 }
 
-class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProviderStateMixin {
+class DraggableScrollbarState extends State<DraggableScrollbar>
+    with TickerProviderStateMixin {
   late double _barOffset;
   late double _viewOffset;
   late bool _isDragInProcess;
@@ -345,7 +353,8 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
     super.dispose();
   }
 
-  double get barMaxScrollExtent => context.size!.height - widget.heightScrollThumb;
+  double get barMaxScrollExtent =>
+      context.size!.height - widget.heightScrollThumb;
 
   double get barMinScrollExtent => 0;
 
@@ -362,7 +371,8 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
       );
     }
 
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
       //print("LayoutBuilder constraints=$constraints");
 
       return NotificationListener<ScrollNotification>(
@@ -432,7 +442,8 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
         }
       }
 
-      if (notification is ScrollUpdateNotification || notification is OverscrollNotification) {
+      if (notification is ScrollUpdateNotification ||
+          notification is OverscrollNotification) {
         if (_thumbAnimationController.status != AnimationStatus.forward) {
           _thumbAnimationController.forward();
         }
@@ -486,7 +497,8 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
           _barOffset = barMaxScrollExtent;
         }
 
-        double viewDelta = getScrollViewDelta(details.delta.dy, barMaxScrollExtent, viewMaxScrollExtent);
+        double viewDelta = getScrollViewDelta(
+            details.delta.dy, barMaxScrollExtent, viewMaxScrollExtent);
 
         _viewOffset = widget.controller.position.pixels + viewDelta;
         if (_viewOffset < widget.controller.position.minScrollExtent) {
@@ -566,7 +578,8 @@ class ArrowClipper extends CustomClipper<Path> {
     path.lineTo(startPointX + arrowWidth / 2, startPointY - arrowWidth / 2);
     path.lineTo(startPointX + arrowWidth, startPointY);
     path.lineTo(startPointX + arrowWidth, startPointY + 1.0);
-    path.lineTo(startPointX + arrowWidth / 2, startPointY - arrowWidth / 2 + 1.0);
+    path.lineTo(
+        startPointX + arrowWidth / 2, startPointY - arrowWidth / 2 + 1.0);
     path.lineTo(startPointX, startPointY + 1.0);
     path.close();
 
@@ -575,7 +588,8 @@ class ArrowClipper extends CustomClipper<Path> {
     path.lineTo(startPointX + arrowWidth / 2, startPointY + arrowWidth / 2);
     path.lineTo(startPointX, startPointY);
     path.lineTo(startPointX, startPointY - 1.0);
-    path.lineTo(startPointX + arrowWidth / 2, startPointY + arrowWidth / 2 - 1.0);
+    path.lineTo(
+        startPointX + arrowWidth / 2, startPointY + arrowWidth / 2 - 1.0);
     path.lineTo(startPointX + arrowWidth, startPointY - 1.0);
     path.close();
 
@@ -600,7 +614,8 @@ class SlideFadeTransition extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: animation,
-      builder: (context, child) => animation.value == 0.0 ? Container() : child!,
+      builder: (context, child) =>
+          animation.value == 0.0 ? Container() : child!,
       child: SlideTransition(
         position: Tween(
           begin: const Offset(0.3, 0.0),

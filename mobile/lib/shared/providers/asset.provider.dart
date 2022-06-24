@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/models/delete_asset_response.model.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
@@ -33,50 +34,61 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
   deleteAssets(Set<ImmichAsset> deleteAssets) async {
     var deviceInfo = await _deviceInfoService.getDeviceInfo();
     var deviceId = deviceInfo["deviceId"];
-    List<String> deleteIdList = [];
+    var deleteIdList = <String>[];
     // Delete asset from device
     for (var asset in deleteAssets) {
       // Delete asset on device if present
       if (asset.deviceId == deviceId) {
-        AssetEntity? localAsset = await AssetEntity.fromId(asset.deviceAssetId);
+        var localAsset = await AssetEntity.fromId(asset.deviceAssetId);
 
         if (localAsset != null) {
           deleteIdList.add(localAsset.id);
         }
       }
     }
-
-    final List<String> result = await PhotoManager.editor.deleteWithIds(deleteIdList);
+    
+    try {
+      await PhotoManager.editor.deleteWithIds(deleteIdList);
+    } catch (e) {
+      debugPrint("Delete asset from device failed: $e");
+    }
 
     // Delete asset on server
-    List<DeleteAssetResponse>? deleteAssetResult = await _assetService.deleteAssets(deleteAssets);
+    List<DeleteAssetResponse>? deleteAssetResult =
+        await _assetService.deleteAssets(deleteAssets);
     if (deleteAssetResult == null) {
       return;
     }
 
     for (var asset in deleteAssetResult) {
       if (asset.status == 'success') {
-        state = state.where((immichAsset) => immichAsset.id != asset.id).toList();
+        state =
+            state.where((immichAsset) => immichAsset.id != asset.id).toList();
       }
     }
   }
 }
 
-final assetProvider = StateNotifierProvider<AssetNotifier, List<ImmichAsset>>((ref) {
+final assetProvider =
+    StateNotifierProvider<AssetNotifier, List<ImmichAsset>>((ref) {
   return AssetNotifier(ref);
 });
 
 final assetGroupByDateTimeProvider = StateProvider((ref) {
   var assets = ref.watch(assetProvider);
 
-  assets.sortByCompare<DateTime>((e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
-  return assets.groupListsBy((element) => DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)));
+  assets.sortByCompare<DateTime>(
+      (e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
+  return assets.groupListsBy((element) =>
+      DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)));
 });
 
 final assetGroupByMonthYearProvider = StateProvider((ref) {
   var assets = ref.watch(assetProvider);
 
-  assets.sortByCompare<DateTime>((e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
+  assets.sortByCompare<DateTime>(
+      (e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
 
-  return assets.groupListsBy((element) => DateFormat('MMMM, y').format(DateTime.parse(element.createdAt)));
+  return assets.groupListsBy((element) =>
+      DateFormat('MMMM, y').format(DateTime.parse(element.createdAt)));
 });

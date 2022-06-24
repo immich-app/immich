@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   immich-server:
-    image: immich-server-dev:1.9.0
+    image: immich-server-dev:latest
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -20,11 +20,9 @@ services:
     depends_on:
       - redis
       - database
-    networks:
-      - immich-network
 
   immich-machine-learning:
-    image: immich-machine-learning-dev:1.9.0
+    image: immich-machine-learning-dev:latest
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
@@ -41,11 +39,9 @@ services:
       - NODE_ENV=development
     depends_on:
       - database
-    networks:
-      - immich-network
 
   immich-microservices:
-    image: immich-microservices:1.9.0
+    image: immich-microservices:latest
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -61,8 +57,6 @@ services:
     depends_on:
       - database
       - immich-server
-    networks:
-      - immich-network
 
   immich-web:
     image: immich-web-dev:1.9.0
@@ -74,20 +68,16 @@ services:
     env_file:
       - .env
     ports:
-      - 3002:3002
+      - 3002:3000
       - 24678:24678
     volumes:
       - ../web:/usr/src/app
       - /usr/src/app/node_modules
-    networks:
-      - immich-network
     restart: always
 
   redis:
     container_name: immich_redis
     image: redis:6.2
-    networks:
-      - immich-network
 
   database:
     container_name: immich_postgres
@@ -103,8 +93,6 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - 5432:5432
-    networks:
-      - immich-network
 
   nginx:
     container_name: proxy_nginx
@@ -116,12 +104,8 @@ services:
       - 2284:443
     logging:
       driver: none
-    networks:
-      - immich-network
     depends_on:
       - immich-server
 
-networks:
-  immich-network:
 volumes:
   pgdata:

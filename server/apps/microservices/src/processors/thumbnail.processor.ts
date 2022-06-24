@@ -20,6 +20,9 @@ export class ThumbnailGeneratorProcessor {
     private thumbnailGeneratorQueue: Queue,
 
     private wsCommunicateionGateway: CommunicationGateway,
+
+    @InjectQueue('metadata-extraction-queue')
+    private metadataExtractionQueue: Queue,
   ) {}
 
   @Process('generate-jpeg-thumbnail')
@@ -48,6 +51,8 @@ export class ThumbnailGeneratorProcessor {
             asset.resizePath = jpegThumbnailPath;
 
             await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset }, { jobId: randomUUID() });
+            await this.metadataExtractionQueue.add('tag-image', { asset }, { jobId: randomUUID() });
+            await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
             this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
           }
         });
@@ -72,6 +77,8 @@ export class ThumbnailGeneratorProcessor {
           asset.resizePath = jpegThumbnailPath;
 
           await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset }, { jobId: randomUUID() });
+          await this.metadataExtractionQueue.add('tag-image', { asset }, { jobId: randomUUID() });
+          await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
 
           this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
         })

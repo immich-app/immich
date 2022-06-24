@@ -10,12 +10,10 @@ class ImmichToast {
     ToastType toastType = ToastType.info,
     ToastGravity gravity = ToastGravity.TOP,
   }) {
-    FToast fToast;
-
-    fToast = FToast();
+    final fToast = FToast();
     fToast.init(context);
 
-    _getColor(ToastType type, BuildContext context) {
+    Color _getColor(ToastType type, BuildContext context) {
       switch (type) {
         case ToastType.info:
           return Theme.of(context).primaryColor;
@@ -23,6 +21,26 @@ class ImmichToast {
           return const Color.fromARGB(255, 78, 140, 124);
         case ToastType.error:
           return const Color.fromARGB(255, 220, 48, 85);
+      }
+    }
+
+    Icon _getIcon(ToastType type) {
+      switch (type) {
+        case ToastType.info:
+          return Icon(
+            Icons.info_outline_rounded,
+            color: Theme.of(context).primaryColor,
+          );
+        case ToastType.success:
+          return const Icon(
+            Icons.check_circle_rounded,
+            color: Color.fromARGB(255, 78, 140, 124),
+          );
+        case ToastType.error:
+          return const Icon(
+            Icons.error_outline_rounded,
+            color: Color.fromARGB(255, 240, 162, 156),
+          );
       }
     }
 
@@ -40,24 +58,7 @@ class ImmichToast {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            (toastType == ToastType.info)
-                ? Icon(
-                    Icons.info_outline_rounded,
-                    color: Theme.of(context).primaryColor,
-                  )
-                : Container(),
-            (toastType == ToastType.success)
-                ? const Icon(
-                    Icons.check_circle_rounded,
-                    color: Color.fromARGB(255, 78, 140, 124),
-                  )
-                : Container(),
-            (toastType == ToastType.error)
-                ? const Icon(
-                    Icons.error_outline_rounded,
-                    color: Color.fromARGB(255, 240, 162, 156),
-                  )
-                : Container(),
+            _getIcon(toastType),
             const SizedBox(
               width: 12.0,
             ),

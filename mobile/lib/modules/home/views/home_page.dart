@@ -19,10 +19,11 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ScrollController _scrollController = useScrollController();
+    ScrollController scrollController = useScrollController();
     var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
-    List<Widget> _imageGridGroup = [];
-    var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
+    List<Widget> imageGridGroup = [];
+    var isMultiSelectEnable =
+        ref.watch(homePageStateProvider).isMultiSelectEnable;
     var homePageState = ref.watch(homePageStateProvider);
 
     useEffect(() {
@@ -39,7 +40,8 @@ class HomePage extends HookConsumerWidget {
     _buildSelectedItemCountIndicator() {
       return isMultiSelectEnable
           ? DisableMultiSelectButton(
-              onPressed: ref.watch(homePageStateProvider.notifier).disableMultiSelect,
+              onPressed:
+                  ref.watch(homePageStateProvider.notifier).disableMultiSelect,
               selectedItemCount: homePageState.selectedItems.length,
             )
           : Container();
@@ -59,7 +61,7 @@ class HomePage extends HookConsumerWidget {
 
           if (lastMonth != null) {
             if (currentMonth - lastMonth! != 0) {
-              _imageGridGroup.add(
+              imageGridGroup.add(
                 MonthlyTitleText(
                   isoDate: dateGroup,
                 ),
@@ -67,14 +69,14 @@ class HomePage extends HookConsumerWidget {
             }
           }
 
-          _imageGridGroup.add(
+          imageGridGroup.add(
             DailyTitleText(
               isoDate: dateGroup,
               assetGroup: immichAssetList,
             ),
           );
 
-          _imageGridGroup.add(
+          imageGridGroup.add(
             ImageGrid(assetGroup: immichAssetList),
           );
 
@@ -109,12 +111,12 @@ class HomePage extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 50.0),
               child: DraggableScrollbar.semicircle(
                 backgroundColor: Theme.of(context).primaryColor,
-                controller: _scrollController,
+                controller: scrollController,
                 heightScrollThumb: 48.0,
                 child: CustomScrollView(
-                  controller: _scrollController,
+                  controller: scrollController,
                   slivers: [
-                    ..._imageGridGroup,
+                    ...imageGridGroup,
                   ],
                 ),
               ),

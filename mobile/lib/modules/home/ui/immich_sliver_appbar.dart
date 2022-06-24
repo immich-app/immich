@@ -20,16 +20,18 @@ class ImmichSliverAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final BackUpState _backupState = ref.watch(backupProvider);
-    bool _isEnableAutoBackup = ref.watch(authenticationProvider).deviceInfo.isAutoBackup;
-    final ServerInfoState _serverInfoState = ref.watch(serverInfoProvider);
+    final BackUpState backupState = ref.watch(backupProvider);
+    bool isEnableAutoBackup =
+        ref.watch(authenticationProvider).deviceInfo.isAutoBackup;
+    final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
 
     return SliverAppBar(
       centerTitle: true,
       floating: true,
       pinned: false,
       snap: false,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(5))),
       leading: Builder(
         builder: (BuildContext context) {
           return Stack(
@@ -47,7 +49,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
                   },
                 ),
               ),
-              _serverInfoState.isVersionMismatch
+              serverInfoState.isVersionMismatch
                   ? Positioned(
                       bottom: 12,
                       right: 12,
@@ -88,7 +90,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
         Stack(
           alignment: AlignmentDirectional.center,
           children: [
-            _backupState.backupProgress == BackUpProgressEnum.inProgress
+            backupState.backupProgress == BackUpProgressEnum.inProgress
                 ? Positioned(
                     top: 10,
                     right: 12,
@@ -97,7 +99,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
                       width: 8,
                       child: CircularProgressIndicator(
                         strokeWidth: 1,
-                        valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).primaryColor),
                       ),
                     ),
                   )
@@ -105,7 +108,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
             IconButton(
               splashRadius: 25,
               iconSize: 30,
-              icon: _isEnableAutoBackup
+              icon: isEnableAutoBackup
                   ? const Icon(Icons.backup_rounded)
                   : Badge(
                       padding: const EdgeInsets.all(4),
@@ -118,20 +121,23 @@ class ImmichSliverAppBar extends ConsumerWidget {
                       ),
                       child: const Icon(Icons.backup_rounded)),
               onPressed: () async {
-                var onPop = await AutoRouter.of(context).push(const BackupControllerRoute());
+                var onPop = await AutoRouter.of(context)
+                    .push(const BackupControllerRoute());
 
                 if (onPop != null && onPop == true) {
                   onPopBack!();
                 }
               },
             ),
-            _backupState.backupProgress == BackUpProgressEnum.inProgress
+            backupState.backupProgress == BackUpProgressEnum.inProgress
                 ? Positioned(
                     bottom: 5,
                     child: Text(
-                      (_backupState.allUniqueAssets.length - _backupState.selectedAlbumsBackupAssetsIds.length)
+                      (backupState.allUniqueAssets.length -
+                              backupState.selectedAlbumsBackupAssetsIds.length)
                           .toString(),
-                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 9, fontWeight: FontWeight.bold),
                     ),
                   )
                 : Container()
