@@ -11,7 +11,6 @@ import { readFile } from 'fs/promises';
 import { Logger } from '@nestjs/common';
 import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
-import { ConfigService } from '@nestjs/config';
 import ffmpeg from 'fluent-ffmpeg';
 // import moment from 'moment';
 
@@ -86,7 +85,7 @@ export class MetadataExtractionProcessor {
 
       await this.exifRepository.save(newExif);
     } catch (e) {
-      Logger.error(`Error extracting EXIF ${e.toString()}`, 'extractExif');
+      Logger.error(`Error extracting EXIF ${String(e)}`, 'extractExif');
     }
   }
 
@@ -128,7 +127,7 @@ export class MetadataExtractionProcessor {
         });
       }
     } catch (error) {
-      Logger.error(`Failed to trigger object detection pipe line ${error.toString()}`);
+      Logger.error(`Failed to trigger object detection pipe line ${String(error)}`);
     }
   }
 

@@ -7,7 +7,7 @@ import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { JwtPayloadDto } from './dto/jwt-payload.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import * as bcrypt from 'bcrypt';
-import { mapUser, User } from '../user/response-dto/user';
+import { mapUser, UserResponseDto } from '../user/response-dto/user-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -39,7 +39,8 @@ export class AuthService {
       return null;
     }
 
-    const isAuthenticated = await this.validatePassword(user.password, loginCredential.password, user.salt);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const isAuthenticated = await this.validatePassword(user.password!, loginCredential.password, user.salt!);
 
     if (isAuthenticated) {
       return user;
@@ -69,7 +70,7 @@ export class AuthService {
     };
   }
 
-  public async adminSignUp(signUpCredential: SignUpDto): Promise<User> {
+  public async adminSignUp(signUpCredential: SignUpDto): Promise<UserResponseDto> {
     const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
 
     if (adminUser) {

@@ -1,12 +1,10 @@
 import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { CommunicationService } from './communication.service';
 import { Socket, Server } from 'socket.io';
-import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
+import { ImmichJwtService, JwtValidationResult } from '../../modules/immich-jwt/immich-jwt.service';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { Repository } from 'typeorm';
-import { query } from 'express';
 
 @WebSocketGateway({ cors: true })
 export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -17,7 +15,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  @WebSocketServer() server: Server;
+  @WebSocketServer() server!: Server;
 
   handleDisconnect(client: Socket) {
     client.leave(client.nsp.name);
@@ -25,13 +23,15 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
     Logger.log(`Client ${client.id} disconnected from Websocket`, 'WebsocketConnectionEvent');
   }
 
-  async handleConnection(client: Socket, ...args: any[]) {
+  async handleConnection(client: Socket) {
     try {
       Logger.log(`New websocket connection: ${client.id}`, 'WebsocketConnectionEvent');
 
-      const accessToken = client.handshake.headers.authorization.split(' ')[1];
+      const accessToken = client.handshake.headers.authorization?.split(' ')[1];
 
-      const res = await this.immichJwtService.validateToken(accessToken);
+      const res: JwtValidationResult = accessToken
+        ? await this.immichJwtService.validateToken(accessToken)
+        : { status: false, userId: null };
 
       if (!res.status) {
         client.emit('error', 'unauthorized');

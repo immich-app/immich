@@ -6,22 +6,22 @@ import { AlbumEntity } from './album.entity';
 @Unique('PK_unique_user_in_album', ['albumId', 'sharedUserId'])
 export class UserAlbumEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id!: string;
 
   @Column()
-  albumId: string;
+  albumId!: string;
 
   @Column()
-  sharedUserId: string;
+  sharedUserId!: string;
 
   @ManyToOne(() => AlbumEntity, (album) => album.sharedUsers, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinColumn({ name: 'albumId' })
-  albumInfo: AlbumEntity;
+  albumInfo!: AlbumEntity;
 
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'sharedUserId' })
-  userInfo: UserEntity;
+  userInfo!: UserEntity;
 }
