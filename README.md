@@ -185,7 +185,11 @@ Additional accounts on the server can be created by the admin account.
 
 ## Step 4: Run mobile app
 
-The app is distributed on several platforms below.
+Login the mobile app with your server address
+
+<p align="left">
+  <img src="design/login-screen.jpeg" width="250" title="Example login screen">
+<p/>
 
 ## F-Droid
 You can get the app on F-droid by clicking the image below.
