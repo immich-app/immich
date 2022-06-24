@@ -3,9 +3,7 @@ version: "3.8"
 services:
   immich-server:
     image: altran1502/immich-server:latest
-    entrypoint: [ "/bin/sh", "./start-server.sh" ]
-    expose:
-      - "3000"
+    entrypoint: ["/bin/sh", "./start-server.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
@@ -15,13 +13,11 @@ services:
     depends_on:
       - redis
       - database
-    networks:
-      - immich-network
     restart: always
 
   immich-microservices:
     image: altran1502/immich-server:latest
-    entrypoint: [ "/bin/sh", "./start-microservices.sh" ]
+    entrypoint: ["/bin/sh", "./start-microservices.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
@@ -31,15 +27,11 @@ services:
     depends_on:
       - redis
       - database
-    networks:
-      - immich-network
     restart: always
 
   immich-machine-learning:
     image: altran1502/immich-machine-learning:latest
-    entrypoint: [ "/bin/sh", "./entrypoint.sh" ]
-    expose:
-      - "3001"
+    entrypoint: ["/bin/sh", "./entrypoint.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
@@ -48,26 +40,18 @@ services:
       - NODE_ENV=production
     depends_on:
       - database
-    networks:
-      - immich-network
     restart: always
 
   immich-web:
     image: altran1502/immich-web:latest
-    entrypoint: [ "/bin/sh", "./entrypoint.sh" ]
+    entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
       - .env
-    ports:
-      - 2285:3000
-    networks:
-      - immich-network
     restart: always
 
   redis:
     container_name: immich_redis
     image: redis:6.2
-    networks:
-      - immich-network
     restart: always
 
   database:
@@ -82,10 +66,6 @@ services:
       PG_DATA: /var/lib/postgresql/data
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
-    networks:
-      - immich-network
     restart: always
 
   nginx:
@@ -98,13 +78,9 @@ services:
       - 2284:443
     logging:
       driver: none
-    networks:
-      - immich-network
     depends_on:
       - immich-server
     restart: always
 
-networks:
-  immich-network:
 volumes:
   pgdata:
