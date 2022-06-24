@@ -25,7 +25,15 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
 
   async handleConnection(client: Socket, ...args: any[]) {
     Logger.verbose(`New websocket connection: ${client.id}`, 'WebsocketConnectionEvent');
-    const accessToken = client.handshake.headers.authorization.split(' ')[1];
+
+    const authBearer = client.handshake.headers.authorization;
+    if (!authBearer.startsWith('Bearer '))  {
+      client.emit('error', 'unauthorized');
+      client.disconnect();
+      return;
+    }
+
+    const accessToken = authBearer.substring(7);
     const user: UserEntity | null = await this.immichAuthService.validateWsToken(accessToken);
 
     if (!user) {
