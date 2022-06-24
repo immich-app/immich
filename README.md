@@ -143,8 +143,8 @@ MAPBOX_KEY=
 # This is the URL of your vm/server where you host Immich, so that the web frontend
 # know where can it make the request to.
 # For example: If your server IP address is 10.1.11.50, the environment variable will
-# be VITE_SERVER_ENDPOINT=http://10.1.11.50:2283
-VITE_SERVER_ENDPOINT=http://192.168.1.216:2283
+# be VITE_SERVER_ENDPOINT=http://10.1.11.50:2283/api
+VITE_SERVER_ENDPOINT=http://192.168.1.216:2283/api
 ```
 
 ## Step 2: Start the server
@@ -167,11 +167,11 @@ To *update* docker-compose with newest image (if you have started the docker-com
 docker-compose -f ./docker/docker-compose.yml pull && docker-compose -f ./docker/docker-compose.yml up
 ```
 
-The server will be running at `http://your-ip:2283` through `Nginx`
+The server will be running at `http://your-ip:2283/api` through `Nginx`
 
 ## Step 3: Register User
 
-Access the web interface at `http://your-ip:2285` to register an admin account.
+Access the web interface at `http://your-ip:2283` to register an admin account.
 
 <p align="left">
   <img src="design/admin-registration-form.png" width="300" title="Admin Registration">

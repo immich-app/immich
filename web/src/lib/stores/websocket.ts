@@ -4,17 +4,23 @@ import type { ImmichAsset } from '../models/immich-asset';
 import { assets } from './assets';
 
 export const openWebsocketConnection = (accessToken: string) => {
-	const websocket = io(serverEndpoint, {
-		transports: ['polling'],
-		reconnection: true,
-		forceNew: true,
-		autoConnect: true,
-		extraHeaders: {
-			Authorization: 'Bearer ' + accessToken,
-		},
-	});
+	const websocketEndpoint = serverEndpoint.replace('/api', '');
+	try {
+		const websocket = io(websocketEndpoint, {
+			path: '/api/socket.io',
+			transports: ['polling'],
+			reconnection: true,
+			forceNew: true,
+			autoConnect: true,
+			extraHeaders: {
+				Authorization: 'Bearer ' + accessToken,
+			},
+		});
 
-	listenToEvent(websocket);
+		listenToEvent(websocket);
+	} catch (e) {
+		console.log('Cannot connect to websocket ', e);
+	}
 };
 
 const listenToEvent = (socket: Socket) => {

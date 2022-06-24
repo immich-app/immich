@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   immich_server_test:
-    image: immich-server-dev:1.9.0
+    image: immich-server-dev:latest
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -19,15 +19,10 @@ services:
     depends_on:
       - redis
       - database
-    networks:
-      - immich_network_test
-
 
   redis:
     container_name: immich_redis_test
     image: redis:6.2
-    networks:
-      - immich_network_test
 
   database:
     container_name: immich_postgres_test
@@ -43,8 +38,3 @@ services:
       - /var/lib/postgresql/data
     ports:
       - 5432:5432
-    networks:
-      - immich_network_test
-
-networks:
-  immich_network_test:
