@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/models/delete_asset_response.model.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
@@ -45,9 +46,12 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
         }
       }
     }
-
-    // final List<String> result = await PhotoManager.editor.deleteWithIds(deleteIdList);
-    await PhotoManager.editor.deleteWithIds(deleteIdList);
+    
+    try {
+      await PhotoManager.editor.deleteWithIds(deleteIdList);
+    } catch (e) {
+      debugPrint("Delete asset from device failed: $e");
+    }
 
     // Delete asset on server
     List<DeleteAssetResponse>? deleteAssetResult =
