@@ -2,8 +2,8 @@ import { IsNotEmpty } from 'class-validator';
 
 export class UpdateAlbumDto {
   @IsNotEmpty()
-  albumName: string;
+  albumName!: string;
 
   @IsNotEmpty()
-  ownerId: string;
+  ownerId!: string;
 }

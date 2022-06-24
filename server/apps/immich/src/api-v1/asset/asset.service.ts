@@ -55,7 +55,7 @@ export class AssetService {
     asset.modifiedAt = assetInfo.modifiedAt;
     asset.isFavorite = assetInfo.isFavorite;
     asset.mimeType = mimeType;
-    asset.duration = assetInfo.duration;
+    asset.duration = assetInfo.duration || null;
 
     try {
       const createdAsset = await this.assetRepository.save(asset);

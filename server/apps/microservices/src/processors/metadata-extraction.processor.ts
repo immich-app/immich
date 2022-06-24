@@ -16,7 +16,7 @@ import ffmpeg from 'fluent-ffmpeg';
 
 @Processor('metadata-extraction-queue')
 export class MetadataExtractionProcessor {
-  private geocodingClient: GeocodeService;
+  private geocodingClient?: GeocodeService;
 
   constructor(
     @InjectRepository(AssetEntity)
@@ -28,7 +28,7 @@ export class MetadataExtractionProcessor {
     @InjectRepository(SmartInfoEntity)
     private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {
-    if (process.env.ENABLE_MAPBOX == 'true') {
+    if (process.env.ENABLE_MAPBOX == 'true' && process.env.MAPBOX_KEY) {
       this.geocodingClient = mapboxGeocoding({
         accessToken: process.env.MAPBOX_KEY,
       });
@@ -64,7 +64,7 @@ export class MetadataExtractionProcessor {
       newExif.longitude = exifData['longitude'] || null;
 
       // Reverse GeoCoding
-      if (process.env.ENABLE_MAPBOX && exifData['longitude'] && exifData['latitude']) {
+      if (this.geocodingClient && exifData['longitude'] && exifData['latitude']) {
         const geoCodeInfo: MapiResponse = await this.geocodingClient
           .reverseGeocode({
             query: [exifData['longitude'], exifData['latitude']],
