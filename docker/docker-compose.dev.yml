@@ -57,8 +57,6 @@ services:
     depends_on:
       - database
       - immich-server
-    networks:
-      - immich-network
 
   immich-web:
     image: immich-web-dev:1.9.0

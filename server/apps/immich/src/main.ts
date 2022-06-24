@@ -9,6 +9,10 @@ async function bootstrap() {
 
   app.set('trust proxy');
 
+  if (process.env.NODE_ENV === 'development') {
+    app.enableCors();
+  }
+
   app.useWebSocketAdapter(new RedisIoAdapter(app));
 
   await app.listen(3000, () => {
