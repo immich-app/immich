@@ -195,7 +195,7 @@ export class AssetService {
           'Content-Type': 'image/jpeg',
         });
         if (!asset.resizePath) {
-          Logger.error('Error serving IMAGE asset for web ');
+          Logger.error('Error serving IMAGE asset for web', 'ServeFile');
           throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
         }
         return new StreamableFile(createReadStream(asset.resizePath));
