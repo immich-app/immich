@@ -3,12 +3,11 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
-import 'package:socket_io_client/socket_io_client.dart';
-
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
 import '../models/ws_token_response.model.dart';
 import '../services/network.service.dart';
@@ -68,8 +67,9 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
         debugPrint("[WEBSOCKET] Attempting to connect to ws");
         // Configure socket transports must be sepecified
         Socket socket = io(
-          endpoint,
+          endpoint.toString().replaceAll('/api', ''),
           OptionBuilder()
+              .setPath('/api/socket.io')
               .setTransports(['websocket'])
               .enableReconnection()
               .enableForceNew()

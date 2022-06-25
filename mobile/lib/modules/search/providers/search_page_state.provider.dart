@@ -45,20 +45,23 @@ class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
   }
 
   void getSuggestedSearchTerms() async {
-    var userSuggestedSearchTerms = await _searchService.getUserSuggestedSearchTerms();
+    var userSuggestedSearchTerms =
+        await _searchService.getUserSuggestedSearchTerms();
 
     state = state.copyWith(userSuggestedSearchTerms: userSuggestedSearchTerms);
   }
 }
 
-final searchPageStateProvider = StateNotifierProvider<SearchPageStateNotifier, SearchPageState>((ref) {
+final searchPageStateProvider =
+    StateNotifierProvider<SearchPageStateNotifier, SearchPageState>((ref) {
   return SearchPageStateNotifier();
 });
 
-final getCuratedLocationProvider = FutureProvider.autoDispose<List<CuratedLocation>>((ref) async {
-  final SearchService _searchService = SearchService();
+final getCuratedLocationProvider =
+    FutureProvider.autoDispose<List<CuratedLocation>>((ref) async {
+  final SearchService searchService = SearchService();
 
-  var curatedLocation = await _searchService.getCuratedLocation();
+  var curatedLocation = await searchService.getCuratedLocation();
   if (curatedLocation != null) {
     return curatedLocation;
   } else {
@@ -66,10 +69,11 @@ final getCuratedLocationProvider = FutureProvider.autoDispose<List<CuratedLocati
   }
 });
 
-final getCuratedObjectProvider = FutureProvider.autoDispose<List<CuratedObject>>((ref) async {
-  final SearchService _searchService = SearchService();
+final getCuratedObjectProvider =
+    FutureProvider.autoDispose<List<CuratedObject>>((ref) async {
+  final SearchService searchService = SearchService();
 
-  var curatedObject = await _searchService.getCuratedObjects();
+  var curatedObject = await searchService.getCuratedObjects();
   if (curatedObject != null) {
     return curatedObject;
   } else {

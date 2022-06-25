@@ -3,20 +3,20 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/upload_profile_image_repsonse.model.dart';
 import 'package:immich_mobile/shared/models/user.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
-import 'package:http_parser/http_parser.dart';
 
 class UserService {
   final NetworkService _networkService = NetworkService();
 
   Future<List<User>> getAllUsersInfo() async {
     try {
-      Response res = await _networkService.getRequest(url: 'user');
+      var res = await _networkService.getRequest(url: 'user');
       List<dynamic> decodedData = jsonDecode(res.toString());
       List<User> result = List.from(decodedData.map((e) => User.fromMap(e)));
 
@@ -29,7 +29,6 @@ class UserService {
   }
 
   Future<UploadProfileImageResponse?> uploadProfileImage(XFile image) async {
-    var dio = await _networkService.baseHttpClient();
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     var mimeType = FileHelper.getMimeType(image.path);
 
@@ -45,7 +44,7 @@ class UserService {
     final formData = FormData.fromMap({'file': imageData});
 
     try {
-      Response res = await dio.post(
+      Response res = await _networkService.dio.post(
         '$savedEndpoint/user/profile-image',
         data: formData,
       );

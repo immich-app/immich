@@ -10,9 +10,11 @@ async function bootstrap() {
     logger: process.env.NODE_ENV === 'development' ? ['verbose'] : ['log', 'warn', 'error'],
   });
 
-  app.enableCors();
-
   app.set('trust proxy');
+
+  if (process.env.NODE_ENV === 'development') {
+    app.enableCors();
+  }
 
   app.useWebSocketAdapter(new RedisIoAdapter(app));
 
