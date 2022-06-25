@@ -65,7 +65,7 @@ export class MetadataExtractionProcessor {
       newExif.longitude = exifData['longitude'] || null;
 
       // Reverse GeoCoding
-      if (process.env.ENABLE_MAPBOX && exifData['longitude'] && exifData['latitude']) {
+      if (this.geocodingClient && exifData['longitude'] && exifData['latitude']) {
         const geoCodeInfo: MapiResponse = await this.geocodingClient
           .reverseGeocode({
             query: [exifData['longitude'], exifData['latitude']],
