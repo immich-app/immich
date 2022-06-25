@@ -1,13 +1,8 @@
 import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { CommunicationService } from './communication.service';
 import { Socket, Server } from 'socket.io';
-import { ImmichJwtService } from '../../modules/immich-auth/immich-jwt.service';
 import { Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '@app/database/entities/user.entity';
-import { Repository } from 'typeorm';
 import {ImmichAuthService} from "../../modules/immich-auth/immich-auth.service";
-import { query } from 'express';
 
 @WebSocketGateway({ cors: true })
 export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisconnect {
