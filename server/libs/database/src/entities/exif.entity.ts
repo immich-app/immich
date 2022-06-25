@@ -7,70 +7,70 @@ import { AssetEntity } from './asset.entity';
 @Entity('exif')
 export class ExifEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id!: string;
 
   @Index({ unique: true })
   @Column({ type: 'uuid' })
-  assetId: string;
+  assetId!: string;
 
-  @Column({ nullable: true })
-  make: string;
+  @Column({ type: 'varchar', nullable: true })
+  make!: string | null;
 
-  @Column({ nullable: true })
-  model: string;
+  @Column({ type: 'varchar', nullable: true })
+  model!: string | null;
 
-  @Column({ nullable: true })
-  imageName: string;
+  @Column({ type: 'varchar', nullable: true })
+  imageName!: string | null;
 
-  @Column({ nullable: true })
-  exifImageWidth: number;
+  @Column({ type: 'integer', nullable: true })
+  exifImageWidth!: number | null;
 
-  @Column({ nullable: true })
-  exifImageHeight: number;
+  @Column({ type: 'integer', nullable: true })
+  exifImageHeight!: number | null;
 
-  @Column({ nullable: true })
-  fileSizeInByte: number;
+  @Column({ type: 'integer', nullable: true })
+  fileSizeInByte!: number | null;
 
-  @Column({ nullable: true })
-  orientation: string;
-
-  @Column({ type: 'timestamptz', nullable: true })
-  dateTimeOriginal: Date;
+  @Column({ type: 'varchar', nullable: true })
+  orientation!: string | null;
 
   @Column({ type: 'timestamptz', nullable: true })
-  modifyDate: Date;
+  dateTimeOriginal!: Date | null;
 
-  @Column({ nullable: true })
-  lensModel: string;
+  @Column({ type: 'timestamptz', nullable: true })
+  modifyDate!: Date | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  lensModel!: string | null;
 
   @Column({ type: 'float8', nullable: true })
-  fNumber: number;
+  fNumber!: number | null;
 
   @Column({ type: 'float8', nullable: true })
-  focalLength: number;
+  focalLength!: number | null;
 
-  @Column({ nullable: true })
-  iso: number;
-
-  @Column({ type: 'float', nullable: true })
-  exposureTime: number;
+  @Column({ type: 'integer', nullable: true })
+  iso!: number | null;
 
   @Column({ type: 'float', nullable: true })
-  latitude: number;
+  exposureTime!: number | null;
 
   @Column({ type: 'float', nullable: true })
-  longitude: number;
+  latitude!: number | null;
 
-  @Column({ nullable: true })
-  city: string;
+  @Column({ type: 'float', nullable: true })
+  longitude!: number | null;
 
-  @Column({ nullable: true })
-  state: string;
+  @Column({ type: 'varchar', nullable: true })
+  city!: string | null;
 
-  @Column({ nullable: true })
-  country: string;
+  @Column({ type: 'varchar', nullable: true })
+  state!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  country!: string | null;
 
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
-  asset: ExifEntity;
+  asset?: ExifEntity;
 }

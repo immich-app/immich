@@ -14,7 +14,6 @@ import {
   Headers,
   Delete,
   Logger,
-  Patch,
   HttpCode,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
@@ -25,9 +24,7 @@ import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetEntity } from '@app/database/entities/asset.entity';
-import { GetAllAssetQueryDto } from './dto/get-all-asset-query.dto';
 import { Response as Res } from 'express';
-import { GetNewAssetQueryDto } from './dto/get-new-asset-query.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
@@ -58,15 +55,18 @@ export class AssetController {
     ),
   )
   async uploadFile(
-    @GetAuthUser() authUser,
+    @GetAuthUser() authUser: AuthUserDto,
     @UploadedFiles() uploadFiles: { assetData: Express.Multer.File[]; thumbnailData?: Express.Multer.File[] },
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
-  ) {
+  ): Promise<'ok' | undefined> {
     for (const file of uploadFiles.assetData) {
       try {
         const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
-        if (uploadFiles.thumbnailData != null && savedAsset) {
+        if (!savedAsset) {
+          return;
+        }
+        if (uploadFiles.thumbnailData != null) {
           const assetWithThumbnail = await this.assetService.updateThumbnailInfo(
             savedAsset,
             uploadFiles.thumbnailData[0].path,
@@ -107,11 +107,11 @@ export class AssetController {
 
   @Get('/file')
   async serveFile(
-    @Headers() headers,
+    @Headers() headers: Record<string, string>,
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Query(ValidationPipe) query: ServeFileDto,
-  ): Promise<StreamableFile> {
+  ): Promise<StreamableFile | undefined> {
     return this.assetService.serveFile(authUser, query, res, headers);
   }
 
@@ -151,7 +151,7 @@ export class AssetController {
   }
 
   @Get('/assetById/:assetId')
-  async getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param('assetId') assetId) {
+  async getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param('assetId') assetId: string) {
     return await this.assetService.getAssetById(authUser, assetId);
   }
 
@@ -161,6 +161,9 @@ export class AssetController {
 
     for (const id of assetIds.ids) {
       const assets = await this.assetService.getAssetById(authUser, id);
+      if (!assets) {
+        continue;
+      }
       deleteAssetList.push(assets);
     }
 

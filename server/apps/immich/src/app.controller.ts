@@ -1,6 +1,3 @@
-import { Controller, Get, Res, Headers } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller } from '@nestjs/common';
 @Controller()
-export class AppController {
-  constructor() {}
-}
+export class AppController {}

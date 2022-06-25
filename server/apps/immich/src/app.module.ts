@@ -4,8 +4,7 @@ import { AssetModule } from './api-v1/asset/asset.module';
 import { AuthModule } from './api-v1/auth/auth.module';
 import { ImmichJwtModule } from './modules/immich-jwt/immich-jwt.module';
 import { DeviceInfoModule } from './api-v1/device-info/device-info.module';
-import { AppLoggerMiddleware } from './middlewares/app-logger.middleware';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { immichAppConfig } from './config/app.config';
 import { BullModule } from '@nestjs/bull';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
@@ -57,6 +56,8 @@ import { DatabaseModule } from '@app/database';
   providers: [],
 })
 export class AppModule implements NestModule {
+  // TODO: check if consumer is needed or remove
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   configure(consumer: MiddlewareConsumer): void {
     if (process.env.NODE_ENV == 'development') {
       // consumer.apply(AppLoggerMiddleware).forRoutes('*');

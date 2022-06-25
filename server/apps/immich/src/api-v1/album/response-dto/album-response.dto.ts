@@ -1,5 +1,5 @@
 import { AlbumEntity } from '../../../../../../libs/database/src/entities/album.entity';
-import { User, mapUser } from '../../user/response-dto/user';
+import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { AssetResponseDto, mapAsset } from '../../asset/response-dto/asset-response.dto';
 
 export interface AlbumResponseDto {
@@ -9,7 +9,7 @@ export interface AlbumResponseDto {
   createdAt: string;
   albumThumbnailAssetId: string | null;
   shared: boolean;
-  sharedUsers: User[];
+  sharedUsers: UserResponseDto[];
   assets: AssetResponseDto[];
 }
 

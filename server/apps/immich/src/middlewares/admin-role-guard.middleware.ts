@@ -1,6 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@app/database/entities/user.entity';
@@ -22,7 +21,14 @@ export class AdminRolesGuard implements CanActivate {
       const bearerToken = request.headers['authorization'].split(' ')[1];
       const { userId } = await this.jwtService.validateToken(bearerToken);
 
+      if (!userId) {
+        return false;
+      }
+
       const user = await this.userRepository.findOne(userId);
+      if (!user) {
+        return false;
+      }
 
       return user.isAdmin;
     }

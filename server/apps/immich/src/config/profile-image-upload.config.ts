@@ -17,8 +17,11 @@ export const profileImageUploadOption: MulterOptions = {
 
   storage: diskStorage({
     destination: (req: Request, file: Express.Multer.File, cb: any) => {
+      if (!req.user) {
+        return;
+      }
       const basePath = APP_UPLOAD_LOCATION;
-      const profileImageLocation = `${basePath}/${req.user['id']}/profile`;
+      const profileImageLocation = `${basePath}/${req.user.id}/profile`;
 
       if (!existsSync(profileImageLocation)) {
         mkdirSync(profileImageLocation, { recursive: true });
@@ -28,7 +31,10 @@ export const profileImageUploadOption: MulterOptions = {
     },
 
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
-      const userId = req.user['id'];
+      if (!req.user) {
+        return;
+      }
+      const userId = req.user.id;
 
       cb(null, `${userId}${extname(file.originalname)}`);
     },

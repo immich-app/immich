@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { ExifEntity } from './exif.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 
@@ -6,52 +6,52 @@ import { SmartInfoEntity } from './smart-info.entity';
 @Unique(['deviceAssetId', 'userId', 'deviceId'])
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  deviceAssetId: string;
+  deviceAssetId!: string;
 
   @Column()
-  userId: string;
+  userId!: string;
 
   @Column()
-  deviceId: string;
+  deviceId!: string;
 
   @Column()
-  type: AssetType;
+  type!: AssetType;
 
   @Column()
-  originalPath: string;
+  originalPath!: string;
 
-  @Column({ nullable: true })
-  resizePath: string;
+  @Column({ type: 'varchar', nullable: true })
+  resizePath!: string | null;
 
-  @Column({ nullable: true })
-  webpPath: string;
+  @Column({ type: 'varchar', nullable: true })
+  webpPath!: string | null;
 
-  @Column({ nullable: true })
-  encodedVideoPath: string;
-
-  @Column()
-  createdAt: string;
+  @Column({ type: 'varchar', nullable: true })
+  encodedVideoPath!: string;
 
   @Column()
-  modifiedAt: string;
+  createdAt!: string;
+
+  @Column()
+  modifiedAt!: string;
 
   @Column({ type: 'boolean', default: false })
-  isFavorite: boolean;
+  isFavorite!: boolean;
 
-  @Column({ nullable: true })
-  mimeType: string;
+  @Column({ type: 'varchar', nullable: true })
+  mimeType!: string | null;
 
-  @Column({ nullable: true })
-  duration: string;
+  @Column({ type: 'varchar', nullable: true })
+  duration!: string | null;
 
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
-  exifInfo: ExifEntity;
+  exifInfo?: ExifEntity;
 
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
-  smartInfo: SmartInfoEntity;
+  smartInfo?: SmartInfoEntity;
 }
 
 export enum AssetType {

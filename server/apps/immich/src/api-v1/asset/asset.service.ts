@@ -1,10 +1,16 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, StreamableFile } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+  StreamableFile,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
-import _ from 'lodash';
 import { createReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -33,7 +39,12 @@ export class AssetService {
     return updatedAsset.raw[0];
   }
 
-  public async createUserAsset(authUser: AuthUserDto, assetInfo: CreateAssetDto, path: string, mimeType: string) {
+  public async createUserAsset(
+    authUser: AuthUserDto,
+    assetInfo: CreateAssetDto,
+    path: string,
+    mimeType: string,
+  ): Promise<AssetEntity | undefined> {
     const asset = new AssetEntity();
     asset.deviceAssetId = assetInfo.deviceAssetId;
     asset.userId = authUser.id;
@@ -44,10 +55,14 @@ export class AssetService {
     asset.modifiedAt = assetInfo.modifiedAt;
     asset.isFavorite = assetInfo.isFavorite;
     asset.mimeType = mimeType;
-    asset.duration = assetInfo.duration;
+    asset.duration = assetInfo.duration || null;
 
     try {
-      return await this.assetRepository.save(asset);
+      const createdAsset = await this.assetRepository.save(asset);
+      if (!createdAsset) {
+        throw new Error('Asset not created');
+      }
+      return createdAsset;
     } catch (e) {
       Logger.error(`Error Create New Asset ${e}`, 'createUserAsset');
     }
@@ -62,7 +77,7 @@ export class AssetService {
       select: ['deviceAssetId'],
     });
 
-    const res = [];
+    const res: string[] = [];
     rows.forEach((v) => res.push(v.deviceAssetId));
     return res;
   }
@@ -119,6 +134,9 @@ export class AssetService {
         });
         file = createReadStream(asset.originalPath);
       } else {
+        if (!asset.resizePath) {
+          throw new Error('resizePath not set');
+        }
         const { size } = await fileInfo(asset.resizePath);
         res.set({
           'Content-Type': 'image/jpeg',
@@ -134,16 +152,25 @@ export class AssetService {
     }
   }
 
-  public async getAssetThumbnail(assetId: string) {
+  public async getAssetThumbnail(assetId: string): Promise<StreamableFile> {
     try {
       const asset = await this.assetRepository.findOne({ id: assetId });
+      if (!asset) {
+        throw new NotFoundException('Asset not found');
+      }
 
       if (asset.webpPath && asset.webpPath.length > 0) {
         return new StreamableFile(createReadStream(asset.webpPath));
       } else {
+        if (!asset.resizePath) {
+          throw new Error('resizePath not set');
+        }
         return new StreamableFile(createReadStream(asset.resizePath));
       }
     } catch (e) {
+      if (e instanceof NotFoundException) {
+        throw e;
+      }
       Logger.error('Error serving asset thumbnail ', e);
       throw new InternalServerErrorException('Failed to serve asset thumbnail', 'GetAssetThumbnail');
     }
@@ -154,6 +181,7 @@ export class AssetService {
     const asset = await this.findOne(query.did, query.aid);
 
     if (!asset) {
+      // TODO: maybe this should be a NotFoundException?
       throw new BadRequestException('Asset does not exist');
     }
 
@@ -166,6 +194,10 @@ export class AssetService {
         res.set({
           'Content-Type': 'image/jpeg',
         });
+        if (!asset.resizePath) {
+          Logger.error('Error serving IMAGE asset for web', 'ServeFile');
+          throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
+        }
         return new StreamableFile(createReadStream(asset.resizePath));
       }
 
@@ -189,6 +221,9 @@ export class AssetService {
             res.set({
               'Content-Type': 'image/jpeg',
             });
+            if (!asset.resizePath) {
+              throw new Error('resizePath not set');
+            }
             file = createReadStream(asset.resizePath);
           }
         }
@@ -297,6 +332,7 @@ export class AssetService {
 
   async getAssetSearchTerm(authUser: AuthUserDto): Promise<string[]> {
     const possibleSearchTerm = new Set<string>();
+    // TODO: should use query builder
     const rows = await this.assetRepository.query(
       `
       select distinct si.tags, si.objects, e.orientation, e."lensModel", e.make, e.model , a.type, e.city, e.state, e.country
@@ -308,12 +344,12 @@ export class AssetService {
       [authUser.id],
     );
 
-    rows.forEach((row) => {
+    rows.forEach((row: { [x: string]: any }) => {
       // tags
-      row['tags']?.map((tag) => possibleSearchTerm.add(tag?.toLowerCase()));
+      row['tags']?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
 
       // objects
-      row['objects']?.map((object) => possibleSearchTerm.add(object?.toLowerCase()));
+      row['objects']?.map((object: string) => possibleSearchTerm.add(object?.toLowerCase()));
 
       // asset's tyoe
       possibleSearchTerm.add(row['type']?.toLowerCase());
@@ -345,7 +381,7 @@ export class AssetService {
              LEFT JOIN exif e ON a.id = e."assetId"
 
     WHERE a."userId" = $1
-       AND 
+       AND
        (
          TO_TSVECTOR('english', ARRAY_TO_STRING(si.tags, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
          TO_TSVECTOR('english', ARRAY_TO_STRING(si.objects, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
@@ -362,7 +398,7 @@ export class AssetService {
         select distinct on (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
         from assets a
         left join exif e on a.id = e."assetId"
-        where a."userId" = $1 
+        where a."userId" = $1
         and e.city is not null
         and a.type = 'IMAGE';
       `,
@@ -376,7 +412,7 @@ export class AssetService {
         select distinct on (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
         from assets a
         left join smart_info si on a.id = si."assetId"
-        where a."userId" = $1 
+        where a."userId" = $1
         and si.objects is not null
       `,
       [authUser.id],

@@ -44,7 +44,7 @@ export class VideoTranscodeProcessor {
         .on('start', () => {
           Logger.log('Start Converting Video', 'mp4Conversion');
         })
-        .on('error', (error, b, c) => {
+        .on('error', (error) => {
           Logger.error(`Cannot Convert Video ${error}`, 'mp4Conversion');
           reject();
         })
