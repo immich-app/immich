@@ -1,4 +1,4 @@
-import { UserResponseDto } from './apps/immich/src/api-v1/user/response-dto/user-response.dto';
+import { UserResponseDto } from './api-v1/user/response-dto/user-response.dto';
 
 declare global {
   namespace Express {
