@@ -8,12 +8,15 @@ class MonthGroupTitle extends HookConsumerWidget {
   final String month;
   final List<ImmichAsset> assetGroup;
 
-  const MonthGroupTitle({Key? key, required this.month, required this.assetGroup}) : super(key: key);
+  const MonthGroupTitle(
+      {Key? key, required this.month, required this.assetGroup})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedDateGroup = ref.watch(assetSelectionProvider).selectedMonths;
-    final selectedAssets = ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
+    final selectedAssets =
+        ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
     final isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
     _handleTitleIconClick() {
@@ -21,10 +24,16 @@ class MonthGroupTitle extends HookConsumerWidget {
 
       if (isAlbumExist) {
         if (selectedDateGroup.contains(month)) {
-          ref.watch(assetSelectionProvider.notifier).removeAssetsInMonth(month, []);
-          ref.watch(assetSelectionProvider.notifier).removeSelectedAdditionalAssets(assetGroup);
+          ref
+              .watch(assetSelectionProvider.notifier)
+              .removeAssetsInMonth(month, []);
+          ref
+              .watch(assetSelectionProvider.notifier)
+              .removeSelectedAdditionalAssets(assetGroup);
         } else {
-          ref.watch(assetSelectionProvider.notifier).addAllAssetsInMonth(month, []);
+          ref
+              .watch(assetSelectionProvider.notifier)
+              .addAllAssetsInMonth(month, []);
 
           // Deep clone assetGroup
           var assetGroupWithNewItems = [...assetGroup];
@@ -33,13 +42,19 @@ class MonthGroupTitle extends HookConsumerWidget {
             assetGroupWithNewItems.removeWhere((a) => a.id == selectedAsset.id);
           }
 
-          ref.watch(assetSelectionProvider.notifier).addAdditionalAssets(assetGroupWithNewItems);
+          ref
+              .watch(assetSelectionProvider.notifier)
+              .addAdditionalAssets(assetGroupWithNewItems);
         }
       } else {
         if (selectedDateGroup.contains(month)) {
-          ref.watch(assetSelectionProvider.notifier).removeAssetsInMonth(month, assetGroup);
+          ref
+              .watch(assetSelectionProvider.notifier)
+              .removeAssetsInMonth(month, assetGroup);
         } else {
-          ref.watch(assetSelectionProvider.notifier).addAllAssetsInMonth(month, assetGroup);
+          ref
+              .watch(assetSelectionProvider.notifier)
+              .addAllAssetsInMonth(month, assetGroup);
         }
       }
     }
@@ -59,7 +74,8 @@ class MonthGroupTitle extends HookConsumerWidget {
 
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.only(top: 29.0, bottom: 29.0, left: 14.0, right: 8.0),
+        padding: const EdgeInsets.only(
+            top: 29.0, bottom: 29.0, left: 14.0, right: 8.0),
         child: Row(
           children: [
             GestureDetector(

@@ -34,16 +34,20 @@ class MapboxInfo {
 
   String toJson() => json.encode(toMap());
 
-  factory MapboxInfo.fromJson(String source) => MapboxInfo.fromMap(json.decode(source));
+  factory MapboxInfo.fromJson(String source) =>
+      MapboxInfo.fromMap(json.decode(source));
 
   @override
-  String toString() => 'MapboxInfo(isEnable: $isEnable, mapboxSecret: $mapboxSecret)';
+  String toString() =>
+      'MapboxInfo(isEnable: $isEnable, mapboxSecret: $mapboxSecret)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is MapboxInfo && other.isEnable == isEnable && other.mapboxSecret == mapboxSecret;
+    return other is MapboxInfo &&
+        other.isEnable == isEnable &&
+        other.mapboxSecret == mapboxSecret;
   }
 
   @override

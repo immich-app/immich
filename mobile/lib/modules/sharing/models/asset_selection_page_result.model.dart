@@ -22,7 +22,8 @@ class AssetSelectionPageResult {
   }) {
     return AssetSelectionPageResult(
       selectedNewAsset: selectedNewAsset ?? this.selectedNewAsset,
-      selectedAdditionalAsset: selectedAdditionalAsset ?? this.selectedAdditionalAsset,
+      selectedAdditionalAsset:
+          selectedAdditionalAsset ?? this.selectedAdditionalAsset,
       isAlbumExist: isAlbumExist ?? this.isAlbumExist,
     );
   }
@@ -30,8 +31,12 @@ class AssetSelectionPageResult {
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
 
-    result.addAll({'selectedNewAsset': selectedNewAsset.map((x) => x.toMap()).toList()});
-    result.addAll({'selectedAdditionalAsset': selectedAdditionalAsset.map((x) => x.toMap()).toList()});
+    result.addAll(
+        {'selectedNewAsset': selectedNewAsset.map((x) => x.toMap()).toList()});
+    result.addAll({
+      'selectedAdditionalAsset':
+          selectedAdditionalAsset.map((x) => x.toMap()).toList()
+    });
     result.addAll({'isAlbumExist': isAlbumExist});
 
     return result;
@@ -39,16 +44,18 @@ class AssetSelectionPageResult {
 
   factory AssetSelectionPageResult.fromMap(Map<String, dynamic> map) {
     return AssetSelectionPageResult(
-      selectedNewAsset: Set<ImmichAsset>.from(map['selectedNewAsset']?.map((x) => ImmichAsset.fromMap(x))),
-      selectedAdditionalAsset:
-          Set<ImmichAsset>.from(map['selectedAdditionalAsset']?.map((x) => ImmichAsset.fromMap(x))),
+      selectedNewAsset: Set<ImmichAsset>.from(
+          map['selectedNewAsset']?.map((x) => ImmichAsset.fromMap(x))),
+      selectedAdditionalAsset: Set<ImmichAsset>.from(
+          map['selectedAdditionalAsset']?.map((x) => ImmichAsset.fromMap(x))),
       isAlbumExist: map['isAlbumExist'] ?? false,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory AssetSelectionPageResult.fromJson(String source) => AssetSelectionPageResult.fromMap(json.decode(source));
+  factory AssetSelectionPageResult.fromJson(String source) =>
+      AssetSelectionPageResult.fromMap(json.decode(source));
 
   @override
   String toString() =>
@@ -66,5 +73,8 @@ class AssetSelectionPageResult {
   }
 
   @override
-  int get hashCode => selectedNewAsset.hashCode ^ selectedAdditionalAsset.hashCode ^ isAlbumExist.hashCode;
+  int get hashCode =>
+      selectedNewAsset.hashCode ^
+      selectedAdditionalAsset.hashCode ^
+      isAlbumExist.hashCode;
 }

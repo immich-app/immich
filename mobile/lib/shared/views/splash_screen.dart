@@ -15,12 +15,14 @@ class SplashScreenPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    HiveSavedLoginInfo? loginInfo = Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
+    HiveSavedLoginInfo? loginInfo =
+        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
 
     void performLoggingIn() async {
       var isAuthenticated = await ref
           .read(authenticationProvider.notifier)
-          .login(loginInfo!.email, loginInfo.password, loginInfo.serverUrl, true);
+          .login(
+              loginInfo!.email, loginInfo.password, loginInfo.serverUrl, true);
 
       if (isAuthenticated) {
         // Resume backup (if enable) then navigate

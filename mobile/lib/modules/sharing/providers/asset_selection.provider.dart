@@ -18,35 +18,48 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     state = state.copyWith(isAlbumExist: isAlbumExist);
   }
 
-  void removeAssetsInMonth(String removedMonth, List<ImmichAsset> assetsInMonth) {
+  void removeAssetsInMonth(
+      String removedMonth, List<ImmichAsset> assetsInMonth) {
     Set<ImmichAsset> currentAssetList = state.selectedNewAssetsForAlbum;
     Set<String> currentMonthList = state.selectedMonths;
 
-    currentMonthList.removeWhere((selectedMonth) => selectedMonth == removedMonth);
+    currentMonthList
+        .removeWhere((selectedMonth) => selectedMonth == removedMonth);
 
     for (ImmichAsset asset in assetsInMonth) {
       currentAssetList.removeWhere((e) => e.id == asset.id);
     }
 
-    state = state.copyWith(selectedNewAssetsForAlbum: currentAssetList, selectedMonths: currentMonthList);
+    state = state.copyWith(
+        selectedNewAssetsForAlbum: currentAssetList,
+        selectedMonths: currentMonthList);
   }
 
   void addAdditionalAssets(List<ImmichAsset> assets) {
     state = state.copyWith(
-      selectedAdditionalAssetsForAlbum: {...state.selectedAdditionalAssetsForAlbum, ...assets},
+      selectedAdditionalAssetsForAlbum: {
+        ...state.selectedAdditionalAssetsForAlbum,
+        ...assets
+      },
     );
   }
 
   void addAllAssetsInMonth(String month, List<ImmichAsset> assetsInMonth) {
     state = state.copyWith(
       selectedMonths: {...state.selectedMonths, month},
-      selectedNewAssetsForAlbum: {...state.selectedNewAssetsForAlbum, ...assetsInMonth},
+      selectedNewAssetsForAlbum: {
+        ...state.selectedNewAssetsForAlbum,
+        ...assetsInMonth
+      },
     );
   }
 
   void addNewAssets(List<ImmichAsset> assets) {
     state = state.copyWith(
-      selectedNewAssetsForAlbum: {...state.selectedNewAssetsForAlbum, ...assets},
+      selectedNewAssetsForAlbum: {
+        ...state.selectedNewAssetsForAlbum,
+        ...assets
+      },
     );
   }
 
@@ -93,7 +106,10 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
 
   void addAssetsInAlbumViewer(List<ImmichAsset> assets) {
     state = state.copyWith(
-      selectedAssetsInAlbumViewer: {...state.selectedAssetsInAlbumViewer, ...assets},
+      selectedAssetsInAlbumViewer: {
+        ...state.selectedAssetsInAlbumViewer,
+        ...assets
+      },
     );
   }
 
@@ -108,6 +124,7 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
   }
 }
 
-final assetSelectionProvider = StateNotifierProvider<AssetSelectionNotifier, AssetSelectionState>((ref) {
+final assetSelectionProvider =
+    StateNotifierProvider<AssetSelectionNotifier, AssetSelectionState>((ref) {
   return AssetSelectionNotifier();
 });

@@ -54,7 +54,8 @@ class CuratedObject {
 
   String toJson() => json.encode(toMap());
 
-  factory CuratedObject.fromJson(String source) => CuratedObject.fromMap(json.decode(source));
+  factory CuratedObject.fromJson(String source) =>
+      CuratedObject.fromMap(json.decode(source));
 
   @override
   String toString() {
@@ -75,6 +76,10 @@ class CuratedObject {
 
   @override
   int get hashCode {
-    return id.hashCode ^ object.hashCode ^ resizePath.hashCode ^ deviceAssetId.hashCode ^ deviceId.hashCode;
+    return id.hashCode ^
+        object.hashCode ^
+        resizePath.hashCode ^
+        deviceAssetId.hashCode ^
+        deviceId.hashCode;
   }
 }

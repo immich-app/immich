@@ -36,16 +36,20 @@ class UploadProfileImageResponse {
 
   String toJson() => json.encode(toMap());
 
-  factory UploadProfileImageResponse.fromJson(String source) => UploadProfileImageResponse.fromMap(json.decode(source));
+  factory UploadProfileImageResponse.fromJson(String source) =>
+      UploadProfileImageResponse.fromMap(json.decode(source));
 
   @override
-  String toString() => 'UploadProfileImageReponse(userId: $userId, profileImagePath: $profileImagePath)';
+  String toString() =>
+      'UploadProfileImageReponse(userId: $userId, profileImagePath: $profileImagePath)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is UploadProfileImageResponse && other.userId == userId && other.profileImagePath == profileImagePath;
+    return other is UploadProfileImageResponse &&
+        other.userId == userId &&
+        other.profileImagePath == profileImagePath;
   }
 
   @override

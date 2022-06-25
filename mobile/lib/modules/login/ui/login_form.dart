@@ -15,13 +15,17 @@ class LoginForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usernameController = useTextEditingController.fromValue(TextEditingValue.empty);
-    final passwordController = useTextEditingController.fromValue(TextEditingValue.empty);
-    final serverEndpointController = useTextEditingController(text: 'http://your-server-ip:2283');
+    final usernameController =
+        useTextEditingController.fromValue(TextEditingValue.empty);
+    final passwordController =
+        useTextEditingController.fromValue(TextEditingValue.empty);
+    final serverEndpointController =
+        useTextEditingController(text: 'http://your-server-ip:2283');
     final isSaveLoginInfo = useState<bool>(false);
 
     useEffect(() {
-      var loginInfo = Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
+      var loginInfo =
+          Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
 
       if (loginInfo != null) {
         usernameController.text = loginInfo.email;
@@ -64,11 +68,15 @@ class LoginForm extends HookConsumerWidget {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                 dense: true,
                 side: const BorderSide(color: Colors.grey, width: 1.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)),
                 enableFeedback: true,
                 title: const Text(
                   "Stay logged in",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey),
                 ),
                 value: isSaveLoginInfo.value,
                 onChanged: (switchValue) {
@@ -94,11 +102,13 @@ class LoginForm extends HookConsumerWidget {
 class ServerEndpointInput extends StatelessWidget {
   final TextEditingController controller;
 
-  const ServerEndpointInput({Key? key, required this.controller}) : super(key: key);
+  const ServerEndpointInput({Key? key, required this.controller})
+      : super(key: key);
 
   String? _validateInput(String? url) {
     if (url == null) return null;
-    if (!url.startsWith(RegExp(r'https?://'))) return 'Please specify http:// or https://';
+    if (!url.startsWith(RegExp(r'https?://')))
+      return 'Please specify http:// or https://';
     return null;
   }
 
@@ -107,7 +117,9 @@ class ServerEndpointInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       decoration: const InputDecoration(
-          labelText: 'Server Endpoint URL', border: OutlineInputBorder(), hintText: 'http://your-server-ip:port'),
+          labelText: 'Server Endpoint URL',
+          border: OutlineInputBorder(),
+          hintText: 'http://your-server-ip:port'),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -131,8 +143,10 @@ class EmailInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration:
-          const InputDecoration(labelText: 'Email', border: OutlineInputBorder(), hintText: 'youremail@email.com'),
+      decoration: const InputDecoration(
+          labelText: 'Email',
+          border: OutlineInputBorder(),
+          hintText: 'youremail@email.com'),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -149,7 +163,10 @@ class PasswordInput extends StatelessWidget {
     return TextFormField(
       obscureText: true,
       controller: controller,
-      decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder(), hintText: 'password'),
+      decoration: const InputDecoration(
+          labelText: 'Password',
+          border: OutlineInputBorder(),
+          hintText: 'password'),
     );
   }
 }
@@ -184,7 +201,8 @@ class LoginButton extends ConsumerWidget {
 
           var isAuthenticated = await ref
               .read(authenticationProvider.notifier)
-              .login(emailController.text, passwordController.text, serverEndpointController.text, isSavedLoginInfo);
+              .login(emailController.text, passwordController.text,
+                  serverEndpointController.text, isSavedLoginInfo);
 
           if (isAuthenticated) {
             // Resume backup (if enable) then navigate
@@ -193,7 +211,8 @@ class LoginButton extends ConsumerWidget {
           } else {
             ImmichToast.show(
               context: context,
-              msg: "Error logging you in, check server url, email and password!",
+              msg:
+                  "Error logging you in, check server url, email and password!",
               toastType: ToastType.error,
             );
           }

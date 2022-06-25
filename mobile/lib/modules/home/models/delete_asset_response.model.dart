@@ -35,7 +35,8 @@ class DeleteAssetResponse {
 
   String toJson() => json.encode(toMap());
 
-  factory DeleteAssetResponse.fromJson(String source) => DeleteAssetResponse.fromMap(json.decode(source));
+  factory DeleteAssetResponse.fromJson(String source) =>
+      DeleteAssetResponse.fromMap(json.decode(source));
 
   @override
   String toString() => 'DeleteAssetResponse(id: $id, status: $status)';
@@ -44,7 +45,9 @@ class DeleteAssetResponse {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is DeleteAssetResponse && other.id == id && other.status == status;
+    return other is DeleteAssetResponse &&
+        other.id == id &&
+        other.status == status;
   }
 
   @override

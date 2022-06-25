@@ -10,15 +10,18 @@ import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
   final SharedAlbum albumInfo;
 
-  const SelectAdditionalUserForSharingPage({Key? key, required this.albumInfo}) : super(key: key);
+  const SelectAdditionalUserForSharingPage({Key? key, required this.albumInfo})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<User>> suggestedShareUsers = ref.watch(suggestedSharedUsersProvider);
+    AsyncValue<List<User>> suggestedShareUsers =
+        ref.watch(suggestedSharedUsersProvider);
     final sharedUsersList = useState<Set<User>>({});
 
     _addNewUsersHandler() {
-      AutoRouter.of(context).pop(sharedUsersList.value.map((e) => e.id).toList());
+      AutoRouter.of(context)
+          .pop(sharedUsersList.value.map((e) => e.id).toList());
     }
 
     _buildTileIcon(User user) {
@@ -32,7 +35,8 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         );
       } else {
         return CircleAvatar(
-          backgroundImage: const AssetImage('assets/immich-logo-no-outline.png'),
+          backgroundImage:
+              const AssetImage('assets/immich-logo-no-outline.png'),
           backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
         );
       }
@@ -49,7 +53,10 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
               backgroundColor: Theme.of(context).primaryColor.withOpacity(0.15),
               label: Text(
                 user.email,
-                style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -65,7 +72,10 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
             padding: EdgeInsets.all(16.0),
             child: Text(
               'Suggestions',
-              style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold),
             ),
           ),
           ListView.builder(
@@ -75,14 +85,20 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
                 leading: _buildTileIcon(users[index]),
                 title: Text(
                   users[index].email,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 onTap: () {
                   if (sharedUsersList.value.contains(users[index])) {
-                    sharedUsersList.value =
-                        sharedUsersList.value.where((selectedUser) => selectedUser.id != users[index].id).toSet();
+                    sharedUsersList.value = sharedUsersList.value
+                        .where((selectedUser) =>
+                            selectedUser.id != users[index].id)
+                        .toSet();
                   } else {
-                    sharedUsersList.value = {...sharedUsersList.value, users[index]};
+                    sharedUsersList.value = {
+                      ...sharedUsersList.value,
+                      users[index]
+                    };
                   }
                 },
               );
@@ -109,7 +125,8 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: sharedUsersList.value.isEmpty ? null : _addNewUsersHandler,
+            onPressed:
+                sharedUsersList.value.isEmpty ? null : _addNewUsersHandler,
             child: const Text(
               "Add",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
@@ -120,7 +137,8 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
       body: suggestedShareUsers.when(
         data: (users) {
           for (var sharedUsers in albumInfo.sharedUsers) {
-            users.removeWhere((u) => u.id == sharedUsers.id || u.id == albumInfo.ownerId);
+            users.removeWhere(
+                (u) => u.id == sharedUsers.id || u.id == albumInfo.ownerId);
           }
 
           return _buildUserList(users);

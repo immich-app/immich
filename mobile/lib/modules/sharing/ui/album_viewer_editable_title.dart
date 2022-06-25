@@ -7,11 +7,14 @@ import 'package:immich_mobile/modules/sharing/providers/album_viewer.provider.da
 class AlbumViewerEditableTitle extends HookConsumerWidget {
   final SharedAlbum albumInfo;
   final FocusNode titleFocusNode;
-  const AlbumViewerEditableTitle({Key? key, required this.albumInfo, required this.titleFocusNode}) : super(key: key);
+  const AlbumViewerEditableTitle(
+      {Key? key, required this.albumInfo, required this.titleFocusNode})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final titleTextEditController = useTextEditingController(text: albumInfo.albumName);
+    final titleTextEditController =
+        useTextEditingController(text: albumInfo.albumName);
 
     void onFocusModeChange() {
       if (!titleFocusNode.hasFocus && titleTextEditController.text.isEmpty) {
@@ -40,7 +43,9 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
       onTap: () {
         FocusScope.of(context).requestFocus(titleFocusNode);
 
-        ref.watch(albumViewerProvider.notifier).setEditTitleText(albumInfo.albumName);
+        ref
+            .watch(albumViewerProvider.notifier)
+            .setEditTitleText(albumInfo.albumName);
         ref.watch(albumViewerProvider.notifier).enableEditAlbum();
 
         if (titleTextEditController.text == 'Untitled') {

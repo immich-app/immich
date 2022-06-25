@@ -15,12 +15,14 @@ class ImageViewerService {
     try {
       String fileName = p.basename(asset.originalPath);
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-      Uri filePath =
-          Uri.parse("$savedEndpoint/asset/download?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false");
+      Uri filePath = Uri.parse(
+          "$savedEndpoint/asset/download?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false");
 
       var res = await http.get(
         filePath,
-        headers: {"Authorization": "Bearer ${Hive.box(userInfoBox).get(accessTokenKey)}"},
+        headers: {
+          "Authorization": "Bearer ${Hive.box(userInfoBox).get(accessTokenKey)}"
+        },
       );
 
       final AssetEntity? entity;

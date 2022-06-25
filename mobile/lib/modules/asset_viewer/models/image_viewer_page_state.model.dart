@@ -28,22 +28,26 @@ class ImageViewerPageState {
 
   factory ImageViewerPageState.fromMap(Map<String, dynamic> map) {
     return ImageViewerPageState(
-      downloadAssetStatus: DownloadAssetStatus.values[map['downloadAssetStatus'] ?? 0],
+      downloadAssetStatus:
+          DownloadAssetStatus.values[map['downloadAssetStatus'] ?? 0],
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory ImageViewerPageState.fromJson(String source) => ImageViewerPageState.fromMap(json.decode(source));
+  factory ImageViewerPageState.fromJson(String source) =>
+      ImageViewerPageState.fromMap(json.decode(source));
 
   @override
-  String toString() => 'ImageViewerPageState(downloadAssetStatus: $downloadAssetStatus)';
+  String toString() =>
+      'ImageViewerPageState(downloadAssetStatus: $downloadAssetStatus)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is ImageViewerPageState && other.downloadAssetStatus == downloadAssetStatus;
+    return other is ImageViewerPageState &&
+        other.downloadAssetStatus == downloadAssetStatus;
   }
 
   @override

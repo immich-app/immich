@@ -18,7 +18,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       : super(
           BackUpState(
             backupProgress: BackUpProgressEnum.idle,
-            allAssetOnDatabase: const [],
+            allAssetsInDatabase: const [],
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
             serverInfo: ServerInfo(
@@ -36,7 +36,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             allUniqueAssets: const {},
             selectedAlbumsBackupAssetsIds: const {},
           ),
-        );
+        ) {
+    getBackupInfo();
+  }
 
   final BackupService _backupService;
   final ServerInfoService _serverInfoService;
@@ -93,7 +95,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// If this is the first time performing backup - set the default selected album to be
   /// the one that has all assets (Recent on Android, Recents on iOS)
   ///
-  Future<void> getBackupAlbumsInfo() async {
+  Future<void> _getBackupAlbumsInfo() async {
     // Get all albums on the device
     List<AvailableAlbum> availableAlbums = [];
     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
@@ -177,7 +179,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Find the assets that are not overlapping between the two sets
   /// Those assets are unique and are used as the total assets
   ///
-  void _updateBackupAssetCount() async {
+  Future<void> _updateBackupAssetCount() async {
     Set<AssetEntity> assetsFromSelectedAlbums = {};
     Set<AssetEntity> assetsFromExcludedAlbums = {};
 
@@ -195,27 +197,27 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     Set<AssetEntity> allUniqueAssets =
         assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
-    List<String> allAssetOnDatabase =
+    List<String> allAssetsInDatabase =
         await _backupService.getDeviceBackupAsset();
 
     // Find asset that were backup from selected albums
     Set<String> selectedAlbumsBackupAssets =
         Set.from(allUniqueAssets.map((e) => e.id));
     selectedAlbumsBackupAssets
-        .removeWhere((assetId) => !allAssetOnDatabase.contains(assetId));
+        .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
 
     if (allUniqueAssets.isEmpty) {
       debugPrint("No Asset On Device");
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
-        allAssetOnDatabase: allAssetOnDatabase,
+        allAssetsInDatabase: allAssetsInDatabase,
         allUniqueAssets: {},
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
       return;
     } else {
       state = state.copyWith(
-        allAssetOnDatabase: allAssetOnDatabase,
+        allAssetsInDatabase: allAssetsInDatabase,
         allUniqueAssets: allUniqueAssets,
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
@@ -223,6 +225,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Save to persistent storage
     _updatePersistentAlbumsSelection();
+
+    return;
   }
 
   ///
@@ -230,10 +234,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// which albums are selected or excluded
   /// and then update the UI according to those information
   ///
-  void getBackupInfo() async {
-    await getBackupAlbumsInfo();
-    _updateServerInfo();
-    _updateBackupAssetCount();
+  Future<void> getBackupInfo() async {
+    await _getBackupAlbumsInfo();
+    await _updateServerInfo();
+    await _updateBackupAssetCount();
   }
 
   ///
@@ -256,10 +260,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Invoke backup process
   ///
   void startBackupProcess() async {
-    _updateServerInfo();
-    _updateBackupAssetCount();
-
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
+
+    await getBackupInfo();
 
     var authResult = await PhotoManager.requestPermissionExtend();
     if (authResult.isAuth) {
@@ -271,10 +274,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         return;
       }
 
-      Set<AssetEntity> assetsWillBeBackup = state.allUniqueAssets;
+      Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
 
       // Remove item that has already been backed up
-      for (var assetId in state.allAssetOnDatabase) {
+      for (var assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);
       }
 
@@ -301,8 +304,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     state = state.copyWith(selectedAlbumsBackupAssetsIds: {
       ...state.selectedAlbumsBackupAssetsIds,
       deviceAssetId
-    }, allAssetOnDatabase: [
-      ...state.allAssetOnDatabase,
+    }, allAssetsInDatabase: [
+      ...state.allAssetsInDatabase,
       deviceAssetId
     ]);
 
@@ -321,7 +324,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         progressInPercentage: (sent.toDouble() / total.toDouble() * 100));
   }
 
-  void _updateServerInfo() async {
+  Future<void> _updateServerInfo() async {
     var serverInfo = await _serverInfoService.getServerInfo();
 
     // Update server info
