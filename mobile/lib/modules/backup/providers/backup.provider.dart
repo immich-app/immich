@@ -18,7 +18,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       : super(
           BackUpState(
             backupProgress: BackUpProgressEnum.idle,
-            allAssetOnDatabase: const [],
+            allAssetsInDatabase: const [],
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
             serverInfo: ServerInfo(
@@ -185,24 +185,24 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     Set<AssetEntity> allUniqueAssets = assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
-    List<String> allAssetOnDatabase = await _backupService.getDeviceBackupAsset();
+    List<String> allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
 
     // Find asset that were backup from selected albums
     Set<String> selectedAlbumsBackupAssets = Set.from(allUniqueAssets.map((e) => e.id));
-    selectedAlbumsBackupAssets.removeWhere((assetId) => !allAssetOnDatabase.contains(assetId));
+    selectedAlbumsBackupAssets.removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
 
     if (allUniqueAssets.isEmpty) {
       debugPrint("No Asset On Device");
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
-        allAssetOnDatabase: allAssetOnDatabase,
+        allAssetsInDatabase: allAssetsInDatabase,
         allUniqueAssets: {},
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
       return;
     } else {
       state = state.copyWith(
-        allAssetOnDatabase: allAssetOnDatabase,
+        allAssetsInDatabase: allAssetsInDatabase,
         allUniqueAssets: allUniqueAssets,
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
@@ -261,7 +261,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       Set<AssetEntity> assetsWillBeBackup = state.allUniqueAssets;
 
       // Remove item that has already been backed up
-      for (var assetId in state.allAssetOnDatabase) {
+      for (var assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);
       }
 
@@ -285,7 +285,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   void _onAssetUploaded(String deviceAssetId, String deviceId) {
     state = state.copyWith(
         selectedAlbumsBackupAssetsIds: {...state.selectedAlbumsBackupAssetsIds, deviceAssetId},
-        allAssetOnDatabase: [...state.allAssetOnDatabase, deviceAssetId]);
+        allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId]);
 
     if (state.allUniqueAssets.length - state.selectedAlbumsBackupAssetsIds.length == 0) {
       state = state.copyWith(backupProgress: BackUpProgressEnum.done, progressInPercentage: 0.0);
