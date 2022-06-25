@@ -4,7 +4,8 @@ import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.da
 import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
 
 class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
-  AlbumViewerNotifier(this.ref) : super(AlbumViewerPageState(editTitleText: "", isEditAlbum: false));
+  AlbumViewerNotifier(this.ref)
+      : super(AlbumViewerPageState(editTitleText: "", isEditAlbum: false));
 
   final Ref ref;
 
@@ -28,10 +29,12 @@ class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
     state = state.copyWith(editTitleText: "", isEditAlbum: false);
   }
 
-  Future<bool> changeAlbumTitle(String albumId, String ownerId, String newAlbumTitle) async {
-    SharedAlbumService service = SharedAlbumService();
+  Future<bool> changeAlbumTitle(
+      String albumId, String ownerId, String newAlbumTitle) async {
+    SharedAlbumService service = ref.watch(sharedAlbumServiceProvider);
 
-    bool isSuccess = await service.changeTitleAlbum(albumId, ownerId, newAlbumTitle);
+    bool isSuccess =
+        await service.changeTitleAlbum(albumId, ownerId, newAlbumTitle);
 
     if (isSuccess) {
       state = state.copyWith(editTitleText: "", isEditAlbum: false);
@@ -45,6 +48,7 @@ class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   }
 }
 
-final albumViewerProvider = StateNotifierProvider<AlbumViewerNotifier, AlbumViewerPageState>((ref) {
+final albumViewerProvider =
+    StateNotifierProvider<AlbumViewerNotifier, AlbumViewerPageState>((ref) {
   return AlbumViewerNotifier(ref);
 });

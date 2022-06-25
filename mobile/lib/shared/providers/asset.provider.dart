@@ -9,11 +9,10 @@ import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
-  final AssetService _assetService = AssetService();
+  final AssetService _assetService;
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
-  final Ref ref;
 
-  AssetNotifier(this.ref) : super([]);
+  AssetNotifier(this._assetService) : super([]);
 
   getAllAsset() async {
     List<ImmichAsset>? allAssets = await _assetService.getAllAsset();
@@ -71,7 +70,7 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
 
 final assetProvider =
     StateNotifierProvider<AssetNotifier, List<ImmichAsset>>((ref) {
-  return AssetNotifier(ref);
+  return AssetNotifier(ref.watch(assetServiceProvider));
 });
 
 final assetGroupByDateTimeProvider = StateProvider((ref) {

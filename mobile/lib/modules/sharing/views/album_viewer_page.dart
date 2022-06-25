@@ -53,8 +53,10 @@ class AlbumViewerPage extends HookConsumerWidget {
         if (returnPayload.selectedAdditionalAsset.isNotEmpty) {
           ImmichLoadingOverlayController.appLoader.show();
 
-          var isSuccess = await SharedAlbumService().addAdditionalAssetToAlbum(
-              returnPayload.selectedAdditionalAsset, albumId);
+          var isSuccess = await ref
+              .watch(sharedAlbumServiceProvider)
+              .addAdditionalAssetToAlbum(
+                  returnPayload.selectedAdditionalAsset, albumId);
 
           if (isSuccess) {
             ref.refresh(sharedAlbumDetailProvider(albumId));
@@ -77,7 +79,8 @@ class AlbumViewerPage extends HookConsumerWidget {
       if (sharedUserIds != null) {
         ImmichLoadingOverlayController.appLoader.show();
 
-        var isSuccess = await SharedAlbumService()
+        var isSuccess = await ref
+            .watch(sharedAlbumServiceProvider)
             .addAdditionalUserToAlbum(sharedUserIds, albumId);
 
         if (isSuccess) {

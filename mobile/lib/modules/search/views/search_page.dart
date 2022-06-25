@@ -18,7 +18,7 @@ import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 class SearchPage extends HookConsumerWidget {
   SearchPage({Key? key}) : super(key: key);
 
-  late FocusNode searchFocusNode;
+  FocusNode searchFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
