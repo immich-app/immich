@@ -93,7 +93,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// If this is the first time performing backup - set the default selected album to be
   /// the one that has all assets (Recent on Android, Recents on iOS)
   ///
-  Future<void> getBackupAlbumsInfo() async {
+  Future<void> _getBackupAlbumsInfo() async {
     // Get all albums on the device
     List<AvailableAlbum> availableAlbums = [];
     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(hasAll: true, type: RequestType.common);
@@ -220,7 +220,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// and then update the UI according to those information
   ///
   Future<void> getBackupInfo() async {
-    await getBackupAlbumsInfo();
+    await _getBackupAlbumsInfo();
     await _updateServerInfo();
     await _updateBackupAssetCount();
   }
@@ -244,9 +244,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Invoke backup process
   ///
   void startBackupProcess() async {
-    await getBackupInfo();
-
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
+
+    await getBackupInfo();
 
     var authResult = await PhotoManager.requestPermissionExtend();
     if (authResult.isAuth) {

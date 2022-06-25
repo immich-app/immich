@@ -17,7 +17,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
 
     useEffect(() {
-      ref.read(backupProvider.notifier).getBackupAlbumsInfo();
+      ref.read(backupProvider.notifier).getBackupInfo();
       return null;
     }, []);
 
