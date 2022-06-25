@@ -65,11 +65,14 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
 
       try {
         debugPrint("[WEBSOCKET] Attempting to connect to ws");
+
+        var wsUri = Uri.parse(endpoint + '/socket.io');
+
         // Configure socket transports must be sepecified
         Socket socket = io(
-          endpoint.toString().replaceAll('/api', ''),
+          wsUri.origin,
           OptionBuilder()
-              .setPath('/api/socket.io')
+              .setPath(wsUri.path)
               .setTransports(['websocket'])
               .enableReconnection()
               .enableForceNew()
@@ -113,6 +116,7 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
         state = WebscoketState(isConnected: false, socket: null);
       }
     }
+    debugPrint("[WEBSOCKET] Disconnected");
   }
 
   stopListenToEvent(String eventName) {

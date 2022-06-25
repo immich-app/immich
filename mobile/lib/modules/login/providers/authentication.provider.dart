@@ -182,6 +182,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     var refreshedOAuth2Token = await OAuth2Service.refreshToken();
 
     if (refreshedOAuth2Token) {
+      state = state.copyWith(
+          isAuthenticated: true,
+      );
       return true;
     }
 
