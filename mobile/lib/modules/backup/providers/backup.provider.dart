@@ -208,6 +208,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
     }
 
+    print("Unique asset count ${allUniqueAssets.length}");
     // Save to persistent storage
     _updatePersistentAlbumsSelection();
 
@@ -258,7 +259,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         return;
       }
 
-      Set<AssetEntity> assetsWillBeBackup = state.allUniqueAssets;
+      Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
 
       // Remove item that has already been backed up
       for (var assetId in state.allAssetsInDatabase) {

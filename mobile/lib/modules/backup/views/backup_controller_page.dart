@@ -190,7 +190,7 @@ class BackupControllerPage extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Albums to be backup",
+                  "Albums to be backed up",
                   style: TextStyle(color: Color(0xFF808080), fontSize: 12),
                 ),
                 _buildSelectedAlbumName(),
@@ -260,12 +260,12 @@ class BackupControllerPage extends HookConsumerWidget {
             ),
             BackupInfoCard(
               title: "Backup",
-              subtitle: "Photos and videos from selected albums that are backup",
+              subtitle: "Backed up photos and videos",
               info: "${backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             BackupInfoCard(
               title: "Remainder",
-              subtitle: "Photos and videos that has not been backing up from selected albums",
+              subtitle: "Remaining photos and albums to back up from selection",
               info: "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             const Divider(),
