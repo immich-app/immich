@@ -73,7 +73,8 @@ class LogInReponse {
 
   String toJson() => json.encode(toMap());
 
-  factory LogInReponse.fromJson(String source) => LogInReponse.fromMap(json.decode(source));
+  factory LogInReponse.fromJson(String source) =>
+      LogInReponse.fromMap(json.decode(source));
 
   @override
   String toString() {

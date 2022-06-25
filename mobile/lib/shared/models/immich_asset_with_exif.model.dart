@@ -85,13 +85,15 @@ class ImmichAssetWithExif {
       originalPath: map['originalPath'] ?? '',
       isFavorite: map['isFavorite'] ?? false,
       duration: map['duration'],
-      exifInfo: map['exifInfo'] != null ? ImmichExif.fromMap(map['exifInfo']) : null,
+      exifInfo:
+          map['exifInfo'] != null ? ImmichExif.fromMap(map['exifInfo']) : null,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory ImmichAssetWithExif.fromJson(String source) => ImmichAssetWithExif.fromMap(json.decode(source));
+  factory ImmichAssetWithExif.fromJson(String source) =>
+      ImmichAssetWithExif.fromMap(json.decode(source));
 
   @override
   String toString() {

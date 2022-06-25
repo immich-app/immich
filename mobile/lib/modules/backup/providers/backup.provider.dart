@@ -57,7 +57,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       removeExcludedAlbumForBackup(album);
     }
 
-    state = state.copyWith(selectedBackupAlbums: {...state.selectedBackupAlbums, album});
+    state = state
+        .copyWith(selectedBackupAlbums: {...state.selectedBackupAlbums, album});
     _updateBackupAssetCount();
   }
 
@@ -65,7 +66,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (state.selectedBackupAlbums.contains(album)) {
       removeAlbumForBackup(album);
     }
-    state = state.copyWith(excludedBackupAlbums: {...state.excludedBackupAlbums, album});
+    state = state
+        .copyWith(excludedBackupAlbums: {...state.excludedBackupAlbums, album});
     _updateBackupAssetCount();
   }
 
@@ -96,16 +98,19 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   Future<void> _getBackupAlbumsInfo() async {
     // Get all albums on the device
     List<AvailableAlbum> availableAlbums = [];
-    List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(hasAll: true, type: RequestType.common);
+    List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
+        hasAll: true, type: RequestType.common);
 
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
 
-      var assetList = await album.getAssetListRange(start: 0, end: album.assetCount);
+      var assetList =
+          await album.getAssetListRange(start: 0, end: album.assetCount);
 
       if (assetList.isNotEmpty) {
         var thumbnailAsset = assetList.first;
-        var thumbnailData = await thumbnailAsset.thumbnailDataWithSize(const ThumbnailSize(512, 512));
+        var thumbnailData = await thumbnailAsset
+            .thumbnailDataWithSize(const ThumbnailSize(512, 512));
         availableAlbum = availableAlbum.copyWith(thumbnailData: thumbnailData);
       }
 
@@ -116,7 +121,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Put persistent storage info into local state of the app
     // Get local storage on selected backup album
-    Box<HiveBackupAlbums> backupAlbumInfoBox = Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
+    Box<HiveBackupAlbums> backupAlbumInfoBox =
+        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
     HiveBackupAlbums? backupAlbumInfo = backupAlbumInfoBox.get(
       backupInfoKey,
       defaultValue: HiveBackupAlbums(
@@ -135,7 +141,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       debugPrint("First time backup setup recent album as default");
 
       // Get album that contains all assets
-      var list = await PhotoManager.getAssetPathList(hasAll: true, onlyAll: true, type: RequestType.common);
+      var list = await PhotoManager.getAssetPathList(
+          hasAll: true, onlyAll: true, type: RequestType.common);
       AssetPathEntity albumHasAllAssets = list.first;
 
       backupAlbumInfoBox.put(
@@ -153,12 +160,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     try {
       for (var selectedAlbumId in backupAlbumInfo!.selectedAlbumIds) {
         var albumAsset = await AssetPathEntity.fromId(selectedAlbumId);
-        state = state.copyWith(selectedBackupAlbums: {...state.selectedBackupAlbums, albumAsset});
+        state = state.copyWith(
+            selectedBackupAlbums: {...state.selectedBackupAlbums, albumAsset});
       }
 
       for (var excludedAlbumId in backupAlbumInfo.excludedAlbumsIds) {
         var albumAsset = await AssetPathEntity.fromId(excludedAlbumId);
-        state = state.copyWith(excludedBackupAlbums: {...state.excludedBackupAlbums, albumAsset});
+        state = state.copyWith(
+            excludedBackupAlbums: {...state.excludedBackupAlbums, albumAsset});
       }
     } catch (e) {
       debugPrint("[ERROR] Failed to generate album from id $e");
@@ -175,21 +184,27 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     Set<AssetEntity> assetsFromExcludedAlbums = {};
 
     for (var album in state.selectedBackupAlbums) {
-      var assets = await album.getAssetListRange(start: 0, end: album.assetCount);
+      var assets =
+          await album.getAssetListRange(start: 0, end: album.assetCount);
       assetsFromSelectedAlbums.addAll(assets);
     }
 
     for (var album in state.excludedBackupAlbums) {
-      var assets = await album.getAssetListRange(start: 0, end: album.assetCount);
+      var assets =
+          await album.getAssetListRange(start: 0, end: album.assetCount);
       assetsFromExcludedAlbums.addAll(assets);
     }
 
-    Set<AssetEntity> allUniqueAssets = assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
-    List<String> allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
+    Set<AssetEntity> allUniqueAssets =
+        assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
+    List<String> allAssetsInDatabase =
+        await _backupService.getDeviceBackupAsset();
 
     // Find asset that were backup from selected albums
-    Set<String> selectedAlbumsBackupAssets = Set.from(allUniqueAssets.map((e) => e.id));
-    selectedAlbumsBackupAssets.removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
+    Set<String> selectedAlbumsBackupAssets =
+        Set.from(allUniqueAssets.map((e) => e.id));
+    selectedAlbumsBackupAssets
+        .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
 
     if (allUniqueAssets.isEmpty) {
       debugPrint("No Asset On Device");
@@ -208,7 +223,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
     }
 
-    print("Unique asset count ${allUniqueAssets.length}");
     // Save to persistent storage
     _updatePersistentAlbumsSelection();
 
@@ -231,7 +245,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Hive database
   ///
   void _updatePersistentAlbumsSelection() {
-    Box<HiveBackupAlbums> backupAlbumInfoBox = Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
+    Box<HiveBackupAlbums> backupAlbumInfoBox =
+        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
     backupAlbumInfoBox.put(
       backupInfoKey,
       HiveBackupAlbums(
@@ -272,7 +287,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       // Perform Backup
       state = state.copyWith(cancelToken: CancellationToken());
-      _backupService.backupAsset(assetsWillBeBackup, state.cancelToken, _onAssetUploaded, _onUploadProgress);
+      _backupService.backupAsset(assetsWillBeBackup, state.cancelToken,
+          _onAssetUploaded, _onUploadProgress);
     } else {
       PhotoManager.openSetting();
     }
@@ -280,23 +296,32 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   void cancelBackup() {
     state.cancelToken.cancel();
-    state = state.copyWith(backupProgress: BackUpProgressEnum.idle, progressInPercentage: 0.0);
+    state = state.copyWith(
+        backupProgress: BackUpProgressEnum.idle, progressInPercentage: 0.0);
   }
 
   void _onAssetUploaded(String deviceAssetId, String deviceId) {
-    state = state.copyWith(
-        selectedAlbumsBackupAssetsIds: {...state.selectedAlbumsBackupAssetsIds, deviceAssetId},
-        allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId]);
+    state = state.copyWith(selectedAlbumsBackupAssetsIds: {
+      ...state.selectedAlbumsBackupAssetsIds,
+      deviceAssetId
+    }, allAssetsInDatabase: [
+      ...state.allAssetsInDatabase,
+      deviceAssetId
+    ]);
 
-    if (state.allUniqueAssets.length - state.selectedAlbumsBackupAssetsIds.length == 0) {
-      state = state.copyWith(backupProgress: BackUpProgressEnum.done, progressInPercentage: 0.0);
+    if (state.allUniqueAssets.length -
+            state.selectedAlbumsBackupAssetsIds.length ==
+        0) {
+      state = state.copyWith(
+          backupProgress: BackUpProgressEnum.done, progressInPercentage: 0.0);
     }
 
     _updateServerInfo();
   }
 
   void _onUploadProgress(int sent, int total) {
-    state = state.copyWith(progressInPercentage: (sent.toDouble() / total.toDouble() * 100));
+    state = state.copyWith(
+        progressInPercentage: (sent.toDouble() / total.toDouble() * 100));
   }
 
   Future<void> _updateServerInfo() async {
@@ -327,7 +352,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     // Check if this device is enable backup by the user
-    if ((_authState.deviceInfo.deviceId == _authState.deviceId) && _authState.deviceInfo.isAutoBackup) {
+    if ((_authState.deviceInfo.deviceId == _authState.deviceId) &&
+        _authState.deviceInfo.isAutoBackup) {
       // check if backup is alreayd in process - then return
       if (state.backupProgress == BackUpProgressEnum.inProgress) {
         debugPrint("[resumeBackup] Backup is already in progress - abort");
@@ -343,7 +369,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 }
 
-final backupProvider = StateNotifierProvider<BackupNotifier, BackUpState>((ref) {
+final backupProvider =
+    StateNotifierProvider<BackupNotifier, BackUpState>((ref) {
   return BackupNotifier(
     ref.watch(backupServiceProvider),
     ref.watch(serverInfoServiceProvider),

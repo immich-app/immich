@@ -36,16 +36,20 @@ class AlbumViewerPageState {
 
   String toJson() => json.encode(toMap());
 
-  factory AlbumViewerPageState.fromJson(String source) => AlbumViewerPageState.fromMap(json.decode(source));
+  factory AlbumViewerPageState.fromJson(String source) =>
+      AlbumViewerPageState.fromMap(json.decode(source));
 
   @override
-  String toString() => 'AlbumViewerPageState(isEditAlbum: $isEditAlbum, editTitleText: $editTitleText)';
+  String toString() =>
+      'AlbumViewerPageState(isEditAlbum: $isEditAlbum, editTitleText: $editTitleText)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is AlbumViewerPageState && other.isEditAlbum == isEditAlbum && other.editTitleText == editTitleText;
+    return other is AlbumViewerPageState &&
+        other.isEditAlbum == isEditAlbum &&
+        other.editTitleText == editTitleText;
   }
 
   @override

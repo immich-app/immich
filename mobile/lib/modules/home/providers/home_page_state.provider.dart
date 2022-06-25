@@ -13,7 +13,8 @@ class HomePageStateNotifier extends StateNotifier<HomePageState> {
         );
 
   void addSelectedDateGroup(String dateGroupTitle) {
-    state = state.copyWith(selectedDateGroup: {...state.selectedDateGroup, dateGroupTitle});
+    state = state.copyWith(
+        selectedDateGroup: {...state.selectedDateGroup, dateGroupTitle});
   }
 
   void removeSelectedDateGroup(String dateGroupTitle) {
@@ -25,11 +26,13 @@ class HomePageStateNotifier extends StateNotifier<HomePageState> {
   }
 
   void enableMultiSelect(Set<ImmichAsset> selectedItems) {
-    state = state.copyWith(isMultiSelectEnable: true, selectedItems: selectedItems);
+    state =
+        state.copyWith(isMultiSelectEnable: true, selectedItems: selectedItems);
   }
 
   void disableMultiSelect() {
-    state = state.copyWith(isMultiSelectEnable: false, selectedItems: {}, selectedDateGroup: {});
+    state = state.copyWith(
+        isMultiSelectEnable: false, selectedItems: {}, selectedDateGroup: {});
   }
 
   void addSingleSelectedItem(ImmichAsset asset) {
@@ -60,4 +63,5 @@ class HomePageStateNotifier extends StateNotifier<HomePageState> {
 }
 
 final homePageStateProvider =
-    StateNotifierProvider<HomePageStateNotifier, HomePageState>(((ref) => HomePageStateNotifier()));
+    StateNotifierProvider<HomePageStateNotifier, HomePageState>(
+        ((ref) => HomePageStateNotifier()));

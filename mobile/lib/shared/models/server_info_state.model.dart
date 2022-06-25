@@ -26,7 +26,8 @@ class ServerInfoState {
       mapboxInfo: mapboxInfo ?? this.mapboxInfo,
       serverVersion: serverVersion ?? this.serverVersion,
       isVersionMismatch: isVersionMismatch ?? this.isVersionMismatch,
-      versionMismatchErrorMessage: versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
+      versionMismatchErrorMessage:
+          versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
     );
   }
 
@@ -50,7 +51,8 @@ class ServerInfoState {
 
   String toJson() => json.encode(toMap());
 
-  factory ServerInfoState.fromJson(String source) => ServerInfoState.fromMap(json.decode(source));
+  factory ServerInfoState.fromJson(String source) =>
+      ServerInfoState.fromMap(json.decode(source));
 
   @override
   String toString() {

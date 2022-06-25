@@ -29,12 +29,14 @@ class SharingPage extends HookConsumerWidget {
       return SliverList(
         delegate: SliverChildBuilderDelegate(
           (BuildContext context, int index) {
-            String thumbnailUrl = sharedAlbums[index].albumThumbnailAssetId != null
+            String thumbnailUrl = sharedAlbums[index].albumThumbnailAssetId !=
+                    null
                 ? "$thumbnailRequestUrl/${sharedAlbums[index].albumThumbnailAssetId}"
                 : "https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60";
 
             return ListTile(
-              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: FadeInImage(
@@ -44,7 +46,9 @@ class SharingPage extends HookConsumerWidget {
                   placeholder: MemoryImage(kTransparentImage),
                   image: NetworkImage(
                     thumbnailUrl,
-                    headers: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+                    headers: {
+                      "Authorization": "Bearer ${box.get(accessTokenKey)}"
+                    },
                   ),
                   fadeInDuration: const Duration(milliseconds: 200),
                   fadeOutDuration: const Duration(milliseconds: 200),
@@ -54,10 +58,14 @@ class SharingPage extends HookConsumerWidget {
                 sharedAlbums[index].albumName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800),
               ),
               onTap: () {
-                AutoRouter.of(context).push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
+                AutoRouter.of(context)
+                    .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
               },
             );
           },
@@ -134,7 +142,9 @@ class SharingPage extends HookConsumerWidget {
               ),
             ),
           ),
-          sharedAlbums.isNotEmpty ? _buildAlbumList() : _buildEmptyListIndication()
+          sharedAlbums.isNotEmpty
+              ? _buildAlbumList()
+              : _buildEmptyListIndication()
         ],
       ),
     );

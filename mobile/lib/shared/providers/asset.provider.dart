@@ -45,7 +45,7 @@ class AssetNotifier extends StateNotifier<List<ImmichAsset>> {
         }
       }
     }
-    
+
     try {
       await PhotoManager.editor.deleteWithIds(deleteIdList);
     } catch (e) {

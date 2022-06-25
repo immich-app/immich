@@ -9,7 +9,8 @@ import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 class SharedAlbumThumbnailImage extends HookConsumerWidget {
   final ImmichAsset asset;
 
-  const SharedAlbumThumbnailImage({Key? key, required this.asset}) : super(key: key);
+  const SharedAlbumThumbnailImage({Key? key, required this.asset})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,9 +35,11 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
             imageUrl: thumbnailRequestUrl,
             httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
             fadeInDuration: const Duration(milliseconds: 250),
-            progressIndicatorBuilder: (context, url, downloadProgress) => Transform.scale(
+            progressIndicatorBuilder: (context, url, downloadProgress) =>
+                Transform.scale(
               scale: 0.2,
-              child: CircularProgressIndicator(value: downloadProgress.progress),
+              child:
+                  CircularProgressIndicator(value: downloadProgress.progress),
             ),
             errorWidget: (context, url, error) {
               return Icon(

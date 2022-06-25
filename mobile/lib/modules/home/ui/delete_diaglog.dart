@@ -14,7 +14,8 @@ class DeleteDialog extends ConsumerWidget {
       backgroundColor: Colors.grey[200],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       title: const Text("Delete Permanently"),
-      content: const Text("These items will be permanently deleted from Immich and from your device"),
+      content: const Text(
+          "These items will be permanently deleted from Immich and from your device"),
       actions: [
         TextButton(
           onPressed: () {
@@ -27,7 +28,9 @@ class DeleteDialog extends ConsumerWidget {
         ),
         TextButton(
           onPressed: () {
-            ref.watch(assetProvider.notifier).deleteAssets(homePageState.selectedItems);
+            ref
+                .watch(assetProvider.notifier)
+                .deleteAssets(homePageState.selectedItems);
             ref.watch(homePageStateProvider.notifier).disableMultiSelect();
 
             Navigator.of(context).pop();

@@ -61,7 +61,8 @@ class BackUpState extends Equatable {
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
       excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
-      selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
+      selectedAlbumsBackupAssetsIds:
+          selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
     );
   }
 
