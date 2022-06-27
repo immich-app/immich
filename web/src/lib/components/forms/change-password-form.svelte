@@ -63,7 +63,7 @@
 
 	<form on:submit|preventDefault={changePassword} method="post" autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
-			<label class="immich-form-label" for="password">Password</label>
+			<label class="immich-form-label" for="password">New Password</label>
 			<input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
 		</div>
 

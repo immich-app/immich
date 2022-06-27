@@ -2,10 +2,7 @@
 	export const prerender = false;
 
 	import type { Load } from '@sveltejs/kit';
-	import type { ImmichUser } from '../../../lib/models/immich-user';
-
-	import { getAssetsInfo } from '$lib/stores/assets';
-	import { checkAppVersion } from '$lib/utils/check-app-version';
+	import type { ImmichUser } from '$lib/models/immich-user';
 
 	export const load: Load = async ({ session }) => {
 		if (!session.user) {
