@@ -1,42 +1,46 @@
 <script lang="ts">
-	import { sendRegistrationForm } from '$lib/auth-api';
-	import { createEventDispatcher } from 'svelte';
+	import { session } from '$app/stores';
 
+	import { sendRegistrationForm, sendUpdateForm } from '$lib/auth-api';
+	import { createEventDispatcher } from 'svelte';
+	import type { ImmichUser } from '../../models/immich-user';
+
+	export let user: ImmichUser;
 	let error: string;
 	let success: string;
 
 	let password: string = '';
 	let confirmPassowrd: string = '';
 
-	let canCreateUser = false;
+	let changeChagePassword = false;
 
 	$: {
 		if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
 			error = 'Password does not match';
-			canCreateUser = false;
+			changeChagePassword = false;
 		} else {
 			error = '';
-			canCreateUser = true;
+			changeChagePassword = true;
 		}
 	}
 	const dispatch = createEventDispatcher();
 
-	async function registerUser(event: SubmitEvent) {
-		if (canCreateUser) {
+	async function changePassword(event: SubmitEvent) {
+		if (changeChagePassword) {
 			error = '';
 
 			const formElement = event.target as HTMLFormElement;
 
-			const response = await sendRegistrationForm(formElement);
+			const response = await sendUpdateForm(formElement);
 
 			if (response.error) {
 				error = JSON.stringify(response.error);
 			}
 
 			if (response.success) {
-				success = 'New user created';
+				success = 'Password has been changed';
 
-				dispatch('user-created');
+				dispatch('success');
 			}
 		}
 	}
@@ -45,20 +49,21 @@
 <div class="border bg-white p-4 shadow-sm w-[500px] rounded-md py-8">
 	<div class="flex flex-col place-items-center place-content-center gap-4 px-4">
 		<img class="text-center" src="/immich-logo.svg" height="100" width="100" alt="immich-logo" />
-		<h1 class="text-2xl text-immich-primary font-medium">Create new user</h1>
+		<h1 class="text-2xl text-immich-primary font-medium">Chage Password</h1>
+
 		<p class="text-sm border rounded-md p-4 font-mono text-gray-600">
-			Please provide your user with the password, they will have to change it on their first sign in.
+			Hi {user.firstName}
+			{user.lastName} ({user.email}),
+			<br />
+			<br />
+			This is either the first time you are signing into the system or a request has been made to change your password. Please
+			enter the new password below.
 		</p>
 	</div>
 
-	<form on:submit|preventDefault={registerUser} method="post" action="/admin/api/create-user" autocomplete="off">
+	<form on:submit|preventDefault={changePassword} method="post" autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
-			<label class="immich-form-label" for="email">Email</label>
-			<input class="immich-form-input" id="email" name="email" type="email" required />
-		</div>
-
-		<div class="m-4 flex flex-col gap-2">
-			<label class="immich-form-label" for="password">Password</label>
+			<label class="immich-form-label" for="password">New Password</label>
 			<input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
 		</div>
 
@@ -74,16 +79,6 @@
 			/>
 		</div>
 
-		<div class="m-4 flex flex-col gap-2">
-			<label class="immich-form-label" for="firstName">First Name</label>
-			<input class="immich-form-input" id="firstName" name="firstName" type="text" required />
-		</div>
-
-		<div class="m-4 flex flex-col gap-2">
-			<label class="immich-form-label" for="lastName">Last Name</label>
-			<input class="immich-form-input" id="lastName" name="lastName" type="text" required />
-		</div>
-
 		{#if error}
 			<p class="text-red-400 ml-4 text-sm">{error}</p>
 		{/if}
@@ -95,7 +90,7 @@
 			<button
 				type="submit"
 				class="m-4 p-2 bg-immich-primary hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full"
-				>Create</button
+				>Change Password</button
 			>
 		</div>
 	</form>

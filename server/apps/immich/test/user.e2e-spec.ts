@@ -98,7 +98,7 @@ describe('User', () => {
               id: expect.anything(),
               createdAt: expect.anything(),
               isAdmin: false,
-              isFirstLoggedIn: true,
+              shouldChangePassword: true,
               profileImagePath: '',
             },
             {
@@ -108,7 +108,7 @@ describe('User', () => {
               id: expect.anything(),
               createdAt: expect.anything(),
               isAdmin: false,
-              isFirstLoggedIn: true,
+              shouldChangePassword: true,
               profileImagePath: '',
             },
           ]),

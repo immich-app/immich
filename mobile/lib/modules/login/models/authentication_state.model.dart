@@ -11,7 +11,7 @@ class AuthenticationState {
   final String firstName;
   final String lastName;
   final bool isAdmin;
-  final bool isFirstLogin;
+  final bool shouldChangePassword;
   final String profileImagePath;
   final DeviceInfoRemote deviceInfo;
 
@@ -24,7 +24,7 @@ class AuthenticationState {
     required this.firstName,
     required this.lastName,
     required this.isAdmin,
-    required this.isFirstLogin,
+    required this.shouldChangePassword,
     required this.profileImagePath,
     required this.deviceInfo,
   });
@@ -38,7 +38,7 @@ class AuthenticationState {
     String? firstName,
     String? lastName,
     bool? isAdmin,
-    bool? isFirstLoggedIn,
+    bool? shouldChangePassword,
     String? profileImagePath,
     DeviceInfoRemote? deviceInfo,
   }) {
@@ -51,15 +51,10 @@ class AuthenticationState {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       isAdmin: isAdmin ?? this.isAdmin,
-      isFirstLogin: isFirstLoggedIn ?? isFirstLogin,
+      shouldChangePassword: shouldChangePassword ?? this.shouldChangePassword,
       profileImagePath: profileImagePath ?? this.profileImagePath,
       deviceInfo: deviceInfo ?? this.deviceInfo,
     );
-  }
-
-  @override
-  String toString() {
-    return 'AuthenticationState(deviceId: $deviceId, deviceType: $deviceType, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, firstName: $firstName, lastName: $lastName, isAdmin: $isAdmin, isFirstLoggedIn: $isFirstLogin, profileImagePath: $profileImagePath, deviceInfo: $deviceInfo)';
   }
 
   Map<String, dynamic> toMap() {
@@ -73,7 +68,7 @@ class AuthenticationState {
     result.addAll({'firstName': firstName});
     result.addAll({'lastName': lastName});
     result.addAll({'isAdmin': isAdmin});
-    result.addAll({'isFirstLogin': isFirstLogin});
+    result.addAll({'shouldChangePassword': shouldChangePassword});
     result.addAll({'profileImagePath': profileImagePath});
     result.addAll({'deviceInfo': deviceInfo.toMap()});
 
@@ -90,7 +85,7 @@ class AuthenticationState {
       firstName: map['firstName'] ?? '',
       lastName: map['lastName'] ?? '',
       isAdmin: map['isAdmin'] ?? false,
-      isFirstLogin: map['isFirstLogin'] ?? false,
+      shouldChangePassword: map['shouldChangePassword'] ?? false,
       profileImagePath: map['profileImagePath'] ?? '',
       deviceInfo: DeviceInfoRemote.fromMap(map['deviceInfo']),
     );
@@ -100,6 +95,11 @@ class AuthenticationState {
 
   factory AuthenticationState.fromJson(String source) =>
       AuthenticationState.fromMap(json.decode(source));
+
+  @override
+  String toString() {
+    return 'AuthenticationState(deviceId: $deviceId, deviceType: $deviceType, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, firstName: $firstName, lastName: $lastName, isAdmin: $isAdmin, shouldChangePassword: $shouldChangePassword, profileImagePath: $profileImagePath, deviceInfo: $deviceInfo)';
+  }
 
   @override
   bool operator ==(Object other) {
@@ -114,7 +114,7 @@ class AuthenticationState {
         other.firstName == firstName &&
         other.lastName == lastName &&
         other.isAdmin == isAdmin &&
-        other.isFirstLogin == isFirstLogin &&
+        other.shouldChangePassword == shouldChangePassword &&
         other.profileImagePath == profileImagePath &&
         other.deviceInfo == deviceInfo;
   }
@@ -129,7 +129,7 @@ class AuthenticationState {
         firstName.hashCode ^
         lastName.hashCode ^
         isAdmin.hashCode ^
-        isFirstLogin.hashCode ^
+        shouldChangePassword.hashCode ^
         profileImagePath.hashCode ^
         deviceInfo.hashCode;
   }

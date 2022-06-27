@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
@@ -20,7 +21,7 @@ class LoginForm extends HookConsumerWidget {
     final passwordController =
         useTextEditingController.fromValue(TextEditingValue.empty);
     final serverEndpointController =
-        useTextEditingController(text: 'http://your-server-ip:2283');
+        useTextEditingController(text: 'http://your-server-ip:2283/api');
     final isSaveLoginInfo = useState<bool>(false);
 
     useEffect(() {
@@ -106,9 +107,18 @@ class ServerEndpointInput extends StatelessWidget {
       : super(key: key);
 
   String? _validateInput(String? url) {
-    if (url == null) return null;
-    if (!url.startsWith(RegExp(r'https?://')))
+    if (url == null) {
+      return null;
+    }
+
+    if (url.isEmpty) {
+      return 'Server endpoint is required';
+    }
+
+    if (!url.startsWith(RegExp(r'https?://'))) {
       return 'Please specify http:// or https://';
+    }
+
     return null;
   }
 
@@ -117,9 +127,10 @@ class ServerEndpointInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       decoration: const InputDecoration(
-          labelText: 'Server Endpoint URL',
-          border: OutlineInputBorder(),
-          hintText: 'http://your-server-ip:port'),
+        labelText: 'Server Endpoint URL',
+        border: OutlineInputBorder(),
+        hintText: 'http://your-server-ip:port',
+      ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -144,9 +155,10 @@ class EmailInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       decoration: const InputDecoration(
-          labelText: 'Email',
-          border: OutlineInputBorder(),
-          hintText: 'youremail@email.com'),
+        labelText: 'Email',
+        border: OutlineInputBorder(),
+        hintText: 'youremail@email.com',
+      ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -200,14 +212,19 @@ class LoginButton extends ConsumerWidget {
           ref.watch(assetProvider.notifier).clearAllAsset();
 
           var isAuthenticated = await ref
-              .read(authenticationProvider.notifier)
+              .watch(authenticationProvider.notifier)
               .login(emailController.text, passwordController.text,
                   serverEndpointController.text, isSavedLoginInfo);
 
           if (isAuthenticated) {
             // Resume backup (if enable) then navigate
-            ref.watch(backupProvider.notifier).resumeBackup();
-            AutoRouter.of(context).pushNamed("/tab-controller-page");
+
+            if (ref.watch(authenticationProvider).shouldChangePassword) {
+              AutoRouter.of(context).push(const ChangePasswordRoute());
+            } else {
+              ref.watch(backupProvider.notifier).resumeBackup();
+              AutoRouter.of(context).pushNamed("/tab-controller-page");
+            }
           } else {
             ImmichToast.show(
               context: context,

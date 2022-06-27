@@ -30,7 +30,7 @@ export class AuthService {
           'lastName',
           'isAdmin',
           'profileImagePath',
-          'isFirstLoggedIn',
+          'shouldChangePassword',
         ],
       },
     );
@@ -66,7 +66,7 @@ export class AuthService {
       lastName: validatedUser.lastName,
       isAdmin: validatedUser.isAdmin,
       profileImagePath: validatedUser.profileImagePath,
-      isFirstLogin: validatedUser.isFirstLoggedIn,
+      shouldChangePassword: validatedUser.shouldChangePassword,
     };
   }
 
