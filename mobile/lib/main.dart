@@ -47,12 +47,11 @@ void main() async {
   ];
 
   runApp(EasyLocalization(
-    supportedLocales: locales,
-    path: 'assets/i18n',
-    useFallbackTranslations: true,
-    fallbackLocale: locales.first,
-    child: const ProviderScope(child: ImmichApp())
-  ));
+      supportedLocales: locales,
+      path: 'assets/i18n',
+      useFallbackTranslations: true,
+      fallbackLocale: locales.first,
+      child: const ProviderScope(child: ImmichApp())));
 }
 
 class ImmichApp extends ConsumerStatefulWidget {

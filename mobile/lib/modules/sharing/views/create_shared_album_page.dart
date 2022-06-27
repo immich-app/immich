@@ -99,7 +99,10 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
                   'share_select_photos',
-                  style: TextStyle(fontSize: 16, color: Colors.grey[700], fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.bold),
                 ).tr(),
               ),
             ),
@@ -176,7 +179,9 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
           ).tr(),
           actions: [
             TextButton(
-              onPressed: albumTitleController.text.isNotEmpty ? _showSelectUserPage : null,
+              onPressed: albumTitleController.text.isNotEmpty
+                  ? _showSelectUserPage
+                  : null,
               child: Text(
                 'share_share'.tr(),
                 style: TextStyle(

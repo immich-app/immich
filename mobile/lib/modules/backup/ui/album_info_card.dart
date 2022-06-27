@@ -39,7 +39,8 @@ class AlbumInfoCard extends HookConsumerWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           label: const Text(
             "backup_album_included",
-            style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
           ).tr(),
           backgroundColor: Theme.of(context).primaryColor,
         );
@@ -49,7 +50,8 @@ class AlbumInfoCard extends HookConsumerWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           label: const Text(
             "backup_album_excluded",
-            style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
           ).tr(),
           backgroundColor: Colors.red[300],
         );
@@ -175,8 +177,12 @@ class AlbumInfoCard extends HookConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.only(top: 2.0),
                             child: Text(
-                              albumInfo.assetCount.toString() + (albumInfo.isAll ? " (${'backup_all'.tr()})" : ""),
-                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                              albumInfo.assetCount.toString() +
+                                  (albumInfo.isAll
+                                      ? " (${'backup_all'.tr()})"
+                                      : ""),
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey[600]),
                             ),
                           )
                         ],

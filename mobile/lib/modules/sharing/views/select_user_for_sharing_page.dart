@@ -88,7 +88,10 @@ class SelectUserForSharingPage extends HookConsumerWidget {
             padding: EdgeInsets.all(16.0),
             child: Text(
               'share_suggestions',
-              style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold),
             ).tr(),
           ),
           ListView.builder(

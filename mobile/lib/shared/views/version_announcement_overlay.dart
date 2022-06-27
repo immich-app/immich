@@ -74,7 +74,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                       text: "version_announcement_text_2".tr(),
                                     ),
                                     TextSpan(
-                                      text: "version_announcement_release_notes".tr(),
+                                      text: "version_announcement_release_notes"
+                                          .tr(),
                                       style: const TextStyle(
                                         decoration: TextDecoration.underline,
                                       ),
@@ -82,8 +83,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                         ..onTap = goToReleaseNote,
                                     ),
                                     TextSpan(
-                                      text:
-                                          "version_announcement_text_3".tr(),
+                                      text: "version_announcement_text_3".tr(),
                                     )
                                   ],
                                 ),
@@ -98,7 +98,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                     primary: Colors.indigo,
                                     onPrimary: Colors.grey[50],
                                     elevation: 2,
-                                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10, horizontal: 25),
                                   ),
                                   onPressed: onAcknowledgeTapped,
                                   child: const Text(

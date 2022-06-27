@@ -185,7 +185,10 @@ class ProfileDrawer extends HookConsumerWidget {
                 ),
                 title: const Text(
                   "home_sign_out",
-                  style: TextStyle(color: Colors.black54, fontSize: 14, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
                 ).tr(),
                 onTap: () async {
                   bool res =

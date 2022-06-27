@@ -16,9 +16,12 @@ class LoginForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usernameController = useTextEditingController.fromValue(TextEditingValue.empty);
-    final passwordController = useTextEditingController.fromValue(TextEditingValue.empty);
-    final serverEndpointController = useTextEditingController(text: 'login_endpoint_hint'.tr());
+    final usernameController =
+        useTextEditingController.fromValue(TextEditingValue.empty);
+    final passwordController =
+        useTextEditingController.fromValue(TextEditingValue.empty);
+    final serverEndpointController =
+        useTextEditingController(text: 'login_endpoint_hint'.tr());
     final isSaveLoginInfo = useState<bool>(false);
 
     useEffect(() {
@@ -71,7 +74,10 @@ class LoginForm extends HookConsumerWidget {
                 enableFeedback: true,
                 title: const Text(
                   "save_login",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey),
                 ).tr(),
                 value: isSaveLoginInfo.value,
                 onChanged: (switchValue) {
@@ -111,7 +117,9 @@ class ServerEndpointInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-          labelText: 'login_endpoint_url'.tr(), border: OutlineInputBorder(), hintText: 'login_endpoint_hint'.tr()),
+          labelText: 'login_endpoint_url'.tr(),
+          border: OutlineInputBorder(),
+          hintText: 'login_endpoint_hint'.tr()),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -127,7 +135,8 @@ class EmailInput extends StatelessWidget {
     if (email == null || email == '') return null;
     if (email.endsWith(' ')) return 'login_err_trailing_whitespace'.tr();
     if (email.startsWith(' ')) return 'login_err_leading_whitespace'.tr();
-    if (email.contains(' ') || !email.contains('@')) return 'login_err_invalid_email'.tr();
+    if (email.contains(' ') || !email.contains('@'))
+      return 'login_err_invalid_email'.tr();
     return null;
   }
 
@@ -135,8 +144,10 @@ class EmailInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration:
-          InputDecoration(labelText: 'login_label_email'.tr(), border: OutlineInputBorder(), hintText: 'login_email_hint'.tr()),
+      decoration: InputDecoration(
+          labelText: 'login_label_email'.tr(),
+          border: OutlineInputBorder(),
+          hintText: 'login_email_hint'.tr()),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -153,7 +164,10 @@ class PasswordInput extends StatelessWidget {
     return TextFormField(
       obscureText: true,
       controller: controller,
-      decoration: InputDecoration(labelText: 'login_label_password'.tr(), border: OutlineInputBorder(), hintText: 'login_password_hint'.tr()),
+      decoration: InputDecoration(
+          labelText: 'login_label_password'.tr(),
+          border: OutlineInputBorder(),
+          hintText: 'login_password_hint'.tr()),
     );
   }
 }

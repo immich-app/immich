@@ -19,9 +19,12 @@ class DailyTitleText extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var currentYear = DateTime.now().year;
     var groupYear = DateTime.parse(isoDate).year;
-    var formatDateTemplate = currentYear == groupYear ? "home_date".tr() : "home_date_year".tr();
-    var dateText = DateFormat(formatDateTemplate).format(DateTime.parse(isoDate));
-    var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
+    var formatDateTemplate =
+        currentYear == groupYear ? "home_date".tr() : "home_date_year".tr();
+    var dateText =
+        DateFormat(formatDateTemplate).format(DateTime.parse(isoDate));
+    var isMultiSelectEnable =
+        ref.watch(homePageStateProvider).isMultiSelectEnable;
     var selectedDateGroup = ref.watch(homePageStateProvider).selectedDateGroup;
     var selectedItems = ref.watch(homePageStateProvider).selectedItems;
 

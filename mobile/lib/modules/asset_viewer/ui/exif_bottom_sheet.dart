@@ -142,7 +142,8 @@ class ExifBottomSheet extends ConsumerWidget {
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: Text(
                           "asset_details",
-                          style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                          style:
+                              TextStyle(fontSize: 11, color: Colors.grey[400]),
                         ).tr(),
                       ),
                       ListTile(

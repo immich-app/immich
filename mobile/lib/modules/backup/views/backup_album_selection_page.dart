@@ -146,7 +146,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         physics: const ClampingScrollPhysics(),
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             child: const Text(
               "backup_selection_info",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -183,7 +184,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     visualDensity: VisualDensity.compact,
                     title: Text(
                       "backup_total_assets",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey[700]),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.grey[700]),
                     ).tr(),
                     trailing: Text(
                       ref
@@ -201,7 +205,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
           ListTile(
             title: Text(
-              "backup_albums_device".tr(args: [availableAlbums.length.toString()]),
+              "backup_albums_device"
+                  .tr(args: [availableAlbums.length.toString()]),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             subtitle: Padding(
@@ -244,7 +249,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                           children: [
                             Text(
                               'backup_info_assets_scatter',
-                              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.grey[700]),
                             ).tr(),
                           ],
                         ),

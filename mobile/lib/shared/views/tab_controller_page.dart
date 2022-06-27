@@ -43,9 +43,15 @@ class TabControllerPage extends ConsumerWidget {
                       tabsRouter.setActiveIndex(index);
                     },
                     items: [
-                      BottomNavigationBarItem(label: 'nav_photos'.tr(), icon: const Icon(Icons.photo)),
-                      BottomNavigationBarItem(label: 'nav_search'.tr(), icon: const Icon(Icons.search)),
-                      BottomNavigationBarItem(label: 'nav_sharing'.tr(), icon: const Icon(Icons.group_outlined)),
+                      BottomNavigationBarItem(
+                          label: 'nav_photos'.tr(),
+                          icon: const Icon(Icons.photo)),
+                      BottomNavigationBarItem(
+                          label: 'nav_search'.tr(),
+                          icon: const Icon(Icons.search)),
+                      BottomNavigationBarItem(
+                          label: 'nav_sharing'.tr(),
+                          icon: const Icon(Icons.group_outlined)),
                     ],
                   ),
           ),

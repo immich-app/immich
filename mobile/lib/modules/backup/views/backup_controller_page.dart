@@ -65,7 +65,10 @@ class BackupControllerPage extends HookConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
-                child: Text('backup_storage_format').tr(args: [backupState.serverInfo.diskUse, backupState.serverInfo.diskSize]),
+                child: Text('backup_storage_format').tr(args: [
+                  backupState.serverInfo.diskUse,
+                  backupState.serverInfo.diskSize
+                ]),
               ),
             ],
           ),
@@ -74,9 +77,13 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     ListTile _buildBackupController() {
-      var backUpOption = authenticationState.deviceInfo.isAutoBackup ? "backup_status_on".tr() : "backup_status_off".tr();
+      var backUpOption = authenticationState.deviceInfo.isAutoBackup
+          ? "backup_status_on".tr()
+          : "backup_status_off".tr();
       var isAutoBackup = authenticationState.deviceInfo.isAutoBackup;
-      var backupBtnText = authenticationState.deviceInfo.isAutoBackup ? "backup_turn_off".tr() : "backup_turn_on".tr();
+      var backupBtnText = authenticationState.deviceInfo.isAutoBackup
+          ? "backup_turn_off".tr()
+          : "backup_turn_on".tr();
       return ListTile(
         isThreeLine: true,
         leading: isAutoBackup
@@ -120,7 +127,8 @@ class BackupControllerPage extends HookConsumerWidget {
                           .setAutoBackup(true);
                     }
                   },
-                  child: Text(backupBtnText, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(backupBtnText,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
               )
             ],
@@ -157,7 +165,10 @@ class BackupControllerPage extends HookConsumerWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             "backup_none_selected".tr(),
-            style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontSize: 12,
+                fontWeight: FontWeight.bold),
           ),
         );
       }
@@ -200,7 +211,9 @@ class BackupControllerPage extends HookConsumerWidget {
         borderOnForeground: false,
         child: ListTile(
           minVerticalPadding: 15,
-          title: const Text("backup_albums", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)).tr(),
+          title: const Text("backup_albums",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20))
+              .tr(),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Column(
@@ -283,7 +296,8 @@ class BackupControllerPage extends HookConsumerWidget {
             BackupInfoCard(
               title: "backup_remainder".tr(),
               subtitle: "backup_remainder_sub".tr(),
-              info: "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
+              info:
+                  "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             const Divider(),
             _buildBackupController(),
@@ -292,8 +306,9 @@ class BackupControllerPage extends HookConsumerWidget {
             const Divider(),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(
-                  "backup_assets".tr(args: ["${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length} [${backupState.progressInPercentage.toStringAsFixed(0)}%]"])),
+              child: Text("backup_assets".tr(args: [
+                "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length} [${backupState.progressInPercentage.toStringAsFixed(0)}%]"
+              ])),
             ),
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
@@ -308,29 +323,32 @@ class BackupControllerPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
-                child: backupState.backupProgress == BackUpProgressEnum.inProgress
-                    ? ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.red[300],
-                          onPrimary: Colors.grey[50],
-                        ),
-                        onPressed: () {
-                          ref.read(backupProvider.notifier).cancelBackup();
-                        },
-                        child: const Text("backup_cancel").tr(),
-                      )
-                    : ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: Theme.of(context).primaryColor,
-                          onPrimary: Colors.grey[50],
-                        ),
-                        onPressed: shouldBackup
-                            ? () {
-                                ref.read(backupProvider.notifier).startBackupProcess();
-                              }
-                            : null,
-                        child: const Text("start_backup").tr(),
-                      ),
+                child:
+                    backupState.backupProgress == BackUpProgressEnum.inProgress
+                        ? ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.red[300],
+                              onPrimary: Colors.grey[50],
+                            ),
+                            onPressed: () {
+                              ref.read(backupProvider.notifier).cancelBackup();
+                            },
+                            child: const Text("backup_cancel").tr(),
+                          )
+                        : ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: Theme.of(context).primaryColor,
+                              onPrimary: Colors.grey[50],
+                            ),
+                            onPressed: shouldBackup
+                                ? () {
+                                    ref
+                                        .read(backupProvider.notifier)
+                                        .startBackupProcess();
+                                  }
+                                : null,
+                            child: const Text("start_backup").tr(),
+                          ),
               ),
             )
           ],
