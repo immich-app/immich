@@ -111,8 +111,12 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     // Register device info
     try {
       Response res = await _networkService.postRequest(
-          url: 'device-info',
-          data: {'deviceId': state.deviceId, 'deviceType': state.deviceType});
+        url: 'device-info',
+        data: {
+          'deviceId': state.deviceId,
+          'deviceType': state.deviceType,
+        },
+      );
 
       DeviceInfoRemote deviceInfo = DeviceInfoRemote.fromJson(res.toString());
       state = state.copyWith(deviceInfo: deviceInfo);
@@ -162,6 +166,24 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   updateUserProfileImagePath(String path) {
     state = state.copyWith(profileImagePath: path);
+  }
+
+  Future<bool> changePassword(String newPassword) async {
+    Response res = await _networkService.putRequest(
+      url: 'user',
+      data: {
+        'id': state.userId,
+        'password': newPassword,
+        'shouldChangePassword': false,
+      },
+    );
+
+    if (res.statusCode == 200) {
+      state = state.copyWith(shouldChangePassword: false);
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 
