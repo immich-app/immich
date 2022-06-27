@@ -3,7 +3,7 @@
 
 export const serverVersion = {
   major: 1,
-  minor: 13,
+  minor: 14,
   patch: 0,
-  build: 20,
+  build: 21,
 };
