@@ -21,7 +21,7 @@
   "backup_info_assets_scatter": "Dateien können sich über mehrere Alben verteilen.Daher können Alben während des Backup Prozesses inkludiert oder exkludiert werden.",
   "backup_none_selected": "Nichts ausgewählt",
   "backup_progress": "Backup Fortschritt: ",
-  "backup_remainder": "Übrig: ",
+  "backup_remainder": "Übrig",
   "backup_remainder_sub": "Noch nicht gesicherte Fotos und Videos aus gewählten Alben ",
   "backup_select": "Auswählen",
   "backup_select_albums": "Wähle Alben aus",
