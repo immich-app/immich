@@ -21,13 +21,16 @@ class AvailableAlbum {
   }
 
   @override
-  String toString() => 'AvailableAlbum(albumEntity: $albumEntity, thumbnailData: $thumbnailData)';
+  String toString() =>
+      'AvailableAlbum(albumEntity: $albumEntity, thumbnailData: $thumbnailData)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is AvailableAlbum && other.albumEntity == albumEntity && other.thumbnailData == thumbnailData;
+    return other is AvailableAlbum &&
+        other.albumEntity == albumEntity &&
+        other.thumbnailData == thumbnailData;
   }
 
   @override

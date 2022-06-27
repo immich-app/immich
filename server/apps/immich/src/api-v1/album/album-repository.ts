@@ -14,7 +14,7 @@ import { UpdateAlbumDto } from './dto/update-album.dto';
 export interface IAlbumRepository {
   create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
   getList(ownerId: string, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]>;
-  get(albumId: string): Promise<AlbumEntity>;
+  get(albumId: string): Promise<AlbumEntity | undefined>;
   delete(album: AlbumEntity): Promise<void>;
   addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity>;
   removeUser(album: AlbumEntity, userId: string): Promise<void>;
@@ -39,7 +39,7 @@ export class AlbumRepository implements IAlbumRepository {
   ) {}
 
   async create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity> {
-    return await getConnection().transaction(async (transactionalEntityManager) => {
+    return getConnection().transaction(async (transactionalEntityManager) => {
       // Create album entity
       const newAlbum = new AlbumEntity();
       newAlbum.ownerId = ownerId;
@@ -80,7 +80,6 @@ export class AlbumRepository implements IAlbumRepository {
 
       return album;
     });
-    return;
   }
 
   getList(ownerId: string, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]> {
@@ -155,7 +154,7 @@ export class AlbumRepository implements IAlbumRepository {
       return;
     }
     // TODO: sort in query
-    const sortedSharedAsset = album.assets.sort(
+    const sortedSharedAsset = album.assets?.sort(
       (a, b) => new Date(a.assetInfo.createdAt).valueOf() - new Date(b.assetInfo.createdAt).valueOf(),
     );
 
@@ -180,7 +179,7 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     await this.userAlbumRepository.save([...newRecords]);
-    return this.get(album.id);
+    return this.get(album.id) as Promise<AlbumEntity>; // There is an album for sure
   }
 
   async removeUser(album: AlbumEntity, userId: string): Promise<void> {
@@ -217,7 +216,7 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     await this.assetAlbumRepository.save([...newRecords]);
-    return this.get(album.id);
+    return this.get(album.id) as Promise<AlbumEntity>; // There is an album for sure
   }
 
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity> {

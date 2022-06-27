@@ -5,7 +5,11 @@ class AlbumActionOutlinedButton extends StatelessWidget {
   final String labelText;
   final IconData iconData;
 
-  const AlbumActionOutlinedButton({Key? key, this.onPressed, required this.labelText, required this.iconData})
+  const AlbumActionOutlinedButton(
+      {Key? key,
+      this.onPressed,
+      required this.labelText,
+      required this.iconData})
       : super(key: key);
 
   @override
@@ -26,7 +30,8 @@ class AlbumActionOutlinedButton extends StatelessWidget {
         icon: Icon(iconData, size: 15),
         label: Text(
           labelText,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+          style: const TextStyle(
+              fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
         onPressed: onPressed,
       ),

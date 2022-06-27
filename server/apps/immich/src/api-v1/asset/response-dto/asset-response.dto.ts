@@ -14,7 +14,7 @@ export interface AssetResponseDto {
   modifiedAt: string;
   isFavorite: boolean;
   mimeType: string | null;
-  duration: string | null;
+  duration: string;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
 }
@@ -32,7 +32,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     modifiedAt: entity.modifiedAt,
     isFavorite: entity.isFavorite,
     mimeType: entity.mimeType,
-    duration: entity.duration,
+    duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
   };

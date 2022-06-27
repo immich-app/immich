@@ -31,13 +31,15 @@ class ImmichAssetGroupByDate {
   factory ImmichAssetGroupByDate.fromMap(Map<String, dynamic> map) {
     return ImmichAssetGroupByDate(
       date: map['date'] ?? '',
-      assets: List<ImmichAsset>.from(map['assets']?.map((x) => ImmichAsset.fromMap(x))),
+      assets: List<ImmichAsset>.from(
+          map['assets']?.map((x) => ImmichAsset.fromMap(x))),
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory ImmichAssetGroupByDate.fromJson(String source) => ImmichAssetGroupByDate.fromMap(json.decode(source));
+  factory ImmichAssetGroupByDate.fromJson(String source) =>
+      ImmichAssetGroupByDate.fromMap(json.decode(source));
 
   @override
   String toString() => 'ImmichAssetGroupByDate(date: $date, assets: $assets)';
@@ -46,7 +48,9 @@ class ImmichAssetGroupByDate {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is ImmichAssetGroupByDate && other.date == date && listEquals(other.assets, assets);
+    return other is ImmichAssetGroupByDate &&
+        other.date == date &&
+        listEquals(other.assets, assets);
   }
 
   @override
@@ -86,17 +90,20 @@ class GetAllAssetResponse {
   factory GetAllAssetResponse.fromMap(Map<String, dynamic> map) {
     return GetAllAssetResponse(
       count: map['count']?.toInt() ?? 0,
-      data: List<ImmichAssetGroupByDate>.from(map['data']?.map((x) => ImmichAssetGroupByDate.fromMap(x))),
+      data: List<ImmichAssetGroupByDate>.from(
+          map['data']?.map((x) => ImmichAssetGroupByDate.fromMap(x))),
       nextPageKey: map['nextPageKey'] ?? '',
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory GetAllAssetResponse.fromJson(String source) => GetAllAssetResponse.fromMap(json.decode(source));
+  factory GetAllAssetResponse.fromJson(String source) =>
+      GetAllAssetResponse.fromMap(json.decode(source));
 
   @override
-  String toString() => 'GetAllAssetResponse(count: $count, data: $data, nextPageKey: $nextPageKey)';
+  String toString() =>
+      'GetAllAssetResponse(count: $count, data: $data, nextPageKey: $nextPageKey)';
 
   @override
   bool operator ==(Object other) {

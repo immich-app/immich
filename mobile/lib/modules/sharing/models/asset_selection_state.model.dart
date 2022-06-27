@@ -32,9 +32,12 @@ class AssetSelectionState {
   }) {
     return AssetSelectionState(
       selectedMonths: selectedMonths ?? this.selectedMonths,
-      selectedNewAssetsForAlbum: selectedNewAssetsForAlbum ?? this.selectedNewAssetsForAlbum,
-      selectedAdditionalAssetsForAlbum: selectedAdditionalAssetsForAlbum ?? this.selectedAdditionalAssetsForAlbum,
-      selectedAssetsInAlbumViewer: selectedAssetsInAlbumViewer ?? this.selectedAssetsInAlbumViewer,
+      selectedNewAssetsForAlbum:
+          selectedNewAssetsForAlbum ?? this.selectedNewAssetsForAlbum,
+      selectedAdditionalAssetsForAlbum: selectedAdditionalAssetsForAlbum ??
+          this.selectedAdditionalAssetsForAlbum,
+      selectedAssetsInAlbumViewer:
+          selectedAssetsInAlbumViewer ?? this.selectedAssetsInAlbumViewer,
       isMultiselectEnable: isMultiselectEnable ?? this.isMultiselectEnable,
       isAlbumExist: isAlbumExist ?? this.isAlbumExist,
     );
@@ -44,10 +47,18 @@ class AssetSelectionState {
     final result = <String, dynamic>{};
 
     result.addAll({'selectedMonths': selectedMonths.toList()});
-    result.addAll({'selectedNewAssetsForAlbum': selectedNewAssetsForAlbum.map((x) => x.toMap()).toList()});
-    result
-        .addAll({'selectedAdditionalAssetsForAlbum': selectedAdditionalAssetsForAlbum.map((x) => x.toMap()).toList()});
-    result.addAll({'selectedAssetsInAlbumViewer': selectedAssetsInAlbumViewer.map((x) => x.toMap()).toList()});
+    result.addAll({
+      'selectedNewAssetsForAlbum':
+          selectedNewAssetsForAlbum.map((x) => x.toMap()).toList()
+    });
+    result.addAll({
+      'selectedAdditionalAssetsForAlbum':
+          selectedAdditionalAssetsForAlbum.map((x) => x.toMap()).toList()
+    });
+    result.addAll({
+      'selectedAssetsInAlbumViewer':
+          selectedAssetsInAlbumViewer.map((x) => x.toMap()).toList()
+    });
     result.addAll({'isMultiselectEnable': isMultiselectEnable});
     result.addAll({'isAlbumExist': isAlbumExist});
 
@@ -57,12 +68,14 @@ class AssetSelectionState {
   factory AssetSelectionState.fromMap(Map<String, dynamic> map) {
     return AssetSelectionState(
       selectedMonths: Set<String>.from(map['selectedMonths']),
-      selectedNewAssetsForAlbum:
-          Set<ImmichAsset>.from(map['selectedNewAssetsForAlbum']?.map((x) => ImmichAsset.fromMap(x))),
-      selectedAdditionalAssetsForAlbum:
-          Set<ImmichAsset>.from(map['selectedAdditionalAssetsForAlbum']?.map((x) => ImmichAsset.fromMap(x))),
-      selectedAssetsInAlbumViewer:
-          Set<ImmichAsset>.from(map['selectedAssetsInAlbumViewer']?.map((x) => ImmichAsset.fromMap(x))),
+      selectedNewAssetsForAlbum: Set<ImmichAsset>.from(
+          map['selectedNewAssetsForAlbum']?.map((x) => ImmichAsset.fromMap(x))),
+      selectedAdditionalAssetsForAlbum: Set<ImmichAsset>.from(
+          map['selectedAdditionalAssetsForAlbum']
+              ?.map((x) => ImmichAsset.fromMap(x))),
+      selectedAssetsInAlbumViewer: Set<ImmichAsset>.from(
+          map['selectedAssetsInAlbumViewer']
+              ?.map((x) => ImmichAsset.fromMap(x))),
       isMultiselectEnable: map['isMultiselectEnable'] ?? false,
       isAlbumExist: map['isAlbumExist'] ?? false,
     );
@@ -70,7 +83,8 @@ class AssetSelectionState {
 
   String toJson() => json.encode(toMap());
 
-  factory AssetSelectionState.fromJson(String source) => AssetSelectionState.fromMap(json.decode(source));
+  factory AssetSelectionState.fromJson(String source) =>
+      AssetSelectionState.fromMap(json.decode(source));
 
   @override
   String toString() {
@@ -85,8 +99,10 @@ class AssetSelectionState {
     return other is AssetSelectionState &&
         setEquals(other.selectedMonths, selectedMonths) &&
         setEquals(other.selectedNewAssetsForAlbum, selectedNewAssetsForAlbum) &&
-        setEquals(other.selectedAdditionalAssetsForAlbum, selectedAdditionalAssetsForAlbum) &&
-        setEquals(other.selectedAssetsInAlbumViewer, selectedAssetsInAlbumViewer) &&
+        setEquals(other.selectedAdditionalAssetsForAlbum,
+            selectedAdditionalAssetsForAlbum) &&
+        setEquals(
+            other.selectedAssetsInAlbumViewer, selectedAssetsInAlbumViewer) &&
         other.isMultiselectEnable == isMultiselectEnable &&
         other.isAlbumExist == isAlbumExist;
   }

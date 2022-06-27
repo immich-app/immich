@@ -29,13 +29,16 @@ class WebscoketState {
   }
 
   @override
-  String toString() => 'WebscoketState(socket: $socket, isConnected: $isConnected)';
+  String toString() =>
+      'WebscoketState(socket: $socket, isConnected: $isConnected)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is WebscoketState && other.socket == socket && other.isConnected == isConnected;
+    return other is WebscoketState &&
+        other.socket == socket &&
+        other.isConnected == isConnected;
   }
 
   @override
@@ -43,7 +46,8 @@ class WebscoketState {
 }
 
 class WebsocketNotifier extends StateNotifier<WebscoketState> {
-  WebsocketNotifier(this.ref) : super(WebscoketState(socket: null, isConnected: false)) {
+  WebsocketNotifier(this.ref)
+      : super(WebscoketState(socket: null, isConnected: false)) {
     debugPrint("Init websocket instance");
   }
 
@@ -122,6 +126,7 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
   }
 }
 
-final websocketProvider = StateNotifierProvider<WebsocketNotifier, WebscoketState>((ref) {
+final websocketProvider =
+    StateNotifierProvider<WebsocketNotifier, WebscoketState>((ref) {
   return WebsocketNotifier(ref);
 });

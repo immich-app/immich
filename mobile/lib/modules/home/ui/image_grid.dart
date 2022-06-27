@@ -33,7 +33,10 @@ class ImageGrid extends ConsumerWidget {
                         child: Row(
                           children: [
                             Text(
-                              assetGroup[index].duration.toString().substring(0, 7),
+                              assetGroup[index]
+                                  .duration
+                                  .toString()
+                                  .substring(0, 7),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,

@@ -8,7 +8,7 @@ import { UserModule } from '../src/api-v1/user/user.module';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { UserService } from '../src/api-v1/user/user.service';
 import { CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
-import { User } from '../src/api-v1/user/response-dto/user';
+import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
 
 function _createUser(userService: UserService, data: CreateUserDto) {
   return userService.createUser(data);
@@ -44,7 +44,7 @@ describe('User', () => {
 
   describe('with auth', () => {
     let userService: UserService;
-    let authUser: User;
+    let authUser: UserResponseDto;
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({

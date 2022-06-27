@@ -3,26 +3,26 @@ import { AssetType } from '@app/database/entities/asset.entity';
 
 export class CreateAssetDto {
   @IsNotEmpty()
-  deviceAssetId: string;
+  deviceAssetId!: string;
 
   @IsNotEmpty()
-  deviceId: string;
+  deviceId!: string;
 
   @IsNotEmpty()
-  assetType: AssetType;
+  assetType!: AssetType;
 
   @IsNotEmpty()
-  createdAt: string;
+  createdAt!: string;
 
   @IsNotEmpty()
-  modifiedAt: string;
+  modifiedAt!: string;
 
   @IsNotEmpty()
-  isFavorite: boolean;
+  isFavorite!: boolean;
 
   @IsNotEmpty()
-  fileExtension: string;
+  fileExtension!: string;
 
   @IsOptional()
-  duration: string;
+  duration?: string;
 }

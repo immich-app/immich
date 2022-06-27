@@ -47,7 +47,8 @@ class ServerVersion {
 
   String toJson() => json.encode(toMap());
 
-  factory ServerVersion.fromJson(String source) => ServerVersion.fromMap(json.decode(source));
+  factory ServerVersion.fromJson(String source) =>
+      ServerVersion.fromMap(json.decode(source));
 
   @override
   String toString() {
