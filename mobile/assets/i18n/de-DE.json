@@ -87,5 +87,11 @@
   "home_client_server_up_to_date": "Client und Server sind aktuell",
   "home_date": "E, dd MMM",
   "home_date_year": "E, dd MMM, yyyy",
-  "month_title_date_format": "MMMM y"
+  "month_title_date_format": "MMMM y",
+  "search_hint": "Durchsuche deine Fotos",
+  "search_places": "Orte",
+  "search_things": "Dinge",
+  "search_new_search_hint": "Neue Suche",
+  "search_no_objects": "Keine Informationen über Dinge verfügbar",
+  "search_no_places": "Keine Informationen über Orte verfügbar"
 }
