@@ -15,6 +15,6 @@
 
 <section class="h-screen w-screen flex place-items-center place-content-center">
 	<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
-		<LoginForm on:success={onLoginSuccess} />
+		<LoginForm on:success={onLoginSuccess} on:first-login={() => goto('/auth/change-password')} />
 	</div>
 </section>

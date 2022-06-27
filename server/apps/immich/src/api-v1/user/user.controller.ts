@@ -33,6 +33,12 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getUserInfo(@GetAuthUser() authUser: AuthUserDto) {
+    return await this.userService.getUserInfo(authUser);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @UseGuards(AdminRolesGuard)
   @Post()
   async createNewUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {

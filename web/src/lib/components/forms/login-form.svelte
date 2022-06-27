@@ -28,6 +28,10 @@
 				email: response.user!.email,
 			};
 
+			if (!response.user?.isAdmin && response.user?.isFirstLogin) {
+				return dispatch('first-login');
+			}
+
 			return dispatch('success');
 		}
 	}

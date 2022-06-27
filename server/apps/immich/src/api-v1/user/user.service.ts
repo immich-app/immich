@@ -37,6 +37,10 @@ export class UserService {
     });
   }
 
+  async getUserInfo(authUser: AuthUserDto) {
+    return this.userRepository.findOne({ id: authUser.id });
+  }
+
   async getUserCount(isAdmin: boolean) {
     let users;
 
