@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
@@ -13,17 +14,17 @@ class DeleteDialog extends ConsumerWidget {
     return AlertDialog(
       backgroundColor: Colors.grey[200],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      title: const Text("Delete Permanently"),
-      content: const Text("These items will be permanently deleted from Immich and from your device"),
+      title: const Text("home_delete_alert_title").tr(),
+      content: const Text("home_delete_alert").tr(),
       actions: [
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
           child: const Text(
-            "Cancel",
+            "home_delete_alert_cancel",
             style: TextStyle(color: Colors.blueGrey),
-          ),
+          ).tr(),
         ),
         TextButton(
           onPressed: () {
@@ -33,9 +34,9 @@ class DeleteDialog extends ConsumerWidget {
             Navigator.of(context).pop();
           },
           child: Text(
-            "Delete",
+            "home_delete_alert_ok",
             style: TextStyle(color: Colors.red[400]),
-          ),
+          ).tr(),
         ),
       ],
     );

@@ -1,5 +1,8 @@
 {
   "date_format": "E, LLL d, y \u2022 h:mm a",
+  "home_date": "E, MMM dd",
+  "home_date_year": "E, MMM dd, yyyy",
+  "month_title_date_format": "MMMM y",
   "login_button_text": "Login",
   "save_login": "Save Login",
   "login_endpoint_url": "Server Endpoint URL",
@@ -77,5 +80,12 @@
   "backup_storage_format": "{} of {} used",
   "nav_photos": "Photos",
   "nav_search": "Search",
-  "nav_sharing": "Sharing"
+  "nav_sharing": "Sharing",
+  "home_delete": "Delete",
+  "home_delete_alert_title": "Delete Permanently",
+  "home_delete_alert": "These items will be permanently deleted from Immich and from your device",
+  "home_delete_alert_cancel": "Cancel",
+  "home_delete_alert_ok": "Delete",
+  "home_sign_out": "Sign Out",
+  "home_client_server_up_to_date": "Client and Server are up-to-date"
 }

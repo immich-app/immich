@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
@@ -18,7 +19,7 @@ class DailyTitleText extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var currentYear = DateTime.now().year;
     var groupYear = DateTime.parse(isoDate).year;
-    var formatDateTemplate = currentYear == groupYear ? 'E, MMM dd' : 'E, MMM dd, yyyy';
+    var formatDateTemplate = currentYear == groupYear ? "home_date".tr() : "home_date_year".tr();
     var dateText = DateFormat(formatDateTemplate).format(DateTime.parse(isoDate));
     var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
     var selectedDateGroup = ref.watch(homePageStateProvider).selectedDateGroup;
