@@ -53,6 +53,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Put()
   async updateUser(@Body(ValidationPipe) updateUserDto: UpdateUserDto) {
+    console.log('update form', updateUserDto);
     return await this.userService.updateUser(updateUserDto);
   }
 

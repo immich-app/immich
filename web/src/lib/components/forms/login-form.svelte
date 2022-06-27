@@ -28,7 +28,7 @@
 				email: response.user!.email,
 			};
 
-			if (!response.user?.isAdmin && response.user?.isFirstLogin) {
+			if (!response.user?.isAdmin && response.user?.shouldChangePassword) {
 				return dispatch('first-login');
 			}
 

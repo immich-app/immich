@@ -24,7 +24,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
             lastName: '',
             profileImagePath: '',
             isAdmin: false,
-            isFirstLogin: false,
+            shouldChangePassword: false,
             isAuthenticated: false,
             deviceInfo: DeviceInfoRemote(
               id: 0,
@@ -87,7 +87,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         lastName: payload.lastName,
         profileImagePath: payload.profileImagePath,
         isAdmin: payload.isAdmin,
-        isFirstLoggedIn: payload.isFirstLogin,
+        shouldChangePassword: payload.shouldChangePassword,
       );
 
       if (isSavedLoginInfo) {
@@ -133,7 +133,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       firstName: '',
       lastName: '',
       profileImagePath: '',
-      isFirstLogin: false,
+      shouldChangePassword: false,
       isAuthenticated: false,
       isAdmin: false,
       deviceInfo: DeviceInfoRemote(

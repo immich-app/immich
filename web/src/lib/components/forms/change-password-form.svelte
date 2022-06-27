@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { sendRegistrationForm } from '$lib/auth-api';
+	import { session } from '$app/stores';
+
+	import { sendRegistrationForm, sendUpdateForm } from '$lib/auth-api';
 	import { createEventDispatcher } from 'svelte';
 	import type { ImmichUser } from '../../models/immich-user';
 
@@ -23,22 +25,22 @@
 	}
 	const dispatch = createEventDispatcher();
 
-	async function registerUser(event: SubmitEvent) {
+	async function changePassword(event: SubmitEvent) {
 		if (changeChagePassword) {
 			error = '';
 
 			const formElement = event.target as HTMLFormElement;
 
-			const response = await sendRegistrationForm(formElement);
+			const response = await sendUpdateForm(formElement);
 
 			if (response.error) {
 				error = JSON.stringify(response.error);
 			}
 
 			if (response.success) {
-				success = 'New user created';
+				success = 'Password has been changed';
 
-				dispatch('user-created');
+				dispatch('success');
 			}
 		}
 	}
@@ -59,7 +61,7 @@
 		</p>
 	</div>
 
-	<form on:submit|preventDefault={registerUser} method="post" action="/admin/api/create-user" autocomplete="off">
+	<form on:submit|preventDefault={changePassword} method="post" autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="password">Password</label>
 			<input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />

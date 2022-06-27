@@ -57,6 +57,14 @@
 	import { serverEndpoint } from '../../../lib/constants';
 
 	export let user: ImmichUser;
+
+	const onSuccessHandler = async () => {
+		const res = await fetch('/auth/logout', { method: 'POST' });
+
+		if (res.status == 200 && res.statusText == 'OK') {
+			goto('/auth/login');
+		}
+	};
 </script>
 
 <svelte:head>
@@ -65,6 +73,6 @@
 
 <section class="h-screen w-screen flex place-items-center place-content-center">
 	<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
-		<ChangePasswordForm {user} />
+		<ChangePasswordForm {user} on:success={onSuccessHandler} />
 	</div>
 </section>

@@ -10,7 +10,7 @@ type AuthUser = {
 	firstName: string;
 	lastName: string;
 	isAdmin: boolean;
-	isFirstLogin: boolean;
+	shouldChangePassword: boolean;
 };
 
 export const post: RequestHandler = async ({ request }) => {
@@ -46,7 +46,7 @@ export const post: RequestHandler = async ({ request }) => {
 					lastName: authUser.lastName,
 					isAdmin: authUser.isAdmin,
 					email: authUser.userEmail,
-					isFirstLogin: authUser.isFirstLogin,
+					shouldChangePassword: authUser.shouldChangePassword,
 				},
 				success: 'success',
 			},

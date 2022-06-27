@@ -16,7 +16,7 @@ type LoginResult = Promise<{
 		isAdmin: boolean;
 		id: string;
 		email: string;
-		isFirstLogin: boolean;
+		shouldChangePassword: boolean;
 	};
 }>;
 

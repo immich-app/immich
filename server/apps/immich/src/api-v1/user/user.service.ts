@@ -93,7 +93,7 @@ export class UserService {
     user.lastName = updateUserDto.lastName || user.lastName;
     user.firstName = updateUserDto.firstName || user.firstName;
     user.profileImagePath = updateUserDto.profileImagePath || user.profileImagePath;
-    user.isFirstLoggedIn = updateUserDto.isFirstLoggedIn || user.isFirstLoggedIn;
+    user.shouldChangePassword = updateUserDto.shouldChangePassword || user.shouldChangePassword;
 
     // If payload includes password - Create new password for user
     if (updateUserDto.password) {
