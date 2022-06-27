@@ -25,7 +25,7 @@
 
 			const userInfo: ImmichUser = await res.json();
 
-			if (userInfo.isFirstLoggedIn) {
+			if (userInfo.shouldChangePassword) {
 				return {
 					status: 200,
 					props: {

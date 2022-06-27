@@ -5,5 +5,5 @@ export type ImmichUser = {
 	lastName: string;
 	isAdmin: boolean;
 	profileImagePath: string;
-	isFirstLoggedIn: boolean;
+	shouldChangePassword: boolean;
 };

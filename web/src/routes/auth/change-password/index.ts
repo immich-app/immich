@@ -7,8 +7,9 @@ export const post: RequestHandler = async ({ request, locals }) => {
 	const password = form.get('password');
 
 	const payload = {
+		id: locals.user?.id,
 		password,
-		isFirstLoggedIn: false,
+		shouldChangePassword: false,
 	};
 
 	const res = await fetch(`${serverEndpoint}/user`, {
