@@ -113,26 +113,22 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     _buildControlButton() {
-      if (selectedAssets.isNotEmpty) {
-        return Padding(
-          padding: const EdgeInsets.only(left: 12.0, top: 16, bottom: 16),
-          child: SizedBox(
-            height: 30,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                AlbumActionOutlinedButton(
-                  iconData: Icons.add_photo_alternate_outlined,
-                  onPressed: _onSelectPhotosButtonPressed,
-                  labelText: "Add photos",
-                ),
-              ],
-            ),
+      return Padding(
+        padding: const EdgeInsets.only(left: 12.0, top: 16, bottom: 16),
+        child: SizedBox(
+          height: 30,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              AlbumActionOutlinedButton(
+                iconData: Icons.add_photo_alternate_outlined,
+                onPressed: _onSelectPhotosButtonPressed,
+                labelText: "Add photos",
+              ),
+            ],
           ),
-        );
-      }
-
-      return Container();
+        ),
+      );
     }
 
     _buildSelectedImageGrid() {
@@ -196,7 +192,8 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
             slivers: [
               SliverAppBar(
                 elevation: 5,
-                leading: Container(),
+                automaticallyImplyLeading: false,
+                // leading: Container(),
                 pinned: true,
                 floating: false,
                 bottom: PreferredSize(
@@ -204,7 +201,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                   child: Column(
                     children: [
                       _buildTitleInputField(),
-                      _buildControlButton(),
+                      if (selectedAssets.isNotEmpty) _buildControlButton(),
                     ],
                   ),
                 ),

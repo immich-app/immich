@@ -87,7 +87,7 @@ class ProfileDrawer extends HookConsumerWidget {
         return const ImmichLoadingIndicator();
       }
 
-      return Container();
+      return const SizedBox();
     }
 
     _pickUserProfileImage() async {

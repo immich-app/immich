@@ -109,32 +109,27 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget _buildAlbumDateRange(SharedAlbum albumInfo) {
-      if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty) {
-        String startDate = "";
-        DateTime parsedStartDate =
-            DateTime.parse(albumInfo.assets!.first.createdAt);
-        DateTime parsedEndDate =
-            DateTime.parse(albumInfo.assets!.last.createdAt);
+      String startDate = "";
+      DateTime parsedStartDate =
+          DateTime.parse(albumInfo.assets!.first.createdAt);
+      DateTime parsedEndDate = DateTime.parse(albumInfo.assets!.last.createdAt);
 
-        if (parsedStartDate.year == parsedEndDate.year) {
-          startDate = DateFormat('LLL d').format(parsedStartDate);
-        } else {
-          startDate = DateFormat('LLL d, y').format(parsedStartDate);
-        }
-
-        String endDate = DateFormat('LLL d, y').format(parsedEndDate);
-
-        return Padding(
-          padding: const EdgeInsets.only(left: 16.0, top: 8),
-          child: Text(
-            "$startDate-$endDate",
-            style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
-          ),
-        );
+      if (parsedStartDate.year == parsedEndDate.year) {
+        startDate = DateFormat('LLL d').format(parsedStartDate);
       } else {
-        return Container();
+        startDate = DateFormat('LLL d, y').format(parsedStartDate);
       }
+
+      String endDate = DateFormat('LLL d, y').format(parsedEndDate);
+
+      return Padding(
+        padding: const EdgeInsets.only(left: 16.0, top: 8),
+        child: Text(
+          "$startDate-$endDate",
+          style: const TextStyle(
+              fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+        ),
+      );
     }
 
     Widget _buildHeader(SharedAlbum albumInfo) {
@@ -143,7 +138,8 @@ class AlbumViewerPage extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildTitle(albumInfo),
-            _buildAlbumDateRange(albumInfo),
+            if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty)
+              _buildAlbumDateRange(albumInfo),
             SizedBox(
               height: 60,
               child: ListView.builder(
@@ -209,13 +205,12 @@ class AlbumViewerPage extends HookConsumerWidget {
                 onPressed: () => _onAddPhotosPressed(albumInfo),
                 labelText: "Add photos",
               ),
-              userId == albumInfo.ownerId
-                  ? AlbumActionOutlinedButton(
-                      iconData: Icons.person_add_alt_rounded,
-                      onPressed: () => _onAddUsersPressed(albumInfo),
-                      labelText: "Add users",
-                    )
-                  : Container(),
+              if (userId == albumInfo.ownerId)
+                AlbumActionOutlinedButton(
+                  iconData: Icons.person_add_alt_rounded,
+                  onPressed: () => _onAddUsersPressed(albumInfo),
+                  labelText: "Add users",
+                ),
             ],
           ),
         ),

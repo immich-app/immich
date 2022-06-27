@@ -114,7 +114,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
             onTap: () => _onRemoveFromAlbumPressed(albumId),
           );
         } else {
-          return Container();
+          return const SizedBox();
         }
       } else {
         if (_albumInfo.asData?.value.ownerId == userId) {
@@ -199,7 +199,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       leading: _buildLeadingButton(),
       title: isMultiSelectionEnable
           ? Text(selectedAssetsInAlbum.length.toString())
-          : Container(),
+          : null,
       centerTitle: false,
       actions: [
         IconButton(

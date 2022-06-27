@@ -25,30 +25,26 @@ class ImageGrid extends ConsumerWidget {
             child: Stack(
               children: [
                 ThumbnailImage(asset: assetGroup[index]),
-                assetType == 'IMAGE'
-                    ? Container()
-                    : Positioned(
-                        top: 5,
-                        right: 5,
-                        child: Row(
-                          children: [
-                            Text(
-                              assetGroup[index]
-                                  .duration
-                                  .toString()
-                                  .substring(0, 7),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.play_circle_outline_rounded,
-                              color: Colors.white,
-                            ),
-                          ],
+                if (assetType != 'IMAGE')
+                  Positioned(
+                    top: 5,
+                    right: 5,
+                    child: Row(
+                      children: [
+                        Text(
+                          assetGroup[index].duration.toString().substring(0, 7),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
                         ),
-                      )
+                        const Icon(
+                          Icons.play_circle_outline_rounded,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           );
