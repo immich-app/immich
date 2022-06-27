@@ -22,7 +22,8 @@ class LoginForm extends HookConsumerWidget {
     final isSaveLoginInfo = useState<bool>(false);
 
     useEffect(() {
-      var loginInfo = Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
+      var loginInfo =
+          Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
 
       if (loginInfo != null) {
         usernameController.text = loginInfo.email;
@@ -65,7 +66,8 @@ class LoginForm extends HookConsumerWidget {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                 dense: true,
                 side: const BorderSide(color: Colors.grey, width: 1.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)),
                 enableFeedback: true,
                 title: const Text(
                   "save_login",
@@ -95,7 +97,8 @@ class LoginForm extends HookConsumerWidget {
 class ServerEndpointInput extends StatelessWidget {
   final TextEditingController controller;
 
-  const ServerEndpointInput({Key? key, required this.controller}) : super(key: key);
+  const ServerEndpointInput({Key? key, required this.controller})
+      : super(key: key);
 
   String? _validateInput(String? url) {
     if (url == null) return null;
@@ -185,7 +188,8 @@ class LoginButton extends ConsumerWidget {
 
           var isAuthenticated = await ref
               .read(authenticationProvider.notifier)
-              .login(emailController.text, passwordController.text, serverEndpointController.text, isSavedLoginInfo);
+              .login(emailController.text, passwordController.text,
+                  serverEndpointController.text, isSavedLoginInfo);
 
           if (isAuthenticated) {
             // Resume backup (if enable) then navigate

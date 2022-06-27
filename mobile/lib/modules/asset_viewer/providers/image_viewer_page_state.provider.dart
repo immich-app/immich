@@ -9,7 +9,9 @@ import 'package:immich_mobile/shared/ui/immich_toast.dart';
 class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
   final ImageViewerService _imageViewerService = ImageViewerService();
 
-  ImageViewerStateNotifier() : super(ImageViewerPageState(downloadAssetStatus: DownloadAssetStatus.idle));
+  ImageViewerStateNotifier()
+      : super(ImageViewerPageState(
+            downloadAssetStatus: DownloadAssetStatus.idle));
 
   void downloadAsset(ImmichAsset asset, BuildContext context) async {
     state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.loading);
@@ -40,4 +42,5 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
 }
 
 final imageViewerStateProvider =
-    StateNotifierProvider<ImageViewerStateNotifier, ImageViewerPageState>(((ref) => ImageViewerStateNotifier()));
+    StateNotifierProvider<ImageViewerStateNotifier, ImageViewerPageState>(
+        ((ref) => ImageViewerStateNotifier()));

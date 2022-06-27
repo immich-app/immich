@@ -1,6 +1,6 @@
 import { UserEntity } from '../../../../../../libs/database/src/entities/user.entity';
 
-export interface User {
+export interface UserResponseDto {
   id: string;
   email: string;
   firstName: string;
@@ -8,7 +8,7 @@ export interface User {
   createdAt: string;
 }
 
-export function mapUser(entity: UserEntity): User {
+export function mapUser(entity: UserEntity): UserResponseDto {
   return {
     id: entity.id,
     email: entity.email,

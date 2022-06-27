@@ -3,11 +3,11 @@ import { DeviceType } from '@app/database/entities/device-info.entity';
 
 export class CreateDeviceInfoDto {
   @IsNotEmpty()
-  deviceId: string;
+  deviceId!: string;
 
   @IsNotEmpty()
-  deviceType: DeviceType;
+  deviceType!: DeviceType;
 
   @IsOptional()
-  isAutoBackup: boolean;
+  isAutoBackup?: boolean;
 }

@@ -5,7 +5,11 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 
 class ThumbnailWithInfo extends StatelessWidget {
-  const ThumbnailWithInfo({Key? key, required this.textInfo, required this.imageUrl, required this.onTap})
+  const ThumbnailWithInfo(
+      {Key? key,
+      required this.textInfo,
+      required this.imageUrl,
+      required this.onTap})
       : super(key: key);
 
   final String textInfo;
@@ -39,7 +43,9 @@ class ThumbnailWithInfo extends StatelessWidget {
                     height: 250,
                     fit: BoxFit.cover,
                     imageUrl: imageUrl,
-                    httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+                    httpHeaders: {
+                      "Authorization": "Bearer ${box.get(accessTokenKey)}"
+                    },
                   ),
                 ),
               ),

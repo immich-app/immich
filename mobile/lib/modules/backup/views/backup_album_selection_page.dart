@@ -18,7 +18,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
 
     useEffect(() {
-      ref.read(backupProvider.notifier).getBackupAlbumsInfo();
+      ref.read(backupProvider.notifier).getBackupInfo();
       return null;
     }, []);
 
@@ -38,8 +38,12 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           itemBuilder: ((context, index) {
             var thumbnailData = availableAlbums[index].thumbnailData;
             return Padding(
-              padding: index == 0 ? const EdgeInsets.only(left: 16.00) : const EdgeInsets.all(0),
-              child: AlbumInfoCard(imageData: thumbnailData, albumInfo: availableAlbums[index].albumEntity),
+              padding: index == 0
+                  ? const EdgeInsets.only(left: 16.00)
+                  : const EdgeInsets.all(0),
+              child: AlbumInfoCard(
+                  imageData: thumbnailData,
+                  albumInfo: availableAlbums[index].albumEntity),
             );
           }),
         ),
@@ -68,10 +72,14 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             onTap: removeSelection,
             child: Chip(
               visualDensity: VisualDensity.compact,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)),
               label: Text(
                 album.name,
-                style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 10,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
               ),
               backgroundColor: Theme.of(context).primaryColor,
               deleteIconColor: Colors.white,
@@ -89,7 +97,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     _buildExcludedAlbumNameChip() {
       return excludedBackupAlbums.map((album) {
         void removeSelection() {
-          ref.watch(backupProvider.notifier).removeExcludedAlbumForBackup(album);
+          ref
+              .watch(backupProvider.notifier)
+              .removeExcludedAlbumForBackup(album);
         }
 
         return GestureDetector(
@@ -98,10 +108,14 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(right: 8.0),
             child: Chip(
               visualDensity: VisualDensity.compact,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)),
               label: Text(
                 album.name,
-                style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 10,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
               ),
               backgroundColor: Colors.red[300],
               deleteIconColor: Colors.white,
@@ -143,7 +157,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Wrap(
-              children: [..._buildSelectedAlbumNameChip(), ..._buildExcludedAlbumNameChip()],
+              children: [
+                ..._buildSelectedAlbumNameChip(),
+                ..._buildExcludedAlbumNameChip()
+              ],
             ),
           ),
 
@@ -169,7 +186,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey[700]),
                     ).tr(),
                     trailing: Text(
-                      ref.watch(backupProvider).allUniqueAssets.length.toString(),
+                      ref
+                          .watch(backupProvider)
+                          .allUniqueAssets
+                          .length
+                          .toString(),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -207,7 +228,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       elevation: 5,
                       title: Text(
                         'backup_selection_info',

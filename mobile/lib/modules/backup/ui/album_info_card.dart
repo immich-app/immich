@@ -15,16 +15,22 @@ class AlbumInfoCard extends HookConsumerWidget {
   final Uint8List? imageData;
   final AssetPathEntity albumInfo;
 
-  const AlbumInfoCard({Key? key, this.imageData, required this.albumInfo}) : super(key: key);
+  const AlbumInfoCard({Key? key, this.imageData, required this.albumInfo})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isSelected = ref.watch(backupProvider).selectedBackupAlbums.contains(albumInfo);
-    final bool isExcluded = ref.watch(backupProvider).excludedBackupAlbums.contains(albumInfo);
+    final bool isSelected =
+        ref.watch(backupProvider).selectedBackupAlbums.contains(albumInfo);
+    final bool isExcluded =
+        ref.watch(backupProvider).excludedBackupAlbums.contains(albumInfo);
 
-    ColorFilter selectedFilter = ColorFilter.mode(Theme.of(context).primaryColor.withAlpha(100), BlendMode.darken);
-    ColorFilter excludedFilter = ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
-    ColorFilter unselectedFilter = const ColorFilter.mode(Colors.black, BlendMode.color);
+    ColorFilter selectedFilter = ColorFilter.mode(
+        Theme.of(context).primaryColor.withAlpha(100), BlendMode.darken);
+    ColorFilter excludedFilter =
+        ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
+    ColorFilter unselectedFilter =
+        const ColorFilter.mode(Colors.black, BlendMode.color);
 
     _buildSelectedTextBox() {
       if (isSelected) {
@@ -86,10 +92,15 @@ class AlbumInfoCard extends HookConsumerWidget {
         HapticFeedback.selectionClick();
 
         if (isExcluded) {
-          ref.watch(backupProvider.notifier).removeExcludedAlbumForBackup(albumInfo);
+          ref
+              .watch(backupProvider.notifier)
+              .removeExcludedAlbumForBackup(albumInfo);
         } else {
           if (ref.watch(backupProvider).selectedBackupAlbums.length == 1 &&
-              ref.watch(backupProvider).selectedBackupAlbums.contains(albumInfo)) {
+              ref
+                  .watch(backupProvider)
+                  .selectedBackupAlbums
+                  .contains(albumInfo)) {
             ImmichToast.show(
               context: context,
               msg: "backup_err_only_album".tr(),
@@ -99,7 +110,9 @@ class AlbumInfoCard extends HookConsumerWidget {
             return;
           }
 
-          ref.watch(backupProvider.notifier).addExcludedAlbumForBackup(albumInfo);
+          ref
+              .watch(backupProvider.notifier)
+              .addExcludedAlbumForBackup(albumInfo);
         }
       },
       child: Card(
@@ -122,12 +135,16 @@ class AlbumInfoCard extends HookConsumerWidget {
                   width: 200,
                   height: 200,
                   decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+                    borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12)),
                     image: DecorationImage(
                       colorFilter: _buildImageFilter(),
                       image: imageData != null
                           ? MemoryImage(imageData!)
-                          : const AssetImage('assets/immich-logo-no-outline.png') as ImageProvider,
+                          : const AssetImage(
+                                  'assets/immich-logo-no-outline.png')
+                              as ImageProvider,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -151,7 +168,9 @@ class AlbumInfoCard extends HookConsumerWidget {
                           Text(
                             albumInfo.name,
                             style: TextStyle(
-                                fontSize: 14, color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
+                                fontSize: 14,
+                                color: Theme.of(context).primaryColor,
+                                fontWeight: FontWeight.bold),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(top: 2.0),
@@ -166,7 +185,8 @@ class AlbumInfoCard extends HookConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      AutoRouter.of(context).push(AlbumPreviewRoute(album: albumInfo));
+                      AutoRouter.of(context)
+                          .push(AlbumPreviewRoute(album: albumInfo));
                     },
                     icon: Icon(
                       Icons.image_outlined,

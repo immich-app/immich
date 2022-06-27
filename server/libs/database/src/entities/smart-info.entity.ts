@@ -4,19 +4,19 @@ import { AssetEntity } from './asset.entity';
 @Entity('smart_info')
 export class SmartInfoEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id!: string;
 
   @Index({ unique: true })
   @Column({ type: 'uuid' })
-  assetId: string;
+  assetId!: string;
 
   @Column({ type: 'text', array: true, nullable: true })
-  tags: string[];
+  tags!: string[] | null;
 
   @Column({ type: 'text', array: true, nullable: true })
-  objects: string[];
+  objects!: string[] | null;
 
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
-  asset: SmartInfoEntity;
+  asset?: SmartInfoEntity;
 }

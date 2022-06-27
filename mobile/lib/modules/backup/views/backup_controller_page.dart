@@ -18,16 +18,21 @@ class BackupControllerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
-    AuthenticationState _authenticationState = ref.watch(authenticationProvider);
-    bool shouldBackup =
-        backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length == 0 ? false : true;
+    AuthenticationState authenticationState = ref.watch(authenticationProvider);
+    bool shouldBackup = backupState.allUniqueAssets.length -
+                backupState.selectedAlbumsBackupAssetsIds.length ==
+            0
+        ? false
+        : true;
 
     useEffect(() {
       if (backupState.backupProgress != BackUpProgressEnum.inProgress) {
-        ref.read(backupProvider.notifier).getBackupInfo();
+        ref.watch(backupProvider.notifier).getBackupInfo();
       }
 
-      ref.watch(websocketProvider.notifier).stopListenToEvent('on_upload_success');
+      ref
+          .watch(websocketProvider.notifier)
+          .stopListenToEvent('on_upload_success');
       return null;
     }, []);
 
@@ -49,7 +54,8 @@ class BackupControllerPage extends HookConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: LinearPercentIndicator(
-                  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
                   barRadius: const Radius.circular(2),
                   lineHeight: 6.0,
                   percent: backupState.serverInfo.diskUsagePercentage / 100.0,
@@ -68,9 +74,9 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     ListTile _buildBackupController() {
-      var backUpOption = _authenticationState.deviceInfo.isAutoBackup ? "backup_status_on".tr() : "backup_status_off".tr();
-      var isAutoBackup = _authenticationState.deviceInfo.isAutoBackup;
-      var backupBtnText = _authenticationState.deviceInfo.isAutoBackup ? "backup_turn_off".tr() : "backup_turn_on".tr();
+      var backUpOption = authenticationState.deviceInfo.isAutoBackup ? "backup_status_on".tr() : "backup_status_off".tr();
+      var isAutoBackup = authenticationState.deviceInfo.isAutoBackup;
+      var backupBtnText = authenticationState.deviceInfo.isAutoBackup ? "backup_turn_off".tr() : "backup_turn_on".tr();
       return ListTile(
         isThreeLine: true,
         leading: isAutoBackup
@@ -104,9 +110,15 @@ class BackupControllerPage extends HookConsumerWidget {
                     ),
                   ),
                   onPressed: () {
-                    isAutoBackup
-                        ? ref.watch(authenticationProvider.notifier).setAutoBackup(false)
-                        : ref.watch(authenticationProvider.notifier).setAutoBackup(true);
+                    if (isAutoBackup) {
+                      ref
+                          .read(authenticationProvider.notifier)
+                          .setAutoBackup(false);
+                    } else {
+                      ref
+                          .read(authenticationProvider.notifier)
+                          .setAutoBackup(true);
+                    }
                   },
                   child: Text(backupBtnText, style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
@@ -134,7 +146,10 @@ class BackupControllerPage extends HookConsumerWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             text.trim().substring(0, text.length - 2),
-            style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontSize: 12,
+                fontWeight: FontWeight.bold),
           ),
         );
       } else {
@@ -161,7 +176,10 @@ class BackupControllerPage extends HookConsumerWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             text.trim().substring(0, text.length - 2),
-            style: TextStyle(color: Colors.red[300], fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: Colors.red[300],
+                fontSize: 12,
+                fontWeight: FontWeight.bold),
           ),
         );
       } else {

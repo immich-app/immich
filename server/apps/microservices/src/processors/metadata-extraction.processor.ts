@@ -11,13 +11,12 @@ import { readFile } from 'fs/promises';
 import { Logger } from '@nestjs/common';
 import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
-import { ConfigService } from '@nestjs/config';
 import ffmpeg from 'fluent-ffmpeg';
 // import moment from 'moment';
 
 @Processor('metadata-extraction-queue')
 export class MetadataExtractionProcessor {
-  private geocodingClient: GeocodeService;
+  private geocodingClient?: GeocodeService;
 
   constructor(
     @InjectRepository(AssetEntity)
@@ -29,7 +28,7 @@ export class MetadataExtractionProcessor {
     @InjectRepository(SmartInfoEntity)
     private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {
-    if (process.env.ENABLE_MAPBOX == 'true') {
+    if (process.env.ENABLE_MAPBOX == 'true' && process.env.MAPBOX_KEY) {
       this.geocodingClient = mapboxGeocoding({
         accessToken: process.env.MAPBOX_KEY,
       });
@@ -65,7 +64,7 @@ export class MetadataExtractionProcessor {
       newExif.longitude = exifData['longitude'] || null;
 
       // Reverse GeoCoding
-      if (process.env.ENABLE_MAPBOX && exifData['longitude'] && exifData['latitude']) {
+      if (this.geocodingClient && exifData['longitude'] && exifData['latitude']) {
         const geoCodeInfo: MapiResponse = await this.geocodingClient
           .reverseGeocode({
             query: [exifData['longitude'], exifData['latitude']],
@@ -86,7 +85,7 @@ export class MetadataExtractionProcessor {
 
       await this.exifRepository.save(newExif);
     } catch (e) {
-      Logger.error(`Error extracting EXIF ${e.toString()}`, 'extractExif');
+      Logger.error(`Error extracting EXIF ${String(e)}`, 'extractExif');
     }
   }
 
@@ -128,7 +127,7 @@ export class MetadataExtractionProcessor {
         });
       }
     } catch (error) {
-      Logger.error(`Failed to trigger object detection pipe line ${error.toString()}`);
+      Logger.error(`Failed to trigger object detection pipe line ${String(error)}`);
     }
   }
 

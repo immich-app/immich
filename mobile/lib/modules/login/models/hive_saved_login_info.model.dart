@@ -16,5 +16,9 @@ class HiveSavedLoginInfo {
   @HiveField(3)
   bool isSaveLogin;
 
-  HiveSavedLoginInfo({required this.email, required this.password, required this.serverUrl, required this.isSaveLogin});
+  HiveSavedLoginInfo(
+      {required this.email,
+      required this.password,
+      required this.serverUrl,
+      required this.isSaveLogin});
 }

@@ -1,20 +1,19 @@
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsBooleanString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBooleanString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class ServeFileDto {
   //assetId
   @IsNotEmpty()
-  aid: string;
+  aid!: string;
 
   //deviceId
   @IsNotEmpty()
-  did: string;
+  did!: string;
 
   @IsOptional()
   @IsBooleanString()
-  isThumb: string;
+  isThumb?: string;
 
   @IsOptional()
   @IsBooleanString()
-  isWeb: string;
+  isWeb?: string;
 }

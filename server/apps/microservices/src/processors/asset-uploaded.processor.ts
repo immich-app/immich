@@ -1,4 +1,4 @@
-import { InjectQueue, OnQueueActive, OnQueueCompleted, OnQueueWaiting, Process, Processor } from '@nestjs/bull';
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Job, Queue } from 'bull';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { InjectRepository } from '@nestjs/typeorm';

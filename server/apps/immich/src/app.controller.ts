@@ -1,13 +1,3 @@
-import { Controller, Get, Res, Headers } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller } from '@nestjs/common';
 @Controller()
-export class AppController {
-  constructor() {}
-
-  @Get()
-  async redirectToWebpage(@Res({ passthrough: true }) res: Response, @Headers() headers) {
-    const host = headers.host;
-
-    return res.redirect(`http://${host}:2285`);
-  }
-}
+export class AppController {}

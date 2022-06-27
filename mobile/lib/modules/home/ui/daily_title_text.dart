@@ -36,23 +36,42 @@ class DailyTitleText extends ConsumerWidget {
           selectedDateGroup.contains(dateText) &&
           selectedItems.length != assetGroup.length) {
         // Multi select is active - click again on the icon while it is not the only active group -> remove that group from selected group/items
-        ref.watch(homePageStateProvider.notifier).removeSelectedDateGroup(dateText);
-        ref.watch(homePageStateProvider.notifier).removeMultipleSelectedItem(assetGroup);
-      } else if (isMultiSelectEnable && selectedDateGroup.contains(dateText) && selectedDateGroup.length > 1) {
-        ref.watch(homePageStateProvider.notifier).removeSelectedDateGroup(dateText);
-        ref.watch(homePageStateProvider.notifier).removeMultipleSelectedItem(assetGroup);
+        ref
+            .watch(homePageStateProvider.notifier)
+            .removeSelectedDateGroup(dateText);
+        ref
+            .watch(homePageStateProvider.notifier)
+            .removeMultipleSelectedItem(assetGroup);
+      } else if (isMultiSelectEnable &&
+          selectedDateGroup.contains(dateText) &&
+          selectedDateGroup.length > 1) {
+        ref
+            .watch(homePageStateProvider.notifier)
+            .removeSelectedDateGroup(dateText);
+        ref
+            .watch(homePageStateProvider.notifier)
+            .removeMultipleSelectedItem(assetGroup);
       } else if (isMultiSelectEnable && !selectedDateGroup.contains(dateText)) {
-        ref.watch(homePageStateProvider.notifier).addSelectedDateGroup(dateText);
-        ref.watch(homePageStateProvider.notifier).addMultipleSelectedItems(assetGroup);
+        ref
+            .watch(homePageStateProvider.notifier)
+            .addSelectedDateGroup(dateText);
+        ref
+            .watch(homePageStateProvider.notifier)
+            .addMultipleSelectedItems(assetGroup);
       } else {
-        ref.watch(homePageStateProvider.notifier).enableMultiSelect(assetGroup.toSet());
-        ref.watch(homePageStateProvider.notifier).addSelectedDateGroup(dateText);
+        ref
+            .watch(homePageStateProvider.notifier)
+            .enableMultiSelect(assetGroup.toSet());
+        ref
+            .watch(homePageStateProvider.notifier)
+            .addSelectedDateGroup(dateText);
       }
     }
 
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.only(top: 29.0, bottom: 29.0, left: 12.0, right: 12.0),
+        padding: const EdgeInsets.only(
+            top: 29.0, bottom: 29.0, left: 12.0, right: 12.0),
         child: Row(
           children: [
             Text(

@@ -20,6 +20,9 @@ export class ThumbnailGeneratorProcessor {
     private thumbnailGeneratorQueue: Queue,
 
     private wsCommunicateionGateway: CommunicationGateway,
+
+    @InjectQueue('metadata-extraction-queue')
+    private metadataExtractionQueue: Queue,
   ) {}
 
   @Process('generate-jpeg-thumbnail')
@@ -40,7 +43,7 @@ export class ThumbnailGeneratorProcessor {
       sharp(asset.originalPath)
         .resize(1440, 2560, { fit: 'inside' })
         .jpeg()
-        .toFile(jpegThumbnailPath, async (err, info) => {
+        .toFile(jpegThumbnailPath, async (err) => {
           if (!err) {
             await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
 
@@ -48,6 +51,8 @@ export class ThumbnailGeneratorProcessor {
             asset.resizePath = jpegThumbnailPath;
 
             await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset }, { jobId: randomUUID() });
+            await this.metadataExtractionQueue.add('tag-image', { asset }, { jobId: randomUUID() });
+            await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
             this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
           }
         });
@@ -60,7 +65,7 @@ export class ThumbnailGeneratorProcessor {
         .on('start', () => {
           Logger.log('Start Generating Video Thumbnail', 'generateJPEGThumbnail');
         })
-        .on('error', (error, b, c) => {
+        .on('error', (error) => {
           Logger.error(`Cannot Generate Video Thumbnail ${error}`, 'generateJPEGThumbnail');
           // reject();
         })
@@ -72,6 +77,8 @@ export class ThumbnailGeneratorProcessor {
           asset.resizePath = jpegThumbnailPath;
 
           await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset }, { jobId: randomUUID() });
+          await this.metadataExtractionQueue.add('tag-image', { asset }, { jobId: randomUUID() });
+          await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
 
           this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
         })
@@ -80,15 +87,18 @@ export class ThumbnailGeneratorProcessor {
   }
 
   @Process({ name: 'generate-webp-thumbnail', concurrency: 2 })
-  async generateWepbThumbnail(job: Job) {
-    const { asset }: { asset: AssetEntity } = job.data;
+  async generateWepbThumbnail(job: Job<{ asset: AssetEntity }>) {
+    const { asset } = job.data;
 
+    if (!asset.resizePath) {
+      return;
+    }
     const webpPath = asset.resizePath.replace('jpeg', 'webp');
 
     sharp(asset.resizePath)
       .resize(250)
       .webp()
-      .toFile(webpPath, (err, info) => {
+      .toFile(webpPath, (err) => {
         if (!err) {
           this.assetRepository.update({ id: asset.id }, { webpPath: webpPath });
         }

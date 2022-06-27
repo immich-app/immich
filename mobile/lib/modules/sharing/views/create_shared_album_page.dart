@@ -16,11 +16,13 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumTitleController = useTextEditingController.fromValue(TextEditingValue.empty);
+    final albumTitleController =
+        useTextEditingController.fromValue(TextEditingValue.empty);
     final albumTitleTextFieldFocusNode = useFocusNode();
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
-    final selectedAssets = ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
+    final selectedAssets =
+        ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
 
     _showSelectUserPage() {
       AutoRouter.of(context).push(const SelectUserForSharingRoute());
@@ -39,8 +41,8 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     _onSelectPhotosButtonPressed() async {
       ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(false);
 
-      AssetSelectionPageResult? selectedAsset =
-          await AutoRouter.of(context).push<AssetSelectionPageResult?>(const AssetSelectionRoute());
+      AssetSelectionPageResult? selectedAsset = await AutoRouter.of(context)
+          .push<AssetSelectionPageResult?>(const AssetSelectionRoute());
 
       if (selectedAsset == null) {
         ref.watch(assetSelectionProvider.notifier).removeAll();
@@ -85,9 +87,12 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                   alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
-                  side: const BorderSide(color: Color.fromARGB(255, 206, 206, 206)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
+                  side: const BorderSide(
+                      color: Color.fromARGB(255, 206, 206, 206)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5))),
               onPressed: _onSelectPhotosButtonPressed,
               icon: const Icon(Icons.add_rounded),
               label: Padding(
@@ -142,7 +147,8 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
               (BuildContext context, int index) {
                 return GestureDetector(
                   onTap: _onBackgroundTapped,
-                  child: SharedAlbumThumbnailImage(asset: selectedAssets.toList()[index]),
+                  child: SharedAlbumThumbnailImage(
+                      asset: selectedAssets.toList()[index]),
                 );
               },
               childCount: selectedAssets.length,
@@ -190,13 +196,13 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                 pinned: true,
                 floating: false,
                 bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(66.0),
                   child: Column(
                     children: [
                       _buildTitleInputField(),
                       _buildControlButton(),
                     ],
                   ),
-                  preferredSize: const Size.fromHeight(66.0),
                 ),
               ),
               _buildTitle(),

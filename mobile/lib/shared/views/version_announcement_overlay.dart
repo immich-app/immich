@@ -13,8 +13,9 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     void goToReleaseNote() async {
-      final Uri _url = Uri.parse('https://github.com/alextran1502/immich/releases/latest');
-      await launchUrl(_url);
+      final Uri url =
+          Uri.parse('https://github.com/alextran1502/immich/releases/latest');
+      await launchUrl(url);
     }
 
     void onAcknowledgeTapped() {
@@ -22,7 +23,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
     }
 
     return ValueListenableBuilder<bool>(
-      valueListenable: VersionAnnouncementOverlayController.appLoader.loaderShowingNotifier,
+      valueListenable:
+          VersionAnnouncementOverlayController.appLoader.loaderShowingNotifier,
       builder: (context, shouldShow, child) {
         if (shouldShow) {
           return Scaffold(
@@ -52,7 +54,10 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                               child: RichText(
                                 text: TextSpan(
                                   style: const TextStyle(
-                                      fontSize: 14, fontFamily: 'WorkSans', color: Colors.black87, height: 1.2),
+                                      fontSize: 14,
+                                      fontFamily: 'WorkSans',
+                                      color: Colors.black87,
+                                      height: 1.2),
                                   children: <TextSpan>[
                                     TextSpan(
                                       text: 'version_announcement_text_1'.tr(),
@@ -73,7 +78,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                       style: const TextStyle(
                                         decoration: TextDecoration.underline,
                                       ),
-                                      recognizer: TapGestureRecognizer()..onTap = goToReleaseNote,
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = goToReleaseNote,
                                     ),
                                     TextSpan(
                                       text:
@@ -120,7 +126,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
 }
 
 class VersionAnnouncementOverlayController {
-  static final VersionAnnouncementOverlayController appLoader = VersionAnnouncementOverlayController();
+  static final VersionAnnouncementOverlayController appLoader =
+      VersionAnnouncementOverlayController();
   ValueNotifier<bool> loaderShowingNotifier = ValueNotifier(false);
   ValueNotifier<String> loaderTextNotifier = ValueNotifier('error message');
 

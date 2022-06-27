@@ -6,7 +6,7 @@ import 'package:immich_mobile/modules/search/models/search_page_state.model.dart
 import 'package:immich_mobile/modules/search/services/search.service.dart';
 
 class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
-  SearchPageStateNotifier()
+  SearchPageStateNotifier(this._searchService)
       : super(
           SearchPageState(
             searchTerm: "",
@@ -16,7 +16,7 @@ class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
           ),
         );
 
-  final SearchService _searchService = SearchService();
+  final SearchService _searchService;
 
   void enableSearch() {
     state = state.copyWith(isSearchEnabled: true);
@@ -45,20 +45,23 @@ class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
   }
 
   void getSuggestedSearchTerms() async {
-    var userSuggestedSearchTerms = await _searchService.getUserSuggestedSearchTerms();
+    var userSuggestedSearchTerms =
+        await _searchService.getUserSuggestedSearchTerms();
 
     state = state.copyWith(userSuggestedSearchTerms: userSuggestedSearchTerms);
   }
 }
 
-final searchPageStateProvider = StateNotifierProvider<SearchPageStateNotifier, SearchPageState>((ref) {
-  return SearchPageStateNotifier();
+final searchPageStateProvider =
+    StateNotifierProvider<SearchPageStateNotifier, SearchPageState>((ref) {
+  return SearchPageStateNotifier(ref.watch(searchServiceProvider));
 });
 
-final getCuratedLocationProvider = FutureProvider.autoDispose<List<CuratedLocation>>((ref) async {
-  final SearchService _searchService = SearchService();
+final getCuratedLocationProvider =
+    FutureProvider.autoDispose<List<CuratedLocation>>((ref) async {
+  final SearchService searchService = ref.watch(searchServiceProvider);
 
-  var curatedLocation = await _searchService.getCuratedLocation();
+  var curatedLocation = await searchService.getCuratedLocation();
   if (curatedLocation != null) {
     return curatedLocation;
   } else {
@@ -66,10 +69,11 @@ final getCuratedLocationProvider = FutureProvider.autoDispose<List<CuratedLocati
   }
 });
 
-final getCuratedObjectProvider = FutureProvider.autoDispose<List<CuratedObject>>((ref) async {
-  final SearchService _searchService = SearchService();
+final getCuratedObjectProvider =
+    FutureProvider.autoDispose<List<CuratedObject>>((ref) async {
+  final SearchService searchService = ref.watch(searchServiceProvider);
 
-  var curatedObject = await _searchService.getCuratedObjects();
+  var curatedObject = await searchService.getCuratedObjects();
   if (curatedObject != null) {
     return curatedObject;
   } else {

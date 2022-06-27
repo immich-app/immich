@@ -17,21 +17,24 @@ class SelectUserForSharingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sharedUsersList = useState<Set<User>>({});
-    AsyncValue<List<User>> suggestedShareUsers = ref.watch(suggestedSharedUsersProvider);
+    AsyncValue<List<User>> suggestedShareUsers =
+        ref.watch(suggestedSharedUsersProvider);
 
     _createSharedAlbum() async {
-      var isSuccess = await SharedAlbumService().createSharedAlbum(
-        ref.watch(albumTitleProvider),
-        ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
-        sharedUsersList.value.map((userInfo) => userInfo.id).toList(),
-      );
+      var isSuccess =
+          await ref.watch(sharedAlbumServiceProvider).createSharedAlbum(
+                ref.watch(albumTitleProvider),
+                ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
+                sharedUsersList.value.map((userInfo) => userInfo.id).toList(),
+              );
 
       if (isSuccess) {
         await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 
-        AutoRouter.of(context).navigate(const TabControllerRoute(children: [SharingRoute()]));
+        AutoRouter.of(context)
+            .navigate(const TabControllerRoute(children: [SharingRoute()]));
       }
 
       ScaffoldMessenger(child: SnackBar(content: Text('share_err_album').tr()));
@@ -48,7 +51,8 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         );
       } else {
         return CircleAvatar(
-          backgroundImage: const AssetImage('assets/immich-logo-no-outline.png'),
+          backgroundImage:
+              const AssetImage('assets/immich-logo-no-outline.png'),
           backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
         );
       }
@@ -65,7 +69,10 @@ class SelectUserForSharingPage extends HookConsumerWidget {
               backgroundColor: Theme.of(context).primaryColor.withOpacity(0.15),
               label: Text(
                 user.email,
-                style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -91,14 +98,20 @@ class SelectUserForSharingPage extends HookConsumerWidget {
                 leading: _buildTileIcon(users[index]),
                 title: Text(
                   users[index].email,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 onTap: () {
                   if (sharedUsersList.value.contains(users[index])) {
-                    sharedUsersList.value =
-                        sharedUsersList.value.where((selectedUser) => selectedUser.id != users[index].id).toSet();
+                    sharedUsersList.value = sharedUsersList.value
+                        .where((selectedUser) =>
+                            selectedUser.id != users[index].id)
+                        .toSet();
                   } else {
-                    sharedUsersList.value = {...sharedUsersList.value, users[index]};
+                    sharedUsersList.value = {
+                      ...sharedUsersList.value,
+                      users[index]
+                    };
                   }
                 },
               );
@@ -125,7 +138,8 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         ),
         actions: [
           TextButton(
-              onPressed: sharedUsersList.value.isEmpty ? null : _createSharedAlbum,
+              onPressed:
+                  sharedUsersList.value.isEmpty ? null : _createSharedAlbum,
               child: const Text(
                 "share_create_album",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),

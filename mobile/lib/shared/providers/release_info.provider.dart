@@ -15,7 +15,7 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
     try {
       String? localReleaseVersion = box.get(githubReleaseInfoKey);
 
-      Response res = await dio.get(
+      var res = await dio.get(
         "https://api.github.com/repos/alextran1502/immich/releases/latest",
         options: Options(
           headers: {"Accept": "application/vnd.github.v3+json"},
@@ -34,7 +34,8 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
           return;
         }
 
-        if (latestTagVersion.isNotEmpty && localReleaseVersion != latestTagVersion) {
+        if (latestTagVersion.isNotEmpty &&
+            localReleaseVersion != latestTagVersion) {
           VersionAnnouncementOverlayController.appLoader.show();
           return;
         }
@@ -54,4 +55,5 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
   }
 }
 
-final releaseInfoProvider = StateNotifierProvider<ReleaseInfoNotifier, String>((ref) => ReleaseInfoNotifier());
+final releaseInfoProvider = StateNotifierProvider<ReleaseInfoNotifier, String>(
+    (ref) => ReleaseInfoNotifier());

@@ -2,7 +2,7 @@
 	"name": "web",
 	"version": "0.0.1",
 	"scripts": {
-		"dev": "svelte-kit dev --host 0.0.0.0 --port 3002",
+		"dev": "svelte-kit dev --host 0.0.0.0",
 		"build": "svelte-kit build",
 		"package": "svelte-kit package",
 		"preview": "svelte-kit preview",

@@ -2,7 +2,7 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateAlbumDto {
   @IsNotEmpty()
-  albumName: string;
+  albumName!: string;
 
   @IsOptional()
   sharedWithUserIds?: string[];

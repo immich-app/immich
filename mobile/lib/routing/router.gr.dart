@@ -21,13 +21,21 @@ class _$AppRouter extends RootStackRouter {
 
   @override
   final Map<String, PageFactory> pagesMap = {
+    SplashScreenRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const SplashScreenPage());
+    },
     LoginRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const LoginPage());
     },
     TabControllerRoute.name: (routeData) {
-      return MaterialPageX<dynamic>(
-          routeData: routeData, child: const TabControllerPage());
+      return CustomPage<dynamic>(
+          routeData: routeData,
+          child: const TabControllerPage(),
+          transitionsBuilder: TransitionsBuilders.fadeIn,
+          opaque: true,
+          barrierDismissible: false);
     },
     ImageViewerRoute.name: (routeData) {
       final args = routeData.argsAs<ImageViewerRouteArgs>();
@@ -121,7 +129,8 @@ class _$AppRouter extends RootStackRouter {
 
   @override
   List<RouteConfig> get routes => [
-        RouteConfig(LoginRoute.name, path: '/'),
+        RouteConfig(SplashScreenRoute.name, path: '/'),
+        RouteConfig(LoginRoute.name, path: '/login-page'),
         RouteConfig(TabControllerRoute.name,
             path: '/tab-controller-page',
             guards: [
@@ -168,9 +177,17 @@ class _$AppRouter extends RootStackRouter {
 }
 
 /// generated route for
+/// [SplashScreenPage]
+class SplashScreenRoute extends PageRouteInfo<void> {
+  const SplashScreenRoute() : super(SplashScreenRoute.name, path: '/');
+
+  static const String name = 'SplashScreenRoute';
+}
+
+/// generated route for
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<void> {
-  const LoginRoute() : super(LoginRoute.name, path: '/');
+  const LoginRoute() : super(LoginRoute.name, path: '/login-page');
 
   static const String name = 'LoginRoute';
 }

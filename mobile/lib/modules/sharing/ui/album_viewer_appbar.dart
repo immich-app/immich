@@ -27,18 +27,22 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isMultiSelectionEnable = ref.watch(assetSelectionProvider).isMultiselectEnable;
-    final selectedAssetsInAlbum = ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;
+    final isMultiSelectionEnable =
+        ref.watch(assetSelectionProvider).isMultiselectEnable;
+    final selectedAssetsInAlbum =
+        ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;
     final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
 
     void _onDeleteAlbumPressed(String albumId) async {
       ImmichLoadingOverlayController.appLoader.show();
 
-      bool isSuccess = await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
+      bool isSuccess =
+          await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
 
       if (isSuccess) {
-        AutoRouter.of(context).navigate(const TabControllerRoute(children: [SharingRoute()]));
+        AutoRouter.of(context)
+            .navigate(const TabControllerRoute(children: [SharingRoute()]));
       } else {
         ImmichToast.show(
           context: context,
@@ -54,10 +58,12 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
     void _onLeaveAlbumPressed(String albumId) async {
       ImmichLoadingOverlayController.appLoader.show();
 
-      bool isSuccess = await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(albumId);
+      bool isSuccess =
+          await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(albumId);
 
       if (isSuccess) {
-        AutoRouter.of(context).navigate(const TabControllerRoute(children: [SharingRoute()]));
+        AutoRouter.of(context)
+            .navigate(const TabControllerRoute(children: [SharingRoute()]));
       } else {
         Navigator.pop(context);
         ImmichToast.show(
@@ -74,10 +80,11 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
     void _onRemoveFromAlbumPressed(String albumId) async {
       ImmichLoadingOverlayController.appLoader.show();
 
-      bool isSuccess = await ref.watch(sharedAlbumProvider.notifier).removeAssetFromAlbum(
-            albumId,
-            selectedAssetsInAlbum.map((a) => a.id).toList(),
-          );
+      bool isSuccess =
+          await ref.watch(sharedAlbumProvider.notifier).removeAssetFromAlbum(
+                albumId,
+                selectedAssetsInAlbum.map((a) => a.id).toList(),
+              );
 
       if (isSuccess) {
         Navigator.pop(context);
@@ -154,15 +161,18 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
     _buildLeadingButton() {
       if (isMultiSelectionEnable) {
         return IconButton(
-          onPressed: () => ref.watch(assetSelectionProvider.notifier).disableMultiselection(),
+          onPressed: () => ref
+              .watch(assetSelectionProvider.notifier)
+              .disableMultiselection(),
           icon: const Icon(Icons.close_rounded),
           splashRadius: 25,
         );
       } else if (isEditAlbum) {
         return IconButton(
           onPressed: () async {
-            bool isSuccess =
-                await ref.watch(albumViewerProvider.notifier).changeAlbumTitle(albumId, userId, newAlbumTitle);
+            bool isSuccess = await ref
+                .watch(albumViewerProvider.notifier)
+                .changeAlbumTitle(albumId, userId, newAlbumTitle);
 
             if (!isSuccess) {
               ImmichToast.show(
@@ -188,7 +198,9 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
     return AppBar(
       elevation: 0,
       leading: _buildLeadingButton(),
-      title: isMultiSelectionEnable ? Text(selectedAssetsInAlbum.length.toString()) : Container(),
+      title: isMultiSelectionEnable
+          ? Text(selectedAssetsInAlbum.length.toString())
+          : Container(),
       centerTitle: false,
       actions: [
         IconButton(

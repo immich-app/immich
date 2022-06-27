@@ -19,7 +19,8 @@ class HiveBackupAlbums {
   });
 
   @override
-  String toString() => 'HiveBackupAlbums(selectedAlbumIds: $selectedAlbumIds, excludedAlbumsIds: $excludedAlbumsIds)';
+  String toString() =>
+      'HiveBackupAlbums(selectedAlbumIds: $selectedAlbumIds, excludedAlbumsIds: $excludedAlbumsIds)';
 
   HiveBackupAlbums copyWith({
     List<String>? selectedAlbumIds,
@@ -49,7 +50,8 @@ class HiveBackupAlbums {
 
   String toJson() => json.encode(toMap());
 
-  factory HiveBackupAlbums.fromJson(String source) => HiveBackupAlbums.fromMap(json.decode(source));
+  factory HiveBackupAlbums.fromJson(String source) =>
+      HiveBackupAlbums.fromMap(json.decode(source));
 
   @override
   bool operator ==(Object other) {

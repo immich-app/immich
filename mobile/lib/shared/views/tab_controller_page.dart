@@ -10,7 +10,8 @@ class TabControllerPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
+    var isMultiSelectEnable =
+        ref.watch(homePageStateProvider).isMultiSelectEnable;
 
     return AutoTabsRouter(
       routes: [
@@ -33,8 +34,10 @@ class TabControllerPage extends ConsumerWidget {
             bottomNavigationBar: isMultiSelectEnable
                 ? null
                 : BottomNavigationBar(
-                    selectedLabelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                    unselectedLabelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    selectedLabelStyle: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w600),
+                    unselectedLabelStyle: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w600),
                     currentIndex: tabsRouter.activeIndex,
                     onTap: (index) {
                       tabsRouter.setActiveIndex(index);

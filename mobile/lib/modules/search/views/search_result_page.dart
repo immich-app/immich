@@ -13,24 +13,27 @@ import 'package:immich_mobile/modules/search/providers/search_result_page.provid
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 
 class SearchResultPage extends HookConsumerWidget {
-  SearchResultPage({Key? key, required this.searchTerm}) : super(key: key);
+  const SearchResultPage({Key? key, required this.searchTerm})
+      : super(key: key);
 
   final String searchTerm;
-  late FocusNode searchFocusNode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ScrollController _scrollController = useScrollController();
+    ScrollController scrollController = useScrollController();
     final searchTermController = useTextEditingController(text: "");
     final isNewSearch = useState(false);
     final currentSearchTerm = useState(searchTerm);
 
-    List<Widget> _imageGridGroup = [];
+    final List<Widget> imageGridGroup = [];
+
+    late FocusNode searchFocusNode;
 
     useEffect(() {
       searchFocusNode = FocusNode();
 
-      Future.delayed(Duration.zero, () => ref.read(searchResultPageProvider.notifier).search(searchTerm));
+      Future.delayed(Duration.zero,
+          () => ref.read(searchResultPageProvider.notifier).search(searchTerm));
       return () => searchFocusNode.dispose();
     }, []);
 
@@ -86,7 +89,10 @@ class SearchResultPage extends HookConsumerWidget {
           children: [
             Text(
               currentSearchTerm.value,
-              style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 13, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold),
               maxLines: 1,
             ),
             Icon(
@@ -125,7 +131,7 @@ class SearchResultPage extends HookConsumerWidget {
 
             if (lastMonth != null) {
               if (currentMonth - lastMonth! != 0) {
-                _imageGridGroup.add(
+                imageGridGroup.add(
                   MonthlyTitleText(
                     isoDate: dateGroup,
                   ),
@@ -133,14 +139,14 @@ class SearchResultPage extends HookConsumerWidget {
               }
             }
 
-            _imageGridGroup.add(
+            imageGridGroup.add(
               DailyTitleText(
                 isoDate: dateGroup,
                 assetGroup: immichAssetList,
               ),
             );
 
-            _imageGridGroup.add(
+            imageGridGroup.add(
               ImageGrid(assetGroup: immichAssetList),
             );
 
@@ -149,11 +155,11 @@ class SearchResultPage extends HookConsumerWidget {
 
           return DraggableScrollbar.semicircle(
             backgroundColor: Theme.of(context).primaryColor,
-            controller: _scrollController,
+            controller: scrollController,
             heightScrollThumb: 48.0,
             child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [..._imageGridGroup],
+              controller: scrollController,
+              slivers: [...imageGridGroup],
             ),
           );
         } else {
@@ -193,7 +199,9 @@ class SearchResultPage extends HookConsumerWidget {
         child: Stack(
           children: [
             _buildSearchResult(),
-            isNewSearch.value ? SearchSuggestionList(onSubmitted: _onSearchSubmitted) : Container(),
+            isNewSearch.value
+                ? SearchSuggestionList(onSubmitted: _onSearchSubmitted)
+                : Container(),
           ],
         ),
       ),

@@ -98,7 +98,8 @@ class AuthenticationState {
 
   String toJson() => json.encode(toMap());
 
-  factory AuthenticationState.fromJson(String source) => AuthenticationState.fromMap(json.decode(source));
+  factory AuthenticationState.fromJson(String source) =>
+      AuthenticationState.fromMap(json.decode(source));
 
   @override
   bool operator ==(Object other) {

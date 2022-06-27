@@ -4,25 +4,25 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique } from
 @Unique(['userId', 'deviceId'])
 export class DeviceInfoEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  userId: string;
+  userId!: string;
 
   @Column()
-  deviceId: string;
+  deviceId!: string;
 
   @Column()
-  deviceType: DeviceType;
+  deviceType!: DeviceType;
 
-  @Column({ nullable: true })
-  notificationToken: string;
+  @Column({ type: 'varchar', nullable: true })
+  notificationToken!: string | null;
 
   @CreateDateColumn()
-  createdAt: string;
+  createdAt!: string;
 
   @Column({ type: 'bool', default: false })
-  isAutoBackup: boolean;
+  isAutoBackup!: boolean;
 }
 
 export enum DeviceType {

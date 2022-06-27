@@ -38,11 +38,13 @@ class SharingSliverAppBar extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 4.0),
                   child: TextButton.icon(
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor.withAlpha(20)),
+                      backgroundColor: MaterialStateProperty.all(
+                          Theme.of(context).primaryColor.withAlpha(20)),
                       // foregroundColor: MaterialStateProperty.all(Colors.white),
                     ),
                     onPressed: () {
-                      AutoRouter.of(context).push(const CreateSharedAlbumRoute());
+                      AutoRouter.of(context)
+                          .push(const CreateSharedAlbumRoute());
                     },
                     icon: const Icon(
                       Icons.photo_album_outlined,
@@ -60,7 +62,8 @@ class SharingSliverAppBar extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 4.0),
                   child: TextButton.icon(
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor.withAlpha(20)),
+                      backgroundColor: MaterialStateProperty.all(
+                          Theme.of(context).primaryColor.withAlpha(20)),
                       // foregroundColor: MaterialStateProperty.all(Colors.white),
                     ),
                     onPressed: null,
