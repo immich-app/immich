@@ -93,5 +93,11 @@
   "search_things": "Things",
   "search_new_search_hint": "New Search",
   "search_no_objects": "No Object Info Available",
-  "search_no_places": "No Places Info Available"
+  "search_no_places": "No Places Info Available",
+  "version_announcement_title": "New Server Version Available \uD83C\uDF89",
+  "version_announcement_text_1": "Hi friend, there is a new release of",
+  "version_announcement_text_2": "please take your time to visit the ",
+  "version_announcement_release_notes": "release notes",
+  "version_announcement_text_3": " and ensure your docker-compose and .env setup is up-to-date to prevent any misconfigurations, especially if you use WatchTower or any mechanism that handles updating your server application automatically.",
+  "version_announcement_ack": "Acknowledge"
 }

@@ -93,5 +93,11 @@
   "search_things": "Dinge",
   "search_new_search_hint": "Neue Suche",
   "search_no_objects": "Keine Informationen über Dinge verfügbar",
-  "search_no_places": "Keine Informationen über Orte verfügbar"
+  "search_no_places": "Keine Informationen über Orte verfügbar",
+  "version_announcement_title": "Eine neue Server-Version ist verfügbar \uD83C\uDF89",
+  "version_announcement_text_1": "Hallo mein Freund, es gibt eine neue Version von",
+  "version_announcement_text_2": "- Bitte nehme dir Zeit und lese die ",
+  "version_announcement_release_notes": "Release-Notes",
+  "version_announcement_text_3": " und stelle sicher, dass deine docker-compose und .env Dateien aktuell sind. So kannst du Fehler vermeiden, besonders wenn du WatchTower oder einen ähnlichen Mechanismus für automatische Updates benutzt.",
+  "version_announcement_ack": "Ich habe verstanden"
 }
