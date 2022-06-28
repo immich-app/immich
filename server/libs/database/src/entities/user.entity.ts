@@ -27,7 +27,7 @@ export class UserEntity {
   profileImagePath!: string;
 
   @Column()
-  isFirstLoggedIn!: boolean;
+  shouldChangePassword!: boolean;
 
   @CreateDateColumn()
   createdAt!: string;

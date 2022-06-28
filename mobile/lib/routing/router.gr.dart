@@ -29,6 +29,10 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const LoginPage());
     },
+    ChangePasswordRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const ChangePasswordPage());
+    },
     TabControllerRoute.name: (routeData) {
       return CustomPage<dynamic>(
           routeData: routeData,
@@ -131,6 +135,7 @@ class _$AppRouter extends RootStackRouter {
   List<RouteConfig> get routes => [
         RouteConfig(SplashScreenRoute.name, path: '/'),
         RouteConfig(LoginRoute.name, path: '/login-page'),
+        RouteConfig(ChangePasswordRoute.name, path: '/change-password-page'),
         RouteConfig(TabControllerRoute.name,
             path: '/tab-controller-page',
             guards: [
@@ -190,6 +195,15 @@ class LoginRoute extends PageRouteInfo<void> {
   const LoginRoute() : super(LoginRoute.name, path: '/login-page');
 
   static const String name = 'LoginRoute';
+}
+
+/// generated route for
+/// [ChangePasswordPage]
+class ChangePasswordRoute extends PageRouteInfo<void> {
+  const ChangePasswordRoute()
+      : super(ChangePasswordRoute.name, path: '/change-password-page');
+
+  static const String name = 'ChangePasswordRoute';
 }
 
 /// generated route for
