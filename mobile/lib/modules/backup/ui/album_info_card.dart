@@ -180,8 +180,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.only(top: 2.0),
                             child: Text(
-                              albumInfo.assetCount.toString() +
-                                  (albumInfo.isAll ? " (ALL)" : ""),
+                              '${albumInfo.assetCount} ${(albumInfo.isAll ? " (ALL)" : "")}',
                               style: TextStyle(
                                   fontSize: 12, color: Colors.grey[600]),
                             ),

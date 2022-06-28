@@ -198,7 +198,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       elevation: 0,
       leading: _buildLeadingButton(),
       title: isMultiSelectionEnable
-          ? Text(selectedAssetsInAlbum.length.toString())
+          ? Text('${selectedAssetsInAlbum.length}')
           : null,
       centerTitle: false,
       actions: [

@@ -37,7 +37,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     /// Find out if the assets in album exist on the device
     /// If they exist, add to selected asset state to show they are already selected.
     void _onAddPhotosPressed(SharedAlbum albumInfo) async {
-      if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty) {
+      if (albumInfo.assets?.isNotEmpty == true) {
         ref
             .watch(assetSelectionProvider.notifier)
             .addNewAssets(albumInfo.assets!.toList());
@@ -112,7 +112,8 @@ class AlbumViewerPage extends HookConsumerWidget {
       String startDate = "";
       DateTime parsedStartDate =
           DateTime.parse(albumInfo.assets!.first.createdAt);
-      DateTime parsedEndDate = DateTime.parse(albumInfo.assets!.last.createdAt);
+      DateTime parsedEndDate = DateTime.parse(
+          albumInfo.assets?.last.createdAt ?? '11111111'); //Need default.
 
       if (parsedStartDate.year == parsedEndDate.year) {
         startDate = DateFormat('LLL d').format(parsedStartDate);
@@ -138,7 +139,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildTitle(albumInfo),
-            if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty)
+            if (albumInfo.assets?.isNotEmpty == true)
               _buildAlbumDateRange(albumInfo),
             SizedBox(
               height: 60,
@@ -171,7 +172,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget _buildImageGrid(SharedAlbum albumInfo) {
-      if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty) {
+      if (albumInfo.assets?.isNotEmpty == true) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 10.0),
           sliver: SliverGrid(

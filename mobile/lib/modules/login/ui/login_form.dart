@@ -106,10 +106,11 @@ class ServerEndpointInput extends StatelessWidget {
       : super(key: key);
 
   String? _validateInput(String? url) {
-    if (url == null) return null;
-    if (!url.startsWith(RegExp(r'https?://')))
+    if (url?.startsWith(RegExp(r'https?://')) == true) {
+      return null;
+    } else {
       return 'Please specify http:// or https://';
-    return null;
+    }
   }
 
   @override

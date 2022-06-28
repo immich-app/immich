@@ -138,7 +138,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    asset.duration.toString().substring(0, 7),
+                    '${asset.duration?.substring(0, 7)}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,

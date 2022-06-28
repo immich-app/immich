@@ -107,14 +107,14 @@ class ExifBottomSheet extends ConsumerWidget {
                     "LOCATION",
                     style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                   ),
-                  if (assetDetail.exifInfo!.latitude != null &&
-                      assetDetail.exifInfo!.longitude != null)
+                  if (assetDetail.exifInfo?.latitude != null &&
+                      assetDetail.exifInfo?.longitude != null)
                     _buildMap(),
-                  if (assetDetail.exifInfo!.city != null &&
-                      assetDetail.exifInfo!.state != null)
+                  if (assetDetail.exifInfo?.city != null &&
+                      assetDetail.exifInfo?.state != null)
                     _buildLocationText(),
                   Text(
-                    "${assetDetail.exifInfo!.latitude!.toStringAsFixed(4)}, ${assetDetail.exifInfo!.longitude!.toStringAsFixed(4)}",
+                    "${assetDetail.exifInfo?.latitude?.toStringAsFixed(4)}, ${assetDetail.exifInfo?.longitude?.toStringAsFixed(4)}",
                     style: TextStyle(fontSize: 12, color: Colors.grey[400]),
                   )
                 ],
@@ -165,7 +165,7 @@ class ExifBottomSheet extends ConsumerWidget {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                          "ƒ/${assetDetail.exifInfo?.fNumber}   1/${(1 / assetDetail.exifInfo!.exposureTime!).toStringAsFixed(0)}   ${assetDetail.exifInfo?.focalLength}mm   ISO${assetDetail.exifInfo?.iso} "),
+                          "ƒ/${assetDetail.exifInfo?.fNumber}   1/${(1 / (assetDetail.exifInfo?.exposureTime ?? 1)).toStringAsFixed(0)}   ${assetDetail.exifInfo?.focalLength}mm   ISO${assetDetail.exifInfo?.iso} "),
                     ),
                 ],
               ),
