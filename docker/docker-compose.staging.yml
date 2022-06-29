@@ -69,10 +69,8 @@ services:
     restart: always
 
   nginx:
-    container_name: proxy_nginx
-    image: nginx:latest
-    volumes:
-      - ./settings/nginx-conf:/etc/nginx/conf.d
+    container_name: immich_proxy
+    image: altran1502/immich-proxy:staging
     ports:
       - 2283:80
       - 2284:443

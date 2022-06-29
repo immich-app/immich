@@ -107,5 +107,15 @@ services:
     depends_on:
       - immich-server
 
+  immich-proxy:
+    container_name: immich_proxy
+    image: immich-proxy-dev:latest
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 2283:80
+      - 2284:443
+
 volumes:
   pgdata:
