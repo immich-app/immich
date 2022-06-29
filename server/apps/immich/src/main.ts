@@ -15,7 +15,7 @@ async function bootstrap() {
 
   app.useWebSocketAdapter(new RedisIoAdapter(app));
 
-  await app.listen(3000, () => {
+  await app.listen(3001, () => {
     if (process.env.NODE_ENV == 'development') {
       Logger.log('Running Immich Server in DEVELOPMENT environment', 'ImmichServer');
     }
