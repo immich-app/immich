@@ -116,7 +116,6 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
         state = WebscoketState(isConnected: false, socket: null);
       }
     }
-    debugPrint("[WEBSOCKET] Disconnected");
   }
 
   stopListenToEvent(String eventName) {
