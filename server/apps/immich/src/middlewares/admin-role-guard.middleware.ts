@@ -25,7 +25,7 @@ export class AdminRolesGuard implements CanActivate {
         return false;
       }
 
-      const user = await this.userRepository.findOne(userId);
+      const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) {
         return false;
       }

@@ -33,7 +33,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
         ? await this.immichJwtService.validateToken(accessToken)
         : { status: false, userId: null };
 
-      if (!res.status) {
+      if (!res.status || res.userId == null) {
         client.emit('error', 'unauthorized');
         client.disconnect();
         return;

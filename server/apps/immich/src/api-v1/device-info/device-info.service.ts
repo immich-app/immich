@@ -15,8 +15,10 @@ export class DeviceInfoService {
 
   async create(createDeviceInfoDto: CreateDeviceInfoDto, authUser: AuthUserDto) {
     const res = await this.deviceRepository.findOne({
-      deviceId: createDeviceInfoDto.deviceId,
-      userId: authUser.id,
+      where: {
+        deviceId: createDeviceInfoDto.deviceId,
+        userId: authUser.id,
+      },
     });
 
     if (res) {

@@ -10,9 +10,6 @@ export const databaseConfig: TypeOrmModuleOptions = {
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
   synchronize: false,
   migrations: [__dirname + '/../migrations/*.{js,ts}'],
-  cli: {
-    migrationsDir: __dirname + '/../migrations',
-  },
   migrationsRun: true,
   autoLoadEntities: true,
 };
