@@ -31,6 +31,7 @@ export class AlbumController {
 
   @Post()
   async create(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createAlbumDto: CreateAlbumDto) {
+    console.log('create album');
     return this.albumService.create(authUser, createAlbumDto);
   }
 
