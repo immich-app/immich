@@ -41,7 +41,7 @@ import { DatabaseModule } from '@app/database';
       useFactory: async () => ({
         redis: {
           host: process.env.REDIS_HOSTNAME || 'immich_redis',
-          port: parseInt(process.env.REDIS_PORT) || 6379,
+          port: parseInt(process.env.REDIS_PORT!) || 6379,
         },
       }),
     }),
@@ -62,6 +62,8 @@ import { DatabaseModule } from '@app/database';
   providers: [],
 })
 export class AppModule implements NestModule {
+  // TODO: check if consumer is needed or remove
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   configure(consumer: MiddlewareConsumer): void {
     if (process.env.NODE_ENV == 'development') {
       // consumer.apply(AppLoggerMiddleware).forRoutes('*');

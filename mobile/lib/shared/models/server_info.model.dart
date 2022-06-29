@@ -64,7 +64,8 @@ class ServerInfo {
 
   String toJson() => json.encode(toMap());
 
-  factory ServerInfo.fromJson(String source) => ServerInfo.fromMap(json.decode(source));
+  factory ServerInfo.fromJson(String source) =>
+      ServerInfo.fromMap(json.decode(source));
 
   @override
   String toString() {

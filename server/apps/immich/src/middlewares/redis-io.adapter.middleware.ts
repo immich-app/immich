@@ -5,7 +5,7 @@ import { createAdapter } from 'socket.io-redis';
 
 const pubClient = new RedisClient({
   host: process.env.REDIS_HOSTNAME || 'immich_redis',
-  port: parseInt(process.env.REDIS_PORT) || 6379,
+  port: parseInt(process.env.REDIS_PORT!) || 6379,
 });
 
 const subClient = pubClient.duplicate();

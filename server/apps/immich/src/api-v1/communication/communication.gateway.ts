@@ -10,7 +10,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
     private immichAuthService: ImmichAuthService,
   ) {}
 
-  @WebSocketServer() server: Server;
+  @WebSocketServer() server!: Server;
 
   handleDisconnect(client: Socket) {
     client.leave(client.nsp.name);
@@ -21,7 +21,8 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
   async handleConnection(client: Socket, ...args: any[]) {
     Logger.verbose(`New websocket connection: ${client.id}`, 'WebsocketConnectionEvent');
 
-    const authBearer = client.handshake.headers.authorization;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const authBearer = client.handshake.headers.authorization!;
     if (!authBearer.startsWith('Bearer '))  {
       client.emit('error', 'unauthorized');
       client.disconnect();
@@ -29,7 +30,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
     }
 
     const accessToken = authBearer.substring(7);
-    const user: UserEntity | null = await this.immichAuthService.validateWsToken(accessToken);
+    const user: UserEntity | undefined = await this.immichAuthService.validateWsToken(accessToken);
 
     if (!user) {
       client.emit('error', 'unauthorized');

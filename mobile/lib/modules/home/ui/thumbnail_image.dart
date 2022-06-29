@@ -25,7 +25,8 @@ class ThumbnailImage extends HookConsumerWidget {
         '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
 
     var selectedAsset = ref.watch(homePageStateProvider).selectedItems;
-    var isMultiSelectEnable = ref.watch(homePageStateProvider).isMultiSelectEnable;
+    var isMultiSelectEnable =
+        ref.watch(homePageStateProvider).isMultiSelectEnable;
     var deviceId = ref.watch(authenticationProvider).deviceId;
 
     Widget _buildSelectionIcon(ImmichAsset asset) {
@@ -45,12 +46,20 @@ class ThumbnailImage extends HookConsumerWidget {
     return GestureDetector(
       onTap: () {
         debugPrint("View ${asset.id}");
-        if (isMultiSelectEnable && selectedAsset.contains(asset) && selectedAsset.length == 1) {
+        if (isMultiSelectEnable &&
+            selectedAsset.contains(asset) &&
+            selectedAsset.length == 1) {
           ref.watch(homePageStateProvider.notifier).disableMultiSelect();
-        } else if (isMultiSelectEnable && selectedAsset.contains(asset) && selectedAsset.length > 1) {
-          ref.watch(homePageStateProvider.notifier).removeSingleSelectedItem(asset);
+        } else if (isMultiSelectEnable &&
+            selectedAsset.contains(asset) &&
+            selectedAsset.length > 1) {
+          ref
+              .watch(homePageStateProvider.notifier)
+              .removeSingleSelectedItem(asset);
         } else if (isMultiSelectEnable && !selectedAsset.contains(asset)) {
-          ref.watch(homePageStateProvider.notifier).addSingleSelectedItem(asset);
+          ref
+              .watch(homePageStateProvider.notifier)
+              .addSingleSelectedItem(asset);
         } else {
           if (asset.type == 'IMAGE') {
             AutoRouter.of(context).push(
@@ -65,7 +74,8 @@ class ThumbnailImage extends HookConsumerWidget {
           } else {
             AutoRouter.of(context).push(
               VideoViewerRoute(
-                  videoUrl: '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
+                  videoUrl:
+                      '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
                   asset: asset),
             );
           }
@@ -83,7 +93,8 @@ class ThumbnailImage extends HookConsumerWidget {
             Container(
               decoration: BoxDecoration(
                 border: isMultiSelectEnable && selectedAsset.contains(asset)
-                    ? Border.all(color: Theme.of(context).primaryColorLight, width: 10)
+                    ? Border.all(
+                        color: Theme.of(context).primaryColorLight, width: 10)
                     : const Border(),
               ),
               child: CachedNetworkImage(
@@ -93,11 +104,15 @@ class ThumbnailImage extends HookConsumerWidget {
                 memCacheHeight: asset.type == 'IMAGE' ? 250 : 400,
                 fit: BoxFit.cover,
                 imageUrl: thumbnailRequestUrl,
-                httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+                httpHeaders: {
+                  "Authorization": "Bearer ${box.get(accessTokenKey)}"
+                },
                 fadeInDuration: const Duration(milliseconds: 250),
-                progressIndicatorBuilder: (context, url, downloadProgress) => Transform.scale(
+                progressIndicatorBuilder: (context, url, downloadProgress) =>
+                    Transform.scale(
                   scale: 0.2,
-                  child: CircularProgressIndicator(value: downloadProgress.progress),
+                  child: CircularProgressIndicator(
+                      value: downloadProgress.progress),
                 ),
                 errorWidget: (context, url, error) {
                   return Icon(
@@ -122,7 +137,9 @@ class ThumbnailImage extends HookConsumerWidget {
               right: 10,
               bottom: 5,
               child: Icon(
-                (deviceId != asset.deviceId) ? Icons.cloud_done_outlined : Icons.photo_library_rounded,
+                (deviceId != asset.deviceId)
+                    ? Icons.cloud_done_outlined
+                    : Icons.photo_library_rounded,
                 color: Colors.white,
                 size: 18,
               ),

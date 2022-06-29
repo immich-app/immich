@@ -3,9 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
-  Delete,
   UseGuards,
   ValidationPipe,
   Put,
@@ -32,6 +30,12 @@ export class UserController {
   @Get()
   async getAllUsers(@GetAuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean) {
     return await this.userService.getAllUsers(authUser, isAll);
+  }
+
+  @UseGuards(ImmichAuthGuard)
+  @Get('me')
+  async getUserInfo(@GetAuthUser() authUser: AuthUserDto) {
+    return await this.userService.getUserInfo(authUser);
   }
 
   @UseGuards(AdminRolesGuard)

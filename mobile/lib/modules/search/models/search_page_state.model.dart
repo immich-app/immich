@@ -25,7 +25,8 @@ class SearchPageState {
       searchTerm: searchTerm ?? this.searchTerm,
       isSearchEnabled: isSearchEnabled ?? this.isSearchEnabled,
       searchSuggestion: searchSuggestion ?? this.searchSuggestion,
-      userSuggestedSearchTerms: userSuggestedSearchTerms ?? this.userSuggestedSearchTerms,
+      userSuggestedSearchTerms:
+          userSuggestedSearchTerms ?? this.userSuggestedSearchTerms,
     );
   }
 
@@ -43,13 +44,15 @@ class SearchPageState {
       searchTerm: map['searchTerm'] ?? '',
       isSearchEnabled: map['isSearchEnabled'] ?? false,
       searchSuggestion: List<String>.from(map['searchSuggestion']),
-      userSuggestedSearchTerms: List<String>.from(map['userSuggestedSearchTerms']),
+      userSuggestedSearchTerms:
+          List<String>.from(map['userSuggestedSearchTerms']),
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory SearchPageState.fromJson(String source) => SearchPageState.fromMap(json.decode(source));
+  factory SearchPageState.fromJson(String source) =>
+      SearchPageState.fromMap(json.decode(source));
 
   @override
   String toString() {

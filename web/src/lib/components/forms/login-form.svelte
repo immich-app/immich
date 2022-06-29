@@ -20,14 +20,6 @@
 			error = response.error;
 		}
 
-		if (response.needUpdate) {
-			return dispatch('need-update');
-		}
-
-		if (response.needSelectAdmin) {
-			return dispatch('need-select-admin');
-		}
-
 		if (response.success) {
 			$session.user = {
 				accessToken: response.user!.accessToken,
@@ -37,6 +29,10 @@
 				id: response.user!.id,
 				email: response.user!.email,
 			};
+
+			if (!response.user?.isAdmin && response.user?.shouldChangePassword) {
+				return dispatch('first-login');
+			}
 
 			return dispatch('success');
 		}

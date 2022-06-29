@@ -37,14 +37,16 @@ class HomePageState {
   factory HomePageState.fromMap(Map<String, dynamic> map) {
     return HomePageState(
       isMultiSelectEnable: map['isMultiSelectEnable'] ?? false,
-      selectedItems: Set<ImmichAsset>.from(map['selectedItems']?.map((x) => ImmichAsset.fromMap(x))),
+      selectedItems: Set<ImmichAsset>.from(
+          map['selectedItems']?.map((x) => ImmichAsset.fromMap(x))),
       selectedDateGroup: Set<String>.from(map['selectedDateGroup']),
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory HomePageState.fromJson(String source) => HomePageState.fromMap(json.decode(source));
+  factory HomePageState.fromJson(String source) =>
+      HomePageState.fromMap(json.decode(source));
 
   @override
   String toString() =>
@@ -62,5 +64,8 @@ class HomePageState {
   }
 
   @override
-  int get hashCode => isMultiSelectEnable.hashCode ^ selectedItems.hashCode ^ selectedDateGroup.hashCode;
+  int get hashCode =>
+      isMultiSelectEnable.hashCode ^
+      selectedItems.hashCode ^
+      selectedDateGroup.hashCode;
 }

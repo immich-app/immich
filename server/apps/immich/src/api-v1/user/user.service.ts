@@ -1,4 +1,11 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, StreamableFile } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+  StreamableFile,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
@@ -8,8 +15,8 @@ import { UserEntity } from '@app/database/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { createReadStream } from 'fs';
 import { Response as Res } from 'express';
-import { mapUser, User } from './response-dto/user';
 import {ConfigService} from "@nestjs/config";
+import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
 
 @Injectable()
 export class UserService {
@@ -32,6 +39,10 @@ export class UserService {
     });
   }
 
+  async getUserInfo(authUser: AuthUserDto) {
+    return this.userRepository.findOne({ where: { id: authUser.id } });
+  }
+
   async getUserCount(isAdmin: boolean) {
     let users;
 
@@ -46,7 +57,7 @@ export class UserService {
     };
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) throw new BadRequestException("Local users not allowed!");
 
     const user = await this.userRepository.findOne({ where: { email: createUserDto.email } });
@@ -78,12 +89,16 @@ export class UserService {
   }
 
   async updateUser(updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOne(updateUserDto.id);
+    const user = await this.userRepository.findOne({ where: { id: updateUserDto.id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     user.lastName = updateUserDto.lastName || user.lastName;
     user.firstName = updateUserDto.firstName || user.firstName;
     user.profileImagePath = updateUserDto.profileImagePath || user.profileImagePath;
-    user.isFirstLoggedIn = updateUserDto.isFirstLoggedIn || user.isFirstLoggedIn;
+    user.shouldChangePassword =
+      updateUserDto.shouldChangePassword != undefined ? updateUserDto.shouldChangePassword : user.shouldChangePassword;
 
     // If payload includes password - Create new password for user
     if (updateUserDto.password) {
@@ -104,6 +119,7 @@ export class UserService {
     try {
       const updatedUser = await this.userRepository.save(user);
 
+      // TODO: this should probably retrun UserResponseDto
       return {
         id: updatedUser.id,
         email: updatedUser.email,
@@ -136,7 +152,10 @@ export class UserService {
 
   async getUserProfileImage(userId: string, res: Res) {
     try {
-      const user = await this.userRepository.findOne({ id: userId });
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
 
       if (!user.profileImagePath) {
         // throw new BadRequestException('User does not have a profile image');

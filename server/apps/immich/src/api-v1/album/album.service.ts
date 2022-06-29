@@ -31,7 +31,7 @@ export class AlbumService {
 
     if (validateIsOwner && !isOwner) {
       throw new ForbiddenException('Unauthorized Album Access');
-    } else if (!isOwner && !album.sharedUsers.some((user) => user.sharedUserId == authUser.id)) {
+    } else if (!isOwner && !album.sharedUsers?.some((user) => user.sharedUserId == authUser.id)) {
       throw new ForbiddenException('Unauthorized Album Access');
     }
     return album;

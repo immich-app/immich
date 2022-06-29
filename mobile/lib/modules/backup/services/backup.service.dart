@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
@@ -14,20 +15,28 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:cancellation_token_http/http.dart' as http;
 
+final backupServiceProvider =
+    Provider((ref) => BackupService(ref.watch(networkServiceProvider)));
+
 class BackupService {
-  final NetworkService _networkService = NetworkService();
+  final NetworkService _networkService;
+  BackupService(this._networkService);
 
   Future<List<String>> getDeviceBackupAsset() async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
 
-    Response response = await _networkService.getRequest(url: "asset/$deviceId");
+    Response response =
+        await _networkService.getRequest(url: "asset/$deviceId");
     List<dynamic> result = jsonDecode(response.toString());
 
     return result.cast<String>();
   }
 
-  backupAsset(Set<AssetEntity> assetList, http.CancellationToken cancelToken,
-      Function(String, String) singleAssetDoneCb, Function(int, int) uploadProgress) async {
+  backupAsset(
+      Set<AssetEntity> assetList,
+      http.CancellationToken cancelToken,
+      Function(String, String) singleAssetDoneCb,
+      Function(int, int) uploadProgress) async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
@@ -44,7 +53,8 @@ class BackupService {
 
         if (file != null) {
           String originalFileName = await entity.titleAsync;
-          String fileNameWithoutPath = originalFileName.toString().split(".")[0];
+          String fileNameWithoutPath =
+              originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
           var mimeType = FileHelper.getMimeType(file.path);
           var fileStream = file.openRead();
@@ -60,7 +70,8 @@ class BackupService {
           );
 
           // Build thumbnail multipart data
-          var thumbnailData = await entity.thumbnailDataWithSize(const ThumbnailSize(1440, 2560));
+          var thumbnailData = await entity
+              .thumbnailDataWithSize(const ThumbnailSize(1440, 2560));
           if (thumbnailData != null) {
             thumbnailUploadData = http.MultipartFile.fromBytes(
               "thumbnailData",
@@ -75,8 +86,10 @@ class BackupService {
 
           var box = Hive.box(userInfoBox);
 
-          var req = MultipartRequest('POST', Uri.parse('$savedEndpoint/asset/upload'),
-              onProgress: ((bytes, totalBytes) => uploadProgress(bytes, totalBytes)));
+          var req = MultipartRequest(
+              'POST', Uri.parse('$savedEndpoint/asset/upload'),
+              onProgress: ((bytes, totalBytes) =>
+                  uploadProgress(bytes, totalBytes)));
           req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
 
           req.fields['deviceAssetId'] = entity.id;
@@ -126,7 +139,8 @@ class BackupService {
     }
   }
 
-  Future<DeviceInfoRemote> setAutoBackup(bool status, String deviceId, String deviceType) async {
+  Future<DeviceInfoRemote> setAutoBackup(
+      bool status, String deviceId, String deviceType) async {
     var res = await _networkService.patchRequest(url: 'device-info', data: {
       "isAutoBackup": status,
       "deviceId": deviceId,

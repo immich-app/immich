@@ -5,23 +5,39 @@
 	let error: string;
 	let success: string;
 
+	let password: string = '';
+	let confirmPassowrd: string = '';
+
+	let canCreateUser = false;
+
+	$: {
+		if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
+			error = 'Password does not match';
+			canCreateUser = false;
+		} else {
+			error = '';
+			canCreateUser = true;
+		}
+	}
 	const dispatch = createEventDispatcher();
 
 	async function registerUser(event: SubmitEvent) {
-		error = '';
+		if (canCreateUser) {
+			error = '';
 
-		const formElement = event.target as HTMLFormElement;
+			const formElement = event.target as HTMLFormElement;
 
-		const response = await sendRegistrationForm(formElement);
+			const response = await sendRegistrationForm(formElement);
 
-		if (response.error) {
-			error = JSON.stringify(response.error);
-		}
+			if (response.error) {
+				error = JSON.stringify(response.error);
+			}
 
-		if (response.success) {
-			success = 'New user created';
+			if (response.success) {
+				success = 'New user created';
 
-			dispatch('user-created');
+				dispatch('user-created');
+			}
 		}
 	}
 </script>
@@ -43,25 +59,37 @@
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="password">Password</label>
-			<input class="immich-form-input" id="password" name="password" type="password" required />
+			<input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
-			<label class="immich-form-label" for="password">First Name</label>
+			<label class="immich-form-label" for="confirmPassword">Confirm Password</label>
+			<input
+				class="immich-form-input"
+				id="confirmPassword"
+				name="password"
+				type="password"
+				required
+				bind:value={confirmPassowrd}
+			/>
+		</div>
+
+		<div class="m-4 flex flex-col gap-2">
+			<label class="immich-form-label" for="firstName">First Name</label>
 			<input class="immich-form-input" id="firstName" name="firstName" type="text" required />
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
-			<label class="immich-form-label" for="password">Last Name</label>
+			<label class="immich-form-label" for="lastName">Last Name</label>
 			<input class="immich-form-input" id="lastName" name="lastName" type="text" required />
 		</div>
 
 		{#if error}
-			<p class="text-red-400">{error}</p>
+			<p class="text-red-400 ml-4 text-sm">{error}</p>
 		{/if}
 
 		{#if success}
-			<p class="text-immich-primary">{success}</p>
+			<p class="text-immich-primary ml-4 text-sm">{success}</p>
 		{/if}
 		<div class="flex w-full">
 			<button

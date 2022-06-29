@@ -56,18 +56,19 @@ class User {
   factory User.fromJson(String source) => User.fromMap(json.decode(source));
 
   @override
-  String toString() => 'UserInfo(id: $id, email: $email, createdAt: $createdAt)';
+  String toString() =>
+      'UserInfo(id: $id, email: $email, createdAt: $createdAt)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
     return other is User &&
-      other.id == id &&
-      other.email == email &&
-      other.createdAt == createdAt &&
-      other.firstName == firstName &&
-      other.lastName == lastName;
+        other.id == id &&
+        other.email == email &&
+        other.createdAt == createdAt &&
+        other.firstName == firstName &&
+        other.lastName == lastName;
   }
 
   @override

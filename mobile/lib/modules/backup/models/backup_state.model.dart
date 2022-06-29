@@ -10,7 +10,7 @@ enum BackUpProgressEnum { idle, inProgress, done }
 class BackUpState extends Equatable {
   // enum
   final BackUpProgressEnum backupProgress;
-  final List<String> allAssetOnDatabase;
+  final List<String> allAssetsInDatabase;
   final double progressInPercentage;
   final CancellationToken cancelToken;
   final ServerInfo serverInfo;
@@ -28,7 +28,7 @@ class BackUpState extends Equatable {
 
   const BackUpState({
     required this.backupProgress,
-    required this.allAssetOnDatabase,
+    required this.allAssetsInDatabase,
     required this.progressInPercentage,
     required this.cancelToken,
     required this.serverInfo,
@@ -41,7 +41,7 @@ class BackUpState extends Equatable {
 
   BackUpState copyWith({
     BackUpProgressEnum? backupProgress,
-    List<String>? allAssetOnDatabase,
+    List<String>? allAssetsInDatabase,
     double? progressInPercentage,
     CancellationToken? cancelToken,
     ServerInfo? serverInfo,
@@ -53,7 +53,7 @@ class BackUpState extends Equatable {
   }) {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,
-      allAssetOnDatabase: allAssetOnDatabase ?? this.allAssetOnDatabase,
+      allAssetsInDatabase: allAssetsInDatabase ?? this.allAssetsInDatabase,
       progressInPercentage: progressInPercentage ?? this.progressInPercentage,
       cancelToken: cancelToken ?? this.cancelToken,
       serverInfo: serverInfo ?? this.serverInfo,
@@ -61,20 +61,21 @@ class BackUpState extends Equatable {
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
       excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
-      selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
+      selectedAlbumsBackupAssetsIds:
+          selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
     );
   }
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetOnDatabase: $allAssetOnDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds)';
   }
 
   @override
   List<Object> get props {
     return [
       backupProgress,
-      allAssetOnDatabase,
+      allAssetsInDatabase,
       progressInPercentage,
       cancelToken,
       serverInfo,

@@ -3,8 +3,7 @@
 	import { fade } from 'svelte/transition';
 
 	import LoginForm from '$lib/components/forms/login-form.svelte';
-	import UpdateForm from '../../../lib/components/forms/update-form.svelte';
-	import SelectAdminForm from '../../../lib/components/forms/select-admin-form.svelte';
+
 	import {
 		AuthorizationRequest,
 		AuthorizationServiceConfiguration,
@@ -50,21 +49,8 @@
 		});
 	})
 
-	let shouldShowUpdateForm = false;
-	let shouldShowSelectAdminForm = false;
-
 	const onLoginSuccess = async () => {
 		goto('/photos');
-	};
-
-	const onNeedUpdate = () => {
-		shouldShowUpdateForm = true;
-		shouldShowSelectAdminForm = false;
-	};
-
-	const onNeedSelectAdmin = () => {
-		shouldShowUpdateForm = false;
-		shouldShowSelectAdminForm = true;
 	};
 
 	const onOAuth2Login = () => {
@@ -87,26 +73,12 @@
 </svelte:head>
 
 <section class="h-screen w-screen flex place-items-center place-content-center">
-	{#if !shouldShowUpdateForm && !shouldShowSelectAdminForm}
-		<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
-			<LoginForm on:success={onLoginSuccess}
-					   on:need-update={onNeedUpdate}
-					   on:need-select-admin={onNeedSelectAdmin}
-					   on:oauth2-login={onOAuth2Login}
-					   {localLoginEnabled}
-					   {oauth2LoginEnabled} />
-		</div>
-	{/if}
-
-	{#if shouldShowUpdateForm}
-		<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
-			<UpdateForm on:success={onLoginSuccess} />
-		</div>
-	{/if}
-
-	{#if shouldShowSelectAdminForm}
-		<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
-			<SelectAdminForm on:success={onLoginSuccess} />
-		</div>
-	{/if}
+	<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
+		<LoginForm
+				on:success={onLoginSuccess}
+				on:first-login={() => goto('/auth/change-password')}
+				on:oauth2-login={onOAuth2Login}
+				{localLoginEnabled}
+				{oauth2LoginEnabled} />
+	</div>
 </section>

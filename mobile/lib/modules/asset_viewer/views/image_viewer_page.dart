@@ -20,20 +20,26 @@ class ImageViewerPage extends HookConsumerWidget {
   final String heroTag;
   final String thumbnailUrl;
   final ImmichAsset asset;
-  final AssetService _assetService = AssetService();
+
   ImmichAssetWithExif? assetDetail;
 
-  ImageViewerPage(
-      {Key? key, required this.imageUrl, required this.heroTag, required this.thumbnailUrl, required this.asset})
-      : super(key: key);
+  ImageViewerPage({
+    Key? key,
+    required this.imageUrl,
+    required this.heroTag,
+    required this.thumbnailUrl,
+    required this.asset,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final downloadAssetStatus = ref.watch(imageViewerStateProvider).downloadAssetStatus;
+    final downloadAssetStatus =
+        ref.watch(imageViewerStateProvider).downloadAssetStatus;
     var box = Hive.box(userInfoBox);
 
     getAssetExif() async {
-      assetDetail = await _assetService.getAssetById(asset.id);
+      assetDetail =
+          await ref.watch(assetServiceProvider).getAssetById(asset.id);
     }
 
     showInfo() {
@@ -59,31 +65,32 @@ class ImageViewerPage extends HookConsumerWidget {
         asset: asset,
         onMoreInfoPressed: showInfo,
         onDownloadPressed: () {
-          ref.watch(imageViewerStateProvider.notifier).downloadAsset(asset, context);
+          ref
+              .watch(imageViewerStateProvider.notifier)
+              .downloadAsset(asset, context);
         },
       ),
       body: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: Hero(
+        child: Stack(
+          children: [
+            Center(
+              child: Hero(
                   tag: heroTag,
                   child: RemotePhotoView(
-                      thumbnailUrl: thumbnailUrl,
-                      imageUrl: imageUrl,
-                      authToken: "Bearer ${box.get(accessTokenKey)}",
-                      onSwipeDown: () => AutoRouter.of(context).pop(),
-                      onSwipeUp: () => showInfo(),
-                  )
-                ),
+                    thumbnailUrl: thumbnailUrl,
+                    imageUrl: imageUrl,
+                    authToken: "Bearer ${box.get(accessTokenKey)}",
+                    onSwipeDown: () => AutoRouter.of(context).pop(),
+                    onSwipeUp: () => showInfo(),
+                  )),
+            ),
+            if (downloadAssetStatus == DownloadAssetStatus.loading)
+              const Center(
+                child: DownloadLoadingIndicator(),
               ),
-              if (downloadAssetStatus == DownloadAssetStatus.loading)
-                const Center(
-                  child: DownloadLoadingIndicator(),
-                ),
-            ],
-          ),
+          ],
         ),
+      ),
     );
   }
 }

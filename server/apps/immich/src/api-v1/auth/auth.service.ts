@@ -10,10 +10,10 @@ import { UserEntity } from '@app/database/entities/user.entity';
 import {LoginCredentialDto} from './dto/login-credential.dto';
 import {ImmichJwtService} from '../../modules/immich-auth/immich-jwt.service';
 import {SignUpDto} from './dto/sign-up.dto';
-import { mapUser, User } from '../user/response-dto/user';
 import {AuthUserDto} from "../../decorators/auth-user.decorator";
 import { ConfigService } from '@nestjs/config';
 import {ImmichAuthService} from "../../modules/immich-auth/immich-auth.service";
+import {mapUser, UserResponseDto} from "../user/response-dto/user-response.dto";
 
 
 @Injectable()
@@ -31,14 +31,14 @@ export class AuthService {
     const params = {
       localAuth: true,
       oauth2: false,
-      issuer: null,
-      clientId: null,
+      issuer: '',
+      clientId: '',
     };
 
     if (this.configService.get<boolean>('OAUTH2_ENABLE') === true) {
       params.oauth2 = true;
-      params.issuer =  this.configService.get<string>('OAUTH2_ISSUER');
-      params.clientId = this.configService.get<string>('OAUTH2_CLIENT_ID');
+      params.issuer =  this.configService.getOrThrow<string>('OAUTH2_ISSUER');
+      params.clientId = this.configService.getOrThrow<string>('OAUTH2_CLIENT_ID');
     }
 
     if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) {
@@ -52,6 +52,8 @@ export class AuthService {
   async validateToken(authUser: AuthUserDto) {
     const user = await this.userRepository.findOne({ where: { email: authUser.email } });
 
+    if (!user) throw new InternalServerErrorException();
+
     return {
       authStatus: true,
       ...mapUser(user),
@@ -64,7 +66,7 @@ export class AuthService {
     };
   }
 
-  public async adminSignUp(signUpCredential: SignUpDto): Promise<User> {
+  public async adminSignUp(signUpCredential: SignUpDto): Promise<UserResponseDto> {
     if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) throw new BadRequestException("Local users not allowed!");
 
     try {

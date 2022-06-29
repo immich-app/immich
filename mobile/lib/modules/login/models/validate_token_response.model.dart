@@ -7,7 +7,7 @@ class ValidateTokenReponse {
   final String lastName;
   final String profileImagePath;
   final bool isAdmin;
-  final bool isFirstLogin;
+  final bool shouldChangePassword;
 
   ValidateTokenReponse({
     required this.id,
@@ -16,7 +16,7 @@ class ValidateTokenReponse {
     required this.lastName,
     required this.profileImagePath,
     required this.isAdmin,
-    required this.isFirstLogin,
+    required this.shouldChangePassword,
   });
 
   ValidateTokenReponse copyWith({
@@ -26,7 +26,7 @@ class ValidateTokenReponse {
     String? lastName,
     String? profileImagePath,
     bool? isAdmin,
-    bool? isFirstLogin,
+    bool? shouldChangePassword,
   }) {
     return ValidateTokenReponse(
       id: id ?? this.id,
@@ -35,7 +35,7 @@ class ValidateTokenReponse {
       lastName: lastName ?? this.lastName,
       profileImagePath: profileImagePath ?? this.profileImagePath,
       isAdmin: isAdmin ?? this.isAdmin,
-      isFirstLogin: isFirstLogin ?? this.isFirstLogin,
+      shouldChangePassword: shouldChangePassword ?? this.shouldChangePassword,
     );
   }
 
@@ -48,7 +48,7 @@ class ValidateTokenReponse {
     result.addAll({'lastName': lastName});
     result.addAll({'profileImagePath': profileImagePath});
     result.addAll({'isAdmin': isAdmin});
-    result.addAll({'isFirstLogin': isFirstLogin});
+    result.addAll({'shouldChangePassword': shouldChangePassword});
 
     return result;
   }
@@ -61,7 +61,7 @@ class ValidateTokenReponse {
       lastName: map['lastName'] ?? '',
       profileImagePath: map['profileImagePath'] ?? '',
       isAdmin: map['isAdmin'] ?? false,
-      isFirstLogin: map['isFirstLogin'] ?? false,
+      shouldChangePassword: map['shouldChangePassword'] ?? false,
     );
   }
 
@@ -71,7 +71,7 @@ class ValidateTokenReponse {
 
   @override
   String toString() {
-    return 'LogInReponse(id: $id, email: $email, firstName: $firstName, lastName: $lastName, profileImagePath: $profileImagePath, isAdmin: $isAdmin, isFirstLogin: $isFirstLogin)';
+    return 'LogInReponse(id: $id, email: $email, firstName: $firstName, lastName: $lastName, profileImagePath: $profileImagePath, isAdmin: $isAdmin, shouldChangePassword: $shouldChangePassword)';
   }
 
   @override
@@ -85,7 +85,7 @@ class ValidateTokenReponse {
         other.lastName == lastName &&
         other.profileImagePath == profileImagePath &&
         other.isAdmin == isAdmin &&
-        other.isFirstLogin == isFirstLogin;
+        other.shouldChangePassword == shouldChangePassword;
   }
 
   @override
@@ -96,6 +96,6 @@ class ValidateTokenReponse {
         lastName.hashCode ^
         profileImagePath.hashCode ^
         isAdmin.hashCode ^
-        isFirstLogin.hashCode;
+        shouldChangePassword.hashCode;
   }
 }

@@ -4,7 +4,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 
 class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
-  SearchBar({Key? key, required this.searchFocusNode, required this.onSubmitted}) : super(key: key);
+  SearchBar(
+      {Key? key, required this.searchFocusNode, required this.onSubmitted})
+      : super(key: key);
 
   final FocusNode searchFocusNode;
   final Function(String) onSubmitted;

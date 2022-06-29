@@ -35,24 +35,24 @@ export class ImmichAuthService {
     return newWsToken.token;
   };
 
-  async validateWsToken(token: string): Promise<UserEntity> {
+  async validateWsToken(token: string): Promise<UserEntity | undefined> {
     for (const [userId, wsToken] of this.wsTokenMap) {
       if (Date.now() > wsToken.expiry) {
         this.wsTokenMap.delete(userId);
       } else {
         if (token === wsToken.token) {
-          const user = this.userRepository.findOne( {id: userId});
+          const user = this.userRepository.findOneOrFail( { where: {id: userId}});
           this.wsTokenMap.delete(userId);
           Logger.verbose(`Validated WS token for ${userId}`, "ImmichWSAuth");
           return user;
         }
       }
     }
-    return null;
+    return undefined;
   }
 
   async createUser(email: string, localUser: boolean, password: string | null, firstName = "", lastName = "", isAdmin = false) {
-    const registerUser = await this.userRepository.findOne({ email: email });
+    const registerUser = await this.userRepository.findOne({ where: { email: email }});
 
     if (registerUser) {
       throw new BadRequestException('User already exists');

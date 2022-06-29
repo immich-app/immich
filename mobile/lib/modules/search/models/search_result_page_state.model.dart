@@ -44,13 +44,15 @@ class SearchResultPageState {
       isLoading: map['isLoading'] ?? false,
       isSuccess: map['isSuccess'] ?? false,
       isError: map['isError'] ?? false,
-      searchResult: List<ImmichAsset>.from(map['searchResult']?.map((x) => ImmichAsset.fromMap(x))),
+      searchResult: List<ImmichAsset>.from(
+          map['searchResult']?.map((x) => ImmichAsset.fromMap(x))),
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory SearchResultPageState.fromJson(String source) => SearchResultPageState.fromMap(json.decode(source));
+  factory SearchResultPageState.fromJson(String source) =>
+      SearchResultPageState.fromMap(json.decode(source));
 
   @override
   String toString() {
@@ -71,6 +73,9 @@ class SearchResultPageState {
 
   @override
   int get hashCode {
-    return isLoading.hashCode ^ isSuccess.hashCode ^ isError.hashCode ^ searchResult.hashCode;
+    return isLoading.hashCode ^
+        isSuccess.hashCode ^
+        isError.hashCode ^
+        searchResult.hashCode;
   }
 }

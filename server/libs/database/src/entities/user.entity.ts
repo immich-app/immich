@@ -3,35 +3,35 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeor
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  firstName: string;
+  firstName!: string;
 
   @Column()
-  lastName: string;
+  lastName!: string;
 
   @Column()
-  isAdmin: boolean;
+  isAdmin!: boolean;
 
   @Column()
-  email: string;
+  email!: string;
 
-  @Column({ select: false, nullable: true })
-  password: string | null;
+  @Column({ select: false })
+  password?: string;
 
-  @Column({ select: false, nullable: true })
-  salt: string | null;
-
-  @Column()
-  profileImagePath: string;
+  @Column({ select: false })
+  salt?: string;
 
   @Column()
-  isFirstLoggedIn: boolean;
+  profileImagePath!: string;
+
+  @Column()
+  shouldChangePassword!: boolean;
 
   @CreateDateColumn()
-  createdAt: string;
+  createdAt!: string;
 
   @Column({default: true})
-  isLocalUser: boolean;
+  isLocalUser!: boolean;
 }

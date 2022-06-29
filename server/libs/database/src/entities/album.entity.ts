@@ -5,23 +5,23 @@ import { UserAlbumEntity } from './user-album.entity';
 @Entity('albums')
 export class AlbumEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  ownerId: string;
+  ownerId!: string;
 
   @Column({ default: 'Untitled Album' })
-  albumName: string;
+  albumName!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: string;
+  createdAt!: string;
 
-  @Column({ comment: 'Asset ID to be used as thumbnail', nullable: true })
-  albumThumbnailAssetId: string;
+  @Column({ comment: 'Asset ID to be used as thumbnail', type: 'varchar', nullable: true})
+  albumThumbnailAssetId!: string | null;
 
   @OneToMany(() => UserAlbumEntity, (userAlbums) => userAlbums.albumInfo)
-  sharedUsers: UserAlbumEntity[];
+  sharedUsers?: UserAlbumEntity[];
 
   @OneToMany(() => AssetAlbumEntity, (assetAlbumEntity) => assetAlbumEntity.albumInfo)
-  assets: AssetAlbumEntity[];
+  assets?: AssetAlbumEntity[];
 }

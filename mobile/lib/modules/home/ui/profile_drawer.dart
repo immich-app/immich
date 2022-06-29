@@ -191,7 +191,7 @@ class ProfileDrawer extends HookConsumerWidget {
                 ),
                 onTap: () async {
                   bool res =
-                      await ref.read(authenticationProvider.notifier).logout();
+                      await ref.watch(authenticationProvider.notifier).logout();
 
                   if (res) {
                     ref.watch(backupProvider.notifier).cancelBackup();

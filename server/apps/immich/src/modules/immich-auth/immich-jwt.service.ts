@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {BadRequestException, Injectable, InternalServerErrorException, Logger} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayloadDto } from '../../api-v1/auth/dto/jwt-payload.dto';
 import { jwtSecret } from '../../constants/jwt.constant';
@@ -7,7 +7,7 @@ import {UserEntity} from "@app/database/entities/user.entity";
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ImmichAuthService } from './immich-auth.service';
-import {mapUser} from "../../api-v1/user/response-dto/user";
+import {mapUser} from "../../api-v1/user/response-dto/user-response.dto";
 
 @Injectable()
 export class ImmichJwtService {
@@ -40,26 +40,27 @@ export class ImmichJwtService {
     }
   }
 
-  private async validateLocalUser(email: string, password: string): Promise<UserEntity> {
+  private async validateLocalUser(email: string, password: string): Promise<UserEntity | undefined> {
     const user = await this.userRepository.findOne(
-        { email: email },
-        {
-          select: [
-            'id',
-            'email',
-            'password',
-            'salt',
-            'firstName',
-            'lastName',
-            'isAdmin',
-            'profileImagePath',
-            'isFirstLoggedIn',
-            'isLocalUser',
-          ],
-        },
+        { where:
+                  { email: email },
+                 select: [
+                      'id',
+                      'email',
+                      'password',
+                      'salt',
+                      'firstName',
+                      'lastName',
+                      'isAdmin',
+                      'profileImagePath',
+                      'shouldChangePassword',
+                      'isLocalUser',
+                    ],
+                  },
     );
 
     if (!user || !user.isLocalUser) throw new BadRequestException('Incorrect email or password');
+    if (!user.password || !user.salt) throw new InternalServerErrorException();
 
     const isAuthenticated = await ImmichJwtService.validatePassword(user.password, password, user.salt);
 
@@ -67,7 +68,7 @@ export class ImmichJwtService {
       return user;
     }
 
-    return null;
+    return undefined;
   }
 
   async validate(email: string, password: string) {

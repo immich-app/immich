@@ -1,4 +1,4 @@
-import { BadRequestException, HttpCode, Injectable, Logger, Res } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
@@ -15,8 +15,10 @@ export class DeviceInfoService {
 
   async create(createDeviceInfoDto: CreateDeviceInfoDto, authUser: AuthUserDto) {
     const res = await this.deviceRepository.findOne({
-      deviceId: createDeviceInfoDto.deviceId,
-      userId: authUser.id,
+      where: {
+        deviceId: createDeviceInfoDto.deviceId,
+        userId: authUser.id,
+      },
     });
 
     if (res) {

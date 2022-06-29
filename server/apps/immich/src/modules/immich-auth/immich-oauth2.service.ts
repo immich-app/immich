@@ -1,4 +1,10 @@
-import {BadRequestException, Injectable, Logger} from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+    UnauthorizedException
+} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {UserEntity} from "@app/database/entities/user.entity";
 import {Repository} from "typeorm";
@@ -17,7 +23,7 @@ export class ImmichOauth2Service {
     const email = payload.email;
     if (!email || email === "") throw new BadRequestException("User email not found");
 
-    const user = await this.userRepository.findOne({ email: email });
+    const user = await this.userRepository.findOne({ where: { email: email }});
 
     const firstName = payload.given_name || '';
     const lastName = payload.family_name || '';
@@ -29,7 +35,9 @@ export class ImmichOauth2Service {
       return await this.immichAuthService.createUser(email, false, null, firstName, lastName, isAdmin);
     }
 
-    let validatedUser = await this.userRepository.findOne({ email: email });
+    let validatedUser = await this.userRepository.findOne({ where: { email: email }});
+
+    if (!validatedUser) throw new InternalServerErrorException();
 
     if (validatedUser.isAdmin !== isAdmin ||
         validatedUser.firstName !== firstName ||

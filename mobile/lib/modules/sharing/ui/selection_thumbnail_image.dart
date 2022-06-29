@@ -10,7 +10,8 @@ import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 class SelectionThumbnailImage extends HookConsumerWidget {
   final ImmichAsset asset;
 
-  const SelectionThumbnailImage({Key? key, required this.asset}) : super(key: key);
+  const SelectionThumbnailImage({Key? key, required this.asset})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,8 +19,10 @@ class SelectionThumbnailImage extends HookConsumerWidget {
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
         '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
-    var selectedAsset = ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
-    var newAssetsForAlbum = ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
+    var selectedAsset =
+        ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
+    var newAssetsForAlbum =
+        ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
     var isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
     Widget _buildSelectionIcon(ImmichAsset asset) {
@@ -72,15 +75,21 @@ class SelectionThumbnailImage extends HookConsumerWidget {
           // Operation for existing album
           if (!selectedAsset.contains(asset)) {
             if (newAssetsForAlbum.contains(asset)) {
-              ref.watch(assetSelectionProvider.notifier).removeSelectedAdditionalAssets([asset]);
+              ref
+                  .watch(assetSelectionProvider.notifier)
+                  .removeSelectedAdditionalAssets([asset]);
             } else {
-              ref.watch(assetSelectionProvider.notifier).addAdditionalAssets([asset]);
+              ref
+                  .watch(assetSelectionProvider.notifier)
+                  .addAdditionalAssets([asset]);
             }
           }
         } else {
           // Operation for new album
           if (selectedAsset.contains(asset)) {
-            ref.watch(assetSelectionProvider.notifier).removeSelectedNewAssets([asset]);
+            ref
+                .watch(assetSelectionProvider.notifier)
+                .removeSelectedNewAssets([asset]);
           } else {
             ref.watch(assetSelectionProvider.notifier).addNewAssets([asset]);
           }
@@ -97,11 +106,15 @@ class SelectionThumbnailImage extends HookConsumerWidget {
               memCacheHeight: asset.type == 'IMAGE' ? 150 : 150,
               fit: BoxFit.cover,
               imageUrl: thumbnailRequestUrl,
-              httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+              httpHeaders: {
+                "Authorization": "Bearer ${box.get(accessTokenKey)}"
+              },
               fadeInDuration: const Duration(milliseconds: 250),
-              progressIndicatorBuilder: (context, url, downloadProgress) => Transform.scale(
+              progressIndicatorBuilder: (context, url, downloadProgress) =>
+                  Transform.scale(
                 scale: 0.2,
-                child: CircularProgressIndicator(value: downloadProgress.progress),
+                child:
+                    CircularProgressIndicator(value: downloadProgress.progress),
               ),
               errorWidget: (context, url, error) {
                 return Icon(

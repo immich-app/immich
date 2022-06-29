@@ -3,9 +3,9 @@ import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
 
 class SharedAlbumNotifier extends StateNotifier<List<SharedAlbum>> {
-  SharedAlbumNotifier() : super([]);
+  SharedAlbumNotifier(this._sharedAlbumService) : super([]);
 
-  final SharedAlbumService _sharedAlbumService = SharedAlbumService();
+  final SharedAlbumService _sharedAlbumService;
 
   getAllSharedAlbums() async {
     List<SharedAlbum> sharedAlbums =
@@ -50,12 +50,13 @@ class SharedAlbumNotifier extends StateNotifier<List<SharedAlbum>> {
 
 final sharedAlbumProvider =
     StateNotifierProvider<SharedAlbumNotifier, List<SharedAlbum>>((ref) {
-  return SharedAlbumNotifier();
+  return SharedAlbumNotifier(ref.watch(sharedAlbumServiceProvider));
 });
 
 final sharedAlbumDetailProvider = FutureProvider.autoDispose
     .family<SharedAlbum, String>((ref, albumId) async {
-  final SharedAlbumService sharedAlbumService = SharedAlbumService();
+  final SharedAlbumService sharedAlbumService =
+      ref.watch(sharedAlbumServiceProvider);
 
   return await sharedAlbumService.getAlbumDetail(albumId);
 });

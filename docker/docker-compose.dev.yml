@@ -68,7 +68,7 @@ services:
     env_file:
       - .env
     ports:
-      - 3002:3000
+      - 3000:3000
       - 24678:24678
     volumes:
       - ../web:/usr/src/app

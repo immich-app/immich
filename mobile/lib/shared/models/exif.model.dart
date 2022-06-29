@@ -149,7 +149,8 @@ class ImmichExif {
 
   String toJson() => json.encode(toMap());
 
-  factory ImmichExif.fromJson(String source) => ImmichExif.fromMap(json.decode(source));
+  factory ImmichExif.fromJson(String source) =>
+      ImmichExif.fromMap(json.decode(source));
 
   @override
   String toString() {

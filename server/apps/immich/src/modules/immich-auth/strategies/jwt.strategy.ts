@@ -24,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     Logger.verbose('Trying to validate JWT token', 'JWT STRATEGY');
 
     const { userId } = payload;
-    const user = await this.usersRepository.findOne({ id: userId });
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
 
     if (!user || !user.isLocalUser) {
       throw new UnauthorizedException('Failure to validate JWT payload');

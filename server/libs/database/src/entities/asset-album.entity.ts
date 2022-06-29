@@ -6,25 +6,25 @@ import { AssetEntity } from './asset.entity';
 @Unique('PK_unique_asset_in_album', ['albumId', 'assetId'])
 export class AssetAlbumEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id!: string;
 
   @Column()
-  albumId: string;
+  albumId!: string;
 
   @Column()
-  assetId: string;
+  assetId!: string;
 
   @ManyToOne(() => AlbumEntity, (album) => album.assets, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinColumn({ name: 'albumId' })
-  albumInfo: AlbumEntity;
+  albumInfo!: AlbumEntity;
 
   @ManyToOne(() => AssetEntity, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinColumn({ name: 'assetId' })
-  assetInfo: AssetEntity;
+  assetInfo!: AssetEntity;
 }

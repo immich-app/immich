@@ -21,7 +21,7 @@ export class Oauth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: Buffer.from(configService.get<string>('OAUTH2_CERTIFICATE'), 'base64').toString('ascii'),
+            secretOrKey: Buffer.from(configService.getOrThrow<string>('OAUTH2_CERTIFICATE'), 'base64').toString('ascii'),
             audience: configService.get<string>('OAUTH2_CLIENT_ID'),
         });
     }

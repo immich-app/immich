@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Body, Patch, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { DeviceInfoService } from './device-info.service';

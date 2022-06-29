@@ -2,14 +2,14 @@ import { IsNotEmpty } from 'class-validator';
 
 export class SignUpDto {
   @IsNotEmpty()
-  email: string;
+  email!: string;
 
   @IsNotEmpty()
-  password: string;
+  password!: string;
 
   @IsNotEmpty()
-  firstName: string;
+  firstName!: string;
 
   @IsNotEmpty()
-  lastName: string;
+  lastName!: string;
 }

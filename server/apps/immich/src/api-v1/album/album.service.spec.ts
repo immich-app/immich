@@ -25,6 +25,7 @@ describe('Album service', () => {
     albumEntity.createdAt = 'date';
     albumEntity.sharedUsers = [];
     albumEntity.assets = [];
+    albumEntity.albumThumbnailAssetId = null;
 
     return albumEntity;
   };
@@ -36,6 +37,7 @@ describe('Album service', () => {
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
     albumEntity.assets = [];
+    albumEntity.albumThumbnailAssetId = null;
     albumEntity.sharedUsers = [
       {
         id: '99',
@@ -60,6 +62,7 @@ describe('Album service', () => {
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
     albumEntity.assets = [];
+    albumEntity.albumThumbnailAssetId = null;
     albumEntity.sharedUsers = [
       {
         id: '99',
@@ -96,6 +99,7 @@ describe('Album service', () => {
     albumEntity.createdAt = 'date';
     albumEntity.sharedUsers = [];
     albumEntity.assets = [];
+    albumEntity.albumThumbnailAssetId = null;
 
     return albumEntity;
   };
@@ -151,7 +155,7 @@ describe('Album service', () => {
 
     const expectedResult: AlbumResponseDto = {
       albumName: 'name',
-      albumThumbnailAssetId: undefined,
+      albumThumbnailAssetId: null,
       createdAt: 'date',
       id: '0001',
       ownerId,

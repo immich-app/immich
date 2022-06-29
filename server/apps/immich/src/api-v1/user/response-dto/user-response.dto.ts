@@ -1,6 +1,6 @@
 import { UserEntity } from '../../../../../../libs/database/src/entities/user.entity';
 
-export interface User {
+export interface UserResponseDto {
   id: string;
   email: string;
   firstName: string;
@@ -11,7 +11,7 @@ export interface User {
   isFirstLogin: boolean;
 }
 
-export function mapUser(entity: UserEntity): User {
+export function mapUser(entity: UserEntity): UserResponseDto {
   return {
     id: entity.id,
     email: entity.email,
@@ -20,6 +20,6 @@ export function mapUser(entity: UserEntity): User {
     createdAt: entity.createdAt,
     isAdmin: entity.isAdmin,
     profileImagePath: entity.profileImagePath,
-    isFirstLogin: entity.isFirstLoggedIn,
+    isFirstLogin: entity.shouldChangePassword,
   };
 }

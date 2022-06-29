@@ -95,7 +95,8 @@ class ImmichAsset extends Equatable {
 
   String toJson() => json.encode(toMap());
 
-  factory ImmichAsset.fromJson(String source) => ImmichAsset.fromMap(json.decode(source));
+  factory ImmichAsset.fromJson(String source) =>
+      ImmichAsset.fromMap(json.decode(source));
 
   @override
   String toString() {

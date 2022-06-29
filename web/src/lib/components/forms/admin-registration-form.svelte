@@ -5,20 +5,36 @@
 	let error: string;
 	let success: string;
 
-	async function registerAdmin(event: SubmitEvent) {
-		error = '';
+	let password: string = '';
+	let confirmPassowrd: string = '';
 
-		const formElement = event.target as HTMLFormElement;
+	let canRegister = false;
 
-		const response = await sendRegistrationForm(formElement);
-
-		if (response.error) {
-			error = JSON.stringify(response.error);
+	$: {
+		if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
+			error = 'Password does not match';
+			canRegister = false;
+		} else {
+			error = '';
+			canRegister = true;
 		}
+	}
+	async function registerAdmin(event: SubmitEvent) {
+		if (canRegister) {
+			error = '';
 
-		if (response.success) {
-			success = response.success;
-			goto('/auth/login');
+			const formElement = event.target as HTMLFormElement;
+
+			const response = await sendRegistrationForm(formElement);
+
+			if (response.error) {
+				error = JSON.stringify(response.error);
+			}
+
+			if (response.success) {
+				success = response.success;
+				goto('/auth/login');
+			}
 		}
 	}
 </script>
@@ -41,21 +57,33 @@
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="password">Admin Password</label>
-			<input class="immich-form-input" id="password" name="password" type="password" required />
+			<input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
-			<label class="immich-form-label" for="password">First Name</label>
+			<label class="immich-form-label" for="confirmPassword">Confirm Admin Password</label>
+			<input
+				class="immich-form-input"
+				id="confirmPassword"
+				name="password"
+				type="password"
+				required
+				bind:value={confirmPassowrd}
+			/>
+		</div>
+
+		<div class="m-4 flex flex-col gap-2">
+			<label class="immich-form-label" for="firstName">First Name</label>
 			<input class="immich-form-input" id="firstName" name="firstName" type="text" required />
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
-			<label class="immich-form-label" for="password">Last Name</label>
+			<label class="immich-form-label" for="lastName">Last Name</label>
 			<input class="immich-form-input" id="lastName" name="lastName" type="text" required />
 		</div>
 
 		{#if error}
-			<p class="text-red-400">{error}</p>
+			<p class="text-red-400 ml-4">{error}</p>
 		{/if}
 
 		{#if success}

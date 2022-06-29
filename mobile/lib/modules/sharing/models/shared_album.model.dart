@@ -38,7 +38,8 @@ class SharedAlbum {
       ownerId: ownerId ?? this.ownerId,
       albumName: albumName ?? this.albumName,
       createdAt: createdAt ?? this.createdAt,
-      albumThumbnailAssetId: albumThumbnailAssetId ?? this.albumThumbnailAssetId,
+      albumThumbnailAssetId:
+          albumThumbnailAssetId ?? this.albumThumbnailAssetId,
       sharedUsers: sharedUsers ?? this.sharedUsers,
       assets: assets ?? this.assets,
     );
@@ -69,16 +70,19 @@ class SharedAlbum {
       albumName: map['albumName'] ?? '',
       createdAt: map['createdAt'] ?? '',
       albumThumbnailAssetId: map['albumThumbnailAssetId'],
-      sharedUsers: List<User>.from(map['sharedUsers']?.map((x) => User.fromMap(x))),
+      sharedUsers:
+          List<User>.from(map['sharedUsers']?.map((x) => User.fromMap(x))),
       assets: map['assets'] != null
-          ? List<ImmichAsset>.from(map['assets']?.map((x) => ImmichAsset.fromMap(x)))
+          ? List<ImmichAsset>.from(
+              map['assets']?.map((x) => ImmichAsset.fromMap(x)))
           : null,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory SharedAlbum.fromJson(String source) => SharedAlbum.fromMap(json.decode(source));
+  factory SharedAlbum.fromJson(String source) =>
+      SharedAlbum.fromMap(json.decode(source));
 
   @override
   String toString() {

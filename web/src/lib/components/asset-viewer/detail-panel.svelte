@@ -95,7 +95,11 @@
 	</div>
 
 	<div class="px-4 py-4">
-		<p class="text-sm pb-4">DETAILS</p>
+		{#if !asset.exifInfo}
+			<p class="text-sm pb-4">NO EXIF INFO AVAILABLE</p>
+		{:else}
+			<p class="text-sm pb-4">DETAILS</p>
+		{/if}
 
 		{#if asset.exifInfo?.dateTimeOriginal}
 			<div class="flex gap-4 py-4">
@@ -104,7 +108,7 @@
 				</div>
 
 				<div>
-					<p>{moment(asset.exifInfo.dateTimeOriginal).format('MMM DD')}</p>
+					<p>{moment(asset.exifInfo.dateTimeOriginal).format('MMM DD, YYYY')}</p>
 					<div class="flex gap-2 text-sm">
 						<p>
 							{moment(
@@ -141,9 +145,20 @@
 					<p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
 					<div class="flex text-sm gap-2">
 						<p>{`f/${asset.exifInfo.fNumber}` || ''}</p>
-						<p>{`1/${Math.floor(1 / asset.exifInfo.exposureTime)}` || ''}</p>
-						<p>{`${asset.exifInfo.focalLength}mm` || ''}</p>
-						<p>{`ISO${asset.exifInfo.iso}` || ''}</p>
+
+						{#if asset.exifInfo.exposureTime}
+							<p>{`1/${Math.floor(1 / asset.exifInfo.exposureTime)}`}</p>
+						{/if}
+
+						{#if asset.exifInfo.focalLength}
+							<p>{`${asset.exifInfo.focalLength} mm`}</p>
+						{/if}
+
+						{#if asset.exifInfo.iso}
+							<p>
+								{`ISO${asset.exifInfo.iso}`}
+							</p>
+						{/if}
 					</div>
 				</div>
 			</div>
