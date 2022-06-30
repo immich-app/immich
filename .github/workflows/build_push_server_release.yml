@@ -43,6 +43,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             altran1502/immich-server:${{ steps.previoustag.outputs.tag }}
+            altran1502/immich-server:release
 
   build_and_push_machine_learning_release:
     runs-on: ubuntu-latest
@@ -75,6 +76,7 @@ jobs:
           push: true
           tags: |
             altran1502/immich-machine-learning:${{ steps.previoustag.outputs.tag }}
+            altran1502/immich-machine-learning:release
 
   build_and_push_web_release:
     runs-on: ubuntu-latest
@@ -114,3 +116,43 @@ jobs:
           target: prod
           tags: |
             altran1502/immich-web:${{ steps.previoustag.outputs.tag }}
+            altran1502/immich-web:release
+
+  build_and_push_nginx_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: "main"
+          fetch-depth: 0
+
+      - name: "Get Previous tag"
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: latest
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2.0.0
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2.0.0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push immich-proxy release
+        uses: docker/build-push-action@v3.0.0
+        with:
+          context: ./web
+          file: ./web/Dockerfile
+          platforms: linux/arm/v7,linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            altran1502/immich-proxy:release
+            altran1502/immich-proxy:${{ steps.previoustag.outputs.tag }}
