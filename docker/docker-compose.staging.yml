@@ -68,7 +68,7 @@ services:
       - pgdata:/var/lib/postgresql/data
     restart: always
 
-  nginx:
+  immich-proxy:
     container_name: immich_proxy
     image: altran1502/immich-proxy:staging
     ports:
