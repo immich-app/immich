@@ -7,8 +7,6 @@ services:
       context: ../server
       dockerfile: Dockerfile
     command: npm run start:dev immich
-    expose:
-      - "3000"
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -21,24 +19,24 @@ services:
       - redis
       - database
 
-  # immich-machine-learning:
-  #   image: immich-machine-learning-dev:latest
-  #   build:
-  #     context: ../machine-learning
-  #     dockerfile: Dockerfile
-  #   command: npm run start:dev
-  #   expose:
-  #     - "3001"
-  #   volumes:
-  #     - ../machine-learning:/usr/src/app
-  #     - ${UPLOAD_LOCATION}:/usr/src/app/upload
-  #     - /usr/src/app/node_modules
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     - NODE_ENV=development
-  #   depends_on:
-  #     - database
+  immich-machine-learning:
+    image: immich-machine-learning-dev:latest
+    build:
+      context: ../machine-learning
+      dockerfile: Dockerfile
+    command: npm run start:dev
+    expose:
+      - "3001"
+    volumes:
+      - ../machine-learning:/usr/src/app
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /usr/src/app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - database
 
   immich-microservices:
     image: immich-microservices:latest
@@ -94,14 +92,15 @@ services:
     ports:
       - 5432:5432
 
-  immich-networking:
-    container_name: immich_networking
-    image: immich-networking-dev:latest
+  immich-proxy:
+    container_name: immich_proxy
+    image: immich-proxy-dev:latest
     build:
-      context: ./immich-networking
+      context: ../nginx
       dockerfile: Dockerfile
     ports:
-      - 2283:2283
+      - 2283:80
+      - 2284:443
     depends_on:
       - immich-server
     restart: always
