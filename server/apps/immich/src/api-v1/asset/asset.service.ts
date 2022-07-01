@@ -153,7 +153,7 @@ export class AssetService {
 
       return new StreamableFile(fileReadStream);
     } catch (e) {
-      Logger.error('Error download asset ', e);
+      Logger.error(`Error download asset`, 'downloadFile');
       throw new InternalServerErrorException(`Failed to download asset ${e}`, 'DownloadFile');
     }
   }
@@ -225,6 +225,8 @@ export class AssetService {
           res.set({
             'Content-Type': asset.mimeType,
           });
+
+          await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
           fileReadStream = createReadStream(asset.originalPath);
         } else {
           if (asset.webpPath && asset.webpPath.length > 0) {
@@ -261,6 +263,8 @@ export class AssetService {
         // Handle Video
         let videoPath = asset.originalPath;
         let mimeType = asset.mimeType;
+
+        await fs.access(videoPath, constants.R_OK | constants.W_OK);
 
         if (query.isWeb && asset.mimeType == 'video/quicktime') {
           videoPath = asset.encodedVideoPath == '' ? asset.originalPath : asset.encodedVideoPath;
@@ -304,7 +308,6 @@ export class AssetService {
             'Content-Type': mimeType,
           });
 
-          await fs.access(videoPath, constants.R_OK | constants.W_OK);
           const videoStream = createReadStream(videoPath, { start: start, end: end });
 
           return new StreamableFile(videoStream);
@@ -353,11 +356,11 @@ export class AssetService {
     // TODO: should use query builder
     const rows = await this.assetRepository.query(
       `
-      select distinct si.tags, si.objects, e.orientation, e."lensModel", e.make, e.model , a.type, e.city, e.state, e.country
-      from assets a
-      left join exif e on a.id = e."assetId"
-      left join smart_info si on a.id = si."assetId"
-      where a."userId" = $1;
+      SELECT DISTINCT si.tags, si.objects, e.orientation, e."lensModel", e.make, e.model , a.type, e.city, e.state, e.country
+      FROM assets a
+      LEFT JOIN exif e ON a.id = e."assetId"
+      LEFT JOIN smart_info si ON a.id = si."assetId"
+      WHERE a."userId" = $1;
       `,
       [authUser.id],
     );
@@ -413,12 +416,12 @@ export class AssetService {
   async getCuratedLocation(authUser: AuthUserDto) {
     return await this.assetRepository.query(
       `
-        select distinct on (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
-        from assets a
-        left join exif e on a.id = e."assetId"
-        where a."userId" = $1
-        and e.city is not null
-        and a.type = 'IMAGE';
+        SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
+        FROM assets a
+        LEFT JOIN exif e ON a.id = e."assetId"
+        WHERE a."userId" = $1
+        AND e.city IS NOT NULL
+        AND a.type = 'IMAGE';
       `,
       [authUser.id],
     );
@@ -427,11 +430,11 @@ export class AssetService {
   async getCuratedObject(authUser: AuthUserDto) {
     return await this.assetRepository.query(
       `
-        select distinct on (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
-        from assets a
-        left join smart_info si on a.id = si."assetId"
-        where a."userId" = $1
-        and si.objects is not null
+        SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
+        FROM assets a
+        LEFT JOIN smart_info si ON a.id = si."assetId"
+        WHERE a."userId" = $1
+        AND si.objects IS NOT NULL
       `,
       [authUser.id],
     );
