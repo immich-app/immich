@@ -107,19 +107,12 @@ class ServerEndpointInput extends StatelessWidget {
       : super(key: key);
 
   String? _validateInput(String? url) {
-    if (url == null) {
+  
+    if (url?.startsWith(RegExp(r'https?://')) == true) {
       return null;
-    }
-
-    if (url.isEmpty) {
-      return 'Server endpoint is required';
-    }
-
-    if (!url.startsWith(RegExp(r'https?://'))) {
+    } else {
       return 'Please specify http:// or https://';
     }
-
-    return null;
   }
 
   @override

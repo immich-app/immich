@@ -122,17 +122,14 @@ class ThumbnailImage extends HookConsumerWidget {
                 },
               ),
             ),
-            Container(
-              child: isMultiSelectEnable
-                  ? Padding(
-                      padding: const EdgeInsets.all(3.0),
-                      child: Align(
-                        alignment: Alignment.topLeft,
-                        child: _buildSelectionIcon(asset),
-                      ),
-                    )
-                  : Container(),
-            ),
+            if (isMultiSelectEnable)
+              Padding(
+                padding: const EdgeInsets.all(3.0),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: _buildSelectionIcon(asset),
+                ),
+              ),
             Positioned(
               right: 10,
               bottom: 5,

@@ -34,7 +34,7 @@ class DisableMultiSelectButton extends ConsumerWidget {
                   },
                   icon: const Icon(Icons.close_rounded),
                   label: Text(
-                    selectedItemCount.toString(),
+                    '$selectedItemCount',
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 18),
                   )),

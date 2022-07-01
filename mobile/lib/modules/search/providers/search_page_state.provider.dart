@@ -62,11 +62,7 @@ final getCuratedLocationProvider =
   final SearchService searchService = ref.watch(searchServiceProvider);
 
   var curatedLocation = await searchService.getCuratedLocation();
-  if (curatedLocation != null) {
-    return curatedLocation;
-  } else {
-    return [];
-  }
+  return curatedLocation ?? [];
 });
 
 final getCuratedObjectProvider =
@@ -74,9 +70,6 @@ final getCuratedObjectProvider =
   final SearchService searchService = ref.watch(searchServiceProvider);
 
   var curatedObject = await searchService.getCuratedObjects();
-  if (curatedObject != null) {
-    return curatedObject;
-  } else {
-    return [];
-  }
+
+  return curatedObject ?? [];
 });

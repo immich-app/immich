@@ -104,10 +104,9 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
   disconnect() {
     debugPrint("[WEBSOCKET] Attempting to disconnect");
     var socket = state.socket?.disconnect();
-    if (socket != null) {
-      if (socket.disconnected) {
-        state = WebscoketState(isConnected: false, socket: null);
-      }
+
+    if (socket?.disconnected == true) {
+      state = WebscoketState(isConnected: false, socket: null);
     }
   }
 
