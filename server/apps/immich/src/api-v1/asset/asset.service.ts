@@ -133,6 +133,8 @@ export class AssetService {
           'Content-Type': asset.mimeType,
           'Content-Length': size,
         });
+
+        await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
         fileReadStream = createReadStream(asset.originalPath);
       } else {
         if (!asset.resizePath) {
@@ -143,13 +145,10 @@ export class AssetService {
           'Content-Type': 'image/jpeg',
           'Content-Length': size,
         });
+
+        await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
         fileReadStream = createReadStream(asset.resizePath);
       }
-
-      fileReadStream.on('error', (error) => {
-        Logger.error(`Cannot create read stream ${error}`, 'getAssetThumbnail');
-        throw new BadRequestException('Cannot Create Read Stream');
-      });
 
       return new StreamableFile(fileReadStream);
     } catch (e) {
