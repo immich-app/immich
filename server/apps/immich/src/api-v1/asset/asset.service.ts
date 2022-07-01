@@ -167,20 +167,27 @@ export class AssetService {
       throw new NotFoundException('Asset not found');
     }
 
-    if (asset.webpPath && asset.webpPath.length > 0) {
-      fileReadStream = createReadStream(asset.webpPath);
-    } else {
-      if (!asset.resizePath) {
-        return new NotFoundException('resizePath not set');
+    try {
+      if (asset.webpPath && asset.webpPath.length > 0) {
+        await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
+        fileReadStream = createReadStream(asset.webpPath);
+      } else {
+        if (!asset.resizePath) {
+          return new NotFoundException('resizePath not set');
+        }
+
+        await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
+        fileReadStream = createReadStream(asset.resizePath);
       }
-      fileReadStream = createReadStream(asset.resizePath);
+
+      return new StreamableFile(fileReadStream);
+    } catch (e) {
+      Logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
+      throw new InternalServerErrorException(
+        e,
+        `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
+      );
     }
-
-    fileReadStream.on('error', () => {
-      Logger.error(`Cannot create read stream for asset id ${asset.id}`, 'getAssetThumbnail');
-    });
-
-    return new StreamableFile(fileReadStream);
   }
 
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
@@ -188,65 +195,67 @@ export class AssetService {
     const asset = await this.findOne(query.did, query.aid);
 
     if (!asset) {
-      // TODO: maybe this should be a NotFoundException?
-      throw new BadRequestException('Asset does not exist');
+      throw new NotFoundException('Asset does not exist');
     }
 
     // Handle Sending Images
     if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
-      /**
-       * Serve file viewer on the web
-       */
-      if (query.isWeb) {
-        res.set({
-          'Content-Type': 'image/jpeg',
-        });
-        if (!asset.resizePath) {
-          Logger.error('Error serving IMAGE asset for web', 'ServeFile');
-          throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
-        }
-
-        fileReadStream = createReadStream(asset.resizePath);
-        fileReadStream.on('error', (error) => {
-          Logger.error(`Cannot create read stream for asset id ${asset.id}`, 'serveFile');
-          throw new InternalServerErrorException(`Failed to create file stream ${error}`, 'ServeFile');
-        });
-
-        return new StreamableFile(fileReadStream);
-      }
-
-      /**
-       * Serve thumbnail image for both web and mobile app
-       */
-      if (query.isThumb === 'false' || !query.isThumb) {
-        res.set({
-          'Content-Type': asset.mimeType,
-        });
-        fileReadStream = createReadStream(asset.originalPath);
-      } else {
-        if (asset.webpPath && asset.webpPath.length > 0) {
-          res.set({
-            'Content-Type': 'image/webp',
-          });
-
-          fileReadStream = createReadStream(asset.webpPath);
-        } else {
+      try {
+        /**
+         * Serve file viewer on the web
+         */
+        if (query.isWeb) {
           res.set({
             'Content-Type': 'image/jpeg',
           });
           if (!asset.resizePath) {
-            throw new Error('resizePath not set');
+            Logger.error('Error serving IMAGE asset for web', 'ServeFile');
+            throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
           }
+          await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
           fileReadStream = createReadStream(asset.resizePath);
+
+          return new StreamableFile(fileReadStream);
         }
+
+        /**
+         * Serve thumbnail image for both web and mobile app
+         */
+        if (query.isThumb === 'false' || !query.isThumb) {
+          res.set({
+            'Content-Type': asset.mimeType,
+          });
+          fileReadStream = createReadStream(asset.originalPath);
+        } else {
+          if (asset.webpPath && asset.webpPath.length > 0) {
+            res.set({
+              'Content-Type': 'image/webp',
+            });
+
+            await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
+            fileReadStream = createReadStream(asset.webpPath);
+          } else {
+            res.set({
+              'Content-Type': 'image/jpeg',
+            });
+
+            if (!asset.resizePath) {
+              throw new Error('resizePath not set');
+            }
+
+            await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
+            fileReadStream = createReadStream(asset.resizePath);
+          }
+        }
+
+        return new StreamableFile(fileReadStream);
+      } catch (e) {
+        Logger.error(`Cannot create read stream for asset ${asset.id}`, 'serveFile[IMAGE]');
+        throw new InternalServerErrorException(
+          e,
+          `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
+        );
       }
-
-      fileReadStream.on('error', (error) => {
-        Logger.error(`Cannot create read stream ${error} for asset ${asset.id}`, 'serveFile');
-        throw new InternalServerErrorException(`Failed to serve image asset ${error}`, 'ServeFile');
-      });
-
-      return new StreamableFile(fileReadStream);
     } else if (asset.type == AssetType.VIDEO) {
       try {
         // Handle Video
@@ -295,6 +304,7 @@ export class AssetService {
             'Content-Type': mimeType,
           });
 
+          await fs.access(videoPath, constants.R_OK | constants.W_OK);
           const videoStream = createReadStream(videoPath, { start: start, end: end });
 
           return new StreamableFile(videoStream);
@@ -306,7 +316,7 @@ export class AssetService {
           return new StreamableFile(createReadStream(videoPath));
         }
       } catch (e) {
-        Logger.error('Error serving VIDEO asset ', e);
+        Logger.error(`Error serving VIDEO asset id ${asset.id}`, 'serveFile[VIDEO]');
         throw new InternalServerErrorException(`Failed to serve video asset ${e}`, 'ServeFile');
       }
     }
