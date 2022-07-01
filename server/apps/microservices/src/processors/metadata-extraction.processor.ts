@@ -93,7 +93,7 @@ export class MetadataExtractionProcessor {
   async tagImage(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
 
-    const res = await axios.post('http://immich-machine-learning:3001/image-classifier/tag-image', {
+    const res = await axios.post('http://immich-machine-learning:3003/image-classifier/tag-image', {
       thumbnailPath: asset.resizePath,
     });
 
@@ -113,7 +113,7 @@ export class MetadataExtractionProcessor {
     try {
       const { asset }: { asset: AssetEntity } = job.data;
 
-      const res = await axios.post('http://immich-machine-learning:3001/object-detection/detect-object', {
+      const res = await axios.post('http://immich-machine-learning:3003/object-detection/detect-object', {
         thumbnailPath: asset.resizePath,
       });
 
