@@ -11,7 +11,7 @@ import { IsNull, Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
-import { constants, createReadStream, stat } from 'fs';
+import { constants, createReadStream, ReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
 import { promisify } from 'util';
@@ -124,7 +124,7 @@ export class AssetService {
 
   public async downloadFile(query: ServeFileDto, res: Res) {
     try {
-      let file = null;
+      let fileReadStream = null;
       const asset = await this.findOne(query.did, query.aid);
 
       if (query.isThumb === 'false' || !query.isThumb) {
@@ -133,7 +133,7 @@ export class AssetService {
           'Content-Type': asset.mimeType,
           'Content-Length': size,
         });
-        file = createReadStream(asset.originalPath);
+        fileReadStream = createReadStream(asset.originalPath);
       } else {
         if (!asset.resizePath) {
           throw new Error('resizePath not set');
@@ -143,10 +143,15 @@ export class AssetService {
           'Content-Type': 'image/jpeg',
           'Content-Length': size,
         });
-        file = createReadStream(asset.resizePath);
+        fileReadStream = createReadStream(asset.resizePath);
       }
 
-      return new StreamableFile(file);
+      fileReadStream.on('error', (error) => {
+        Logger.error(`Cannot create read stream ${error}`, 'getAssetThumbnail');
+        return new BadRequestException('Cannot Create Read Stream');
+      });
+
+      return new StreamableFile(fileReadStream);
     } catch (e) {
       Logger.error('Error download asset ', e);
       throw new InternalServerErrorException(`Failed to download asset ${e}`, 'DownloadFile');
@@ -154,6 +159,8 @@ export class AssetService {
   }
 
   public async getAssetThumbnail(assetId: string): Promise<StreamableFile> {
+    let fileReadStream: ReadStream;
+
     try {
       const asset = await this.assetRepository.findOne({ where: { id: assetId } });
       if (!asset) {
@@ -161,15 +168,23 @@ export class AssetService {
       }
 
       if (asset.webpPath && asset.webpPath.length > 0) {
-        await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
-        return new StreamableFile(createReadStream(asset.webpPath));
+        // await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
+        fileReadStream = createReadStream(asset.webpPath);
+        // return new StreamableFile(createReadStream(asset.webpPath));
       } else {
         if (!asset.resizePath) {
           throw new Error('resizePath not set');
         }
-        await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
-        return new StreamableFile(createReadStream(asset.resizePath));
+        // await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
+        fileReadStream = createReadStream(asset.resizePath);
       }
+
+      fileReadStream.on('error', (error) => {
+        Logger.error(`Cannot create read stream ${error}`, 'getAssetThumbnail');
+        return new InternalServerErrorException('Cannot Create Read Stream');
+      });
+
+      return new StreamableFile(fileReadStream);
     } catch (e) {
       if (e instanceof NotFoundException) {
         throw e;
@@ -180,7 +195,7 @@ export class AssetService {
   }
 
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
-    let file = null;
+    let fileReadStream: ReadStream;
     const asset = await this.findOne(query.did, query.aid);
 
     if (!asset) {
@@ -190,21 +205,28 @@ export class AssetService {
 
     // Handle Sending Images
     if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
-      /**
-       * Serve file viewer on the web
-       */
-      if (query.isWeb) {
-        res.set({
-          'Content-Type': 'image/jpeg',
-        });
-        if (!asset.resizePath) {
-          Logger.error('Error serving IMAGE asset for web', 'ServeFile');
-          throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
-        }
-        return new StreamableFile(createReadStream(asset.resizePath));
-      }
-
       try {
+        /**
+         * Serve file viewer on the web
+         */
+        if (query.isWeb) {
+          res.set({
+            'Content-Type': 'image/jpeg',
+          });
+          if (!asset.resizePath) {
+            Logger.error('Error serving IMAGE asset for web', 'ServeFile');
+            throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
+          }
+
+          fileReadStream = createReadStream(asset.resizePath);
+          fileReadStream.on('error', (error) => {
+            Logger.error(`Cannot create read stream ${error} for asset ${asset.id}`, 'serveFile');
+            throw new InternalServerErrorException(`Failed to create file stream ${error}`, 'ServeFile');
+          });
+
+          return new StreamableFile(fileReadStream);
+        }
+
         /**
          * Serve thumbnail image for both web and mobile app
          */
@@ -212,14 +234,14 @@ export class AssetService {
           res.set({
             'Content-Type': asset.mimeType,
           });
-          file = createReadStream(asset.originalPath);
+          fileReadStream = createReadStream(asset.originalPath);
         } else {
           if (asset.webpPath && asset.webpPath.length > 0) {
             res.set({
               'Content-Type': 'image/webp',
             });
 
-            file = createReadStream(asset.webpPath);
+            fileReadStream = createReadStream(asset.webpPath);
           } else {
             res.set({
               'Content-Type': 'image/jpeg',
@@ -227,16 +249,16 @@ export class AssetService {
             if (!asset.resizePath) {
               throw new Error('resizePath not set');
             }
-            file = createReadStream(asset.resizePath);
+            fileReadStream = createReadStream(asset.resizePath);
           }
         }
 
-        file.on('error', (error) => {
-          Logger.log(`Cannot create read stream ${error}`);
-          return new BadRequestException('Cannot Create Read Stream');
+        fileReadStream.on('error', (error) => {
+          Logger.error(`Cannot create read stream ${error} for asset ${asset.id}`, 'serveFile');
+          throw new InternalServerErrorException(`Failed to serve image asset ${error}`, 'ServeFile');
         });
 
-        return new StreamableFile(file);
+        return new StreamableFile(fileReadStream);
       } catch (e) {
         Logger.error('Error serving IMAGE asset ', e);
         throw new InternalServerErrorException(`Failed to serve image asset ${e}`, 'ServeFile');
