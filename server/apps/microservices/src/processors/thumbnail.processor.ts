@@ -60,7 +60,7 @@ export class ThumbnailGeneratorProcessor {
 
     if (asset.type == AssetType.VIDEO) {
       ffmpeg(asset.originalPath)
-        .outputOptions(['-ss 00:00:01.000', '-frames:v 1'])
+        .outputOptions(['-ss 00:00:00.000', '-frames:v 1'])
         .output(jpegThumbnailPath)
         .on('start', () => {
           Logger.log('Start Generating Video Thumbnail', 'generateJPEGThumbnail');

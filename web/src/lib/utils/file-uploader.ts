@@ -82,9 +82,7 @@ export async function fileUploader(asset: File, accessToken: string) {
 		};
 
 		request.upload.onload = () => {
-			setTimeout(() => {
-				uploadAssetsStore.removeUploadAsset(deviceAssetId);
-			}, 2500);
+			uploadAssetsStore.removeUploadAsset(deviceAssetId);
 		};
 
 		// listen for `error` event

@@ -11,12 +11,13 @@ import { IsNull, Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
-import { createReadStream, stat } from 'fs';
+import { constants, createReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
+import fs from 'fs/promises';
 
 const fileInfo = promisify(stat);
 
@@ -160,11 +161,13 @@ export class AssetService {
       }
 
       if (asset.webpPath && asset.webpPath.length > 0) {
+        await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
         return new StreamableFile(createReadStream(asset.webpPath));
       } else {
         if (!asset.resizePath) {
           throw new Error('resizePath not set');
         }
+        await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
         return new StreamableFile(createReadStream(asset.resizePath));
       }
     } catch (e) {

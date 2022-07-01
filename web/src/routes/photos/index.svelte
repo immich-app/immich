@@ -31,7 +31,7 @@
 
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
@@ -42,7 +42,7 @@
 	import DownloadPanel from '../../lib/components/asset-viewer/download-panel.svelte';
 	import StatusBox from '../../lib/components/shared/status-box.svelte';
 	import { fileUploader } from '../../lib/utils/file-uploader';
-	import { openWebsocketConnection } from '../../lib/stores/websocket';
+	import { openWebsocketConnection, closeWebsocketConnection } from '../../lib/stores/websocket';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -69,6 +69,10 @@
 
 			openWebsocketConnection($session.user.accessToken);
 		}
+	});
+
+	onDestroy(() => {
+		closeWebsocketConnection();
 	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
