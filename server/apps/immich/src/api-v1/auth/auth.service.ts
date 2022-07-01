@@ -52,7 +52,9 @@ export class AuthService {
   async validateToken(authUser: AuthUserDto) {
     const user = await this.userRepository.findOne({ where: { email: authUser.email } });
 
-    if (!user) throw new InternalServerErrorException();
+    if (!user) {
+      throw new InternalServerErrorException();
+    }
 
     return {
       authStatus: true,
@@ -67,7 +69,9 @@ export class AuthService {
   }
 
   public async adminSignUp(signUpCredential: SignUpDto): Promise<UserResponseDto> {
-    if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) throw new BadRequestException("Local users not allowed!");
+    if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) {
+      throw new BadRequestException("Local users not allowed!");
+    }
 
     try {
       const adminUser = await this.immichJwtService.signUpAdmin(signUpCredential.email, signUpCredential.password, signUpCredential.firstName, signUpCredential.lastName);
@@ -79,7 +83,9 @@ export class AuthService {
   }
 
   public async login(loginCredential: LoginCredentialDto) {
-    if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) throw new BadRequestException("Local users not allowed!");
+    if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) {
+      throw new BadRequestException("Local users not allowed!");
+    }
 
     return this.immichJwtService.validate(loginCredential.email, loginCredential.password);
   }

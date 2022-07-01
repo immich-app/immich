@@ -2,8 +2,7 @@ import {
     BadRequestException,
     Injectable,
     InternalServerErrorException,
-    Logger,
-    UnauthorizedException
+    Logger
 } from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {UserEntity} from "@app/database/entities/user.entity";
@@ -21,7 +20,9 @@ export class ImmichOauth2Service {
 
   public async validateUserOauth(payload: any) {
     const email = payload.email;
-    if (!email || email === "") throw new BadRequestException("User email not found");
+    if (!email || email === "") {
+        throw new BadRequestException("User email not found");
+    }
 
     const user = await this.userRepository.findOne({ where: { email: email }});
 
@@ -37,7 +38,9 @@ export class ImmichOauth2Service {
 
     let validatedUser = await this.userRepository.findOne({ where: { email: email }});
 
-    if (!validatedUser) throw new InternalServerErrorException();
+    if (!validatedUser) {
+        throw new InternalServerErrorException();
+    }
 
     if (validatedUser.isAdmin !== isAdmin ||
         validatedUser.firstName !== firstName ||

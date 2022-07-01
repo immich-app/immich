@@ -64,7 +64,9 @@ export class ImmichAuthService {
     newUser.lastName = lastName;
     newUser.isAdmin = isAdmin;
     if (localUser) {
-      if (password === null) throw new InternalServerErrorException();
+      if (password === null) {
+        throw new InternalServerErrorException();
+      }
       newUser.salt = await bcrypt.genSalt();
       newUser.password = await ImmichAuthService.hashPassword(password, newUser.salt);
       newUser.isLocalUser = true;

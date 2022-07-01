@@ -1,4 +1,3 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 export const databaseConfig: PostgresConnectionOptions = {

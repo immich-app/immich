@@ -58,7 +58,9 @@ export class UserService {
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) throw new BadRequestException("Local users not allowed!");
+    if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) {
+      throw new BadRequestException("Local users not allowed!");
+    }
 
     const user = await this.userRepository.findOne({ where: { email: createUserDto.email } });
 

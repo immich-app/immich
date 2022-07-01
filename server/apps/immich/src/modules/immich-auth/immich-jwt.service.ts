@@ -59,8 +59,13 @@ export class ImmichJwtService {
                   },
     );
 
-    if (!user || !user.isLocalUser) throw new BadRequestException('Incorrect email or password');
-    if (!user.password || !user.salt) throw new InternalServerErrorException();
+    if (!user || !user.isLocalUser) {
+        throw new BadRequestException('Incorrect email or password');
+    }
+
+    if (!user.password || !user.salt) {
+        throw new InternalServerErrorException();
+    }
 
     const isAuthenticated = await ImmichJwtService.validatePassword(user.password, password, user.salt);
 
@@ -74,7 +79,9 @@ export class ImmichJwtService {
   async validate(email: string, password: string) {
 
     const validatedUser = await this.validateLocalUser(email, password);
-    if (!validatedUser) throw new BadRequestException('Incorrect email or password');
+    if (!validatedUser) {
+        throw new BadRequestException('Incorrect email or password');
+    }
 
     const payload = new JwtPayloadDto(validatedUser.id, validatedUser.email);
 
