@@ -5,6 +5,8 @@
 	import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
 	import type { UploadAsset } from '$lib/models/upload-asset';
+	import { getAssetsInfo } from '$lib/stores/assets';
+	import { session } from '$app/stores';
 
 	let showDetail = true;
 
@@ -73,8 +75,15 @@
 	}
 
 	let isUploading = false;
+	uploadAssetsStore.isUploading.subscribe((value) => {
+		isUploading = value;
 
-	uploadAssetsStore.isUploading.subscribe((value) => (isUploading = value));
+		if (isUploading == false) {
+			if ($session.user) {
+				getAssetsInfo($session.user.accessToken);
+			}
+		}
+	});
 </script>
 
 {#if isUploading}

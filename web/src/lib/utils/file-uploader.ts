@@ -84,7 +84,7 @@ export async function fileUploader(asset: File, accessToken: string) {
 		request.upload.onload = () => {
 			setTimeout(() => {
 				uploadAssetsStore.removeUploadAsset(deviceAssetId);
-			}, 2500);
+			}, 1000);
 		};
 
 		// listen for `error` event

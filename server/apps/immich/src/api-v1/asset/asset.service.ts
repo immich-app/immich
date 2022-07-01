@@ -11,12 +11,13 @@ import { IsNull, Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
-import { createReadStream, stat } from 'fs';
+import { constants, createReadStream, ReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
 import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
+import fs from 'fs/promises';
 
 const fileInfo = promisify(stat);
 
@@ -123,7 +124,7 @@ export class AssetService {
 
   public async downloadFile(query: ServeFileDto, res: Res) {
     try {
-      let file = null;
+      let fileReadStream = null;
       const asset = await this.findOne(query.did, query.aid);
 
       if (query.isThumb === 'false' || !query.isThumb) {
@@ -132,76 +133,90 @@ export class AssetService {
           'Content-Type': asset.mimeType,
           'Content-Length': size,
         });
-        file = createReadStream(asset.originalPath);
+
+        await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
+        fileReadStream = createReadStream(asset.originalPath);
       } else {
         if (!asset.resizePath) {
-          throw new Error('resizePath not set');
+          throw new NotFoundException('resizePath not set');
         }
         const { size } = await fileInfo(asset.resizePath);
         res.set({
           'Content-Type': 'image/jpeg',
           'Content-Length': size,
         });
-        file = createReadStream(asset.resizePath);
+
+        await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
+        fileReadStream = createReadStream(asset.resizePath);
       }
 
-      return new StreamableFile(file);
+      return new StreamableFile(fileReadStream);
     } catch (e) {
-      Logger.error('Error download asset ', e);
+      Logger.error(`Error download asset`, 'downloadFile');
       throw new InternalServerErrorException(`Failed to download asset ${e}`, 'DownloadFile');
     }
   }
 
-  public async getAssetThumbnail(assetId: string): Promise<StreamableFile> {
-    try {
-      const asset = await this.assetRepository.findOne({ where: { id: assetId } });
-      if (!asset) {
-        throw new NotFoundException('Asset not found');
-      }
+  public async getAssetThumbnail(assetId: string) {
+    let fileReadStream: ReadStream;
 
+    const asset = await this.assetRepository.findOne({ where: { id: assetId } });
+
+    if (!asset) {
+      throw new NotFoundException('Asset not found');
+    }
+
+    try {
       if (asset.webpPath && asset.webpPath.length > 0) {
-        return new StreamableFile(createReadStream(asset.webpPath));
+        await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
+        fileReadStream = createReadStream(asset.webpPath);
       } else {
         if (!asset.resizePath) {
-          throw new Error('resizePath not set');
+          return new NotFoundException('resizePath not set');
         }
-        return new StreamableFile(createReadStream(asset.resizePath));
+
+        await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
+        fileReadStream = createReadStream(asset.resizePath);
       }
+
+      return new StreamableFile(fileReadStream);
     } catch (e) {
-      if (e instanceof NotFoundException) {
-        throw e;
-      }
-      Logger.error('Error serving asset thumbnail ', e);
-      throw new InternalServerErrorException('Failed to serve asset thumbnail', 'GetAssetThumbnail');
+      Logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
+      throw new InternalServerErrorException(
+        e,
+        `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
+      );
     }
   }
 
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
-    let file = null;
+    let fileReadStream: ReadStream;
     const asset = await this.findOne(query.did, query.aid);
 
     if (!asset) {
-      // TODO: maybe this should be a NotFoundException?
-      throw new BadRequestException('Asset does not exist');
+      throw new NotFoundException('Asset does not exist');
     }
 
     // Handle Sending Images
     if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
-      /**
-       * Serve file viewer on the web
-       */
-      if (query.isWeb) {
-        res.set({
-          'Content-Type': 'image/jpeg',
-        });
-        if (!asset.resizePath) {
-          Logger.error('Error serving IMAGE asset for web', 'ServeFile');
-          throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
-        }
-        return new StreamableFile(createReadStream(asset.resizePath));
-      }
-
       try {
+        /**
+         * Serve file viewer on the web
+         */
+        if (query.isWeb) {
+          res.set({
+            'Content-Type': 'image/jpeg',
+          });
+          if (!asset.resizePath) {
+            Logger.error('Error serving IMAGE asset for web', 'ServeFile');
+            throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
+          }
+          await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
+          fileReadStream = createReadStream(asset.resizePath);
+
+          return new StreamableFile(fileReadStream);
+        }
+
         /**
          * Serve thumbnail image for both web and mobile app
          */
@@ -209,40 +224,46 @@ export class AssetService {
           res.set({
             'Content-Type': asset.mimeType,
           });
-          file = createReadStream(asset.originalPath);
+
+          await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
+          fileReadStream = createReadStream(asset.originalPath);
         } else {
           if (asset.webpPath && asset.webpPath.length > 0) {
             res.set({
               'Content-Type': 'image/webp',
             });
 
-            file = createReadStream(asset.webpPath);
+            await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
+            fileReadStream = createReadStream(asset.webpPath);
           } else {
             res.set({
               'Content-Type': 'image/jpeg',
             });
+
             if (!asset.resizePath) {
               throw new Error('resizePath not set');
             }
-            file = createReadStream(asset.resizePath);
+
+            await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
+            fileReadStream = createReadStream(asset.resizePath);
           }
         }
 
-        file.on('error', (error) => {
-          Logger.log(`Cannot create read stream ${error}`);
-          return new BadRequestException('Cannot Create Read Stream');
-        });
-
-        return new StreamableFile(file);
+        return new StreamableFile(fileReadStream);
       } catch (e) {
-        Logger.error('Error serving IMAGE asset ', e);
-        throw new InternalServerErrorException(`Failed to serve image asset ${e}`, 'ServeFile');
+        Logger.error(`Cannot create read stream for asset ${asset.id}`, 'serveFile[IMAGE]');
+        throw new InternalServerErrorException(
+          e,
+          `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
+        );
       }
     } else if (asset.type == AssetType.VIDEO) {
       try {
         // Handle Video
         let videoPath = asset.originalPath;
         let mimeType = asset.mimeType;
+
+        await fs.access(videoPath, constants.R_OK | constants.W_OK);
 
         if (query.isWeb && asset.mimeType == 'video/quicktime') {
           videoPath = asset.encodedVideoPath == '' ? asset.originalPath : asset.encodedVideoPath;
@@ -297,7 +318,7 @@ export class AssetService {
           return new StreamableFile(createReadStream(videoPath));
         }
       } catch (e) {
-        Logger.error('Error serving VIDEO asset ', e);
+        Logger.error(`Error serving VIDEO asset id ${asset.id}`, 'serveFile[VIDEO]');
         throw new InternalServerErrorException(`Failed to serve video asset ${e}`, 'ServeFile');
       }
     }
@@ -334,11 +355,11 @@ export class AssetService {
     // TODO: should use query builder
     const rows = await this.assetRepository.query(
       `
-      select distinct si.tags, si.objects, e.orientation, e."lensModel", e.make, e.model , a.type, e.city, e.state, e.country
-      from assets a
-      left join exif e on a.id = e."assetId"
-      left join smart_info si on a.id = si."assetId"
-      where a."userId" = $1;
+      SELECT DISTINCT si.tags, si.objects, e.orientation, e."lensModel", e.make, e.model , a.type, e.city, e.state, e.country
+      FROM assets a
+      LEFT JOIN exif e ON a.id = e."assetId"
+      LEFT JOIN smart_info si ON a.id = si."assetId"
+      WHERE a."userId" = $1;
       `,
       [authUser.id],
     );
@@ -394,12 +415,12 @@ export class AssetService {
   async getCuratedLocation(authUser: AuthUserDto) {
     return await this.assetRepository.query(
       `
-        select distinct on (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
-        from assets a
-        left join exif e on a.id = e."assetId"
-        where a."userId" = $1
-        and e.city is not null
-        and a.type = 'IMAGE';
+        SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
+        FROM assets a
+        LEFT JOIN exif e ON a.id = e."assetId"
+        WHERE a."userId" = $1
+        AND e.city IS NOT NULL
+        AND a.type = 'IMAGE';
       `,
       [authUser.id],
     );
@@ -408,11 +429,11 @@ export class AssetService {
   async getCuratedObject(authUser: AuthUserDto) {
     return await this.assetRepository.query(
       `
-        select distinct on (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
-        from assets a
-        left join smart_info si on a.id = si."assetId"
-        where a."userId" = $1
-        and si.objects is not null
+        SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
+        FROM assets a
+        LEFT JOIN smart_info si ON a.id = si."assetId"
+        WHERE a."userId" = $1
+        AND si.objects IS NOT NULL
       `,
       [authUser.id],
     );
