@@ -8,7 +8,7 @@ async function bootstrap() {
 
   app.useWebSocketAdapter(new RedisIoAdapter(app));
 
-  await app.listen(3000, () => {
+  await app.listen(3002, () => {
     if (process.env.NODE_ENV == 'development') {
       Logger.log('Running Immich Microservices in DEVELOPMENT environment', 'ImmichMicroservice');
     }

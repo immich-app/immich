@@ -154,7 +154,7 @@ export class AssetService {
 
   public async getAssetThumbnail(assetId: string): Promise<StreamableFile> {
     try {
-      const asset = await this.assetRepository.findOne({ id: assetId });
+      const asset = await this.assetRepository.findOne({ where: { id: assetId } });
       if (!asset) {
         throw new NotFoundException('Asset not found');
       }

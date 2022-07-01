@@ -38,7 +38,7 @@ export class UserService {
   }
 
   async getUserInfo(authUser: AuthUserDto) {
-    return this.userRepository.findOne({ id: authUser.id });
+    return this.userRepository.findOne({ where: { id: authUser.id } });
   }
 
   async getUserCount(isAdmin: boolean) {
@@ -85,7 +85,7 @@ export class UserService {
   }
 
   async updateUser(updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOne(updateUserDto.id);
+    const user = await this.userRepository.findOne({ where: { id: updateUserDto.id } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -148,7 +148,7 @@ export class UserService {
 
   async getUserProfileImage(userId: string, res: Res) {
     try {
-      const user = await this.userRepository.findOne({ id: userId });
+      const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) {
         throw new NotFoundException('User not found');
       }

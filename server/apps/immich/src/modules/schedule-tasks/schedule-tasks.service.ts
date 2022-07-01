@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AssetEntity } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { randomUUID } from 'crypto';
@@ -44,7 +44,7 @@ export class ScheduleTasksService {
   async videoConversion() {
     const assets = await this.assetRepository.find({
       where: {
-        type: 'VIDEO',
+        type: AssetType.VIDEO,
         mimeType: 'video/quicktime',
         encodedVideoPath: '',
       },

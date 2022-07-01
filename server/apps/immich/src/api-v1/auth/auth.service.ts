@@ -18,22 +18,22 @@ export class AuthService {
   ) {}
 
   private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity | null> {
-    const user = await this.userRepository.findOne(
-      { email: loginCredential.email },
-      {
-        select: [
-          'id',
-          'email',
-          'password',
-          'salt',
-          'firstName',
-          'lastName',
-          'isAdmin',
-          'profileImagePath',
-          'shouldChangePassword',
-        ],
+    const user = await this.userRepository.findOne({
+      where: {
+        email: loginCredential.email,
       },
-    );
+      select: [
+        'id',
+        'email',
+        'password',
+        'salt',
+        'firstName',
+        'lastName',
+        'isAdmin',
+        'profileImagePath',
+        'shouldChangePassword',
+      ],
+    });
 
     if (!user) {
       return null;

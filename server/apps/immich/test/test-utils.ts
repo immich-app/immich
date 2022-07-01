@@ -1,15 +1,18 @@
-import { getConnection } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { TestingModuleBuilder } from '@nestjs/testing';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../src/modules/immich-jwt/guards/jwt-auth.guard';
+import databaseConfig from '@app/database/config/database.config';
 
 type CustomAuthCallback = () => AuthUserDto;
 
 export async function clearDb() {
-  const entities = getConnection().entityMetadatas;
+  const db = new DataSource(databaseConfig);
+
+  const entities = db.entityMetadatas;
   for (const entity of entities) {
-    const repository = getConnection().getRepository(entity.name);
+    const repository = db.getRepository(entity.name);
     await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
   }
 }
