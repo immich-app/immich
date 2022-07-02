@@ -63,7 +63,9 @@
 		dispatch('close');
 	};
 
-	const navigateAssetForward = () => {
+	const navigateAssetForward = (e?: Event) => {
+		e?.stopPropagation();
+
 		const nextAsset = $flattenAssetGroupByDate[selectedIndex + 1];
 		viewDeviceId = nextAsset.deviceId;
 		viewAssetId = nextAsset.id;
@@ -73,7 +75,9 @@
 		pushState(viewAssetId);
 	};
 
-	const navigateAssetBackward = () => {
+	const navigateAssetBackward = (e?: Event) => {
+		e?.stopPropagation();
+
 		const lastAsset = $flattenAssetGroupByDate[selectedIndex - 1];
 		viewDeviceId = lastAsset.deviceId;
 		viewAssetId = lastAsset.id;
