@@ -59,7 +59,6 @@ export class AssetController {
     @UploadedFiles() uploadFiles: { assetData: Express.Multer.File[] },
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
   ): Promise<'ok' | undefined> {
-    console.log('Upload event');
     for (const file of uploadFiles.assetData) {
       try {
         const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
