@@ -30,7 +30,7 @@
 
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
@@ -38,10 +38,9 @@
 	import moment from 'moment';
 	import type { ImmichAsset } from '../../lib/models/immich-asset';
 	import AssetViewer from '../../lib/components/asset-viewer/asset-viewer.svelte';
-	import DownloadPanel from '../../lib/components/asset-viewer/download-panel.svelte';
 	import StatusBox from '../../lib/components/shared/status-box.svelte';
 	import { fileUploader } from '../../lib/utils/file-uploader';
-	import { openWebsocketConnection } from '../../lib/stores/websocket';
+	import { openWebsocketConnection, closeWebsocketConnection } from '../../lib/stores/websocket';
 	import {serverEndpoint} from "../../lib/constants";
 
 	export let user: ImmichUser;
@@ -82,6 +81,10 @@
 			}
 
 		}
+	});
+
+	onDestroy(() => {
+		closeWebsocketConnection();
 	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {

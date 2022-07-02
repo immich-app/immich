@@ -116,7 +116,7 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
-  async getAssetThumbnail(@Param('assetId') assetId: string): Promise<StreamableFile> {
+  async getAssetThumbnail(@Param('assetId') assetId: string) {
     return await this.assetService.getAssetThumbnail(assetId);
   }
 

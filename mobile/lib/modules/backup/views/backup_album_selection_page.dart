@@ -188,11 +188,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                           color: Colors.grey[700]),
                     ),
                     trailing: Text(
-                      ref
-                          .watch(backupProvider)
-                          .allUniqueAssets
-                          .length
-                          .toString(),
+                      '${ref.watch(backupProvider).allUniqueAssets.length}',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -203,7 +199,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
           ListTile(
             title: Text(
-              "Albums on device (${availableAlbums.length.toString()})",
+              "Albums on device (${availableAlbums.length})",
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             subtitle: Padding(

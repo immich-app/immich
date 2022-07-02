@@ -39,11 +39,7 @@ class SharedAlbumService {
         "assetIds": assets.map((asset) => asset.id).toList(),
       });
 
-      if (res == null) {
-        return false;
-      }
-
-      return true;
+      return res != null;
     } catch (e) {
       debugPrint("Error createSharedAlbum  ${e.toString()}");
       return false;
@@ -71,11 +67,7 @@ class SharedAlbumService {
         "assetIds": assets.map((asset) => asset.id).toList(),
       });
 
-      if (res == null) {
-        return false;
-      }
-
-      return true;
+      return res != null;
     } catch (e) {
       debugPrint("Error addAdditionalAssetToAlbum  ${e.toString()}");
       return false;
@@ -90,11 +82,7 @@ class SharedAlbumService {
         "sharedUserIds": sharedUserIds,
       });
 
-      if (res == null) {
-        return false;
-      }
-
-      return true;
+      return res != null;
     } catch (e) {
       debugPrint("Error addAdditionalUserToAlbum  ${e.toString()}");
       return false;

@@ -160,7 +160,6 @@ export class UserService {
       }
 
       if (!user.profileImagePath) {
-        // throw new BadRequestException('User does not have a profile image');
         res.status(404).send('User does not have a profile image');
         return;
       }
@@ -171,7 +170,7 @@ export class UserService {
       const fileStream = createReadStream(user.profileImagePath);
       return new StreamableFile(fileStream);
     } catch (e) {
-      console.log('error getting user profile');
+      res.status(404).send('User does not have a profile image');
     }
   }
 }

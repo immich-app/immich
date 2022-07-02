@@ -166,7 +166,7 @@ class SearchResultPage extends HookConsumerWidget {
         }
       }
 
-      return Container();
+      return const SizedBox();
     }
 
     return Scaffold(
@@ -198,9 +198,8 @@ class SearchResultPage extends HookConsumerWidget {
         child: Stack(
           children: [
             _buildSearchResult(),
-            isNewSearch.value
-                ? SearchSuggestionList(onSubmitted: _onSearchSubmitted)
-                : Container(),
+            if (isNewSearch.value)
+              SearchSuggestionList(onSubmitted: _onSearchSubmitted),
           ],
         ),
       ),

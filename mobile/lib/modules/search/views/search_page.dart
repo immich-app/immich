@@ -176,9 +176,8 @@ class SearchPage extends HookConsumerWidget {
                 _buildThings()
               ],
             ),
-            isSearchEnabled
-                ? SearchSuggestionList(onSubmitted: _onSearchSubmitted)
-                : Container(),
+            if (isSearchEnabled)
+              SearchSuggestionList(onSubmitted: _onSearchSubmitted),
           ],
         ),
       ),

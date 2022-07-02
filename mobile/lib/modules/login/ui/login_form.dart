@@ -107,19 +107,12 @@ class ServerEndpointInput extends StatelessWidget {
       : super(key: key);
 
   String? _validateInput(String? url) {
-    if (url == null) {
+  
+    if (url?.startsWith(RegExp(r'https?://')) == true) {
       return null;
-    }
-
-    if (url.isEmpty) {
-      return 'Server endpoint is required';
-    }
-
-    if (!url.startsWith(RegExp(r'https?://'))) {
+    } else {
       return 'Please specify http:// or https://';
     }
-
-    return null;
   }
 
   @override
@@ -219,7 +212,8 @@ class LoginButton extends ConsumerWidget {
           if (isAuthenticated) {
             // Resume backup (if enable) then navigate
 
-            if (ref.watch(authenticationProvider).shouldChangePassword) {
+            if (ref.watch(authenticationProvider).shouldChangePassword &&
+                !ref.watch(authenticationProvider).isAdmin) {
               AutoRouter.of(context).push(const ChangePasswordRoute());
             } else {
               ref.watch(backupProvider.notifier).resumeBackup();

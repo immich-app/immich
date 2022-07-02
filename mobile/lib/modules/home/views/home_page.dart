@@ -38,17 +38,10 @@ class HomePage extends HookConsumerWidget {
     }
 
     _buildSelectedItemCountIndicator() {
-      return isMultiSelectEnable
-          ? DisableMultiSelectButton(
-              onPressed:
-                  ref.watch(homePageStateProvider.notifier).disableMultiSelect,
-              selectedItemCount: homePageState.selectedItems.length,
-            )
-          : Container();
-    }
-
-    _buildBottomAppBar() {
-      return isMultiSelectEnable ? const ControlBottomAppBar() : Container();
+      return DisableMultiSelectButton(
+        onPressed: ref.watch(homePageStateProvider.notifier).disableMultiSelect,
+        selectedItemCount: homePageState.selectedItems.length,
+      );
     }
 
     Widget _buildBody() {
@@ -121,8 +114,10 @@ class HomePage extends HookConsumerWidget {
                 ),
               ),
             ),
-            _buildSelectedItemCountIndicator(),
-            _buildBottomAppBar(),
+            if (isMultiSelectEnable) ...[
+              _buildSelectedItemCountIndicator(),
+              const ControlBottomAppBar(),
+            ],
           ],
         ),
       );

@@ -12,7 +12,7 @@ import { Logger } from '@nestjs/common';
 import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import ffmpeg from 'fluent-ffmpeg';
-// import moment from 'moment';
+import path from 'path';
 
 @Processor('metadata-extraction-queue')
 export class MetadataExtractionProcessor {
@@ -48,7 +48,7 @@ export class MetadataExtractionProcessor {
       newExif.assetId = asset.id;
       newExif.make = exifData['Make'] || null;
       newExif.model = exifData['Model'] || null;
-      newExif.imageName = fileName || null;
+      newExif.imageName = path.parse(fileName).name || null;
       newExif.exifImageHeight = exifData['ExifImageHeight'] || null;
       newExif.exifImageWidth = exifData['ExifImageWidth'] || null;
       newExif.fileSizeInByte = fileSize || null;
@@ -93,7 +93,7 @@ export class MetadataExtractionProcessor {
   async tagImage(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
 
-    const res = await axios.post('http://immich-machine-learning:3001/image-classifier/tag-image', {
+    const res = await axios.post('http://immich-machine-learning:3003/image-classifier/tag-image', {
       thumbnailPath: asset.resizePath,
     });
 
@@ -113,7 +113,7 @@ export class MetadataExtractionProcessor {
     try {
       const { asset }: { asset: AssetEntity } = job.data;
 
-      const res = await axios.post('http://immich-machine-learning:3001/object-detection/detect-object', {
+      const res = await axios.post('http://immich-machine-learning:3003/object-detection/detect-object', {
         thumbnailPath: asset.resizePath,
       });
 

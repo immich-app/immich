@@ -5,7 +5,7 @@ import { Logger } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  await app.listen(3001, () => {
+  await app.listen(3003, () => {
     if (process.env.NODE_ENV == 'development') {
       Logger.log(
         'Running Immich Machine Learning in DEVELOPMENT environment',

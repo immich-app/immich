@@ -96,12 +96,11 @@ class BackupControllerPage extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              !isAutoBackup
-                  ? const Text(
-                      "Turn on backup to automatically upload new assets to the server.",
-                      style: TextStyle(fontSize: 14),
-                    )
-                  : Container(),
+              if (!isAutoBackup)
+                const Text(
+                  "Turn on backup to automatically upload new assets to the server.",
+                  style: TextStyle(fontSize: 14),
+                ),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: OutlinedButton(
@@ -189,7 +188,7 @@ class BackupControllerPage extends HookConsumerWidget {
           ),
         );
       } else {
-        return Container();
+        return const SizedBox();
       }
     }
 

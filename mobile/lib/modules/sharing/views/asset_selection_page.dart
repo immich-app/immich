@@ -74,23 +74,22 @@ class AssetSelectionPage extends HookConsumerWidget {
               ),
         centerTitle: false,
         actions: [
-          (!isAlbumExist && selectedAssets.isNotEmpty) ||
-                  (isAlbumExist && newAssetsForAlbum.isNotEmpty)
-              ? TextButton(
-                  onPressed: () {
-                    var payload = AssetSelectionPageResult(
-                      isAlbumExist: isAlbumExist,
-                      selectedAdditionalAsset: newAssetsForAlbum,
-                      selectedNewAsset: selectedAssets,
-                    );
-                    AutoRouter.of(context).pop(payload);
-                  },
-                  child: const Text(
-                    "Add",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                )
-              : Container()
+          if ((!isAlbumExist && selectedAssets.isNotEmpty) ||
+              (isAlbumExist && newAssetsForAlbum.isNotEmpty))
+            TextButton(
+              onPressed: () {
+                var payload = AssetSelectionPageResult(
+                  isAlbumExist: isAlbumExist,
+                  selectedAdditionalAsset: newAssetsForAlbum,
+                  selectedNewAsset: selectedAssets,
+                );
+                AutoRouter.of(context).pop(payload);
+              },
+              child: const Text(
+                "Add",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
         ],
       ),
       body: _buildBody(),

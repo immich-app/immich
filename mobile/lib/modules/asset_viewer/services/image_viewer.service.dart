@@ -39,14 +39,10 @@ class ImageViewerService {
         entity = await PhotoManager.editor.saveVideo(tempFile, title: fileName);
       }
 
-      if (entity != null) {
-        return true;
-      }
+      return entity != null;
     } catch (e) {
       debugPrint("Error saving file $e");
       return false;
     }
-
-    return false;
   }
 }

@@ -147,8 +147,7 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return chewieController != null &&
-            chewieController!.videoPlayerController.value.isInitialized
+    return chewieController?.videoPlayerController.value.isInitialized == true
         ? SizedBox(
             child: Chewie(
               controller: chewieController!,

@@ -56,7 +56,7 @@ class AlbumInfoCard extends HookConsumerWidget {
         );
       }
 
-      return Container();
+      return const SizedBox();
     }
 
     _buildImageFilter() {
@@ -151,7 +151,11 @@ class AlbumInfoCard extends HookConsumerWidget {
                   ),
                   child: null,
                 ),
-                Positioned(bottom: 10, left: 25, child: _buildSelectedTextBox())
+                Positioned(
+                  bottom: 10,
+                  left: 25,
+                  child: _buildSelectedTextBox(),
+                )
               ],
             ),
             Padding(
@@ -176,8 +180,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.only(top: 2.0),
                             child: Text(
-                              albumInfo.assetCount.toString() +
-                                  (albumInfo.isAll ? " (ALL)" : ""),
+                              '${albumInfo.assetCount} ${(albumInfo.isAll ? " (ALL)" : "")}',
                               style: TextStyle(
                                   fontSize: 12, color: Colors.grey[600]),
                             ),
