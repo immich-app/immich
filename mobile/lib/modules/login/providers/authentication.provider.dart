@@ -50,7 +50,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   final NetworkService _networkService;
 
   Future<bool> login(String email, String password, String serverEndpoint,
-      bool isSavedLoginInfo) async {
+      bool isSavedLoginInfo, bool oauth2Login) async {
     // Store server endpoint to Hive and test endpoint
     if (serverEndpoint[serverEndpoint.length - 1] == "/") {
       var validUrl = serverEndpoint.substring(0, serverEndpoint.length - 1);
@@ -91,11 +91,11 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       bool loggedIn = false;
 
-      if (loginParams.oauth2 == true && email == '' && password == '') {
+      if (loginParams.oauth2 == true && oauth2Login) {
         loggedIn |= await OAuth2Service.tryLogin(loginParams.issuer, loginParams.clientId);
       }
 
-      if (loginParams.localAuth == true &&  !loggedIn) {
+      if (loginParams.localAuth == true && !oauth2Login) {
         loggedIn |= await LocalAuthService.tryLogin(email, password, _networkService);
       }
 

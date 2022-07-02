@@ -21,17 +21,17 @@ export const immichAppConfig: ConfigModuleOptions = {
       then: Joi.string().required().uri({
         scheme: ['https'],
       }),
-      otherwise: Joi.optional().valid(null, ''),
+      otherwise: Joi.optional(),
     }),
     OAUTH2_CLIENT_ID: Joi.any().when('OAUTH2_ENABLE', {
       is: true,
       then: Joi.string().required(),
-      otherwise: Joi.optional().valid(null, ''),
+      otherwise: Joi.optional(),
     }),
     OAUTH2_CERTIFICATE: Joi.any().when('OAUTH2_ENABLE', {
       is: true,
       then: Joi.string().required(),
-      otherwise: Joi.optional().valid(null, ''),
+      otherwise: Joi.optional(),
     }),
     ENABLE_MAPBOX: Joi.boolean().required().valid(true, false),
     MAPBOX_KEY: Joi.any().when('ENABLE_MAPBOX', {
