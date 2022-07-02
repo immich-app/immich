@@ -13,8 +13,10 @@ import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
+import { IExifExtractionProcessor } from '@app/job';
+import { metadataExtractionQueueName } from '@app/job/constants/queue-name.constant';
 
-@Processor('metadata-extraction-queue')
+@Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
   private geocodingClient?: GeocodeService;
 
@@ -36,7 +38,7 @@ export class MetadataExtractionProcessor {
   }
 
   @Process('exif-extraction')
-  async extractExifInfo(job: Job) {
+  async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
 

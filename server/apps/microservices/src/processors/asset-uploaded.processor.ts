@@ -4,17 +4,31 @@ import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
+import { IAssetUploadedJob, IExifExtractionProcessor, IVideoLengthExtractionProcessor } from '@app/job/index';
+import {
+  assetUploadedQueueName,
+  metadataExtractionQueueName,
+  thumbnailGeneratorQueueName,
+  videoConversionQueue,
+} from '@app/job/constants/queue-name.constant';
+import {
+  assetUploadedProcessorName,
+  exifExtractionProcessorName,
+  extractVideoLengthProcessorName,
+  generateJPEGThumbnailProcessorName,
+  mp4ConversionProcessorName,
+} from '@app/job/constants/job-name.constant';
 
-@Processor('asset-uploaded-queue')
+@Processor(assetUploadedQueueName)
 export class AssetUploadedProcessor {
   constructor(
-    @InjectQueue('thumbnail-generator-queue')
+    @InjectQueue(thumbnailGeneratorQueueName)
     private thumbnailGeneratorQueue: Queue,
 
-    @InjectQueue('metadata-extraction-queue')
-    private metadataExtractionQueue: Queue,
+    @InjectQueue(metadataExtractionQueueName)
+    private metadataExtractionQueue: Queue<IExifExtractionProcessor | IVideoLengthExtractionProcessor>,
 
-    @InjectQueue('video-conversion-queue')
+    @InjectQueue(videoConversionQueue)
     private videoConversionQueue: Queue,
 
     @InjectRepository(AssetEntity)
@@ -30,19 +44,19 @@ export class AssetUploadedProcessor {
    *
    * @param job asset-uploaded
    */
-  @Process('asset-uploaded')
-  async processUploadedVideo(job: Job) {
-    const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
+  @Process(assetUploadedProcessorName)
+  async processUploadedVideo(job: Job<IAssetUploadedJob>) {
+    const { asset, fileName, fileSize } = job.data;
 
-    await this.thumbnailGeneratorQueue.add('generate-jpeg-thumbnail', { asset }, { jobId: randomUUID() });
+    await this.thumbnailGeneratorQueue.add(generateJPEGThumbnailProcessorName, { asset }, { jobId: randomUUID() });
 
     // Video Conversion
     if (asset.type == AssetType.VIDEO) {
-      await this.videoConversionQueue.add('mp4-conversion', { asset }, { jobId: randomUUID() });
+      await this.videoConversionQueue.add(mp4ConversionProcessorName, { asset }, { jobId: randomUUID() });
     } else {
       // Extract Metadata/Exif for Images - Currently the library cannot extract EXIF for video yet
       await this.metadataExtractionQueue.add(
-        'exif-extraction',
+        exifExtractionProcessorName,
         {
           asset,
           fileName,
@@ -54,7 +68,7 @@ export class AssetUploadedProcessor {
 
     // Extract video duration if uploaded from the web
     if (asset.type == AssetType.VIDEO && asset.duration == '0:00:00.000000') {
-      await this.metadataExtractionQueue.add('extract-video-length', { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add(extractVideoLengthProcessorName, { asset }, { jobId: randomUUID() });
     }
   }
 }

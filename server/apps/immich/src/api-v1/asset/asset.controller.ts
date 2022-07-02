@@ -31,6 +31,7 @@ import { SearchAssetDto } from './dto/search-asset.dto';
 import { CommunicationGateway } from '../communication/communication.gateway';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { IAssetUploadedJob } from '@app/job/index';
 
 @UseGuards(JwtAuthGuard)
 @Controller('asset')
@@ -41,7 +42,7 @@ export class AssetController {
     private backgroundTaskService: BackgroundTaskService,
 
     @InjectQueue('asset-uploaded-queue')
-    private assetUploadedQueue: Queue,
+    private assetUploadedQueue: Queue<IAssetUploadedJob>,
   ) {}
 
   @Post('upload')

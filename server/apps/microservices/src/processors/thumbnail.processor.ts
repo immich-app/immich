@@ -9,23 +9,28 @@ import { randomUUID } from 'node:crypto';
 import { CommunicationGateway } from '../../../immich/src/api-v1/communication/communication.gateway';
 import ffmpeg from 'fluent-ffmpeg';
 import { Logger } from '@nestjs/common';
+import { metadataExtractionQueueName, thumbnailGeneratorQueueName } from '@app/job/constants/queue-name.constant';
+import {
+  generateJPEGThumbnailProcessorName,
+  generateWEBPThumbnailProcessorName,
+} from '@app/job/constants/job-name.constant';
 
-@Processor('thumbnail-generator-queue')
+@Processor(thumbnailGeneratorQueueName)
 export class ThumbnailGeneratorProcessor {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @InjectQueue('thumbnail-generator-queue')
+    @InjectQueue(thumbnailGeneratorQueueName)
     private thumbnailGeneratorQueue: Queue,
 
     private wsCommunicateionGateway: CommunicationGateway,
 
-    @InjectQueue('metadata-extraction-queue')
+    @InjectQueue(metadataExtractionQueueName)
     private metadataExtractionQueue: Queue,
   ) {}
 
-  @Process({ name: 'generate-jpeg-thumbnail', concurrency: 3 })
+  @Process({ name: generateJPEGThumbnailProcessorName, concurrency: 3 })
   async generateJPEGThumbnail(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
 
@@ -87,7 +92,7 @@ export class ThumbnailGeneratorProcessor {
     }
   }
 
-  @Process({ name: 'generate-webp-thumbnail', concurrency: 3 })
+  @Process({ name: generateWEBPThumbnailProcessorName, concurrency: 3 })
   async generateWepbThumbnail(job: Job<{ asset: AssetEntity }>) {
     const { asset } = job.data;
 

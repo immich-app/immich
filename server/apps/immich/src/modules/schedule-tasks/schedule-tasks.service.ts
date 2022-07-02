@@ -6,6 +6,8 @@ import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { randomUUID } from 'crypto';
+import { mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
+import { thumbnailGeneratorQueueName } from '@app/job/constants/queue-name.constant';
 
 @Injectable()
 export class ScheduleTasksService {
@@ -13,7 +15,7 @@ export class ScheduleTasksService {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @InjectQueue('thumbnail-generator-queue')
+    @InjectQueue(thumbnailGeneratorQueueName)
     private thumbnailGeneratorQueue: Queue,
 
     @InjectQueue('video-conversion-queue')
@@ -54,7 +56,7 @@ export class ScheduleTasksService {
     });
 
     for (const asset of assets) {
-      await this.videoConversionQueue.add('mp4-conversion', { asset }, { jobId: randomUUID() });
+      await this.videoConversionQueue.add(mp4ConversionProcessorName, { asset }, { jobId: randomUUID() });
     }
   }
 }
