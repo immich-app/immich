@@ -13,6 +13,8 @@ import { metadataExtractionQueueName, thumbnailGeneratorQueueName } from '@app/j
 import {
   generateJPEGThumbnailProcessorName,
   generateWEBPThumbnailProcessorName,
+  imageTaggingProcessorName,
+  objectDetectionProcessorName,
 } from '@app/job/constants/job-name.constant';
 
 @Processor(thumbnailGeneratorQueueName)
@@ -56,9 +58,13 @@ export class ThumbnailGeneratorProcessor {
             // Update resize path to send to generate webp queue
             asset.resizePath = jpegThumbnailPath;
 
-            await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset }, { jobId: randomUUID() });
-            await this.metadataExtractionQueue.add('tag-image', { asset }, { jobId: randomUUID() });
-            await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
+            await this.thumbnailGeneratorQueue.add(
+              generateWEBPThumbnailProcessorName,
+              { asset },
+              { jobId: randomUUID() },
+            );
+            await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
+            await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
             this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
           }
         });
@@ -82,9 +88,13 @@ export class ThumbnailGeneratorProcessor {
           // Update resize path to send to generate webp queue
           asset.resizePath = jpegThumbnailPath;
 
-          await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset }, { jobId: randomUUID() });
-          await this.metadataExtractionQueue.add('tag-image', { asset }, { jobId: randomUUID() });
-          await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
+          await this.thumbnailGeneratorQueue.add(
+            generateWEBPThumbnailProcessorName,
+            { asset },
+            { jobId: randomUUID() },
+          );
+          await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
+          await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
 
           this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
         })

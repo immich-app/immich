@@ -16,7 +16,7 @@ import {
   assetUploadedQueueName,
   metadataExtractionQueueName,
   thumbnailGeneratorQueueName,
-  videoConversionQueue,
+  videoConversionQueueName,
 } from '@app/job/constants/queue-name.constant';
 
 @Module({
@@ -56,7 +56,7 @@ import {
       },
     }),
     BullModule.registerQueue({
-      name: videoConversionQueue,
+      name: videoConversionQueueName,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,

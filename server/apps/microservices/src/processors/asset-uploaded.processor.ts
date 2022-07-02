@@ -9,12 +9,12 @@ import {
   assetUploadedQueueName,
   metadataExtractionQueueName,
   thumbnailGeneratorQueueName,
-  videoConversionQueue,
+  videoConversionQueueName,
 } from '@app/job/constants/queue-name.constant';
 import {
   assetUploadedProcessorName,
   exifExtractionProcessorName,
-  extractVideoLengthProcessorName,
+  videoLengthExtractionProcessorName,
   generateJPEGThumbnailProcessorName,
   mp4ConversionProcessorName,
 } from '@app/job/constants/job-name.constant';
@@ -28,7 +28,7 @@ export class AssetUploadedProcessor {
     @InjectQueue(metadataExtractionQueueName)
     private metadataExtractionQueue: Queue<IExifExtractionProcessor | IVideoLengthExtractionProcessor>,
 
-    @InjectQueue(videoConversionQueue)
+    @InjectQueue(videoConversionQueueName)
     private videoConversionQueue: Queue,
 
     @InjectRepository(AssetEntity)
@@ -68,7 +68,7 @@ export class AssetUploadedProcessor {
 
     // Extract video duration if uploaded from the web
     if (asset.type == AssetType.VIDEO && asset.duration == '0:00:00.000000') {
-      await this.metadataExtractionQueue.add(extractVideoLengthProcessorName, { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add(videoLengthExtractionProcessorName, { asset }, { jobId: randomUUID() });
     }
   }
 }

@@ -32,6 +32,8 @@ import { CommunicationGateway } from '../communication/communication.gateway';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { IAssetUploadedJob } from '@app/job/index';
+import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
+import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
 
 @UseGuards(JwtAuthGuard)
 @Controller('asset')
@@ -41,7 +43,7 @@ export class AssetController {
     private assetService: AssetService,
     private backgroundTaskService: BackgroundTaskService,
 
-    @InjectQueue('asset-uploaded-queue')
+    @InjectQueue(assetUploadedQueueName)
     private assetUploadedQueue: Queue<IAssetUploadedJob>,
   ) {}
 
@@ -69,7 +71,7 @@ export class AssetController {
         }
 
         await this.assetUploadedQueue.add(
-          'asset-uploaded',
+          assetUploadedProcessorName,
           { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
           { jobId: savedAsset.id },
         );

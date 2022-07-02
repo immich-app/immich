@@ -15,6 +15,12 @@ import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import { IExifExtractionProcessor } from '@app/job';
 import { metadataExtractionQueueName } from '@app/job/constants/queue-name.constant';
+import {
+  exifExtractionProcessorName,
+  imageTaggingProcessorName,
+  objectDetectionProcessorName,
+  videoLengthExtractionProcessorName,
+} from '@app/job/constants/job-name.constant';
 
 @Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
@@ -37,7 +43,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process('exif-extraction')
+  @Process(exifExtractionProcessorName)
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
@@ -91,7 +97,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: 'tag-image', concurrency: 2 })
+  @Process({ name: imageTaggingProcessorName, concurrency: 2 })
   async tagImage(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
 
@@ -110,7 +116,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: 'detect-object', concurrency: 2 })
+  @Process({ name: objectDetectionProcessorName, concurrency: 2 })
   async detectObject(job: Job) {
     try {
       const { asset }: { asset: AssetEntity } = job.data;
@@ -133,7 +139,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: 'extract-video-length', concurrency: 2 })
+  @Process({ name: videoLengthExtractionProcessorName, concurrency: 2 })
   async extractVideoLength(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
 

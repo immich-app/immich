@@ -1,5 +1,5 @@
 import { mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
-import { videoConversionQueue } from '@app/job/constants/queue-name.constant';
+import { videoConversionQueueName } from '@app/job/constants/queue-name.constant';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 import { AssetEntity } from '../../../../libs/database/src/entities/asset.entity';
 import { APP_UPLOAD_LOCATION } from '../../../immich/src/constants/upload_location.constant';
 
-@Processor(videoConversionQueue)
+@Processor(videoConversionQueueName)
 export class VideoTranscodeProcessor {
   constructor(
     @InjectRepository(AssetEntity)

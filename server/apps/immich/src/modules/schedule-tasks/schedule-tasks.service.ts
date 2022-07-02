@@ -6,8 +6,8 @@ import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { randomUUID } from 'crypto';
-import { mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
-import { thumbnailGeneratorQueueName } from '@app/job/constants/queue-name.constant';
+import { generateWEBPThumbnailProcessorName, mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
+import { thumbnailGeneratorQueueName, videoConversionQueueName } from '@app/job/constants/queue-name.constant';
 
 @Injectable()
 export class ScheduleTasksService {
@@ -18,7 +18,7 @@ export class ScheduleTasksService {
     @InjectQueue(thumbnailGeneratorQueueName)
     private thumbnailGeneratorQueue: Queue,
 
-    @InjectQueue('video-conversion-queue')
+    @InjectQueue(videoConversionQueueName)
     private videoConversionQueue: Queue,
   ) {}
 
@@ -38,7 +38,11 @@ export class ScheduleTasksService {
     }
 
     for (const asset of assets) {
-      await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset: asset }, { jobId: randomUUID() });
+      await this.thumbnailGeneratorQueue.add(
+        generateWEBPThumbnailProcessorName,
+        { asset: asset },
+        { jobId: randomUUID() },
+      );
     }
   }
 
