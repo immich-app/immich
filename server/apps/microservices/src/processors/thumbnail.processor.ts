@@ -25,7 +25,7 @@ export class ThumbnailGeneratorProcessor {
     private metadataExtractionQueue: Queue,
   ) {}
 
-  @Process('generate-jpeg-thumbnail')
+  @Process({ name: 'generate-jpeg-thumbnail', concurrency: 3 })
   async generateJPEGThumbnail(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
 
@@ -43,6 +43,7 @@ export class ThumbnailGeneratorProcessor {
       sharp(asset.originalPath)
         .resize(1440, 2560, { fit: 'inside' })
         .jpeg()
+        .rotate()
         .toFile(jpegThumbnailPath, async (err) => {
           if (!err) {
             await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
@@ -86,7 +87,7 @@ export class ThumbnailGeneratorProcessor {
     }
   }
 
-  @Process({ name: 'generate-webp-thumbnail', concurrency: 2 })
+  @Process({ name: 'generate-webp-thumbnail', concurrency: 3 })
   async generateWepbThumbnail(job: Job<{ asset: AssetEntity }>) {
     const { asset } = job.data;
 
@@ -98,6 +99,7 @@ export class ThumbnailGeneratorProcessor {
     sharp(asset.resizePath)
       .resize(250)
       .webp()
+      .rotate()
       .toFile(webpPath, (err) => {
         if (!err) {
           this.assetRepository.update({ id: asset.id }, { webpPath: webpPath });

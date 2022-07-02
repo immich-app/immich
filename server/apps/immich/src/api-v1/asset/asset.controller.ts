@@ -56,9 +56,10 @@ export class AssetController {
   )
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
-    @UploadedFiles() uploadFiles: { assetData: Express.Multer.File[]; thumbnailData?: Express.Multer.File[] },
+    @UploadedFiles() uploadFiles: { assetData: Express.Multer.File[] },
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
   ): Promise<'ok' | undefined> {
+    console.log('Upload event');
     for (const file of uploadFiles.assetData) {
       try {
         const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
@@ -66,28 +67,12 @@ export class AssetController {
         if (!savedAsset) {
           return;
         }
-        if (uploadFiles.thumbnailData != null) {
-          const assetWithThumbnail = await this.assetService.updateThumbnailInfo(
-            savedAsset,
-            uploadFiles.thumbnailData[0].path,
-          );
 
-          await this.assetUploadedQueue.add(
-            'asset-uploaded',
-            { asset: assetWithThumbnail, fileName: file.originalname, fileSize: file.size, hasThumbnail: true },
-            { jobId: savedAsset.id },
-          );
-
-          this.wsCommunicateionGateway.server
-            .to(savedAsset.userId)
-            .emit('on_upload_success', JSON.stringify(assetWithThumbnail));
-        } else {
-          await this.assetUploadedQueue.add(
-            'asset-uploaded',
-            { asset: savedAsset, fileName: file.originalname, fileSize: file.size, hasThumbnail: false },
-            { jobId: savedAsset.id },
-          );
-        }
+        await this.assetUploadedQueue.add(
+          'asset-uploaded',
+          { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
+          { jobId: savedAsset.id },
+        );
       } catch (e) {
         Logger.error(`Error receiving upload file ${e}`);
       }
