@@ -13,14 +13,15 @@ import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
-import { IExifExtractionProcessor } from '@app/job';
-import { metadataExtractionQueueName } from '@app/job/constants/queue-name.constant';
 import {
+  IExifExtractionProcessor,
+  IVideoLengthExtractionProcessor,
   exifExtractionProcessorName,
   imageTaggingProcessorName,
   objectDetectionProcessorName,
   videoLengthExtractionProcessorName,
-} from '@app/job/constants/job-name.constant';
+  metadataExtractionQueueName,
+} from '@app/job';
 
 @Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
@@ -140,8 +141,8 @@ export class MetadataExtractionProcessor {
   }
 
   @Process({ name: videoLengthExtractionProcessorName, concurrency: 2 })
-  async extractVideoLength(job: Job) {
-    const { asset }: { asset: AssetEntity } = job.data;
+  async extractVideoLength(job: Job<IVideoLengthExtractionProcessor>) {
+    const { asset } = job.data;
 
     ffmpeg.ffprobe(asset.originalPath, async (err, data) => {
       if (!err) {

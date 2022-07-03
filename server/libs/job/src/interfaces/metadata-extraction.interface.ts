@@ -24,4 +24,4 @@ export interface IVideoLengthExtractionProcessor {
   asset: AssetEntity;
 }
 
-export type IMetadataExtractionJob = IExifExtractionProcessor & IVideoLengthExtractionProcessor;
+export type IMetadataExtractionJob = IExifExtractionProcessor | IVideoLengthExtractionProcessor;

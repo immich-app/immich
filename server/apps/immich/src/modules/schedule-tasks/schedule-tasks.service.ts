@@ -8,6 +8,7 @@ import { Queue } from 'bull';
 import { randomUUID } from 'crypto';
 import { generateWEBPThumbnailProcessorName, mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
 import { thumbnailGeneratorQueueName, videoConversionQueueName } from '@app/job/constants/queue-name.constant';
+import { IVideoTranscodeJob } from '@app/job/interfaces/video-transcode.interface';
 
 @Injectable()
 export class ScheduleTasksService {
@@ -19,7 +20,7 @@ export class ScheduleTasksService {
     private thumbnailGeneratorQueue: Queue,
 
     @InjectQueue(videoConversionQueueName)
-    private videoConversionQueue: Queue,
+    private videoConversionQueue: Queue<IVideoTranscodeJob>,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

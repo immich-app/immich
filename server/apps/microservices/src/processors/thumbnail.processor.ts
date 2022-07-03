@@ -9,13 +9,16 @@ import { randomUUID } from 'node:crypto';
 import { CommunicationGateway } from '../../../immich/src/api-v1/communication/communication.gateway';
 import ffmpeg from 'fluent-ffmpeg';
 import { Logger } from '@nestjs/common';
-import { metadataExtractionQueueName, thumbnailGeneratorQueueName } from '@app/job/constants/queue-name.constant';
 import {
+  WebpGeneratorProcessor,
   generateJPEGThumbnailProcessorName,
   generateWEBPThumbnailProcessorName,
   imageTaggingProcessorName,
   objectDetectionProcessorName,
-} from '@app/job/constants/job-name.constant';
+  metadataExtractionQueueName,
+  thumbnailGeneratorQueueName,
+  JpegGeneratorProcessor,
+} from '@app/job';
 
 @Processor(thumbnailGeneratorQueueName)
 export class ThumbnailGeneratorProcessor {
@@ -33,8 +36,8 @@ export class ThumbnailGeneratorProcessor {
   ) {}
 
   @Process({ name: generateJPEGThumbnailProcessorName, concurrency: 3 })
-  async generateJPEGThumbnail(job: Job) {
-    const { asset }: { asset: AssetEntity } = job.data;
+  async generateJPEGThumbnail(job: Job<JpegGeneratorProcessor>) {
+    const { asset } = job.data;
 
     const resizePath = `upload/${asset.userId}/thumb/${asset.deviceId}/`;
 
@@ -103,7 +106,7 @@ export class ThumbnailGeneratorProcessor {
   }
 
   @Process({ name: generateWEBPThumbnailProcessorName, concurrency: 3 })
-  async generateWepbThumbnail(job: Job<{ asset: AssetEntity }>) {
+  async generateWepbThumbnail(job: Job<WebpGeneratorProcessor>) {
     const { asset } = job.data;
 
     if (!asset.resizePath) {

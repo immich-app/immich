@@ -1,5 +1,6 @@
 import { mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
 import { videoConversionQueueName } from '@app/job/constants/queue-name.constant';
+import { IMp4ConversionProcessor } from '@app/job/interfaces/video-transcode.interface';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,8 +19,8 @@ export class VideoTranscodeProcessor {
   ) {}
 
   @Process({ name: mp4ConversionProcessorName, concurrency: 1 })
-  async mp4Conversion(job: Job) {
-    const { asset }: { asset: AssetEntity } = job.data;
+  async mp4Conversion(job: Job<IMp4ConversionProcessor>) {
+    const { asset } = job.data;
 
     if (asset.mimeType != 'video/mp4') {
       const basePath = APP_UPLOAD_LOCATION;
