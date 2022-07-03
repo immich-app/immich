@@ -10,7 +10,7 @@ export const assetsGroupByDate = derived(assets, ($assets) => {
 	try {
 		return lodash
 			.chain($assets)
-			.groupBy((a) => moment(a.createdAt).format('ddd, MMM DD'))
+			.groupBy((a) => moment(a.createdAt).format('ddd, MMM DD YYYY'))
 			.sortBy((group) => $assets.indexOf(group[0]))
 			.value();
 	} catch (e) {
