@@ -73,7 +73,6 @@ services:
     image: altran1502/immich-proxy:release
     ports:
       - 2283:80
-      - 2284:443
     logging:
       driver: none
     depends_on:
