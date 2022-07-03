@@ -17,4 +17,4 @@ prod:
 	docker-compose -f ./docker/docker-compose.yml up --build -V --remove-orphans
 
 prod-scale:
-	docker-compose -f ./docker/docker-compose.yml up --build -V --scale immich-server=5 --scale immich-microservices=3 --remove-orphans
+	docker-compose -f ./docker/docker-compose.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
