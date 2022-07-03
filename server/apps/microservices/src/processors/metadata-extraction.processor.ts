@@ -13,8 +13,17 @@ import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
+import {
+  IExifExtractionProcessor,
+  IVideoLengthExtractionProcessor,
+  exifExtractionProcessorName,
+  imageTaggingProcessorName,
+  objectDetectionProcessorName,
+  videoLengthExtractionProcessorName,
+  metadataExtractionQueueName,
+} from '@app/job';
 
-@Processor('metadata-extraction-queue')
+@Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
   private geocodingClient?: GeocodeService;
 
@@ -35,8 +44,8 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process('exif-extraction')
-  async extractExifInfo(job: Job) {
+  @Process(exifExtractionProcessorName)
+  async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
 
@@ -89,7 +98,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: 'tag-image', concurrency: 2 })
+  @Process({ name: imageTaggingProcessorName, concurrency: 2 })
   async tagImage(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
 
@@ -108,7 +117,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: 'detect-object', concurrency: 2 })
+  @Process({ name: objectDetectionProcessorName, concurrency: 2 })
   async detectObject(job: Job) {
     try {
       const { asset }: { asset: AssetEntity } = job.data;
@@ -131,9 +140,9 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: 'extract-video-length', concurrency: 2 })
-  async extractVideoLength(job: Job) {
-    const { asset }: { asset: AssetEntity } = job.data;
+  @Process({ name: videoLengthExtractionProcessorName, concurrency: 2 })
+  async extractVideoLength(job: Job<IVideoLengthExtractionProcessor>) {
+    const { asset } = job.data;
 
     ffmpeg.ffprobe(asset.originalPath, async (err, data) => {
       if (!err) {

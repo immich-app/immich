@@ -120,7 +120,8 @@
     "moduleNameMapper": {
       "^@app/database(|/.*)$": "<rootDir>/libs/database/src/$1",
       "@app/database/config/(.*)": "<rootDir>/libs/database/src/config/$1",
-      "@app/database/config": "<rootDir>/libs/database/src/config"
+      "@app/database/config": "<rootDir>/libs/database/src/config",
+      "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1"
     }
   }
 }

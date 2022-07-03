@@ -31,6 +31,9 @@ import { SearchAssetDto } from './dto/search-asset.dto';
 import { CommunicationGateway } from '../communication/communication.gateway';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { IAssetUploadedJob } from '@app/job/index';
+import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
+import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
 
 @UseGuards(JwtAuthGuard)
 @Controller('asset')
@@ -40,8 +43,8 @@ export class AssetController {
     private assetService: AssetService,
     private backgroundTaskService: BackgroundTaskService,
 
-    @InjectQueue('asset-uploaded-queue')
-    private assetUploadedQueue: Queue,
+    @InjectQueue(assetUploadedQueueName)
+    private assetUploadedQueue: Queue<IAssetUploadedJob>,
   ) {}
 
   @Post('upload')
@@ -56,7 +59,7 @@ export class AssetController {
   )
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
-    @UploadedFiles() uploadFiles: { assetData: Express.Multer.File[]; thumbnailData?: Express.Multer.File[] },
+    @UploadedFiles() uploadFiles: { assetData: Express.Multer.File[] },
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
   ): Promise<'ok' | undefined> {
     for (const file of uploadFiles.assetData) {
@@ -66,28 +69,12 @@ export class AssetController {
         if (!savedAsset) {
           return;
         }
-        if (uploadFiles.thumbnailData != null) {
-          const assetWithThumbnail = await this.assetService.updateThumbnailInfo(
-            savedAsset,
-            uploadFiles.thumbnailData[0].path,
-          );
 
-          await this.assetUploadedQueue.add(
-            'asset-uploaded',
-            { asset: assetWithThumbnail, fileName: file.originalname, fileSize: file.size, hasThumbnail: true },
-            { jobId: savedAsset.id },
-          );
-
-          this.wsCommunicateionGateway.server
-            .to(savedAsset.userId)
-            .emit('on_upload_success', JSON.stringify(assetWithThumbnail));
-        } else {
-          await this.assetUploadedQueue.add(
-            'asset-uploaded',
-            { asset: savedAsset, fileName: file.originalname, fileSize: file.size, hasThumbnail: false },
-            { jobId: savedAsset.id },
-          );
-        }
+        await this.assetUploadedQueue.add(
+          assetUploadedProcessorName,
+          { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
+          { jobId: savedAsset.id },
+        );
       } catch (e) {
         Logger.error(`Error receiving upload file ${e}`);
       }
