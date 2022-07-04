@@ -132,7 +132,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => GoRouter.of(context).pop(),
+          onPressed: GoRouter.of(context).pop,
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         title: const Text(

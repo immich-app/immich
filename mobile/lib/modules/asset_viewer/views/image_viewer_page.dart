@@ -80,8 +80,8 @@ class ImageViewerPage extends HookConsumerWidget {
                     thumbnailUrl: thumbnailUrl,
                     imageUrl: imageUrl,
                     authToken: "Bearer ${box.get(accessTokenKey)}",
-                    onSwipeDown: () => GoRouter.of(context).pop(),
-                    onSwipeUp: () => showInfo(),
+                    onSwipeDown: GoRouter.of(context).pop,
+                    onSwipeUp: showInfo,
                   )),
             ),
             if (downloadAssetStatus == DownloadAssetStatus.loading)

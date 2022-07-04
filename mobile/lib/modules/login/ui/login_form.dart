@@ -211,7 +211,8 @@ class LoginButton extends ConsumerWidget {
           if (isAuthenticated) {
             // Resume backup (if enable) then navigate
 
-            if (ref.watch(authenticationProvider).shouldChangePassword) {
+            if (ref.watch(authenticationProvider).shouldChangePassword &&
+                !ref.watch(authenticationProvider).isAdmin) {
               GoRouter.of(context).goNamed('changePassword');
             } else {
               ref.watch(backupProvider.notifier).resumeBackup();

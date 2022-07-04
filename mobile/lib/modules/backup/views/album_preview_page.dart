@@ -47,7 +47,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
           ],
         ),
         leading: IconButton(
-          onPressed: () => GoRouter.of(context).pop(),
+          onPressed: GoRouter.of(context).pop,
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
         ),
       ),
