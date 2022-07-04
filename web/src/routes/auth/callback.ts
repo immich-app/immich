@@ -9,8 +9,8 @@ export const post: RequestHandler = async ({ request }): Promise<any> => {
     const id_token = form.get('id_token');
     const refresh_token = form.get('refresh_token'); // todo use refresh token to renew id_token
 
-    const res = await fetch(`${serverEndpoint}/auth/validateToken`, {
-        method: 'POST',
+    const res = await fetch(`${serverEndpoint}/user/me`, {
+        method: 'GET',
         headers: new Headers({
             'Authorization': `Bearer ${id_token}`,
         }),
