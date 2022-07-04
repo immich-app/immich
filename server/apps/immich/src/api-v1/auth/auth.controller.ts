@@ -23,7 +23,9 @@ export class AuthController {
   @Post('/validateToken')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validateToken(@GetAuthUser() authUser: AuthUserDto) {
-    return await this.authService.validateToken(authUser);
+    return {
+      authStatus: true,
+    };
   }
 
   @UseGuards(ImmichAuthGuard)

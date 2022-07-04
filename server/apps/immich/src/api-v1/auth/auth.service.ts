@@ -49,19 +49,6 @@ export class AuthService {
 
   }
 
-  async validateToken(authUser: AuthUserDto) {
-    const user = await this.userRepository.findOne({ where: { email: authUser.email } });
-
-    if (!user) {
-      throw new InternalServerErrorException();
-    }
-
-    return {
-      authStatus: true,
-      ...mapUser(user),
-    };
-  }
-
   async getWsToken(userId: string) {
     return {
       wsToken: await this.immichAuthService.generateWsToken(userId),
