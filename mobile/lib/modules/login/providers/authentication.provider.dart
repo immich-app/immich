@@ -103,7 +103,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       debugPrint("Retrieving user details");
 
-      Response res = await _networkService.postRequest(url: 'auth/validateToken');
+      Response res = await _networkService.getRequest(url: 'user/me');
       var payload = ValidateTokenReponse.fromJson(res.toString());
 
       state = state.copyWith(
