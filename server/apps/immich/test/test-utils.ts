@@ -3,7 +3,7 @@ import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { TestingModuleBuilder } from '@nestjs/testing';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../src/modules/immich-jwt/guards/jwt-auth.guard';
-import databaseConfig from '@app/database/config/database.config';
+import { databaseConfig } from '@app/database/config/database.config';
 
 type CustomAuthCallback = () => AuthUserDto;
 
