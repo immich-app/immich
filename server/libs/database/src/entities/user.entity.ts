@@ -5,13 +5,13 @@ export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ default: '' })
   firstName!: string;
 
-  @Column()
+  @Column({ default: '' })
   lastName!: string;
 
-  @Column()
+  @Column({ default: false })
   isAdmin!: boolean;
 
   @Column()
@@ -23,10 +23,10 @@ export class UserEntity {
   @Column({ select: false })
   salt?: string;
 
-  @Column()
+  @Column({ default: '' })
   profileImagePath!: string;
 
-  @Column()
+  @Column({ default: true })
   shouldChangePassword!: boolean;
 
   @CreateDateColumn()

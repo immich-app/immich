@@ -7,9 +7,9 @@ RUN chown node:node /usr/src/app
 
 COPY --chown=node:node package*.json ./
 
-RUN apk add --update-cache build-base python3 
+RUN apk add --update-cache build-base python3
 
-RUN npm install
+RUN npm ci
 
 COPY --chown=node:node . .
 
@@ -29,9 +29,9 @@ RUN chown node:node /usr/src/app
 COPY --chown=node:node package*.json ./
 COPY --chown=node:node . .
 
-RUN apk add --update-cache build-base python3 
+RUN apk add --update-cache build-base python3
 
-RUN npm install
+RUN npm ci
 
 EXPOSE 3000
 

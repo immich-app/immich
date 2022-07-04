@@ -12,6 +12,12 @@ import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
 import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
+import {
+  assetUploadedQueueName,
+  metadataExtractionQueueName,
+  thumbnailGeneratorQueueName,
+  videoConversionQueueName,
+} from '@app/job/constants/queue-name.constant';
 
 @Module({
   imports: [
@@ -26,7 +32,7 @@ import { CommunicationModule } from '../../immich/src/api-v1/communication/commu
       }),
     }),
     BullModule.registerQueue({
-      name: 'thumbnail-generator-queue',
+      name: thumbnailGeneratorQueueName,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
@@ -34,7 +40,7 @@ import { CommunicationModule } from '../../immich/src/api-v1/communication/commu
       },
     }),
     BullModule.registerQueue({
-      name: 'asset-uploaded-queue',
+      name: assetUploadedQueueName,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
@@ -42,7 +48,7 @@ import { CommunicationModule } from '../../immich/src/api-v1/communication/commu
       },
     }),
     BullModule.registerQueue({
-      name: 'metadata-extraction-queue',
+      name: metadataExtractionQueueName,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
@@ -50,7 +56,7 @@ import { CommunicationModule } from '../../immich/src/api-v1/communication/commu
       },
     }),
     BullModule.registerQueue({
-      name: 'video-conversion-queue',
+      name: videoConversionQueueName,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
