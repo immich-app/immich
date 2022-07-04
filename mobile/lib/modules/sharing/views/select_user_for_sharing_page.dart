@@ -1,13 +1,13 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/sharing/providers/album_title.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/user.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
@@ -32,8 +32,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        GoRouter.of(context).go('/home/${HomeTab.sharing.name}');
       }
 
       const ScaffoldMessenger(
@@ -135,9 +134,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () async {
-            AutoRouter.of(context).pop();
-          },
+          onPressed: GoRouter.of(context).pop,
         ),
         actions: [
           TextButton(

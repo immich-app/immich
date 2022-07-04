@@ -8,7 +8,6 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
@@ -105,11 +104,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     super.dispose();
   }
 
-  final _immichRouter = AppRouter();
-
   @override
   Widget build(BuildContext context) {
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+    final router = ref.watch(routerProvider);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -134,9 +132,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
                 systemOverlayStyle: SystemUiOverlayStyle.dark,
               ),
             ),
-            routeInformationParser: _immichRouter.defaultRouteParser(),
-            routerDelegate: _immichRouter.delegate(
-                navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
+            routeInformationProvider: router.routeInformationProvider,
+            routeInformationParser: router.routeInformationParser,
+            routerDelegate: router.routerDelegate,
           ),
           const ImmichLoadingOverlay(),
           const VersionAnnouncementOverlay(),

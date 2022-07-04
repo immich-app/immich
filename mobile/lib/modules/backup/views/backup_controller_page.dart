@@ -1,14 +1,14 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
-import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
+import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
+import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
@@ -230,7 +230,8 @@ class BackupControllerPage extends HookConsumerWidget {
               ),
             ),
             onPressed: () {
-              AutoRouter.of(context).push(const BackupAlbumSelectionRoute());
+              // AutoRouter.of(context).push(const BackupAlbumSelectionRoute());
+              GoRouter.of(context).pushNamed('backupAlbumSelection');
             },
             child: const Padding(
               padding: EdgeInsets.symmetric(
@@ -256,7 +257,8 @@ class BackupControllerPage extends HookConsumerWidget {
         leading: IconButton(
             onPressed: () {
               ref.watch(websocketProvider.notifier).listenUploadEvent();
-              AutoRouter.of(context).pop(true);
+              ref.read(assetProvider.notifier).getAllAsset();
+              GoRouter.of(context).pop();
             },
             splashRadius: 24,
             icon: const Icon(

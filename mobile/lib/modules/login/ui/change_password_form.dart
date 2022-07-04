@@ -1,10 +1,9 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 
@@ -18,7 +17,6 @@ class ChangePasswordForm extends HookConsumerWidget {
     final confirmPasswordController =
         useTextEditingController.fromValue(TextEditingValue.empty);
     final authState = ref.watch(authenticationProvider);
-    final formKey = GlobalKey<FormState>();
 
     return Center(
       child: ConstrainedBox(
@@ -48,24 +46,15 @@ class ChangePasswordForm extends HookConsumerWidget {
                   ),
                 ),
               ),
-              Form(
-                key: formKey,
-                child: Column(
-                  children: [
-                    PasswordInput(controller: passwordController),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: ConfirmPasswordInput(
-                        originalController: passwordController,
-                        confirmController: confirmPasswordController,
-                      ),
-                    ),
-                    ChangePasswordButton(
-                      passwordController: passwordController,
-                      formKey: formKey,
-                    ),
-                  ],
-                ),
+              PasswordInput(controller: passwordController),
+              ConfirmPasswordInput(
+                originalController: passwordController,
+                confirmController: confirmPasswordController,
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: ChangePasswordButton(
+                    passwordController: passwordController),
               )
             ],
           ),
@@ -129,12 +118,10 @@ class ConfirmPasswordInput extends StatelessWidget {
 
 class ChangePasswordButton extends ConsumerWidget {
   final TextEditingController passwordController;
-  final GlobalKey<FormState> formKey;
 
   const ChangePasswordButton({
     Key? key,
     required this.passwordController,
-    required this.formKey,
   }) : super(key: key);
 
   @override
@@ -148,21 +135,19 @@ class ChangePasswordButton extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
         ),
         onPressed: () async {
-          if (formKey.currentState!.validate()) {
-            var isSuccess = await ref
-                .watch(authenticationProvider.notifier)
-                .changePassword(passwordController.value.text);
+          var isSuccess = await ref
+              .watch(authenticationProvider.notifier)
+              .changePassword(passwordController.value.text);
 
-            if (isSuccess) {
-              bool res =
-                  await ref.watch(authenticationProvider.notifier).logout();
+          if (isSuccess) {
+            bool res =
+                await ref.watch(authenticationProvider.notifier).logout();
 
-              if (res) {
-                ref.watch(backupProvider.notifier).cancelBackup();
-                ref.watch(assetProvider.notifier).clearAllAsset();
-                ref.watch(websocketProvider.notifier).disconnect();
-                AutoRouter.of(context).replace(const LoginRoute());
-              }
+            if (res) {
+              ref.watch(backupProvider.notifier).cancelBackup();
+              ref.watch(assetProvider.notifier).clearAllAsset();
+              ref.watch(websocketProvider.notifier).disconnect();
+              GoRouter.of(context).goNamed('login');
             }
           }
         },

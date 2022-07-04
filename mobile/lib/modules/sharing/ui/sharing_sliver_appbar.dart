@@ -1,6 +1,5 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/routing/router.dart';
+import 'package:go_router/go_router.dart';
 
 class SharingSliverAppBar extends StatelessWidget {
   const SharingSliverAppBar({
@@ -43,8 +42,7 @@ class SharingSliverAppBar extends StatelessWidget {
                       // foregroundColor: MaterialStateProperty.all(Colors.white),
                     ),
                     onPressed: () {
-                      AutoRouter.of(context)
-                          .push(const CreateSharedAlbumRoute());
+                      GoRouter.of(context).pushNamed('createSharedAlbum');
                     },
                     icon: const Icon(
                       Icons.photo_album_outlined,

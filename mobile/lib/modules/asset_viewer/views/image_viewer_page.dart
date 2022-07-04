@@ -1,6 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -80,7 +80,7 @@ class ImageViewerPage extends HookConsumerWidget {
                     thumbnailUrl: thumbnailUrl,
                     imageUrl: imageUrl,
                     authToken: "Bearer ${box.get(accessTokenKey)}",
-                    onSwipeDown: () => AutoRouter.of(context).pop(),
+                    onSwipeDown: () => GoRouter.of(context).pop(),
                     onSwipeUp: () => showInfo(),
                   )),
             ),

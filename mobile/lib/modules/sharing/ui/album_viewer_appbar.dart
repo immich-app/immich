@@ -1,13 +1,13 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
@@ -40,8 +40,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
 
       if (isSuccess) {
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        GoRouter.of(context).goNamed(HomeTab.sharing.name);
       } else {
         ImmichToast.show(
           context: context,
@@ -61,8 +60,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(albumId);
 
       if (isSuccess) {
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        GoRouter.of(context).goNamed(HomeTab.sharing.name);
       } else {
         Navigator.pop(context);
         ImmichToast.show(
@@ -187,7 +185,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
         );
       } else {
         return IconButton(
-          onPressed: () async => await AutoRouter.of(context).pop(),
+          onPressed: GoRouter.of(context).pop,
           icon: const Icon(Icons.arrow_back_ios_rounded),
           splashRadius: 25,
         );

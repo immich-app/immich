@@ -1,6 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -8,7 +8,6 @@ import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 
 class SplashScreenPage extends HookConsumerWidget {
   const SplashScreenPage({Key? key}) : super(key: key);
@@ -24,20 +23,24 @@ class SplashScreenPage extends HookConsumerWidget {
           .login(
               loginInfo!.email, loginInfo.password, loginInfo.serverUrl, true);
 
-      if (isAuthenticated) {
-        // Resume backup (if enable) then navigate
-        ref.watch(backupProvider.notifier).resumeBackup();
-        AutoRouter.of(context).pushNamed("/tab-controller-page");
-      } else {
-        AutoRouter.of(context).push(const LoginRoute());
-      }
+      if (isAuthenticated) ref.watch(backupProvider.notifier).resumeBackup();
+      // if (isAuthenticated) {
+      //   // Resume backup (if enable) then navigate
+      //   ref.watch(backupProvider.notifier).resumeBackup();
+      //   AutoRouter.of(context).pushNamed("/tab-controller-page");
+      // } else {
+      //   AutoRouter.of(context).push(const LoginRoute());
+      // }
     }
 
     useEffect(() {
       if (loginInfo?.isSaveLogin == true) {
         performLoggingIn();
       } else {
-        AutoRouter.of(context).push(const LoginRoute());
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => GoRouter.of(context).goNamed('login'));
+
+        // AutoRouter.of(context).push(const LoginRoute());
       }
       return null;
     }, []);
