@@ -1,3 +1,6 @@
+import { mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
+import { videoConversionQueueName } from '@app/job/constants/queue-name.constant';
+import { IMp4ConversionProcessor } from '@app/job/interfaces/video-transcode.interface';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,16 +11,16 @@ import { Repository } from 'typeorm';
 import { AssetEntity } from '../../../../libs/database/src/entities/asset.entity';
 import { APP_UPLOAD_LOCATION } from '../../../immich/src/constants/upload_location.constant';
 
-@Processor('video-conversion-queue')
+@Processor(videoConversionQueueName)
 export class VideoTranscodeProcessor {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
 
-  @Process({ name: 'mp4-conversion', concurrency: 1 })
-  async mp4Conversion(job: Job) {
-    const { asset }: { asset: AssetEntity } = job.data;
+  @Process({ name: mp4ConversionProcessorName, concurrency: 1 })
+  async mp4Conversion(job: Job<IMp4ConversionProcessor>) {
+    const { asset } = job.data;
 
     if (asset.mimeType != 'video/mp4') {
       const basePath = APP_UPLOAD_LOCATION;

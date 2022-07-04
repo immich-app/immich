@@ -6,6 +6,9 @@ import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { randomUUID } from 'crypto';
+import { generateWEBPThumbnailProcessorName, mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
+import { thumbnailGeneratorQueueName, videoConversionQueueName } from '@app/job/constants/queue-name.constant';
+import { IVideoTranscodeJob } from '@app/job/interfaces/video-transcode.interface';
 
 @Injectable()
 export class ScheduleTasksService {
@@ -13,11 +16,11 @@ export class ScheduleTasksService {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @InjectQueue('thumbnail-generator-queue')
+    @InjectQueue(thumbnailGeneratorQueueName)
     private thumbnailGeneratorQueue: Queue,
 
-    @InjectQueue('video-conversion-queue')
-    private videoConversionQueue: Queue,
+    @InjectQueue(videoConversionQueueName)
+    private videoConversionQueue: Queue<IVideoTranscodeJob>,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -36,7 +39,11 @@ export class ScheduleTasksService {
     }
 
     for (const asset of assets) {
-      await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset: asset }, { jobId: randomUUID() });
+      await this.thumbnailGeneratorQueue.add(
+        generateWEBPThumbnailProcessorName,
+        { asset: asset },
+        { jobId: randomUUID() },
+      );
     }
   }
 
@@ -54,7 +61,7 @@ export class ScheduleTasksService {
     });
 
     for (const asset of assets) {
-      await this.videoConversionQueue.add('mp4-conversion', { asset }, { jobId: randomUUID() });
+      await this.videoConversionQueue.add(mp4ConversionProcessorName, { asset }, { jobId: randomUUID() });
     }
   }
 }

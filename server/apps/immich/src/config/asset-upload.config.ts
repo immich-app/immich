@@ -6,7 +6,6 @@ import { extname } from 'path';
 import { Request } from 'express';
 import { APP_UPLOAD_LOCATION } from '../constants/upload_location.constant';
 import { randomUUID } from 'crypto';
-// import { CreateAssetDto } from '../api-v1/asset/dto/create-asset.dto';
 
 export const assetUploadOption: MulterOptions = {
   fileFilter: (req: Request, file: any, cb: any) => {
@@ -30,34 +29,20 @@ export const assetUploadOption: MulterOptions = {
         return;
       }
 
-      if (file.fieldname == 'assetData') {
-        const originalUploadFolder = `${basePath}/${req.user.id}/original/${req.body['deviceId']}`;
+      const originalUploadFolder = `${basePath}/${req.user.id}/original/${req.body['deviceId']}`;
 
-        if (!existsSync(originalUploadFolder)) {
-          mkdirSync(originalUploadFolder, { recursive: true });
-        }
-
-        // Save original to disk
-        cb(null, originalUploadFolder);
-      } else if (file.fieldname == 'thumbnailData') {
-        const thumbnailUploadFolder = `${basePath}/${req.user.id}/thumb/${req.body['deviceId']}`;
-
-        if (!existsSync(thumbnailUploadFolder)) {
-          mkdirSync(thumbnailUploadFolder, { recursive: true });
-        }
-
-        // Save thumbnail to disk
-        cb(null, thumbnailUploadFolder);
+      if (!existsSync(originalUploadFolder)) {
+        mkdirSync(originalUploadFolder, { recursive: true });
       }
+
+      // Save original to disk
+      cb(null, originalUploadFolder);
     },
 
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
       const fileNameUUID = randomUUID();
-      if (file.fieldname == 'assetData') {
-        cb(null, `${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`);
-      } else if (file.fieldname == 'thumbnailData') {
-        cb(null, `${fileNameUUID}.jpeg`);
-      }
+
+      cb(null, `${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`);
     },
   }),
 };

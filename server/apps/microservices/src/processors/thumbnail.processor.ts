@@ -9,25 +9,35 @@ import { randomUUID } from 'node:crypto';
 import { CommunicationGateway } from '../../../immich/src/api-v1/communication/communication.gateway';
 import ffmpeg from 'fluent-ffmpeg';
 import { Logger } from '@nestjs/common';
+import {
+  WebpGeneratorProcessor,
+  generateJPEGThumbnailProcessorName,
+  generateWEBPThumbnailProcessorName,
+  imageTaggingProcessorName,
+  objectDetectionProcessorName,
+  metadataExtractionQueueName,
+  thumbnailGeneratorQueueName,
+  JpegGeneratorProcessor,
+} from '@app/job';
 
-@Processor('thumbnail-generator-queue')
+@Processor(thumbnailGeneratorQueueName)
 export class ThumbnailGeneratorProcessor {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @InjectQueue('thumbnail-generator-queue')
+    @InjectQueue(thumbnailGeneratorQueueName)
     private thumbnailGeneratorQueue: Queue,
 
     private wsCommunicateionGateway: CommunicationGateway,
 
-    @InjectQueue('metadata-extraction-queue')
+    @InjectQueue(metadataExtractionQueueName)
     private metadataExtractionQueue: Queue,
   ) {}
 
-  @Process('generate-jpeg-thumbnail')
-  async generateJPEGThumbnail(job: Job) {
-    const { asset }: { asset: AssetEntity } = job.data;
+  @Process({ name: generateJPEGThumbnailProcessorName, concurrency: 3 })
+  async generateJPEGThumbnail(job: Job<JpegGeneratorProcessor>) {
+    const { asset } = job.data;
 
     const resizePath = `upload/${asset.userId}/thumb/${asset.deviceId}/`;
 
@@ -43,6 +53,7 @@ export class ThumbnailGeneratorProcessor {
       sharp(asset.originalPath)
         .resize(1440, 2560, { fit: 'inside' })
         .jpeg()
+        .rotate()
         .toFile(jpegThumbnailPath, async (err) => {
           if (!err) {
             await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
@@ -50,9 +61,13 @@ export class ThumbnailGeneratorProcessor {
             // Update resize path to send to generate webp queue
             asset.resizePath = jpegThumbnailPath;
 
-            await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset }, { jobId: randomUUID() });
-            await this.metadataExtractionQueue.add('tag-image', { asset }, { jobId: randomUUID() });
-            await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
+            await this.thumbnailGeneratorQueue.add(
+              generateWEBPThumbnailProcessorName,
+              { asset },
+              { jobId: randomUUID() },
+            );
+            await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
+            await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
             this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
           }
         });
@@ -76,9 +91,13 @@ export class ThumbnailGeneratorProcessor {
           // Update resize path to send to generate webp queue
           asset.resizePath = jpegThumbnailPath;
 
-          await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset }, { jobId: randomUUID() });
-          await this.metadataExtractionQueue.add('tag-image', { asset }, { jobId: randomUUID() });
-          await this.metadataExtractionQueue.add('detect-object', { asset }, { jobId: randomUUID() });
+          await this.thumbnailGeneratorQueue.add(
+            generateWEBPThumbnailProcessorName,
+            { asset },
+            { jobId: randomUUID() },
+          );
+          await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
+          await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
 
           this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
         })
@@ -86,8 +105,8 @@ export class ThumbnailGeneratorProcessor {
     }
   }
 
-  @Process({ name: 'generate-webp-thumbnail', concurrency: 2 })
-  async generateWepbThumbnail(job: Job<{ asset: AssetEntity }>) {
+  @Process({ name: generateWEBPThumbnailProcessorName, concurrency: 3 })
+  async generateWepbThumbnail(job: Job<WebpGeneratorProcessor>) {
     const { asset } = job.data;
 
     if (!asset.resizePath) {
@@ -98,6 +117,7 @@ export class ThumbnailGeneratorProcessor {
     sharp(asset.resizePath)
       .resize(250)
       .webp()
+      .rotate()
       .toFile(webpPath, (err) => {
         if (!err) {
           this.assetRepository.update({ id: asset.id }, { webpPath: webpPath });
