@@ -1,9 +1,9 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, Unique} from 'typeorm';
 import { AlbumEntity } from './album.entity';
 import { AssetEntity } from './asset.entity';
 
 @Entity('asset_album')
-@Unique('PK_unique_asset_in_album', ['albumId', 'assetId'])
+@Unique('UQ_unique_asset_in_album', ['albumId', 'assetId'])
 export class AssetAlbumEntity {
   @PrimaryGeneratedColumn()
   id!: string;
@@ -12,6 +12,7 @@ export class AssetAlbumEntity {
   albumId!: string;
 
   @Column()
+  @OneToOne(() => AssetEntity, (entity) => entity.id)
   assetId!: string;
 
   @ManyToOne(() => AlbumEntity, (album) => album.assets, {
