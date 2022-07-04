@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
@@ -38,76 +39,59 @@ void main() async {
   runApp(const ProviderScope(child: ImmichApp()));
 }
 
-class ImmichApp extends ConsumerStatefulWidget {
+class ImmichApp extends HookConsumerWidget {
   const ImmichApp({super.key});
 
   @override
-  ImmichAppState createState() => ImmichAppState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    useOnAppLifecycleStateChange(
+      (previous, current) {
+        switch (current) {
+          case AppLifecycleState.resumed:
+            debugPrint("[APP STATE] resumed");
+            ref.watch(appStateProvider.notifier).state = AppStateEnum.resumed;
 
-class ImmichAppState extends ConsumerState<ImmichApp>
-    with WidgetsBindingObserver {
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    switch (state) {
-      case AppLifecycleState.resumed:
-        debugPrint("[APP STATE] resumed");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.resumed;
+            var isAuthenticated =
+                ref.watch(authenticationProvider).isAuthenticated;
 
-        var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
+            if (isAuthenticated) {
+              ref.watch(backupProvider.notifier).resumeBackup();
+              ref.watch(assetProvider.notifier).getAllAsset();
+              ref.watch(serverInfoProvider.notifier).getServerVersion();
+            }
 
-        if (isAuthenticated) {
-          ref.watch(backupProvider.notifier).resumeBackup();
-          ref.watch(assetProvider.notifier).getAllAsset();
-          ref.watch(serverInfoProvider.notifier).getServerVersion();
+            ref.watch(websocketProvider.notifier).connect();
+            ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+
+            break;
+
+          case AppLifecycleState.inactive:
+            debugPrint("[APP STATE] inactive");
+            ref.watch(appStateProvider.notifier).state = AppStateEnum.inactive;
+            ref.watch(websocketProvider.notifier).disconnect();
+            ref.watch(backupProvider.notifier).cancelBackup();
+
+            break;
+
+          case AppLifecycleState.paused:
+            debugPrint("[APP STATE] paused");
+            ref.watch(appStateProvider.notifier).state = AppStateEnum.paused;
+            break;
+
+          case AppLifecycleState.detached:
+            debugPrint("[APP STATE] detached");
+            ref.watch(appStateProvider.notifier).state = AppStateEnum.detached;
+            break;
+          default:
         }
+      },
+    );
 
-        ref.watch(websocketProvider.notifier).connect();
-
-        ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
-
-        break;
-
-      case AppLifecycleState.inactive:
-        debugPrint("[APP STATE] inactive");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.inactive;
-        ref.watch(websocketProvider.notifier).disconnect();
-        ref.watch(backupProvider.notifier).cancelBackup();
-
-        break;
-
-      case AppLifecycleState.paused:
-        debugPrint("[APP STATE] paused");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.paused;
-        break;
-
-      case AppLifecycleState.detached:
-        debugPrint("[APP STATE] detached");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.detached;
-        break;
-    }
-  }
-
-  Future<void> initApp() async {
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  initState() {
-    super.initState();
-    initApp().then((_) => debugPrint("App Init Completed"));
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
     final router = ref.watch(routerProvider);
+    useEffect(() {
+      ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+      return null;
+    }, []);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,

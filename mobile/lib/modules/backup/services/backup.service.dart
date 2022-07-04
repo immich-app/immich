@@ -41,7 +41,7 @@ class BackupService {
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
 
-    http.MultipartFile? thumbnailUploadData;
+    // http.MultipartFile? thumbnailUploadData;
 
     for (var entity in assetList) {
       try {

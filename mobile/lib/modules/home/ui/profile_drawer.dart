@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/providers/upload_profile_image.provider.dart';
+import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
@@ -197,7 +198,8 @@ class ProfileDrawer extends HookConsumerWidget {
                     ref.watch(backupProvider.notifier).cancelBackup();
                     ref.watch(assetProvider.notifier).clearAllAsset();
                     ref.watch(websocketProvider.notifier).disconnect();
-                    // AutoRouter.of(context).popUntilRoot();
+                    Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
+                        .delete(savedLoginInfoKey);
                     GoRouter.of(context).go('login');
                   }
                 },

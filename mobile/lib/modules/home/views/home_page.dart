@@ -6,12 +6,6 @@ import 'package:immich_mobile/modules/photos/views/photos_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/sharing/views/sharing_page.dart';
 
-enum HomeTab {
-  photos,
-  search,
-  sharing,
-}
-
 final indexProvider = StateProvider((ref) => 0);
 
 class HomePage extends HookConsumerWidget {
@@ -58,4 +52,10 @@ class HomePage extends HookConsumerWidget {
             ),
     );
   }
+}
+
+enum HomeTab {
+  photos,
+  search,
+  sharing,
 }

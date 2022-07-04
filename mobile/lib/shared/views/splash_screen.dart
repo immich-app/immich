@@ -14,7 +14,7 @@ class SplashScreenPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    HiveSavedLoginInfo? loginInfo =
+    var loginInfo =
         Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
 
     void performLoggingIn() async {
@@ -24,24 +24,16 @@ class SplashScreenPage extends HookConsumerWidget {
               loginInfo!.email, loginInfo.password, loginInfo.serverUrl, true);
 
       if (isAuthenticated) ref.watch(backupProvider.notifier).resumeBackup();
-      // if (isAuthenticated) {
-      //   // Resume backup (if enable) then navigate
-      //   ref.watch(backupProvider.notifier).resumeBackup();
-      //   AutoRouter.of(context).pushNamed("/tab-controller-page");
-      // } else {
-      //   AutoRouter.of(context).push(const LoginRoute());
-      // }
     }
 
     useEffect(() {
-      if (loginInfo?.isSaveLogin == true) {
-        performLoggingIn();
-      } else {
-        WidgetsBinding.instance
-            .addPostFrameCallback((_) => GoRouter.of(context).goNamed('login'));
-
-        // AutoRouter.of(context).push(const LoginRoute());
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (loginInfo?.isSaveLogin == true) {
+          performLoggingIn();
+        } else {
+          GoRouter.of(context).goNamed('login');
+        }
+      });
       return null;
     }, []);
 
