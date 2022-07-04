@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/photos/views/photos_page.dart';
@@ -12,6 +11,8 @@ enum HomeTab {
   search,
   sharing,
 }
+
+final indexProvider = StateProvider((ref) => 0);
 
 class HomePage extends HookConsumerWidget {
   final HomeTab selectedTab;
@@ -26,25 +27,20 @@ class HomePage extends HookConsumerWidget {
     var isMultiSelectEnable =
         ref.watch(homePageStateProvider).isMultiSelectEnable;
 
-    const body = [
-      PhotosPage(),
-      SearchPage(),
-      SharingPage(),
-    ];
-
     return Scaffold(
-      body: body[selectedTab.index],
+      body: IndexedStack(
+        index: ref.watch(indexProvider.state).state,
+        children: const [
+          PhotosPage(),
+          SearchPage(),
+          SharingPage(),
+        ],
+      ),
       bottomNavigationBar: isMultiSelectEnable
           ? null
           : BottomNavigationBar(
-              currentIndex: selectedTab.index,
-              onTap: (index) {
-                //todo state만 바뀌도록
-
-                GoRouter.of(context).goNamed(
-                  HomeTab.values.firstWhere((tab) => tab.index == index).name,
-                );
-              },
+              currentIndex: ref.watch(indexProvider.state).state,
+              onTap: (index) => ref.read(indexProvider.state).state = index,
               items: const [
                 BottomNavigationBarItem(
                   label: 'Photos',
