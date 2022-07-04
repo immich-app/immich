@@ -87,7 +87,13 @@ export class ImmichJwtService {
 
     return {
       accessToken: await this.generateToken(payload),
-      ...mapUser(validatedUser),
+        userId: validatedUser.id,
+        userEmail: validatedUser.email,
+        firstName: validatedUser.firstName,
+        lastName: validatedUser.lastName,
+        isAdmin: validatedUser.isAdmin,
+        profileImagePath: validatedUser.profileImagePath,
+        shouldChangePassword: validatedUser.shouldChangePassword,
     };
   }
 
