@@ -19,6 +19,7 @@ import 'package:immich_mobile/modules/sharing/views/select_additional_user_for_s
 import 'package:immich_mobile/modules/sharing/views/select_user_for_sharing_page.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/views/splash_screen.dart';
+import 'package:immich_mobile/utils/camel_to_kebab.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 ///ref: https://github.com/lucavenir/go_router_riverpod
@@ -36,6 +37,34 @@ final routerProvider = Provider<GoRouter>(
     );
   },
 );
+
+enum ImmichRoute {
+  home,
+  photos(tabIndex: 0),
+  search(tabIndex: 1),
+  sharing(tabIndex: 2),
+  login,
+  splash,
+  changePassword,
+  imageViewer,
+  videoViewer,
+  backupController,
+  backupAlbumSelection,
+  albumPreview,
+  createSharedAlbum,
+  selectUserForSharing,
+  searchResult,
+  assetSelection,
+  albumViewer,
+  selectAdditionalUserForSharing;
+
+  final int tabIndex;
+
+  const ImmichRoute({this.tabIndex = -1});
+
+  @override
+  String toString() => name.camelTokebab();
+}
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -61,45 +90,46 @@ class RouterNotifier extends ChangeNotifier {
 
   List<GoRoute> get _routes => [
         GoRoute(
-          name: 'home',
+          name: '${ImmichRoute.home}',
           path: '/',
           redirect: (state) {
             var selectedTab = state.extra;
 
-            return selectedTab is HomeTab
-                ? state.namedLocation(selectedTab.name)
-                : state.namedLocation(HomeTab.photos.name);
+            return selectedTab is ImmichRoute && selectedTab.tabIndex > 0
+                ? state.namedLocation('$selectedTab')
+                : state.namedLocation('${ImmichRoute.photos}');
           },
           routes: [
-            for (var tab in HomeTab.values)
+            for (var tab
+                in ImmichRoute.values.where((element) => element.tabIndex >= 0))
               GoRoute(
                 name: tab.name,
                 path: tab.name,
                 pageBuilder: (_, state) => NoTransitionPage(
                   key: state.pageKey,
                   child: HomePage(
-                    selectedTab: tab,
+                    initTabIndex: tab.tabIndex,
                   ),
                 ),
               ),
             GoRoute(
-              name: 'login',
-              path: 'login',
+              name: '${ImmichRoute.login}',
+              path: '${ImmichRoute.login}',
               builder: (_, __) => const LoginPage(),
             ),
             GoRoute(
-              name: 'splash',
-              path: 'splash',
+              name: '${ImmichRoute.splash}',
+              path: '${ImmichRoute.splash}',
               builder: (_, __) => const SplashScreenPage(),
             ),
             GoRoute(
-              name: 'changePassword',
-              path: 'change-password',
+              name: '${ImmichRoute.changePassword}',
+              path: '${ImmichRoute.changePassword}',
               builder: (_, __) => const ChangePasswordPage(),
             ),
             GoRoute(
-              name: 'imageViewer',
-              path: 'image-viewer',
+              name: '${ImmichRoute.imageViewer}',
+              path: '${ImmichRoute.imageViewer}',
               builder: (_, state) => ImageViewerPage(
                 imageUrl: state.queryParams['imageUrl']!,
                 heroTag: state.queryParams['heroTag']!,
@@ -108,64 +138,64 @@ class RouterNotifier extends ChangeNotifier {
               ),
             ),
             GoRoute(
-              name: 'videoViewer',
-              path: 'video-viewer',
+              name: '${ImmichRoute.videoViewer}',
+              path: '${ImmichRoute.videoViewer}',
               builder: (_, state) => VideoViewerPage(
                 videoUrl: state.queryParams['videoUrl']!,
                 asset: state.extra as ImmichAsset,
               ),
             ),
             GoRoute(
-              name: 'backupController',
-              path: 'backup-controller',
+              name: '${ImmichRoute.backupController}',
+              path: '${ImmichRoute.backupController}',
               builder: (_, __) => const BackupControllerPage(),
             ),
             GoRoute(
-              name: 'backupAlbumSelection',
-              path: 'backup-album-selectionr',
+              name: '${ImmichRoute.backupAlbumSelection}',
+              path: '${ImmichRoute.backupAlbumSelection}',
               builder: (_, __) => const BackupAlbumSelectionPage(),
             ),
             GoRoute(
-              name: 'albumPreview',
-              path: 'album-preview',
+              name: '${ImmichRoute.albumPreview}',
+              path: '${ImmichRoute.albumPreview}',
               builder: (_, state) => AlbumPreviewPage(
                 album: state.extra as AssetPathEntity,
               ),
             ),
             GoRoute(
-              name: 'createSharedAlbum',
-              path: 'create-shared-album',
+              name: '${ImmichRoute.createSharedAlbum}',
+              path: '${ImmichRoute.createSharedAlbum}',
               builder: (_, __) => const CreateSharedAlbumPage(),
             ),
             GoRoute(
-              name: 'selectUserForSharing',
-              path: 'select-user-for-sharing',
+              name: '${ImmichRoute.selectUserForSharing}',
+              path: '${ImmichRoute.selectUserForSharing}',
               builder: (_, __) => const SelectUserForSharingPage(),
             ),
             GoRoute(
-              name: 'searchResult',
-              path: 'search-result',
+              name: '${ImmichRoute.searchResult}',
+              path: '${ImmichRoute.searchResult}',
               builder: (_, state) => SearchResultPage(
                 searchTerm: state.queryParams['searchTerm'] ?? '',
               ),
             ),
             GoRoute(
-              name: 'assetSelection',
-              path: 'asset-selection',
+              name: '${ImmichRoute.assetSelection}',
+              path: '${ImmichRoute.assetSelection}',
               builder: (_, state) => AssetSelectionPage(
                 albumId: state.queryParams['albumId'] ?? '',
               ),
             ),
             GoRoute(
-              name: 'albumViewer',
-              path: 'album-viewer',
+              name: '${ImmichRoute.albumViewer}',
+              path: '${ImmichRoute.albumViewer}',
               builder: (_, state) => AlbumViewerPage(
                 albumId: state.queryParams['albumId'] ?? '',
               ),
             ),
             GoRoute(
-              name: 'selectAdditionalUserForSharing',
-              path: 'select-additional-user-for-sharing',
+              name: '${ImmichRoute.selectAdditionalUserForSharing}',
+              path: '${ImmichRoute.selectAdditionalUserForSharing}',
               builder: (_, state) => SelectAdditionalUserForSharingPage(
                 albumInfo: state.extra! as SharedAlbum,
               ),

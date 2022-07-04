@@ -7,6 +7,7 @@ import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider
 import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/sharing/ui/shared_album_thumbnail_image.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class CreateSharedAlbumPage extends HookConsumerWidget {
   const CreateSharedAlbumPage({Key? key}) : super(key: key);
@@ -34,7 +35,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     _onSelectPhotosButtonPressed() {
       ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(false);
 
-      GoRouter.of(context).pushNamed('assetSelection');
+      GoRouter.of(context).pushNamed('${ImmichRoute.assetSelection}');
 
       // if (selectedAsset == null) {
       //   ref.watch(assetSelectionProvider.notifier).removeAll();
@@ -168,7 +169,8 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
           actions: [
             TextButton(
               onPressed: albumTitleController.text.isNotEmpty
-                  ? () => GoRouter.of(context).pushNamed('selectUserForSharing')
+                  ? () => GoRouter.of(context)
+                      .pushNamed('${ImmichRoute.selectUserForSharing}')
                   : null,
               child: const Text(
                 'Share',

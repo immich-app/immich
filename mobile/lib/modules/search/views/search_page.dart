@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/search/providers/search_page_state.provide
 import 'package:immich_mobile/modules/search/ui/search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/capitalize_first_letter.dart';
@@ -38,7 +39,7 @@ class SearchPage extends HookConsumerWidget {
       searchFocusNode.unfocus();
       ref.watch(searchPageStateProvider.notifier).disableSearch();
       GoRouter.of(context).pushNamed(
-        'searchresult',
+        '${ImmichRoute.searchResult}',
         queryParams: {
           'searchTerm': searchTerm,
         },
@@ -70,7 +71,7 @@ class SearchPage extends HookConsumerWidget {
                         textInfo: locationInfo.city,
                         onTap: () {
                           GoRouter.of(context).pushNamed(
-                            'searchresult',
+                            '${ImmichRoute.searchResult}',
                             queryParams: {
                               'searchTerm': locationInfo.city,
                             },
@@ -125,7 +126,7 @@ class SearchPage extends HookConsumerWidget {
                         textInfo: curatedObjectInfo.object,
                         onTap: () {
                           GoRouter.of(context).pushNamed(
-                            'searchresult',
+                            '${ImmichRoute.searchResult}',
                             queryParams: {
                               'searchTerm': curatedObjectInfo.object
                                   .capitalizeFirstLetter(),

@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
@@ -40,7 +41,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
 
       if (isSuccess) {
-        GoRouter.of(context).goNamed(HomeTab.sharing.name);
+        GoRouter.of(context).goNamed('${ImmichRoute.sharing}');
       } else {
         ImmichToast.show(
           context: context,
@@ -60,7 +61,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(albumId);
 
       if (isSuccess) {
-        GoRouter.of(context).goNamed(HomeTab.sharing.name);
+        GoRouter.of(context).goNamed('${ImmichRoute.sharing}');
       } else {
         Navigator.pop(context);
         ImmichToast.show(

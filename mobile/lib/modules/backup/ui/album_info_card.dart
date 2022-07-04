@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -189,8 +190,9 @@ class AlbumInfoCard extends HookConsumerWidget {
                     ),
                   ),
                   IconButton(
-                    onPressed: () => GoRouter.of(context)
-                        .pushNamed('AlbumPreview', extra: albumInfo),
+                    onPressed: () => GoRouter.of(context).pushNamed(
+                        '${ImmichRoute.albumPreview}',
+                        extra: albumInfo),
                     icon: Icon(
                       Icons.image_outlined,
                       color: Theme.of(context).primaryColor,

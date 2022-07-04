@@ -7,6 +7,7 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/sharing/ui/sharing_sliver_appbar.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 import 'package:transparent_image/transparent_image.dart';
 
@@ -65,7 +66,7 @@ class SharingPage extends HookConsumerWidget {
               ),
               onTap: () {
                 GoRouter.of(context).pushNamed(
-                  'albumViewerRoute',
+                  '${ImmichRoute.albumViewer}',
                   queryParams: {
                     'albumId': sharedAlbums[index].id,
                   },

@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class AlbumViewerThumbnail extends HookConsumerWidget {
@@ -29,7 +30,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
     _viewAsset() {
       if (asset.type == 'IMAGE') {
         GoRouter.of(context).pushNamed(
-          'imageViewer',
+          '${ImmichRoute.imageViewer}',
           extra: asset,
           queryParams: {
             'imageUrl':
@@ -40,7 +41,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         );
       } else {
         GoRouter.of(context).pushNamed(
-          'videoViewer',
+          '${ImmichRoute.videoViewer}',
           extra: asset,
           queryParams: {
             'videoUrl':

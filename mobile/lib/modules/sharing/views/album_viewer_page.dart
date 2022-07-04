@@ -12,6 +12,7 @@ import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.da
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_appbar.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_editable_title.dart';
 import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:intl/intl.dart';
@@ -41,13 +42,17 @@ class AlbumViewerPage extends HookConsumerWidget {
 
       ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(true);
 
-      GoRouter.of(context)
-          .pushNamed('assetSelection', queryParams: {'albumId': albumId});
+      GoRouter.of(context).pushNamed(
+        '${ImmichRoute.assetSelection}',
+        queryParams: {'albumId': albumId},
+      );
     }
 
     void _onAddUsersPressed(SharedAlbum albumInfo) async {
-      GoRouter.of(context)
-          .pushNamed('selectAdditionalUserForSharing', extra: albumInfo);
+      GoRouter.of(context).pushNamed(
+        '${ImmichRoute.selectAdditionalUserForSharing}',
+        extra: albumInfo,
+      );
     }
 
     Widget _buildTitle(SharedAlbum albumInfo) {

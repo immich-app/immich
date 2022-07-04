@@ -8,6 +8,7 @@ import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class SplashScreenPage extends HookConsumerWidget {
   const SplashScreenPage({Key? key}) : super(key: key);
@@ -31,7 +32,7 @@ class SplashScreenPage extends HookConsumerWidget {
         if (loginInfo?.isSaveLogin == true) {
           performLoggingIn();
         } else {
-          GoRouter.of(context).goNamed('login');
+          GoRouter.of(context).goNamed('${ImmichRoute.login}');
         }
       });
       return null;

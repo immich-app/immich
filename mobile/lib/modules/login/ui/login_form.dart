@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -213,10 +214,10 @@ class LoginButton extends ConsumerWidget {
 
             if (ref.watch(authenticationProvider).shouldChangePassword &&
                 !ref.watch(authenticationProvider).isAdmin) {
-              GoRouter.of(context).goNamed('changePassword');
+              GoRouter.of(context).goNamed('${ImmichRoute.changePassword}');
             } else {
               ref.watch(backupProvider.notifier).resumeBackup();
-              GoRouter.of(context).goNamed("home");
+              GoRouter.of(context).goNamed("${ImmichRoute.home}");
             }
           } else {
             ImmichToast.show(

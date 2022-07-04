@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class ThumbnailImage extends HookConsumerWidget {
@@ -62,7 +63,7 @@ class ThumbnailImage extends HookConsumerWidget {
         } else {
           if (asset.type == 'IMAGE') {
             GoRouter.of(context).pushNamed(
-              'imageViewer',
+              '${ImmichRoute.imageViewer}',
               extra: asset,
               queryParams: {
                 'imageUrl':
@@ -73,7 +74,7 @@ class ThumbnailImage extends HookConsumerWidget {
             );
           } else {
             GoRouter.of(context).pushNamed(
-              'videoViewer',
+              '${ImmichRoute.videoViewer}',
               extra: asset,
               queryParams: {
                 'videoUrl':

@@ -7,6 +7,7 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -231,7 +232,8 @@ class BackupControllerPage extends HookConsumerWidget {
             ),
             onPressed: () {
               // AutoRouter.of(context).push(const BackupAlbumSelectionRoute());
-              GoRouter.of(context).pushNamed('backupAlbumSelection');
+              GoRouter.of(context)
+                  .pushNamed('${ImmichRoute.backupAlbumSelection}');
             },
             child: const Padding(
               padding: EdgeInsets.symmetric(

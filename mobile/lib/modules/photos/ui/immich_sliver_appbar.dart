@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
@@ -117,7 +118,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
                         size: 8,
                       ),
                       child: const Icon(Icons.backup_rounded)),
-              onPressed: () => GoRouter.of(context).push('backupController'),
+              onPressed: () => GoRouter.of(context)
+                  .pushNamed('${ImmichRoute.backupController}'),
             ),
             if (backupState.backupProgress == BackUpProgressEnum.inProgress)
               Positioned(
