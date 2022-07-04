@@ -21,6 +21,8 @@ import {
   objectDetectionProcessorName,
   videoMetadataExtractionProcessorName,
   metadataExtractionQueueName,
+  reverseGeocodingProcessorName,
+  IReverseGeocodingProcessor,
 } from '@app/job';
 
 @Processor(metadataExtractionQueueName)
@@ -95,6 +97,28 @@ export class MetadataExtractionProcessor {
       await this.exifRepository.save(newExif);
     } catch (e) {
       Logger.error(`Error extracting EXIF ${String(e)}`, 'extractExif');
+    }
+  }
+
+  @Process({ name: reverseGeocodingProcessorName })
+  async reverseGeocoding(job: Job<IReverseGeocodingProcessor>) {
+    const { exif } = job.data;
+
+    if (this.geocodingClient) {
+      const geoCodeInfo: MapiResponse = await this.geocodingClient
+        .reverseGeocode({
+          query: [Number(exif.longitude), Number(exif.latitude)],
+          types: ['country', 'region', 'place'],
+        })
+        .send();
+
+      const res: [] = geoCodeInfo.body['features'];
+
+      const city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
+      const state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
+      const country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+
+      await this.exifRepository.update({ id: exif.id }, { city, state, country });
     }
   }
 
