@@ -13,8 +13,17 @@ import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
+import {
+  IExifExtractionProcessor,
+  IVideoLengthExtractionProcessor,
+  exifExtractionProcessorName,
+  imageTaggingProcessorName,
+  objectDetectionProcessorName,
+  videoMetadataExtractionProcessorName,
+  metadataExtractionQueueName,
+} from '@app/job';
 
-@Processor('metadata-extraction-queue')
+@Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
   private geocodingClient?: GeocodeService;
 
@@ -35,8 +44,8 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process('exif-extraction')
-  async extractExifInfo(job: Job) {
+  @Process(exifExtractionProcessorName)
+  async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
 
@@ -89,7 +98,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: 'tag-image', concurrency: 2 })
+  @Process({ name: imageTaggingProcessorName, concurrency: 2 })
   async tagImage(job: Job) {
     const { asset }: { asset: AssetEntity } = job.data;
 
@@ -108,7 +117,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: 'detect-object', concurrency: 2 })
+  @Process({ name: objectDetectionProcessorName, concurrency: 2 })
   async detectObject(job: Job) {
     try {
       const { asset }: { asset: AssetEntity } = job.data;
@@ -131,26 +140,42 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: 'extract-video-length', concurrency: 2 })
-  async extractVideoLength(job: Job) {
-    const { asset }: { asset: AssetEntity } = job.data;
+  @Process({ name: videoMetadataExtractionProcessorName, concurrency: 2 })
+  async extractVideoMetadata(job: Job<IVideoLengthExtractionProcessor>) {
+    const { asset } = job.data;
 
     ffmpeg.ffprobe(asset.originalPath, async (err, data) => {
       if (!err) {
+        let durationString = asset.duration;
+        let createdAt = asset.createdAt;
+
         if (data.format.duration) {
-          const videoDurationInSecond = parseInt(data.format.duration.toString(), 0);
-
-          const hours = Math.floor(videoDurationInSecond / 3600);
-          const minutes = Math.floor((videoDurationInSecond - hours * 3600) / 60);
-          const seconds = videoDurationInSecond - hours * 3600 - minutes * 60;
-
-          const durationString = `${hours}:${minutes < 10 ? '0' + minutes.toString() : minutes}:${
-            seconds < 10 ? '0' + seconds.toString() : seconds
-          }.000000`;
-
-          await this.assetRepository.update({ id: asset.id }, { duration: durationString });
+          durationString = this.extractDuration(data.format.duration);
         }
+
+        const videoTags = data.format.tags;
+        if (videoTags) {
+          if (videoTags['com.apple.quicktime.creationdate']) {
+            createdAt = String(videoTags['com.apple.quicktime.creationdate']);
+          } else {
+            createdAt = String(videoTags['creation_time']);
+          }
+        }
+
+        await this.assetRepository.update({ id: asset.id }, { duration: durationString, createdAt: createdAt });
       }
     });
+  }
+
+  private extractDuration(duration: number) {
+    const videoDurationInSecond = parseInt(duration.toString(), 0);
+
+    const hours = Math.floor(videoDurationInSecond / 3600);
+    const minutes = Math.floor((videoDurationInSecond - hours * 3600) / 60);
+    const seconds = videoDurationInSecond - hours * 3600 - minutes * 60;
+
+    return `${hours}:${minutes < 10 ? '0' + minutes.toString() : minutes}:${
+      seconds < 10 ? '0' + seconds.toString() : seconds
+    }.000000`;
   }
 }
