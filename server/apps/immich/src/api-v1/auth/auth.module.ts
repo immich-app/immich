@@ -8,7 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '../../config/jwt.config';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity]), JwtModule.register(jwtConfig), ImmichAuthModule],
+  imports: [TypeOrmModule.forFeature([UserEntity]), JwtModule.register(jwtConfig), ImmichAuthModule.register()],
   controllers: [AuthController],
   providers: [AuthService],
   exports: [AuthService],

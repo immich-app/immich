@@ -9,7 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@app/database/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity]), ImmichAuthModule, JwtModule.register(jwtConfig)],
+  imports: [TypeOrmModule.forFeature([UserEntity]), ImmichAuthModule.register(), JwtModule.register(jwtConfig)],
   providers: [CommunicationGateway, CommunicationService, ImmichJwtService],
   exports: [CommunicationGateway],
 })

@@ -9,7 +9,7 @@ import {ImmichAuthModule} from "../../modules/immich-auth/immich-auth.module";
 import {ImmichAuthService} from "../../modules/immich-auth/immich-auth.service";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity]), ImmichAuthModule, JwtModule.register(jwtConfig)],
+  imports: [TypeOrmModule.forFeature([UserEntity]), ImmichAuthModule.register(), JwtModule.register(jwtConfig)],
   controllers: [UserController],
   providers: [UserService, ImmichAuthService],
 })
