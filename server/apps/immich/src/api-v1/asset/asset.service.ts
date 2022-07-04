@@ -405,7 +405,7 @@ export class AssetService {
        (
          TO_TSVECTOR('english', ARRAY_TO_STRING(si.tags, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
          TO_TSVECTOR('english', ARRAY_TO_STRING(si.objects, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
-         e.exif_text_searchable_column @@ PLAINTO_TSQUERY('english', $2)
+         e."exifTextSearchableColumn" @@ PLAINTO_TSQUERY('english', $2)
         );
     `;
 
