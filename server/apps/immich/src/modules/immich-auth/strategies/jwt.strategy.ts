@@ -30,6 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException('Failure to validate JWT payload');
     }
 
+    Logger.verbose(`Validated user with email ${user.email}`, "JWT STRATEGY");
     return user;
   }
 }
