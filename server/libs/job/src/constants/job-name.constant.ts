@@ -18,6 +18,6 @@ export const generateWEBPThumbnailProcessorName = 'generate-webp-thumbnail';
  * Metadata Extraction Queue Jobs
  */
 export const exifExtractionProcessorName = 'exif-extraction';
-export const videoLengthExtractionProcessorName = 'extract-video-length';
+export const videoMetadataExtractionProcessorName = 'extract-video-metadata';
 export const objectDetectionProcessorName = 'detect-object';
 export const imageTaggingProcessorName = 'tag-image';

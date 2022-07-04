@@ -19,7 +19,7 @@ import {
   exifExtractionProcessorName,
   imageTaggingProcessorName,
   objectDetectionProcessorName,
-  videoLengthExtractionProcessorName,
+  videoMetadataExtractionProcessorName,
   metadataExtractionQueueName,
 } from '@app/job';
 
@@ -140,26 +140,42 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: videoLengthExtractionProcessorName, concurrency: 2 })
-  async extractVideoLength(job: Job<IVideoLengthExtractionProcessor>) {
+  @Process({ name: videoMetadataExtractionProcessorName, concurrency: 2 })
+  async extractVideoMetadata(job: Job<IVideoLengthExtractionProcessor>) {
     const { asset } = job.data;
 
     ffmpeg.ffprobe(asset.originalPath, async (err, data) => {
       if (!err) {
+        let durationString = asset.duration;
+        let createdAt = asset.createdAt;
+
         if (data.format.duration) {
-          const videoDurationInSecond = parseInt(data.format.duration.toString(), 0);
-
-          const hours = Math.floor(videoDurationInSecond / 3600);
-          const minutes = Math.floor((videoDurationInSecond - hours * 3600) / 60);
-          const seconds = videoDurationInSecond - hours * 3600 - minutes * 60;
-
-          const durationString = `${hours}:${minutes < 10 ? '0' + minutes.toString() : minutes}:${
-            seconds < 10 ? '0' + seconds.toString() : seconds
-          }.000000`;
-
-          await this.assetRepository.update({ id: asset.id }, { duration: durationString });
+          durationString = this.extractDuration(data.format.duration);
         }
+
+        const videoTags = data.format.tags;
+        if (videoTags) {
+          if (videoTags['com.apple.quicktime.creationdate']) {
+            createdAt = String(videoTags['com.apple.quicktime.creationdate']);
+          } else {
+            createdAt = String(videoTags['creation_time']);
+          }
+        }
+
+        await this.assetRepository.update({ id: asset.id }, { duration: durationString, createdAt: createdAt });
       }
     });
+  }
+
+  private extractDuration(duration: number) {
+    const videoDurationInSecond = parseInt(duration.toString(), 0);
+
+    const hours = Math.floor(videoDurationInSecond / 3600);
+    const minutes = Math.floor((videoDurationInSecond - hours * 3600) / 60);
+    const seconds = videoDurationInSecond - hours * 3600 - minutes * 60;
+
+    return `${hours}:${minutes < 10 ? '0' + minutes.toString() : minutes}:${
+      seconds < 10 ? '0' + seconds.toString() : seconds
+    }.000000`;
   }
 }

@@ -15,7 +15,7 @@ import {
   exifExtractionProcessorName,
   generateJPEGThumbnailProcessorName,
   mp4ConversionProcessorName,
-  videoLengthExtractionProcessorName,
+  videoMetadataExtractionProcessorName,
 } from '@app/job';
 
 @Processor(assetUploadedQueueName)
@@ -62,9 +62,9 @@ export class AssetUploadedProcessor {
       );
     }
 
-    // Extract video duration if uploaded from the web
+    // Extract video duration if uploaded from the web & CLI
     if (asset.type == AssetType.VIDEO && asset.duration == '0:00:00.000000') {
-      await this.metadataExtractionQueue.add(videoLengthExtractionProcessorName, { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add(videoMetadataExtractionProcessorName, { asset }, { jobId: randomUUID() });
     }
   }
 }
