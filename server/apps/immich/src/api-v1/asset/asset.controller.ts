@@ -35,6 +35,7 @@ import { Queue } from 'bull';
 import { IAssetUploadedJob } from '@app/job/index';
 import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
 import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('asset')
@@ -172,9 +173,9 @@ export class AssetController {
   @HttpCode(200)
   async checkDuplicateAsset(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) { deviceAssetId }: { deviceAssetId: string },
+    @Body(ValidationPipe) checkDuplicateAssetDto: CheckDuplicateAssetDto,
   ) {
-    const res = await this.assetService.checkDuplicatedAsset(authUser, deviceAssetId);
+    const res = await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
 
     return {
       isExist: res,
