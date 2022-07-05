@@ -105,6 +105,7 @@ class BackupService {
           req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
 
           req.fields['deviceAssetId'] = entity.id;
+          req.fields['deviceAssetId'] = '27';
           req.fields['deviceId'] = deviceId;
           req.fields['assetType'] = _getAssetType(entity.type);
           req.fields['createdAt'] = entity.createDateTime.toIso8601String();

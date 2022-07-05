@@ -115,6 +115,10 @@ class _$AppRouter extends RootStackRouter {
           routeData: routeData,
           child: AlbumPreviewPage(key: args.key, album: args.album));
     },
+    FailedBackupStatusRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const FailedBackupStatusPage());
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -177,7 +181,9 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(BackupAlbumSelectionRoute.name,
             path: '/backup-album-selection-page', guards: [authGuard]),
         RouteConfig(AlbumPreviewRoute.name,
-            path: '/album-preview-page', guards: [authGuard])
+            path: '/album-preview-page', guards: [authGuard]),
+        RouteConfig(FailedBackupStatusRoute.name,
+            path: '/failed-backup-status-page', guards: [authGuard])
       ];
 }
 
@@ -435,6 +441,15 @@ class AlbumPreviewRouteArgs {
   String toString() {
     return 'AlbumPreviewRouteArgs{key: $key, album: $album}';
   }
+}
+
+/// generated route for
+/// [FailedBackupStatusPage]
+class FailedBackupStatusRoute extends PageRouteInfo<void> {
+  const FailedBackupStatusRoute()
+      : super(FailedBackupStatusRoute.name, path: '/failed-backup-status-page');
+
+  static const String name = 'FailedBackupStatusRoute';
 }
 
 /// generated route for
