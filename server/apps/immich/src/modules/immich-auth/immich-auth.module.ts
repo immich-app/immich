@@ -9,7 +9,6 @@ import {ImmichOauth2Service} from "./immich-oauth2.service";
 import {Oauth2Strategy} from "./strategies/oauth.strategy";
 import {ImmichAuthService} from './immich-auth.service';
 import {ConfigModule} from "@nestjs/config";
-import * as util from "util";
 
 @Module({})
 export class ImmichAuthModule {
@@ -25,8 +24,6 @@ export class ImmichAuthModule {
         if (!!process.env.OAUTH2_CERTIFICATE) {
             mod.providers?.push(Oauth2Strategy);
         }
-
-        console.log(util.inspect(mod));
 
         return mod;
     }
