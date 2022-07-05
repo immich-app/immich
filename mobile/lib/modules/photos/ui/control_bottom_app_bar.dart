@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
+import 'package:immich_mobile/modules/photos/ui/delete_diaglog.dart';
 
 class ControlBottomAppBar extends StatelessWidget {
   const ControlBottomAppBar({Key? key}) : super(key: key);

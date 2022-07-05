@@ -41,7 +41,6 @@ dependencies:
   url_launcher: ^6.1.3
   http: 0.13.4
   cancellation_token_http: ^1.1.0
-  font_awesome_flutter: ^10.1.0
 
   path: ^1.8.1
   path_provider: ^2.0.11

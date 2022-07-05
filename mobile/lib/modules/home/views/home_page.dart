@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/photos/views/photos_page.dart';
@@ -42,17 +41,11 @@ class HomePage extends HookConsumerWidget {
               onTap: (index) => ref.read(indexProvider.state).state = index,
               items: const [
                 BottomNavigationBarItem(
-                  label: 'Photos',
-                  icon: FaIcon(FontAwesomeIcons.photoFilm),
-                ),
+                    label: 'Photos', icon: Icon(Icons.photo)),
                 BottomNavigationBarItem(
-                  label: 'Search',
-                  icon: FaIcon(FontAwesomeIcons.magnifyingGlass),
-                ),
+                    label: 'Search', icon: Icon(Icons.search)),
                 BottomNavigationBarItem(
-                  label: 'Sharing',
-                  icon: FaIcon(FontAwesomeIcons.userGroup),
-                ),
+                    label: 'Sharing', icon: Icon(Icons.group_outlined)),
               ],
             ),
     );

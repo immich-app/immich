@@ -30,7 +30,6 @@ class SearchResultPage extends HookConsumerWidget {
 
     useEffect(() {
       // searchFocusNode = FocusNode();
-
       Future.delayed(Duration.zero,
           () => ref.read(searchResultPageProvider.notifier).search(searchTerm));
       return () => searchFocusNode.dispose();

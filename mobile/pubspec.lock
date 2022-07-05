@@ -380,13 +380,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "8.0.9"
-  font_awesome_flutter:
-    dependency: "direct main"
-    description:
-      name: font_awesome_flutter
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "10.1.0"
   frontend_server_client:
     dependency: transitive
     description:

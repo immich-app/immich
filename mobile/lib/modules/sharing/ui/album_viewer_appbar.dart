@@ -3,7 +3,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
-import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
