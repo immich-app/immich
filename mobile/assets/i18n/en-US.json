@@ -6,7 +6,7 @@
   "login_form_button_text": "Login",
   "login_form_save_login": "Stay logged in",
   "login_form_endpoint_url": "Server Endpoint URL",
-  "login_form_endpoint_hint": "http://your-server-ip:port",
+  "login_form_endpoint_hint": "http://your-server-ip:port/api",
   "login_form_err_trailing_whitespace": "Trailing whitespace",
   "login_form_err_leading_whitespace": "Leading whitespace",
   "login_form_err_invalid_email": "Invalid Email",

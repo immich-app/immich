@@ -6,7 +6,7 @@
   "login_form_button_text": "Anmelden",
   "login_form_save_login": "Angemeldet bleiben",
   "login_form_endpoint_url": "Server URL",
-  "login_form_endpoint_hint": "http://deine-server-ip:port",
+  "login_form_endpoint_hint": "http://deine-server-ip:port/api",
   "login_form_err_trailing_whitespace": "Folgendes Leerzeichen",
   "login_form_err_leading_whitespace": "Führendes Leerzichen",
   "login_form_err_invalid_email": "Ungültige E-Mail",
