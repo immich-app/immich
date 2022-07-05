@@ -15,6 +15,7 @@ import {
   Delete,
   Logger,
   HttpCode,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
@@ -66,17 +67,16 @@ export class AssetController {
       try {
         const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
-        if (!savedAsset) {
-          return;
+        if (savedAsset) {
+          await this.assetUploadedQueue.add(
+            assetUploadedProcessorName,
+            { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
+            { jobId: savedAsset.id },
+          );
         }
-
-        await this.assetUploadedQueue.add(
-          assetUploadedProcessorName,
-          { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
-          { jobId: savedAsset.id },
-        );
       } catch (e) {
-        Logger.error(`Error receiving upload file ${e}`);
+        Logger.error(`Error uploading file ${e}`);
+        throw new BadRequestException(`Error uploading file`, `${e}`);
       }
     }
 

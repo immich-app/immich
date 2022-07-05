@@ -58,15 +58,11 @@ export class AssetService {
     asset.mimeType = mimeType;
     asset.duration = assetInfo.duration || null;
 
-    try {
-      const createdAsset = await this.assetRepository.save(asset);
-      if (!createdAsset) {
-        throw new Error('Asset not created');
-      }
-      return createdAsset;
-    } catch (e) {
-      Logger.error(`Error Create New Asset ${e}`, 'createUserAsset');
+    const createdAsset = await this.assetRepository.save(asset);
+    if (!createdAsset) {
+      throw new Error('Asset not created');
     }
+    return createdAsset;
   }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
