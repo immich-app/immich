@@ -124,40 +124,26 @@ class BackupService {
             ),
           );
 
-          var isDuplicated = await checkDuplicateAsset(entity.id);
+          var response = await req.send(cancellationToken: cancelToken);
 
-          if (isDuplicated) {
+          if (response.statusCode == 201) {
+            singleAssetDoneCb(entity.id, deviceId);
+          } else {
+            var data = await response.stream.bytesToString();
+            var error = jsonDecode(data);
+
+            debugPrint(
+                "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}");
+
             errorCb(ErrorUploadAsset(
               asset: entity,
               id: entity.id,
               createdAt: entity.createDateTime,
               fileName: originalFileName,
               fileType: _getAssetType(entity.type),
-              errorMessage: 'Duplicated Asset',
+              errorMessage: error['error'],
             ));
             continue;
-          } else {
-            var response = await req.send(cancellationToken: cancelToken);
-
-            if (response.statusCode == 201) {
-              singleAssetDoneCb(entity.id, deviceId);
-            } else {
-              var data = await response.stream.bytesToString();
-              var error = jsonDecode(data);
-
-              debugPrint(
-                  "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}");
-
-              errorCb(ErrorUploadAsset(
-                asset: entity,
-                id: entity.id,
-                createdAt: entity.createDateTime,
-                fileName: originalFileName,
-                fileType: _getAssetType(entity.type),
-                errorMessage: error['error'],
-              ));
-              continue;
-            }
           }
         }
       } on http.CancelledException {
