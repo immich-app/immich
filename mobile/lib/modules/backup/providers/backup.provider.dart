@@ -6,7 +6,9 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
+import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -19,6 +21,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._backupService,
     this._serverInfoService,
     this._authState,
+    this.ref,
   ) : super(
           BackUpState(
             backupProgress: BackUpProgressEnum.idle,
@@ -41,7 +44,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             selectedAlbumsBackupAssetsIds: const {},
             currentUploadAsset: CurrentUploadAsset(
               id: '...',
-              createdAt: DateTime.now(),
+              createdAt: DateTime.parse('2020-10-04'),
               fileName: '...',
               fileType: '...',
             ),
@@ -53,6 +56,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final BackupService _backupService;
   final ServerInfoService _serverInfoService;
   final AuthenticationState _authState;
+  final Ref ref;
 
   ///
   /// UI INTERACTION
@@ -306,10 +310,15 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         _onAssetUploaded,
         _onUploadProgress,
         _onSetCurrentBackupAsset,
+        _onBackupError,
       );
     } else {
       PhotoManager.openSetting();
     }
+  }
+
+  void _onBackupError(ErrorUploadAsset errorAssetInfo) {
+    ref.watch(errorBackupListProvider.notifier).add(errorAssetInfo);
   }
 
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
@@ -397,5 +406,6 @@ final backupProvider =
     ref.watch(backupServiceProvider),
     ref.watch(serverInfoServiceProvider),
     ref.watch(authenticationProvider),
+    ref,
   );
 });

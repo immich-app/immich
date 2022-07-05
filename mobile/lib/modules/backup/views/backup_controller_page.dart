@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -253,9 +254,27 @@ class BackupControllerPage extends HookConsumerWidget {
           Icons.info_outline_rounded,
           color: Theme.of(context).primaryColor,
         ),
-        title: const Text(
-          "Uploading file info",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Uploading file info",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            if (ref.watch(errorBackupListProvider).isNotEmpty)
+              ActionChip(
+                visualDensity: VisualDensity.compact,
+                label: Text(
+                  "Failed (${ref.watch(errorBackupListProvider).length})",
+                  style: TextStyle(
+                      color: Colors.red[500],
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10),
+                ),
+                backgroundColor: Colors.red[100],
+                onPressed: () {},
+              ),
+          ],
         ),
         subtitle: Column(
           children: [
@@ -292,23 +311,12 @@ class BackupControllerPage extends HookConsumerWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
                           child: Text(
-                            backupState.currentUploadAsset.fileName,
+                            'File name: ${backupState.currentUploadAsset.fileName} [${backupState.currentUploadAsset.fileType.toLowerCase()}]',
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 10.0),
                           ),
                         ),
                       ),
-                      TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: Text(
-                            backupState.currentUploadAsset.fileType,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 10.0),
-                          ),
-                        ),
-                      )
                     ],
                   ),
                   TableRow(
@@ -321,24 +329,33 @@ class BackupControllerPage extends HookConsumerWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
                           child: Text(
-                            DateFormat.yMMMMd('en_US').format(
+                            "Created on: ${DateFormat.yMMMMd('en_US').format(
                               DateTime.parse(
                                 backupState.currentUploadAsset.createdAt
                                     .toString(),
                               ),
-                            ),
+                            )}",
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 10.0),
                           ),
                         ),
                       ),
+                    ],
+                  ),
+                  TableRow(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                    ),
+                    children: [
                       TableCell(
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
                           child: Text(
-                            backupState.currentUploadAsset.id,
+                            "ID: ${backupState.currentUploadAsset.id}",
                             style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 10.0),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.0,
+                            ),
                           ),
                         ),
                       ),
@@ -350,6 +367,11 @@ class BackupControllerPage extends HookConsumerWidget {
           ],
         ),
       );
+    }
+
+    void startBackup() {
+      ref.watch(errorBackupListProvider.notifier).empty();
+      ref.watch(backupProvider.notifier).startBackupProcess();
     }
 
     return Scaffold(
@@ -422,7 +444,10 @@ class BackupControllerPage extends HookConsumerWidget {
                             },
                             child: const Text(
                               "CANCEL",
-                              style: TextStyle(fontSize: 14),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           )
                         : ElevatedButton(
@@ -431,16 +456,13 @@ class BackupControllerPage extends HookConsumerWidget {
                               onPrimary: Colors.grey[50],
                               padding: const EdgeInsets.all(14),
                             ),
-                            onPressed: shouldBackup
-                                ? () {
-                                    ref
-                                        .read(backupProvider.notifier)
-                                        .startBackupProcess();
-                                  }
-                                : null,
+                            onPressed: shouldBackup ? startBackup : null,
                             child: const Text(
                               "START BACKUP",
-                              style: TextStyle(fontSize: 14),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
               ),

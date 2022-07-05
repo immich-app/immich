@@ -16,6 +16,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:cancellation_token_http/http.dart' as http;
 
+import '../models/error_upload_asset.model.dart';
+
 final backupServiceProvider =
     Provider((ref) => BackupService(ref.watch(networkServiceProvider)));
 
@@ -40,6 +42,7 @@ class BackupService {
     Function(String, String) singleAssetDoneCb,
     Function(int, int) uploadProgressCb,
     Function(CurrentUploadAsset) setCurrentUploadAssetCb,
+    Function(ErrorUploadAsset) errorCb,
   ) async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
@@ -79,7 +82,9 @@ class BackupService {
                   uploadProgressCb(bytes, totalBytes)));
           req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
 
-          req.fields['deviceAssetId'] = entity.id;
+          // req.fields['deviceAssetId'] = entity.id;
+          req.fields['deviceAssetId'] =
+              '7CA6A80F-ADCB-4002-B102-F8DD5F96ACCC/L0/001';
           req.fields['deviceId'] = deviceId;
           req.fields['assetType'] = _getAssetType(entity.type);
           req.fields['createdAt'] = entity.createDateTime.toIso8601String();
@@ -103,6 +108,22 @@ class BackupService {
 
           if (res.statusCode == 201) {
             singleAssetDoneCb(entity.id, deviceId);
+          } else {
+            var response = await res.stream.bytesToString();
+            var error = jsonDecode(response);
+
+            debugPrint(
+                "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}");
+
+            errorCb(ErrorUploadAsset(
+              asset: entity,
+              id: entity.id,
+              createdAt: entity.createDateTime,
+              fileName: originalFileName,
+              fileType: _getAssetType(entity.type),
+              errorMessage: error['error'],
+            ));
+            continue;
           }
         }
       } on http.CancelledException {
