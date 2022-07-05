@@ -9,6 +9,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/check_duplicate_asset_response.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
+import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
@@ -16,8 +17,6 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:cancellation_token_http/http.dart' as http;
-
-import '../models/error_upload_asset.model.dart';
 
 final backupServiceProvider =
     Provider((ref) => BackupService(ref.watch(networkServiceProvider)));
@@ -40,15 +39,23 @@ class BackupService {
   Future<bool> checkDuplicateAsset(String deviceAssetId) async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
 
-    Response response =
-        await _networkService.postRequest(url: "asset/check", data: {
-      "deviceId": deviceId,
-      "deviceAssetId": deviceAssetId,
-    });
+    try {
+      Response response =
+          await _networkService.postRequest(url: "asset/check", data: {
+        "deviceId": deviceId,
+        "deviceAssetId": deviceAssetId,
+      });
 
-    var result = CheckDuplicateAssetResponse.fromJson(response.toString());
+      if (response.statusCode == 200) {
+        var result = CheckDuplicateAssetResponse.fromJson(response.toString());
 
-    return result.isExist;
+        return result.isExist;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
   }
 
   backupAsset(
