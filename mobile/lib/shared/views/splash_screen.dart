@@ -26,6 +26,7 @@ class SplashScreenPage extends HookConsumerWidget {
           .refreshLogin();
 
       if (isAuthenticated) {
+        await ref.watch(authenticationProvider.notifier).finalizeLogin();
         // Resume backup (if enable) then navigate
         ref.watch(backupProvider.notifier).resumeBackup();
         AutoRouter.of(context).pushNamed("/tab-controller-page");

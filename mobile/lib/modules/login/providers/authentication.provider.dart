@@ -68,15 +68,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       return false;
     }
 
-    // Store device id to local storage
-    var deviceInfo = await _deviceInfoService.getDeviceInfo();
-    Hive.box(userInfoBox).put(deviceIdKey, deviceInfo["deviceId"]);
-
-    state = state.copyWith(
-      deviceId: deviceInfo["deviceId"],
-      deviceType: deviceInfo["deviceType"],
-    );
-
     LoginParamsResponse loginParams;
 
     try {
@@ -88,19 +79,50 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
     // Make sign-in request
     try {
-
       bool loggedIn = false;
 
       if (loginParams.oauth2 == true && oauth2Login) {
-        loggedIn |= await OAuth2Service.tryLogin(loginParams.issuer, loginParams.clientId);
+        loggedIn |=
+        await OAuth2Service.tryLogin(loginParams.issuer, loginParams.clientId);
       }
 
       if (loginParams.localAuth == true && !oauth2Login) {
-        loggedIn |= await LocalAuthService.tryLogin(email, password, _networkService);
+        loggedIn |=
+        await LocalAuthService.tryLogin(email, password, _networkService);
       }
 
       if (!loggedIn) return false;
+    } catch(e) {
+      return false;
+    }
 
+    try {
+      var s = await finalizeLogin();
+      if (!s) return false;
+    } catch (e) {
+      return false;
+    }
+
+    if (isSavedLoginInfo) {
+      // Save login info to local storage
+      Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
+        savedLoginInfoKey,
+        HiveSavedLoginInfo(
+            email: email,
+            password: password,
+            isSaveLogin: true,
+            serverUrl: Hive.box(userInfoBox).get(serverEndpointKey)),
+      );
+    } else {
+      Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
+          .delete(savedLoginInfoKey);
+    }
+
+    return true;
+  }
+
+  Future<bool> finalizeLogin() async {
+    try {
       debugPrint("Retrieving user details");
 
       Response res = await _networkService.getRequest(url: 'user/me');
@@ -116,28 +138,22 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         isAdmin: payload.isAdmin,
         shouldChangePassword: payload.shouldChangePassword,
       );
-
-      if (isSavedLoginInfo) {
-        // Save login info to local storage
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
-          savedLoginInfoKey,
-          HiveSavedLoginInfo(
-              email: email,
-              password: password,
-              isSaveLogin: true,
-              serverUrl: Hive.box(userInfoBox).get(serverEndpointKey)),
-        );
-      } else {
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
-            .delete(savedLoginInfoKey);
-      }
-
-    } catch (e) {
+    } catch(e) {
       return false;
     }
 
     // Register device info
     try {
+
+      // Store device id to local storage
+      var deviceInfo = await _deviceInfoService.getDeviceInfo();
+      Hive.box(userInfoBox).put(deviceIdKey, deviceInfo["deviceId"]);
+
+      state = state.copyWith(
+        deviceId: deviceInfo["deviceId"],
+        deviceType: deviceInfo["deviceType"],
+      );
+      
       Response res = await _networkService.postRequest(
         url: 'device-info',
         data: {
@@ -146,8 +162,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         },
       );
 
-      DeviceInfoRemote deviceInfo = DeviceInfoRemote.fromJson(res.toString());
-      state = state.copyWith(deviceInfo: deviceInfo);
+      DeviceInfoRemote deviceInfoRemote = DeviceInfoRemote.fromJson(res.toString());
+      state = state.copyWith(deviceInfo: deviceInfoRemote);
     } catch (e) {
       debugPrint("ERROR Register Device Info: $e");
     }
@@ -237,6 +253,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       return false;
     }
   }
+
 }
 
 final authenticationProvider =
