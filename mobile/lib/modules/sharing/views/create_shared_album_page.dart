@@ -69,7 +69,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
           child: Padding(
             padding: EdgeInsets.only(top: 200, left: 18),
             child: Text(
-              'share_add_assets',
+              'create_shared_album_page_share_add_assets',
               style: TextStyle(fontSize: 12),
             ).tr(),
           ),
@@ -98,7 +98,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
               label: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
-                  'share_select_photos',
+                  'create_shared_album_page_share_select_photos',
                   style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[700],
@@ -183,7 +183,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                   ? _showSelectUserPage
                   : null,
               child: Text(
-                'share_share'.tr(),
+                'create_shared_album_page_share'.tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),

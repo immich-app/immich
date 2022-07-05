@@ -214,7 +214,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                   ? AlbumActionOutlinedButton(
                       iconData: Icons.person_add_alt_rounded,
                       onPressed: () => _onAddUsersPressed(albumInfo),
-                      labelText: "share_add_users".tr(),
+                      labelText: "album_viewer_page_share_add_users".tr(),
                     )
                   : Container(),
             ],

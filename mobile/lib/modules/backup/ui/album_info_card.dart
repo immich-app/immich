@@ -38,7 +38,7 @@ class AlbumInfoCard extends HookConsumerWidget {
           visualDensity: VisualDensity.compact,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           label: const Text(
-            "backup_album_included",
+            "album_info_card_backup_album_included",
             style: TextStyle(
                 fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
           ).tr(),
@@ -49,7 +49,7 @@ class AlbumInfoCard extends HookConsumerWidget {
           visualDensity: VisualDensity.compact,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           label: const Text(
-            "backup_album_excluded",
+            "album_info_card_backup_album_excluded",
             style: TextStyle(
                 fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
           ).tr(),

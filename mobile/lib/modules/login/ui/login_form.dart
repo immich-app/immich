@@ -73,7 +73,7 @@ class LoginForm extends HookConsumerWidget {
                     borderRadius: BorderRadius.circular(5)),
                 enableFeedback: true,
                 title: const Text(
-                  "save_login",
+                  "login_form_save_login",
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -108,7 +108,7 @@ class ServerEndpointInput extends StatelessWidget {
 
   String? _validateInput(String? url) {
     if (url == null) return null;
-    if (!url.startsWith(RegExp(r'https?://'))) return 'login_err_http'.tr();
+    if (!url.startsWith(RegExp(r'https?://'))) return 'login_form_err_http'.tr();
     return null;
   }
 
@@ -117,9 +117,9 @@ class ServerEndpointInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-          labelText: 'login_endpoint_url'.tr(),
+          labelText: 'login_form_endpoint_url'.tr(),
           border: OutlineInputBorder(),
-          hintText: 'login_endpoint_hint'.tr()),
+          hintText: 'login_form_endpoint_hint'.tr()),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -133,10 +133,10 @@ class EmailInput extends StatelessWidget {
 
   String? _validateInput(String? email) {
     if (email == null || email == '') return null;
-    if (email.endsWith(' ')) return 'login_err_trailing_whitespace'.tr();
-    if (email.startsWith(' ')) return 'login_err_leading_whitespace'.tr();
+    if (email.endsWith(' ')) return 'login_form_err_trailing_whitespace'.tr();
+    if (email.startsWith(' ')) return 'login_form_err_leading_whitespace'.tr();
     if (email.contains(' ') || !email.contains('@'))
-      return 'login_err_invalid_email'.tr();
+      return 'login_form_err_invalid_email'.tr();
     return null;
   }
 
@@ -145,9 +145,9 @@ class EmailInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-          labelText: 'login_label_email'.tr(),
+          labelText: 'login_form_label_email'.tr(),
           border: OutlineInputBorder(),
-          hintText: 'login_email_hint'.tr()),
+          hintText: 'login_form_email_hint'.tr()),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -165,9 +165,9 @@ class PasswordInput extends StatelessWidget {
       obscureText: true,
       controller: controller,
       decoration: InputDecoration(
-          labelText: 'login_label_password'.tr(),
+          labelText: 'login_form_label_password'.tr(),
           border: OutlineInputBorder(),
-          hintText: 'login_password_hint'.tr()),
+          hintText: 'login_form_password_hint'.tr()),
     );
   }
 }
@@ -218,7 +218,7 @@ class LoginButton extends ConsumerWidget {
           }
         },
         child: const Text(
-          "login_button_text",
+          "login_form_button_text",
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ).tr());
   }

@@ -68,7 +68,7 @@ class SearchResultPage extends HookConsumerWidget {
           ref.watch(searchPageStateProvider.notifier).setSearchTerm(value);
         },
         decoration: InputDecoration(
-          hintText: 'search_new_search_hint'.tr(),
+          hintText: 'search_result_page_new_search_hint'.tr(),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),

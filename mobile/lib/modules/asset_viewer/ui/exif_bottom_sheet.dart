@@ -94,7 +94,7 @@ class ExifBottomSheet extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(top: 16.0),
             child: Text(
-              "asset_description",
+              "exif_bottom_sheet_description",
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: 11,
@@ -114,7 +114,7 @@ class ExifBottomSheet extends ConsumerWidget {
                         color: Colors.grey[600],
                       ),
                       Text(
-                        "asset_location",
+                        "exif_bottom_sheet_location",
                         style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                       ).tr(),
                       _buildMap(),
@@ -141,7 +141,7 @@ class ExifBottomSheet extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: Text(
-                          "asset_details",
+                          "exif_bottom_sheet_details",
                           style:
                               TextStyle(fontSize: 11, color: Colors.grey[400]),
                         ).tr(),

@@ -44,13 +44,13 @@ class TabControllerPage extends ConsumerWidget {
                     },
                     items: [
                       BottomNavigationBarItem(
-                          label: 'nav_photos'.tr(),
+                          label: 'tab_controller_nav_photos'.tr(),
                           icon: const Icon(Icons.photo)),
                       BottomNavigationBarItem(
-                          label: 'nav_search'.tr(),
+                          label: 'tab_controller_nav_search'.tr(),
                           icon: const Icon(Icons.search)),
                       BottomNavigationBarItem(
-                          label: 'nav_sharing'.tr(),
+                          label: 'tab_controller_nav_sharing'.tr(),
                           icon: const Icon(Icons.group_outlined)),
                     ],
                   ),

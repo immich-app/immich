@@ -45,7 +45,7 @@ class BackupInfoCard extends StatelessWidget {
               info,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            const Text("backup_info_assets").tr(),
+            const Text("backup_info_card_assets").tr(),
           ],
         ),
       ),

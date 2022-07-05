@@ -137,7 +137,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         title: const Text(
-          "backup_select_albums",
+          "backup_album_selection_page_select_albums",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ).tr(),
         elevation: 0,
@@ -149,7 +149,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             padding:
                 const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             child: const Text(
-              "backup_selection_info",
+              "backup_album_selection_page_selection_info",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ).tr(),
           ),
@@ -183,7 +183,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   ListTile(
                     visualDensity: VisualDensity.compact,
                     title: Text(
-                      "backup_total_assets",
+                      "backup_album_selection_page_total_assets",
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -205,14 +205,14 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
           ListTile(
             title: Text(
-              "backup_albums_device"
+              "backup_album_selection_page_albums_device"
                   .tr(args: [availableAlbums.length.toString()]),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             subtitle: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
-                "backup_albums_tap",
+                "backup_album_selection_page_albums_tap",
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).primaryColor,
@@ -237,7 +237,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                           borderRadius: BorderRadius.circular(12)),
                       elevation: 5,
                       title: Text(
-                        'backup_selection_info',
+                        'backup_album_selection_page_selection_info',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -248,7 +248,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                         child: ListBody(
                           children: [
                             Text(
-                              'backup_info_assets_scatter',
+                              'backup_album_selection_page_assets_scatter',
                               style: TextStyle(
                                   fontSize: 14, color: Colors.grey[700]),
                             ).tr(),

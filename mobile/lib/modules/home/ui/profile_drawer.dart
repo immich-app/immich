@@ -184,7 +184,7 @@ class ProfileDrawer extends HookConsumerWidget {
                   color: Colors.black54,
                 ),
                 title: const Text(
-                  "home_sign_out",
+                  "profile_drawer_sign_out",
                   style: TextStyle(
                       color: Colors.black54,
                       fontSize: 14,
@@ -228,7 +228,7 @@ class ProfileDrawer extends HookConsumerWidget {
                       child: Text(
                         serverInfoState.isVersionMismatch
                             ? serverInfoState.versionMismatchErrorMessage
-                            : "home_client_server_up_to_date".tr(),
+                            : "profile_drawer_client_server_up_to_date".tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 11,

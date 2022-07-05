@@ -37,7 +37,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
             .navigate(const TabControllerRoute(children: [SharingRoute()]));
       }
 
-      ScaffoldMessenger(child: SnackBar(content: Text('share_err_album').tr()));
+      ScaffoldMessenger(child: SnackBar(content: Text('select_user_for_sharing_page_err_album').tr()));
     }
 
     _buildTileIcon(User user) {

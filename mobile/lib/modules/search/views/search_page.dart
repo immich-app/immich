@@ -83,7 +83,7 @@ class SearchPage extends HookConsumerWidget {
                       return ThumbnailWithInfo(
                         imageUrl:
                             'https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60',
-                        textInfo: 'search_no_places'.tr(),
+                        textInfo: 'search_page_no_places'.tr(),
                         onTap: () {},
                       );
                     }),
@@ -162,7 +162,7 @@ class SearchPage extends HookConsumerWidget {
                 Padding(
                   padding: EdgeInsets.all(16.0),
                   child: const Text(
-                    "search_places",
+                    "search_page_places",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ).tr(),
                 ),
@@ -170,7 +170,7 @@ class SearchPage extends HookConsumerWidget {
                 Padding(
                   padding: EdgeInsets.all(16.0),
                   child: const  Text(
-                    "search_things",
+                    "search_page_things",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ).tr(),
                 ),

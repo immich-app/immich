@@ -27,7 +27,7 @@ class ControlBottomAppBar extends StatelessWidget {
                 children: [
                   ControlBoxButton(
                     iconData: Icons.delete_forever_rounded,
-                    label: "home_delete".tr(),
+                    label: "control_bottom_app_bar_delete".tr(),
                     onPressed: () {
                       showDialog(
                         context: context,

@@ -51,7 +51,7 @@ class SharingSliverAppBar extends StatelessWidget {
                       size: 20,
                     ),
                     label: const Text(
-                      "create_shared_album",
+                      "sharing_silver_appbar_create_shared_album",
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                     ).tr(),
@@ -73,7 +73,7 @@ class SharingSliverAppBar extends StatelessWidget {
                       size: 20,
                     ),
                     label: const Text(
-                      "share_partner",
+                      "sharing_silver_appbar_share_partner",
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                     ).tr(),

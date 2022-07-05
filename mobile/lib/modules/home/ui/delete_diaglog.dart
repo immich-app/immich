@@ -14,15 +14,15 @@ class DeleteDialog extends ConsumerWidget {
     return AlertDialog(
       backgroundColor: Colors.grey[200],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      title: const Text("home_delete_alert_title").tr(),
-      content: const Text("home_delete_alert").tr(),
+      title: const Text("delete_dialog_title").tr(),
+      content: const Text("delete_dialog_alert").tr(),
       actions: [
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
           child: const Text(
-            "home_delete_alert_cancel",
+            "delete_dialog_cancel",
             style: TextStyle(color: Colors.blueGrey),
           ).tr(),
         ),
@@ -36,7 +36,7 @@ class DeleteDialog extends ConsumerWidget {
             Navigator.of(context).pop();
           },
           child: Text(
-            "home_delete_alert_ok",
+            "delete_dialog_ok",
             style: TextStyle(color: Colors.red[400]),
           ).tr(),
         ),

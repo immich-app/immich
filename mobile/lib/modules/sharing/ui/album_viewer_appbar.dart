@@ -46,7 +46,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       } else {
         ImmichToast.show(
           context: context,
-          msg: "share_err_delete".tr(),
+          msg: "album_viewer_appbar_share_err_delete".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -68,7 +68,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
         Navigator.pop(context);
         ImmichToast.show(
           context: context,
-          msg: "share_err_leave".tr(),
+          msg: "album_viewer_appbar_share_err_leave".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -94,7 +94,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
         Navigator.pop(context);
         ImmichToast.show(
           context: context,
-          msg: "share_err_remove".tr(),
+          msg: "album_viewer_appbar_share_err_remove".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -109,7 +109,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           return ListTile(
             leading: const Icon(Icons.delete_sweep_rounded),
             title: const Text(
-              'share_remove',
+              'album_viewer_appbar_share_remove',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
             onTap: () => _onRemoveFromAlbumPressed(albumId),
@@ -122,7 +122,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           return ListTile(
             leading: const Icon(Icons.delete_forever_rounded),
             title: const Text(
-              'share_delete',
+              'album_viewer_appbar_share_delete',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
             onTap: () => _onDeleteAlbumPressed(albumId),
@@ -131,7 +131,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           return ListTile(
             leading: const Icon(Icons.person_remove_rounded),
             title: const Text(
-              'share_leave',
+              'album_viewer_appbar_share_leave',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
             onTap: () => _onLeaveAlbumPressed(albumId),
@@ -177,7 +177,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
             if (!isSuccess) {
               ImmichToast.show(
                 context: context,
-                msg: "share_err_title".tr(),
+                msg: "album_viewer_appbar_share_err_title".tr(),
                 gravity: ToastGravity.BOTTOM,
                 toastType: ToastType.error,
               );

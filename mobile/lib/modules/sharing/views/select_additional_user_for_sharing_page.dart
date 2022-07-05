@@ -72,7 +72,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
           Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'share_suggestions'.tr(),
+              'select_additional_user_for_sharing_page_suggestions'.tr(),
               style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey,

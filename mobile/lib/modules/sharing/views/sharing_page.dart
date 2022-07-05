@@ -105,7 +105,7 @@ class SharingPage extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'share_empty_list',
+                      'sharing_page_empty_list',
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(context).primaryColor,
@@ -116,7 +116,7 @@ class SharingPage extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'share_description',
+                      'sharing_page_description',
                       style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                     ).tr(),
                   ),
@@ -136,7 +136,7 @@ class SharingPage extends HookConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             sliver: SliverToBoxAdapter(
               child: Text(
-                "share_album",
+                "sharing_page_album",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),

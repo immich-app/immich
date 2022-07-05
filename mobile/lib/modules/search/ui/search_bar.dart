@@ -49,7 +49,7 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
           ref.watch(searchPageStateProvider.notifier).setSearchTerm(value);
         },
         decoration: InputDecoration(
-          hintText: 'search_hint'.tr(),
+          hintText: 'search_bar_hint'.tr(),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),

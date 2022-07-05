@@ -20,7 +20,7 @@ class DailyTitleText extends ConsumerWidget {
     var currentYear = DateTime.now().year;
     var groupYear = DateTime.parse(isoDate).year;
     var formatDateTemplate =
-        currentYear == groupYear ? "home_date".tr() : "home_date_year".tr();
+        currentYear == groupYear ? "daily_title_text_date".tr() : "daily_title_text_date_year".tr();
     var dateText =
         DateFormat(formatDateTemplate).format(DateTime.parse(isoDate));
     var isMultiSelectEnable =

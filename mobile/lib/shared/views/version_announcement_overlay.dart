@@ -41,7 +41,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "version_announcement_title",
+                              "version_announcement_overlay_title",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontFamily: 'WorkSans',
@@ -60,7 +60,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                       height: 1.2),
                                   children: <TextSpan>[
                                     TextSpan(
-                                      text: 'version_announcement_text_1'.tr(),
+                                      text: 'version_announcement_overlay_text_1'.tr(),
                                     ),
                                     const TextSpan(
                                       text: ' Immich ',
@@ -71,10 +71,10 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                       ),
                                     ),
                                     TextSpan(
-                                      text: "version_announcement_text_2".tr(),
+                                      text: "version_announcement_overlay_text_2".tr(),
                                     ),
                                     TextSpan(
-                                      text: "version_announcement_release_notes"
+                                      text: "version_announcement_overlay_release_notes"
                                           .tr(),
                                       style: const TextStyle(
                                         decoration: TextDecoration.underline,
@@ -83,7 +83,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                         ..onTap = goToReleaseNote,
                                     ),
                                     TextSpan(
-                                      text: "version_announcement_text_3".tr(),
+                                      text: "version_announcement_overlay_text_3".tr(),
                                     )
                                   ],
                                 ),
@@ -103,7 +103,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                   ),
                                   onPressed: onAcknowledgeTapped,
                                   child: const Text(
-                                    "version_announcement_ack",
+                                    "version_announcement_overlay_ack",
                                     style: TextStyle(
                                       fontSize: 14,
                                     ),

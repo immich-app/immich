@@ -12,7 +12,7 @@ class MonthlyTitleText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var monthTitleText = DateFormat("month_title_date_format".tr()).format(DateTime.parse(isoDate));
+    var monthTitleText = DateFormat("monthly_title_text_date_format".tr()).format(DateTime.parse(isoDate));
 
     return SliverToBoxAdapter(
       child: Padding(
