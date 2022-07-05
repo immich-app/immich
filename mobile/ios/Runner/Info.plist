@@ -82,5 +82,11 @@
     <array>
       <string>https</string>
     </array>
+
+    <key>CFBundleLocalizations</key>
+    <array>
+      <string>en</string>
+      <string>de</string>
+    </array>
   </dict>
 </plist>
