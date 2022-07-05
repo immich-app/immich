@@ -1,12 +1,16 @@
 import { Socket, io } from 'socket.io-client';
+import { writable } from 'svelte/store';
 import { serverEndpoint } from '../constants';
 import type { ImmichAsset } from '../models/immich-asset';
 import { assets } from './assets';
 
+let websocket: Socket;
+
 export const openWebsocketConnection = (accessToken: string) => {
 	const websocketEndpoint = serverEndpoint.replace('/api', '');
+
 	try {
-		const websocket = io(websocketEndpoint, {
+		websocket = io(websocketEndpoint, {
 			path: '/api/socket.io',
 			transports: ['polling'],
 			reconnection: true,
@@ -26,11 +30,14 @@ export const openWebsocketConnection = (accessToken: string) => {
 const listenToEvent = (socket: Socket) => {
 	socket.on('on_upload_success', (data) => {
 		const newUploadedAsset: ImmichAsset = JSON.parse(data);
-
-		assets.update((assets) => [...assets, newUploadedAsset]);
+		// assets.update((assets) => [...assets, newUploadedAsset]);
 	});
 
 	socket.on('error', (e) => {
 		console.log('Websocket Error', e);
 	});
+};
+
+export const closeWebsocketConnection = () => {
+	websocket?.close();
 };

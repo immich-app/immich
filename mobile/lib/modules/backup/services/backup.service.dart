@@ -69,21 +69,6 @@ class BackupService {
             ),
           );
 
-          // Build thumbnail multipart data
-          var thumbnailData = await entity
-              .thumbnailDataWithSize(const ThumbnailSize(1440, 2560));
-          if (thumbnailData != null) {
-            thumbnailUploadData = http.MultipartFile.fromBytes(
-              "thumbnailData",
-              List.from(thumbnailData),
-              filename: fileNameWithoutPath,
-              contentType: MediaType(
-                "image",
-                "jpeg",
-              ),
-            );
-          }
-
           var box = Hive.box(userInfoBox);
 
           var req = MultipartRequest(
@@ -101,9 +86,6 @@ class BackupService {
           req.fields['fileExtension'] = fileExtension;
           req.fields['duration'] = entity.videoDuration.toString();
 
-          if (thumbnailUploadData != null) {
-            req.files.add(thumbnailUploadData);
-          }
           req.files.add(assetRawUploadData);
 
           var res = await req.send(cancellationToken: cancelToken);

@@ -3,7 +3,7 @@ import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getConnection, Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository, SelectQueryBuilder, DataSource } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -36,10 +36,12 @@ export class AlbumRepository implements IAlbumRepository {
 
     @InjectRepository(UserAlbumEntity)
     private userAlbumRepository: Repository<UserAlbumEntity>,
+
+    private dataSource: DataSource,
   ) {}
 
   async create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity> {
-    return getConnection().transaction(async (transactionalEntityManager) => {
+    return this.dataSource.transaction(async (transactionalEntityManager) => {
       // Create album entity
       const newAlbum = new AlbumEntity();
       newAlbum.ownerId = ownerId;

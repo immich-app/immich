@@ -101,12 +101,11 @@ class BackupControllerPage extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              !isAutoBackup
-                  ? const Text(
-                      "backup_controller_page_desc_backup",
-                      style: TextStyle(fontSize: 14),
-                    ).tr()
-                  : Container(),
+              if (!isAutoBackup)
+                const Text(
+                  "backup_controller_page_desc_backup",
+                  style: TextStyle(fontSize: 14),
+                ).tr(),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: OutlinedButton(
@@ -194,7 +193,7 @@ class BackupControllerPage extends HookConsumerWidget {
           ),
         );
       } else {
-        return Container();
+        return const SizedBox();
       }
     }
 

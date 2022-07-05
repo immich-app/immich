@@ -119,7 +119,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
             ),
           );
         } else {
-          return Container();
+          return const SizedBox();
         }
       },
     );

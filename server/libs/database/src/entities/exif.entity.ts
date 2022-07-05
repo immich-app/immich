@@ -73,4 +73,19 @@ export class ExifEntity {
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
   asset?: ExifEntity;
+
+  @Index("exif_text_searchable", { synchronize: false })
+  @Column({
+    type: 'tsvector',
+    generatedType: 'STORED',
+    asExpression: `TO_TSVECTOR('english',
+                         COALESCE(make, '') || ' ' ||
+                         COALESCE(model, '') || ' ' ||
+                         COALESCE(orientation, '') || ' ' ||
+                         COALESCE("lensModel", '') || ' ' ||
+                         COALESCE("city", '') || ' ' ||
+                         COALESCE("state", '') || ' ' ||
+                         COALESCE("country", ''))`
+  })
+  exifTextSearchableColumn!: string
 }

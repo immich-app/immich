@@ -20,7 +20,7 @@ export class CreateUserDto {
   isAdmin?: boolean;
 
   @IsOptional()
-  isFirstLoggedIn?: boolean;
+  shouldChangePassword?: boolean;
 
   @IsOptional()
   id?: string;

@@ -1,11 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AssetEntity } from '@app/database/entities/asset.entity';
+import { IsNull, Not, Repository } from 'typeorm';
+import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { randomUUID } from 'crypto';
+import { ExifEntity } from '@app/database/entities/exif.entity';
+import {
+  IMetadataExtractionJob,
+  IVideoTranscodeJob,
+  metadataExtractionQueueName,
+  thumbnailGeneratorQueueName,
+  videoConversionQueueName,
+  generateWEBPThumbnailProcessorName,
+  mp4ConversionProcessorName,
+  reverseGeocodingProcessorName,
+} from '@app/job';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ScheduleTasksService {
@@ -13,17 +25,23 @@ export class ScheduleTasksService {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @InjectQueue('thumbnail-generator-queue')
+    @InjectRepository(ExifEntity)
+    private exifRepository: Repository<ExifEntity>,
+
+    @InjectQueue(thumbnailGeneratorQueueName)
     private thumbnailGeneratorQueue: Queue,
 
-    @InjectQueue('video-conversion-queue')
-    private videoConversionQueue: Queue,
+    @InjectQueue(videoConversionQueueName)
+    private videoConversionQueue: Queue<IVideoTranscodeJob>,
+
+    @InjectQueue(metadataExtractionQueueName)
+    private metadataExtractionQueue: Queue<IMetadataExtractionJob>,
+
+    private configService: ConfigService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async webpConversion() {
-    Logger.log('Starting Schedule Webp Conversion Tasks', 'CronjobWebpGenerator');
-
     const assets = await this.assetRepository.find({
       where: {
         webpPath: '',
@@ -36,7 +54,11 @@ export class ScheduleTasksService {
     }
 
     for (const asset of assets) {
-      await this.thumbnailGeneratorQueue.add('generate-webp-thumbnail', { asset: asset }, { jobId: randomUUID() });
+      await this.thumbnailGeneratorQueue.add(
+        generateWEBPThumbnailProcessorName,
+        { asset: asset },
+        { jobId: randomUUID() },
+      );
     }
   }
 
@@ -44,7 +66,7 @@ export class ScheduleTasksService {
   async videoConversion() {
     const assets = await this.assetRepository.find({
       where: {
-        type: 'VIDEO',
+        type: AssetType.VIDEO,
         mimeType: 'video/quicktime',
         encodedVideoPath: '',
       },
@@ -54,7 +76,26 @@ export class ScheduleTasksService {
     });
 
     for (const asset of assets) {
-      await this.videoConversionQueue.add('mp4-conversion', { asset }, { jobId: randomUUID() });
+      await this.videoConversionQueue.add(mp4ConversionProcessorName, { asset }, { jobId: randomUUID() });
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_SECONDS)
+  async reverseGeocoding() {
+    const isMapboxEnable = this.configService.get('ENABLE_MAPBOX');
+
+    if (isMapboxEnable) {
+      const exifInfo = await this.exifRepository.find({
+        where: {
+          city: IsNull(),
+          longitude: Not(IsNull()),
+          latitude: Not(IsNull()),
+        },
+      });
+
+      for (const exif of exifInfo) {
+        await this.metadataExtractionQueue.add(reverseGeocodingProcessorName, { exif }, { jobId: randomUUID() });
+      }
     }
   }
 }

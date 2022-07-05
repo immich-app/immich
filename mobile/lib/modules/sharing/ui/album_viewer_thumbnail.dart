@@ -71,29 +71,25 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
     }
 
     _buildVideoLabel() {
-      if (asset.type == 'IMAGE') {
-        return Container();
-      } else {
-        return Positioned(
-          top: 5,
-          right: 5,
-          child: Row(
-            children: [
-              Text(
-                asset.duration.toString().substring(0, 7),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                ),
-              ),
-              const Icon(
-                Icons.play_circle_outline_rounded,
+      return Positioned(
+        top: 5,
+        right: 5,
+        child: Row(
+          children: [
+            Text(
+              asset.duration.toString().substring(0, 7),
+              style: const TextStyle(
                 color: Colors.white,
+                fontSize: 10,
               ),
-            ],
-          ),
-        );
-      }
+            ),
+            const Icon(
+              Icons.play_circle_outline_rounded,
+              color: Colors.white,
+            ),
+          ],
+        ),
+      );
     }
 
     _buildAssetStoreLocationIcon() {
@@ -112,23 +108,20 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
 
     _buildAssetSelectionIcon() {
       bool isSelected = selectedAssetsInAlbumViewer.contains(asset);
-      if (isMultiSelectionEnable) {
-        return Positioned(
-          left: 10,
-          top: 5,
-          child: isSelected
-              ? Icon(
-                  Icons.check_circle_rounded,
-                  color: Theme.of(context).primaryColor,
-                )
-              : const Icon(
-                  Icons.check_circle_outline_rounded,
-                  color: Colors.white,
-                ),
-        );
-      } else {
-        return Container();
-      }
+
+      return Positioned(
+        left: 10,
+        top: 5,
+        child: isSelected
+            ? Icon(
+                Icons.check_circle_rounded,
+                color: Theme.of(context).primaryColor,
+              )
+            : const Icon(
+                Icons.check_circle_outline_rounded,
+                color: Colors.white,
+              ),
+      );
     }
 
     _buildThumbnailImage() {
@@ -183,8 +176,8 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
           children: [
             _buildThumbnailImage(),
             _buildAssetStoreLocationIcon(),
-            _buildVideoLabel(),
-            _buildAssetSelectionIcon(),
+            if (asset.type != 'IMAGE') _buildVideoLabel(),
+            if (isMultiSelectionEnable) _buildAssetSelectionIcon(),
           ],
         ),
       ),

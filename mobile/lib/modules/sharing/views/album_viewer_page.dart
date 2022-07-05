@@ -38,7 +38,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     /// Find out if the assets in album exist on the device
     /// If they exist, add to selected asset state to show they are already selected.
     void _onAddPhotosPressed(SharedAlbum albumInfo) async {
-      if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty) {
+      if (albumInfo.assets?.isNotEmpty == true) {
         ref
             .watch(assetSelectionProvider.notifier)
             .addNewAssets(albumInfo.assets!.toList());
@@ -110,32 +110,28 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget _buildAlbumDateRange(SharedAlbum albumInfo) {
-      if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty) {
-        String startDate = "";
-        DateTime parsedStartDate =
-            DateTime.parse(albumInfo.assets!.first.createdAt);
-        DateTime parsedEndDate =
-            DateTime.parse(albumInfo.assets!.last.createdAt);
+      String startDate = "";
+      DateTime parsedStartDate =
+          DateTime.parse(albumInfo.assets!.first.createdAt);
+      DateTime parsedEndDate = DateTime.parse(
+          albumInfo.assets?.last.createdAt ?? '11111111'); //Need default.
 
-        if (parsedStartDate.year == parsedEndDate.year) {
-          startDate = DateFormat('LLL d').format(parsedStartDate);
-        } else {
-          startDate = DateFormat('LLL d, y').format(parsedStartDate);
-        }
-
-        String endDate = DateFormat('LLL d, y').format(parsedEndDate);
-
-        return Padding(
-          padding: const EdgeInsets.only(left: 16.0, top: 8),
-          child: Text(
-            "$startDate-$endDate",
-            style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
-          ),
-        );
+      if (parsedStartDate.year == parsedEndDate.year) {
+        startDate = DateFormat('LLL d').format(parsedStartDate);
       } else {
-        return Container();
+        startDate = DateFormat('LLL d, y').format(parsedStartDate);
       }
+
+      String endDate = DateFormat('LLL d, y').format(parsedEndDate);
+
+      return Padding(
+        padding: const EdgeInsets.only(left: 16.0, top: 8),
+        child: Text(
+          "$startDate-$endDate",
+          style: const TextStyle(
+              fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+        ),
+      );
     }
 
     Widget _buildHeader(SharedAlbum albumInfo) {
@@ -144,7 +140,8 @@ class AlbumViewerPage extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildTitle(albumInfo),
-            _buildAlbumDateRange(albumInfo),
+            if (albumInfo.assets?.isNotEmpty == true)
+              _buildAlbumDateRange(albumInfo),
             SizedBox(
               height: 60,
               child: ListView.builder(
@@ -176,7 +173,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget _buildImageGrid(SharedAlbum albumInfo) {
-      if (albumInfo.assets != null && albumInfo.assets!.isNotEmpty) {
+      if (albumInfo.assets?.isNotEmpty == true) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 10.0),
           sliver: SliverGrid(
@@ -210,13 +207,12 @@ class AlbumViewerPage extends HookConsumerWidget {
                 onPressed: () => _onAddPhotosPressed(albumInfo),
                 labelText: "share_add_photos".tr(),
               ),
-              userId == albumInfo.ownerId
-                  ? AlbumActionOutlinedButton(
-                      iconData: Icons.person_add_alt_rounded,
-                      onPressed: () => _onAddUsersPressed(albumInfo),
-                      labelText: "album_viewer_page_share_add_users".tr(),
-                    )
-                  : Container(),
+              if (userId == albumInfo.ownerId)
+                AlbumActionOutlinedButton(
+                  iconData: Icons.person_add_alt_rounded,
+                  onPressed: () => _onAddUsersPressed(albumInfo),
+                  labelText: "album_viewer_page_share_add_users".tr(),
+                ),
             ],
           ),
         ),

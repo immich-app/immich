@@ -26,10 +26,10 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true })
   resizePath!: string | null;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, default: '' })
   webpPath!: string | null;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, default: '' })
   encodedVideoPath!: string;
 
   @Column()

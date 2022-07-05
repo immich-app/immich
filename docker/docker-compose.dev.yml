@@ -7,8 +7,6 @@ services:
       context: ../server
       dockerfile: Dockerfile
     command: npm run start:dev immich
-    expose:
-      - "3000"
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -27,8 +25,6 @@ services:
       context: ../machine-learning
       dockerfile: Dockerfile
     command: npm run start:dev
-    expose:
-      - "3001"
     volumes:
       - ../machine-learning:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -94,11 +90,12 @@ services:
     ports:
       - 5432:5432
 
-  nginx:
-    container_name: proxy_nginx
-    image: nginx:latest
-    volumes:
-      - ./settings/nginx-conf:/etc/nginx/conf.d
+  immich-proxy:
+    container_name: immich_proxy
+    image: immich-proxy-dev:latest
+    build:
+      context: ../nginx
+      dockerfile: Dockerfile
     ports:
       - 2283:80
       - 2284:443
@@ -106,6 +103,7 @@ services:
       driver: none
     depends_on:
       - immich-server
+    restart: always
 
 volumes:
   pgdata:

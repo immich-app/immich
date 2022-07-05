@@ -8,6 +8,7 @@
 	import type { ImmichAsset } from '../../models/immich-asset';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { browser } from '$app/env';
+	import { round } from 'lodash';
 
 	// Map Property
 	let map: any;
@@ -80,6 +81,16 @@
 			return `${sizeInByte}B`;
 		}
 	};
+
+	const getMegapixel = (width: number, height: number): number | undefined => {
+		const megapixel = Math.round((height * width) / 1_000_000);
+
+		if (megapixel) {
+			return megapixel;
+		}
+
+		return undefined;
+	};
 </script>
 
 <section class="p-2">
@@ -129,8 +140,13 @@
 				<div>
 					<p>{`${asset.exifInfo.imageName}.${asset.originalPath.split('.')[1]}` || ''}</p>
 					<div class="flex text-sm gap-2">
-						<p>{((asset.exifInfo.exifImageHeight * asset.exifInfo.exifImageWidth) / 1_000_000).toFixed(0)}MP</p>
-						<p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
+						{#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
+							{#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
+								<p>{getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}MP</p>
+							{/if}
+
+							<p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
+						{/if}
 						<p>{getHumanReadableString(asset.exifInfo.fileSizeInByte)}</p>
 					</div>
 				</div>

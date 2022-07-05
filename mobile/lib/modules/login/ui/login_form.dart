@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
@@ -107,9 +108,12 @@ class ServerEndpointInput extends StatelessWidget {
       : super(key: key);
 
   String? _validateInput(String? url) {
-    if (url == null) return null;
-    if (!url.startsWith(RegExp(r'https?://'))) return 'login_form_err_http'.tr();
-    return null;
+
+    if (url?.startsWith(RegExp(r'https?://')) == true) {
+      return null;
+    } else {
+      return 'login_form_err_http'.tr();
+    }
   }
 
   @override
@@ -117,9 +121,10 @@ class ServerEndpointInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-          labelText: 'login_form_endpoint_url'.tr(),
-          border: OutlineInputBorder(),
-          hintText: 'login_form_endpoint_hint'.tr()),
+        labelText: 'login_form_endpoint_url'.tr(),
+        border: OutlineInputBorder(),
+        hintText: 'login_form_endpoint_hint'.tr(),
+      ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -145,9 +150,10 @@ class EmailInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-          labelText: 'login_form_label_email'.tr(),
-          border: OutlineInputBorder(),
-          hintText: 'login_form_email_hint'.tr()),
+        labelText: 'login_form_label_email'.tr(),
+        border: OutlineInputBorder(),
+        hintText: 'login_form_email_hint'.tr(),
+      ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
     );
@@ -201,14 +207,20 @@ class LoginButton extends ConsumerWidget {
           ref.watch(assetProvider.notifier).clearAllAsset();
 
           var isAuthenticated = await ref
-              .read(authenticationProvider.notifier)
+              .watch(authenticationProvider.notifier)
               .login(emailController.text, passwordController.text,
                   serverEndpointController.text, isSavedLoginInfo);
 
           if (isAuthenticated) {
             // Resume backup (if enable) then navigate
-            ref.watch(backupProvider.notifier).resumeBackup();
-            AutoRouter.of(context).pushNamed("/tab-controller-page");
+
+            if (ref.watch(authenticationProvider).shouldChangePassword &&
+                !ref.watch(authenticationProvider).isAdmin) {
+              AutoRouter.of(context).push(const ChangePasswordRoute());
+            } else {
+              ref.watch(backupProvider.notifier).resumeBackup();
+              AutoRouter.of(context).pushNamed("/tab-controller-page");
+            }
           } else {
             ImmichToast.show(
               context: context,

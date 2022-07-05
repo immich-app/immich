@@ -34,7 +34,7 @@ class SplashScreenPage extends HookConsumerWidget {
     }
 
     useEffect(() {
-      if (loginInfo != null && loginInfo.isSaveLogin) {
+      if (loginInfo?.isSaveLogin == true) {
         performLoggingIn();
       } else {
         AutoRouter.of(context).push(const LoginRoute());

@@ -37,6 +37,10 @@ export class UserService {
     });
   }
 
+  async getUserInfo(authUser: AuthUserDto) {
+    return this.userRepository.findOne({ where: { id: authUser.id } });
+  }
+
   async getUserCount(isAdmin: boolean) {
     let users;
 
@@ -81,7 +85,7 @@ export class UserService {
   }
 
   async updateUser(updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOne(updateUserDto.id);
+    const user = await this.userRepository.findOne({ where: { id: updateUserDto.id } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -89,7 +93,8 @@ export class UserService {
     user.lastName = updateUserDto.lastName || user.lastName;
     user.firstName = updateUserDto.firstName || user.firstName;
     user.profileImagePath = updateUserDto.profileImagePath || user.profileImagePath;
-    user.isFirstLoggedIn = updateUserDto.isFirstLoggedIn || user.isFirstLoggedIn;
+    user.shouldChangePassword =
+      updateUserDto.shouldChangePassword != undefined ? updateUserDto.shouldChangePassword : user.shouldChangePassword;
 
     // If payload includes password - Create new password for user
     if (updateUserDto.password) {
@@ -143,13 +148,12 @@ export class UserService {
 
   async getUserProfileImage(userId: string, res: Res) {
     try {
-      const user = await this.userRepository.findOne({ id: userId });
+      const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) {
         throw new NotFoundException('User not found');
       }
 
       if (!user.profileImagePath) {
-        // throw new BadRequestException('User does not have a profile image');
         res.status(404).send('User does not have a profile image');
         return;
       }
@@ -160,7 +164,7 @@ export class UserService {
       const fileStream = createReadStream(user.profileImagePath);
       return new StreamableFile(fileStream);
     } catch (e) {
-      console.log('error getting user profile');
+      res.status(404).send('User does not have a profile image');
     }
   }
 }

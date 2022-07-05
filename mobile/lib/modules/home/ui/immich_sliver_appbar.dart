@@ -49,30 +49,29 @@ class ImmichSliverAppBar extends ConsumerWidget {
                   },
                 ),
               ),
-              serverInfoState.isVersionMismatch
-                  ? Positioned(
-                      bottom: 12,
-                      right: 12,
-                      child: GestureDetector(
-                        onTap: () => Scaffold.of(context).openDrawer(),
-                        child: Material(
-                          color: Colors.grey[200],
-                          elevation: 1,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50.0),
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.all(2.0),
-                            child: Icon(
-                              Icons.info,
-                              color: Color.fromARGB(255, 243, 188, 106),
-                              size: 15,
-                            ),
-                          ),
+              if (serverInfoState.isVersionMismatch)
+                Positioned(
+                  bottom: 12,
+                  right: 12,
+                  child: GestureDetector(
+                    onTap: () => Scaffold.of(context).openDrawer(),
+                    child: Material(
+                      color: Colors.grey[200],
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50.0),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(2.0),
+                        child: Icon(
+                          Icons.info,
+                          color: Color.fromARGB(255, 243, 188, 106),
+                          size: 15,
                         ),
                       ),
-                    )
-                  : Container(),
+                    ),
+                  ),
+                ),
             ],
           );
         },
@@ -90,21 +89,20 @@ class ImmichSliverAppBar extends ConsumerWidget {
         Stack(
           alignment: AlignmentDirectional.center,
           children: [
-            backupState.backupProgress == BackUpProgressEnum.inProgress
-                ? Positioned(
-                    top: 10,
-                    right: 12,
-                    child: SizedBox(
-                      height: 8,
-                      width: 8,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 1,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).primaryColor),
-                      ),
-                    ),
-                  )
-                : Container(),
+            if (backupState.backupProgress == BackUpProgressEnum.inProgress)
+              Positioned(
+                top: 10,
+                right: 12,
+                child: SizedBox(
+                  height: 8,
+                  width: 8,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor),
+                  ),
+                ),
+              ),
             IconButton(
               splashRadius: 25,
               iconSize: 30,
@@ -129,18 +127,15 @@ class ImmichSliverAppBar extends ConsumerWidget {
                 }
               },
             ),
-            backupState.backupProgress == BackUpProgressEnum.inProgress
-                ? Positioned(
-                    bottom: 5,
-                    child: Text(
-                      (backupState.allUniqueAssets.length -
-                              backupState.selectedAlbumsBackupAssetsIds.length)
-                          .toString(),
-                      style: const TextStyle(
-                          fontSize: 9, fontWeight: FontWeight.bold),
-                    ),
-                  )
-                : Container()
+            if (backupState.backupProgress == BackUpProgressEnum.inProgress)
+              Positioned(
+                bottom: 5,
+                child: Text(
+                  '${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}',
+                  style:
+                      const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+                ),
+              ),
           ],
         ),
       ],

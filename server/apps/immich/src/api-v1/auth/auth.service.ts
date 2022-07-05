@@ -18,22 +18,22 @@ export class AuthService {
   ) {}
 
   private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity | null> {
-    const user = await this.userRepository.findOne(
-      { email: loginCredential.email },
-      {
-        select: [
-          'id',
-          'email',
-          'password',
-          'salt',
-          'firstName',
-          'lastName',
-          'isAdmin',
-          'profileImagePath',
-          'isFirstLoggedIn',
-        ],
+    const user = await this.userRepository.findOne({
+      where: {
+        email: loginCredential.email,
       },
-    );
+      select: [
+        'id',
+        'email',
+        'password',
+        'salt',
+        'firstName',
+        'lastName',
+        'isAdmin',
+        'profileImagePath',
+        'shouldChangePassword',
+      ],
+    });
 
     if (!user) {
       return null;
@@ -66,7 +66,7 @@ export class AuthService {
       lastName: validatedUser.lastName,
       isAdmin: validatedUser.isAdmin,
       profileImagePath: validatedUser.profileImagePath,
-      isFirstLogin: validatedUser.isFirstLoggedIn,
+      shouldChangePassword: validatedUser.shouldChangePassword,
     };
   }
 

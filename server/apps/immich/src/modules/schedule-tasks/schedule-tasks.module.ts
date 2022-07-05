@@ -3,12 +3,18 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ScheduleTasksService } from './schedule-tasks.service';
+import {
+  metadataExtractionQueueName,
+  thumbnailGeneratorQueueName,
+  videoConversionQueueName,
+} from '@app/job/constants/queue-name.constant';
+import { ExifEntity } from '@app/database/entities/exif.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AssetEntity]),
+    TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
     BullModule.registerQueue({
-      name: 'video-conversion-queue',
+      name: videoConversionQueueName,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
@@ -16,7 +22,16 @@ import { ScheduleTasksService } from './schedule-tasks.service';
       },
     }),
     BullModule.registerQueue({
-      name: 'thumbnail-generator-queue',
+      name: thumbnailGeneratorQueueName,
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
+
+    BullModule.registerQueue({
+      name: metadataExtractionQueueName,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,

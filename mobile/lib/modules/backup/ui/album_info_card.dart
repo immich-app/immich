@@ -57,7 +57,7 @@ class AlbumInfoCard extends HookConsumerWidget {
         );
       }
 
-      return Container();
+      return const SizedBox();
     }
 
     _buildImageFilter() {
@@ -152,7 +152,11 @@ class AlbumInfoCard extends HookConsumerWidget {
                   ),
                   child: null,
                 ),
-                Positioned(bottom: 10, left: 25, child: _buildSelectedTextBox())
+                Positioned(
+                  bottom: 10,
+                  left: 25,
+                  child: _buildSelectedTextBox(),
+                )
               ],
             ),
             Padding(
