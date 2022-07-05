@@ -1,13 +1,7 @@
 config_version: 1.0
-project_id: 4fda40f2-8e20-48cf-97e8-0062c2b93ffc
+project_id: ead34689-ec52-41d9-b675-09bc85a6cbd7
 file_type: flutter_arb
 upload:
-  files:
-    - file: mobile/assets/i18n/en-US.json
-      locale_code: en
-    - file: mobile/assets/i18n/de-DE.json
-      locale_code: de
-download:
   files:
     - file: mobile/assets/i18n/en-US.json
       locale_code: en
