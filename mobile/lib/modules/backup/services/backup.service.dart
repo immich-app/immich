@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/models/check_duplicate_asset_response.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
@@ -34,6 +35,20 @@ class BackupService {
     List<dynamic> result = jsonDecode(response.toString());
 
     return result.cast<String>();
+  }
+
+  Future<bool> checkDuplicateAsset(String deviceAssetId) async {
+    String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+
+    Response response =
+        await _networkService.postRequest(url: "asset/check", data: {
+      "deviceId": deviceId,
+      "deviceAssetId": deviceAssetId,
+    });
+
+    var result = CheckDuplicateAssetResponse.fromJson(response.toString());
+
+    return result.isExist;
   }
 
   backupAsset(
@@ -82,9 +97,7 @@ class BackupService {
                   uploadProgressCb(bytes, totalBytes)));
           req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
 
-          // req.fields['deviceAssetId'] = entity.id;
-          req.fields['deviceAssetId'] =
-              '7CA6A80F-ADCB-4002-B102-F8DD5F96ACCC/L0/001';
+          req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
           req.fields['assetType'] = _getAssetType(entity.type);
           req.fields['createdAt'] = entity.createDateTime.toIso8601String();
@@ -104,26 +117,40 @@ class BackupService {
             ),
           );
 
-          var res = await req.send(cancellationToken: cancelToken);
+          var isDuplicated = await checkDuplicateAsset(entity.id);
 
-          if (res.statusCode == 201) {
-            singleAssetDoneCb(entity.id, deviceId);
-          } else {
-            var response = await res.stream.bytesToString();
-            var error = jsonDecode(response);
-
-            debugPrint(
-                "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}");
-
+          if (isDuplicated) {
             errorCb(ErrorUploadAsset(
               asset: entity,
               id: entity.id,
               createdAt: entity.createDateTime,
               fileName: originalFileName,
               fileType: _getAssetType(entity.type),
-              errorMessage: error['error'],
+              errorMessage: 'Duplicated Asset',
             ));
             continue;
+          } else {
+            var response = await req.send(cancellationToken: cancelToken);
+
+            if (response.statusCode == 201) {
+              singleAssetDoneCb(entity.id, deviceId);
+            } else {
+              var data = await response.stream.bytesToString();
+              var error = jsonDecode(data);
+
+              debugPrint(
+                  "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}");
+
+              errorCb(ErrorUploadAsset(
+                asset: entity,
+                id: entity.id,
+                createdAt: entity.createDateTime,
+                fileName: originalFileName,
+                fileType: _getAssetType(entity.type),
+                errorMessage: error['error'],
+              ));
+              continue;
+            }
           }
         }
       } on http.CancelledException {
@@ -139,6 +166,8 @@ class BackupService {
       }
     }
   }
+
+  void sendBackupRequest(AssetEntity entity) {}
 
   String _getAssetType(AssetType assetType) {
     switch (assetType) {
