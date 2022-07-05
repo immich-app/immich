@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
+import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
@@ -14,8 +15,11 @@ import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class BackupNotifier extends StateNotifier<BackUpState> {
-  BackupNotifier(this._backupService, this._serverInfoService, this._authState)
-      : super(
+  BackupNotifier(
+    this._backupService,
+    this._serverInfoService,
+    this._authState,
+  ) : super(
           BackUpState(
             backupProgress: BackUpProgressEnum.idle,
             allAssetsInDatabase: const [],
@@ -35,6 +39,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             excludedBackupAlbums: const {},
             allUniqueAssets: const {},
             selectedAlbumsBackupAssetsIds: const {},
+            currentUploadAsset: CurrentUploadAsset(
+              id: '...',
+              createdAt: DateTime.now(),
+              fileName: '...',
+              fileType: '...',
+            ),
           ),
         ) {
     getBackupInfo();
@@ -235,8 +245,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// and then update the UI according to those information
   ///
   Future<void> getBackupInfo() async {
-    await _getBackupAlbumsInfo();
-    await _updateServerInfo();
+    await Future.wait([
+      _getBackupAlbumsInfo(),
+      _updateServerInfo(),
+    ]);
+
     await _updateBackupAssetCount();
   }
 
@@ -287,11 +300,20 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       // Perform Backup
       state = state.copyWith(cancelToken: CancellationToken());
-      _backupService.backupAsset(assetsWillBeBackup, state.cancelToken,
-          _onAssetUploaded, _onUploadProgress);
+      _backupService.backupAsset(
+        assetsWillBeBackup,
+        state.cancelToken,
+        _onAssetUploaded,
+        _onUploadProgress,
+        _onSetCurrentBackupAsset,
+      );
     } else {
       PhotoManager.openSetting();
     }
+  }
+
+  void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
+    state = state.copyWith(currentUploadAsset: currentUploadAsset);
   }
 
   void cancelBackup() {

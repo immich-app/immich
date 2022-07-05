@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
@@ -20,6 +21,7 @@ final backupServiceProvider =
 
 class BackupService {
   final NetworkService _networkService;
+
   BackupService(this._networkService);
 
   Future<List<String>> getDeviceBackupAsset() async {
@@ -33,15 +35,15 @@ class BackupService {
   }
 
   backupAsset(
-      Set<AssetEntity> assetList,
-      http.CancellationToken cancelToken,
-      Function(String, String) singleAssetDoneCb,
-      Function(int, int) uploadProgress) async {
+    Set<AssetEntity> assetList,
+    http.CancellationToken cancelToken,
+    Function(String, String) singleAssetDoneCb,
+    Function(int, int) uploadProgressCb,
+    Function(CurrentUploadAsset) setCurrentUploadAssetCb,
+  ) async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
-
-    http.MultipartFile? thumbnailUploadData;
 
     for (var entity in assetList) {
       try {
@@ -74,7 +76,7 @@ class BackupService {
           var req = MultipartRequest(
               'POST', Uri.parse('$savedEndpoint/asset/upload'),
               onProgress: ((bytes, totalBytes) =>
-                  uploadProgress(bytes, totalBytes)));
+                  uploadProgressCb(bytes, totalBytes)));
           req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
 
           req.fields['deviceAssetId'] = entity.id;
@@ -87,6 +89,15 @@ class BackupService {
           req.fields['duration'] = entity.videoDuration.toString();
 
           req.files.add(assetRawUploadData);
+
+          setCurrentUploadAssetCb(
+            CurrentUploadAsset(
+              id: entity.id,
+              createdAt: entity.createDateTime,
+              fileName: originalFileName,
+              fileType: _getAssetType(entity.type),
+            ),
+          );
 
           var res = await req.send(cancellationToken: cancelToken);
 
