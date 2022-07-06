@@ -83,23 +83,27 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Text(
-                            errorAsset.fileName,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: Colors.red[300],
+                            DateFormat.yMMMMd('en_US').format(
+                              DateTime.parse(
+                                errorAsset.createdAt.toString(),
+                              ),
                             ),
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[700]),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Text(
-                              DateFormat.yMMMMd('en_US').format(
-                                DateTime.parse(
-                                  errorAsset.createdAt.toString(),
-                                ),
+                              errorAsset.fileName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: Theme.of(context).primaryColor,
                               ),
-                              style: const TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.w600),
                             ),
                           ),
                           Text(
@@ -107,7 +111,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey[600],
+                              color: Colors.grey[800],
                             ),
                           ),
                         ],

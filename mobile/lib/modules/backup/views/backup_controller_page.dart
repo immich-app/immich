@@ -263,21 +263,22 @@ class BackupControllerPage extends HookConsumerWidget {
             ),
             if (ref.watch(errorBackupListProvider).isNotEmpty)
               ActionChip(
-                avatar: const Icon(
+                avatar: Icon(
                   Icons.info,
-                  size: 18,
-                  color: Colors.red,
+                  size: 24,
+                  color: Colors.red[400],
                 ),
                 elevation: 1,
                 visualDensity: VisualDensity.compact,
                 label: Text(
                   "Failed (${ref.watch(errorBackupListProvider).length})",
                   style: TextStyle(
-                      color: Colors.red[500],
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10),
+                    color: Colors.red[400],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
                 ),
-                backgroundColor: Colors.red[50],
+                backgroundColor: Colors.white,
                 onPressed: () {
                   AutoRouter.of(context).push(const FailedBackupStatusRoute());
                 },
