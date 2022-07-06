@@ -22,12 +22,13 @@ import { GenerateChecksumProcessor } from './processors/generate-checksum.proces
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
+import { SystemConfigEntity } from '@app/database/entities/system-config.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
     DatabaseModule,
-    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
+    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity, SystemConfigEntity]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',
