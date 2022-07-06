@@ -18,6 +18,7 @@ import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import fs from 'fs/promises';
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 
 const fileInfo = promisify(stat);
 
@@ -58,15 +59,11 @@ export class AssetService {
     asset.mimeType = mimeType;
     asset.duration = assetInfo.duration || null;
 
-    try {
-      const createdAsset = await this.assetRepository.save(asset);
-      if (!createdAsset) {
-        throw new Error('Asset not created');
-      }
-      return createdAsset;
-    } catch (e) {
-      Logger.error(`Error Create New Asset ${e}`, 'createUserAsset');
+    const createdAsset = await this.assetRepository.save(asset);
+    if (!createdAsset) {
+      throw new Error('Asset not created');
     }
+    return createdAsset;
   }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
@@ -439,10 +436,11 @@ export class AssetService {
     );
   }
 
-  async checkDuplicatedAsset(authUser: AuthUserDto, deviceAssetId: string) {
+  async checkDuplicatedAsset(authUser: AuthUserDto, checkDuplicateAssetDto: CheckDuplicateAssetDto) {
     const res = await this.assetRepository.findOne({
       where: {
-        deviceAssetId,
+        deviceAssetId: checkDuplicateAssetDto.deviceAssetId,
+        deviceId: checkDuplicateAssetDto.deviceId,
         userId: authUser.id,
       },
     });
