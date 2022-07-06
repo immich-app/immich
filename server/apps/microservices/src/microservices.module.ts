@@ -17,12 +17,15 @@ import { MachineLearningProcessor } from './processors/machine-learning.processo
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
+import { AdminConfigEntity } from '@app/database/entities/admin-config.entity';
+import { AdminConfigModule, AdminConfigService } from '@app/admin-config';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
     DatabaseModule,
-    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
+    AdminConfigModule,
+    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity, AdminConfigEntity]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',
@@ -97,6 +100,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     GenerateChecksumProcessor,
     MachineLearningProcessor,
     ConfigService,
+    AdminConfigService,
   ],
   exports: [],
 })

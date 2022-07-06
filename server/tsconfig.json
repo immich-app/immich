@@ -33,6 +33,12 @@
       ],
       "@app/job/*": [
         "libs/job/src/*"
+      ],
+      "@app/admin-config": [
+        "libs/admin-config/src"
+      ],
+      "@app/admin-config/*": [
+        "libs/admin-config/src/*"
       ]
     }
   },

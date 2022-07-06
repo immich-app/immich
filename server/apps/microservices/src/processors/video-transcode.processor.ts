@@ -10,12 +10,17 @@ import { Job } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'fs';
 import { Repository } from 'typeorm';
+import { AdminConfigEntity } from '@app/database/entities/admin-config.entity';
+import { AdminConfigService } from '@app/admin-config';
 
 @Processor(QueueNameEnum.VIDEO_CONVERSION)
 export class VideoTranscodeProcessor {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(AdminConfigEntity)
+    private systemConfigRepository: Repository<AdminConfigEntity>,
+    private adminConfigService: AdminConfigService,
   ) {}
 
   @Process({ name: mp4ConversionProcessorName, concurrency: 1 })
@@ -40,9 +45,16 @@ export class VideoTranscodeProcessor {
   }
 
   async runFFMPEGPipeLine(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
+    const config = await this.adminConfigService.getConfig();
     return new Promise((resolve, reject) => {
       ffmpeg(asset.originalPath)
-        .outputOptions(['-crf 23', '-preset ultrafast', '-vcodec libx264', '-acodec mp3', '-vf scale=1280:-2'])
+        .outputOptions([
+          `-crf ${config.ffmpeg_crf}`,
+          `-preset ${config.ffmpeg_preset}`,
+          `-vcodec ${config.ffmpeg_target_video_codec}`,
+          `-acodec ${config.ffmpeg_target_audio_codec}`,
+          `-vf scale=${config.ffmpeg_target_scaling}`,
+        ])
         .output(savedEncodedPath)
         .on('start', () => {
           Logger.log('Start Converting Video', 'mp4Conversion');

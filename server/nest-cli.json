@@ -6,13 +6,15 @@
   "compilerOptions": {
     "webpack": false,
     "tsConfigPath": "apps/immich/tsconfig.app.json",
-    "plugins": [  {
-      "name": "@nestjs/swagger",
-      "options": {
-        "classValidatorShim": false,
-        "introspectComments": true
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "classValidatorShim": false,
+          "introspectComments": true
+        }
       }
-    }]
+    ]
   },
   "projects": {
     "immich": {
@@ -58,6 +60,15 @@
       "sourceRoot": "libs/job/src",
       "compilerOptions": {
         "tsConfigPath": "libs/job/tsconfig.lib.json"
+      }
+    },
+    "admin-config": {
+      "type": "library",
+      "root": "libs/admin-config",
+      "entryFile": "index",
+      "sourceRoot": "libs/admin-config/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/admin-config/tsconfig.lib.json"
       }
     }
   }
