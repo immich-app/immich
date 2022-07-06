@@ -116,8 +116,12 @@ class _$AppRouter extends RootStackRouter {
           child: AlbumPreviewPage(key: args.key, album: args.album));
     },
     FailedBackupStatusRoute.name: (routeData) {
-      return MaterialPageX<dynamic>(
-          routeData: routeData, child: const FailedBackupStatusPage());
+      return CustomPage<dynamic>(
+          routeData: routeData,
+          child: const FailedBackupStatusPage(),
+          transitionsBuilder: TransitionsBuilders.slideBottom,
+          opaque: true,
+          barrierDismissible: false);
     },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(

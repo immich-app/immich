@@ -66,7 +66,11 @@ part 'router.gr.dart';
     ),
     AutoRoute(page: BackupAlbumSelectionPage, guards: [AuthGuard]),
     AutoRoute(page: AlbumPreviewPage, guards: [AuthGuard]),
-    AutoRoute(page: FailedBackupStatusPage, guards: [AuthGuard]),
+    CustomRoute(
+      page: FailedBackupStatusPage,
+      guards: [AuthGuard],
+      transitionsBuilder: TransitionsBuilders.slideBottom,
+    ),
   ],
 )
 class AppRouter extends _$AppRouter {
