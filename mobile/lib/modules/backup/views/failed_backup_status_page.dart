@@ -69,7 +69,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                         image: AssetEntityImageProvider(
                           errorAsset.asset,
                           isOriginal: false,
-                          thumbnailSize: const ThumbnailSize.square(200),
+                          thumbnailSize: const ThumbnailSize.square(512),
                           thumbnailFormat: ThumbnailFormat.jpeg,
                         ),
                       ),
