@@ -79,7 +79,7 @@ class NetworkService {
 
       return res;
     } on DioError catch (e) {
-      debugPrint("DioError: ${e.response}");
+      debugPrint("[postRequest] DioError: ${e.response}");
       return null;
     } catch (e) {
       debugPrint("ERROR PostRequest: $e");

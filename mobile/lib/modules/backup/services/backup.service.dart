@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/models/check_duplicate_asset_response.model.dart';
+import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
+import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/shared/models/device_info.model.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
@@ -20,6 +23,7 @@ final backupServiceProvider =
 
 class BackupService {
   final NetworkService _networkService;
+
   BackupService(this._networkService);
 
   Future<List<String>> getDeviceBackupAsset() async {
@@ -32,16 +36,39 @@ class BackupService {
     return result.cast<String>();
   }
 
+  Future<bool> checkDuplicateAsset(String deviceAssetId) async {
+    String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+
+    try {
+      Response response =
+          await _networkService.postRequest(url: "asset/check", data: {
+        "deviceId": deviceId,
+        "deviceAssetId": deviceAssetId,
+      });
+
+      if (response.statusCode == 200) {
+        var result = CheckDuplicateAssetResponse.fromJson(response.toString());
+
+        return result.isExist;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
   backupAsset(
-      Set<AssetEntity> assetList,
-      http.CancellationToken cancelToken,
-      Function(String, String) singleAssetDoneCb,
-      Function(int, int) uploadProgress) async {
+    Set<AssetEntity> assetList,
+    http.CancellationToken cancelToken,
+    Function(String, String) singleAssetDoneCb,
+    Function(int, int) uploadProgressCb,
+    Function(CurrentUploadAsset) setCurrentUploadAssetCb,
+    Function(ErrorUploadAsset) errorCb,
+  ) async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
-
-    http.MultipartFile? thumbnailUploadData;
 
     for (var entity in assetList) {
       try {
@@ -74,7 +101,7 @@ class BackupService {
           var req = MultipartRequest(
               'POST', Uri.parse('$savedEndpoint/asset/upload'),
               onProgress: ((bytes, totalBytes) =>
-                  uploadProgress(bytes, totalBytes)));
+                  uploadProgressCb(bytes, totalBytes)));
           req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
 
           req.fields['deviceAssetId'] = entity.id;
@@ -88,10 +115,35 @@ class BackupService {
 
           req.files.add(assetRawUploadData);
 
-          var res = await req.send(cancellationToken: cancelToken);
+          setCurrentUploadAssetCb(
+            CurrentUploadAsset(
+              id: entity.id,
+              createdAt: entity.createDateTime,
+              fileName: originalFileName,
+              fileType: _getAssetType(entity.type),
+            ),
+          );
 
-          if (res.statusCode == 201) {
+          var response = await req.send(cancellationToken: cancelToken);
+
+          if (response.statusCode == 201) {
             singleAssetDoneCb(entity.id, deviceId);
+          } else {
+            var data = await response.stream.bytesToString();
+            var error = jsonDecode(data);
+
+            debugPrint(
+                "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}");
+
+            errorCb(ErrorUploadAsset(
+              asset: entity,
+              id: entity.id,
+              createdAt: entity.createDateTime,
+              fileName: originalFileName,
+              fileType: _getAssetType(entity.type),
+              errorMessage: error['error'],
+            ));
+            continue;
           }
         }
       } on http.CancelledException {
@@ -107,6 +159,8 @@ class BackupService {
       }
     }
   }
+
+  void sendBackupRequest(AssetEntity entity) {}
 
   String _getAssetType(AssetType assetType) {
     switch (assetType) {

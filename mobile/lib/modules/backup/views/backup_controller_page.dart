@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -10,6 +11,7 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
+import 'package:intl/intl.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
@@ -57,7 +59,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
                   barRadius: const Radius.circular(2),
-                  lineHeight: 6.0,
+                  lineHeight: 10.0,
                   percent: backupState.serverInfo.diskUsagePercentage / 100.0,
                   backgroundColor: Colors.grey,
                   progressColor: Theme.of(context).primaryColor,
@@ -65,10 +67,11 @@ class BackupControllerPage extends HookConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
-                child: Text('backup_controller_page_storage_format').tr(args: [
-                  backupState.serverInfo.diskUse,
-                  backupState.serverInfo.diskSize
-                ]),
+                child: const Text('backup_controller_page_storage_format').tr(
+                    args: [
+                      backupState.serverInfo.diskUse,
+                      backupState.serverInfo.diskSize
+                    ]),
               ),
             ],
           ),
@@ -252,6 +255,141 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
+    _buildCurrentBackupAssetInfoCard() {
+      return ListTile(
+        leading: Icon(
+          Icons.info_outline_rounded,
+          color: Theme.of(context).primaryColor,
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Uploading file info",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            if (ref.watch(errorBackupListProvider).isNotEmpty)
+              ActionChip(
+                avatar: Icon(
+                  Icons.info,
+                  size: 24,
+                  color: Colors.red[400],
+                ),
+                elevation: 1,
+                visualDensity: VisualDensity.compact,
+                label: Text(
+                  "Failed (${ref.watch(errorBackupListProvider).length})",
+                  style: TextStyle(
+                    color: Colors.red[400],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                ),
+                backgroundColor: Colors.white,
+                onPressed: () {
+                  AutoRouter.of(context).push(const FailedBackupStatusRoute());
+                },
+              ),
+          ],
+        ),
+        subtitle: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: LinearPercentIndicator(
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                barRadius: const Radius.circular(2),
+                lineHeight: 10.0,
+                trailing: Text(
+                  " ${backupState.progressInPercentage.toStringAsFixed(0)}%",
+                  style: const TextStyle(fontSize: 12),
+                ),
+                percent: backupState.progressInPercentage / 100.0,
+                backgroundColor: Colors.grey,
+                progressColor: Theme.of(context).primaryColor,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Table(
+                border: TableBorder.all(
+                  color: Colors.black12,
+                  width: 1,
+                ),
+                children: [
+                  TableRow(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                    ),
+                    children: [
+                      TableCell(
+                        verticalAlignment: TableCellVerticalAlignment.middle,
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Text(
+                            'File name: ${backupState.currentUploadAsset.fileName} [${backupState.currentUploadAsset.fileType.toLowerCase()}]',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 10.0),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  TableRow(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                    ),
+                    children: [
+                      TableCell(
+                        verticalAlignment: TableCellVerticalAlignment.middle,
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Text(
+                            "Created on: ${DateFormat.yMMMMd('en_US').format(
+                              DateTime.parse(
+                                backupState.currentUploadAsset.createdAt
+                                    .toString(),
+                              ),
+                            )}",
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 10.0),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  TableRow(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                    ),
+                    children: [
+                      TableCell(
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Text(
+                            "ID: ${backupState.currentUploadAsset.id}",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    void startBackup() {
+      ref.watch(errorBackupListProvider.notifier).empty();
+      ref.watch(backupProvider.notifier).startBackupProcess();
+    }
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -270,7 +408,7 @@ class BackupControllerPage extends HookConsumerWidget {
             )),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 32),
         child: ListView(
           // crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -303,24 +441,11 @@ class BackupControllerPage extends HookConsumerWidget {
             const Divider(),
             _buildStorageInformation(),
             const Divider(),
+            _buildCurrentBackupAssetInfoCard(),
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("backup_controller_page_assets".tr(args: [
-                "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length} [${backupState.progressInPercentage.toStringAsFixed(0)}%]"
-              ])),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Row(children: [
-                const Text("backup_controller_page_progress").tr(),
-                const Padding(padding: EdgeInsets.symmetric(horizontal: 2)),
-                backupState.backupProgress == BackUpProgressEnum.inProgress
-                    ? const CircularProgressIndicator.adaptive()
-                    : const Text("backup_controller_page_done").tr(),
-              ]),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(
+                top: 24,
+              ),
               child: Container(
                 child:
                     backupState.backupProgress == BackUpProgressEnum.inProgress
@@ -328,25 +453,33 @@ class BackupControllerPage extends HookConsumerWidget {
                             style: ElevatedButton.styleFrom(
                               primary: Colors.red[300],
                               onPrimary: Colors.grey[50],
+                              padding: const EdgeInsets.all(14),
                             ),
                             onPressed: () {
                               ref.read(backupProvider.notifier).cancelBackup();
                             },
-                            child: const Text("backup_controller_page_cancel").tr(),
+                            child: const Text(
+                              "backup_controller_page_cancel",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ).tr(),
                           )
                         : ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               primary: Theme.of(context).primaryColor,
                               onPrimary: Colors.grey[50],
+                              padding: const EdgeInsets.all(14),
                             ),
-                            onPressed: shouldBackup
-                                ? () {
-                                    ref
-                                        .read(backupProvider.notifier)
-                                        .startBackupProcess();
-                                  }
-                                : null,
-                            child: const Text("backup_controller_page_start_backup").tr(),
+                            onPressed: shouldBackup ? startBackup : null,
+                            child: const Text(
+                              "backup_controller_page_start_backup",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ).tr(),
                           ),
               ),
             )
