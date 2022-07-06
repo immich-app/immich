@@ -82,16 +82,26 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          Text(
-                            DateFormat.yMMMMd('en_US').format(
-                              DateTime.parse(
-                                errorAsset.createdAt.toString(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                DateFormat.yMMMMd('en_US').format(
+                                  DateTime.parse(
+                                    errorAsset.createdAt.toString(),
+                                  ),
+                                ),
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[700]),
                               ),
-                            ),
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[700]),
+                              Icon(
+                                Icons.error,
+                                color: Colors.red.withAlpha(200),
+                                size: 18,
+                              ),
+                            ],
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
