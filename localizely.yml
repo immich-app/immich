@@ -7,3 +7,9 @@ upload:
       locale_code: en
     - file: mobile/assets/i18n/de-DE.json
       locale_code: de
+download:
+  files:
+    - file: mobile/assets/i18n/en-US.json
+      locale_code: en
+    - file: mobile/assets/i18n/de-DE.json
+      locale_code: de
