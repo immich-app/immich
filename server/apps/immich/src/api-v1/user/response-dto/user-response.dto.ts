@@ -1,11 +1,13 @@
-import { UserEntity } from '../../../../../../libs/database/src/entities/user.entity';
+import { UserEntity } from '@app/database/entities/user.entity';
 
-export interface UserResponseDto {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  createdAt: string;
+export class UserResponseDto {
+  id!: string;
+  email!: string;
+  firstName!: string;
+  lastName!: string;
+  createdAt!: string;
+  profileImagePath!: string;
+  shouldChangePassword!: boolean;
 }
 
 export function mapUser(entity: UserEntity): UserResponseDto {
@@ -15,5 +17,7 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     firstName: entity.firstName,
     lastName: entity.lastName,
     createdAt: entity.createdAt,
+    profileImagePath: entity.profileImagePath,
+    shouldChangePassword: entity.shouldChangePassword,
   };
 }

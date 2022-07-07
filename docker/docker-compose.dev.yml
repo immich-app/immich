@@ -19,22 +19,22 @@ services:
       - redis
       - database
 
-  immich-machine-learning:
-    image: immich-machine-learning-dev:latest
-    build:
-      context: ../machine-learning
-      dockerfile: Dockerfile
-    command: npm run start:dev
-    volumes:
-      - ../machine-learning:/usr/src/app
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /usr/src/app/node_modules
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - database
+#  immich-machine-learning:
+#    image: immich-machine-learning-dev:latest
+#    build:
+#      context: ../machine-learning
+#      dockerfile: Dockerfile
+#    command: npm run start:dev
+#    volumes:
+#      - ../machine-learning:/usr/src/app
+#      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+#      - /usr/src/app/node_modules
+#    env_file:
+#      - .env
+#    environment:
+#      - NODE_ENV=development
+#    depends_on:
+#      - database
 
   immich-microservices:
     image: immich-microservices:latest

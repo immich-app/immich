@@ -21,17 +21,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/login')
-  @ApiBody({ type: LoginCredentialDto })
-  @ApiCreatedResponse({ type: LoginResponseDto })
   async login(@Body(ValidationPipe) loginCredential: LoginCredentialDto): Promise<LoginResponseDto> {
     return await this.authService.login(loginCredential);
   }
 
   @Post('/admin-sign-up')
-  @ApiCreatedResponse({ type: AdminSignupResponseDto })
   @ApiBadRequestResponse({ description: 'The server already has an admin' })
-  async adminSignUp(@Body(ValidationPipe) signUpCrendential: SignUpDto): Promise<AdminSignupResponseDto> {
-    return await this.authService.adminSignUp(signUpCrendential);
+  async adminSignUp(@Body(ValidationPipe) signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
+    return await this.authService.adminSignUp(signUpCredential);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,20 +1,10 @@
 import { UserEntity } from '@app/database/entities/user.entity';
-import { ApiResponseProperty } from '@nestjs/swagger';
 
 export class AdminSignupResponseDto {
-  @ApiResponseProperty()
   id!: string;
-
-  @ApiResponseProperty()
   email!: string;
-
-  @ApiResponseProperty()
   firstName!: string;
-
-  @ApiResponseProperty()
   lastName!: string;
-
-  @ApiResponseProperty()
   createdAt!: string;
 }
 

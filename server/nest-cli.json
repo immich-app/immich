@@ -6,7 +6,13 @@
   "compilerOptions": {
     "webpack": false,
     "tsConfigPath": "apps/immich/tsconfig.app.json",
-    "plugins": ["@nestjs/swagger"]
+    "plugins": [  {
+      "name": "@nestjs/swagger",
+      "options": {
+        "classValidatorShim": false,
+        "introspectComments": true
+      }
+    }]
   },
   "projects": {
     "immich": {
