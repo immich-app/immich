@@ -1,5 +1,12 @@
 import { Body, Controller, Post, UseGuards, ValidationPipe } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
@@ -14,13 +21,15 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/login')
-  @ApiResponse({ type: LoginResponseDto })
+  @ApiBody({ type: LoginCredentialDto })
+  @ApiCreatedResponse({ type: LoginResponseDto })
   async login(@Body(ValidationPipe) loginCredential: LoginCredentialDto): Promise<LoginResponseDto> {
     return await this.authService.login(loginCredential);
   }
 
   @Post('/admin-sign-up')
-  @ApiResponse({ type: AdminSignupResponseDto })
+  @ApiCreatedResponse({ type: AdminSignupResponseDto })
+  @ApiBadRequestResponse({ description: 'The server already has an admin' })
   async adminSignUp(@Body(ValidationPipe) signUpCrendential: SignUpDto): Promise<AdminSignupResponseDto> {
     return await this.authService.adminSignUp(signUpCrendential);
   }
