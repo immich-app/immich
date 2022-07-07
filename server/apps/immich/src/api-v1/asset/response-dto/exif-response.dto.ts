@@ -1,26 +1,26 @@
 import { ExifEntity } from '@app/database/entities/exif.entity';
 
-export interface ExifResponseDto {
-  id: string;
-  make: string | null;
-  model: string | null;
-  imageName: string | null;
-  exifImageWidth: number | null;
-  exifImageHeight: number | null;
-  fileSizeInByte: number | null;
-  orientation: string | null;
-  dateTimeOriginal: Date | null;
-  modifyDate: Date | null;
-  lensModel: string | null;
-  fNumber: number | null;
-  focalLength: number | null;
-  iso: number | null;
-  exposureTime: number | null;
-  latitude: number | null;
-  longitude: number | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
+export class ExifResponseDto {
+  id?: string;
+  make?: string | null;
+  model?: string | null;
+  imageName?: string | null;
+  exifImageWidth?: number | null;
+  exifImageHeight?: number | null;
+  fileSizeInByte?: number | null;
+  orientation?: string | null;
+  dateTimeOriginal?: Date | null;
+  modifyDate?: Date | null;
+  lensModel?: string | null;
+  fNumber?: number | null;
+  focalLength?: number | null;
+  iso?: number | null;
+  exposureTime?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
 }
 
 export function mapExif(entity: ExifEntity): ExifResponseDto {

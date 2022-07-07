@@ -1,12 +1,13 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsBooleanString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class ServeFileDto {
-  //assetId
   @IsNotEmpty()
+  @ApiProperty({ type: String, title: 'Device Asset ID' })
   aid!: string;
 
-  //deviceId
   @IsNotEmpty()
+  @ApiProperty({ type: String, title: 'Device ID' })
   did!: string;
 
   @IsOptional()

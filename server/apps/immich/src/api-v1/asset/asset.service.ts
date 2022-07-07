@@ -19,6 +19,8 @@ import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import fs from 'fs/promises';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
+import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+import { AssetResponseDto, mapAsset } from './response-dto/asset-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -80,21 +82,19 @@ export class AssetService {
     return res;
   }
 
-  public async getAllAssets(authUser: AuthUserDto) {
-    try {
-      return await this.assetRepository.find({
-        where: {
-          userId: authUser.id,
-          resizePath: Not(IsNull()),
-        },
-        relations: ['exifInfo'],
-        order: {
-          createdAt: 'DESC',
-        },
-      });
-    } catch (e) {
-      Logger.error(e, 'getAllAssets');
-    }
+  public async getAllAssets(authUser: AuthUserDto): Promise<AssetResponseDto[]> {
+    const assets = await this.assetRepository.find({
+      where: {
+        userId: authUser.id,
+        resizePath: Not(IsNull()),
+      },
+      relations: ['exifInfo'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return assets.map((asset) => mapAsset(asset));
   }
 
   public async findOne(deviceId: string, assetId: string): Promise<AssetEntity> {
@@ -111,12 +111,18 @@ export class AssetService {
   }
 
   public async getAssetById(authUser: AuthUserDto, assetId: string) {
-    return await this.assetRepository.findOne({
+    const asset = await this.assetRepository.findOne({
       where: {
         id: assetId,
       },
       relations: ['exifInfo'],
     });
+
+    if (!asset) {
+      throw new NotFoundException('Asset not found');
+    }
+
+    return mapAsset(asset);
   }
 
   public async downloadFile(query: ServeFileDto, res: Res) {
@@ -390,7 +396,7 @@ export class AssetService {
     return Array.from(possibleSearchTerm).filter((x) => x != null);
   }
 
-  async searchAsset(authUser: AuthUserDto, searchAssetDto: SearchAssetDto) {
+  async searchAsset(authUser: AuthUserDto, searchAssetDto: SearchAssetDto): Promise<AssetResponseDto[]> {
     const query = `
     SELECT a.*
     FROM assets a
@@ -406,7 +412,12 @@ export class AssetService {
         );
     `;
 
-    return await this.assetRepository.query(query, [authUser.id, searchAssetDto.searchTerm]);
+    const searchResults: AssetEntity[] = await this.assetRepository.query(query, [
+      authUser.id,
+      searchAssetDto.searchTerm,
+    ]);
+
+    return searchResults.map((asset) => mapAsset(asset));
   }
 
   async getCuratedLocation(authUser: AuthUserDto) {
@@ -423,8 +434,8 @@ export class AssetService {
     );
   }
 
-  async getCuratedObject(authUser: AuthUserDto) {
-    return await this.assetRepository.query(
+  async getCuratedObject(authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
+    const curatedObjects: CuratedObjectsResponseDto[] = await this.assetRepository.query(
       `
         SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
         FROM assets a
@@ -434,9 +445,11 @@ export class AssetService {
       `,
       [authUser.id],
     );
+
+    return curatedObjects;
   }
 
-  async checkDuplicatedAsset(authUser: AuthUserDto, checkDuplicateAssetDto: CheckDuplicateAssetDto) {
+  async checkDuplicatedAsset(authUser: AuthUserDto, checkDuplicateAssetDto: CheckDuplicateAssetDto): Promise<boolean> {
     const res = await this.assetRepository.findOne({
       where: {
         deviceAssetId: checkDuplicateAssetDto.deviceAssetId,
