@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
@@ -41,13 +42,16 @@ class TabControllerPage extends ConsumerWidget {
                     onTap: (index) {
                       tabsRouter.setActiveIndex(index);
                     },
-                    items: const [
+                    items: [
                       BottomNavigationBarItem(
-                          label: 'Photos', icon: Icon(Icons.photo)),
+                          label: 'tab_controller_nav_photos'.tr(),
+                          icon: const Icon(Icons.photo)),
                       BottomNavigationBarItem(
-                          label: 'Search', icon: Icon(Icons.search)),
+                          label: 'tab_controller_nav_search'.tr(),
+                          icon: const Icon(Icons.search)),
                       BottomNavigationBarItem(
-                          label: 'Sharing', icon: Icon(Icons.group_outlined)),
+                          label: 'tab_controller_nav_sharing'.tr(),
+                          icon: const Icon(Icons.group_outlined)),
                     ],
                   ),
           ),

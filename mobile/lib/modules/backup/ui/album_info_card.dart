@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -37,10 +38,10 @@ class AlbumInfoCard extends HookConsumerWidget {
           visualDensity: VisualDensity.compact,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           label: const Text(
-            "INCLUDED",
+            "album_info_card_backup_album_included",
             style: TextStyle(
                 fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
-          ),
+          ).tr(),
           backgroundColor: Theme.of(context).primaryColor,
         );
       } else if (isExcluded) {
@@ -48,10 +49,10 @@ class AlbumInfoCard extends HookConsumerWidget {
           visualDensity: VisualDensity.compact,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           label: const Text(
-            "EXCLUDED",
+            "album_info_card_backup_album_excluded",
             style: TextStyle(
                 fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
-          ),
+          ).tr(),
           backgroundColor: Colors.red[300],
         );
       }
@@ -77,7 +78,7 @@ class AlbumInfoCard extends HookConsumerWidget {
           if (ref.watch(backupProvider).selectedBackupAlbums.length == 1) {
             ImmichToast.show(
               context: context,
-              msg: "Cannot remove the only album",
+              msg: "backup_err_only_album".tr(),
               toastType: ToastType.error,
               gravity: ToastGravity.BOTTOM,
             );
@@ -104,7 +105,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                   .contains(albumInfo)) {
             ImmichToast.show(
               context: context,
-              msg: "Cannot exclude the only album",
+              msg: "backup_err_only_album".tr(),
               toastType: ToastType.error,
               gravity: ToastGravity.BOTTOM,
             );
@@ -180,7 +181,10 @@ class AlbumInfoCard extends HookConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.only(top: 2.0),
                             child: Text(
-                              '${albumInfo.assetCount} ${(albumInfo.isAll ? " (ALL)" : "")}',
+                              albumInfo.assetCount.toString() +
+                                  (albumInfo.isAll
+                                      ? " (${'backup_all'.tr()})"
+                                      : ""),
                               style: TextStyle(
                                   fontSize: 12, color: Colors.grey[600]),
                             ),

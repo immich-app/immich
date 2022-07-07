@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -183,12 +184,12 @@ class ProfileDrawer extends HookConsumerWidget {
                   color: Colors.black54,
                 ),
                 title: const Text(
-                  "Sign Out",
+                  "profile_drawer_sign_out",
                   style: TextStyle(
                       color: Colors.black54,
                       fontSize: 14,
                       fontWeight: FontWeight.bold),
-                ),
+                ).tr(),
                 onTap: () async {
                   bool res =
                       await ref.watch(authenticationProvider.notifier).logout();
@@ -227,7 +228,7 @@ class ProfileDrawer extends HookConsumerWidget {
                       child: Text(
                         serverInfoState.isVersionMismatch
                             ? serverInfoState.versionMismatchErrorMessage
-                            : "Client and Server are up-to-date",
+                            : "profile_drawer_client_server_up_to_date".tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 11,

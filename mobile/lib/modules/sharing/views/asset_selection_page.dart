@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -65,9 +66,9 @@ class AssetSelectionPage extends HookConsumerWidget {
         ),
         title: selectedAssets.isEmpty
             ? const Text(
-                'Add photos',
+                'share_add_photos',
                 style: TextStyle(fontSize: 18),
-              )
+              ).tr()
             : Text(
                 _buildAssetCountText(),
                 style: const TextStyle(fontSize: 18),
@@ -86,9 +87,9 @@ class AssetSelectionPage extends HookConsumerWidget {
                 AutoRouter.of(context).pop(payload);
               },
               child: const Text(
-                "Add",
+                "share_add",
                 style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              ).tr(),
             ),
         ],
       ),

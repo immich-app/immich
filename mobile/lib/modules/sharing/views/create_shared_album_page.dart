@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -64,13 +65,13 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
 
     _buildTitle() {
       if (selectedAssets.isEmpty) {
-        return const SliverToBoxAdapter(
+        return SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.only(top: 200, left: 18),
             child: Text(
-              'ADD ASSETS',
+              'create_shared_album_page_share_add_assets',
               style: TextStyle(fontSize: 12),
-            ),
+            ).tr(),
           ),
         );
       }
@@ -97,12 +98,12 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
               label: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
-                  'Select Photos',
+                  'create_shared_album_page_share_select_photos',
                   style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[700],
                       fontWeight: FontWeight.bold),
-                ),
+                ).tr(),
               ),
             ),
           ),
@@ -123,7 +124,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
               AlbumActionOutlinedButton(
                 iconData: Icons.add_photo_alternate_outlined,
                 onPressed: _onSelectPhotosButtonPressed,
-                labelText: "Add photos",
+                labelText: "share_add_photos".tr(),
               ),
             ],
           ),
@@ -169,16 +170,16 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
               },
               icon: const Icon(Icons.close_rounded)),
           title: const Text(
-            'Create album',
+            'share_create_album',
             style: TextStyle(color: Colors.black),
-          ),
+          ).tr(),
           actions: [
             TextButton(
               onPressed: albumTitleController.text.isNotEmpty
                   ? _showSelectUserPage
                   : null,
-              child: const Text(
-                'Share',
+              child: Text(
+                'create_shared_album_page_share'.tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),

@@ -55,7 +55,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width / 3,
                   child: Text(
-                    textInfo.capitalizeFirstLetter(),
+                    textInfo,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

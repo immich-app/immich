@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -72,7 +73,7 @@ class ExifBottomSheet extends ConsumerWidget {
         children: [
           if (assetDetail.exifInfo?.dateTimeOriginal != null)
             Text(
-              DateFormat('E, LLL d, y • h:mm a').format(
+              DateFormat('date_format'.tr()).format(
                 DateTime.parse(assetDetail.exifInfo!.dateTimeOriginal!),
               ),
               style: TextStyle(
@@ -84,12 +85,12 @@ class ExifBottomSheet extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(top: 16.0),
             child: Text(
-              "Add Description...",
+              "exif_bottom_sheet_description",
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: 11,
               ),
-            ),
+            ).tr(),
           ),
 
           // Location
@@ -104,9 +105,9 @@ class ExifBottomSheet extends ConsumerWidget {
                     color: Colors.grey[600],
                   ),
                   Text(
-                    "LOCATION",
+                    "exif_bottom_sheet_location",
                     style: TextStyle(fontSize: 11, color: Colors.grey[400]),
-                  ),
+                  ).tr(),
                   if (assetDetail.exifInfo?.latitude != null &&
                       assetDetail.exifInfo?.longitude != null)
                     _buildMap(),
@@ -134,9 +135,9 @@ class ExifBottomSheet extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: Text(
-                      "DETAILS",
+                      "exif_bottom_sheet_details",
                       style: TextStyle(fontSize: 11, color: Colors.grey[400]),
-                    ),
+                    ).tr(),
                   ),
                   ListTile(
                     contentPadding: const EdgeInsets.all(0),

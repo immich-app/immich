@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive/hive.dart';
@@ -21,7 +22,7 @@ class LoginForm extends HookConsumerWidget {
     final passwordController =
         useTextEditingController.fromValue(TextEditingValue.empty);
     final serverEndpointController =
-        useTextEditingController(text: 'http://your-server-ip:2283/api');
+        useTextEditingController(text: 'login_endpoint_hint'.tr());
     final isSaveLoginInfo = useState<bool>(false);
 
     useEffect(() {
@@ -73,12 +74,12 @@ class LoginForm extends HookConsumerWidget {
                     borderRadius: BorderRadius.circular(5)),
                 enableFeedback: true,
                 title: const Text(
-                  "Stay logged in",
+                  "login_form_save_login",
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.grey),
-                ),
+                ).tr(),
                 value: isSaveLoginInfo.value,
                 onChanged: (switchValue) {
                   if (switchValue != null) {
@@ -107,11 +108,11 @@ class ServerEndpointInput extends StatelessWidget {
       : super(key: key);
 
   String? _validateInput(String? url) {
-  
+
     if (url?.startsWith(RegExp(r'https?://')) == true) {
       return null;
     } else {
-      return 'Please specify http:// or https://';
+      return 'login_form_err_http'.tr();
     }
   }
 
@@ -119,10 +120,10 @@ class ServerEndpointInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
-        labelText: 'Server Endpoint URL',
+      decoration: InputDecoration(
+        labelText: 'login_form_endpoint_url'.tr(),
         border: OutlineInputBorder(),
-        hintText: 'http://your-server-ip:port',
+        hintText: 'login_form_endpoint_hint'.tr(),
       ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
@@ -137,9 +138,10 @@ class EmailInput extends StatelessWidget {
 
   String? _validateInput(String? email) {
     if (email == null || email == '') return null;
-    if (email.endsWith(' ')) return 'Trailing whitespace';
-    if (email.startsWith(' ')) return 'Leading whitespace';
-    if (email.contains(' ') || !email.contains('@')) return 'Invalid Email';
+    if (email.endsWith(' ')) return 'login_form_err_trailing_whitespace'.tr();
+    if (email.startsWith(' ')) return 'login_form_err_leading_whitespace'.tr();
+    if (email.contains(' ') || !email.contains('@'))
+      return 'login_form_err_invalid_email'.tr();
     return null;
   }
 
@@ -147,10 +149,10 @@ class EmailInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
-        labelText: 'Email',
+      decoration: InputDecoration(
+        labelText: 'login_form_label_email'.tr(),
         border: OutlineInputBorder(),
-        hintText: 'youremail@email.com',
+        hintText: 'login_form_email_hint'.tr(),
       ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
@@ -168,10 +170,10 @@ class PasswordInput extends StatelessWidget {
     return TextFormField(
       obscureText: true,
       controller: controller,
-      decoration: const InputDecoration(
-          labelText: 'Password',
+      decoration: InputDecoration(
+          labelText: 'login_form_label_password'.tr(),
           border: OutlineInputBorder(),
-          hintText: 'password'),
+          hintText: 'login_form_password_hint'.tr()),
     );
   }
 }
@@ -222,15 +224,14 @@ class LoginButton extends ConsumerWidget {
           } else {
             ImmichToast.show(
               context: context,
-              msg:
-                  "Error logging you in, check server url, email and password!",
+              msg: "login_failed".tr(),
               toastType: ToastType.error,
             );
           }
         },
         child: const Text(
-          "Login",
+          "login_form_button_text",
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ));
+        ).tr());
   }
 }

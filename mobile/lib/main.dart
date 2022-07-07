@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -36,7 +37,21 @@ void main() async {
     ),
   );
 
-  runApp(const ProviderScope(child: ImmichApp()));
+  await EasyLocalization.ensureInitialized();
+
+  var locales = const [
+    // Default locale
+    Locale('en', 'US'),
+    // Additional locales
+    Locale('de', 'DE')
+  ];
+
+  runApp(EasyLocalization(
+      supportedLocales: locales,
+      path: 'assets/i18n',
+      useFallbackTranslations: true,
+      fallbackLocale: locales.first,
+      child: const ProviderScope(child: ImmichApp())));
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -112,6 +127,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
     return MaterialApp(
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
       debugShowCheckedModeBanner: false,
       home: Stack(
         children: [

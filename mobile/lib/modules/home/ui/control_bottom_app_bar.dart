@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 
@@ -26,7 +27,7 @@ class ControlBottomAppBar extends StatelessWidget {
                 children: [
                   ControlBoxButton(
                     iconData: Icons.delete_forever_rounded,
-                    label: "Delete",
+                    label: "control_bottom_app_bar_delete".tr(),
                     onPressed: () {
                       showDialog(
                         context: context,

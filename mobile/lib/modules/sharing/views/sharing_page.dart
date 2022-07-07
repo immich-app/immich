@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive/hive.dart';
@@ -104,20 +105,20 @@ class SharingPage extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'EMPTY LIST',
+                      'sharing_page_empty_list',
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
-                    ),
+                    ).tr(),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'Create shared albums to share photos and videos with people in your network.',
+                      'sharing_page_description',
                       style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-                    ),
+                    ).tr(),
                   ),
                 ],
               ),
@@ -131,15 +132,15 @@ class SharingPage extends HookConsumerWidget {
       body: CustomScrollView(
         slivers: [
           const SharingSliverAppBar(),
-          const SliverPadding(
+          SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             sliver: SliverToBoxAdapter(
               child: Text(
-                "Shared albums",
+                "sharing_page_album",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
-              ),
+              ).tr(),
             ),
           ),
           sharedAlbums.isNotEmpty

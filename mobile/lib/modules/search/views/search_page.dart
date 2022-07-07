@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -82,7 +83,7 @@ class SearchPage extends HookConsumerWidget {
                       return ThumbnailWithInfo(
                         imageUrl:
                             'https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60',
-                        textInfo: 'No Places Info Available',
+                        textInfo: 'search_page_no_places'.tr(),
                         onTap: () {},
                       );
                     }),
@@ -134,7 +135,7 @@ class SearchPage extends HookConsumerWidget {
                       return ThumbnailWithInfo(
                         imageUrl:
                             'https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60',
-                        textInfo: 'No Object Info Available',
+                        textInfo: 'sarch_no_objects'.tr(),
                         onTap: () {},
                       );
                     }),
@@ -158,20 +159,20 @@ class SearchPage extends HookConsumerWidget {
           children: [
             ListView(
               children: [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    "Places",
+                  child: const Text(
+                    "search_page_places",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                  ).tr(),
                 ),
                 _buildPlaces(),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    "Things",
+                  child: const  Text(
+                    "search_page_things",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                  ).tr(),
                 ),
                 _buildThings()
               ],
