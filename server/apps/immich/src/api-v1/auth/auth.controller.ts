@@ -1,4 +1,5 @@
 import { Body, Controller, Post, UseGuards, ValidationPipe } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
@@ -20,6 +21,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('/validateToken')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validateToken(@GetAuthUser() authUser: AuthUserDto) {

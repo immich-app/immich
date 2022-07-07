@@ -36,8 +36,10 @@ import { IAssetUploadedJob } from '@app/job/index';
 import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
 import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller('asset')
 export class AssetController {
   constructor(

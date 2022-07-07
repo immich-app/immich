@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { ServerInfoService } from './server-info.service';
 import { serverVersion } from '../../constants/server_version.constant';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('server-info')
 export class ServerInfoController {
@@ -21,6 +22,7 @@ export class ServerInfoController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('/mapbox')
   async getMapboxInfo() {
     return {

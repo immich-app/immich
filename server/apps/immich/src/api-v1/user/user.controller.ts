@@ -21,24 +21,30 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { profileImageUploadOption } from '../../config/profile-image-upload.config';
 import { Response as Res } from 'express';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiBearerAuth()
   @Get()
   async getAllUsers(@GetAuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean) {
     return await this.userService.getAllUsers(authUser, isAll);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('me')
   async getUserInfo(@GetAuthUser() authUser: AuthUserDto) {
     return await this.userService.getUserInfo(authUser);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @UseGuards(AdminRolesGuard)
   @Post()
   async createNewUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
@@ -51,12 +57,14 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Put()
   async updateUser(@Body(ValidationPipe) updateUserDto: UpdateUserDto) {
     return await this.userService.updateUser(updateUserDto);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
   @Post('/profile-image')
   async createProfileImage(@GetAuthUser() authUser: AuthUserDto, @UploadedFile() fileInfo: Express.Multer.File) {
