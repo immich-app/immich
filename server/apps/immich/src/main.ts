@@ -2,6 +2,8 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { writeFileSync } from 'fs';
+import path from 'path';
 import { AppModule } from './app.module';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 
@@ -31,14 +33,18 @@ async function bootstrap() {
     .addServer('/api')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const apiDocument = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('doc', app, document, {
+  SwaggerModule.setup('doc', app, apiDocument, {
     swaggerOptions: {
       persistAuthorization: true,
     },
     customSiteTitle: 'Immich API Documentation',
   });
+
+  // Generate API Documentation
+  const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
+  writeFileSync(outputPath, JSON.stringify(apiDocument), { encoding: 'utf8' });
 
   await app.listen(3001, () => {
     if (process.env.NODE_ENV == 'development') {
