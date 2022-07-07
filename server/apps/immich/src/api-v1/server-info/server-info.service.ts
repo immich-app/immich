@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ServerInfoDto } from './dto/server-info.dto';
+import { ServerInfoResponseDto } from './response-dto/server-info-response.dto';
 import diskusage from 'diskusage';
 import { APP_UPLOAD_LOCATION } from '../../constants/upload_location.constant';
 
@@ -10,7 +10,7 @@ export class ServerInfoService {
 
     const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
 
-    const serverInfo = new ServerInfoDto();
+    const serverInfo = new ServerInfoResponseDto();
     serverInfo.diskAvailable = ServerInfoService.getHumanReadableString(diskInfo.available);
     serverInfo.diskSize = ServerInfoService.getHumanReadableString(diskInfo.total);
     serverInfo.diskUse = ServerInfoService.getHumanReadableString(diskInfo.total - diskInfo.free);
