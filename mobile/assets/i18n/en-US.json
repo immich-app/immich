@@ -94,5 +94,10 @@
   "version_announcement_overlay_text_2": "please take your time to visit the ",
   "version_announcement_overlay_release_notes": "release notes",
   "version_announcement_overlay_text_3": " and ensure your docker-compose and .env setup is up-to-date to prevent any misconfigurations, especially if you use WatchTower or any mechanism that handles updating your server application automatically.",
-  "version_announcement_overlay_ack": "Acknowledge"
+  "version_announcement_overlay_ack": "Acknowledge",
+  "backup_controller_page_uploading_file_info": "Uploading file info",
+  "backup_controller_page_failed": "Failed ({})",
+  "backup_controller_page_filename": "File name: {} [{}]",
+  "backup_controller_page_created": "Created on: {}",
+  "backup_controller_page_id": "ID: {}"
 }

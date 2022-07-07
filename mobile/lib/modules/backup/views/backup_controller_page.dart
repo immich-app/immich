@@ -265,9 +265,9 @@ class BackupControllerPage extends HookConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              "Uploading file info",
+              "backup_controller_page_uploading_file_info",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
+            ).tr(),
             if (ref.watch(errorBackupListProvider).isNotEmpty)
               ActionChip(
                 avatar: Icon(
@@ -278,13 +278,15 @@ class BackupControllerPage extends HookConsumerWidget {
                 elevation: 1,
                 visualDensity: VisualDensity.compact,
                 label: Text(
-                  "Failed (${ref.watch(errorBackupListProvider).length})",
+                  "backup_controller_page_failed",
                   style: TextStyle(
                     color: Colors.red[400],
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
                   ),
-                ),
+                ).tr(args: [
+                  ref.watch(errorBackupListProvider).length.toString()
+                ]),
                 backgroundColor: Colors.white,
                 onPressed: () {
                   AutoRouter.of(context).push(const FailedBackupStatusRoute());
@@ -326,11 +328,15 @@ class BackupControllerPage extends HookConsumerWidget {
                         verticalAlignment: TableCellVerticalAlignment.middle,
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
-                          child: Text(
-                            'File name: ${backupState.currentUploadAsset.fileName} [${backupState.currentUploadAsset.fileType.toLowerCase()}]',
-                            style: const TextStyle(
+                          child: const Text(
+                            'backup_controller_page_filename',
+                            style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 10.0),
-                          ),
+                          ).tr(args: [
+                            backupState.currentUploadAsset.fileName,
+                            backupState.currentUploadAsset.fileType
+                                .toLowerCase()
+                          ]),
                         ),
                       ),
                     ],
@@ -344,16 +350,18 @@ class BackupControllerPage extends HookConsumerWidget {
                         verticalAlignment: TableCellVerticalAlignment.middle,
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
-                          child: Text(
-                            "Created on: ${DateFormat.yMMMMd('en_US').format(
+                          child: const Text(
+                            "backup_controller_page_created",
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 10.0),
+                          ).tr(args: [
+                            DateFormat.yMMMMd('en_US').format(
                               DateTime.parse(
                                 backupState.currentUploadAsset.createdAt
                                     .toString(),
                               ),
-                            )}",
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 10.0),
-                          ),
+                            )
+                          ]),
                         ),
                       ),
                     ],
@@ -366,13 +374,13 @@ class BackupControllerPage extends HookConsumerWidget {
                       TableCell(
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
-                          child: Text(
-                            "ID: ${backupState.currentUploadAsset.id}",
-                            style: const TextStyle(
+                          child: const Text(
+                            "backup_controller_page_id",
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 10.0,
                             ),
-                          ),
+                          ).tr(args: [backupState.currentUploadAsset.id]),
                         ),
                       ),
                     ],
