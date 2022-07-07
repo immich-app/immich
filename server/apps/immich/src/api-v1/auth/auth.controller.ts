@@ -1,22 +1,27 @@
 import { Body, Controller, Post, UseGuards, ValidationPipe } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
+import { LoginResponseDto } from './response-dto/login-response.dto';
 import { SignUpDto } from './dto/sign-up.dto';
+import { AdminSignupResponseDto } from './response-dto/admin-signup-response.dto';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/login')
-  async login(@Body(ValidationPipe) loginCredential: LoginCredentialDto) {
+  @ApiResponse({ type: LoginResponseDto })
+  async login(@Body(ValidationPipe) loginCredential: LoginCredentialDto): Promise<LoginResponseDto> {
     return await this.authService.login(loginCredential);
   }
 
   @Post('/admin-sign-up')
-  async adminSignUp(@Body(ValidationPipe) signUpCrendential: SignUpDto) {
+  @ApiResponse({ type: AdminSignupResponseDto })
+  async adminSignUp(@Body(ValidationPipe) signUpCrendential: SignUpDto): Promise<AdminSignupResponseDto> {
     return await this.authService.adminSignUp(signUpCrendential);
   }
 
