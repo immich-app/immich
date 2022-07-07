@@ -5,7 +5,8 @@
   "root": "apps/immich",
   "compilerOptions": {
     "webpack": false,
-    "tsConfigPath": "apps/immich/tsconfig.app.json"
+    "tsConfigPath": "apps/immich/tsconfig.app.json",
+    "plugins": ["@nestjs/swagger"]
   },
   "projects": {
     "immich": {
