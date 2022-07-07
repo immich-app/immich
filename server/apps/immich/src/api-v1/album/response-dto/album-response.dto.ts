@@ -2,15 +2,15 @@ import { AlbumEntity } from '../../../../../../libs/database/src/entities/album.
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { AssetResponseDto, mapAsset } from '../../asset/response-dto/asset-response.dto';
 
-export interface AlbumResponseDto {
-  id: string;
-  ownerId: string;
-  albumName: string;
-  createdAt: string;
-  albumThumbnailAssetId: string | null;
-  shared: boolean;
-  sharedUsers: UserResponseDto[];
-  assets: AssetResponseDto[];
+export class AlbumResponseDto {
+  id!: string;
+  ownerId!: string;
+  albumName!: string;
+  createdAt!: string;
+  albumThumbnailAssetId!: string | null;
+  shared!: boolean;
+  sharedUsers!: UserResponseDto[];
+  assets!: AssetResponseDto[];
 }
 
 export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
