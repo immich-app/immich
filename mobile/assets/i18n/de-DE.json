@@ -94,5 +94,10 @@
   "version_announcement_overlay_text_2": "Bitte nehm dir die Zeit und lese das ",
   "version_announcement_overlay_release_notes": "Änderungsprotokoll",
   "version_announcement_overlay_text_3": " und achte darauf, dass deine docker-compose und .env Dateien aktuell sind, vor allem wenn du ein System für automatische Updates benutzt (z.B. Watchtower).",
-  "version_announcement_overlay_ack": "Ich habe verstanden"
+  "version_announcement_overlay_ack": "Ich habe verstanden",
+  "backup_controller_page_uploading_file_info": "Informationen",
+  "backup_controller_page_failed": "Fehlgeschlagen ({})",
+  "backup_controller_page_filename": "Dateiname: {} [{}]",
+  "backup_controller_page_created": "Erstellt: {}",
+  "backup_controller_page_id": "ID: {}"
 }
