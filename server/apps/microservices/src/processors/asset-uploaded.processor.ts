@@ -63,7 +63,7 @@ export class AssetUploadedProcessor {
     }
 
     // Extract video duration if uploaded from the web & CLI
-    if (asset.type == AssetType.VIDEO && asset.duration == '0:00:00.000000') {
+    if (asset.type == AssetType.VIDEO) {
       await this.metadataExtractionQueue.add(videoMetadataExtractionProcessorName, { asset }, { jobId: randomUUID() });
     }
   }
