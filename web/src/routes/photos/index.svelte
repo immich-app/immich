@@ -43,6 +43,7 @@
 	import StatusBox from '../../lib/components/shared/status-box.svelte';
 	import { fileUploader } from '../../lib/utils/file-uploader';
 	import { openWebsocketConnection, closeWebsocketConnection } from '../../lib/stores/websocket';
+	import { ServerInfoApi } from '$lib/api/index';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -62,6 +63,10 @@
 	};
 
 	onMount(async () => {
+		const serverInfoApi = new ServerInfoApi();
+
+		console.log(await serverInfoApi.serverInfoControllerGetServerInfo());
+
 		selectedAction = AppSideBarSelection.PHOTOS;
 
 		if ($session.user) {

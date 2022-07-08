@@ -1,0 +1,97 @@
+{
+  "name": "iterare",
+  "version": "1.2.1",
+  "description": "Array methods for ES6 Iterators",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "engines": {
+    "node": ">=6"
+  },
+  "scripts": {
+    "tslint": "tslint -c tslint.json -p tsconfig.json 'src/**/*.ts'",
+    "prettier": "prettier --write --list-different '**/*.{ts,json,js,md,yml}'",
+    "test": "nyc mocha",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "typedoc": "typedoc --out typedoc --tsconfig tsconfig.json --ignoreCompilerErrors --mode file --excludeExternals src",
+    "semantic-release": "semantic-release"
+  },
+  "nyc": {
+    "all": true,
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/**/*.test.ts"
+    ],
+    "reporter": [
+      "text",
+      "json"
+    ]
+  },
+  "mocha": {
+    "spec": "src/**/*.test.ts",
+    "require": "ts-node/register"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "keywords": [
+    "iterator",
+    "iteration",
+    "functional",
+    "es6",
+    "collection",
+    "array",
+    "map",
+    "set",
+    "filter",
+    "reduce",
+    "flatten",
+    "concat",
+    "every",
+    "some"
+  ],
+  "author": "Felix Becker <felix.b@outlook.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/felixfbecker/iterare"
+  },
+  "bugs": {
+    "url": "https://github.com/felixfbecker/iterare/issues"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@commitlint/cli": "^8.0.0",
+    "@commitlint/config-conventional": "^8.0.0",
+    "@reactivex/ix-es2015-cjs": "^2.5.3",
+    "@types/benchmark": "^1.0.31",
+    "@types/lodash": "^4.14.134",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^7.10.6",
+    "benchmark": "^2.1.4",
+    "husky": "^2.4.0",
+    "ix": "^2.5.3",
+    "lodash": "^4.17.11",
+    "mocha": "^6.1.4",
+    "nyc": "^14.1.1",
+    "prettier": "^1.18.1",
+    "rxjs": "^6.5.2",
+    "semantic-release": "^15.13.12",
+    "ts-node": "^8.2.0",
+    "tslint": "^5.17.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typedoc": "^0.14.2",
+    "typescript": "~3.5.1"
+  }
+}
