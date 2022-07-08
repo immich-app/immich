@@ -9,13 +9,13 @@ import {
 } from '../open-api';
 
 class ImmichApi {
-	public userApi!: UserApi;
-	public albumApi!: AlbumApi;
-	public assetApi!: AssetApi;
-	public authenticationApi!: AuthenticationApi;
-	public deviceInfoApi!: DeviceInfoApi;
-	public serverInfoApi!: ServerInfoApi;
-	public config = new Configuration();
+	public userApi: UserApi;
+	public albumApi: AlbumApi;
+	public assetApi: AssetApi;
+	public authenticationApi: AuthenticationApi;
+	public deviceInfoApi: DeviceInfoApi;
+	public serverInfoApi: ServerInfoApi;
+	private config = new Configuration();
 
 	constructor() {
 		this.userApi = new UserApi(this.config);

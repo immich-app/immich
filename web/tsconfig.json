@@ -18,5 +18,5 @@
     "target": "es2020",
     "importsNotUsedAsValues": "preserve",
     "preserveValueImports": false
-  }
+  },
 }
