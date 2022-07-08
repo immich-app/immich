@@ -16,8 +16,8 @@ export class ImmichApi {
 	public deviceInfoApi!: DeviceInfoApi;
 	public serverInfoApi!: ServerInfoApi;
 
-	constructor(accessToken: string) {
-		const config = new Configuration({ accessToken });
+	constructor(accessToken: string, basePath?: string) {
+		const config = new Configuration({ accessToken, basePath });
 
 		this.userApi = new UserApi(config);
 		this.albumApi = new AlbumApi(config);

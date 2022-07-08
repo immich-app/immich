@@ -61,6 +61,12 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     shouldChangePassword: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserResponseDto
+     */
+    isAdmin: boolean;
 }
 
 /**
@@ -75,6 +81,7 @@ export function instanceOfUserResponseDto(value: object): boolean {
     isInstance = isInstance && "createdAt" in value;
     isInstance = isInstance && "profileImagePath" in value;
     isInstance = isInstance && "shouldChangePassword" in value;
+    isInstance = isInstance && "isAdmin" in value;
 
     return isInstance;
 }
@@ -96,6 +103,7 @@ export function UserResponseDtoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'createdAt': json['createdAt'],
         'profileImagePath': json['profileImagePath'],
         'shouldChangePassword': json['shouldChangePassword'],
+        'isAdmin': json['isAdmin'],
     };
 }
 
@@ -115,6 +123,7 @@ export function UserResponseDtoToJSON(value?: UserResponseDto | null): any {
         'createdAt': value.createdAt,
         'profileImagePath': value.profileImagePath,
         'shouldChangePassword': value.shouldChangePassword,
+        'isAdmin': value.isAdmin,
     };
 }
 

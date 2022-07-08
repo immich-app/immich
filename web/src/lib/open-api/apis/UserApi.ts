@@ -19,7 +19,6 @@ import type {
   CreateUserDto,
   UpdateUserDto,
   UserCountResponseDto,
-  UserEntity,
   UserResponseDto,
 } from '../models';
 import {
@@ -31,8 +30,6 @@ import {
     UpdateUserDtoToJSON,
     UserCountResponseDtoFromJSON,
     UserCountResponseDtoToJSON,
-    UserEntityFromJSON,
-    UserEntityToJSON,
     UserResponseDtoFromJSON,
     UserResponseDtoToJSON,
 } from '../models';
@@ -164,7 +161,7 @@ export class UserApi extends runtime.BaseAPI {
 
     /**
      */
-    async userControllerGetAllUsersRaw(requestParameters: UserControllerGetAllUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<UserEntity>>> {
+    async userControllerGetAllUsersRaw(requestParameters: UserControllerGetAllUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<UserResponseDto>>> {
         if (requestParameters.isAll === null || requestParameters.isAll === undefined) {
             throw new runtime.RequiredError('isAll','Required parameter requestParameters.isAll was null or undefined when calling userControllerGetAllUsers.');
         }
@@ -192,12 +189,12 @@ export class UserApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(UserEntityFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(UserResponseDtoFromJSON));
     }
 
     /**
      */
-    async userControllerGetAllUsers(requestParameters: UserControllerGetAllUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<UserEntity>> {
+    async userControllerGetAllUsers(requestParameters: UserControllerGetAllUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<UserResponseDto>> {
         const response = await this.userControllerGetAllUsersRaw(requestParameters, initOverrides);
         return await response.value();
     }

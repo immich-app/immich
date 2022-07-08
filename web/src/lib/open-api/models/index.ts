@@ -28,5 +28,4 @@ export * from './SmartInfoResponseDto';
 export * from './UpdateAlbumDto';
 export * from './UpdateUserDto';
 export * from './UserCountResponseDto';
-export * from './UserEntity';
 export * from './UserResponseDto';

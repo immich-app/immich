@@ -12,6 +12,15 @@
 			};
 		}
 
+		const api = new ImmichApi(session.user.accessToken);
+
+		try {
+			const assets = await api.userApi.userControllerGetAllUsers({ isAll: true });
+			console.log('be', assets);
+		} catch (e) {
+			console.log('error request', e);
+		}
+
 		return {
 			status: 200,
 			props: {
@@ -64,7 +73,7 @@
 		const immichApi = new ImmichApi($session.user!.accessToken);
 
 		const allAsset = await immichApi.assetApi.assetControllerGetAllAssets();
-		console.log(allAsset);
+		console.log('fe', allAsset);
 
 		selectedAction = AppSideBarSelection.PHOTOS;
 

@@ -8,6 +8,7 @@ export class UserResponseDto {
   createdAt!: string;
   profileImagePath!: string;
   shouldChangePassword!: boolean;
+  isAdmin!: boolean;
 }
 
 export function mapUser(entity: UserEntity): UserResponseDto {
@@ -19,5 +20,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     createdAt: entity.createdAt,
     profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
+    isAdmin: entity.isAdmin,
   };
 }

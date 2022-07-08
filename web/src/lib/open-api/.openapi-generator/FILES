@@ -35,7 +35,6 @@ models/SmartInfoResponseDto.ts
 models/UpdateAlbumDto.ts
 models/UpdateUserDto.ts
 models/UserCountResponseDto.ts
-models/UserEntity.ts
 models/UserResponseDto.ts
 models/index.ts
 runtime.ts

@@ -29,17 +29,21 @@ export class UserService {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  async getAllUsers(authUser: AuthUserDto, isAll: boolean) {
+  async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
     if (isAll) {
-      return await this.userRepository.find();
+      const allUsers = await this.userRepository.find();
+
+      return allUsers.map(mapUser);
     }
 
-    return await this.userRepository.find({
+    const allUserExceptRequestedUser = await this.userRepository.find({
       where: { id: Not(authUser.id) },
       order: {
         createdAt: 'DESC',
       },
     });
+
+    return allUserExceptRequestedUser.map(mapUser);
   }
 
   async getUserInfo(authUser: AuthUserDto): Promise<UserResponseDto> {
