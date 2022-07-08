@@ -15,6 +15,7 @@ import {
   Delete,
   Logger,
   HttpCode,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
@@ -34,6 +35,7 @@ import { Queue } from 'bull';
 import { IAssetUploadedJob } from '@app/job/index';
 import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
 import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('asset')
@@ -66,17 +68,16 @@ export class AssetController {
       try {
         const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
-        if (!savedAsset) {
-          return;
+        if (savedAsset) {
+          await this.assetUploadedQueue.add(
+            assetUploadedProcessorName,
+            { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
+            { jobId: savedAsset.id },
+          );
         }
-
-        await this.assetUploadedQueue.add(
-          assetUploadedProcessorName,
-          { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
-          { jobId: savedAsset.id },
-        );
       } catch (e) {
-        Logger.error(`Error receiving upload file ${e}`);
+        Logger.error(`Error uploading file ${e}`);
+        throw new BadRequestException(`Error uploading file`, `${e}`);
       }
     }
 
@@ -172,9 +173,9 @@ export class AssetController {
   @HttpCode(200)
   async checkDuplicateAsset(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) { deviceAssetId }: { deviceAssetId: string },
+    @Body(ValidationPipe) checkDuplicateAssetDto: CheckDuplicateAssetDto,
   ) {
-    const res = await this.assetService.checkDuplicatedAsset(authUser, deviceAssetId);
+    const res = await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
 
     return {
       isExist: res,

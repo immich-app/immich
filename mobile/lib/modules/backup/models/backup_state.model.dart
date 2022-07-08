@@ -1,13 +1,14 @@
 import 'package:cancellation_token_http/http.dart';
-import 'package:equatable/equatable.dart';
+import 'package:collection/collection.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
+import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/shared/models/server_info.model.dart';
 
 enum BackUpProgressEnum { idle, inProgress, done }
 
-class BackUpState extends Equatable {
+class BackUpState {
   // enum
   final BackUpProgressEnum backupProgress;
   final List<String> allAssetsInDatabase;
@@ -26,6 +27,9 @@ class BackUpState extends Equatable {
   /// All assets from the selected albums that have been backup
   final Set<String> selectedAlbumsBackupAssetsIds;
 
+  // Current Backup Asset
+  final CurrentUploadAsset currentUploadAsset;
+
   const BackUpState({
     required this.backupProgress,
     required this.allAssetsInDatabase,
@@ -37,6 +41,7 @@ class BackUpState extends Equatable {
     required this.excludedBackupAlbums,
     required this.allUniqueAssets,
     required this.selectedAlbumsBackupAssetsIds,
+    required this.currentUploadAsset,
   });
 
   BackUpState copyWith({
@@ -50,6 +55,7 @@ class BackUpState extends Equatable {
     Set<AssetPathEntity>? excludedBackupAlbums,
     Set<AssetEntity>? allUniqueAssets,
     Set<String>? selectedAlbumsBackupAssetsIds,
+    CurrentUploadAsset? currentUploadAsset,
   }) {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,
@@ -63,27 +69,47 @@ class BackUpState extends Equatable {
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
       selectedAlbumsBackupAssetsIds:
           selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
+      currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
     );
   }
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
-  List<Object> get props {
-    return [
-      backupProgress,
-      allAssetsInDatabase,
-      progressInPercentage,
-      cancelToken,
-      serverInfo,
-      availableAlbums,
-      selectedBackupAlbums,
-      excludedBackupAlbums,
-      allUniqueAssets,
-      selectedAlbumsBackupAssetsIds,
-    ];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    final collectionEquals = const DeepCollectionEquality().equals;
+
+    return other is BackUpState &&
+        other.backupProgress == backupProgress &&
+        collectionEquals(other.allAssetsInDatabase, allAssetsInDatabase) &&
+        other.progressInPercentage == progressInPercentage &&
+        other.cancelToken == cancelToken &&
+        other.serverInfo == serverInfo &&
+        collectionEquals(other.availableAlbums, availableAlbums) &&
+        collectionEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
+        collectionEquals(other.excludedBackupAlbums, excludedBackupAlbums) &&
+        collectionEquals(other.allUniqueAssets, allUniqueAssets) &&
+        collectionEquals(other.selectedAlbumsBackupAssetsIds,
+            selectedAlbumsBackupAssetsIds) &&
+        other.currentUploadAsset == currentUploadAsset;
+  }
+
+  @override
+  int get hashCode {
+    return backupProgress.hashCode ^
+        allAssetsInDatabase.hashCode ^
+        progressInPercentage.hashCode ^
+        cancelToken.hashCode ^
+        serverInfo.hashCode ^
+        availableAlbums.hashCode ^
+        selectedBackupAlbums.hashCode ^
+        excludedBackupAlbums.hashCode ^
+        allUniqueAssets.hashCode ^
+        selectedAlbumsBackupAssetsIds.hashCode ^
+        currentUploadAsset.hashCode;
   }
 }

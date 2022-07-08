@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -47,8 +48,8 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
         onChanged: (value) {
           ref.watch(searchPageStateProvider.notifier).setSearchTerm(value);
         },
-        decoration: const InputDecoration(
-          hintText: 'Search your photos',
+        decoration: InputDecoration(
+          hintText: 'search_bar_hint'.tr(),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),

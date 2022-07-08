@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class BackupInfoCard extends StatelessWidget {
@@ -44,7 +45,7 @@ class BackupInfoCard extends StatelessWidget {
               info,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            const Text("assets"),
+            const Text("backup_info_card_assets").tr(),
           ],
         ),
       ),

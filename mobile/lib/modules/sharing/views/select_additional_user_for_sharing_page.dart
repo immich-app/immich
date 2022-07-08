@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
@@ -82,10 +83,10 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
           Wrap(
             children: [...usersChip],
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'Suggestions',
+              'select_additional_user_for_sharing_page_suggestions'.tr(),
               style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
@@ -126,9 +127,9 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Invite to album',
+          'share_invite',
           style: TextStyle(color: Colors.black),
-        ),
+        ).tr(),
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
@@ -140,9 +141,9 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
             onPressed:
                 sharedUsersList.value.isEmpty ? null : _addNewUsersHandler,
             child: const Text(
-              "Add",
+              "share_add",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
+            ).tr(),
           )
         ],
       ),

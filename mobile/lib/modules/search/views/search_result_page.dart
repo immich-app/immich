@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -65,8 +66,8 @@ class SearchResultPage extends HookConsumerWidget {
         onChanged: (value) {
           ref.watch(searchPageStateProvider.notifier).setSearchTerm(value);
         },
-        decoration: const InputDecoration(
-          hintText: 'New Search',
+        decoration: InputDecoration(
+          hintText: 'search_result_page_new_search_hint'.tr(),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/providers/album_title.provider.dart';
@@ -59,7 +60,7 @@ class AlbumTitleTextField extends ConsumerWidget {
           borderSide: const BorderSide(color: Colors.transparent),
           borderRadius: BorderRadius.circular(10),
         ),
-        hintText: 'Add a title',
+        hintText: 'share_add_title'.tr(),
         focusColor: Colors.grey[300],
         fillColor: Colors.grey[200],
         filled: isAlbumTitleTextFieldFocus.value,

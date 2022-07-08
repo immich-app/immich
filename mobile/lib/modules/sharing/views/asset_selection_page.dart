@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/sharing/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
@@ -9,7 +11,6 @@ import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart
 import 'package:immich_mobile/modules/sharing/ui/asset_grid_by_month.dart';
 import 'package:immich_mobile/modules/sharing/ui/month_group_title.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AssetSelectionPage extends HookConsumerWidget {
@@ -69,9 +70,9 @@ class AssetSelectionPage extends HookConsumerWidget {
         ),
         title: selectedAssets.isEmpty
             ? const Text(
-                'Add photos',
+                'share_add_photos',
                 style: TextStyle(fontSize: 18),
-              )
+              ).tr()
             : Text(
                 _buildAssetCountText(),
                 style: const TextStyle(fontSize: 18),
@@ -108,9 +109,9 @@ class AssetSelectionPage extends HookConsumerWidget {
                 GoRouter.of(context).pop();
               },
               child: const Text(
-                "Add",
+                "share_add",
                 style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              ).tr(),
             ),
         ],
       ),

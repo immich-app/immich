@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart'
 import 'package:immich_mobile/modules/backup/views/album_preview_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_album_selection_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_controller_page.dart';
+import 'package:immich_mobile/modules/backup/views/failed_backup_status_page.dart';
 import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/login/views/change_password_page.dart';
@@ -56,7 +57,8 @@ enum ImmichRoute {
   searchResult,
   assetSelection,
   albumViewer,
-  selectAdditionalUserForSharing;
+  selectAdditionalUserForSharing,
+  failedBackupStatus;
 
   final int tabIndex;
 
@@ -199,6 +201,11 @@ class RouterNotifier extends ChangeNotifier {
               builder: (_, state) => SelectAdditionalUserForSharingPage(
                 albumInfo: state.extra! as SharedAlbum,
               ),
+            ),
+            GoRoute(
+              name: '${ImmichRoute.failedBackupStatus}',
+              path: '${ImmichRoute.failedBackupStatus}',
+              builder: (_, __) => const FailedBackupStatusPage(),
             ),
           ],
         ),

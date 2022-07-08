@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -40,14 +41,14 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "New Server Version Available 🎉",
+                              "version_announcement_overlay_title",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontFamily: 'WorkSans',
                                 fontWeight: FontWeight.bold,
                                 color: Colors.indigo,
                               ),
-                            ),
+                            ).tr(),
                             Padding(
                               padding: const EdgeInsets.only(top: 16.0),
                               child: RichText(
@@ -58,9 +59,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                       color: Colors.black87,
                                       height: 1.2),
                                   children: <TextSpan>[
-                                    const TextSpan(
-                                      text:
-                                          'Hi friend, there is a new release of',
+                                    TextSpan(
+                                      text: 'version_announcement_overlay_text_1'.tr(),
                                     ),
                                     const TextSpan(
                                       text: ' Immich ',
@@ -70,22 +70,21 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    const TextSpan(
-                                      text:
-                                          "please take your time to visit the ",
+                                    TextSpan(
+                                      text: "version_announcement_overlay_text_2".tr(),
                                     ),
                                     TextSpan(
-                                      text: "release note",
+                                      text: "version_announcement_overlay_release_notes"
+                                          .tr(),
                                       style: const TextStyle(
                                         decoration: TextDecoration.underline,
                                       ),
                                       recognizer: TapGestureRecognizer()
                                         ..onTap = goToReleaseNote,
                                     ),
-                                    const TextSpan(
-                                      text:
-                                          " and ensure your docker-compose and .env setup is up-to-date to prevent any misconfigurations, especially if you use WatchTower or any mechanism that handles updating your server application automatically.",
-                                    ),
+                                    TextSpan(
+                                      text: "version_announcement_overlay_text_3".tr(),
+                                    )
                                   ],
                                 ),
                               ),
@@ -93,24 +92,23 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                             Padding(
                               padding: const EdgeInsets.only(top: 16.0),
                               child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  shape: const StadiumBorder(),
-                                  visualDensity: VisualDensity.standard,
-                                  primary: Colors.indigo,
-                                  onPrimary: Colors.grey[50],
-                                  elevation: 2,
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 25),
-                                ),
-                                onPressed: onAcknowledgeTapped,
-                                child: const Text(
-                                  "Acknowledge",
-                                  style: TextStyle(
-                                    fontSize: 14,
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const StadiumBorder(),
+                                    visualDensity: VisualDensity.standard,
+                                    primary: Colors.indigo,
+                                    onPrimary: Colors.grey[50],
+                                    elevation: 2,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10, horizontal: 25),
                                   ),
-                                ),
-                              ),
-                            ),
+                                  onPressed: onAcknowledgeTapped,
+                                  child: const Text(
+                                    "version_announcement_overlay_ack",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                    ),
+                                  ).tr()),
+                            )
                           ],
                         ),
                       ),
