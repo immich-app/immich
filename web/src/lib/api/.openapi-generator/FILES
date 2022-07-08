@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/AlbumApi.ts
 apis/AssetApi.ts
 apis/AuthenticationApi.ts
