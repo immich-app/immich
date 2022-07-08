@@ -15,6 +15,8 @@ export class AssetResponseDto {
   isFavorite!: boolean;
   mimeType!: string | null;
   duration!: string;
+  webpPath!: string | null;
+  encodedVideoPath!: string | null;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
 }
@@ -32,6 +34,8 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     modifiedAt: entity.modifiedAt,
     isFavorite: entity.isFavorite,
     mimeType: entity.mimeType,
+    webpPath: entity.webpPath,
+    encodedVideoPath: entity.encodedVideoPath,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,

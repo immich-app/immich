@@ -12,15 +12,6 @@
 			};
 		}
 
-		const api = new ImmichApi(session.user.accessToken);
-
-		try {
-			const assets = await api.userApi.userControllerGetAllUsers({ isAll: true });
-			console.log('be', assets);
-		} catch (e) {
-			console.log('error request', e);
-		}
-
 		return {
 			status: 200,
 			props: {
@@ -50,7 +41,6 @@
 	import StatusBox from '../../lib/components/shared/status-box.svelte';
 	import { fileUploader } from '../../lib/utils/file-uploader';
 	import { openWebsocketConnection, closeWebsocketConnection } from '../../lib/stores/websocket';
-	import { ImmichApi } from '$lib/immich-api';
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -70,11 +60,6 @@
 	};
 
 	onMount(async () => {
-		const immichApi = new ImmichApi($session.user!.accessToken);
-
-		const allAsset = await immichApi.assetApi.assetControllerGetAllAssets();
-		console.log('fe', allAsset);
-
 		selectedAction = AppSideBarSelection.PHOTOS;
 
 		if ($session.user) {

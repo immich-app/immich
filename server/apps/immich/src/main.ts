@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { AppModule } from './app.module';
@@ -33,7 +33,11 @@ async function bootstrap() {
     .addServer('/api')
     .build();
 
-  const apiDocument = SwaggerModule.createDocument(app, config);
+  const apiDocumentOptions: SwaggerDocumentOptions = {
+    operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+  };
+
+  const apiDocument = SwaggerModule.createDocument(app, config, apiDocumentOptions);
 
   SwaggerModule.setup('doc', app, apiDocument, {
     swaggerOptions: {

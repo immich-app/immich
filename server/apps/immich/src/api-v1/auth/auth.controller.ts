@@ -14,6 +14,7 @@ import { LoginCredentialDto } from './dto/login-credential.dto';
 import { LoginResponseDto } from './response-dto/login-response.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto } from './response-dto/admin-signup-response.dto';
+import { ValidateAccessTokenResponseDto } from './response-dto/validate-asset-token-response.dto,';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -35,9 +36,7 @@ export class AuthController {
   @ApiBearerAuth()
   @Post('/validateToken')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async validateToken(@GetAuthUser() authUser: AuthUserDto) {
-    return {
-      authStatus: true,
-    };
+  async validateAccessToken(@GetAuthUser() authUser: AuthUserDto): Promise<ValidateAccessTokenResponseDto> {
+    return new ValidateAccessTokenResponseDto(true);
   }
 }

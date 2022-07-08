@@ -19,7 +19,7 @@ export class ServerInfoController {
   }
 
   @Get('/ping')
-  async getServerPulse(): Promise<ServerPingResponse> {
+  async pingServer(): Promise<ServerPingResponse> {
     return new ServerPingResponse('pong');
   }
 

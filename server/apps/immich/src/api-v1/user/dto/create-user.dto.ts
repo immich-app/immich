@@ -3,26 +3,18 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty()
-  @ApiProperty({ default: 'testuser@email.com' })
+  @ApiProperty({ example: 'testuser@email.com' })
   email!: string;
 
   @IsNotEmpty()
-  @ApiProperty({ default: 'password' })
+  @ApiProperty({ example: 'password' })
   password!: string;
 
   @IsNotEmpty()
-  @ApiProperty({ default: 'John' })
+  @ApiProperty({ example: 'John' })
   firstName!: string;
 
   @IsNotEmpty()
-  @ApiProperty({ default: 'Doe' })
+  @ApiProperty({ example: 'Doe' })
   lastName!: string;
-
-  @IsOptional()
-  @ApiProperty({ default: false })
-  isAdmin?: boolean;
-
-  @IsOptional()
-  @ApiProperty({ default: true })
-  shouldChangePassword?: boolean;
 }

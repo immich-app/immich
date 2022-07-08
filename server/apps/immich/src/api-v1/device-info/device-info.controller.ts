@@ -15,7 +15,7 @@ export class DeviceInfoController {
   constructor(private readonly deviceInfoService: DeviceInfoService) {}
 
   @Post()
-  async create(
+  async createDeviceInfo(
     @Body(ValidationPipe) createDeviceInfoDto: CreateDeviceInfoDto,
     @GetAuthUser() authUser: AuthUserDto,
   ): Promise<DeviceInfoResponseDto> {
@@ -23,7 +23,7 @@ export class DeviceInfoController {
   }
 
   @Patch()
-  async update(
+  async updateDeviceInfo(
     @Body(ValidationPipe) updateDeviceInfoDto: UpdateDeviceInfoDto,
     @GetAuthUser() authUser: AuthUserDto,
   ): Promise<DeviceInfoResponseDto> {

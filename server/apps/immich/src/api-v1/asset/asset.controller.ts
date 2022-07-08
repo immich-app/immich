@@ -115,17 +115,17 @@ export class AssetController {
   }
 
   @Get('/allObjects')
-  async getCuratedObject(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
+  async getCuratedObjects(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
     return this.assetService.getCuratedObject(authUser);
   }
 
   @Get('/allLocation')
-  async getCuratedLocation(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
+  async getCuratedLocations(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
     return this.assetService.getCuratedLocation(authUser);
   }
 
   @Get('/searchTerm')
-  async getAssetSearchTerm(@GetAuthUser() authUser: AuthUserDto): Promise<String[]> {
+  async getAssetSearchTerms(@GetAuthUser() authUser: AuthUserDto): Promise<String[]> {
     return this.assetService.getAssetSearchTerm(authUser);
   }
 
@@ -165,7 +165,7 @@ export class AssetController {
   }
 
   @Delete('/')
-  async deleteAssetById(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) assetIds: DeleteAssetDto) {
+  async deleteAsset(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) assetIds: DeleteAssetDto) {
     const deleteAssetList: AssetResponseDto[] = [];
 
     for (const id of assetIds.ids) {

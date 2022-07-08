@@ -44,7 +44,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('me')
-  async getUserInfo(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
+  async getMyUserInfo(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
     return await this.userService.getUserInfo(authUser);
   }
 
@@ -52,7 +52,7 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(AdminRolesGuard)
   @Post()
-  async createNewUser(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  async createUser(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return await this.userService.createUser(createUserDto);
   }
 

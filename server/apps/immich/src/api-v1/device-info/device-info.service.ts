@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
@@ -43,7 +43,7 @@ export class DeviceInfoService {
     });
 
     if (!deviceInfo) {
-      throw new BadRequestException('Device Not Found');
+      throw new NotFoundException('Device Not Found');
     }
 
     const res = await this.deviceRepository.update(
@@ -59,7 +59,7 @@ export class DeviceInfoService {
       });
 
       if (!updatedDeviceInfo) {
-        throw new BadRequestException('Device Not Found');
+        throw new NotFoundException('Device Not Found');
       }
 
       return mapDeviceInfoResponse(updatedDeviceInfo);

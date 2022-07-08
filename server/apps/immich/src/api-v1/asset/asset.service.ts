@@ -97,20 +97,22 @@ export class AssetService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async findOne(deviceId: string, assetId: string): Promise<AssetEntity> {
+  public async findAssetOfDevice(deviceId: string, assetId: string): Promise<AssetResponseDto> {
     const rows = await this.assetRepository.query(
       'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."deviceId" = $2',
       [assetId, deviceId],
     );
 
     if (rows.lengh == 0) {
-      throw new BadRequestException('Not Found');
+      throw new NotFoundException('Not Found');
     }
 
-    return rows[0] as AssetEntity;
+    const assetOnDevice = rows[0] as AssetEntity;
+
+    return mapAsset(assetOnDevice);
   }
 
-  public async getAssetById(authUser: AuthUserDto, assetId: string) {
+  public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
     const asset = await this.assetRepository.findOne({
       where: {
         id: assetId,
@@ -128,7 +130,7 @@ export class AssetService {
   public async downloadFile(query: ServeFileDto, res: Res) {
     try {
       let fileReadStream = null;
-      const asset = await this.findOne(query.did, query.aid);
+      const asset = await this.findAssetOfDevice(query.did, query.aid);
 
       if (query.isThumb === 'false' || !query.isThumb) {
         const { size } = await fileInfo(asset.originalPath);
@@ -194,7 +196,7 @@ export class AssetService {
 
   public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
     let fileReadStream: ReadStream;
-    const asset = await this.findOne(query.did, query.aid);
+    const asset = await this.findAssetOfDevice(query.did, query.aid);
 
     if (!asset) {
       throw new NotFoundException('Asset does not exist');
@@ -264,12 +266,13 @@ export class AssetService {
       try {
         // Handle Video
         let videoPath = asset.originalPath;
+
         let mimeType = asset.mimeType;
 
         await fs.access(videoPath, constants.R_OK | constants.W_OK);
 
         if (query.isWeb && asset.mimeType == 'video/quicktime') {
-          videoPath = asset.encodedVideoPath == '' ? asset.originalPath : asset.encodedVideoPath;
+          videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
           mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
         }
 
