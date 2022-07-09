@@ -1,6 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { serverEndpoint } from '$lib/constants';
-import { immichApi } from '$lib/immich-api';
+import { api } from '../../../api';
 
 export const post: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user) {
@@ -15,8 +15,8 @@ export const post: RequestHandler = async ({ request, locals }) => {
 	const form = await request.formData();
 	const password = form.get('password');
 
-	immichApi.setAccessToken(locals.user.accessToken);
-	const { status } = await immichApi.userApi.updateUser({
+	api.setAccessToken(locals.user.accessToken);
+	const { status } = await api.userApi.updateUser({
 		id: locals.user.id,
 		password: String(password),
 		shouldChangePassword: false,

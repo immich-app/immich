@@ -1,10 +1,10 @@
 <script context="module" lang="ts">
 	export const prerender = false;
 	import type { Load } from '@sveltejs/kit';
-	import { immichApi } from '$lib/immich-api';
+	import { api } from '../api';
 
 	export const load: Load = async ({ session }) => {
-		const { data } = await immichApi.userApi.getUserCount();
+		const { data } = await api.userApi.getUserCount();
 
 		if (session.user) {
 			return {

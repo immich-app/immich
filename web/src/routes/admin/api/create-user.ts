@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { immichApi } from '$lib/immich-api';
+import { api } from '../../../api';
 
 export const post: RequestHandler = async ({ request }) => {
 	const form = await request.formData();
@@ -9,7 +9,7 @@ export const post: RequestHandler = async ({ request }) => {
 	const firstName = form.get('firstName');
 	const lastName = form.get('lastName');
 
-	const { status } = await immichApi.userApi.createUser({
+	const { status } = await api.userApi.createUser({
 		email: String(email),
 		password: String(password),
 		firstName: String(firstName),

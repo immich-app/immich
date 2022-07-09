@@ -1,6 +1,6 @@
 import type { GetSession, Handle } from '@sveltejs/kit';
 import * as cookie from 'cookie';
-import { immichApi } from '$lib/immich-api';
+import { api } from './api';
 import { AxiosError } from 'axios';
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -13,8 +13,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 	try {
 		const { email, isAdmin, firstName, lastName, id, accessToken } = JSON.parse(cookies.session);
 
-		immichApi.setAccessToken(accessToken);
-		const { status } = await immichApi.authenticationApi.validateAccessToken();
+		api.setAccessToken(accessToken);
+		const { status } = await api.authenticationApi.validateAccessToken();
 
 		if (status === 201) {
 			event.locals.user = {

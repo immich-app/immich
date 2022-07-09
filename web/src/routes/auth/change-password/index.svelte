@@ -42,10 +42,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
-	import { immichApi } from '$lib/immich-api';
+	import { api } from '../../../api';
 
 	import ChangePasswordForm from '$lib/components/forms/change-password-form.svelte';
-	import { UserResponseDto } from '$lib/open-api';
+	import { UserResponseDto } from '$lib/../../../api/open-api';
 
 	export let user: UserResponseDto;
 

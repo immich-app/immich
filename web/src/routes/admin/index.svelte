@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import { immichApi } from '$lib/immich-api';
+	import { api } from '../../api';
 
 	export const load: Load = async ({ session }) => {
 		if (!session.user) {
@@ -10,8 +10,8 @@
 			};
 		}
 
-		immichApi.setAccessToken(session.user.accessToken);
-		const { data } = await immichApi.userApi.getAllUsers(false);
+		api.setAccessToken(session.user.accessToken);
+		const { data } = await api.userApi.getAllUsers(false);
 
 		return {
 			status: 200,
@@ -35,7 +35,7 @@
 	import FullScreenModal from '$lib/components/shared/full-screen-modal.svelte';
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
 	import StatusBox from '$lib/components/shared/status-box.svelte';
-	import { UserResponseDto } from '$lib/open-api';
+	import { UserResponseDto } from '$lib/../../api/open-api';
 
 	let selectedAction: AdminSideBarSelection;
 
@@ -53,7 +53,7 @@
 	});
 
 	const onUserCreated = async () => {
-		const { data } = await immichApi.userApi.getAllUsers(false);
+		const { data } = await api.userApi.getAllUsers(false);
 		allUsers = data;
 
 		shouldShowCreateUserForm = false;

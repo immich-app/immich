@@ -17,6 +17,11 @@
     "strict": true,
     "target": "es2020",
     "importsNotUsedAsValues": "preserve",
-    "preserveValueImports": false
+    "preserveValueImports": false,
+    "paths": {
+      "$lib": ["src/lib"],
+      "$lib/*": ["src/lib/*"],
+      "@api": ["src/api"]
+    }
   },
 }

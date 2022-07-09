@@ -25,7 +25,7 @@
 
 <script lang="ts">
 	import AdminRegistrationForm from '$lib/components/forms/admin-registration-form.svelte';
-	import { immichApi } from '$lib/immich-api';
+	import { api } from '../../../api';
 </script>
 
 <svelte:head>

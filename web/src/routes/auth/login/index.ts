@@ -1,6 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import * as cookie from 'cookie';
-import { immichApi } from '$lib/immich-api';
+import { api } from '../../../api';
 
 export const post: RequestHandler = async ({ request }) => {
 	const form = await request.formData();
@@ -9,7 +9,7 @@ export const post: RequestHandler = async ({ request }) => {
 	const password = form.get('password');
 
 	try {
-		const { data: authUser } = await immichApi.authenticationApi.login({
+		const { data: authUser } = await api.authenticationApi.login({
 			email: String(email),
 			password: String(password),
 		});

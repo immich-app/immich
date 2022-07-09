@@ -25,7 +25,6 @@ import { profileImageUploadOption } from '../../config/profile-image-upload.conf
 import { Response as Res } from 'express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from './response-dto/user-response.dto';
-import { UserEntity } from '@app/database/entities/user.entity';
 import { UserCountResponseDto } from './response-dto/user-count-response.dto';
 import { CreateProfileImageDto } from './dto/create-profile-image.dto';
 import { CreateProfileImageResponseDto } from './response-dto/create-profile-image-response.dto';
