@@ -32,7 +32,6 @@ export class UserService {
   async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
     if (isAll) {
       const allUsers = await this.userRepository.find();
-
       return allUsers.map(mapUser);
     }
 

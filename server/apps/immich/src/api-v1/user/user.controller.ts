@@ -12,6 +12,7 @@ import {
   UploadedFile,
   Response,
   StreamableFile,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
@@ -37,7 +38,10 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get()
-  async getAllUsers(@GetAuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
+  async getAllUsers(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Query('isAll', ParseBoolPipe) isAll: boolean,
+  ): Promise<UserResponseDto[]> {
     return await this.userService.getAllUsers(authUser, isAll);
   }
 
