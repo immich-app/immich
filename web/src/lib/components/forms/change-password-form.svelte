@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { session } from '$app/stores';
-
-	import { sendRegistrationForm, sendUpdateForm } from '$lib/auth-api';
+	import { sendUpdateForm } from '$lib/auth-api';
 	import { createEventDispatcher } from 'svelte';
 	import type { ImmichUser } from '../../models/immich-user';
 

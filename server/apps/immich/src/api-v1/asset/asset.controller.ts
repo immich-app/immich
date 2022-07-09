@@ -36,7 +36,7 @@ import { IAssetUploadedJob } from '@app/job/index';
 import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
 import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetResponseDto } from './response-dto/asset-response.dto';
@@ -110,8 +110,13 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
-  async getAssetThumbnail(@Param('assetId') assetId: string) {
-    return await this.assetService.getAssetThumbnail(assetId);
+  @ApiResponse({
+    content: {
+      'application/octet-stream': {},
+    },
+  })
+  async getAssetThumbnail(@Param('assetId') assetId: string): Promise<StreamableFile> {
+    return this.assetService.getAssetThumbnail(assetId);
   }
 
   @Get('/allObjects')

@@ -2393,7 +2393,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAssetThumbnail(assetId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async getAssetThumbnail(assetId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetThumbnail(assetId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -2533,7 +2533,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetThumbnail(assetId: string, options?: any): AxiosPromise<object> {
+        getAssetThumbnail(assetId: string, options?: any): AxiosPromise<void> {
             return localVarFp.getAssetThumbnail(assetId, options).then((request) => request(axios, basePath));
         },
         /**

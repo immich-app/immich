@@ -177,7 +177,7 @@ export class AssetService {
         fileReadStream = createReadStream(asset.webpPath);
       } else {
         if (!asset.resizePath) {
-          return new NotFoundException('resizePath not set');
+          throw new NotFoundException('resizePath not set');
         }
 
         await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);

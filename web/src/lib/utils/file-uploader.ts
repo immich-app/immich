@@ -1,3 +1,4 @@
+/* @vite-ignore */
 import * as exifr from 'exifr';
 import { serverEndpoint } from '../constants';
 import { uploadAssetsStore } from '$lib/stores/upload';

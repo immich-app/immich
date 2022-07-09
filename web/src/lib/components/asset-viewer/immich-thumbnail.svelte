@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AssetType, type ImmichAsset } from '../../models/immich-asset';
+	import { AssetType } from '../../models/immich-asset';
 	import { session } from '$app/stores';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
@@ -9,7 +9,7 @@
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
 	import LoadingSpinner from '../shared/loading-spinner.svelte';
-	import { AssetResponseDto } from '@api';
+	import { api, AssetResponseDto } from '@api';
 
 	const dispatch = createEventDispatcher();
 
@@ -30,16 +30,14 @@
 
 	const loadImageData = async () => {
 		if ($session.user) {
-			const res = await fetch(serverEndpoint + '/asset/thumbnail/' + asset.id, {
-				method: 'GET',
-				headers: {
-					Authorization: 'bearer ' + $session.user.accessToken,
-				},
-			});
+			api.setAccessToken($session.user.accessToken);
+			const { data } = await api.assetApi.getAssetThumbnail(asset.id, { responseType: 'blob' });
 
-			imageData = URL.createObjectURL(await res.blob());
+			if (data instanceof Blob) {
+				imageData = URL.createObjectURL(data);
 
-			return imageData;
+				return imageData;
+			}
 		}
 	};
 
