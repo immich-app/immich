@@ -1,5 +1,4 @@
-// TODO: this is being used as a response DTO. Should be changed to interface
-export class ServerInfoDto {
+export class ServerInfoResponseDto {
   diskSize!: string;
   diskUse!: string;
   diskAvailable!: string;

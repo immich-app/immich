@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
 import { randomUUID } from 'node:crypto';
 import { AssetEntity } from '@app/database/entities/asset.entity';
+import { AssetResponseDto } from '../../api-v1/asset/response-dto/asset-response.dto';
 
 @Injectable()
 export class BackgroundTaskService {
@@ -11,7 +12,7 @@ export class BackgroundTaskService {
     private backgroundTaskQueue: Queue,
   ) {}
 
-  async deleteFileOnDisk(assets: AssetEntity[]) {
+  async deleteFileOnDisk(assets: AssetResponseDto[]) {
     await this.backgroundTaskQueue.add(
       'delete-file-on-disk',
       {

@@ -16,6 +16,11 @@ import * as bcrypt from 'bcrypt';
 import { createReadStream } from 'fs';
 import { Response as Res } from 'express';
 import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
+import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
+import {
+  CreateProfileImageResponseDto,
+  mapCreateProfileImageResponse,
+} from './response-dto/create-profile-image-response.dto';
 
 @Injectable()
 export class UserService {
@@ -24,24 +29,32 @@ export class UserService {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  async getAllUsers(authUser: AuthUserDto, isAll: boolean) {
+  async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
     if (isAll) {
-      return await this.userRepository.find();
+      const allUsers = await this.userRepository.find();
+
+      return allUsers.map(mapUser);
     }
 
-    return await this.userRepository.find({
+    const allUserExceptRequestedUser = await this.userRepository.find({
       where: { id: Not(authUser.id) },
       order: {
         createdAt: 'DESC',
       },
     });
+
+    return allUserExceptRequestedUser.map(mapUser);
   }
 
-  async getUserInfo(authUser: AuthUserDto) {
-    return this.userRepository.findOne({ where: { id: authUser.id } });
+  async getUserInfo(authUser: AuthUserDto): Promise<UserResponseDto> {
+    const user = await this.userRepository.findOne({ where: { id: authUser.id } });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return mapUser(user);
   }
 
-  async getUserCount(isAdmin: boolean) {
+  async getUserCount(isAdmin: boolean): Promise<UserCountResponseDto> {
     let users;
 
     if (isAdmin) {
@@ -50,9 +63,7 @@ export class UserService {
       users = await this.userRepository.find();
     }
 
-    return {
-      userCount: users.length,
-    };
+    return mapUserCountResponse(users.length);
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
@@ -84,7 +95,7 @@ export class UserService {
     return bcrypt.hash(password, salt);
   }
 
-  async updateUser(updateUserDto: UpdateUserDto) {
+  async updateUser(updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({ where: { id: updateUserDto.id } });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -115,31 +126,23 @@ export class UserService {
     try {
       const updatedUser = await this.userRepository.save(user);
 
-      // TODO: this should probably retrun UserResponseDto
-      return {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        isAdmin: updatedUser.isAdmin,
-        profileImagePath: updatedUser.profileImagePath,
-      };
+      return mapUser(updatedUser);
     } catch (e) {
       Logger.error(e, 'Create new user');
       throw new InternalServerErrorException('Failed to register new user');
     }
   }
 
-  async createProfileImage(authUser: AuthUserDto, fileInfo: Express.Multer.File) {
+  async createProfileImage(
+    authUser: AuthUserDto,
+    fileInfo: Express.Multer.File,
+  ): Promise<CreateProfileImageResponseDto> {
     try {
       await this.userRepository.update(authUser.id, {
         profileImagePath: fileInfo.path,
       });
 
-      return {
-        userId: authUser.id,
-        profileImagePath: fileInfo.path,
-      };
+      return mapCreateProfileImageResponse(authUser.id, fileInfo.path);
     } catch (e) {
       Logger.error(e, 'Create User Profile Image');
       throw new InternalServerErrorException('Failed to create new user profile image');

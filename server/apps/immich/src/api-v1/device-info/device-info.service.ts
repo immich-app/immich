@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateDeviceInfoDto } from './dto/create-device-info.dto';
 import { UpdateDeviceInfoDto } from './dto/update-device-info.dto';
 import { DeviceInfoEntity } from '@app/database/entities/device-info.entity';
+import { DeviceInfoResponseDto, mapDeviceInfoResponse } from './response-dto/create-device-info-response.dto';
 
 @Injectable()
 export class DeviceInfoService {
@@ -13,7 +14,7 @@ export class DeviceInfoService {
     private deviceRepository: Repository<DeviceInfoEntity>,
   ) {}
 
-  async create(createDeviceInfoDto: CreateDeviceInfoDto, authUser: AuthUserDto) {
+  async create(createDeviceInfoDto: CreateDeviceInfoDto, authUser: AuthUserDto): Promise<DeviceInfoResponseDto> {
     const res = await this.deviceRepository.findOne({
       where: {
         deviceId: createDeviceInfoDto.deviceId,
@@ -23,7 +24,7 @@ export class DeviceInfoService {
 
     if (res) {
       Logger.log('Device Info Exist', 'createDeviceInfo');
-      return res;
+      return mapDeviceInfoResponse(res);
     }
 
     const deviceInfo = new DeviceInfoEntity();
@@ -31,20 +32,18 @@ export class DeviceInfoService {
     deviceInfo.deviceType = createDeviceInfoDto.deviceType;
     deviceInfo.userId = authUser.id;
 
-    try {
-      return await this.deviceRepository.save(deviceInfo);
-    } catch (e) {
-      Logger.error('Error creating new device info', 'createDeviceInfo');
-    }
+    const newDeviceInfo = await this.deviceRepository.save(deviceInfo);
+
+    return mapDeviceInfoResponse(newDeviceInfo);
   }
 
-  async update(userId: string, updateDeviceInfoDto: UpdateDeviceInfoDto) {
+  async update(userId: string, updateDeviceInfoDto: UpdateDeviceInfoDto): Promise<DeviceInfoResponseDto> {
     const deviceInfo = await this.deviceRepository.findOne({
       where: { deviceId: updateDeviceInfoDto.deviceId, userId: userId },
     });
 
     if (!deviceInfo) {
-      throw new BadRequestException('Device Not Found');
+      throw new NotFoundException('Device Not Found');
     }
 
     const res = await this.deviceRepository.update(
@@ -55,9 +54,15 @@ export class DeviceInfoService {
     );
 
     if (res.affected == 1) {
-      return await this.deviceRepository.findOne({
+      const updatedDeviceInfo = await this.deviceRepository.findOne({
         where: { deviceId: updateDeviceInfoDto.deviceId, userId: userId },
       });
+
+      if (!updatedDeviceInfo) {
+        throw new NotFoundException('Device Not Found');
+      }
+
+      return mapDeviceInfoResponse(updatedDeviceInfo);
     } else {
       throw new BadRequestException('Bad Request');
     }

@@ -22,20 +22,23 @@ import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@ApiTags('Album')
 @Controller('album')
 export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
   @Post()
-  async create(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createAlbumDto: CreateAlbumDto) {
+  async createAlbum(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createAlbumDto: CreateAlbumDto) {
     return this.albumService.create(authUser, createAlbumDto);
   }
 
   @Put('/:albumId/users')
-  async addUsers(
+  async addUsersToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) addUsersDto: AddUsersDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
@@ -44,7 +47,7 @@ export class AlbumController {
   }
 
   @Put('/:albumId/assets')
-  async addAssets(
+  async addAssetsToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) addAssetsDto: AddAssetsDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,

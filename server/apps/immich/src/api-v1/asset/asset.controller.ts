@@ -36,8 +36,14 @@ import { IAssetUploadedJob } from '@app/job/index';
 import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
 import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
+import { AssetResponseDto } from './response-dto/asset-response.dto';
 
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@ApiTags('Asset')
 @Controller('asset')
 export class AssetController {
   constructor(
@@ -89,7 +95,7 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Query(ValidationPipe) query: ServeFileDto,
-  ) {
+  ): Promise<StreamableFile> {
     return this.assetService.downloadFile(query, res);
   }
 
@@ -109,43 +115,58 @@ export class AssetController {
   }
 
   @Get('/allObjects')
-  async getCuratedObject(@GetAuthUser() authUser: AuthUserDto) {
+  async getCuratedObjects(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
     return this.assetService.getCuratedObject(authUser);
   }
 
   @Get('/allLocation')
-  async getCuratedLocation(@GetAuthUser() authUser: AuthUserDto) {
+  async getCuratedLocations(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
     return this.assetService.getCuratedLocation(authUser);
   }
 
   @Get('/searchTerm')
-  async getAssetSearchTerm(@GetAuthUser() authUser: AuthUserDto) {
+  async getAssetSearchTerms(@GetAuthUser() authUser: AuthUserDto): Promise<String[]> {
     return this.assetService.getAssetSearchTerm(authUser);
   }
 
   @Post('/search')
-  async searchAsset(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) searchAssetDto: SearchAssetDto) {
+  async searchAsset(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) searchAssetDto: SearchAssetDto,
+  ): Promise<AssetResponseDto[]> {
     return this.assetService.searchAsset(authUser, searchAssetDto);
   }
 
+  /**
+   * Get all AssetEntity belong to the user
+   */
   @Get('/')
-  async getAllAssets(@GetAuthUser() authUser: AuthUserDto) {
+  async getAllAssets(@GetAuthUser() authUser: AuthUserDto): Promise<AssetResponseDto[]> {
     return await this.assetService.getAllAssets(authUser);
   }
 
+  /**
+   * Get all asset of a device that are in the database, ID only.
+   */
   @Get('/:deviceId')
   async getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param('deviceId') deviceId: string) {
     return await this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
   }
 
+  /**
+   * Get a single asset's information
+   */
   @Get('/assetById/:assetId')
-  async getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param('assetId') assetId: string) {
+  async getAssetById(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param('assetId') assetId: string,
+  ): Promise<AssetResponseDto> {
     return await this.assetService.getAssetById(authUser, assetId);
   }
 
   @Delete('/')
-  async deleteAssetById(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) assetIds: DeleteAssetDto) {
-    const deleteAssetList: AssetEntity[] = [];
+  async deleteAsset(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) assetIds: DeleteAssetDto) {
+    const deleteAssetList: AssetResponseDto[] = [];
 
     for (const id of assetIds.ids) {
       const assets = await this.assetService.getAssetById(authUser, id);

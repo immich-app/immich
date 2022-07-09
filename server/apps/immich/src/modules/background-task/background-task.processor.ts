@@ -5,6 +5,7 @@ import { AssetEntity } from '@app/database/entities/asset.entity';
 import fs from 'fs';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import { Job } from 'bull';
+import { AssetResponseDto } from '../../api-v1/asset/response-dto/asset-response.dto';
 
 @Processor('background-task')
 export class BackgroundTaskProcessor {
@@ -18,7 +19,7 @@ export class BackgroundTaskProcessor {
 
   // TODO: Should probably use constants / Interfaces for Queue names / data
   @Process('delete-file-on-disk')
-  async deleteFileOnDisk(job: Job<{ assets: AssetEntity[] }>) {
+  async deleteFileOnDisk(job: Job<{ assets: AssetResponseDto[] }>) {
     const { assets } = job.data;
 
     for (const asset of assets) {

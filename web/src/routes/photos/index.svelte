@@ -3,7 +3,6 @@
 
 	import type { Load } from '@sveltejs/kit';
 	import { getAssetsInfo } from '$lib/stores/assets';
-	import { checkAppVersion } from '$lib/utils/check-app-version';
 
 	export const load: Load = async ({ session }) => {
 		if (!session.user) {
@@ -25,7 +24,7 @@
 <script lang="ts">
 	import type { ImmichUser } from '$lib/models/immich-user';
 
-	import NavigationBar from '../../lib/components/shared/navigation-bar.svelte';
+	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
 	import SideBarButton from '$lib/components/shared/side-bar-button.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 
@@ -35,16 +34,16 @@
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
-	import ImmichThumbnail from '../../lib/components/asset-viewer/immich-thumbnail.svelte';
+	import ImmichThumbnail from '$lib/components/asset-viewer/immich-thumbnail.svelte';
 	import moment from 'moment';
-	import type { ImmichAsset } from '../../lib/models/immich-asset';
-	import AssetViewer from '../../lib/components/asset-viewer/asset-viewer.svelte';
-	import DownloadPanel from '../../lib/components/asset-viewer/download-panel.svelte';
-	import StatusBox from '../../lib/components/shared/status-box.svelte';
-	import { fileUploader } from '../../lib/utils/file-uploader';
-	import { openWebsocketConnection, closeWebsocketConnection } from '../../lib/stores/websocket';
+	import type { ImmichAsset } from '$lib/models/immich-asset';
+	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
+	import StatusBox from '$lib/components/shared/status-box.svelte';
+	import { fileUploader } from '$lib/utils/file-uploader';
+	import { openWebsocketConnection, closeWebsocketConnection } from '$lib/stores/websocket';
 
 	export let user: ImmichUser;
+
 	let selectedAction: AppSideBarSelection;
 
 	let selectedGroupThumbnail: number | null;

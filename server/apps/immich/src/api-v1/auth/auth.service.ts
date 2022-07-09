@@ -7,7 +7,8 @@ import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { JwtPayloadDto } from './dto/jwt-payload.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import * as bcrypt from 'bcrypt';
-import { mapUser, UserResponseDto } from '../user/response-dto/user-response.dto';
+import { LoginResponseDto, mapLoginResponse } from './response-dto/login-response.dto';
+import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/admin-signup-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -49,7 +50,7 @@ export class AuthService {
     return null;
   }
 
-  public async login(loginCredential: LoginCredentialDto) {
+  public async login(loginCredential: LoginCredentialDto): Promise<LoginResponseDto> {
     const validatedUser = await this.validateUser(loginCredential);
 
     if (!validatedUser) {
@@ -57,20 +58,12 @@ export class AuthService {
     }
 
     const payload = new JwtPayloadDto(validatedUser.id, validatedUser.email);
+    const accessToken = await this.immichJwtService.generateToken(payload);
 
-    return {
-      accessToken: await this.immichJwtService.generateToken(payload),
-      userId: validatedUser.id,
-      userEmail: validatedUser.email,
-      firstName: validatedUser.firstName,
-      lastName: validatedUser.lastName,
-      isAdmin: validatedUser.isAdmin,
-      profileImagePath: validatedUser.profileImagePath,
-      shouldChangePassword: validatedUser.shouldChangePassword,
-    };
+    return mapLoginResponse(validatedUser, accessToken);
   }
 
-  public async adminSignUp(signUpCredential: SignUpDto): Promise<UserResponseDto> {
+  public async adminSignUp(signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
     const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
 
     if (adminUser) {
@@ -88,7 +81,7 @@ export class AuthService {
     try {
       const savedNewAdminUserUser = await this.userRepository.save(newAdminUser);
 
-      return mapUser(savedNewAdminUserUser);
+      return mapAdminSignupResponse(savedNewAdminUserUser);
     } catch (e) {
       Logger.error('e', 'signUp');
       throw new InternalServerErrorException('Failed to register new admin user');

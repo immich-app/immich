@@ -22,7 +22,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/immich/test/jest-e2e.json",
-    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
+    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
+    "api:generate-typescript": "rm -rf ../web/src/lib/open-api && npx openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ../web/src/lib/open-api"
   },
   "dependencies": {
     "@mapbox/mapbox-sdk": "^0.13.3",
@@ -37,6 +38,7 @@
     "@nestjs/platform-fastify": "^8.4.7",
     "@nestjs/platform-socket.io": "^8.4.7",
     "@nestjs/schedule": "^2.0.1",
+    "@nestjs/swagger": "^5.2.1",
     "@nestjs/typeorm": "^8.1.4",
     "@nestjs/websockets": "^8.4.7",
     "@socket.io/redis-adapter": "^7.1.0",
@@ -60,6 +62,7 @@
     "rxjs": "^7.2.0",
     "sharp": "^0.28.0",
     "socket.io-redis": "^6.1.1",
+    "swagger-ui-express": "^4.4.0",
     "systeminformation": "^5.11.0",
     "typeorm": "^0.3.6"
   },
@@ -83,6 +86,7 @@
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
+    "@openapitools/openapi-generator-cli": "2.5.1",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
