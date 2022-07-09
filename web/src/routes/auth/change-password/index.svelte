@@ -13,14 +13,8 @@
 		}
 
 		try {
-			const res = await fetch(serverEndpoint + '/user/me', {
-				method: 'GET',
-				headers: {
-					Authorization: 'Bearer ' + session.user.accessToken,
-				},
-			});
-
-			const userInfo: ImmichUser = await res.json();
+			immichApi.setAccessToken(session.user.accessToken);
+			const { data: userInfo } = await immichApi.userApi.getMyUserInfo();
 
 			if (userInfo.shouldChangePassword) {
 				return {
@@ -47,15 +41,16 @@
 
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { session } from '$app/stores';
-	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import ChangePasswordForm from '../../../lib/components/forms/change-password-form.svelte';
-	import { serverEndpoint } from '../../../lib/constants';
+	import { immichApi } from '$lib/immich-api';
 
-	export let user: ImmichUser;
+	import ChangePasswordForm from '$lib/components/forms/change-password-form.svelte';
+	import { UserResponseDto } from '$lib/open-api';
+
+	export let user: UserResponseDto;
 
 	const onSuccessHandler = async () => {
+		/** Svelte route fetch */
 		const res = await fetch('/auth/logout', { method: 'POST' });
 
 		if (res.status == 200 && res.statusText == 'OK') {

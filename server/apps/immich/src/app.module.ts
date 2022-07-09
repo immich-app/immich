@@ -15,6 +15,7 @@ import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { DatabaseModule } from '@app/database';
+import { AppLoggerMiddleware } from './middlewares/app-logger.middleware';
 
 @Module({
   imports: [
