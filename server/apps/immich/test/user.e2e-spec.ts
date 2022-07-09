@@ -86,7 +86,7 @@ describe('User', () => {
       });
 
       it('fetches the user collection excluding the auth user', async () => {
-        const { status, body } = await request(app.getHttpServer()).get('/user');
+        const { status, body } = await request(app.getHttpServer()).get('/user?isAll=false');
         expect(status).toEqual(200);
         expect(body).toHaveLength(2);
         expect(body).toEqual(
