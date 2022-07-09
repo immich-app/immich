@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import { getRequest } from '$lib/api';
+	import { getRequest } from '$lib/utils/api-helper';
 
 	export const load: Load = async ({ session, fetch }) => {
 		if (!session.user) {

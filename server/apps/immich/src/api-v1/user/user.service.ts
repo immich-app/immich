@@ -54,14 +54,8 @@ export class UserService {
     return mapUser(user);
   }
 
-  async getUserCount(isAdmin: boolean): Promise<UserCountResponseDto> {
-    let users;
-
-    if (isAdmin) {
-      users = await this.userRepository.find({ where: { isAdmin: true } });
-    } else {
-      users = await this.userRepository.find();
-    }
+  async getUserCount(): Promise<UserCountResponseDto> {
+    const users = await this.userRepository.find();
 
     return mapUserCountResponse(users.length);
   }

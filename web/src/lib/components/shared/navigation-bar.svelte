@@ -4,7 +4,6 @@
 	import type { ImmichUser } from '$lib/models/immich-user';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
-	import { postRequest } from '../../api';
 	import { serverEndpoint } from '../../constants';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
 	import { clickOutside } from './click-outside';

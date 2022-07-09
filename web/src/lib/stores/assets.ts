@@ -1,5 +1,5 @@
 import { writable, derived } from 'svelte/store';
-import { getRequest } from '$lib/api';
+import { getRequest } from '$lib/utils/api-helper';
 import type { ImmichAsset } from '$lib/models/immich-asset';
 import lodash from 'lodash-es';
 import _ from 'lodash';

@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { putRequest } from '../../../lib/api';
+import { putRequest } from '$lib/utils/api-helper';
 import * as cookie from 'cookie';
 
 export const post: RequestHandler = async ({ request, locals }) => {

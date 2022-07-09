@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { getRequest } from '../../../../lib/api';
+import { getRequest } from '$lib/utils/api-helper';
 
 export const get: RequestHandler = async ({ request, locals }) => {
 	const allUsers = await getRequest('user?isAll=true', locals.user!.accessToken);

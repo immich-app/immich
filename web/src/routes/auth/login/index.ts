@@ -1,7 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { serverEndpoint } from '$lib/constants';
 import * as cookie from 'cookie';
-import { getRequest, putRequest } from '$lib/api';
 
 type AuthUser = {
 	accessToken: string;

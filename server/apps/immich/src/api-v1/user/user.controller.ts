@@ -57,8 +57,8 @@ export class UserController {
   }
 
   @Get('/count')
-  async getUserCount(@Query('isAdmin') isAdmin: boolean): Promise<UserCountResponseDto> {
-    return await this.userService.getUserCount(isAdmin);
+  async getUserCount(): Promise<UserCountResponseDto> {
+    return await this.userService.getUserCount();
   }
 
   @UseGuards(JwtAuthGuard)
