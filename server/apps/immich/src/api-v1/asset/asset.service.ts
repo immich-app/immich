@@ -202,7 +202,6 @@ export class AssetService {
       throw new NotFoundException('Asset does not exist');
     }
 
-    console.log(asset.type);
     // Handle Sending Images
     if (asset.type == AssetType.IMAGE) {
       try {
@@ -265,7 +264,6 @@ export class AssetService {
       }
     } else {
       try {
-        console.log('servervideo');
         // Handle Video
         let videoPath = asset.originalPath;
 

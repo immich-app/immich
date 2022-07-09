@@ -31,11 +31,10 @@
 	const loadImageData = async () => {
 		if ($session.user) {
 			api.setAccessToken($session.user.accessToken);
-			const { data } = await api.assetApi.getAssetThumbnail(asset.id, { responseType: 'blob' });
 
+			const { data } = await api.assetApi.getAssetThumbnail(asset.id, { responseType: 'blob' });
 			if (data instanceof Blob) {
 				imageData = URL.createObjectURL(data);
-
 				return imageData;
 			}
 		}
@@ -43,18 +42,20 @@
 
 	const loadVideoData = async () => {
 		isThumbnailVideoPlaying = false;
-		const videoUrl = `/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isWeb=true`;
 
 		if ($session.user) {
 			try {
-				const res = await fetch(serverEndpoint + videoUrl, {
-					method: 'GET',
-					headers: {
-						Authorization: 'bearer ' + $session.user.accessToken,
-					},
+				api.setAccessToken($session.user.accessToken);
+
+				const { data } = await api.assetApi.serveFile(asset.deviceAssetId, asset.deviceId, false, true, {
+					responseType: 'blob',
 				});
 
-				videoData = URL.createObjectURL(await res.blob());
+				if (!(data instanceof Blob)) {
+					return;
+				}
+
+				videoData = URL.createObjectURL(data);
 
 				videoPlayerNode.src = videoData;
 				// videoPlayerNode.src = videoData + '#t=0,5';
