@@ -41,7 +41,6 @@
 	import StatusBox from '$lib/components/shared/status-box.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
 	import { openWebsocketConnection, closeWebsocketConnection } from '$lib/stores/websocket';
-	import { immichApi } from '$lib/immich-api';
 
 	export let user: ImmichUser;
 
@@ -65,10 +64,6 @@
 		selectedAction = AppSideBarSelection.PHOTOS;
 
 		if ($session.user) {
-			// immichApi.setAccessToken($session.user.accessToken);
-			// const assets = await immichApi.assetApi.getAllAssets();
-			// console.log(assets);
-
 			await getAssetsInfo($session.user.accessToken);
 
 			openWebsocketConnection($session.user.accessToken);
