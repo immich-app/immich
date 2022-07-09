@@ -6,7 +6,7 @@ import {
 	DeviceInfoApi,
 	ServerInfoApi,
 	UserApi,
-} from '../open-api';
+} from './open-api';
 
 class ImmichApi {
 	public userApi: UserApi;
@@ -31,4 +31,4 @@ class ImmichApi {
 	}
 }
 
-export const immichApi = new ImmichApi();
+export const api = new ImmichApi();
