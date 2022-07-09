@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { UserResponseDto } from '$lib/../../../api/open-api';
+	import { UserResponseDto } from '@api';
 
 	import { createEventDispatcher } from 'svelte';
 	import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';

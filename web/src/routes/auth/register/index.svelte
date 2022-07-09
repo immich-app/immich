@@ -2,7 +2,7 @@
 	import type { Load } from '@sveltejs/kit';
 
 	export const load: Load = async ({ session }) => {
-		const { data } = await immichApi.userApi.getUserCount();
+		const { data } = await api.userApi.getUserCount();
 
 		if (data.userCount != 0) {
 			// Admin has been registered, redirect to login
@@ -25,7 +25,7 @@
 
 <script lang="ts">
 	import AdminRegistrationForm from '$lib/components/forms/admin-registration-form.svelte';
-	import { api } from '../../../api';
+	import { api } from '@api';
 </script>
 
 <svelte:head>

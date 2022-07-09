@@ -2,7 +2,6 @@
 	export const prerender = false;
 
 	import type { Load } from '@sveltejs/kit';
-	import type { ImmichUser } from '$lib/models/immich-user';
 
 	export const load: Load = async ({ session }) => {
 		if (!session.user) {
@@ -13,8 +12,8 @@
 		}
 
 		try {
-			immichApi.setAccessToken(session.user.accessToken);
-			const { data: userInfo } = await immichApi.userApi.getMyUserInfo();
+			api.setAccessToken(session.user.accessToken);
+			const { data: userInfo } = await api.userApi.getMyUserInfo();
 
 			if (userInfo.shouldChangePassword) {
 				return {
@@ -42,10 +41,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
-	import { api } from '../../../api';
 
 	import ChangePasswordForm from '$lib/components/forms/change-password-form.svelte';
-	import { UserResponseDto } from '$lib/../../../api/open-api';
+	import { api, UserResponseDto } from '@api';
 
 	export let user: UserResponseDto;
 

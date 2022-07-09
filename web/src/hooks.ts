@@ -1,6 +1,6 @@
 import type { GetSession, Handle } from '@sveltejs/kit';
 import * as cookie from 'cookie';
-import { api } from './api';
+import { api } from '@api';
 import { AxiosError } from 'axios';
 
 export const handle: Handle = async ({ event, resolve }) => {

@@ -1,6 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import * as cookie from 'cookie';
-import { api } from '../../../api';
+import { api } from '@api';
 
 export const post: RequestHandler = async ({ request }) => {
 	const form = await request.formData();

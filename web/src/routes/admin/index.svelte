@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import { api } from '../../api';
+	import { api, UserResponseDto } from '@api';
 
 	export const load: Load = async ({ session }) => {
 		if (!session.user) {
@@ -35,7 +35,6 @@
 	import FullScreenModal from '$lib/components/shared/full-screen-modal.svelte';
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
 	import StatusBox from '$lib/components/shared/status-box.svelte';
-	import { UserResponseDto } from '$lib/../../api/open-api';
 
 	let selectedAction: AdminSideBarSelection;
 

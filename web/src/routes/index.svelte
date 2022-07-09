@@ -1,7 +1,7 @@
 <script context="module" lang="ts">
 	export const prerender = false;
 	import type { Load } from '@sveltejs/kit';
-	import { api } from '../api';
+	import { api } from '@api';
 
 	export const load: Load = async ({ session }) => {
 		const { data } = await api.userApi.getUserCount();
