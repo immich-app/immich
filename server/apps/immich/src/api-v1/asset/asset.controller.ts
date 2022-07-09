@@ -94,7 +94,7 @@ export class AssetController {
   async downloadFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
-    @Query(ValidationPipe) query: ServeFileDto,
+    @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
   ): Promise<any> {
     return this.assetService.downloadFile(query, res);
   }
@@ -104,7 +104,7 @@ export class AssetController {
     @Headers() headers: Record<string, string>,
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
-    @Query(ValidationPipe) query: ServeFileDto,
+    @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
   ): Promise<any> {
     return this.assetService.serveFile(authUser, query, res, headers);
   }
