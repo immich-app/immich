@@ -274,6 +274,19 @@ export interface CheckDuplicateAssetDto {
 /**
  * 
  * @export
+ * @interface CheckDuplicateAssetResponseDto
+ */
+export interface CheckDuplicateAssetResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CheckDuplicateAssetResponseDto
+     */
+    'isExist': boolean;
+}
+/**
+ * 
+ * @export
  * @interface CreateAlbumDto
  */
 export interface CreateAlbumDto {
@@ -2330,7 +2343,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async checkDuplicateAsset(checkDuplicateAssetDto: CheckDuplicateAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async checkDuplicateAsset(checkDuplicateAssetDto: CheckDuplicateAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckDuplicateAssetResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.checkDuplicateAsset(checkDuplicateAssetDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -2476,7 +2489,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        checkDuplicateAsset(checkDuplicateAssetDto: CheckDuplicateAssetDto, options?: any): AxiosPromise<void> {
+        checkDuplicateAsset(checkDuplicateAssetDto: CheckDuplicateAssetDto, options?: any): AxiosPromise<CheckDuplicateAssetResponseDto> {
             return localVarFp.checkDuplicateAsset(checkDuplicateAssetDto, options).then((request) => request(axios, basePath));
         },
         /**

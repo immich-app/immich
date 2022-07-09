@@ -39,6 +39,7 @@ import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetResponseDto } from './response-dto/asset-response.dto';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -194,11 +195,9 @@ export class AssetController {
   async checkDuplicateAsset(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) checkDuplicateAssetDto: CheckDuplicateAssetDto,
-  ) {
+  ): Promise<CheckDuplicateAssetResponseDto> {
     const res = await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
 
-    return {
-      isExist: res,
-    };
+    return new CheckDuplicateAssetResponseDto(res);
   }
 }

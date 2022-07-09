@@ -98,8 +98,6 @@
 
 	const downloadFile = async () => {
 		if ($session.user) {
-			// const url = `${serverEndpoint}/asset/download?aid=${selectedAsset.deviceAssetId}&did=${selectedAsset.deviceId}&isThumb=false`;
-
 			try {
 				const imageName = selectedAsset.exifInfo?.imageName ? selectedAsset.exifInfo?.imageName : selectedAsset.id;
 				const imageExtension = selectedAsset.originalPath.split('.')[1];

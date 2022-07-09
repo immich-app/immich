@@ -3,6 +3,7 @@ import * as exifr from 'exifr';
 import { serverEndpoint } from '../constants';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
+import { api } from '@api';
 
 export async function fileUploader(asset: File, accessToken: string) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
@@ -52,19 +53,15 @@ export async function fileUploader(asset: File, accessToken: string) {
 		formData.append('assetData', asset);
 
 		// Check if asset upload on server before performing upload
-		const res = await fetch(serverEndpoint + '/asset/check', {
-			method: 'POST',
-			body: JSON.stringify({ deviceAssetId, deviceId: 'WEB' }),
-			headers: {
-				Authorization: 'Bearer ' + accessToken,
-				'Content-Type': 'application/json',
-			},
+
+		api.setAccessToken(accessToken);
+		const { data, status } = await api.assetApi.checkDuplicateAsset({
+			deviceAssetId: String(deviceAssetId),
+			deviceId: 'WEB',
 		});
 
-		if (res.status === 200) {
-			const { isExist } = await res.json();
-
-			if (isExist) {
+		if (status === 200) {
+			if (data.isExist) {
 				return;
 			}
 		}
