@@ -9,8 +9,6 @@
 	import PhotoViewer from './photo-viewer.svelte';
 	import DetailPanel from './detail-panel.svelte';
 	import { session } from '$app/stores';
-	import { serverEndpoint } from '../../constants';
-	import axios from 'axios';
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import { api, AssetResponseDto } from '@api';
@@ -132,28 +130,11 @@
 						},
 					},
 				);
-				console.log(data);
 
 				if (!(data instanceof Blob)) {
 					return;
 				}
 
-				// const res = await axios.get(url, {
-				// 	responseType: 'blob',
-				// 	headers: {
-				// 		Authorization: 'Bearer ' + $session.user.accessToken,
-				// 	},
-				// 	onDownloadProgress: (progressEvent) => {
-				// 		if (progressEvent.lengthComputable) {
-				// 			const total = progressEvent.total;
-				// 			const current = progressEvent.loaded;
-				// 			let percentCompleted = Math.floor((current / total) * 100);
-
-				// 			$downloadAssets[imageFileName] = percentCompleted;
-				// 		}
-				// 	},
-				// });
-				console.log(status);
 				if (status === 200) {
 					const fileUrl = URL.createObjectURL(data);
 					const anchor = document.createElement('a');

@@ -8,7 +8,6 @@ import {
   Get,
   Param,
   ValidationPipe,
-  StreamableFile,
   Query,
   Response,
   Headers,

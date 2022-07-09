@@ -87,10 +87,7 @@ export class UserController {
   }
 
   @Get('/profile-image/:userId')
-  async getProfileImage(
-    @Param('userId') userId: string,
-    @Response({ passthrough: true }) res: Res,
-  ): Promise<StreamableFile | undefined> {
+  async getProfileImage(@Param('userId') userId: string, @Response({ passthrough: true }) res: Res): Promise<any> {
     return this.userService.getUserProfileImage(userId, res);
   }
 }

@@ -128,7 +128,6 @@ export class AssetService {
   }
 
   public async downloadFile(query: ServeFileDto, res: Res) {
-    console.log('download file ', query);
     try {
       let fileReadStream = null;
       const asset = await this.findAssetOfDevice(query.did, query.aid);
@@ -146,7 +145,6 @@ export class AssetService {
         fileReadStream = createReadStream(asset.originalPath);
       } else {
         // Download Image
-        console.log(Boolean(query.isThumb));
         if (!query.isThumb) {
           /**
            * Download Image Original File

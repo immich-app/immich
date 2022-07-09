@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import type { ImmichUser } from '$lib/models/immich-user';
@@ -7,6 +8,7 @@
 	import { serverEndpoint } from '../../constants';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
 	import { clickOutside } from './click-outside';
+	import { api } from '@api';
 
 	export let user: ImmichUser;
 
@@ -15,12 +17,28 @@
 
 	const dispatch = createEventDispatcher();
 	let shouldShowAccountInfoPanel = false;
-	onMount(async () => {
-		const res = await fetch(`${serverEndpoint}/user/profile-image/${user.id}`, { method: 'GET' });
 
-		if (res.status == 200) shouldShowProfileImage = true;
+	onMount(() => {
+		getUserProfileImage();
 	});
 
+	const getUserProfileImage = async () => {
+		if ($session.user) {
+			try {
+				api.setAccessToken($session.user.accessToken);
+				const { status } = await api.userApi.getProfileImage(user.id);
+
+				if (status === 200) {
+					shouldShowProfileImage = true;
+				} else {
+					shouldShowProfileImage = false;
+				}
+			} catch (e) {
+				console.log('My Error ', e);
+				shouldShowProfileImage = false;
+			}
+		}
+	};
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
 	};
