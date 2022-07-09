@@ -13,10 +13,11 @@
 	import axios from 'axios';
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
+	import { AssetResponseDto } from '@api';
 
 	const dispatch = createEventDispatcher();
 
-	export let selectedAsset: ImmichAsset;
+	export let selectedAsset: AssetResponseDto;
 
 	export let selectedIndex: number;
 

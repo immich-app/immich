@@ -9,10 +9,11 @@
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
 	import LoadingSpinner from '../shared/loading-spinner.svelte';
+	import { AssetResponseDto } from '@api';
 
 	const dispatch = createEventDispatcher();
 
-	export let asset: ImmichAsset;
+	export let asset: AssetResponseDto;
 	export let groupIndex: number;
 
 	let imageData: string;
