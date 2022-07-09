@@ -132,7 +132,7 @@ export class AssetService {
       let fileReadStream = null;
       const asset = await this.findAssetOfDevice(query.did, query.aid);
 
-      if (query.isThumb === 'false' || !query.isThumb) {
+      if (!query.isThumb) {
         const { size } = await fileInfo(asset.originalPath);
         res.set({
           'Content-Type': asset.mimeType,
@@ -202,8 +202,9 @@ export class AssetService {
       throw new NotFoundException('Asset does not exist');
     }
 
+    console.log(asset.type);
     // Handle Sending Images
-    if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
+    if (asset.type == AssetType.IMAGE) {
       try {
         /**
          * Serve file viewer on the web
@@ -225,7 +226,7 @@ export class AssetService {
         /**
          * Serve thumbnail image for both web and mobile app
          */
-        if (query.isThumb === 'false' || !query.isThumb) {
+        if (!query.isThumb) {
           res.set({
             'Content-Type': asset.mimeType,
           });
@@ -262,8 +263,9 @@ export class AssetService {
           `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
         );
       }
-    } else if (asset.type == AssetType.VIDEO) {
+    } else {
       try {
+        console.log('servervideo');
         // Handle Video
         let videoPath = asset.originalPath;
 

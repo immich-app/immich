@@ -95,7 +95,7 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Query(ValidationPipe) query: ServeFileDto,
-  ): Promise<StreamableFile> {
+  ): Promise<any> {
     return this.assetService.downloadFile(query, res);
   }
 
@@ -105,17 +105,12 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Query(ValidationPipe) query: ServeFileDto,
-  ): Promise<StreamableFile | undefined> {
+  ): Promise<any> {
     return this.assetService.serveFile(authUser, query, res, headers);
   }
 
   @Get('/thumbnail/:assetId')
-  @ApiResponse({
-    content: {
-      'application/octet-stream': {},
-    },
-  })
-  async getAssetThumbnail(@Param('assetId') assetId: string): Promise<StreamableFile> {
+  async getAssetThumbnail(@Param('assetId') assetId: string): Promise<any> {
     return this.assetService.getAssetThumbnail(assetId);
   }
 

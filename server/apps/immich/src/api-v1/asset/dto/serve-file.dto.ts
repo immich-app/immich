@@ -11,10 +11,10 @@ export class ServeFileDto {
   did!: string;
 
   @IsOptional()
-  @IsBooleanString()
-  isThumb?: string;
+  @ApiProperty({ type: Boolean, title: 'Is serve thumbnail (resize) file' })
+  isThumb?: boolean;
 
   @IsOptional()
-  @IsBooleanString()
-  isWeb?: string;
+  @ApiProperty({ type: Boolean, title: 'Is request made from web' })
+  isWeb?: boolean;
 }
