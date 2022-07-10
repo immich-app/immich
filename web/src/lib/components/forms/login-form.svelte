@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import { sendLoginForm } from '$lib/auth-api';
-	import { demoInstanceMessage } from '$lib/constants';
+	import { loginPageMessage } from '$lib/constants';
 	import { createEventDispatcher } from 'svelte';
 
 	let error: string;
@@ -44,9 +44,9 @@
 		<h1 class="text-2xl text-immich-primary font-medium">Login</h1>
 	</div>
 
-	{#if demoInstanceMessage}
+	{#if loginPageMessage}
 		<div class="bg-blue-100 m-4 p-2 border-t border-b border-blue-500 text-blue-700" role="alert">
-			<p>{@html demoInstanceMessage}</p>
+			<p>{@html loginPageMessage}</p>
 		</div>
 	{/if}
 
