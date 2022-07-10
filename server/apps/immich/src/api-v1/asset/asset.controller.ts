@@ -15,10 +15,11 @@ import {
   Logger,
   HttpCode,
   BadRequestException,
+  UploadedFile,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -56,35 +57,25 @@ export class AssetController {
   ) {}
 
   @Post('upload')
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'assetData', maxCount: 1 },
-        { name: 'thumbnailData', maxCount: 1 },
-      ],
-      assetUploadOption,
-    ),
-  )
+  @UseInterceptors(FileInterceptor('assetData', assetUploadOption))
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
-    @UploadedFiles() uploadFiles: { assetData: Express.Multer.File[] },
+    @UploadedFile() file: Express.Multer.File,
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
   ): Promise<'ok' | undefined> {
-    for (const file of uploadFiles.assetData) {
-      try {
-        const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
+    try {
+      const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
-        if (savedAsset) {
-          await this.assetUploadedQueue.add(
-            assetUploadedProcessorName,
-            { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
-            { jobId: savedAsset.id },
-          );
-        }
-      } catch (e) {
-        Logger.error(`Error uploading file ${e}`);
-        throw new BadRequestException(`Error uploading file`, `${e}`);
+      if (savedAsset) {
+        await this.assetUploadedQueue.add(
+          assetUploadedProcessorName,
+          { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
+          { jobId: savedAsset.id },
+        );
       }
+    } catch (e) {
+      Logger.error(`Error uploading file ${e}`);
+      throw new BadRequestException(`Error uploading file`, `${e}`);
     }
 
     return 'ok';
