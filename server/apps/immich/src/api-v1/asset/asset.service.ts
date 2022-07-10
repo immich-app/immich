@@ -9,7 +9,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
@@ -21,6 +20,8 @@ import fs from 'fs/promises';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { AssetResponseDto, mapAsset } from './response-dto/asset-response.dto';
+import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
+import { CreateAssetDto } from './dto/create-asset.dto';
 
 const fileInfo = promisify(stat);
 
