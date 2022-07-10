@@ -25,7 +25,6 @@
 	const getUserProfileImage = async () => {
 		if ($session.user) {
 			try {
-				api.setAccessToken($session.user.accessToken);
 				const { status } = await api.userApi.getProfileImage(user.id);
 
 				if (status === 200) {

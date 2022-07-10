@@ -10,7 +10,6 @@
 			};
 		}
 
-		api.setAccessToken(session.user.accessToken);
 		const { data } = await api.userApi.getAllUsers(false);
 
 		return {

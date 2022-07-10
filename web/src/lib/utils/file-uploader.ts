@@ -54,7 +54,6 @@ export async function fileUploader(asset: File, accessToken: string) {
 
 		// Check if asset upload on server before performing upload
 
-		api.setAccessToken(accessToken);
 		const { data, status } = await api.assetApi.checkDuplicateAsset({
 			deviceAssetId: String(deviceAssetId),
 			deviceId: 'WEB',

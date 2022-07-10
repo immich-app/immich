@@ -109,7 +109,6 @@
 				}
 				$downloadAssets[imageFileName] = 0;
 
-				api.setAccessToken($session.user.accessToken);
 				const { data, status } = await api.assetApi.downloadFile(
 					selectedAsset.deviceAssetId,
 					selectedAsset.deviceId,

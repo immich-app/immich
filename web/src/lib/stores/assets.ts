@@ -22,7 +22,6 @@ export const flattenAssetGroupByDate = derived(assetsGroupByDate, ($assetsGroupB
 });
 
 export const getAssetsInfo = async (accessToken: string) => {
-	api.setAccessToken(accessToken);
 	const { data } = await api.assetApi.getAllAssets();
 	assets.set(data);
 };

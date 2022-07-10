@@ -12,7 +12,6 @@
 		}
 
 		try {
-			api.setAccessToken(session.user.accessToken);
 			const { data: userInfo } = await api.userApi.getMyUserInfo();
 
 			if (userInfo.shouldChangePassword) {

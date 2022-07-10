@@ -17,7 +17,6 @@
 
 	onMount(async () => {
 		if ($session.user) {
-			api.setAccessToken($session.user.accessToken);
 			const { data: assetInfo } = await api.assetApi.getAssetById(assetId);
 
 			asset = assetInfo;

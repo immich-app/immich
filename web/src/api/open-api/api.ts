@@ -142,6 +142,19 @@ export interface AlbumResponseDto {
 /**
  * 
  * @export
+ * @interface AssetFileUploadResponseDto
+ */
+export interface AssetFileUploadResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetFileUploadResponseDto
+     */
+    'id': string;
+}
+/**
+ * 
+ * @export
  * @interface AssetResponseDto
  */
 export interface AssetResponseDto {
@@ -309,71 +322,6 @@ export interface CreateAlbumDto {
      */
     'assetIds'?: Array<string>;
 }
-/**
- * 
- * @export
- * @interface CreateAssetDto
- */
-export interface CreateAssetDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateAssetDto
-     */
-    'deviceAssetId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateAssetDto
-     */
-    'deviceId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateAssetDto
-     */
-    'assetType': CreateAssetDtoAssetTypeEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateAssetDto
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateAssetDto
-     */
-    'modifiedAt': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof CreateAssetDto
-     */
-    'isFavorite': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateAssetDto
-     */
-    'fileExtension': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateAssetDto
-     */
-    'duration'?: string;
-}
-
-export const CreateAssetDtoAssetTypeEnum = {
-    Image: 'IMAGE',
-    Video: 'VIDEO',
-    Audio: 'AUDIO',
-    Other: 'OTHER'
-} as const;
-
-export type CreateAssetDtoAssetTypeEnum = typeof CreateAssetDtoAssetTypeEnum[keyof typeof CreateAssetDtoAssetTypeEnum];
-
 /**
  * 
  * @export
@@ -2289,13 +2237,13 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {CreateAssetDto} createAssetDto 
+         * @param {any} assetData 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile: async (createAssetDto: CreateAssetDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'createAssetDto' is not null or undefined
-            assertParamExists('uploadFile', 'createAssetDto', createAssetDto)
+        uploadFile: async (assetData: any, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetData' is not null or undefined
+            assertParamExists('uploadFile', 'assetData', assetData)
             const localVarPath = `/asset/upload`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2307,19 +2255,24 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
 
+            if (assetData !== undefined) { 
+                localVarFormParams.append('assetData', assetData as any);
+            }
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(createAssetDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = localVarFormParams;
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2464,12 +2417,12 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {CreateAssetDto} createAssetDto 
+         * @param {any} assetData 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadFile(createAssetDto: CreateAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(createAssetDto, options);
+        async uploadFile(assetData: any, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetData, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -2598,12 +2551,12 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {CreateAssetDto} createAssetDto 
+         * @param {any} assetData 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile(createAssetDto: CreateAssetDto, options?: any): AxiosPromise<string> {
-            return localVarFp.uploadFile(createAssetDto, options).then((request) => request(axios, basePath));
+        uploadFile(assetData: any, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
+            return localVarFp.uploadFile(assetData, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2755,13 +2708,13 @@ export class AssetApi extends BaseAPI {
 
     /**
      * 
-     * @param {CreateAssetDto} createAssetDto 
+     * @param {any} assetData 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public uploadFile(createAssetDto: CreateAssetDto, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).uploadFile(createAssetDto, options).then((request) => request(this.axios, this.basePath));
+    public uploadFile(assetData: any, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).uploadFile(assetData, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

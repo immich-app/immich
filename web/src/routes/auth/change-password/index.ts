@@ -14,7 +14,6 @@ export const post: RequestHandler = async ({ request, locals }) => {
 	const form = await request.formData();
 	const password = form.get('password');
 
-	api.setAccessToken(locals.user.accessToken);
 	const { status } = await api.userApi.updateUser({
 		id: locals.user.id,
 		password: String(password),

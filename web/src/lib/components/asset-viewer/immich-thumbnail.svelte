@@ -29,8 +29,6 @@
 
 	const loadImageData = async () => {
 		if ($session.user) {
-			api.setAccessToken($session.user.accessToken);
-
 			const { data } = await api.assetApi.getAssetThumbnail(asset.id, { responseType: 'blob' });
 			if (data instanceof Blob) {
 				imageData = URL.createObjectURL(data);
@@ -44,8 +42,6 @@
 
 		if ($session.user) {
 			try {
-				api.setAccessToken($session.user.accessToken);
-
 				const { data } = await api.assetApi.serveFile(asset.deviceAssetId, asset.deviceId, false, true, {
 					responseType: 'blob',
 				});
