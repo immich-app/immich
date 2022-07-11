@@ -19,13 +19,13 @@ class ServerVersionReponseDto {
     required this.build,
   });
 
-  num major;
+  int major;
 
-  num minor;
+  int minor;
 
-  num patch_;
+  int patch_;
 
-  num build;
+  int build;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerVersionReponseDto &&
@@ -73,18 +73,10 @@ class ServerVersionReponseDto {
       }());
 
       return ServerVersionReponseDto(
-        major: json[r'major'] == null
-            ? null
-            : num.parse(json[r'major'].toString()),
-        minor: json[r'minor'] == null
-            ? null
-            : num.parse(json[r'minor'].toString()),
-        patch_: json[r'patch'] == null
-            ? null
-            : num.parse(json[r'patch'].toString()),
-        build: json[r'build'] == null
-            ? null
-            : num.parse(json[r'build'].toString()),
+        major: mapValueOfType<int>(json, r'major')!,
+        minor: mapValueOfType<int>(json, r'minor')!,
+        patch_: mapValueOfType<int>(json, r'patch')!,
+        build: mapValueOfType<int>(json, r'build')!,
       );
     }
     return null;

@@ -16,7 +16,7 @@ class UserCountResponseDto {
     required this.userCount,
   });
 
-  num userCount;
+  int userCount;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserCountResponseDto &&
@@ -55,9 +55,7 @@ class UserCountResponseDto {
       }());
 
       return UserCountResponseDto(
-        userCount: json[r'userCount'] == null
-            ? null
-            : num.parse(json[r'userCount'].toString()),
+        userCount: mapValueOfType<int>(json, r'userCount')!,
       );
     }
     return null;

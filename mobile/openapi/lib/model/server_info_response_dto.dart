@@ -13,14 +13,22 @@ part of openapi.api;
 class ServerInfoResponseDto {
   /// Returns a new [ServerInfoResponseDto] instance.
   ServerInfoResponseDto({
-    required this.diskSize,
-    required this.diskUse,
-    required this.diskAvailable,
     required this.diskSizeRaw,
     required this.diskUseRaw,
     required this.diskAvailableRaw,
     required this.diskUsagePercentage,
+    required this.diskSize,
+    required this.diskUse,
+    required this.diskAvailable,
   });
+
+  int diskSizeRaw;
+
+  int diskUseRaw;
+
+  int diskAvailableRaw;
+
+  int diskUsagePercentage;
 
   String diskSize;
 
@@ -28,47 +36,39 @@ class ServerInfoResponseDto {
 
   String diskAvailable;
 
-  num diskSizeRaw;
-
-  num diskUseRaw;
-
-  num diskAvailableRaw;
-
-  num diskUsagePercentage;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerInfoResponseDto &&
-     other.diskSize == diskSize &&
-     other.diskUse == diskUse &&
-     other.diskAvailable == diskAvailable &&
      other.diskSizeRaw == diskSizeRaw &&
      other.diskUseRaw == diskUseRaw &&
      other.diskAvailableRaw == diskAvailableRaw &&
-     other.diskUsagePercentage == diskUsagePercentage;
+     other.diskUsagePercentage == diskUsagePercentage &&
+     other.diskSize == diskSize &&
+     other.diskUse == diskUse &&
+     other.diskAvailable == diskAvailable;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (diskSize.hashCode) +
-    (diskUse.hashCode) +
-    (diskAvailable.hashCode) +
     (diskSizeRaw.hashCode) +
     (diskUseRaw.hashCode) +
     (diskAvailableRaw.hashCode) +
-    (diskUsagePercentage.hashCode);
+    (diskUsagePercentage.hashCode) +
+    (diskSize.hashCode) +
+    (diskUse.hashCode) +
+    (diskAvailable.hashCode);
 
   @override
-  String toString() => 'ServerInfoResponseDto[diskSize=$diskSize, diskUse=$diskUse, diskAvailable=$diskAvailable, diskSizeRaw=$diskSizeRaw, diskUseRaw=$diskUseRaw, diskAvailableRaw=$diskAvailableRaw, diskUsagePercentage=$diskUsagePercentage]';
+  String toString() => 'ServerInfoResponseDto[diskSizeRaw=$diskSizeRaw, diskUseRaw=$diskUseRaw, diskAvailableRaw=$diskAvailableRaw, diskUsagePercentage=$diskUsagePercentage, diskSize=$diskSize, diskUse=$diskUse, diskAvailable=$diskAvailable]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
-      _json[r'diskSize'] = diskSize;
-      _json[r'diskUse'] = diskUse;
-      _json[r'diskAvailable'] = diskAvailable;
       _json[r'diskSizeRaw'] = diskSizeRaw;
       _json[r'diskUseRaw'] = diskUseRaw;
       _json[r'diskAvailableRaw'] = diskAvailableRaw;
       _json[r'diskUsagePercentage'] = diskUsagePercentage;
+      _json[r'diskSize'] = diskSize;
+      _json[r'diskUse'] = diskUse;
+      _json[r'diskAvailable'] = diskAvailable;
     return _json;
   }
 
@@ -91,21 +91,13 @@ class ServerInfoResponseDto {
       }());
 
       return ServerInfoResponseDto(
+        diskSizeRaw: mapValueOfType<int>(json, r'diskSizeRaw')!,
+        diskUseRaw: mapValueOfType<int>(json, r'diskUseRaw')!,
+        diskAvailableRaw: mapValueOfType<int>(json, r'diskAvailableRaw')!,
+        diskUsagePercentage: mapValueOfType<int>(json, r'diskUsagePercentage')!,
         diskSize: mapValueOfType<String>(json, r'diskSize')!,
         diskUse: mapValueOfType<String>(json, r'diskUse')!,
         diskAvailable: mapValueOfType<String>(json, r'diskAvailable')!,
-        diskSizeRaw: json[r'diskSizeRaw'] == null
-            ? null
-            : num.parse(json[r'diskSizeRaw'].toString()),
-        diskUseRaw: json[r'diskUseRaw'] == null
-            ? null
-            : num.parse(json[r'diskUseRaw'].toString()),
-        diskAvailableRaw: json[r'diskAvailableRaw'] == null
-            ? null
-            : num.parse(json[r'diskAvailableRaw'].toString()),
-        diskUsagePercentage: json[r'diskUsagePercentage'] == null
-            ? null
-            : num.parse(json[r'diskUsagePercentage'].toString()),
       );
     }
     return null;
@@ -155,13 +147,13 @@ class ServerInfoResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'diskSize',
-    'diskUse',
-    'diskAvailable',
     'diskSizeRaw',
     'diskUseRaw',
     'diskAvailableRaw',
     'diskUsagePercentage',
+    'diskSize',
+    'diskUse',
+    'diskAvailable',
   };
 }
 

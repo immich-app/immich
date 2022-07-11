@@ -22,7 +22,7 @@ class DeviceInfoResponseDto {
     required this.isAutoBackup,
   });
 
-  num id;
+  int id;
 
   String userId;
 
@@ -95,9 +95,7 @@ class DeviceInfoResponseDto {
       }());
 
       return DeviceInfoResponseDto(
-        id: json[r'id'] == null
-            ? null
-            : num.parse(json[r'id'].toString()),
+        id: mapValueOfType<int>(json, r'id')!,
         userId: mapValueOfType<String>(json, r'userId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         deviceType: DeviceInfoResponseDtoDeviceTypeEnum.fromJson(json[r'deviceType'])!,

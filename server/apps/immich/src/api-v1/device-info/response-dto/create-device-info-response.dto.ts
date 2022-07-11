@@ -2,7 +2,7 @@ import { DeviceInfoEntity, DeviceType } from '@app/database/entities/device-info
 import { ApiProperty } from '@nestjs/swagger';
 
 export class DeviceInfoResponseDto {
-  @ApiProperty({ type: 'integer', format: 'int64' })
+  @ApiProperty({ type: 'integer' })
   id!: number;
   userId!: string;
   deviceId!: string;
