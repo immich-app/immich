@@ -1,7 +1,7 @@
-import type { ExternalFetch, GetSession, Handle } from '@sveltejs/kit';
+import type { GetSession, Handle } from '@sveltejs/kit';
 import * as cookie from 'cookie';
-import { serverEndpoint } from '$lib/constants';
-import { session } from '$app/stores';
+import { api } from '@api';
+import { AxiosError } from 'axios';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
@@ -13,14 +13,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 	try {
 		const { email, isAdmin, firstName, lastName, id, accessToken } = JSON.parse(cookies.session);
 
-		const res = await fetch(`${serverEndpoint}/auth/validateToken`, {
-			method: 'POST',
-			headers: {
-				Authorization: `Bearer ${accessToken}`,
-			},
-		});
+		api.setAccessToken(accessToken);
+		const { status } = await api.authenticationApi.validateAccessToken();
 
-		if (res.status === 201) {
+		if (status === 201) {
 			event.locals.user = {
 				id,
 				accessToken,
@@ -35,7 +31,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 		return response;
 	} catch (error) {
-		console.log('Error parsing session', error);
+		if (error instanceof AxiosError) {
+			console.log('Error validating token');
+			return await resolve(event);
+		}
+
+		console.log('Error parsing session');
 		return await resolve(event);
 	}
 };

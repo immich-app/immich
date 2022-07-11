@@ -1,14 +1,11 @@
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import { serverEndpoint } from '$lib/constants';
 
-	export const load: Load = async ({ session, fetch }) => {
-		const res = await fetch(`${serverEndpoint}/user/count`);
-		const { userCount } = await res.json();
+	export const load: Load = async ({ session }) => {
+		const { data } = await api.userApi.getUserCount();
 
-		if (userCount != 0) {
+		if (data.userCount != 0) {
 			// Admin has been registered, redirect to login
-
 			if (!session.user) {
 				return {
 					status: 302,
@@ -17,7 +14,7 @@
 			} else {
 				return {
 					status: 302,
-					redirect: '/dashboard',
+					redirect: '/photos',
 				};
 			}
 		}
@@ -28,6 +25,7 @@
 
 <script lang="ts">
 	import AdminRegistrationForm from '$lib/components/forms/admin-registration-form.svelte';
+	import { api } from '@api';
 </script>
 
 <svelte:head>

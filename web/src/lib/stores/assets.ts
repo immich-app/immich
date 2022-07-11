@@ -1,10 +1,9 @@
 import { writable, derived } from 'svelte/store';
-import { getRequest } from '$lib/api';
-import type { ImmichAsset } from '$lib/models/immich-asset';
 import lodash from 'lodash-es';
 import _ from 'lodash';
 import moment from 'moment';
-export const assets = writable<ImmichAsset[]>([]);
+import { api, AssetResponseDto } from '@api';
+export const assets = writable<AssetResponseDto[]>([]);
 
 export const assetsGroupByDate = derived(assets, ($assets) => {
 	try {
@@ -23,6 +22,6 @@ export const flattenAssetGroupByDate = derived(assetsGroupByDate, ($assetsGroupB
 });
 
 export const getAssetsInfo = async (accessToken: string) => {
-	const res = await getRequest('asset', accessToken);
-	assets.set(res);
+	const { data } = await api.assetApi.getAllAssets();
+	assets.set(data);
 };

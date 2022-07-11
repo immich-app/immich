@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { UserResponseDto } from '@api';
+
 	import { createEventDispatcher } from 'svelte';
 	import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
-	export let usersOnServer: Array<any>;
+	export let allUsers: Array<UserResponseDto>;
 
 	const dispatch = createEventDispatcher();
 </script>
@@ -18,7 +20,7 @@
 		</tr>
 	</thead>
 	<tbody class="overflow-y-auto rounded-md w-full max-h-[320px] block border">
-		{#each usersOnServer as user, i}
+		{#each allUsers as user, i}
 			<tr
 				class={`text-center flex place-items-center w-full border-b h-[80px] ${
 					i % 2 == 0 ? 'bg-gray-100' : 'bg-immich-bg'

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBooleanString, IsNotEmpty, IsOptional } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsBooleanString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class ServeFileDto {
   @IsNotEmpty()
@@ -11,10 +12,28 @@ export class ServeFileDto {
   did!: string;
 
   @IsOptional()
-  @IsBooleanString()
-  isThumb?: string;
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value == 'true') {
+      return true;
+    } else if (value == 'false') {
+      return false;
+    }
+    return value;
+  })
+  @ApiProperty({ type: Boolean, title: 'Is serve thumbnail (resize) file' })
+  isThumb?: boolean;
 
   @IsOptional()
-  @IsBooleanString()
-  isWeb?: string;
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value == 'true') {
+      return true;
+    } else if (value == 'false') {
+      return false;
+    }
+    return value;
+  })
+  @ApiProperty({ type: Boolean, title: 'Is request made from web' })
+  isWeb?: boolean;
 }

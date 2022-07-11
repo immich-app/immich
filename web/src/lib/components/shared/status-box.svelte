@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getRequest } from '$lib/api';
+	import { getRequest } from '$lib/utils/api-helper';
 	import { onDestroy, onMount } from 'svelte';
 	import { serverEndpoint } from '$lib/constants';
 	import Cloud from 'svelte-material-icons/Cloud.svelte';

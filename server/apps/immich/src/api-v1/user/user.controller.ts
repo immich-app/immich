@@ -12,6 +12,7 @@ import {
   UploadedFile,
   Response,
   StreamableFile,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
@@ -24,7 +25,6 @@ import { profileImageUploadOption } from '../../config/profile-image-upload.conf
 import { Response as Res } from 'express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from './response-dto/user-response.dto';
-import { UserEntity } from '@app/database/entities/user.entity';
 import { UserCountResponseDto } from './response-dto/user-count-response.dto';
 import { CreateProfileImageDto } from './dto/create-profile-image.dto';
 import { CreateProfileImageResponseDto } from './response-dto/create-profile-image-response.dto';
@@ -37,7 +37,10 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get()
-  async getAllUsers(@GetAuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
+  async getAllUsers(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Query('isAll', ParseBoolPipe) isAll: boolean,
+  ): Promise<UserResponseDto[]> {
     return await this.userService.getAllUsers(authUser, isAll);
   }
 
@@ -57,8 +60,8 @@ export class UserController {
   }
 
   @Get('/count')
-  async getUserCount(@Query('isAdmin') isAdmin: boolean): Promise<UserCountResponseDto> {
-    return await this.userService.getUserCount(isAdmin);
+  async getUserCount(): Promise<UserCountResponseDto> {
+    return await this.userService.getUserCount();
   }
 
   @UseGuards(JwtAuthGuard)
@@ -84,10 +87,7 @@ export class UserController {
   }
 
   @Get('/profile-image/:userId')
-  async getProfileImage(
-    @Param('userId') userId: string,
-    @Response({ passthrough: true }) res: Res,
-  ): Promise<StreamableFile | undefined> {
+  async getProfileImage(@Param('userId') userId: string, @Response({ passthrough: true }) res: Res): Promise<any> {
     return this.userService.getUserProfileImage(userId, res);
   }
 }

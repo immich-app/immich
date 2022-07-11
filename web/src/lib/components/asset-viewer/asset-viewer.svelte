@@ -1,22 +1,21 @@
 <script lang="ts">
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import { fly, slide } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import AsserViewerNavBar from './asser-viewer-nav-bar.svelte';
 	import { flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-	import { AssetType, type ImmichAsset, type ImmichExif } from '../../models/immich-asset';
+	import { AssetType } from '../../models/immich-asset';
 	import PhotoViewer from './photo-viewer.svelte';
 	import DetailPanel from './detail-panel.svelte';
 	import { session } from '$app/stores';
-	import { serverEndpoint } from '../../constants';
-	import axios from 'axios';
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
+	import { api, AssetResponseDto } from '@api';
 
 	const dispatch = createEventDispatcher();
 
-	export let selectedAsset: ImmichAsset;
+	export let selectedAsset: AssetResponseDto;
 
 	export let selectedIndex: number;
 
@@ -99,8 +98,6 @@
 
 	const downloadFile = async () => {
 		if ($session.user) {
-			const url = `${serverEndpoint}/asset/download?aid=${selectedAsset.deviceAssetId}&did=${selectedAsset.deviceId}&isThumb=false`;
-
 			try {
 				const imageName = selectedAsset.exifInfo?.imageName ? selectedAsset.exifInfo?.imageName : selectedAsset.id;
 				const imageExtension = selectedAsset.originalPath.split('.')[1];
@@ -112,24 +109,31 @@
 				}
 				$downloadAssets[imageFileName] = 0;
 
-				const res = await axios.get(url, {
-					responseType: 'blob',
-					headers: {
-						Authorization: 'Bearer ' + $session.user.accessToken,
-					},
-					onDownloadProgress: (progressEvent) => {
-						if (progressEvent.lengthComputable) {
-							const total = progressEvent.total;
-							const current = progressEvent.loaded;
-							let percentCompleted = Math.floor((current / total) * 100);
+				const { data, status } = await api.assetApi.downloadFile(
+					selectedAsset.deviceAssetId,
+					selectedAsset.deviceId,
+					false,
+					false,
+					{
+						responseType: 'blob',
+						onDownloadProgress: (progressEvent) => {
+							if (progressEvent.lengthComputable) {
+								const total = progressEvent.total;
+								const current = progressEvent.loaded;
+								let percentCompleted = Math.floor((current / total) * 100);
 
-							$downloadAssets[imageFileName] = percentCompleted;
-						}
+								$downloadAssets[imageFileName] = percentCompleted;
+							}
+						},
 					},
-				});
+				);
 
-				if (res.status === 200) {
-					const fileUrl = URL.createObjectURL(new Blob([res.data]));
+				if (!(data instanceof Blob)) {
+					return;
+				}
+
+				if (status === 200) {
+					const fileUrl = URL.createObjectURL(data);
 					const anchor = document.createElement('a');
 					anchor.href = fileUrl;
 					anchor.download = imageFileName;

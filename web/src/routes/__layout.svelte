@@ -1,18 +1,15 @@
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
 	import { checkAppVersion } from '$lib/utils/check-app-version';
-	import { browser } from '$app/env';
 
-	export const load: Load = async ({ url }) => {
-		if (browser) {
-			const { shouldShowAnnouncement, localVersion, remoteVersion } = await checkAppVersion();
-
-			return { props: { url, shouldShowAnnouncement, localVersion, remoteVersion } };
-		} else {
-			return {
-				props: { url },
-			};
+	export const load: Load = async ({ url, session }) => {
+		if (session.user) {
+			api.setAccessToken(session.user.accessToken);
 		}
+
+		return {
+			props: { url },
+		};
 	};
 </script>
 
@@ -24,11 +21,21 @@
 	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
 	import AnnouncementBox from '$lib/components/shared/announcement-box.svelte';
 	import UploadPanel from '$lib/components/shared/upload-panel.svelte';
+	import { onMount } from 'svelte';
+	import { api } from '@api';
 
 	export let url: string;
-	export let shouldShowAnnouncement: boolean;
-	export let localVersion: string;
-	export let remoteVersion: string;
+	let shouldShowAnnouncement: boolean;
+	let localVersion: string;
+	let remoteVersion: string;
+
+	onMount(async () => {
+		const res = await checkAppVersion();
+
+		shouldShowAnnouncement = res.shouldShowAnnouncement;
+		localVersion = res.localVersion ?? 'unknown';
+		remoteVersion = res.remoteVersion ?? 'unknown';
+	});
 </script>
 
 <main>

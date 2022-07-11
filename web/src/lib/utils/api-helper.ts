@@ -1,4 +1,4 @@
-import { serverEndpoint } from './constants';
+import { serverEndpoint } from '../constants';
 
 type ISend = {
 	method: string;
