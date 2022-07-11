@@ -45,10 +45,6 @@
 	</div>
 
 	{#if loginPageMessage}
-		<!-- <div class="bg-blue-100 m-4 p-2 border-t border-b border-blue-500 text-blue-700" role="alert">
-			<p>{@html loginPageMessage}</p>
-		</div> -->
-
 		<p class="text-sm border rounded-md m-4 p-4 text-immich-primary font-medium bg-immich-primary/5">
 			{@html loginPageMessage}
 		</p>
