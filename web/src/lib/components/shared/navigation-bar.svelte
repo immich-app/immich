@@ -25,15 +25,10 @@
 	const getUserProfileImage = async () => {
 		if ($session.user) {
 			try {
-				const { status } = await api.userApi.getProfileImage(user.id);
-
-				if (status === 200) {
-					shouldShowProfileImage = true;
-				} else {
-					shouldShowProfileImage = false;
-				}
+				await api.userApi.getProfileImage(user.id);
+				shouldShowProfileImage = true;
 			} catch (e) {
-				console.log('My Error ', e);
+				console.log('User does not have a profile image');
 				shouldShowProfileImage = false;
 			}
 		}

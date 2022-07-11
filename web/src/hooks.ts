@@ -13,6 +13,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	try {
 		const { email, isAdmin, firstName, lastName, id, accessToken } = JSON.parse(cookies.session);
 
+		api.setAccessToken(accessToken);
 		const { status } = await api.authenticationApi.validateAccessToken();
 
 		if (status === 201) {
