@@ -1,7 +1,7 @@
 import type { GetSession, Handle } from '@sveltejs/kit';
 import * as cookie from 'cookie';
 import { api } from '@api';
-import { AxiosError } from 'axios';
+import AxiosError from 'axios';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
