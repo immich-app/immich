@@ -9,9 +9,9 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **int** |  | 
+**deviceType** | **String** |  | 
 **userId** | **String** |  | 
 **deviceId** | **String** |  | 
-**deviceType** | **String** |  | 
 **createdAt** | **String** |  | 
 **isAutoBackup** | **bool** |  | 
 

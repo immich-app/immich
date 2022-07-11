@@ -6,7 +6,10 @@ export class DeviceInfoResponseDto {
   id!: number;
   userId!: string;
   deviceId!: string;
+
+  @ApiProperty({ enum: DeviceType })
   deviceType!: DeviceType;
+
   createdAt!: string;
   isAutoBackup!: boolean;
 }

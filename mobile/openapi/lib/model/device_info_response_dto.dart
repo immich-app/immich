@@ -14,20 +14,20 @@ class DeviceInfoResponseDto {
   /// Returns a new [DeviceInfoResponseDto] instance.
   DeviceInfoResponseDto({
     required this.id,
+    required this.deviceType,
     required this.userId,
     required this.deviceId,
-    required this.deviceType,
     required this.createdAt,
     required this.isAutoBackup,
   });
 
   int id;
 
+  DeviceInfoResponseDtoDeviceTypeEnum deviceType;
+
   String userId;
 
   String deviceId;
-
-  DeviceInfoResponseDtoDeviceTypeEnum deviceType;
 
   String createdAt;
 
@@ -36,9 +36,9 @@ class DeviceInfoResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is DeviceInfoResponseDto &&
      other.id == id &&
+     other.deviceType == deviceType &&
      other.userId == userId &&
      other.deviceId == deviceId &&
-     other.deviceType == deviceType &&
      other.createdAt == createdAt &&
      other.isAutoBackup == isAutoBackup;
 
@@ -46,21 +46,21 @@ class DeviceInfoResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (id.hashCode) +
+    (deviceType.hashCode) +
     (userId.hashCode) +
     (deviceId.hashCode) +
-    (deviceType.hashCode) +
     (createdAt.hashCode) +
     (isAutoBackup.hashCode);
 
   @override
-  String toString() => 'DeviceInfoResponseDto[id=$id, userId=$userId, deviceId=$deviceId, deviceType=$deviceType, createdAt=$createdAt, isAutoBackup=$isAutoBackup]';
+  String toString() => 'DeviceInfoResponseDto[id=$id, deviceType=$deviceType, userId=$userId, deviceId=$deviceId, createdAt=$createdAt, isAutoBackup=$isAutoBackup]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'id'] = id;
+      _json[r'deviceType'] = deviceType;
       _json[r'userId'] = userId;
       _json[r'deviceId'] = deviceId;
-      _json[r'deviceType'] = deviceType;
       _json[r'createdAt'] = createdAt;
       _json[r'isAutoBackup'] = isAutoBackup;
     return _json;
@@ -86,9 +86,9 @@ class DeviceInfoResponseDto {
 
       return DeviceInfoResponseDto(
         id: mapValueOfType<int>(json, r'id')!,
+        deviceType: DeviceInfoResponseDtoDeviceTypeEnum.fromJson(json[r'deviceType'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
-        deviceType: DeviceInfoResponseDtoDeviceTypeEnum.fromJson(json[r'deviceType'])!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         isAutoBackup: mapValueOfType<bool>(json, r'isAutoBackup')!,
       );
@@ -141,9 +141,9 @@ class DeviceInfoResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'id',
+    'deviceType',
     'userId',
     'deviceId',
-    'deviceType',
     'createdAt',
     'isAutoBackup',
   };

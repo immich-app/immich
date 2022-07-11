@@ -333,13 +333,13 @@ export interface CreateDeviceInfoDto {
      * @type {string}
      * @memberof CreateDeviceInfoDto
      */
-    'deviceId': string;
+    'deviceType': CreateDeviceInfoDtoDeviceTypeEnum;
     /**
      * 
      * @type {string}
      * @memberof CreateDeviceInfoDto
      */
-    'deviceType': CreateDeviceInfoDtoDeviceTypeEnum;
+    'deviceId': string;
     /**
      * 
      * @type {boolean}
@@ -510,6 +510,12 @@ export interface DeviceInfoResponseDto {
      * @type {string}
      * @memberof DeviceInfoResponseDto
      */
+    'deviceType': DeviceInfoResponseDtoDeviceTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeviceInfoResponseDto
+     */
     'userId': string;
     /**
      * 
@@ -517,12 +523,6 @@ export interface DeviceInfoResponseDto {
      * @memberof DeviceInfoResponseDto
      */
     'deviceId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DeviceInfoResponseDto
-     */
-    'deviceType': DeviceInfoResponseDtoDeviceTypeEnum;
     /**
      * 
      * @type {string}
@@ -951,13 +951,13 @@ export interface UpdateDeviceInfoDto {
      * @type {string}
      * @memberof UpdateDeviceInfoDto
      */
-    'deviceId': string;
+    'deviceType': UpdateDeviceInfoDtoDeviceTypeEnum;
     /**
      * 
      * @type {string}
      * @memberof UpdateDeviceInfoDto
      */
-    'deviceType': UpdateDeviceInfoDtoDeviceTypeEnum;
+    'deviceId': string;
     /**
      * 
      * @type {boolean}

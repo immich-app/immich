@@ -87,4 +87,3 @@ lib/model/update_user_dto.dart
 lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 pubspec.yaml
-test/update_device_info_dto_test.dart

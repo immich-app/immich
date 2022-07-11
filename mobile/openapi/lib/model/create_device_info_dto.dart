@@ -13,14 +13,14 @@ part of openapi.api;
 class CreateDeviceInfoDto {
   /// Returns a new [CreateDeviceInfoDto] instance.
   CreateDeviceInfoDto({
-    required this.deviceId,
     required this.deviceType,
+    required this.deviceId,
     this.isAutoBackup,
   });
 
-  String deviceId;
-
   CreateDeviceInfoDtoDeviceTypeEnum deviceType;
+
+  String deviceId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -32,24 +32,24 @@ class CreateDeviceInfoDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateDeviceInfoDto &&
-     other.deviceId == deviceId &&
      other.deviceType == deviceType &&
+     other.deviceId == deviceId &&
      other.isAutoBackup == isAutoBackup;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (deviceId.hashCode) +
     (deviceType.hashCode) +
+    (deviceId.hashCode) +
     (isAutoBackup == null ? 0 : isAutoBackup!.hashCode);
 
   @override
-  String toString() => 'CreateDeviceInfoDto[deviceId=$deviceId, deviceType=$deviceType, isAutoBackup=$isAutoBackup]';
+  String toString() => 'CreateDeviceInfoDto[deviceType=$deviceType, deviceId=$deviceId, isAutoBackup=$isAutoBackup]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
-      _json[r'deviceId'] = deviceId;
       _json[r'deviceType'] = deviceType;
+      _json[r'deviceId'] = deviceId;
     if (isAutoBackup != null) {
       _json[r'isAutoBackup'] = isAutoBackup;
     } else {
@@ -77,8 +77,8 @@ class CreateDeviceInfoDto {
       }());
 
       return CreateDeviceInfoDto(
-        deviceId: mapValueOfType<String>(json, r'deviceId')!,
         deviceType: CreateDeviceInfoDtoDeviceTypeEnum.fromJson(json[r'deviceType'])!,
+        deviceId: mapValueOfType<String>(json, r'deviceId')!,
         isAutoBackup: mapValueOfType<bool>(json, r'isAutoBackup'),
       );
     }
@@ -129,8 +129,8 @@ class CreateDeviceInfoDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'deviceId',
     'deviceType',
+    'deviceId',
   };
 }
 
