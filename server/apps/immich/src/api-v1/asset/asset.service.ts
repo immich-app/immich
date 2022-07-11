@@ -280,7 +280,7 @@ export class AssetService {
 
         return new StreamableFile(fileReadStream);
       } catch (e) {
-        Logger.error(`Cannot create read stream for asset ${asset.id}`, 'serveFile[IMAGE]');
+        Logger.error(`Cannot create read stream for asset ${asset.id} ${JSON.stringify(e)}`, 'serveFile[IMAGE]');
         throw new InternalServerErrorException(
           e,
           `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
