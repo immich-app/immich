@@ -66,13 +66,13 @@ class DeviceInfoApi {
   /// Performs an HTTP 'PATCH /device-info' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<Response> updateDeviceInfoWithHttpInfo(Object body,) async {
+  /// * [UpdateDeviceInfoDto] updateDeviceInfoDto (required):
+  Future<Response> updateDeviceInfoWithHttpInfo(UpdateDeviceInfoDto updateDeviceInfoDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/device-info';
 
     // ignore: prefer_final_locals
-    Object? postBody = body;
+    Object? postBody = updateDeviceInfoDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -94,9 +94,9 @@ class DeviceInfoApi {
 
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<DeviceInfoResponseDto?> updateDeviceInfo(Object body,) async {
-    final response = await updateDeviceInfoWithHttpInfo(body,);
+  /// * [UpdateDeviceInfoDto] updateDeviceInfoDto (required):
+  Future<DeviceInfoResponseDto?> updateDeviceInfo(UpdateDeviceInfoDto updateDeviceInfoDto,) async {
+    final response = await updateDeviceInfoWithHttpInfo(updateDeviceInfoDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

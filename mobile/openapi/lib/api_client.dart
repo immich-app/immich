@@ -246,6 +246,8 @@ class ApiClient {
           return SmartInfoResponseDto.fromJson(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
+        case 'UpdateDeviceInfoDto':
+          return UpdateDeviceInfoDto.fromJson(value);
         case 'UpdateUserDto':
           return UpdateUserDto.fromJson(value);
         case 'UserCountResponseDto':

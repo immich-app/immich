@@ -133,6 +133,7 @@ Class | Method | HTTP request | Description
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
+ - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UserCountResponseDto](doc//UserCountResponseDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)

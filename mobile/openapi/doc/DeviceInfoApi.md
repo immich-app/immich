@@ -61,7 +61,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **updateDeviceInfo**
-> DeviceInfoResponseDto updateDeviceInfo(body)
+> DeviceInfoResponseDto updateDeviceInfo(updateDeviceInfoDto)
 
 
 
@@ -76,10 +76,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = DeviceInfoApi();
-final body = Object(); // Object | 
+final updateDeviceInfoDto = UpdateDeviceInfoDto(); // UpdateDeviceInfoDto | 
 
 try {
-    final result = api_instance.updateDeviceInfo(body);
+    final result = api_instance.updateDeviceInfo(updateDeviceInfoDto);
     print(result);
 } catch (e) {
     print('Exception when calling DeviceInfoApi->updateDeviceInfo: $e\n');
@@ -90,7 +90,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | **Object**|  | 
+ **updateDeviceInfoDto** | [**UpdateDeviceInfoDto**](UpdateDeviceInfoDto.md)|  | 
 
 ### Return type
 

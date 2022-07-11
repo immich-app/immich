@@ -528,12 +528,6 @@ export interface DeviceInfoResponseDto {
      * @type {string}
      * @memberof DeviceInfoResponseDto
      */
-    'notificationToken': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof DeviceInfoResponseDto
-     */
     'createdAt': string;
     /**
      * 
@@ -786,24 +780,6 @@ export interface SearchAssetDto {
 export interface ServerInfoResponseDto {
     /**
      * 
-     * @type {string}
-     * @memberof ServerInfoResponseDto
-     */
-    'diskSize': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ServerInfoResponseDto
-     */
-    'diskUse': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ServerInfoResponseDto
-     */
-    'diskAvailable': string;
-    /**
-     * 
      * @type {number}
      * @memberof ServerInfoResponseDto
      */
@@ -826,6 +802,24 @@ export interface ServerInfoResponseDto {
      * @memberof ServerInfoResponseDto
      */
     'diskUsagePercentage': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServerInfoResponseDto
+     */
+    'diskSize': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServerInfoResponseDto
+     */
+    'diskUse': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServerInfoResponseDto
+     */
+    'diskAvailable': string;
 }
 /**
  * 
@@ -946,6 +940,40 @@ export interface UpdateAlbumDto {
      */
     'ownerId': string;
 }
+/**
+ * 
+ * @export
+ * @interface UpdateDeviceInfoDto
+ */
+export interface UpdateDeviceInfoDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateDeviceInfoDto
+     */
+    'deviceId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateDeviceInfoDto
+     */
+    'deviceType': UpdateDeviceInfoDtoDeviceTypeEnum;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdateDeviceInfoDto
+     */
+    'isAutoBackup'?: boolean;
+}
+
+export const UpdateDeviceInfoDtoDeviceTypeEnum = {
+    Ios: 'IOS',
+    Android: 'ANDROID',
+    Web: 'WEB'
+} as const;
+
+export type UpdateDeviceInfoDtoDeviceTypeEnum = typeof UpdateDeviceInfoDtoDeviceTypeEnum[keyof typeof UpdateDeviceInfoDtoDeviceTypeEnum];
+
 /**
  * 
  * @export
@@ -2994,13 +3022,13 @@ export const DeviceInfoApiAxiosParamCreator = function (configuration?: Configur
         },
         /**
          * 
-         * @param {object} body 
+         * @param {UpdateDeviceInfoDto} updateDeviceInfoDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateDeviceInfo: async (body: object, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'body' is not null or undefined
-            assertParamExists('updateDeviceInfo', 'body', body)
+        updateDeviceInfo: async (updateDeviceInfoDto: UpdateDeviceInfoDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'updateDeviceInfoDto' is not null or undefined
+            assertParamExists('updateDeviceInfo', 'updateDeviceInfoDto', updateDeviceInfoDto)
             const localVarPath = `/device-info`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3024,7 +3052,7 @@ export const DeviceInfoApiAxiosParamCreator = function (configuration?: Configur
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(body, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(updateDeviceInfoDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3053,12 +3081,12 @@ export const DeviceInfoApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {object} body 
+         * @param {UpdateDeviceInfoDto} updateDeviceInfoDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateDeviceInfo(body: object, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeviceInfoResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateDeviceInfo(body, options);
+        async updateDeviceInfo(updateDeviceInfoDto: UpdateDeviceInfoDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeviceInfoResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateDeviceInfo(updateDeviceInfoDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -3082,12 +3110,12 @@ export const DeviceInfoApiFactory = function (configuration?: Configuration, bas
         },
         /**
          * 
-         * @param {object} body 
+         * @param {UpdateDeviceInfoDto} updateDeviceInfoDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateDeviceInfo(body: object, options?: any): AxiosPromise<DeviceInfoResponseDto> {
-            return localVarFp.updateDeviceInfo(body, options).then((request) => request(axios, basePath));
+        updateDeviceInfo(updateDeviceInfoDto: UpdateDeviceInfoDto, options?: any): AxiosPromise<DeviceInfoResponseDto> {
+            return localVarFp.updateDeviceInfo(updateDeviceInfoDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3112,13 +3140,13 @@ export class DeviceInfoApi extends BaseAPI {
 
     /**
      * 
-     * @param {object} body 
+     * @param {UpdateDeviceInfoDto} updateDeviceInfoDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DeviceInfoApi
      */
-    public updateDeviceInfo(body: object, options?: AxiosRequestConfig) {
-        return DeviceInfoApiFp(this.configuration).updateDeviceInfo(body, options).then((request) => request(this.axios, this.basePath));
+    public updateDeviceInfo(updateDeviceInfoDto: UpdateDeviceInfoDto, options?: AxiosRequestConfig) {
+        return DeviceInfoApiFp(this.configuration).updateDeviceInfo(updateDeviceInfoDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

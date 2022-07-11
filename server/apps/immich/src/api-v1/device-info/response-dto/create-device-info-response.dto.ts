@@ -7,7 +7,6 @@ export class DeviceInfoResponseDto {
   userId!: string;
   deviceId!: string;
   deviceType!: DeviceType;
-  notificationToken?: string | null;
   createdAt!: string;
   isAutoBackup!: boolean;
 }
@@ -18,7 +17,6 @@ export function mapDeviceInfoResponse(entity: DeviceInfoEntity): DeviceInfoRespo
     userId: entity.userId,
     deviceId: entity.deviceId,
     deviceType: entity.deviceType,
-    notificationToken: entity.notificationToken,
     createdAt: entity.createdAt,
     isAutoBackup: entity.isAutoBackup,
   };

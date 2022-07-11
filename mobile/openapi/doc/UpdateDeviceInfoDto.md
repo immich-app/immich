@@ -1,4 +1,4 @@
-# openapi.model.DeviceInfoResponseDto
+# openapi.model.UpdateDeviceInfoDto
 
 ## Load the model package
 ```dart
@@ -8,12 +8,9 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **int** |  | 
-**userId** | **String** |  | 
 **deviceId** | **String** |  | 
 **deviceType** | **String** |  | 
-**createdAt** | **String** |  | 
-**isAutoBackup** | **bool** |  | 
+**isAutoBackup** | **bool** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -17,7 +17,6 @@ class DeviceInfoResponseDto {
     required this.userId,
     required this.deviceId,
     required this.deviceType,
-    this.notificationToken,
     required this.createdAt,
     required this.isAutoBackup,
   });
@@ -30,8 +29,6 @@ class DeviceInfoResponseDto {
 
   DeviceInfoResponseDtoDeviceTypeEnum deviceType;
 
-  String? notificationToken;
-
   String createdAt;
 
   bool isAutoBackup;
@@ -42,7 +39,6 @@ class DeviceInfoResponseDto {
      other.userId == userId &&
      other.deviceId == deviceId &&
      other.deviceType == deviceType &&
-     other.notificationToken == notificationToken &&
      other.createdAt == createdAt &&
      other.isAutoBackup == isAutoBackup;
 
@@ -53,12 +49,11 @@ class DeviceInfoResponseDto {
     (userId.hashCode) +
     (deviceId.hashCode) +
     (deviceType.hashCode) +
-    (notificationToken == null ? 0 : notificationToken!.hashCode) +
     (createdAt.hashCode) +
     (isAutoBackup.hashCode);
 
   @override
-  String toString() => 'DeviceInfoResponseDto[id=$id, userId=$userId, deviceId=$deviceId, deviceType=$deviceType, notificationToken=$notificationToken, createdAt=$createdAt, isAutoBackup=$isAutoBackup]';
+  String toString() => 'DeviceInfoResponseDto[id=$id, userId=$userId, deviceId=$deviceId, deviceType=$deviceType, createdAt=$createdAt, isAutoBackup=$isAutoBackup]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -66,11 +61,6 @@ class DeviceInfoResponseDto {
       _json[r'userId'] = userId;
       _json[r'deviceId'] = deviceId;
       _json[r'deviceType'] = deviceType;
-    if (notificationToken != null) {
-      _json[r'notificationToken'] = notificationToken;
-    } else {
-      _json[r'notificationToken'] = null;
-    }
       _json[r'createdAt'] = createdAt;
       _json[r'isAutoBackup'] = isAutoBackup;
     return _json;
@@ -99,7 +89,6 @@ class DeviceInfoResponseDto {
         userId: mapValueOfType<String>(json, r'userId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         deviceType: DeviceInfoResponseDtoDeviceTypeEnum.fromJson(json[r'deviceType'])!,
-        notificationToken: mapValueOfType<String>(json, r'notificationToken'),
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         isAutoBackup: mapValueOfType<bool>(json, r'isAutoBackup')!,
       );
