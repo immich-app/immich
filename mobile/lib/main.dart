@@ -19,6 +19,7 @@ import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 
 import 'constants/hive_box.dart';
+import 'package:openapi/api.dart';
 
 void main() async {
   await Hive.initFlutter();
@@ -106,11 +107,21 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   Future<void> initApp() async {
     WidgetsBinding.instance.addObserver(this);
+
+    final apiInstance = UserApi();
+
+    try {
+      final result = await apiInstance.getUserCount();
+      print(result);
+    } catch (e) {
+      print('Exception when calling UserApi->getUserCount: $e\n');
+    }
   }
 
   @override
   initState() {
     super.initState();
+
     initApp().then((_) => debugPrint("App Init Completed"));
   }
 
