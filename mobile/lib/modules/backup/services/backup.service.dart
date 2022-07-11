@@ -190,16 +190,16 @@ class BackupService {
   Future<DeviceInfoResponseDto> setAutoBackup(
     bool status,
     String deviceId,
-    CreateDeviceInfoDtoDeviceTypeEnum deviceType,
+    DeviceTypeEnum deviceType,
   ) async {
     try {
-      var updatedDeviceInfo = await _apiService.deviceInfoApi.updateDeviceInfo({
-        {
-          "isAutoBackup": status,
-          "deviceId": deviceId,
-          "deviceType": deviceType,
-        },
-      });
+      var updatedDeviceInfo = await _apiService.deviceInfoApi.updateDeviceInfo(
+        UpdateDeviceInfoDto(
+          deviceId: deviceId,
+          deviceType: deviceType,
+          isAutoBackup: status,
+        ),
+      );
 
       if (updatedDeviceInfo == null) {
         throw Exception("Error updating device info");

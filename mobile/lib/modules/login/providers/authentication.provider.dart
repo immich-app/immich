@@ -20,7 +20,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   ) : super(
           AuthenticationState(
             deviceId: "",
-            deviceType: CreateDeviceInfoDtoDeviceTypeEnum.ANDROID,
+            deviceType: DeviceTypeEnum.ANDROID,
             userId: "",
             userEmail: "",
             firstName: '',
@@ -33,8 +33,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
               id: 0,
               userId: "",
               deviceId: "",
-              deviceType: DeviceInfoResponseDtoDeviceTypeEnum.ANDROID,
-              notificationToken: "",
+              deviceType: DeviceTypeEnum.ANDROID,
               createdAt: "",
               isAutoBackup: false,
             ),
@@ -162,7 +161,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   setAutoBackup(bool backupState) async {
     var deviceInfo = await _deviceInfoService.getDeviceInfo();
     var deviceId = deviceInfo["deviceId"];
-    CreateDeviceInfoDtoDeviceTypeEnum deviceType = deviceInfo["deviceType"];
+
+    DeviceTypeEnum deviceType = deviceInfo["deviceType"];
 
     DeviceInfoResponseDto updatedDeviceInfo =
         await _backupService.setAutoBackup(backupState, deviceId, deviceType);
