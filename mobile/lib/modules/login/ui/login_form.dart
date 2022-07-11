@@ -108,7 +108,6 @@ class ServerEndpointInput extends StatelessWidget {
       : super(key: key);
 
   String? _validateInput(String? url) {
-
     if (url?.startsWith(RegExp(r'https?://')) == true) {
       return null;
     } else {
@@ -122,7 +121,7 @@ class ServerEndpointInput extends StatelessWidget {
       controller: controller,
       decoration: InputDecoration(
         labelText: 'login_form_endpoint_url'.tr(),
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
         hintText: 'login_form_endpoint_hint'.tr(),
       ),
       validator: _validateInput,
@@ -140,8 +139,9 @@ class EmailInput extends StatelessWidget {
     if (email == null || email == '') return null;
     if (email.endsWith(' ')) return 'login_form_err_trailing_whitespace'.tr();
     if (email.startsWith(' ')) return 'login_form_err_leading_whitespace'.tr();
-    if (email.contains(' ') || !email.contains('@'))
+    if (email.contains(' ') || !email.contains('@')) {
       return 'login_form_err_invalid_email'.tr();
+    }
     return null;
   }
 
@@ -151,7 +151,7 @@ class EmailInput extends StatelessWidget {
       controller: controller,
       decoration: InputDecoration(
         labelText: 'login_form_label_email'.tr(),
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
         hintText: 'login_form_email_hint'.tr(),
       ),
       validator: _validateInput,
@@ -172,7 +172,7 @@ class PasswordInput extends StatelessWidget {
       controller: controller,
       decoration: InputDecoration(
           labelText: 'login_form_label_password'.tr(),
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
           hintText: 'login_form_password_hint'.tr()),
     );
   }
@@ -224,7 +224,7 @@ class LoginButton extends ConsumerWidget {
           } else {
             ImmichToast.show(
               context: context,
-              msg: "login_failed".tr(),
+              msg: "login_form_failed_login".tr(),
               toastType: ToastType.error,
             );
           }
