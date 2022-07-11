@@ -7,7 +7,7 @@ export class DeviceInfoResponseDto {
   userId!: string;
   deviceId!: string;
   deviceType!: DeviceType;
-  notificationToken!: string | null;
+  notificationToken?: string | null;
   createdAt!: string;
   isAutoBackup!: boolean;
 }

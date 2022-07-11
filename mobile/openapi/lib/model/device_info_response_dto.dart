@@ -17,7 +17,7 @@ class DeviceInfoResponseDto {
     required this.userId,
     required this.deviceId,
     required this.deviceType,
-    required this.notificationToken,
+    this.notificationToken,
     required this.createdAt,
     required this.isAutoBackup,
   });
@@ -155,7 +155,6 @@ class DeviceInfoResponseDto {
     'userId',
     'deviceId',
     'deviceType',
-    'notificationToken',
     'createdAt',
     'isAutoBackup',
   };

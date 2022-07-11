@@ -24,6 +24,7 @@ export class DeviceInfoService {
 
     if (res) {
       Logger.log('Device Info Exist', 'createDeviceInfo');
+      console.log(mapDeviceInfoResponse(res));
       return mapDeviceInfoResponse(res);
     }
 

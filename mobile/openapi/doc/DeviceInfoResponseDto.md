@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **userId** | **String** |  | 
 **deviceId** | **String** |  | 
 **deviceType** | **String** |  | 
-**notificationToken** | **String** |  | 
+**notificationToken** | **String** |  | [optional] 
 **createdAt** | **String** |  | 
 **isAutoBackup** | **bool** |  | 
 
