@@ -224,6 +224,8 @@ class ApiClient {
           return DeleteAssetDto.fromJson(value);
         case 'DeviceInfoResponseDto':
           return DeviceInfoResponseDto.fromJson(value);
+        case 'DeviceTypeEnum':
+          return DeviceTypeEnumTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'LoginCredentialDto':

@@ -548,6 +548,21 @@ export type DeviceInfoResponseDtoDeviceTypeEnum = typeof DeviceInfoResponseDtoDe
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const DeviceTypeEnum = {
+    Ios: 'IOS',
+    Android: 'ANDROID',
+    Web: 'WEB'
+} as const;
+
+export type DeviceTypeEnum = typeof DeviceTypeEnum[keyof typeof DeviceTypeEnum];
+
+
+/**
+ * 
+ * @export
  * @interface ExifResponseDto
  */
 export interface ExifResponseDto {
@@ -948,10 +963,10 @@ export interface UpdateAlbumDto {
 export interface UpdateDeviceInfoDto {
     /**
      * 
-     * @type {string}
+     * @type {DeviceTypeEnum}
      * @memberof UpdateDeviceInfoDto
      */
-    'deviceType': UpdateDeviceInfoDtoDeviceTypeEnum;
+    'deviceType': DeviceTypeEnum;
     /**
      * 
      * @type {string}
@@ -965,15 +980,6 @@ export interface UpdateDeviceInfoDto {
      */
     'isAutoBackup'?: boolean;
 }
-
-export const UpdateDeviceInfoDtoDeviceTypeEnum = {
-    Ios: 'IOS',
-    Android: 'ANDROID',
-    Web: 'WEB'
-} as const;
-
-export type UpdateDeviceInfoDtoDeviceTypeEnum = typeof UpdateDeviceInfoDtoDeviceTypeEnum[keyof typeof UpdateDeviceInfoDtoDeviceTypeEnum];
-
 /**
  * 
  * @export

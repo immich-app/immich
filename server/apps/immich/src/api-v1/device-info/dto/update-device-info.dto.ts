@@ -9,7 +9,7 @@ export class UpdateDeviceInfoDto {
   deviceId!: string;
 
   @IsNotEmpty()
-  @ApiProperty({ enum: DeviceType })
+  @ApiProperty({ enumName: 'DeviceTypeEnum', enum: DeviceType })
   deviceType!: DeviceType;
 
   @IsOptional()

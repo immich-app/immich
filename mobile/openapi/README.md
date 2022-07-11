@@ -122,6 +122,7 @@ Class | Method | HTTP request | Description
  - [CuratedObjectsResponseDto](doc//CuratedObjectsResponseDto.md)
  - [DeleteAssetDto](doc//DeleteAssetDto.md)
  - [DeviceInfoResponseDto](doc//DeviceInfoResponseDto.md)
+ - [DeviceTypeEnum](doc//DeviceTypeEnum.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
