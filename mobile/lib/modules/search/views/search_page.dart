@@ -60,8 +60,7 @@ class SearchPage extends HookConsumerWidget {
                     itemBuilder: ((context, index) {
                       CuratedLocation locationInfo = curatedLocations[index];
                       var thumbnailRequestUrl =
-                          '${box.get(serverEndpointKey)}/asset/file?aid=${locationInfo.deviceAssetId}&did=${locationInfo.deviceId}&isThumb=true';
-
+                          '${box.get(serverEndpointKey)}/asset/thumbnail/${locationInfo.id}';
                       return ThumbnailWithInfo(
                         imageUrl: thumbnailRequestUrl,
                         textInfo: locationInfo.city,
@@ -169,7 +168,7 @@ class SearchPage extends HookConsumerWidget {
                 _buildPlaces(),
                 Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: const  Text(
+                  child: const Text(
                     "search_page_things",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ).tr(),

@@ -14,6 +14,7 @@ import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SelectUserForSharingPage extends HookConsumerWidget {
   const SelectUserForSharingPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sharedUsersList = useState<Set<User>>({});
@@ -37,7 +38,9 @@ class SelectUserForSharingPage extends HookConsumerWidget {
             .navigate(const TabControllerRoute(children: [SharingRoute()]));
       }
 
-      ScaffoldMessenger(child: SnackBar(content: Text('select_user_for_sharing_page_err_album').tr()));
+      ScaffoldMessenger(
+          child: SnackBar(
+              content: Text('select_user_for_sharing_page_err_album').tr()));
     }
 
     _buildTileIcon(User user) {
@@ -87,7 +90,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
           Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'share_suggestions',
+              'select_user_for_sharing_page_share_suggestions',
               style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey,

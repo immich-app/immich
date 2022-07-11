@@ -18,11 +18,12 @@ final userServiceProvider =
 
 class UserService {
   final NetworkService _networkService;
+
   UserService(this._networkService);
 
   Future<List<User>> getAllUsersInfo() async {
     try {
-      var res = await _networkService.getRequest(url: 'user');
+      var res = await _networkService.getRequest(url: 'user?isAll=false');
       List<dynamic> decodedData = jsonDecode(res.toString());
       List<User> result = List.from(decodedData.map((e) => User.fromMap(e)));
 

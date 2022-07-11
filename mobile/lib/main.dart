@@ -15,6 +15,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 
@@ -108,14 +109,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   Future<void> initApp() async {
     WidgetsBinding.instance.addObserver(this);
 
-    final apiInstance = UserApi();
+    var apiService = ApiService();
+    var tes = await apiService.userApi.getUserCount();
 
-    try {
-      final result = await apiInstance.getUserCount();
-      print(result);
-    } catch (e) {
-      print('Exception when calling UserApi->getUserCount: $e\n');
-    }
+    print("TEST API ${tes?.userCount}");
   }
 
   @override

@@ -20,7 +20,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
     final cacheKey = useState(1);
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
+        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
     var deviceId = ref.watch(authenticationProvider).deviceId;
     final selectedAssetsInAlbumViewer =
         ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;

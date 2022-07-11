@@ -22,8 +22,7 @@ class ThumbnailImage extends HookConsumerWidget {
 
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
-
+        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
     var selectedAsset = ref.watch(homePageStateProvider).selectedItems;
     var isMultiSelectEnable =
         ref.watch(homePageStateProvider).isMultiSelectEnable;
@@ -112,9 +111,11 @@ class ThumbnailImage extends HookConsumerWidget {
                     Transform.scale(
                   scale: 0.2,
                   child: CircularProgressIndicator(
-                      value: downloadProgress.progress),
+                    value: downloadProgress.progress,
+                  ),
                 ),
                 errorWidget: (context, url, error) {
+                  print("Error getting thumbnail $url = $error");
                   return Icon(
                     Icons.image_not_supported_outlined,
                     color: Theme.of(context).primaryColor,
