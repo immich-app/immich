@@ -89,4 +89,3 @@ lib/model/update_user_dto.dart
 lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 pubspec.yaml
-test/device_type_enum_test.dart

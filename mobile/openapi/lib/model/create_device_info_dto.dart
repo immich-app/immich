@@ -18,7 +18,7 @@ class CreateDeviceInfoDto {
     this.isAutoBackup,
   });
 
-  CreateDeviceInfoDtoDeviceTypeEnum deviceType;
+  DeviceTypeEnum deviceType;
 
   String deviceId;
 
@@ -77,7 +77,7 @@ class CreateDeviceInfoDto {
       }());
 
       return CreateDeviceInfoDto(
-        deviceType: CreateDeviceInfoDtoDeviceTypeEnum.fromJson(json[r'deviceType'])!,
+        deviceType: DeviceTypeEnum.fromJson(json[r'deviceType'])!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         isAutoBackup: mapValueOfType<bool>(json, r'isAutoBackup'),
       );
@@ -133,81 +133,4 @@ class CreateDeviceInfoDto {
     'deviceId',
   };
 }
-
-
-class CreateDeviceInfoDtoDeviceTypeEnum {
-  /// Instantiate a new enum with the provided [value].
-  const CreateDeviceInfoDtoDeviceTypeEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const IOS = CreateDeviceInfoDtoDeviceTypeEnum._(r'IOS');
-  static const ANDROID = CreateDeviceInfoDtoDeviceTypeEnum._(r'ANDROID');
-  static const WEB = CreateDeviceInfoDtoDeviceTypeEnum._(r'WEB');
-
-  /// List of all possible values in this [enum][CreateDeviceInfoDtoDeviceTypeEnum].
-  static const values = <CreateDeviceInfoDtoDeviceTypeEnum>[
-    IOS,
-    ANDROID,
-    WEB,
-  ];
-
-  static CreateDeviceInfoDtoDeviceTypeEnum? fromJson(dynamic value) => CreateDeviceInfoDtoDeviceTypeEnumTypeTransformer().decode(value);
-
-  static List<CreateDeviceInfoDtoDeviceTypeEnum>? listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <CreateDeviceInfoDtoDeviceTypeEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = CreateDeviceInfoDtoDeviceTypeEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [CreateDeviceInfoDtoDeviceTypeEnum] to String,
-/// and [decode] dynamic data back to [CreateDeviceInfoDtoDeviceTypeEnum].
-class CreateDeviceInfoDtoDeviceTypeEnumTypeTransformer {
-  factory CreateDeviceInfoDtoDeviceTypeEnumTypeTransformer() => _instance ??= const CreateDeviceInfoDtoDeviceTypeEnumTypeTransformer._();
-
-  const CreateDeviceInfoDtoDeviceTypeEnumTypeTransformer._();
-
-  String encode(CreateDeviceInfoDtoDeviceTypeEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a CreateDeviceInfoDtoDeviceTypeEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  CreateDeviceInfoDtoDeviceTypeEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data.toString()) {
-        case r'IOS': return CreateDeviceInfoDtoDeviceTypeEnum.IOS;
-        case r'ANDROID': return CreateDeviceInfoDtoDeviceTypeEnum.ANDROID;
-        case r'WEB': return CreateDeviceInfoDtoDeviceTypeEnum.WEB;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [CreateDeviceInfoDtoDeviceTypeEnumTypeTransformer] instance.
-  static CreateDeviceInfoDtoDeviceTypeEnumTypeTransformer? _instance;
-}
-
 

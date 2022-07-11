@@ -9,7 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **int** |  | 
-**deviceType** | **String** |  | 
+**deviceType** | [**DeviceTypeEnum**](DeviceTypeEnum.md) |  | 
 **userId** | **String** |  | 
 **deviceId** | **String** |  | 
 **createdAt** | **String** |  | 

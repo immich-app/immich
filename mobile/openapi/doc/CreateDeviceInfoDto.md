@@ -8,7 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**deviceType** | **String** |  | 
+**deviceType** | [**DeviceTypeEnum**](DeviceTypeEnum.md) |  | 
 **deviceId** | **String** |  | 
 **isAutoBackup** | **bool** |  | [optional] 
 

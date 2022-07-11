@@ -7,7 +7,7 @@ export class CreateDeviceInfoDto {
   deviceId!: string;
 
   @IsNotEmpty()
-  @ApiProperty({ enum: DeviceType })
+  @ApiProperty({ enumName: 'DeviceTypeEnum', enum: DeviceType })
   deviceType!: DeviceType;
 
   @IsOptional()

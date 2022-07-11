@@ -7,7 +7,7 @@ export class DeviceInfoResponseDto {
   userId!: string;
   deviceId!: string;
 
-  @ApiProperty({ enum: DeviceType })
+  @ApiProperty({ enumName: 'DeviceTypeEnum', enum: DeviceType })
   deviceType!: DeviceType;
 
   createdAt!: string;

@@ -330,10 +330,10 @@ export interface CreateAlbumDto {
 export interface CreateDeviceInfoDto {
     /**
      * 
-     * @type {string}
+     * @type {DeviceTypeEnum}
      * @memberof CreateDeviceInfoDto
      */
-    'deviceType': CreateDeviceInfoDtoDeviceTypeEnum;
+    'deviceType': DeviceTypeEnum;
     /**
      * 
      * @type {string}
@@ -347,15 +347,6 @@ export interface CreateDeviceInfoDto {
      */
     'isAutoBackup'?: boolean;
 }
-
-export const CreateDeviceInfoDtoDeviceTypeEnum = {
-    Ios: 'IOS',
-    Android: 'ANDROID',
-    Web: 'WEB'
-} as const;
-
-export type CreateDeviceInfoDtoDeviceTypeEnum = typeof CreateDeviceInfoDtoDeviceTypeEnum[keyof typeof CreateDeviceInfoDtoDeviceTypeEnum];
-
 /**
  * 
  * @export
@@ -507,10 +498,10 @@ export interface DeviceInfoResponseDto {
     'id': number;
     /**
      * 
-     * @type {string}
+     * @type {DeviceTypeEnum}
      * @memberof DeviceInfoResponseDto
      */
-    'deviceType': DeviceInfoResponseDtoDeviceTypeEnum;
+    'deviceType': DeviceTypeEnum;
     /**
      * 
      * @type {string}
@@ -536,15 +527,6 @@ export interface DeviceInfoResponseDto {
      */
     'isAutoBackup': boolean;
 }
-
-export const DeviceInfoResponseDtoDeviceTypeEnum = {
-    Ios: 'IOS',
-    Android: 'ANDROID',
-    Web: 'WEB'
-} as const;
-
-export type DeviceInfoResponseDtoDeviceTypeEnum = typeof DeviceInfoResponseDtoDeviceTypeEnum[keyof typeof DeviceInfoResponseDtoDeviceTypeEnum];
-
 /**
  * 
  * @export
