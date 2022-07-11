@@ -19,7 +19,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
-import 'package:intl/intl.dart';
 
 class AlbumViewerPage extends HookConsumerWidget {
   final String albumId;
@@ -57,7 +56,9 @@ class AlbumViewerPage extends HookConsumerWidget {
           var isSuccess = await ref
               .watch(sharedAlbumServiceProvider)
               .addAdditionalAssetToAlbum(
-                  returnPayload.selectedAdditionalAsset, albumId);
+                returnPayload.selectedAdditionalAsset,
+                albumId,
+              );
 
           if (isSuccess) {
             ref.refresh(sharedAlbumDetailProvider(albumId));
@@ -73,9 +74,10 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     void _onAddUsersPressed(SharedAlbum albumInfo) async {
-      List<String>? sharedUserIds = await AutoRouter.of(context)
-          .push<List<String>?>(
-              SelectAdditionalUserForSharingRoute(albumInfo: albumInfo));
+      List<String>? sharedUserIds =
+          await AutoRouter.of(context).push<List<String>?>(
+        SelectAdditionalUserForSharingRoute(albumInfo: albumInfo),
+      );
 
       if (sharedUserIds != null) {
         ImmichLoadingOverlayController.appLoader.show();
@@ -102,9 +104,13 @@ class AlbumViewerPage extends HookConsumerWidget {
               )
             : Padding(
                 padding: const EdgeInsets.only(left: 8.0),
-                child: Text(albumInfo.albumName,
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold)),
+                child: Text(
+                  albumInfo.albumName,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
       );
     }
@@ -114,7 +120,8 @@ class AlbumViewerPage extends HookConsumerWidget {
       DateTime parsedStartDate =
           DateTime.parse(albumInfo.assets!.first.createdAt);
       DateTime parsedEndDate = DateTime.parse(
-          albumInfo.assets?.last.createdAt ?? '11111111'); //Need default.
+        albumInfo.assets?.last.createdAt ?? '11111111',
+      ); //Need default.
 
       if (parsedStartDate.year == parsedEndDate.year) {
         startDate = DateFormat('LLL d').format(parsedStartDate);
@@ -129,7 +136,10 @@ class AlbumViewerPage extends HookConsumerWidget {
         child: Text(
           "$startDate-$endDate",
           style: const TextStyle(
-              fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
         ),
       );
     }
@@ -252,7 +262,10 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AlbumViewerAppbar(
-          albumInfo: albumInfo, userId: userId, albumId: albumId),
+        albumInfo: albumInfo,
+        userId: userId,
+        albumId: albumId,
+      ),
       body: albumInfo.when(
         data: (albumInfo) => _buildBody(albumInfo),
         error: (e, _) => Center(child: Text("Error loading album info $e")),

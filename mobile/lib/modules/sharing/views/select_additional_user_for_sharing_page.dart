@@ -55,9 +55,10 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
               label: Text(
                 user.email,
                 style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold),
+                  fontSize: 12,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -70,13 +71,14 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
             children: [...usersChip],
           ),
           Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Text(
               'select_additional_user_for_sharing_page_suggestions'.tr(),
-              style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           ListView.builder(
@@ -87,13 +89,16 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
                 title: Text(
                   users[index].email,
                   style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.bold),
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 onTap: () {
                   if (sharedUsersList.value.contains(users[index])) {
                     sharedUsersList.value = sharedUsersList.value
-                        .where((selectedUser) =>
-                            selectedUser.id != users[index].id)
+                        .where(
+                          (selectedUser) => selectedUser.id != users[index].id,
+                        )
                         .toSet();
                   } else {
                     sharedUsersList.value = {
@@ -139,7 +144,8 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         data: (users) {
           for (var sharedUsers in albumInfo.sharedUsers) {
             users.removeWhere(
-                (u) => u.id == sharedUsers.id || u.id == albumInfo.ownerId);
+              (u) => u.id == sharedUsers.id || u.id == albumInfo.ownerId,
+            );
           }
 
           return _buildUserList(users);

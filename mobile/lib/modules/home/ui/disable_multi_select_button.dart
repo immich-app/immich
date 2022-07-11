@@ -29,15 +29,18 @@ class DisableMultiSelectButton extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: TextButton.icon(
-                  onPressed: () {
-                    onPressed();
-                  },
-                  icon: const Icon(Icons.close_rounded),
-                  label: Text(
-                    '$selectedItemCount',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 18),
-                  )),
+                onPressed: () {
+                  onPressed();
+                },
+                icon: const Icon(Icons.close_rounded),
+                label: Text(
+                  '$selectedItemCount',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
             ),
           ),
         ),

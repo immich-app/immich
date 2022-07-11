@@ -40,7 +40,8 @@ class SharingSliverAppBar extends StatelessWidget {
                   child: TextButton.icon(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(
-                          Theme.of(context).primaryColor.withAlpha(20)),
+                        Theme.of(context).primaryColor.withAlpha(20),
+                      ),
                       // foregroundColor: MaterialStateProperty.all(Colors.white),
                     ),
                     onPressed: () {
@@ -65,7 +66,8 @@ class SharingSliverAppBar extends StatelessWidget {
                   child: TextButton.icon(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(
-                          Theme.of(context).primaryColor.withAlpha(20)),
+                        Theme.of(context).primaryColor.withAlpha(20),
+                      ),
                       // foregroundColor: MaterialStateProperty.all(Colors.white),
                     ),
                     onPressed: null,

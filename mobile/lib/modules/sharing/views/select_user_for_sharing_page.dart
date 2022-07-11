@@ -39,8 +39,10 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       }
 
       ScaffoldMessenger(
-          child: SnackBar(
-              content: Text('select_user_for_sharing_page_err_album').tr()));
+        child: SnackBar(
+          content: const Text('select_user_for_sharing_page_err_album').tr(),
+        ),
+      );
     }
 
     _buildTileIcon(User user) {
@@ -73,9 +75,10 @@ class SelectUserForSharingPage extends HookConsumerWidget {
               label: Text(
                 user.email,
                 style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold),
+                  fontSize: 12,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -88,13 +91,14 @@ class SelectUserForSharingPage extends HookConsumerWidget {
             children: [...usersChip],
           ),
           Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
+            padding: const EdgeInsets.all(16.0),
+            child: const Text(
               'select_user_for_sharing_page_share_suggestions',
               style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold),
+                fontSize: 14,
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
             ).tr(),
           ),
           ListView.builder(
@@ -105,13 +109,16 @@ class SelectUserForSharingPage extends HookConsumerWidget {
                 title: Text(
                   users[index].email,
                   style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.bold),
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 onTap: () {
                   if (sharedUsersList.value.contains(users[index])) {
                     sharedUsersList.value = sharedUsersList.value
-                        .where((selectedUser) =>
-                            selectedUser.id != users[index].id)
+                        .where(
+                          (selectedUser) => selectedUser.id != users[index].id,
+                        )
                         .toSet();
                   } else {
                     sharedUsersList.value = {
@@ -144,12 +151,13 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         ),
         actions: [
           TextButton(
-              onPressed:
-                  sharedUsersList.value.isEmpty ? null : _createSharedAlbum,
-              child: const Text(
-                "share_create_album",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ).tr())
+            onPressed:
+                sharedUsersList.value.isEmpty ? null : _createSharedAlbum,
+            child: const Text(
+              "share_create_album",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ).tr(),
+          )
         ],
       ),
       body: suggestedShareUsers.when(

@@ -38,7 +38,8 @@ class HomePageState {
     return HomePageState(
       isMultiSelectEnable: map['isMultiSelectEnable'] ?? false,
       selectedItems: Set<ImmichAsset>.from(
-          map['selectedItems']?.map((x) => ImmichAsset.fromMap(x))),
+        map['selectedItems']?.map((x) => ImmichAsset.fromMap(x)),
+      ),
       selectedDateGroup: Set<String>.from(map['selectedDateGroup']),
     );
   }

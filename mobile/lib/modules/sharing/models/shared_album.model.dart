@@ -74,7 +74,8 @@ class SharedAlbum {
           List<User>.from(map['sharedUsers']?.map((x) => User.fromMap(x))),
       assets: map['assets'] != null
           ? List<ImmichAsset>.from(
-              map['assets']?.map((x) => ImmichAsset.fromMap(x)))
+              map['assets']?.map((x) => ImmichAsset.fromMap(x)),
+            )
           : null,
     );
   }

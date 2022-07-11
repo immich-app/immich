@@ -30,14 +30,20 @@ class SharedAlbumService {
     return [];
   }
 
-  Future<bool> createSharedAlbum(String albumName, Set<ImmichAsset> assets,
-      List<String> sharedUserIds) async {
+  Future<bool> createSharedAlbum(
+    String albumName,
+    Set<ImmichAsset> assets,
+    List<String> sharedUserIds,
+  ) async {
     try {
-      var res = await _networkService.postRequest(url: 'album', data: {
-        "albumName": albumName,
-        "sharedWithUserIds": sharedUserIds,
-        "assetIds": assets.map((asset) => asset.id).toList(),
-      });
+      var res = await _networkService.postRequest(
+        url: 'album',
+        data: {
+          "albumName": albumName,
+          "sharedWithUserIds": sharedUserIds,
+          "assetIds": assets.map((asset) => asset.id).toList(),
+        },
+      );
 
       return res != null;
     } catch (e) {
@@ -59,13 +65,17 @@ class SharedAlbumService {
   }
 
   Future<bool> addAdditionalAssetToAlbum(
-      Set<ImmichAsset> assets, String albumId) async {
+    Set<ImmichAsset> assets,
+    String albumId,
+  ) async {
     try {
-      var res =
-          await _networkService.putRequest(url: 'album/$albumId/assets', data: {
-        "albumId": albumId,
-        "assetIds": assets.map((asset) => asset.id).toList(),
-      });
+      var res = await _networkService.putRequest(
+        url: 'album/$albumId/assets',
+        data: {
+          "albumId": albumId,
+          "assetIds": assets.map((asset) => asset.id).toList(),
+        },
+      );
 
       return res != null;
     } catch (e) {
@@ -75,12 +85,16 @@ class SharedAlbumService {
   }
 
   Future<bool> addAdditionalUserToAlbum(
-      List<String> sharedUserIds, String albumId) async {
+    List<String> sharedUserIds,
+    String albumId,
+  ) async {
     try {
-      var res =
-          await _networkService.putRequest(url: 'album/$albumId/users', data: {
-        "sharedUserIds": sharedUserIds,
-      });
+      var res = await _networkService.putRequest(
+        url: 'album/$albumId/users',
+        data: {
+          "sharedUserIds": sharedUserIds,
+        },
+      );
 
       return res != null;
     } catch (e) {
@@ -121,12 +135,16 @@ class SharedAlbumService {
   }
 
   Future<bool> removeAssetFromAlbum(
-      String albumId, List<String> assetIds) async {
+    String albumId,
+    List<String> assetIds,
+  ) async {
     try {
-      Response res = await _networkService
-          .deleteRequest(url: 'album/$albumId/assets', data: {
-        "assetIds": assetIds,
-      });
+      Response res = await _networkService.deleteRequest(
+        url: 'album/$albumId/assets',
+        data: {
+          "assetIds": assetIds,
+        },
+      );
 
       if (res.statusCode != 200) {
         return false;
@@ -140,13 +158,18 @@ class SharedAlbumService {
   }
 
   Future<bool> changeTitleAlbum(
-      String albumId, String ownerId, String newAlbumTitle) async {
+    String albumId,
+    String ownerId,
+    String newAlbumTitle,
+  ) async {
     try {
-      Response res =
-          await _networkService.patchRequest(url: 'album/$albumId/', data: {
-        "ownerId": ownerId,
-        "albumName": newAlbumTitle,
-      });
+      Response res = await _networkService.patchRequest(
+        url: 'album/$albumId/',
+        data: {
+          "ownerId": ownerId,
+          "albumName": newAlbumTitle,
+        },
+      );
 
       if (res.statusCode != 200) {
         return false;

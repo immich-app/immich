@@ -59,7 +59,9 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
     }
 
     state = state.copyWith(
-        isVersionMismatch: false, versionMismatchErrorMessage: "");
+      isVersionMismatch: false,
+      versionMismatchErrorMessage: "",
+    );
   }
 
   Map<String, int> _getDetailVersion(String version) {

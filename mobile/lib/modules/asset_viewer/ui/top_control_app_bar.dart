@@ -6,12 +6,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
-  const TopControlAppBar(
-      {Key? key,
-      required this.asset,
-      required this.onMoreInfoPressed,
-      required this.onDownloadPressed})
-      : super(key: key);
+  const TopControlAppBar({
+    Key? key,
+    required this.asset,
+    required this.onMoreInfoPressed,
+    required this.onDownloadPressed,
+  }) : super(key: key);
 
   final ImmichAsset asset;
   final Function onMoreInfoPressed;
@@ -54,12 +54,13 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
               : const Icon(Icons.favorite_border_rounded),
         ),
         IconButton(
-            iconSize: iconSize,
-            splashRadius: iconSize,
-            onPressed: () {
-              onMoreInfoPressed();
-            },
-            icon: const Icon(Icons.more_horiz_rounded))
+          iconSize: iconSize,
+          splashRadius: iconSize,
+          onPressed: () {
+            onMoreInfoPressed();
+          },
+          icon: const Icon(Icons.more_horiz_rounded),
+        )
       ],
     );
   }

@@ -8,9 +8,11 @@ import 'package:immich_mobile/modules/sharing/providers/album_viewer.provider.da
 class AlbumViewerEditableTitle extends HookConsumerWidget {
   final SharedAlbum albumInfo;
   final FocusNode titleFocusNode;
-  const AlbumViewerEditableTitle(
-      {Key? key, required this.albumInfo, required this.titleFocusNode})
-      : super(key: key);
+  const AlbumViewerEditableTitle({
+    Key? key,
+    required this.albumInfo,
+    required this.titleFocusNode,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,12 +26,15 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
       }
     }
 
-    useEffect(() {
-      titleFocusNode.addListener(onFocusModeChange);
-      return () {
-        titleFocusNode.removeListener(onFocusModeChange);
-      };
-    }, []);
+    useEffect(
+      () {
+        titleFocusNode.addListener(onFocusModeChange);
+        return () {
+          titleFocusNode.removeListener(onFocusModeChange);
+        };
+      },
+      [],
+    );
 
     return TextField(
       onChanged: (value) {

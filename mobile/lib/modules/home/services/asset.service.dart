@@ -98,7 +98,8 @@ class AssetService {
   }
 
   Future<List<DeleteAssetResponse>?> deleteAssets(
-      Set<ImmichAsset> deleteAssets) async {
+    Set<ImmichAsset> deleteAssets,
+  ) async {
     try {
       var payload = [];
 

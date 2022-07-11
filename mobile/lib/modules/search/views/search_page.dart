@@ -30,10 +30,13 @@ class SearchPage extends HookConsumerWidget {
     AsyncValue<List<CuratedObject>> curatedObjects =
         ref.watch(getCuratedObjectProvider);
 
-    useEffect(() {
-      searchFocusNode = FocusNode();
-      return () => searchFocusNode.dispose();
-    }, []);
+    useEffect(
+      () {
+        searchFocusNode = FocusNode();
+        return () => searchFocusNode.dispose();
+      },
+      [],
+    );
 
     _onSearchSubmitted(String searchTerm) async {
       searchFocusNode.unfocus();
@@ -66,7 +69,8 @@ class SearchPage extends HookConsumerWidget {
                         textInfo: locationInfo.city,
                         onTap: () {
                           AutoRouter.of(context).push(
-                              SearchResultRoute(searchTerm: locationInfo.city));
+                            SearchResultRoute(searchTerm: locationInfo.city),
+                          );
                         },
                       );
                     }),
@@ -116,9 +120,12 @@ class SearchPage extends HookConsumerWidget {
                         imageUrl: thumbnailRequestUrl,
                         textInfo: curatedObjectInfo.object,
                         onTap: () {
-                          AutoRouter.of(context).push(SearchResultRoute(
+                          AutoRouter.of(context).push(
+                            SearchResultRoute(
                               searchTerm: curatedObjectInfo.object
-                                  .capitalizeFirstLetter()));
+                                  .capitalizeFirstLetter(),
+                            ),
+                          );
                         },
                       );
                     }),
@@ -159,7 +166,7 @@ class SearchPage extends HookConsumerWidget {
             ListView(
               children: [
                 Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: const Text(
                     "search_page_places",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -167,7 +174,7 @@ class SearchPage extends HookConsumerWidget {
                 ),
                 _buildPlaces(),
                 Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: const Text(
                     "search_page_things",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),

@@ -20,11 +20,14 @@ class SharingPage extends HookConsumerWidget {
     var thumbnailRequestUrl = '${box.get(serverEndpointKey)}/asset/thumbnail';
     final List<SharedAlbum> sharedAlbums = ref.watch(sharedAlbumProvider);
 
-    useEffect(() {
-      ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+    useEffect(
+      () {
+        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
 
-      return null;
-    }, []);
+        return null;
+      },
+      [],
+    );
 
     _buildAlbumList() {
       return SliverList(
@@ -60,9 +63,10 @@ class SharingPage extends HookConsumerWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
               ),
               onTap: () {
                 AutoRouter.of(context)
@@ -133,9 +137,9 @@ class SharingPage extends HookConsumerWidget {
         slivers: [
           const SharingSliverAppBar(),
           SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             sliver: SliverToBoxAdapter(
-              child: Text(
+              child: const Text(
                 "sharing_page_album",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,

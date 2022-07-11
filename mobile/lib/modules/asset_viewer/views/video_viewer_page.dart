@@ -49,10 +49,13 @@ class VideoViewerPage extends HookConsumerWidget {
           await ref.watch(assetServiceProvider).getAssetById(asset.id);
     }
 
-    useEffect(() {
-      getAssetExif();
-      return null;
-    }, []);
+    useEffect(
+      () {
+        getAssetExif();
+        return null;
+      },
+      [],
+    );
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -116,8 +119,10 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
 
   Future<void> initializePlayer() async {
     try {
-      videoPlayerController = VideoPlayerController.network(widget.url,
-          httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"});
+      videoPlayerController = VideoPlayerController.network(
+        widget.url,
+        httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"},
+      );
 
       await videoPlayerController.initialize();
       _createChewieController();

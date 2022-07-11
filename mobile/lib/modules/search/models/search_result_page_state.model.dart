@@ -45,7 +45,8 @@ class SearchResultPageState {
       isSuccess: map['isSuccess'] ?? false,
       isError: map['isError'] ?? false,
       searchResult: List<ImmichAsset>.from(
-          map['searchResult']?.map((x) => ImmichAsset.fromMap(x))),
+        map['searchResult']?.map((x) => ImmichAsset.fromMap(x)),
+      ),
     );
   }
 

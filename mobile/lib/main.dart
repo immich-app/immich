@@ -15,12 +15,10 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
-import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 
 import 'constants/hive_box.dart';
-import 'package:openapi/api.dart';
 
 void main() async {
   await Hive.initFlutter();
@@ -48,12 +46,15 @@ void main() async {
     Locale('de', 'DE')
   ];
 
-  runApp(EasyLocalization(
+  runApp(
+    EasyLocalization(
       supportedLocales: locales,
       path: 'assets/i18n',
       useFallbackTranslations: true,
       fallbackLocale: locales.first,
-      child: const ProviderScope(child: ImmichApp())));
+      child: const ProviderScope(child: ImmichApp()),
+    ),
+  );
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -108,11 +109,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   Future<void> initApp() async {
     WidgetsBinding.instance.addObserver(this);
-
-    var apiService = ApiService();
-    var tes = await apiService.userApi.getUserCount();
-
-    print("TEST API ${tes?.userCount}");
   }
 
   @override
@@ -150,7 +146,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
               primarySwatch: Colors.indigo,
               fontFamily: 'WorkSans',
               snackBarTheme: const SnackBarThemeData(
-                  contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
+                contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+              ),
               scaffoldBackgroundColor: immichBackgroundColor,
               appBarTheme: const AppBarTheme(
                 backgroundColor: immichBackgroundColor,
@@ -162,7 +159,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
             ),
             routeInformationParser: _immichRouter.defaultRouteParser(),
             routerDelegate: _immichRouter.delegate(
-                navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
+              navigatorObservers: () => [TabNavigationObserver(ref: ref)],
+            ),
           ),
           const ImmichLoadingOverlay(),
           const VersionAnnouncementOverlay(),

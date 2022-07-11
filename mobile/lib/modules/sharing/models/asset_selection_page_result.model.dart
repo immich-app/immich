@@ -32,7 +32,8 @@ class AssetSelectionPageResult {
     final result = <String, dynamic>{};
 
     result.addAll(
-        {'selectedNewAsset': selectedNewAsset.map((x) => x.toMap()).toList()});
+      {'selectedNewAsset': selectedNewAsset.map((x) => x.toMap()).toList()},
+    );
     result.addAll({
       'selectedAdditionalAsset':
           selectedAdditionalAsset.map((x) => x.toMap()).toList()
@@ -45,9 +46,11 @@ class AssetSelectionPageResult {
   factory AssetSelectionPageResult.fromMap(Map<String, dynamic> map) {
     return AssetSelectionPageResult(
       selectedNewAsset: Set<ImmichAsset>.from(
-          map['selectedNewAsset']?.map((x) => ImmichAsset.fromMap(x))),
+        map['selectedNewAsset']?.map((x) => ImmichAsset.fromMap(x)),
+      ),
       selectedAdditionalAsset: Set<ImmichAsset>.from(
-          map['selectedAdditionalAsset']?.map((x) => ImmichAsset.fromMap(x))),
+        map['selectedAdditionalAsset']?.map((x) => ImmichAsset.fromMap(x)),
+      ),
       isAlbumExist: map['isAlbumExist'] ?? false,
     );
   }

@@ -13,4 +13,5 @@ class AlbumTitleNotifier extends StateNotifier<String> {
 }
 
 final albumTitleProvider = StateNotifierProvider<AlbumTitleNotifier, String>(
-    (ref) => AlbumTitleNotifier());
+  (ref) => AlbumTitleNotifier(),
+);

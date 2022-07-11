@@ -77,17 +77,25 @@ final assetGroupByDateTimeProvider = StateProvider((ref) {
   var assets = ref.watch(assetProvider);
 
   assets.sortByCompare<DateTime>(
-      (e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
-  return assets.groupListsBy((element) =>
-      DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)));
+    (e) => DateTime.parse(e.createdAt),
+    (a, b) => b.compareTo(a),
+  );
+  return assets.groupListsBy(
+    (element) =>
+        DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)),
+  );
 });
 
 final assetGroupByMonthYearProvider = StateProvider((ref) {
   var assets = ref.watch(assetProvider);
 
   assets.sortByCompare<DateTime>(
-      (e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
+    (e) => DateTime.parse(e.createdAt),
+    (a, b) => b.compareTo(a),
+  );
 
-  return assets.groupListsBy((element) =>
-      DateFormat('MMMM, y').format(DateTime.parse(element.createdAt)));
+  return assets.groupListsBy(
+    (element) =>
+        DateFormat('MMMM, y').format(DateTime.parse(element.createdAt)),
+  );
 });

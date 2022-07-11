@@ -113,7 +113,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     // Get all albums on the device
     List<AvailableAlbum> availableAlbums = [];
     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
-        hasAll: true, type: RequestType.common);
+      hasAll: true,
+      type: RequestType.common,
+    );
 
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
@@ -156,7 +158,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       // Get album that contains all assets
       var list = await PhotoManager.getAssetPathList(
-          hasAll: true, onlyAll: true, type: RequestType.common);
+        hasAll: true,
+        onlyAll: true,
+        type: RequestType.common,
+      );
       AssetPathEntity albumHasAllAssets = list.first;
 
       backupAlbumInfoBox.put(
@@ -175,13 +180,15 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       for (var selectedAlbumId in backupAlbumInfo!.selectedAlbumIds) {
         var albumAsset = await AssetPathEntity.fromId(selectedAlbumId);
         state = state.copyWith(
-            selectedBackupAlbums: {...state.selectedBackupAlbums, albumAsset});
+          selectedBackupAlbums: {...state.selectedBackupAlbums, albumAsset},
+        );
       }
 
       for (var excludedAlbumId in backupAlbumInfo.excludedAlbumsIds) {
         var albumAsset = await AssetPathEntity.fromId(excludedAlbumId);
         state = state.copyWith(
-            excludedBackupAlbums: {...state.excludedBackupAlbums, albumAsset});
+          excludedBackupAlbums: {...state.excludedBackupAlbums, albumAsset},
+        );
       }
     } catch (e) {
       debugPrint("[ERROR] Failed to generate album from id $e");
@@ -328,23 +335,27 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   void cancelBackup() {
     state.cancelToken.cancel();
     state = state.copyWith(
-        backupProgress: BackUpProgressEnum.idle, progressInPercentage: 0.0);
+      backupProgress: BackUpProgressEnum.idle,
+      progressInPercentage: 0.0,
+    );
   }
 
   void _onAssetUploaded(String deviceAssetId, String deviceId) {
-    state = state.copyWith(selectedAlbumsBackupAssetsIds: {
-      ...state.selectedAlbumsBackupAssetsIds,
-      deviceAssetId
-    }, allAssetsInDatabase: [
-      ...state.allAssetsInDatabase,
-      deviceAssetId
-    ]);
+    state = state.copyWith(
+      selectedAlbumsBackupAssetsIds: {
+        ...state.selectedAlbumsBackupAssetsIds,
+        deviceAssetId
+      },
+      allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
+    );
 
     if (state.allUniqueAssets.length -
             state.selectedAlbumsBackupAssetsIds.length ==
         0) {
       state = state.copyWith(
-          backupProgress: BackUpProgressEnum.done, progressInPercentage: 0.0);
+        backupProgress: BackUpProgressEnum.done,
+        progressInPercentage: 0.0,
+      );
     }
 
     _updateServerInfo();
@@ -352,7 +363,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   void _onUploadProgress(int sent, int total) {
     state = state.copyWith(
-        progressInPercentage: (sent.toDouble() / total.toDouble() * 100));
+      progressInPercentage: (sent.toDouble() / total.toDouble() * 100),
+    );
   }
 
   Future<void> _updateServerInfo() async {

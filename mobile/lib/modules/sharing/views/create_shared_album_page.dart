@@ -56,10 +56,11 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
           left: 10,
         ),
         child: AlbumTitleTextField(
-            isAlbumTitleEmpty: isAlbumTitleEmpty,
-            albumTitleTextFieldFocusNode: albumTitleTextFieldFocusNode,
-            albumTitleController: albumTitleController,
-            isAlbumTitleTextFieldFocus: isAlbumTitleTextFieldFocus),
+          isAlbumTitleEmpty: isAlbumTitleEmpty,
+          albumTitleTextFieldFocusNode: albumTitleTextFieldFocusNode,
+          albumTitleController: albumTitleController,
+          isAlbumTitleTextFieldFocus: isAlbumTitleTextFieldFocus,
+        ),
       );
     }
 
@@ -67,8 +68,8 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
       if (selectedAssets.isEmpty) {
         return SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.only(top: 200, left: 18),
-            child: Text(
+            padding: const EdgeInsets.only(top: 200, left: 18),
+            child: const Text(
               'create_shared_album_page_share_add_assets',
               style: TextStyle(fontSize: 12),
             ).tr(),
@@ -86,13 +87,16 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(top: 16, left: 18, right: 18),
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
-                  side: const BorderSide(
-                      color: Color.fromARGB(255, 206, 206, 206)),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5))),
+                alignment: Alignment.centerLeft,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
+                side: const BorderSide(
+                  color: Color.fromARGB(255, 206, 206, 206),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
               onPressed: _onSelectPhotosButtonPressed,
               icon: const Icon(Icons.add_rounded),
               label: Padding(
@@ -100,9 +104,10 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                 child: Text(
                   'create_shared_album_page_share_select_photos',
                   style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.bold),
+                    fontSize: 16,
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.bold,
+                  ),
                 ).tr(),
               ),
             ),
@@ -147,7 +152,8 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                 return GestureDetector(
                   onTap: _onBackgroundTapped,
                   child: SharedAlbumThumbnailImage(
-                      asset: selectedAssets.toList()[index]),
+                    asset: selectedAssets.toList()[index],
+                  ),
                 );
               },
               childCount: selectedAssets.length,
@@ -160,58 +166,60 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          centerTitle: false,
-          leading: IconButton(
-              onPressed: () {
-                ref.watch(assetSelectionProvider.notifier).removeAll();
-                AutoRouter.of(context).pop();
-              },
-              icon: const Icon(Icons.close_rounded)),
-          title: const Text(
-            'share_create_album',
-            style: TextStyle(color: Colors.black),
-          ).tr(),
-          actions: [
-            TextButton(
-              onPressed: albumTitleController.text.isNotEmpty
-                  ? _showSelectUserPage
-                  : null,
-              child: Text(
-                'create_shared_album_page_share'.tr(),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: false,
+        leading: IconButton(
+          onPressed: () {
+            ref.watch(assetSelectionProvider.notifier).removeAll();
+            AutoRouter.of(context).pop();
+          },
+          icon: const Icon(Icons.close_rounded),
+        ),
+        title: const Text(
+          'share_create_album',
+          style: TextStyle(color: Colors.black),
+        ).tr(),
+        actions: [
+          TextButton(
+            onPressed: albumTitleController.text.isNotEmpty
+                ? _showSelectUserPage
+                : null,
+            child: Text(
+              'create_shared_album_page_share'.tr(),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: GestureDetector(
+        onTap: _onBackgroundTapped,
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              elevation: 5,
+              automaticallyImplyLeading: false,
+              // leading: Container(),
+              pinned: true,
+              floating: false,
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(66.0),
+                child: Column(
+                  children: [
+                    _buildTitleInputField(),
+                    if (selectedAssets.isNotEmpty) _buildControlButton(),
+                  ],
                 ),
               ),
             ),
+            _buildTitle(),
+            _buildSelectPhotosButton(),
+            _buildSelectedImageGrid(),
           ],
         ),
-        body: GestureDetector(
-          onTap: _onBackgroundTapped,
-          child: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                elevation: 5,
-                automaticallyImplyLeading: false,
-                // leading: Container(),
-                pinned: true,
-                floating: false,
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(66.0),
-                  child: Column(
-                    children: [
-                      _buildTitleInputField(),
-                      if (selectedAssets.isNotEmpty) _buildControlButton(),
-                    ],
-                  ),
-                ),
-              ),
-              _buildTitle(),
-              _buildSelectPhotosButton(),
-              _buildSelectedImageGrid(),
-            ],
-          ),
-        ));
+      ),
+    );
   }
 }

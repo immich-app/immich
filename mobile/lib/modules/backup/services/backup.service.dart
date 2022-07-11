@@ -10,21 +10,26 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/check_duplicate_asset_response.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
+import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
-import 'package:immich_mobile/shared/models/device_info.model.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
+import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:cancellation_token_http/http.dart' as http;
 
-final backupServiceProvider =
-    Provider((ref) => BackupService(ref.watch(networkServiceProvider)));
+final backupServiceProvider = Provider(
+  (ref) => BackupService(
+    ref.watch(networkServiceProvider),
+    ref.watch(apiServiceProvider),
+  ),
+);
 
 class BackupService {
   final NetworkService _networkService;
-
-  BackupService(this._networkService);
+  final ApiService _apiService;
+  BackupService(this._networkService, this._apiService);
 
   Future<List<String>> getDeviceBackupAsset() async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
@@ -40,11 +45,13 @@ class BackupService {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
 
     try {
-      Response response =
-          await _networkService.postRequest(url: "asset/check", data: {
-        "deviceId": deviceId,
-        "deviceAssetId": deviceAssetId,
-      });
+      Response response = await _networkService.postRequest(
+        url: "asset/check",
+        data: {
+          "deviceId": deviceId,
+          "deviceAssetId": deviceAssetId,
+        },
+      );
 
       if (response.statusCode == 200) {
         var result = CheckDuplicateAssetResponse.fromJson(response.toString());
@@ -99,9 +106,11 @@ class BackupService {
           var box = Hive.box(userInfoBox);
 
           var req = MultipartRequest(
-              'POST', Uri.parse('$savedEndpoint/asset/upload'),
-              onProgress: ((bytes, totalBytes) =>
-                  uploadProgressCb(bytes, totalBytes)));
+            'POST',
+            Uri.parse('$savedEndpoint/asset/upload'),
+            onProgress: ((bytes, totalBytes) =>
+                uploadProgressCb(bytes, totalBytes)),
+          );
           req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
 
           req.fields['deviceAssetId'] = entity.id;
@@ -133,16 +142,19 @@ class BackupService {
             var error = jsonDecode(data);
 
             debugPrint(
-                "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}");
+              "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
+            );
 
-            errorCb(ErrorUploadAsset(
-              asset: entity,
-              id: entity.id,
-              createdAt: entity.createDateTime,
-              fileName: originalFileName,
-              fileType: _getAssetType(entity.type),
-              errorMessage: error['error'],
-            ));
+            errorCb(
+              ErrorUploadAsset(
+                asset: entity,
+                id: entity.id,
+                createdAt: entity.createDateTime,
+                fileName: originalFileName,
+                fileType: _getAssetType(entity.type),
+                errorMessage: error['error'],
+              ),
+            );
             continue;
           }
         }
@@ -175,15 +187,29 @@ class BackupService {
     }
   }
 
-  Future<DeviceInfoRemote> setAutoBackup(
-      bool status, String deviceId, String deviceType) async {
-    var res = await _networkService.patchRequest(url: 'device-info', data: {
-      "isAutoBackup": status,
-      "deviceId": deviceId,
-      "deviceType": deviceType,
-    });
+  Future<DeviceInfoResponseDto> setAutoBackup(
+    bool status,
+    String deviceId,
+    CreateDeviceInfoDtoDeviceTypeEnum deviceType,
+  ) async {
+    try {
+      var updatedDeviceInfo = await _apiService.deviceInfoApi.updateDeviceInfo({
+        {
+          "isAutoBackup": status,
+          "deviceId": deviceId,
+          "deviceType": deviceType,
+        },
+      });
 
-    return DeviceInfoRemote.fromJson(res.toString());
+      if (updatedDeviceInfo == null) {
+        throw Exception("Error updating device info");
+      }
+
+      return updatedDeviceInfo;
+    } catch (e) {
+      debugPrint("Error setAutoBackup: ${e.toString()}");
+      throw Error();
+    }
   }
 }
 

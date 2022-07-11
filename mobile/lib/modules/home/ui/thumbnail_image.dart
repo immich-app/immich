@@ -73,9 +73,10 @@ class ThumbnailImage extends HookConsumerWidget {
           } else {
             AutoRouter.of(context).push(
               VideoViewerRoute(
-                  videoUrl:
-                      '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-                  asset: asset),
+                videoUrl:
+                    '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
+                asset: asset,
+              ),
             );
           }
         }
@@ -93,7 +94,9 @@ class ThumbnailImage extends HookConsumerWidget {
               decoration: BoxDecoration(
                 border: isMultiSelectEnable && selectedAsset.contains(asset)
                     ? Border.all(
-                        color: Theme.of(context).primaryColorLight, width: 10)
+                        color: Theme.of(context).primaryColorLight,
+                        width: 10,
+                      )
                     : const Border(),
               ),
               child: CachedNetworkImage(

@@ -32,7 +32,8 @@ class ImmichAssetGroupByDate {
     return ImmichAssetGroupByDate(
       date: map['date'] ?? '',
       assets: List<ImmichAsset>.from(
-          map['assets']?.map((x) => ImmichAsset.fromMap(x))),
+        map['assets']?.map((x) => ImmichAsset.fromMap(x)),
+      ),
     );
   }
 
@@ -91,7 +92,8 @@ class GetAllAssetResponse {
     return GetAllAssetResponse(
       count: map['count']?.toInt() ?? 0,
       data: List<ImmichAssetGroupByDate>.from(
-          map['data']?.map((x) => ImmichAssetGroupByDate.fromMap(x))),
+        map['data']?.map((x) => ImmichAssetGroupByDate.fromMap(x)),
+      ),
       nextPageKey: map['nextPageKey'] ?? '',
     );
   }

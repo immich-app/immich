@@ -23,7 +23,9 @@ class TabNavigationObserver extends AutoRouterObserver {
 
   @override
   Future<void> didChangeTabRoute(
-      TabPageRoute route, TabPageRoute previousRoute) async {
+    TabPageRoute route,
+    TabPageRoute previousRoute,
+  ) async {
     // Perform tasks on re-visit to SearchRoute
     if (route.name == 'SearchRoute') {
       // Refresh Location State

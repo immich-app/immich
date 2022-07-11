@@ -118,20 +118,24 @@ class DraggableScrollbar extends StatefulWidget {
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
         scrollThumbBuilder = _thumbSemicircleBuilder(
-            heightScrollThumb * 0.6, scrollThumbKey, alwaysVisibleScrollThumb),
+          heightScrollThumb * 0.6,
+          scrollThumbKey,
+          alwaysVisibleScrollThumb,
+        ),
         super(key: key);
 
   @override
   DraggableScrollbarState createState() => DraggableScrollbarState();
 
-  static buildScrollThumbAndLabel(
-      {required Widget scrollThumb,
-      required Color backgroundColor,
-      required Animation<double>? thumbAnimation,
-      required Animation<double>? labelAnimation,
-      required Text? labelText,
-      required BoxConstraints? labelConstraints,
-      required bool alwaysVisibleScrollThumb}) {
+  static buildScrollThumbAndLabel({
+    required Widget scrollThumb,
+    required Color backgroundColor,
+    required Animation<double>? thumbAnimation,
+    required Animation<double>? labelAnimation,
+    required Text? labelText,
+    required BoxConstraints? labelConstraints,
+    required bool alwaysVisibleScrollThumb,
+  }) {
     var scrollThumbAndLabel = labelText == null
         ? scrollThumb
         : Row(
@@ -158,7 +162,10 @@ class DraggableScrollbar extends StatefulWidget {
   }
 
   static ScrollThumbBuilder _thumbSemicircleBuilder(
-      double width, Key? scrollThumbKey, bool alwaysVisibleScrollThumb) {
+    double width,
+    Key? scrollThumbKey,
+    bool alwaysVisibleScrollThumb,
+  ) {
     return (
       Color backgroundColor,
       Animation<double> thumbAnimation,
@@ -198,7 +205,9 @@ class DraggableScrollbar extends StatefulWidget {
   }
 
   static ScrollThumbBuilder _thumbArrowBuilder(
-      Key? scrollThumbKey, bool alwaysVisibleScrollThumb) {
+    Key? scrollThumbKey,
+    bool alwaysVisibleScrollThumb,
+  ) {
     return (
       Color backgroundColor,
       Animation<double> thumbAnimation,
@@ -234,7 +243,9 @@ class DraggableScrollbar extends StatefulWidget {
   }
 
   static ScrollThumbBuilder _thumbRRectBuilder(
-      Key? scrollThumbKey, bool alwaysVisibleScrollThumb) {
+    Key? scrollThumbKey,
+    bool alwaysVisibleScrollThumb,
+  ) {
     return (
       Color backgroundColor,
       Animation<double> thumbAnimation,
@@ -372,42 +383,44 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     }
 
     return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-      //print("LayoutBuilder constraints=$constraints");
+      builder: (BuildContext context, BoxConstraints constraints) {
+        //print("LayoutBuilder constraints=$constraints");
 
-      return NotificationListener<ScrollNotification>(
-        onNotification: (ScrollNotification notification) {
-          changePosition(notification);
-          return false;
-        },
-        child: Stack(
-          children: <Widget>[
-            RepaintBoundary(
-              child: widget.child,
-            ),
-            RepaintBoundary(
+        return NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification notification) {
+            changePosition(notification);
+            return false;
+          },
+          child: Stack(
+            children: <Widget>[
+              RepaintBoundary(
+                child: widget.child,
+              ),
+              RepaintBoundary(
                 child: GestureDetector(
-              onVerticalDragStart: _onVerticalDragStart,
-              onVerticalDragUpdate: _onVerticalDragUpdate,
-              onVerticalDragEnd: _onVerticalDragEnd,
-              child: Container(
-                alignment: Alignment.topRight,
-                margin: EdgeInsets.only(top: _barOffset),
-                padding: widget.padding,
-                child: widget.scrollThumbBuilder(
-                  widget.backgroundColor,
-                  _thumbAnimation,
-                  _labelAnimation,
-                  widget.heightScrollThumb,
-                  labelText: labelText,
-                  labelConstraints: widget.labelConstraints,
+                  onVerticalDragStart: _onVerticalDragStart,
+                  onVerticalDragUpdate: _onVerticalDragUpdate,
+                  onVerticalDragEnd: _onVerticalDragEnd,
+                  child: Container(
+                    alignment: Alignment.topRight,
+                    margin: EdgeInsets.only(top: _barOffset),
+                    padding: widget.padding,
+                    child: widget.scrollThumbBuilder(
+                      widget.backgroundColor,
+                      _thumbAnimation,
+                      _labelAnimation,
+                      widget.heightScrollThumb,
+                      labelText: labelText,
+                      labelConstraints: widget.labelConstraints,
+                    ),
+                  ),
                 ),
               ),
-            )),
-          ],
-        ),
-      );
-    });
+            ],
+          ),
+        );
+      },
+    );
   }
 
   //scroll bar has received notification that it's view was scrolled
@@ -498,7 +511,10 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
         }
 
         double viewDelta = getScrollViewDelta(
-            details.delta.dy, barMaxScrollExtent, viewMaxScrollExtent);
+          details.delta.dy,
+          barMaxScrollExtent,
+          viewMaxScrollExtent,
+        );
 
         _viewOffset = widget.controller.position.pixels + viewDelta;
         if (_viewOffset < widget.controller.position.minScrollExtent) {
@@ -579,7 +595,9 @@ class ArrowClipper extends CustomClipper<Path> {
     path.lineTo(startPointX + arrowWidth, startPointY);
     path.lineTo(startPointX + arrowWidth, startPointY + 1.0);
     path.lineTo(
-        startPointX + arrowWidth / 2, startPointY - arrowWidth / 2 + 1.0);
+      startPointX + arrowWidth / 2,
+      startPointY - arrowWidth / 2 + 1.0,
+    );
     path.lineTo(startPointX, startPointY + 1.0);
     path.close();
 
@@ -589,7 +607,9 @@ class ArrowClipper extends CustomClipper<Path> {
     path.lineTo(startPointX, startPointY);
     path.lineTo(startPointX, startPointY - 1.0);
     path.lineTo(
-        startPointX + arrowWidth / 2, startPointY + arrowWidth / 2 - 1.0);
+      startPointX + arrowWidth / 2,
+      startPointY + arrowWidth / 2 - 1.0,
+    );
     path.lineTo(startPointX + arrowWidth, startPointY - 1.0);
     path.close();
 

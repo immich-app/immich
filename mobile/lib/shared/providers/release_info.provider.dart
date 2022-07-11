@@ -56,4 +56,5 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
 }
 
 final releaseInfoProvider = StateNotifierProvider<ReleaseInfoNotifier, String>(
-    (ref) => ReleaseInfoNotifier());
+  (ref) => ReleaseInfoNotifier(),
+);

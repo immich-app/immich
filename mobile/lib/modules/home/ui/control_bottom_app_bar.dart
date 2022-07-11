@@ -15,7 +15,9 @@ class ControlBottomAppBar extends StatelessWidget {
         height: MediaQuery.of(context).size.height * 0.15,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+            topLeft: Radius.circular(15),
+            topRight: Radius.circular(15),
+          ),
           color: Colors.grey[300]?.withOpacity(0.98),
         ),
         child: Column(
@@ -48,12 +50,12 @@ class ControlBottomAppBar extends StatelessWidget {
 }
 
 class ControlBoxButton extends StatelessWidget {
-  const ControlBoxButton(
-      {Key? key,
-      required this.label,
-      required this.iconData,
-      required this.onPressed})
-      : super(key: key);
+  const ControlBoxButton({
+    Key? key,
+    required this.label,
+    required this.iconData,
+    required this.onPressed,
+  }) : super(key: key);
 
   final String label;
   final IconData iconData;

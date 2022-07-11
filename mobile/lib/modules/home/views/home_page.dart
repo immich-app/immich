@@ -26,12 +26,15 @@ class HomePage extends HookConsumerWidget {
         ref.watch(homePageStateProvider).isMultiSelectEnable;
     var homePageState = ref.watch(homePageStateProvider);
 
-    useEffect(() {
-      ref.read(websocketProvider.notifier).connect();
-      ref.read(assetProvider.notifier).getAllAsset();
-      ref.watch(serverInfoProvider.notifier).getServerVersion();
-      return null;
-    }, []);
+    useEffect(
+      () {
+        ref.read(websocketProvider.notifier).connect();
+        ref.read(assetProvider.notifier).getAllAsset();
+        ref.watch(serverInfoProvider.notifier).getServerVersion();
+        return null;
+      },
+      [],
+    );
 
     void reloadAllAsset() {
       ref.read(assetProvider.notifier).getAllAsset();

@@ -54,10 +54,13 @@ class ImageViewerPage extends HookConsumerWidget {
       );
     }
 
-    useEffect(() {
-      getAssetExif();
-      return null;
-    }, []);
+    useEffect(
+      () {
+        getAssetExif();
+        return null;
+      },
+      [],
+    );
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -75,14 +78,15 @@ class ImageViewerPage extends HookConsumerWidget {
           children: [
             Center(
               child: Hero(
-                  tag: heroTag,
-                  child: RemotePhotoView(
-                    thumbnailUrl: thumbnailUrl,
-                    imageUrl: imageUrl,
-                    authToken: "Bearer ${box.get(accessTokenKey)}",
-                    onSwipeDown: () => AutoRouter.of(context).pop(),
-                    onSwipeUp: () => showInfo(),
-                  )),
+                tag: heroTag,
+                child: RemotePhotoView(
+                  thumbnailUrl: thumbnailUrl,
+                  imageUrl: imageUrl,
+                  authToken: "Bearer ${box.get(accessTokenKey)}",
+                  onSwipeDown: () => AutoRouter.of(context).pop(),
+                  onSwipeUp: () => showInfo(),
+                ),
+              ),
             ),
             if (downloadAssetStatus == DownloadAssetStatus.loading)
               const Center(

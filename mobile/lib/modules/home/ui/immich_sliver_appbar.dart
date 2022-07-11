@@ -31,7 +31,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
       pinned: false,
       snap: false,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(5))),
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+      ),
       leading: Builder(
         builder: (BuildContext context) {
           return Stack(
@@ -99,7 +100,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
                   child: CircularProgressIndicator(
                     strokeWidth: 1,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).primaryColor),
+                      Theme.of(context).primaryColor,
+                    ),
                   ),
                 ),
               ),
@@ -117,7 +119,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
                         Icons.cloud_off_rounded,
                         size: 8,
                       ),
-                      child: const Icon(Icons.backup_rounded)),
+                      child: const Icon(Icons.backup_rounded),
+                    ),
               onPressed: () async {
                 var onPop = await AutoRouter.of(context)
                     .push(const BackupControllerRoute());

@@ -69,13 +69,15 @@ class AssetSelectionState {
     return AssetSelectionState(
       selectedMonths: Set<String>.from(map['selectedMonths']),
       selectedNewAssetsForAlbum: Set<ImmichAsset>.from(
-          map['selectedNewAssetsForAlbum']?.map((x) => ImmichAsset.fromMap(x))),
+        map['selectedNewAssetsForAlbum']?.map((x) => ImmichAsset.fromMap(x)),
+      ),
       selectedAdditionalAssetsForAlbum: Set<ImmichAsset>.from(
-          map['selectedAdditionalAssetsForAlbum']
-              ?.map((x) => ImmichAsset.fromMap(x))),
+        map['selectedAdditionalAssetsForAlbum']
+            ?.map((x) => ImmichAsset.fromMap(x)),
+      ),
       selectedAssetsInAlbumViewer: Set<ImmichAsset>.from(
-          map['selectedAssetsInAlbumViewer']
-              ?.map((x) => ImmichAsset.fromMap(x))),
+        map['selectedAssetsInAlbumViewer']?.map((x) => ImmichAsset.fromMap(x)),
+      ),
       isMultiselectEnable: map['isMultiselectEnable'] ?? false,
       isAlbumExist: map['isAlbumExist'] ?? false,
     );
@@ -99,10 +101,14 @@ class AssetSelectionState {
     return other is AssetSelectionState &&
         setEquals(other.selectedMonths, selectedMonths) &&
         setEquals(other.selectedNewAssetsForAlbum, selectedNewAssetsForAlbum) &&
-        setEquals(other.selectedAdditionalAssetsForAlbum,
-            selectedAdditionalAssetsForAlbum) &&
         setEquals(
-            other.selectedAssetsInAlbumViewer, selectedAssetsInAlbumViewer) &&
+          other.selectedAdditionalAssetsForAlbum,
+          selectedAdditionalAssetsForAlbum,
+        ) &&
+        setEquals(
+          other.selectedAssetsInAlbumViewer,
+          selectedAssetsInAlbumViewer,
+        ) &&
         other.isMultiselectEnable == isMultiselectEnable &&
         other.isAlbumExist == isAlbumExist;
   }

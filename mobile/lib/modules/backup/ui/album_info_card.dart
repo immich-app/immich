@@ -26,7 +26,9 @@ class AlbumInfoCard extends HookConsumerWidget {
         ref.watch(backupProvider).excludedBackupAlbums.contains(albumInfo);
 
     ColorFilter selectedFilter = ColorFilter.mode(
-        Theme.of(context).primaryColor.withAlpha(100), BlendMode.darken);
+      Theme.of(context).primaryColor.withAlpha(100),
+      BlendMode.darken,
+    );
     ColorFilter excludedFilter =
         ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
     ColorFilter unselectedFilter =
@@ -40,7 +42,10 @@ class AlbumInfoCard extends HookConsumerWidget {
           label: const Text(
             "album_info_card_backup_album_included",
             style: TextStyle(
-                fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+              fontSize: 10,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ).tr(),
           backgroundColor: Theme.of(context).primaryColor,
         );
@@ -51,7 +56,10 @@ class AlbumInfoCard extends HookConsumerWidget {
           label: const Text(
             "album_info_card_backup_album_excluded",
             style: TextStyle(
-                fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+              fontSize: 10,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ).tr(),
           backgroundColor: Colors.red[300],
         );
@@ -138,15 +146,16 @@ class AlbumInfoCard extends HookConsumerWidget {
                   height: 200,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12)),
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                    ),
                     image: DecorationImage(
                       colorFilter: _buildImageFilter(),
                       image: imageData != null
                           ? MemoryImage(imageData!)
                           : const AssetImage(
-                                  'assets/immich-logo-no-outline.png')
-                              as ImageProvider,
+                              'assets/immich-logo-no-outline.png',
+                            ) as ImageProvider,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -174,9 +183,10 @@ class AlbumInfoCard extends HookConsumerWidget {
                           Text(
                             albumInfo.name,
                             style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context).primaryColor,
-                                fontWeight: FontWeight.bold),
+                              fontSize: 14,
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(top: 2.0),
@@ -186,7 +196,9 @@ class AlbumInfoCard extends HookConsumerWidget {
                                       ? " (${'backup_all'.tr()})"
                                       : ""),
                               style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[600]),
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
                             ),
                           )
                         ],

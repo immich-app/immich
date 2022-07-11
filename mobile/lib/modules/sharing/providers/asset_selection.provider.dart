@@ -5,21 +5,25 @@ import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
   AssetSelectionNotifier()
-      : super(AssetSelectionState(
-          selectedNewAssetsForAlbum: {},
-          selectedMonths: {},
-          selectedAdditionalAssetsForAlbum: {},
-          selectedAssetsInAlbumViewer: {},
-          isAlbumExist: false,
-          isMultiselectEnable: false,
-        ));
+      : super(
+          AssetSelectionState(
+            selectedNewAssetsForAlbum: {},
+            selectedMonths: {},
+            selectedAdditionalAssetsForAlbum: {},
+            selectedAssetsInAlbumViewer: {},
+            isAlbumExist: false,
+            isMultiselectEnable: false,
+          ),
+        );
 
   void setIsAlbumExist(bool isAlbumExist) {
     state = state.copyWith(isAlbumExist: isAlbumExist);
   }
 
   void removeAssetsInMonth(
-      String removedMonth, List<ImmichAsset> assetsInMonth) {
+    String removedMonth,
+    List<ImmichAsset> assetsInMonth,
+  ) {
     Set<ImmichAsset> currentAssetList = state.selectedNewAssetsForAlbum;
     Set<String> currentMonthList = state.selectedMonths;
 
@@ -31,8 +35,9 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     }
 
     state = state.copyWith(
-        selectedNewAssetsForAlbum: currentAssetList,
-        selectedMonths: currentMonthList);
+      selectedNewAssetsForAlbum: currentAssetList,
+      selectedMonths: currentMonthList,
+    );
   }
 
   void addAdditionalAssets(List<ImmichAsset> assets) {

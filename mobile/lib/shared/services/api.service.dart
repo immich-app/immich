@@ -1,26 +1,30 @@
-import 'package:hive/hive.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:openapi/api.dart';
 
-import '../../constants/hive_box.dart';
-
-class ApiBearerAuth extends Authentication {
-  @override
-  void applyToParams(List<QueryParam> queryParams,
-      Map<String, String> headerParams) {}
-}
+final apiServiceProvider = Provider((ref) => ApiService());
 
 class ApiService {
-  late ApiClient apiClient;
+  late ApiClient _apiClient;
 
   late UserApi userApi;
+  late AuthenticationApi authenticationApi;
+  late AlbumApi albumApi;
+  late AssetApi assetApi;
+  late ServerInfoApi serverInfoApi;
+  late DeviceInfoApi deviceInfoApi;
 
-  ApiService() {
-    String serverEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-    String accessToken = Hive.box(userInfoBox).get(accessTokenKey);
+  setEndpoint(String endpoint) {
+    _apiClient = ApiClient(basePath: endpoint);
 
-    apiClient = ApiClient(basePath: serverEndpoint);
+    userApi = UserApi(_apiClient);
+    authenticationApi = AuthenticationApi(_apiClient);
+    albumApi = AlbumApi(_apiClient);
+    assetApi = AssetApi(_apiClient);
+    serverInfoApi = ServerInfoApi(_apiClient);
+    deviceInfoApi = DeviceInfoApi(_apiClient);
+  }
 
-    defaultApiClient = apiClient;
-    userApi = UserApi();
+  setAccessToken(String accessToken) {
+    _apiClient.addDefaultHeader('Authorization', 'bearer $accessToken');
   }
 }

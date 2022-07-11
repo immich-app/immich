@@ -10,8 +10,11 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
   final ImageViewerService _imageViewerService = ImageViewerService();
 
   ImageViewerStateNotifier()
-      : super(ImageViewerPageState(
-            downloadAssetStatus: DownloadAssetStatus.idle));
+      : super(
+          ImageViewerPageState(
+            downloadAssetStatus: DownloadAssetStatus.idle,
+          ),
+        );
 
   void downloadAsset(ImmichAsset asset, BuildContext context) async {
     state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.loading);
@@ -43,4 +46,5 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
 
 final imageViewerStateProvider =
     StateNotifierProvider<ImageViewerStateNotifier, ImageViewerPageState>(
-        ((ref) => ImageViewerStateNotifier()));
+  ((ref) => ImageViewerStateNotifier()),
+);

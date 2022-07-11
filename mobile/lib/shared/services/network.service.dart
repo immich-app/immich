@@ -33,10 +33,11 @@ class NetworkService {
     }
   }
 
-  Future<dynamic> getRequest(
-      {required String url,
-      bool isByteResponse = false,
-      bool isStreamReponse = false}) async {
+  Future<dynamic> getRequest({
+    required String url,
+    bool isByteResponse = false,
+    bool isStreamReponse = false,
+  }) async {
     try {
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
 

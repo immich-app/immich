@@ -16,7 +16,8 @@ class ImageViewerService {
       String fileName = p.basename(asset.originalPath);
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       Uri filePath = Uri.parse(
-          "$savedEndpoint/asset/download?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false");
+        "$savedEndpoint/asset/download?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false",
+      );
 
       var res = await http.get(
         filePath,

@@ -4,12 +4,12 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 
 class ThumbnailWithInfo extends StatelessWidget {
-  const ThumbnailWithInfo(
-      {Key? key,
-      required this.textInfo,
-      required this.imageUrl,
-      required this.onTap})
-      : super(key: key);
+  const ThumbnailWithInfo({
+    Key? key,
+    required this.textInfo,
+    required this.imageUrl,
+    required this.onTap,
+  }) : super(key: key);
 
   final String textInfo;
   final String imageUrl;

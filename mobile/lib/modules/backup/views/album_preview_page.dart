@@ -20,10 +20,13 @@ class AlbumPreviewPage extends HookConsumerWidget {
           await album.getAssetListRange(start: 0, end: album.assetCount);
     }
 
-    useEffect(() {
-      _getAssetsInAlbum();
-      return null;
-    }, []);
+    useEffect(
+      () {
+        _getAssetsInAlbum();
+        return null;
+      },
+      [],
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -39,9 +42,10 @@ class AlbumPreviewPage extends HookConsumerWidget {
               child: Text(
                 "ID ${album.id}",
                 style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.bold),
+                  fontSize: 10,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -59,9 +63,11 @@ class AlbumPreviewPage extends HookConsumerWidget {
         ),
         itemCount: assets.value.length,
         itemBuilder: (context, index) {
-          Future<Uint8List?> thumbData = assets.value[index]
-              .thumbnailDataWithSize(const ThumbnailSize(200, 200),
-                  quality: 50);
+          Future<Uint8List?> thumbData =
+              assets.value[index].thumbnailDataWithSize(
+            const ThumbnailSize(200, 200),
+            quality: 50,
+          );
 
           return FutureBuilder<Uint8List?>(
             future: thumbData,
