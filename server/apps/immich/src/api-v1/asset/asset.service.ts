@@ -9,7 +9,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
@@ -21,6 +20,8 @@ import fs from 'fs/promises';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { AssetResponseDto, mapAsset } from './response-dto/asset-response.dto';
+import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
+import { CreateAssetDto } from './dto/create-asset.dto';
 
 const fileInfo = promisify(stat);
 
@@ -132,8 +133,10 @@ export class AssetService {
       let fileReadStream = null;
       const asset = await this.findAssetOfDevice(query.did, query.aid);
 
-      if (query.isThumb === 'false' || !query.isThumb) {
+      // Download Video
+      if (asset.type === AssetType.VIDEO) {
         const { size } = await fileInfo(asset.originalPath);
+
         res.set({
           'Content-Type': asset.mimeType,
           'Content-Length': size,
@@ -142,22 +145,43 @@ export class AssetService {
         await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
         fileReadStream = createReadStream(asset.originalPath);
       } else {
-        if (!asset.resizePath) {
-          throw new NotFoundException('resizePath not set');
-        }
-        const { size } = await fileInfo(asset.resizePath);
-        res.set({
-          'Content-Type': 'image/jpeg',
-          'Content-Length': size,
-        });
+        // Download Image
+        if (!query.isThumb) {
+          /**
+           * Download Image Original File
+           */
+          const { size } = await fileInfo(asset.originalPath);
 
-        await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
-        fileReadStream = createReadStream(asset.resizePath);
+          res.set({
+            'Content-Type': asset.mimeType,
+            'Content-Length': size,
+          });
+
+          await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
+          fileReadStream = createReadStream(asset.originalPath);
+        } else {
+          /**
+           * Download Image Resize File
+           */
+          if (!asset.resizePath) {
+            throw new NotFoundException('resizePath not set');
+          }
+
+          const { size } = await fileInfo(asset.resizePath);
+
+          res.set({
+            'Content-Type': 'image/jpeg',
+            'Content-Length': size,
+          });
+
+          await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
+          fileReadStream = createReadStream(asset.resizePath);
+        }
       }
 
       return new StreamableFile(fileReadStream);
     } catch (e) {
-      Logger.error(`Error download asset`, 'downloadFile');
+      Logger.error(`Error download asset ${e}`, 'downloadFile');
       throw new InternalServerErrorException(`Failed to download asset ${e}`, 'DownloadFile');
     }
   }
@@ -177,7 +201,7 @@ export class AssetService {
         fileReadStream = createReadStream(asset.webpPath);
       } else {
         if (!asset.resizePath) {
-          return new NotFoundException('resizePath not set');
+          throw new NotFoundException('resizePath not set');
         }
 
         await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
@@ -203,7 +227,7 @@ export class AssetService {
     }
 
     // Handle Sending Images
-    if (asset.type == AssetType.IMAGE || query.isThumb == 'true') {
+    if (asset.type == AssetType.IMAGE) {
       try {
         /**
          * Serve file viewer on the web
@@ -225,7 +249,7 @@ export class AssetService {
         /**
          * Serve thumbnail image for both web and mobile app
          */
-        if (query.isThumb === 'false' || !query.isThumb) {
+        if (!query.isThumb) {
           res.set({
             'Content-Type': asset.mimeType,
           });
@@ -262,7 +286,7 @@ export class AssetService {
           `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
         );
       }
-    } else if (asset.type == AssetType.VIDEO) {
+    } else {
       try {
         // Handle Video
         let videoPath = asset.originalPath;

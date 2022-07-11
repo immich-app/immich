@@ -1,39 +1,28 @@
 <script context="module" lang="ts">
 	export const prerender = false;
 	import type { Load } from '@sveltejs/kit';
+	import { api } from '@api';
 
-	export const load: Load = async ({ session, fetch }) => {
-		const res = await fetch(`${serverEndpoint}/user/count`);
-		const { userCount } = await res.json();
+	export const load: Load = async ({ session }) => {
+		const { data } = await api.userApi.getUserCount();
 
-		if (!session.user) {
-			// Check if admin exist to wherether navigating to login or registration
-			if (userCount != 0) {
-				return {
-					status: 200,
-					props: {
-						isAdminUserExist: true,
-					},
-				};
-			} else {
-				return {
-					status: 200,
-					props: {
-						isAdminUserExist: false,
-					},
-				};
-			}
-		} else {
+		if (session.user) {
 			return {
 				status: 302,
 				redirect: '/photos',
 			};
 		}
+
+		return {
+			status: 200,
+			props: {
+				isAdminUserExist: data.userCount == 0 ? false : true,
+			},
+		};
 	};
 </script>
 
 <script lang="ts">
-	import { serverEndpoint } from '$lib/constants';
 	import { goto } from '$app/navigation';
 
 	export let isAdminUserExist: boolean;

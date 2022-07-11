@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { AssetType, type ImmichAsset } from '../../models/immich-asset';
+	import { AssetType } from '../../models/immich-asset';
 	import { session } from '$app/stores';
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { fade, fly, slide } from 'svelte/transition';
-	import { serverEndpoint } from '../../constants';
+	import { fade, fly } from 'svelte/transition';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
 	import LoadingSpinner from '../shared/loading-spinner.svelte';
+	import { api, AssetResponseDto } from '@api';
 
 	const dispatch = createEventDispatcher();
 
-	export let asset: ImmichAsset;
+	export let asset: AssetResponseDto;
 	export let groupIndex: number;
 
 	let imageData: string;
@@ -29,33 +29,28 @@
 
 	const loadImageData = async () => {
 		if ($session.user) {
-			const res = await fetch(serverEndpoint + '/asset/thumbnail/' + asset.id, {
-				method: 'GET',
-				headers: {
-					Authorization: 'bearer ' + $session.user.accessToken,
-				},
-			});
-
-			imageData = URL.createObjectURL(await res.blob());
-
-			return imageData;
+			const { data } = await api.assetApi.getAssetThumbnail(asset.id, { responseType: 'blob' });
+			if (data instanceof Blob) {
+				imageData = URL.createObjectURL(data);
+				return imageData;
+			}
 		}
 	};
 
 	const loadVideoData = async () => {
 		isThumbnailVideoPlaying = false;
-		const videoUrl = `/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isWeb=true`;
 
 		if ($session.user) {
 			try {
-				const res = await fetch(serverEndpoint + videoUrl, {
-					method: 'GET',
-					headers: {
-						Authorization: 'bearer ' + $session.user.accessToken,
-					},
+				const { data } = await api.assetApi.serveFile(asset.deviceAssetId, asset.deviceId, false, true, {
+					responseType: 'blob',
 				});
 
-				videoData = URL.createObjectURL(await res.blob());
+				if (!(data instanceof Blob)) {
+					return;
+				}
+
+				videoData = URL.createObjectURL(data);
 
 				videoPlayerNode.src = videoData;
 				// videoPlayerNode.src = videoData + '#t=0,5';

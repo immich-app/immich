@@ -5,24 +5,23 @@
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
 	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
 	import moment from 'moment';
-	import type { ImmichAsset } from '../../models/immich-asset';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { browser } from '$app/env';
-	import { round } from 'lodash';
+	import { AssetResponseDto } from '@api';
 
 	// Map Property
 	let map: any;
 	let leaflet: any;
 	let marker: any;
 
-	export let asset: ImmichAsset;
-	$: if (asset.exifInfo) {
+	export let asset: AssetResponseDto;
+	$: if (asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null) {
 		drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
 	}
 
 	onMount(async () => {
 		if (browser) {
-			if (asset.exifInfo) {
+			if (asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null) {
 				await drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
 			}
 		}

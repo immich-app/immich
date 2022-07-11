@@ -32,7 +32,6 @@ export class UserService {
   async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
     if (isAll) {
       const allUsers = await this.userRepository.find();
-
       return allUsers.map(mapUser);
     }
 
@@ -54,14 +53,8 @@ export class UserService {
     return mapUser(user);
   }
 
-  async getUserCount(isAdmin: boolean): Promise<UserCountResponseDto> {
-    let users;
-
-    if (isAdmin) {
-      users = await this.userRepository.find({ where: { isAdmin: true } });
-    } else {
-      users = await this.userRepository.find();
-    }
+  async getUserCount(): Promise<UserCountResponseDto> {
+    const users = await this.userRepository.find();
 
     return mapUserCountResponse(users.length);
   }
@@ -157,8 +150,7 @@ export class UserService {
       }
 
       if (!user.profileImagePath) {
-        res.status(404).send('User does not have a profile image');
-        return;
+        throw new NotFoundException('User does not have a profile image');
       }
 
       res.set({
@@ -167,7 +159,7 @@ export class UserService {
       const fileStream = createReadStream(user.profileImagePath);
       return new StreamableFile(fileStream);
     } catch (e) {
-      res.status(404).send('User does not have a profile image');
+      throw new NotFoundException('User does not have a profile image');
     }
   }
 }

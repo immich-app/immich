@@ -1,27 +1,26 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { serverEndpoint } from '$lib/constants';
+import { api } from '@api';
 
 export const post: RequestHandler = async ({ request, locals }) => {
-	const form = await request.formData();
+	if (!locals.user) {
+		return {
+			status: 401,
+			body: {
+				error: 'Unauthorized',
+			},
+		};
+	}
 
+	const form = await request.formData();
 	const password = form.get('password');
 
-	const payload = {
-		id: locals.user?.id,
-		password,
+	const { status } = await api.userApi.updateUser({
+		id: locals.user.id,
+		password: String(password),
 		shouldChangePassword: false,
-	};
-
-	const res = await fetch(`${serverEndpoint}/user`, {
-		method: 'PUT',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${locals.user?.accessToken}`,
-		},
-		body: JSON.stringify(payload),
 	});
 
-	if (res.status === 200) {
+	if (status === 200) {
 		return {
 			status: 200,
 			body: {
@@ -32,7 +31,7 @@ export const post: RequestHandler = async ({ request, locals }) => {
 		return {
 			status: 400,
 			body: {
-				error: await res.json(),
+				error: 'Error change password',
 			},
 		};
 	}

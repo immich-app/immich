@@ -1,43 +1,34 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { serverEndpoint } from '$lib/constants';
+import { api } from '@api';
 
 export const post: RequestHandler = async ({ request }) => {
-  const form = await request.formData();
+	const form = await request.formData();
 
-  const email = form.get('email')
-  const password = form.get('password')
-  const firstName = form.get('firstName')
-  const lastName = form.get('lastName')
+	const email = form.get('email');
+	const password = form.get('password');
+	const firstName = form.get('firstName');
+	const lastName = form.get('lastName');
 
-  const payload = {
-    email,
-    password,
-    firstName,
-    lastName,
-  }
+	const { status } = await api.authenticationApi.adminSignUp({
+		email: String(email),
+		password: String(password),
+		firstName: String(firstName),
+		lastName: String(lastName),
+	});
 
-  const res = await fetch(`${serverEndpoint}/auth/admin-sign-up`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload),
-  })
-
-  if (res.status === 201) {
-    return {
-      status: 201,
-      body: {
-        success: 'Succesfully create admin account'
-      }
-    }
-  } else {
-    return {
-      status: 400,
-      body: {
-        error: await res.json()
-      }
-    }
-
-  }
-}
+	if (status === 201) {
+		return {
+			status: 201,
+			body: {
+				success: 'Succesfully create admin account',
+			},
+		};
+	} else {
+		return {
+			status: 400,
+			body: {
+				error: 'Error create admin account',
+			},
+		};
+	}
+};

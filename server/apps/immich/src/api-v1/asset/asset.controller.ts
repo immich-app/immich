@@ -8,7 +8,6 @@ import {
   Get,
   Param,
   ValidationPipe,
-  StreamableFile,
   Query,
   Response,
   Headers,
@@ -16,13 +15,13 @@ import {
   Logger,
   HttpCode,
   BadRequestException,
+  UploadedFile,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { CreateAssetDto } from './dto/create-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { Response as Res } from 'express';
@@ -36,10 +35,14 @@ import { IAssetUploadedJob } from '@app/job/index';
 import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
 import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetResponseDto } from './response-dto/asset-response.dto';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
+import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
+import { CreateAssetDto } from './dto/create-asset.dto';
+import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -56,46 +59,43 @@ export class AssetController {
   ) {}
 
   @Post('upload')
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'assetData', maxCount: 1 },
-        { name: 'thumbnailData', maxCount: 1 },
-      ],
-      assetUploadOption,
-    ),
-  )
+  @UseInterceptors(FileInterceptor('assetData', assetUploadOption))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Asset Upload Information',
+    type: AssetFileUploadDto,
+  })
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
-    @UploadedFiles() uploadFiles: { assetData: Express.Multer.File[] },
+    @UploadedFile() file: Express.Multer.File,
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
-  ): Promise<'ok' | undefined> {
-    for (const file of uploadFiles.assetData) {
-      try {
-        const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
+  ): Promise<AssetFileUploadResponseDto> {
+    try {
+      const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
 
-        if (savedAsset) {
-          await this.assetUploadedQueue.add(
-            assetUploadedProcessorName,
-            { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
-            { jobId: savedAsset.id },
-          );
-        }
-      } catch (e) {
-        Logger.error(`Error uploading file ${e}`);
-        throw new BadRequestException(`Error uploading file`, `${e}`);
+      if (!savedAsset) {
+        throw new BadRequestException('Asset not created');
       }
-    }
 
-    return 'ok';
+      await this.assetUploadedQueue.add(
+        assetUploadedProcessorName,
+        { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
+        { jobId: savedAsset.id },
+      );
+
+      return new AssetFileUploadResponseDto(savedAsset.id);
+    } catch (e) {
+      Logger.error(`Error uploading file ${e}`);
+      throw new BadRequestException(`Error uploading file`, `${e}`);
+    }
   }
 
   @Get('/download')
   async downloadFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
-    @Query(ValidationPipe) query: ServeFileDto,
-  ): Promise<StreamableFile> {
+    @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
+  ): Promise<any> {
     return this.assetService.downloadFile(query, res);
   }
 
@@ -104,14 +104,14 @@ export class AssetController {
     @Headers() headers: Record<string, string>,
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
-    @Query(ValidationPipe) query: ServeFileDto,
-  ): Promise<StreamableFile | undefined> {
+    @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
+  ): Promise<any> {
     return this.assetService.serveFile(authUser, query, res, headers);
   }
 
   @Get('/thumbnail/:assetId')
-  async getAssetThumbnail(@Param('assetId') assetId: string) {
-    return await this.assetService.getAssetThumbnail(assetId);
+  async getAssetThumbnail(@Param('assetId') assetId: string): Promise<any> {
+    return this.assetService.getAssetThumbnail(assetId);
   }
 
   @Get('/allObjects')
@@ -195,11 +195,9 @@ export class AssetController {
   async checkDuplicateAsset(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) checkDuplicateAssetDto: CheckDuplicateAssetDto,
-  ) {
+  ): Promise<CheckDuplicateAssetResponseDto> {
     const res = await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
 
-    return {
-      isExist: res,
-    };
+    return new CheckDuplicateAssetResponseDto(res);
   }
 }

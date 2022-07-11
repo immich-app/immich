@@ -12,6 +12,8 @@
 			};
 		}
 
+		await getAssetsInfo(session.user.accessToken);
+
 		return {
 			status: 200,
 			props: {
@@ -30,17 +32,16 @@
 
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ImmichThumbnail from '$lib/components/asset-viewer/immich-thumbnail.svelte';
 	import moment from 'moment';
-	import type { ImmichAsset } from '$lib/models/immich-asset';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import StatusBox from '$lib/components/shared/status-box.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
-	import { openWebsocketConnection, closeWebsocketConnection } from '$lib/stores/websocket';
+	import { AssetResponseDto } from '@api';
 
 	export let user: ImmichUser;
 
@@ -54,7 +55,7 @@
 
 	let isShowAsset = false;
 	let currentViewAssetIndex = 0;
-	let currentSelectedAsset: ImmichAsset;
+	let currentSelectedAsset: AssetResponseDto;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AppSideBarSelection;
@@ -62,16 +63,6 @@
 
 	onMount(async () => {
 		selectedAction = AppSideBarSelection.PHOTOS;
-
-		if ($session.user) {
-			await getAssetsInfo($session.user.accessToken);
-
-			openWebsocketConnection($session.user.accessToken);
-		}
-	});
-
-	onDestroy(() => {
-		closeWebsocketConnection();
 	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {

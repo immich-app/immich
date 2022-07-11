@@ -2,7 +2,6 @@
 	export const prerender = false;
 
 	import type { Load } from '@sveltejs/kit';
-	import type { ImmichUser } from '$lib/models/immich-user';
 
 	export const load: Load = async ({ session }) => {
 		if (!session.user) {
@@ -13,14 +12,7 @@
 		}
 
 		try {
-			const res = await fetch(serverEndpoint + '/user/me', {
-				method: 'GET',
-				headers: {
-					Authorization: 'Bearer ' + session.user.accessToken,
-				},
-			});
-
-			const userInfo: ImmichUser = await res.json();
+			const { data: userInfo } = await api.userApi.getMyUserInfo();
 
 			if (userInfo.shouldChangePassword) {
 				return {
@@ -47,15 +39,15 @@
 
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { session } from '$app/stores';
-	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import ChangePasswordForm from '../../../lib/components/forms/change-password-form.svelte';
-	import { serverEndpoint } from '../../../lib/constants';
 
-	export let user: ImmichUser;
+	import ChangePasswordForm from '$lib/components/forms/change-password-form.svelte';
+	import { api, UserResponseDto } from '@api';
+
+	export let user: UserResponseDto;
 
 	const onSuccessHandler = async () => {
+		/** Svelte route fetch */
 		const res = await fetch('/auth/logout', { method: 'POST' });
 
 		if (res.status == 200 && res.statusText == 'OK') {

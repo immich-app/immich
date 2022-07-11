@@ -1,43 +1,39 @@
 <script lang="ts">
 	import { session } from '$app/stores';
-	import { serverEndpoint } from '$lib/constants';
 	import { fade } from 'svelte/transition';
 
-	import type { ImmichAsset, ImmichExif } from '$lib/models/immich-asset';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import LoadingSpinner from '../shared/loading-spinner.svelte';
+	import { api, AssetResponseDto } from '@api';
 
 	export let assetId: string;
 	export let deviceId: string;
 
-	let assetInfo: ImmichAsset;
+	let assetInfo: AssetResponseDto;
 
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
 		if ($session.user) {
-			const res = await fetch(serverEndpoint + '/asset/assetById/' + assetId, {
-				headers: {
-					Authorization: 'bearer ' + $session.user.accessToken,
-				},
-			});
-			assetInfo = await res.json();
+			const { data } = await api.assetApi.getAssetById(assetId);
+			assetInfo = data;
 		}
 	});
 
 	const loadAssetData = async () => {
-		const assetUrl = `/asset/file?aid=${assetInfo.deviceAssetId}&did=${deviceId}&isWeb=true`;
 		if ($session.user) {
-			const res = await fetch(serverEndpoint + assetUrl, {
-				method: 'GET',
-				headers: {
-					Authorization: 'bearer ' + $session.user.accessToken,
-				},
-			});
+			try {
+				const { data } = await api.assetApi.serveFile(assetInfo.deviceAssetId, deviceId, false, true, {
+					responseType: 'blob',
+				});
 
-			const assetData = URL.createObjectURL(await res.blob());
+				if (!(data instanceof Blob)) {
+					return;
+				}
 
-			return assetData;
+				const assetData = URL.createObjectURL(data);
+				return assetData;
+			} catch (e) {}
 		}
 	};
 </script>
