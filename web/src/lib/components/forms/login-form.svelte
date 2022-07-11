@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import { sendLoginForm } from '$lib/auth-api';
+	import { loginPageMessage } from '$lib/constants';
 	import { createEventDispatcher } from 'svelte';
 
 	let error: string;
@@ -42,6 +43,16 @@
 		<img class="text-center" src="/immich-logo.svg" height="100" width="100" alt="immich-logo" />
 		<h1 class="text-2xl text-immich-primary font-medium">Login</h1>
 	</div>
+
+	{#if loginPageMessage}
+		<!-- <div class="bg-blue-100 m-4 p-2 border-t border-b border-blue-500 text-blue-700" role="alert">
+			<p>{@html loginPageMessage}</p>
+		</div> -->
+
+		<p class="text-sm border rounded-md m-4 p-4 text-immich-primary font-medium bg-immich-primary/5">
+			{@html loginPageMessage}
+		</p>
+	{/if}
 
 	<form on:submit|preventDefault={login} method="post" action="" autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
