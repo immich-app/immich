@@ -10,12 +10,12 @@ class DeviceInfoService {
   Future<Map<String, dynamic>> getDeviceInfo() async {
     // Get device info
     var deviceId = await FlutterUdid.consistentUdid;
-    var deviceType = CreateDeviceInfoDtoDeviceTypeEnum.ANDROID;
+    var deviceType = DeviceTypeEnum.ANDROID;
 
     if (Platform.isAndroid) {
-      deviceType = CreateDeviceInfoDtoDeviceTypeEnum.ANDROID;
+      deviceType = DeviceTypeEnum.ANDROID;
     } else if (Platform.isIOS) {
-      deviceType = CreateDeviceInfoDtoDeviceTypeEnum.IOS;
+      deviceType = DeviceTypeEnum.IOS;
     }
 
     return {"deviceId": deviceId, "deviceType": deviceType};

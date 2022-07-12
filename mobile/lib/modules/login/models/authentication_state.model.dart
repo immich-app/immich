@@ -2,7 +2,7 @@ import 'package:openapi/api.dart';
 
 class AuthenticationState {
   final String deviceId;
-  final CreateDeviceInfoDtoDeviceTypeEnum deviceType;
+  final DeviceTypeEnum deviceType;
   final String userId;
   final String userEmail;
   final bool isAuthenticated;
@@ -28,7 +28,7 @@ class AuthenticationState {
 
   AuthenticationState copyWith({
     String? deviceId,
-    CreateDeviceInfoDtoDeviceTypeEnum? deviceType,
+    DeviceTypeEnum? deviceType,
     String? userId,
     String? userEmail,
     bool? isAuthenticated,
