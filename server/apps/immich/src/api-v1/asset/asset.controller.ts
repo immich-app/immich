@@ -125,7 +125,7 @@ export class AssetController {
   }
 
   @Get('/searchTerm')
-  async getAssetSearchTerms(@GetAuthUser() authUser: AuthUserDto): Promise<String[]> {
+  async getAssetSearchTerms(@GetAuthUser() authUser: AuthUserDto): Promise<string[]> {
     return this.assetService.getAssetSearchTerm(authUser);
   }
 

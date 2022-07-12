@@ -324,7 +324,7 @@ class AssetApi {
     );
   }
 
-  Future<List<Object>?> getAssetSearchTerms() async {
+  Future<List<String>?> getAssetSearchTerms() async {
     final response = await getAssetSearchTermsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -334,8 +334,8 @@ class AssetApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<Object>') as List)
-        .cast<Object>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
+        .cast<String>()
         .toList();
 
     }
