@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -175,19 +174,20 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   }
 
   Future<bool> changePassword(String newPassword) async {
-    Response res = await _networkService.putRequest(
-      url: 'user',
-      data: {
-        'id': state.userId,
-        'password': newPassword,
-        'shouldChangePassword': false,
-      },
-    );
+    try {
+      await _apiService.userApi.updateUser(
+        UpdateUserDto(
+          id: state.userId,
+          password: newPassword,
+          shouldChangePassword: false,
+        ),
+      );
 
-    if (res.statusCode == 200) {
       state = state.copyWith(shouldChangePassword: false);
+
       return true;
-    } else {
+    } catch (e) {
+      debugPrint("Error changing password $e");
       return false;
     }
   }
