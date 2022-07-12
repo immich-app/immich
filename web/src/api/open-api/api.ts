@@ -559,115 +559,115 @@ export interface ExifResponseDto {
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'make': string | null;
+    'make'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'model': string | null;
+    'model'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'imageName': string | null;
+    'imageName'?: string | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'exifImageWidth': number | null;
+    'exifImageWidth'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'exifImageHeight': number | null;
+    'exifImageHeight'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'fileSizeInByte': number | null;
+    'fileSizeInByte'?: number | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'orientation': string | null;
+    'orientation'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'dateTimeOriginal': string | null;
+    'dateTimeOriginal'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'modifyDate': string | null;
+    'modifyDate'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'lensModel': string | null;
+    'lensModel'?: string | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'fNumber': number | null;
+    'fNumber'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'focalLength': number | null;
+    'focalLength'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'iso': number | null;
+    'iso'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'exposureTime': number | null;
+    'exposureTime'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'latitude': number | null;
+    'latitude'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'longitude': number | null;
+    'longitude'?: number | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'city': string | null;
+    'city'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'state': string | null;
+    'state'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'country': string | null;
+    'country'?: string | null;
 }
 /**
  * 
