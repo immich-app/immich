@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:openapi/api.dart';
 
 class MonthGroupTitle extends HookConsumerWidget {
   final String month;
-  final List<ImmichAsset> assetGroup;
+  final List<AssetResponseDto> assetGroup;
 
   const MonthGroupTitle({
     Key? key,

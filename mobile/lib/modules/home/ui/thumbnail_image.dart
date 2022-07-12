@@ -8,11 +8,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:openapi/api.dart';
 
 class ThumbnailImage extends HookConsumerWidget {
-  final ImmichAsset asset;
+  final AssetResponseDto asset;
 
   const ThumbnailImage({Key? key, required this.asset}) : super(key: key);
 
@@ -28,7 +28,7 @@ class ThumbnailImage extends HookConsumerWidget {
         ref.watch(homePageStateProvider).isMultiSelectEnable;
     var deviceId = ref.watch(authenticationProvider).deviceId;
 
-    Widget _buildSelectionIcon(ImmichAsset asset) {
+    Widget _buildSelectionIcon(AssetResponseDto asset) {
       if (selectedAsset.contains(asset)) {
         return Icon(
           Icons.check_circle,

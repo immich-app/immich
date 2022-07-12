@@ -17,12 +17,12 @@ import 'package:immich_mobile/modules/sharing/views/select_additional_user_for_s
 import 'package:immich_mobile/modules/sharing/views/select_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/sharing/views/sharing_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/modules/backup/views/backup_controller_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/shared/views/splash_screen.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
+import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 part 'router.gr.dart';

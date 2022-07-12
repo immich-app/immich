@@ -5,10 +5,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:openapi/api.dart';
 
 class SelectionThumbnailImage extends HookConsumerWidget {
-  final ImmichAsset asset;
+  final AssetResponseDto asset;
 
   const SelectionThumbnailImage({Key? key, required this.asset})
       : super(key: key);
@@ -25,7 +25,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
     var isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
-    Widget _buildSelectionIcon(ImmichAsset asset) {
+    Widget _buildSelectionIcon(AssetResponseDto asset) {
       if (selectedAsset.contains(asset) && !isAlbumExist) {
         return Icon(
           Icons.check_circle,
@@ -138,7 +138,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    '${asset.duration?.substring(0, 7)}',
+                    '${asset.duration.substring(0, 7)}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/models/curated_location.model.dart';
 import 'package:immich_mobile/modules/search/models/curated_object.model.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
+import 'package:openapi/api.dart';
 
 final searchServiceProvider =
     Provider((ref) => SearchService(ref.watch(networkServiceProvider)));
@@ -26,7 +26,7 @@ class SearchService {
     }
   }
 
-  Future<List<ImmichAsset>?> searchAsset(String searchTerm) async {
+  Future<List<AssetResponseDto>?> searchAsset(String searchTerm) async {
     try {
       var res = await _networkService.postRequest(
         url: "asset/search",
@@ -35,8 +35,8 @@ class SearchService {
 
       List<dynamic> decodedData = jsonDecode(res.toString());
 
-      List<ImmichAsset> result =
-          List.from(decodedData.map((a) => ImmichAsset.fromMap(a)));
+      List<AssetResponseDto> result =
+          List.from(decodedData.map((a) => AssetResponseDto.fromJson(a)));
 
       return result;
     } catch (e) {

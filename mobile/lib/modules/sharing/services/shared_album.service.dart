@@ -5,8 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
+import 'package:openapi/api.dart';
 
 final sharedAlbumServiceProvider =
     Provider((ref) => SharedAlbumService(ref.watch(networkServiceProvider)));
@@ -19,10 +19,17 @@ class SharedAlbumService {
     try {
       var res = await _networkService.getRequest(url: 'album?shared=true');
       List<dynamic> decodedData = jsonDecode(res.toString());
-      List<SharedAlbum> result =
-          List.from(decodedData.map((e) => SharedAlbum.fromMap(e)));
+      SharedAlbum result = SharedAlbum(
+        id: "id",
+        ownerId: "ownerId",
+        albumName: "albumName",
+        createdAt: "createdAt",
+        albumThumbnailAssetId: "albumThumbnailAssetId",
+        sharedUsers: [],
+        assets: [],
+      );
 
-      return result;
+      return [result];
     } catch (e) {
       debugPrint("Error getAllSharedAlbum  ${e.toString()}");
     }
@@ -32,7 +39,7 @@ class SharedAlbumService {
 
   Future<bool> createSharedAlbum(
     String albumName,
-    Set<ImmichAsset> assets,
+    Set<AssetResponseDto> assets,
     List<String> sharedUserIds,
   ) async {
     try {
@@ -56,7 +63,15 @@ class SharedAlbumService {
     try {
       var res = await _networkService.getRequest(url: 'album/$albumId');
       dynamic decodedData = jsonDecode(res.toString());
-      SharedAlbum result = SharedAlbum.fromMap(decodedData);
+      SharedAlbum result = SharedAlbum(
+        id: "id",
+        ownerId: "ownerId",
+        albumName: "albumName",
+        createdAt: "createdAt",
+        albumThumbnailAssetId: "albumThumbnailAssetId",
+        sharedUsers: [],
+        assets: [],
+      );
 
       return result;
     } catch (e) {
@@ -65,7 +80,7 @@ class SharedAlbumService {
   }
 
   Future<bool> addAdditionalAssetToAlbum(
-    Set<ImmichAsset> assets,
+    Set<AssetResponseDto> assets,
     String albumId,
   ) async {
     try {

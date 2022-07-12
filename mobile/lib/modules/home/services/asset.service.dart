@@ -1,31 +1,34 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/models/delete_asset_response.model.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/models/immich_asset_with_exif.model.dart';
+import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
+import 'package:openapi/api.dart';
 
-final assetServiceProvider =
-    Provider((ref) => AssetService(ref.watch(networkServiceProvider)));
+final assetServiceProvider = Provider(
+  (ref) => AssetService(
+    ref.watch(networkServiceProvider),
+    ref.watch(apiServiceProvider),
+  ),
+);
 
 class AssetService {
   final NetworkService _networkService;
-  AssetService(this._networkService);
+  final ApiService _apiService;
 
-  Future<List<ImmichAsset>?> getAllAsset() async {
-    var res = await _networkService.getRequest(url: "asset/");
+  AssetService(this._networkService, this._apiService);
+
+  Future<List<AssetResponseDto>?> getAllAsset() async {
     try {
-      List<dynamic> decodedData = jsonDecode(res.toString());
-
-      List<ImmichAsset> result =
-          List.from(decodedData.map((a) => ImmichAsset.fromMap(a)));
-      return result;
+      return await _apiService.assetApi.getAllAssets();
     } catch (e) {
       debugPrint("Error getAllAsset  ${e.toString()}");
+      return null;
     }
-    return null;
   }
 
   Future<ImmichAssetWithExif?> getAssetById(String assetId) async {
@@ -45,7 +48,7 @@ class AssetService {
   }
 
   Future<List<DeleteAssetResponse>?> deleteAssets(
-    Set<ImmichAsset> deleteAssets,
+    Set<AssetResponseDto> deleteAssets,
   ) async {
     try {
       var payload = [];

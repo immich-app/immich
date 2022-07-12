@@ -3,8 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/models/search_result_page_state.model.dart';
 
 import 'package:immich_mobile/modules/search/services/search.service.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:intl/intl.dart';
+import 'package:openapi/api.dart';
 
 class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
   SearchResultPageNotifier(this._searchService)
@@ -27,7 +27,8 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
       isSuccess: false,
     );
 
-    List<ImmichAsset>? assets = await _searchService.searchAsset(searchTerm);
+    List<AssetResponseDto>? assets =
+        await _searchService.searchAsset(searchTerm);
 
     if (assets != null) {
       state = state.copyWith(

@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:openapi/api.dart';
 
 class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
   const TopControlAppBar({
@@ -13,7 +13,7 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
     required this.onDownloadPressed,
   }) : super(key: key);
 
-  final ImmichAsset asset;
+  final AssetResponseDto asset;
   final Function onMoreInfoPressed;
   final Function onDownloadPressed;
 

@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:collection/collection.dart';
 
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/models/user.model.dart';
+import 'package:openapi/api.dart';
 
 class SharedAlbum {
   final String id;
@@ -12,7 +10,7 @@ class SharedAlbum {
   final String createdAt;
   final String? albumThumbnailAssetId;
   final List<User> sharedUsers;
-  final List<ImmichAsset>? assets;
+  final List<AssetResponseDto>? assets;
 
   SharedAlbum({
     required this.id,
@@ -31,7 +29,7 @@ class SharedAlbum {
     String? createdAt,
     String? albumThumbnailAssetId,
     List<User>? sharedUsers,
-    List<ImmichAsset>? assets,
+    List<AssetResponseDto>? assets,
   }) {
     return SharedAlbum(
       id: id ?? this.id,
@@ -44,46 +42,6 @@ class SharedAlbum {
       assets: assets ?? this.assets,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    final result = <String, dynamic>{};
-
-    result.addAll({'id': id});
-    result.addAll({'ownerId': ownerId});
-    result.addAll({'albumName': albumName});
-    result.addAll({'createdAt': createdAt});
-    if (albumThumbnailAssetId != null) {
-      result.addAll({'albumThumbnailAssetId': albumThumbnailAssetId});
-    }
-    result.addAll({'sharedUsers': sharedUsers.map((x) => x.toMap()).toList()});
-    if (assets != null) {
-      result.addAll({'assets': assets!.map((x) => x.toMap()).toList()});
-    }
-
-    return result;
-  }
-
-  factory SharedAlbum.fromMap(Map<String, dynamic> map) {
-    return SharedAlbum(
-      id: map['id'] ?? '',
-      ownerId: map['ownerId'] ?? '',
-      albumName: map['albumName'] ?? '',
-      createdAt: map['createdAt'] ?? '',
-      albumThumbnailAssetId: map['albumThumbnailAssetId'],
-      sharedUsers:
-          List<User>.from(map['sharedUsers']?.map((x) => User.fromMap(x))),
-      assets: map['assets'] != null
-          ? List<ImmichAsset>.from(
-              map['assets']?.map((x) => ImmichAsset.fromMap(x)),
-            )
-          : null,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory SharedAlbum.fromJson(String source) =>
-      SharedAlbum.fromMap(json.decode(source));
 
   @override
   String toString() {
