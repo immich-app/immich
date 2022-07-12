@@ -11,7 +11,6 @@ import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
-import 'package:immich_mobile/shared/models/immich_asset_with_exif.model.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
@@ -21,7 +20,7 @@ class ImageViewerPage extends HookConsumerWidget {
   final String thumbnailUrl;
   final AssetResponseDto asset;
 
-  ImmichAssetWithExif? assetDetail;
+  AssetResponseDto? assetDetail;
 
   ImageViewerPage({
     Key? key,

@@ -2,12 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/models/immich_asset_with_exif.model.dart';
+import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:latlong2/latlong.dart';
 
 class ExifBottomSheet extends ConsumerWidget {
-  final ImmichAssetWithExif assetDetail;
+  final AssetResponseDto assetDetail;
 
   const ExifBottomSheet({Key? key, required this.assetDetail})
       : super(key: key);
@@ -26,8 +26,8 @@ class ExifBottomSheet extends ConsumerWidget {
           child: FlutterMap(
             options: MapOptions(
               center: LatLng(
-                assetDetail.exifInfo!.latitude!,
-                assetDetail.exifInfo!.longitude!,
+                assetDetail.exifInfo?.latitude?.toDouble() ?? 0,
+                assetDetail.exifInfo?.longitude?.toDouble() ?? 0,
               ),
               zoom: 16.0,
             ),
@@ -48,8 +48,8 @@ class ExifBottomSheet extends ConsumerWidget {
                   Marker(
                     anchorPos: AnchorPos.align(AnchorAlign.top),
                     point: LatLng(
-                      assetDetail.exifInfo!.latitude!,
-                      assetDetail.exifInfo!.longitude!,
+                      assetDetail.exifInfo?.latitude?.toDouble() ?? 0,
+                      assetDetail.exifInfo?.longitude?.toDouble() ?? 0,
                     ),
                     builder: (ctx) => const Image(
                       image: AssetImage('assets/location-pin.png'),
@@ -81,7 +81,7 @@ class ExifBottomSheet extends ConsumerWidget {
           if (assetDetail.exifInfo?.dateTimeOriginal != null)
             Text(
               DateFormat('date_format'.tr()).format(
-                DateTime.parse(assetDetail.exifInfo!.dateTimeOriginal!),
+                assetDetail.exifInfo!.dateTimeOriginal!,
               ),
               style: TextStyle(
                 color: Colors.grey[400],
