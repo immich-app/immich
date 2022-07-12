@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
 import { AssetType } from '@app/database/entities/asset.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAssetDto {
   @IsNotEmpty()
@@ -9,6 +10,7 @@ export class CreateAssetDto {
   deviceId!: string;
 
   @IsNotEmpty()
+  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   assetType!: AssetType;
 
   @IsNotEmpty()

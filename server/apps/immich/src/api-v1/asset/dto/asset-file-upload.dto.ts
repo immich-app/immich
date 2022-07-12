@@ -1,7 +1,5 @@
-import { AssetType } from '@app/database/entities/asset.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
-import { CreateAssetDto } from './create-asset.dto';
+import { IsNotEmpty } from 'class-validator';
 
 export class AssetFileUploadDto {
   @IsNotEmpty()

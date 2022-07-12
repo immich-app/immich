@@ -1,4 +1,5 @@
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { ApiProperty } from '@nestjs/swagger';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
 import { SmartInfoResponseDto, mapSmartInfo } from './smart-info-response.dto';
 
@@ -7,6 +8,8 @@ export class AssetResponseDto {
   deviceAssetId!: string;
   ownerId!: string;
   deviceId!: string;
+
+  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   originalPath!: string;
   resizePath!: string | null;
