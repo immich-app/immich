@@ -13,7 +13,7 @@ part of openapi.api;
 class ExifResponseDto {
   /// Returns a new [ExifResponseDto] instance.
   ExifResponseDto({
-    required this.id,
+    this.id,
     this.make,
     this.model,
     this.imageName,
@@ -35,7 +35,7 @@ class ExifResponseDto {
     this.country,
   });
 
-  String id;
+  String? id;
 
   String? make;
 
@@ -101,7 +101,7 @@ class ExifResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
+    (id == null ? 0 : id!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
     (imageName == null ? 0 : imageName!.hashCode) +
@@ -127,7 +127,11 @@ class ExifResponseDto {
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
+    if (id != null) {
       _json[r'id'] = id;
+    } else {
+      _json[r'id'] = null;
+    }
     if (make != null) {
       _json[r'make'] = make;
     } else {
@@ -245,7 +249,7 @@ class ExifResponseDto {
       }());
 
       return ExifResponseDto(
-        id: mapValueOfType<String>(json, r'id')!,
+        id: mapValueOfType<String>(json, r'id'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         imageName: mapValueOfType<String>(json, r'imageName'),
@@ -332,7 +336,6 @@ class ExifResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
   };
 }
 

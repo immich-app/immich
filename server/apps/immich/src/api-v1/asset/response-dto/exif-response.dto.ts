@@ -1,7 +1,7 @@
 import { ExifEntity } from '@app/database/entities/exif.entity';
 
 export class ExifResponseDto {
-  id!: string;
+  id?: string | null = null;
   make?: string | null = null;
   model?: string | null = null;
   imageName?: string | null = null;

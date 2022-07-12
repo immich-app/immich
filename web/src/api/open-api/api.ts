@@ -553,7 +553,7 @@ export interface ExifResponseDto {
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'id': string;
+    'id'?: string | null;
     /**
      * 
      * @type {string}
