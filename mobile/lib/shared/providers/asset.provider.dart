@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/models/delete_asset_response.model.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:collection/collection.dart';
@@ -53,14 +52,15 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
     }
 
     // Delete asset on server
-    List<DeleteAssetResponse>? deleteAssetResult =
+    List<DeleteAssetResponseDto>? deleteAssetResult =
         await _assetService.deleteAssets(deleteAssets);
+
     if (deleteAssetResult == null) {
       return;
     }
 
     for (var asset in deleteAssetResult) {
-      if (asset.status == 'success') {
+      if (asset.status == DeleteAssetStatus.SUCCESS) {
         state =
             state.where((immichAsset) => immichAsset.id != asset.id).toList();
       }
