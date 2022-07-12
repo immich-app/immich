@@ -5,8 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/suggested_shared_users.provider.dart';
-import 'package:immich_mobile/shared/models/user.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:openapi/api.dart';
 
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
   final SharedAlbum albumInfo;
@@ -16,16 +16,16 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<User>> suggestedShareUsers =
+    AsyncValue<List<UserResponseDto>> suggestedShareUsers =
         ref.watch(suggestedSharedUsersProvider);
-    final sharedUsersList = useState<Set<User>>({});
+    final sharedUsersList = useState<Set<UserResponseDto>>({});
 
     _addNewUsersHandler() {
       AutoRouter.of(context)
           .pop(sharedUsersList.value.map((e) => e.id).toList());
     }
 
-    _buildTileIcon(User user) {
+    _buildTileIcon(UserResponseDto user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
@@ -43,7 +43,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
       }
     }
 
-    _buildUserList(List<User> users) {
+    _buildUserList(List<UserResponseDto> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {

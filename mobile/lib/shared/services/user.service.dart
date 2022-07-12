@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -8,31 +6,32 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/upload_profile_image_repsonse.model.dart';
-import 'package:immich_mobile/shared/models/user.model.dart';
+import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/utils/dio_http_interceptor.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
+import 'package:openapi/api.dart';
 
-final userServiceProvider =
-    Provider((ref) => UserService(ref.watch(networkServiceProvider)));
+final userServiceProvider = Provider(
+  (ref) => UserService(
+    ref.watch(networkServiceProvider),
+    ref.watch(apiServiceProvider),
+  ),
+);
 
 class UserService {
   final NetworkService _networkService;
+  final ApiService _apiService;
 
-  UserService(this._networkService);
+  UserService(this._networkService, this._apiService);
 
-  Future<List<User>> getAllUsersInfo() async {
+  Future<List<UserResponseDto>?> getAllUsersInfo({required bool isAll}) async {
     try {
-      var res = await _networkService.getRequest(url: 'user?isAll=false');
-      List<dynamic> decodedData = jsonDecode(res.toString());
-      List<User> result = List.from(decodedData.map((e) => User.fromMap(e)));
-
-      return result;
+      return await _apiService.userApi.getAllUsers(isAll);
     } catch (e) {
-      debugPrint("Error getAllUsersInfo  ${e.toString()}");
+      debugPrint("Error [getAllUsersInfo]  ${e.toString()}");
+      return null;
     }
-
-    return [];
   }
 
   Future<UploadProfileImageResponse?> uploadProfileImage(XFile image) async {

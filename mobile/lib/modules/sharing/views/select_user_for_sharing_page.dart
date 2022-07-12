@@ -9,16 +9,16 @@ import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.da
 import 'package:immich_mobile/modules/sharing/providers/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/user.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:openapi/api.dart';
 
 class SelectUserForSharingPage extends HookConsumerWidget {
   const SelectUserForSharingPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedUsersList = useState<Set<User>>({});
-    AsyncValue<List<User>> suggestedShareUsers =
+    final sharedUsersList = useState<Set<UserResponseDto>>({});
+    AsyncValue<List<UserResponseDto>> suggestedShareUsers =
         ref.watch(suggestedSharedUsersProvider);
 
     _createSharedAlbum() async {
@@ -45,7 +45,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       );
     }
 
-    _buildTileIcon(User user) {
+    _buildTileIcon(UserResponseDto user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
@@ -63,7 +63,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       }
     }
 
-    _buildUserList(List<User> users) {
+    _buildUserList(List<UserResponseDto> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
