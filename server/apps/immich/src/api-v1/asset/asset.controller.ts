@@ -72,7 +72,6 @@ export class AssetController {
   ): Promise<AssetFileUploadResponseDto> {
     try {
       const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
-      console.log(savedAsset);
       if (!savedAsset) {
         throw new BadRequestException('Asset not created');
       }
