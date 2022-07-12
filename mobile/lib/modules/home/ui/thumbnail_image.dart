@@ -60,7 +60,7 @@ class ThumbnailImage extends HookConsumerWidget {
               .watch(homePageStateProvider.notifier)
               .addSingleSelectedItem(asset);
         } else {
-          if (asset.type == 'IMAGE') {
+          if (asset.type == AssetTypeEnum.IMAGE) {
             AutoRouter.of(context).push(
               ImageViewerRoute(
                 imageUrl:
@@ -103,7 +103,7 @@ class ThumbnailImage extends HookConsumerWidget {
                 cacheKey: "${asset.id}-${cacheKey.value}",
                 width: 300,
                 height: 300,
-                memCacheHeight: asset.type == 'IMAGE' ? 250 : 400,
+                memCacheHeight: asset.type == AssetTypeEnum.IMAGE ? 250 : 400,
                 fit: BoxFit.cover,
                 imageUrl: thumbnailRequestUrl,
                 httpHeaders: {
@@ -118,7 +118,7 @@ class ThumbnailImage extends HookConsumerWidget {
                   ),
                 ),
                 errorWidget: (context, url, error) {
-                  print("Error getting thumbnail $url = $error");
+                  debugPrint("Error getting thumbnail $url = $error");
                   return Icon(
                     Icons.image_not_supported_outlined,
                     color: Theme.of(context).primaryColor,

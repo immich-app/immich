@@ -25,7 +25,7 @@ class ImageGrid extends ConsumerWidget {
             child: Stack(
               children: [
                 ThumbnailImage(asset: assetGroup[index]),
-                if (assetType != 'IMAGE')
+                if (assetType != AssetTypeEnum.IMAGE)
                   Positioned(
                     top: 5,
                     right: 5,

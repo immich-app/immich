@@ -28,7 +28,7 @@ class ImageViewerService {
 
       final AssetEntity? entity;
 
-      if (asset.type == AssetResponseDtoTypeEnum.IMAGE) {
+      if (asset.type == AssetTypeEnum.IMAGE) {
         entity = await PhotoManager.editor.saveImage(
           res.bodyBytes,
           title: p.basename(asset.originalPath),

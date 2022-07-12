@@ -28,7 +28,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).isMultiselectEnable;
 
     _viewAsset() {
-      if (asset.type == 'IMAGE') {
+      if (asset.type == AssetTypeEnum.IMAGE) {
         AutoRouter.of(context).push(
           ImageViewerRoute(
             imageUrl:
@@ -177,7 +177,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
           children: [
             _buildThumbnailImage(),
             _buildAssetStoreLocationIcon(),
-            if (asset.type != 'IMAGE') _buildVideoLabel(),
+            if (asset.type != AssetTypeEnum.IMAGE) _buildVideoLabel(),
             if (isMultiSelectionEnable) _buildAssetSelectionIcon(),
           ],
         ),
