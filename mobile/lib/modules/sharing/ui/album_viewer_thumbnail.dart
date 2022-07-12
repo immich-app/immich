@@ -171,16 +171,13 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
     return GestureDetector(
       onTap: isMultiSelectionEnable ? _handleSelectionGesture : _viewAsset,
       onLongPress: _enableMultiSelection,
-      child: Hero(
-        tag: asset.id,
-        child: Stack(
-          children: [
-            _buildThumbnailImage(),
-            _buildAssetStoreLocationIcon(),
-            if (asset.type != AssetTypeEnum.IMAGE) _buildVideoLabel(),
-            if (isMultiSelectionEnable) _buildAssetSelectionIcon(),
-          ],
-        ),
+      child: Stack(
+        children: [
+          _buildThumbnailImage(),
+          _buildAssetStoreLocationIcon(),
+          if (asset.type != AssetTypeEnum.IMAGE) _buildVideoLabel(),
+          if (isMultiSelectionEnable) _buildAssetSelectionIcon(),
+        ],
       ),
     );
   }

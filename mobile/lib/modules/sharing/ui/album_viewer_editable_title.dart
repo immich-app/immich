@@ -2,11 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/album_viewer.provider.dart';
+import 'package:openapi/api.dart';
 
 class AlbumViewerEditableTitle extends HookConsumerWidget {
-  final SharedAlbum albumInfo;
+  final AlbumResponseDto albumInfo;
   final FocusNode titleFocusNode;
   const AlbumViewerEditableTitle({
     Key? key,

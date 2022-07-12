@@ -390,7 +390,7 @@ class AlbumViewerRouteArgs {
 class SelectAdditionalUserForSharingRoute
     extends PageRouteInfo<SelectAdditionalUserForSharingRouteArgs> {
   SelectAdditionalUserForSharingRoute(
-      {Key? key, required SharedAlbum albumInfo})
+      {Key? key, required AlbumResponseDto albumInfo})
       : super(SelectAdditionalUserForSharingRoute.name,
             path: '/select-additional-user-for-sharing-page',
             args: SelectAdditionalUserForSharingRouteArgs(
@@ -405,7 +405,7 @@ class SelectAdditionalUserForSharingRouteArgs {
 
   final Key? key;
 
-  final SharedAlbum albumInfo;
+  final AlbumResponseDto albumInfo;
 
   @override
   String toString() {

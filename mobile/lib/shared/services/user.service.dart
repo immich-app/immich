@@ -4,22 +4,19 @@ import 'package:http/http.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:openapi/api.dart';
 
 final userServiceProvider = Provider(
   (ref) => UserService(
-    ref.watch(networkServiceProvider),
     ref.watch(apiServiceProvider),
   ),
 );
 
 class UserService {
-  final NetworkService _networkService;
   final ApiService _apiService;
 
-  UserService(this._networkService, this._apiService);
+  UserService(this._apiService);
 
   Future<List<UserResponseDto>?> getAllUsersInfo({required bool isAll}) async {
     try {

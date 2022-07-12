@@ -7,7 +7,6 @@ import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/sharing/models/asset_selection_page_result.model.dart';
-import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
@@ -19,6 +18,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
+import 'package:openapi/api.dart';
 
 class AlbumViewerPage extends HookConsumerWidget {
   final String albumId;
@@ -29,18 +29,18 @@ class AlbumViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     FocusNode titleFocusNode = useFocusNode();
     ScrollController scrollController = useScrollController();
-    AsyncValue<SharedAlbum> albumInfo =
+    AsyncValue<AlbumResponseDto?> albumInfo =
         ref.watch(sharedAlbumDetailProvider(albumId));
 
     final userId = ref.watch(authenticationProvider).userId;
 
     /// Find out if the assets in album exist on the device
     /// If they exist, add to selected asset state to show they are already selected.
-    void _onAddPhotosPressed(SharedAlbum albumInfo) async {
-      if (albumInfo.assets?.isNotEmpty == true) {
+    void _onAddPhotosPressed(AlbumResponseDto albumInfo) async {
+      if (albumInfo.assets.isNotEmpty == true) {
         ref
             .watch(assetSelectionProvider.notifier)
-            .addNewAssets(albumInfo.assets!.toList());
+            .addNewAssets(albumInfo.assets.toList());
       }
 
       ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(true);
@@ -73,7 +73,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       }
     }
 
-    void _onAddUsersPressed(SharedAlbum albumInfo) async {
+    void _onAddUsersPressed(AlbumResponseDto albumInfo) async {
       List<String>? sharedUserIds =
           await AutoRouter.of(context).push<List<String>?>(
         SelectAdditionalUserForSharingRoute(albumInfo: albumInfo),
@@ -94,7 +94,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       }
     }
 
-    Widget _buildTitle(SharedAlbum albumInfo) {
+    Widget _buildTitle(AlbumResponseDto albumInfo) {
       return Padding(
         padding: const EdgeInsets.only(left: 8, right: 8, top: 16),
         child: userId == albumInfo.ownerId
@@ -115,12 +115,12 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget _buildAlbumDateRange(SharedAlbum albumInfo) {
+    Widget _buildAlbumDateRange(AlbumResponseDto albumInfo) {
       String startDate = "";
       DateTime parsedStartDate =
-          DateTime.parse(albumInfo.assets!.first.createdAt);
+          DateTime.parse(albumInfo.assets.first.createdAt);
       DateTime parsedEndDate = DateTime.parse(
-        albumInfo.assets?.last.createdAt ?? '11111111',
+        albumInfo.assets.last.createdAt,
       ); //Need default.
 
       if (parsedStartDate.year == parsedEndDate.year) {
@@ -144,13 +144,13 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget _buildHeader(SharedAlbum albumInfo) {
+    Widget _buildHeader(AlbumResponseDto albumInfo) {
       return SliverToBoxAdapter(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildTitle(albumInfo),
-            if (albumInfo.assets?.isNotEmpty == true)
+            if (albumInfo.assets.isNotEmpty == true)
               _buildAlbumDateRange(albumInfo),
             SizedBox(
               height: 60,
@@ -182,8 +182,8 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget _buildImageGrid(SharedAlbum albumInfo) {
-      if (albumInfo.assets?.isNotEmpty == true) {
+    Widget _buildImageGrid(AlbumResponseDto albumInfo) {
+      if (albumInfo.assets.isNotEmpty) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 10.0),
           sliver: SliverGrid(
@@ -194,9 +194,9 @@ class AlbumViewerPage extends HookConsumerWidget {
             ),
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                return AlbumViewerThumbnail(asset: albumInfo.assets![index]);
+                return AlbumViewerThumbnail(asset: albumInfo.assets[index]);
               },
-              childCount: albumInfo.assets?.length,
+              childCount: albumInfo.assets.length,
             ),
           ),
         );
@@ -204,7 +204,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       return const SliverToBoxAdapter();
     }
 
-    Widget _buildControlButton(SharedAlbum albumInfo) {
+    Widget _buildControlButton(AlbumResponseDto albumInfo) {
       return Padding(
         padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
         child: SizedBox(
@@ -229,7 +229,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget _buildBody(SharedAlbum albumInfo) {
+    Widget _buildBody(AlbumResponseDto albumInfo) {
       return GestureDetector(
         onTap: () {
           titleFocusNode.unfocus();
@@ -267,7 +267,11 @@ class AlbumViewerPage extends HookConsumerWidget {
         albumId: albumId,
       ),
       body: albumInfo.when(
-        data: (albumInfo) => _buildBody(albumInfo),
+        data: (albumInfo) => albumInfo != null
+            ? _buildBody(albumInfo)
+            : const Center(
+                child: CircularProgressIndicator(),
+              ),
         error: (e, _) => Center(child: Text("Error loading album info $e")),
         loading: () => const Center(
           child: ImmichLoadingIndicator(),

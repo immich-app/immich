@@ -4,24 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
-import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
+import 'package:openapi/api.dart';
 
 class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
   const AlbumViewerAppbar({
     Key? key,
-    required AsyncValue<SharedAlbum> albumInfo,
+    required AsyncValue<AlbumResponseDto?> albumInfo,
     required this.userId,
     required this.albumId,
   })  : _albumInfo = albumInfo,
         super(key: key);
 
-  final AsyncValue<SharedAlbum> _albumInfo;
+  final AsyncValue<AlbumResponseDto?> _albumInfo;
   final String userId;
   final String albumId;
 
@@ -105,7 +105,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
 
     _buildBottomSheetActionButton() {
       if (isMultiSelectionEnable) {
-        if (_albumInfo.asData?.value.ownerId == userId) {
+        if (_albumInfo.asData?.value?.ownerId == userId) {
           return ListTile(
             leading: const Icon(Icons.delete_sweep_rounded),
             title: const Text(
@@ -118,7 +118,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           return const SizedBox();
         }
       } else {
-        if (_albumInfo.asData?.value.ownerId == userId) {
+        if (_albumInfo.asData?.value?.ownerId == userId) {
           return ListTile(
             leading: const Icon(Icons.delete_forever_rounded),
             title: const Text(
