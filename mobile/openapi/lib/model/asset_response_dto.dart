@@ -13,11 +13,11 @@ part of openapi.api;
 class AssetResponseDto {
   /// Returns a new [AssetResponseDto] instance.
   AssetResponseDto({
+    required this.type,
     required this.id,
     required this.deviceAssetId,
     required this.ownerId,
     required this.deviceId,
-    required this.type,
     required this.originalPath,
     required this.resizePath,
     required this.createdAt,
@@ -31,6 +31,8 @@ class AssetResponseDto {
     this.smartInfo,
   });
 
+  AssetTypeEnum type;
+
   String id;
 
   String deviceAssetId;
@@ -38,8 +40,6 @@ class AssetResponseDto {
   String ownerId;
 
   String deviceId;
-
-  AssetResponseDtoTypeEnum type;
 
   String originalPath;
 
@@ -77,11 +77,11 @@ class AssetResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
+     other.type == type &&
      other.id == id &&
      other.deviceAssetId == deviceAssetId &&
      other.ownerId == ownerId &&
      other.deviceId == deviceId &&
-     other.type == type &&
      other.originalPath == originalPath &&
      other.resizePath == resizePath &&
      other.createdAt == createdAt &&
@@ -97,11 +97,11 @@ class AssetResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (type.hashCode) +
     (id.hashCode) +
     (deviceAssetId.hashCode) +
     (ownerId.hashCode) +
     (deviceId.hashCode) +
-    (type.hashCode) +
     (originalPath.hashCode) +
     (resizePath == null ? 0 : resizePath!.hashCode) +
     (createdAt.hashCode) +
@@ -115,15 +115,15 @@ class AssetResponseDto {
     (smartInfo == null ? 0 : smartInfo!.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, type=$type, originalPath=$originalPath, resizePath=$resizePath, createdAt=$createdAt, modifiedAt=$modifiedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, createdAt=$createdAt, modifiedAt=$modifiedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
+      _json[r'type'] = type;
       _json[r'id'] = id;
       _json[r'deviceAssetId'] = deviceAssetId;
       _json[r'ownerId'] = ownerId;
       _json[r'deviceId'] = deviceId;
-      _json[r'type'] = type;
       _json[r'originalPath'] = originalPath;
     if (resizePath != null) {
       _json[r'resizePath'] = resizePath;
@@ -181,11 +181,11 @@ class AssetResponseDto {
       }());
 
       return AssetResponseDto(
+        type: AssetTypeEnum.fromJson(json[r'type'])!,
         id: mapValueOfType<String>(json, r'id')!,
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
-        type: AssetResponseDtoTypeEnum.fromJson(json[r'type'])!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         resizePath: mapValueOfType<String>(json, r'resizePath'),
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
@@ -246,11 +246,11 @@ class AssetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'type',
     'id',
     'deviceAssetId',
     'ownerId',
     'deviceId',
-    'type',
     'originalPath',
     'resizePath',
     'createdAt',
@@ -262,84 +262,4 @@ class AssetResponseDto {
     'encodedVideoPath',
   };
 }
-
-
-class AssetResponseDtoTypeEnum {
-  /// Instantiate a new enum with the provided [value].
-  const AssetResponseDtoTypeEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const IMAGE = AssetResponseDtoTypeEnum._(r'IMAGE');
-  static const VIDEO = AssetResponseDtoTypeEnum._(r'VIDEO');
-  static const AUDIO = AssetResponseDtoTypeEnum._(r'AUDIO');
-  static const OTHER = AssetResponseDtoTypeEnum._(r'OTHER');
-
-  /// List of all possible values in this [enum][AssetResponseDtoTypeEnum].
-  static const values = <AssetResponseDtoTypeEnum>[
-    IMAGE,
-    VIDEO,
-    AUDIO,
-    OTHER,
-  ];
-
-  static AssetResponseDtoTypeEnum? fromJson(dynamic value) => AssetResponseDtoTypeEnumTypeTransformer().decode(value);
-
-  static List<AssetResponseDtoTypeEnum>? listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetResponseDtoTypeEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetResponseDtoTypeEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [AssetResponseDtoTypeEnum] to String,
-/// and [decode] dynamic data back to [AssetResponseDtoTypeEnum].
-class AssetResponseDtoTypeEnumTypeTransformer {
-  factory AssetResponseDtoTypeEnumTypeTransformer() => _instance ??= const AssetResponseDtoTypeEnumTypeTransformer._();
-
-  const AssetResponseDtoTypeEnumTypeTransformer._();
-
-  String encode(AssetResponseDtoTypeEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a AssetResponseDtoTypeEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  AssetResponseDtoTypeEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data.toString()) {
-        case r'IMAGE': return AssetResponseDtoTypeEnum.IMAGE;
-        case r'VIDEO': return AssetResponseDtoTypeEnum.VIDEO;
-        case r'AUDIO': return AssetResponseDtoTypeEnum.AUDIO;
-        case r'OTHER': return AssetResponseDtoTypeEnum.OTHER;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [AssetResponseDtoTypeEnumTypeTransformer] instance.
-  static AssetResponseDtoTypeEnumTypeTransformer? _instance;
-}
-
 

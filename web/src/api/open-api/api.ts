@@ -160,6 +160,12 @@ export interface AssetFileUploadResponseDto {
 export interface AssetResponseDto {
     /**
      * 
+     * @type {AssetTypeEnum}
+     * @memberof AssetResponseDto
+     */
+    'type': AssetTypeEnum;
+    /**
+     * 
      * @type {string}
      * @memberof AssetResponseDto
      */
@@ -182,12 +188,6 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'deviceId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetResponseDto
-     */
-    'type': AssetResponseDtoTypeEnum;
     /**
      * 
      * @type {string}
@@ -255,15 +255,21 @@ export interface AssetResponseDto {
      */
     'smartInfo'?: SmartInfoResponseDto;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
 
-export const AssetResponseDtoTypeEnum = {
+export const AssetTypeEnum = {
     Image: 'IMAGE',
     Video: 'VIDEO',
     Audio: 'AUDIO',
     Other: 'OTHER'
 } as const;
 
-export type AssetResponseDtoTypeEnum = typeof AssetResponseDtoTypeEnum[keyof typeof AssetResponseDtoTypeEnum];
+export type AssetTypeEnum = typeof AssetTypeEnum[keyof typeof AssetTypeEnum];
+
 
 /**
  * 

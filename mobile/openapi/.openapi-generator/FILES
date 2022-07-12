@@ -10,6 +10,7 @@ doc/AlbumResponseDto.md
 doc/AssetApi.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetResponseDto.md
+doc/AssetTypeEnum.md
 doc/AuthenticationApi.md
 doc/CheckDuplicateAssetDto.md
 doc/CheckDuplicateAssetResponseDto.md
@@ -62,6 +63,7 @@ lib/model/admin_signup_response_dto.dart
 lib/model/album_response_dto.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_response_dto.dart
+lib/model/asset_type_enum.dart
 lib/model/check_duplicate_asset_dto.dart
 lib/model/check_duplicate_asset_response_dto.dart
 lib/model/create_album_dto.dart
@@ -89,3 +91,4 @@ lib/model/update_user_dto.dart
 lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 pubspec.yaml
+test/asset_type_enum_test.dart

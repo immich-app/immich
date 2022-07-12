@@ -204,6 +204,8 @@ class ApiClient {
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
+        case 'AssetTypeEnum':
+          return AssetTypeEnumTypeTransformer().decode(value);
         case 'CheckDuplicateAssetDto':
           return CheckDuplicateAssetDto.fromJson(value);
         case 'CheckDuplicateAssetResponseDto':

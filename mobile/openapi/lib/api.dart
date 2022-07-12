@@ -40,6 +40,7 @@ part 'model/admin_signup_response_dto.dart';
 part 'model/album_response_dto.dart';
 part 'model/asset_file_upload_response_dto.dart';
 part 'model/asset_response_dto.dart';
+part 'model/asset_type_enum.dart';
 part 'model/check_duplicate_asset_dto.dart';
 part 'model/check_duplicate_asset_response_dto.dart';
 part 'model/create_album_dto.dart';

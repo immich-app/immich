@@ -112,6 +112,7 @@ Class | Method | HTTP request | Description
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
+ - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
  - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)

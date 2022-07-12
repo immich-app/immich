@@ -8,11 +8,11 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**type** | [**AssetTypeEnum**](AssetTypeEnum.md) |  | 
 **id** | **String** |  | 
 **deviceAssetId** | **String** |  | 
 **ownerId** | **String** |  | 
 **deviceId** | **String** |  | 
-**type** | **String** |  | 
 **originalPath** | **String** |  | 
 **resizePath** | **String** |  | 
 **createdAt** | **String** |  | 
