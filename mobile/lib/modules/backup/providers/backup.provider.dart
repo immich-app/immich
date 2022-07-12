@@ -12,8 +12,8 @@ import 'package:immich_mobile/modules/backup/providers/error_backup_list.provide
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/models/server_info.model.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
+import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class BackupNotifier extends StateNotifier<BackUpState> {
@@ -28,12 +28,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             allAssetsInDatabase: const [],
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
-            serverInfo: ServerInfo(
+            serverInfo: ServerInfoResponseDto(
               diskAvailable: "0",
               diskAvailableRaw: 0,
               diskSize: "0",
               diskSizeRaw: 0,
-              diskUsagePercentage: 0.0,
+              diskUsagePercentage: 0,
               diskUse: "0",
               diskUseRaw: 0,
             ),
@@ -371,17 +371,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     var serverInfo = await _serverInfoService.getServerInfo();
 
     // Update server info
-    state = state.copyWith(
-      serverInfo: ServerInfo(
-        diskSize: serverInfo.diskSize,
-        diskUse: serverInfo.diskUse,
-        diskAvailable: serverInfo.diskAvailable,
-        diskSizeRaw: serverInfo.diskSizeRaw,
-        diskUseRaw: serverInfo.diskUseRaw,
-        diskAvailableRaw: serverInfo.diskAvailableRaw,
-        diskUsagePercentage: serverInfo.diskUsagePercentage,
-      ),
-    );
+    if (serverInfo != null) {
+      state = state.copyWith(
+        serverInfo: serverInfo,
+      );
+    }
   }
 
   void resumeBackup() {
