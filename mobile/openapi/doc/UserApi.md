@@ -34,7 +34,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = UserApi();
-final file = ; // MultipartFile | 
+final file = BINARY_DATA_HERE; // MultipartFile | 
 
 try {
     final result = api_instance.createProfileImage(file);
@@ -48,7 +48,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **file** | [**MultipartFile**](MultipartFile.md)|  | 
+ **file** | **MultipartFile**|  | 
 
 ### Return type
 

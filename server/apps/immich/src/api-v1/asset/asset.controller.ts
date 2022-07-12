@@ -19,11 +19,10 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
-import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { AssetEntity } from '@app/database/entities/asset.entity';
 import { Response as Res } from 'express';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';

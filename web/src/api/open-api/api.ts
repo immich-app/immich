@@ -3418,7 +3418,7 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
 
 
             if (file !== undefined) { 
-                localVarFormParams.append('file', new Blob([JSON.stringify(file)], { type: "application/json", }));
+                localVarFormParams.append('file', file as any);
             }
     
     
