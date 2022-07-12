@@ -282,7 +282,7 @@ class ProfileDrawer extends HookConsumerWidget {
                           ),
                         ),
                         Text(
-                          "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}",
+                          "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch_}",
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[500],

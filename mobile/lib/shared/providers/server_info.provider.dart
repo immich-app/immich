@@ -1,16 +1,20 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
-import 'package:immich_mobile/shared/models/server_version.model.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
+import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   ServerInfoNotifier(this._serverInfoService)
       : super(
           ServerInfoState(
-            serverVersion:
-                ServerVersion(major: 0, patch: 0, minor: 0, build: 0),
+            serverVersion: ServerVersionReponseDto(
+              major: 0,
+              patch_: 0,
+              minor: 0,
+              build: 0,
+            ),
             isVersionMismatch: false,
             versionMismatchErrorMessage: "",
           ),
@@ -19,7 +23,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   final ServerInfoService _serverInfoService;
 
   getServerVersion() async {
-    ServerVersion? serverVersion = await _serverInfoService.getServerVersion();
+    ServerVersionReponseDto? serverVersion =
+        await _serverInfoService.getServerVersion();
 
     if (serverVersion == null) {
       state = state.copyWith(

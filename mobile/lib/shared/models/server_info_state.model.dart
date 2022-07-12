@@ -1,9 +1,7 @@
-import 'dart:convert';
-
-import 'package:immich_mobile/shared/models/server_version.model.dart';
+import 'package:openapi/api.dart';
 
 class ServerInfoState {
-  final ServerVersion serverVersion;
+  final ServerVersionReponseDto serverVersion;
   final bool isVersionMismatch;
   final String versionMismatchErrorMessage;
 
@@ -14,7 +12,7 @@ class ServerInfoState {
   });
 
   ServerInfoState copyWith({
-    ServerVersion? serverVersion,
+    ServerVersionReponseDto? serverVersion,
     bool? isVersionMismatch,
     String? versionMismatchErrorMessage,
   }) {
@@ -25,27 +23,6 @@ class ServerInfoState {
           versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'serverVersion': serverVersion.toMap(),
-      'isVersionMismatch': isVersionMismatch,
-      'versionMismatchErrorMessage': versionMismatchErrorMessage,
-    };
-  }
-
-  factory ServerInfoState.fromMap(Map<String, dynamic> map) {
-    return ServerInfoState(
-      serverVersion: ServerVersion.fromMap(map['serverVersion']),
-      isVersionMismatch: map['isVersionMismatch'] ?? false,
-      versionMismatchErrorMessage: map['versionMismatchErrorMessage'] ?? '',
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory ServerInfoState.fromJson(String source) =>
-      ServerInfoState.fromMap(json.decode(source));
 
   @override
   String toString() {

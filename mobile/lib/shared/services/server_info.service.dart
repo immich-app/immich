@@ -1,22 +1,17 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/models/server_version.model.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:openapi/api.dart';
 
 final serverInfoServiceProvider = Provider(
   (ref) => ServerInfoService(
-    ref.watch(networkServiceProvider),
     ref.watch(apiServiceProvider),
   ),
 );
 
 class ServerInfoService {
-  final NetworkService _networkService;
   final ApiService _apiService;
-  ServerInfoService(this._networkService, this._apiService);
+  ServerInfoService(this._apiService);
 
   Future<ServerInfoResponseDto?> getServerInfo() async {
     try {
@@ -27,16 +22,12 @@ class ServerInfoService {
     }
   }
 
-  Future<ServerVersion?> getServerVersion() async {
+  Future<ServerVersionReponseDto?> getServerVersion() async {
     try {
-      Response response =
-          await _networkService.getRequest(url: 'server-info/version');
-
-      return ServerVersion.fromJson(response.toString());
+      return await _apiService.serverInfoApi.getServerVersion();
     } catch (e) {
       debugPrint("Error getting server info");
+      return null;
     }
-
-    return null;
   }
 }
