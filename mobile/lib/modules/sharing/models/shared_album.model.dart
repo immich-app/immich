@@ -1,6 +1,4 @@
 import 'package:collection/collection.dart';
-
-import 'package:immich_mobile/shared/models/user.model.dart';
 import 'package:openapi/api.dart';
 
 class SharedAlbum {
@@ -9,7 +7,7 @@ class SharedAlbum {
   final String albumName;
   final String createdAt;
   final String? albumThumbnailAssetId;
-  final List<User> sharedUsers;
+  final List<AssetResponseDto> sharedUsers;
   final List<AssetResponseDto>? assets;
 
   SharedAlbum({
@@ -28,7 +26,7 @@ class SharedAlbum {
     String? albumName,
     String? createdAt,
     String? albumThumbnailAssetId,
-    List<User>? sharedUsers,
+    List<AssetResponseDto>? sharedUsers,
     List<AssetResponseDto>? assets,
   }) {
     return SharedAlbum(
