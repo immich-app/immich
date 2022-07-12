@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **diskSizeRaw** | **int** |  | 
 **diskUseRaw** | **int** |  | 
 **diskAvailableRaw** | **int** |  | 
-**diskUsagePercentage** | **int** |  | 
+**diskUsagePercentage** | **double** |  | 
 **diskSize** | **String** |  | 
 **diskUse** | **String** |  | 
 **diskAvailable** | **String** |  | 

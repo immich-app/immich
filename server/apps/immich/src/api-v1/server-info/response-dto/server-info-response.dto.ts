@@ -14,6 +14,6 @@ export class ServerInfoResponseDto {
   @ApiProperty({ type: 'integer' })
   diskAvailableRaw!: number;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'number', format: 'float' })
   diskUsagePercentage!: number;
 }

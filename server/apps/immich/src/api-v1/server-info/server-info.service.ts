@@ -5,7 +5,7 @@ import { APP_UPLOAD_LOCATION } from '../../constants/upload_location.constant';
 
 @Injectable()
 export class ServerInfoService {
-  async getServerInfo() {
+  async getServerInfo(): Promise<ServerInfoResponseDto> {
     const diskInfo = await diskusage.check(APP_UPLOAD_LOCATION);
 
     const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);

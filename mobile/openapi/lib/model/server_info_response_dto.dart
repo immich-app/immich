@@ -28,7 +28,7 @@ class ServerInfoResponseDto {
 
   int diskAvailableRaw;
 
-  int diskUsagePercentage;
+  double diskUsagePercentage;
 
   String diskSize;
 
@@ -94,7 +94,7 @@ class ServerInfoResponseDto {
         diskSizeRaw: mapValueOfType<int>(json, r'diskSizeRaw')!,
         diskUseRaw: mapValueOfType<int>(json, r'diskUseRaw')!,
         diskAvailableRaw: mapValueOfType<int>(json, r'diskAvailableRaw')!,
-        diskUsagePercentage: mapValueOfType<int>(json, r'diskUsagePercentage')!,
+        diskUsagePercentage: mapValueOfType<double>(json, r'diskUsagePercentage')!,
         diskSize: mapValueOfType<String>(json, r'diskSize')!,
         diskUse: mapValueOfType<String>(json, r'diskUse')!,
         diskAvailable: mapValueOfType<String>(json, r'diskAvailable')!,
