@@ -181,9 +181,13 @@ export class MetadataExtractionProcessor {
         if (videoTags) {
           if (videoTags['com.apple.quicktime.creationdate']) {
             createdAt = String(videoTags['com.apple.quicktime.creationdate']);
-          } else {
+          } else if (videoTags['creation_time']) {
             createdAt = String(videoTags['creation_time']);
+          } else {
+            createdAt = asset.createdAt;
           }
+        } else {
+          createdAt = asset.createdAt;
         }
 
         await this.assetRepository.update({ id: asset.id }, { duration: durationString, createdAt: createdAt });
