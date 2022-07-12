@@ -7,14 +7,12 @@ import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.d
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
-import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:openapi/api.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   AuthenticationNotifier(
     this._deviceInfoService,
     this._backupService,
-    this._networkService,
     this._apiService,
   ) : super(
           AuthenticationState(
@@ -41,7 +39,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   final DeviceInfoService _deviceInfoService;
   final BackupService _backupService;
-  final NetworkService _networkService;
   final ApiService _apiService;
 
   Future<bool> login(
@@ -198,7 +195,6 @@ final authenticationProvider =
   return AuthenticationNotifier(
     ref.watch(deviceInfoServiceProvider),
     ref.watch(backupServiceProvider),
-    ref.watch(networkServiceProvider),
     ref.watch(apiServiceProvider),
   );
 });

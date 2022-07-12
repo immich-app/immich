@@ -103,7 +103,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
               cacheKey: "${asset.id}-${cacheKey.value}",
               width: 150,
               height: 150,
-              memCacheHeight: asset.type == 'IMAGE' ? 150 : 150,
+              memCacheHeight: asset.type == AssetTypeEnum.IMAGE ? 150 : 150,
               fit: BoxFit.cover,
               imageUrl: thumbnailRequestUrl,
               httpHeaders: {
@@ -131,14 +131,14 @@ class SelectionThumbnailImage extends HookConsumerWidget {
               child: _buildSelectionIcon(asset),
             ),
           ),
-          if (asset.type != 'IMAGE')
+          if (asset.type != AssetTypeEnum.IMAGE)
             Positioned(
               bottom: 5,
               right: 5,
               child: Row(
                 children: [
                   Text(
-                    '${asset.duration.substring(0, 7)}',
+                    asset.duration.substring(0, 7),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,

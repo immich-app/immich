@@ -79,7 +79,9 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     thumbnailProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
         _performStateTransition(
-            _RemoteImageStatus.thumbnail, thumbnailProvider);
+          _RemoteImageStatus.thumbnail,
+          thumbnailProvider,
+        );
       }),
     );
 

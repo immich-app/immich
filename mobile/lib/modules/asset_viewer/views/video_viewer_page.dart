@@ -12,7 +12,6 @@ import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
-import 'package:immich_mobile/shared/models/immich_asset_with_exif.model.dart';
 import 'package:openapi/api.dart';
 import 'package:video_player/video_player.dart';
 
@@ -20,7 +19,7 @@ import 'package:video_player/video_player.dart';
 class VideoViewerPage extends HookConsumerWidget {
   final String videoUrl;
   final AssetResponseDto asset;
-  ImmichAssetWithExif? assetDetail;
+  AssetResponseDto? assetDetail;
 
   VideoViewerPage({Key? key, required this.videoUrl, required this.asset})
       : super(key: key);
