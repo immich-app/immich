@@ -493,6 +493,39 @@ export interface DeleteAssetDto {
 /**
  * 
  * @export
+ * @interface DeleteAssetResponseDto
+ */
+export interface DeleteAssetResponseDto {
+    /**
+     * 
+     * @type {DeleteAssetStatus}
+     * @memberof DeleteAssetResponseDto
+     */
+    'status': DeleteAssetStatus;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeleteAssetResponseDto
+     */
+    'id': string;
+}
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const DeleteAssetStatus = {
+    Success: 'SUCCESS',
+    Failed: 'FAILED'
+} as const;
+
+export type DeleteAssetStatus = typeof DeleteAssetStatus[keyof typeof DeleteAssetStatus];
+
+
+/**
+ * 
+ * @export
  * @interface DeviceInfoResponseDto
  */
 export interface DeviceInfoResponseDto {
@@ -2328,7 +2361,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteAsset(deleteAssetDto: DeleteAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async deleteAsset(deleteAssetDto: DeleteAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<DeleteAssetResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.deleteAsset(deleteAssetDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -2473,7 +2506,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteAsset(deleteAssetDto: DeleteAssetDto, options?: any): AxiosPromise<void> {
+        deleteAsset(deleteAssetDto: DeleteAssetDto, options?: any): AxiosPromise<Array<DeleteAssetResponseDto>> {
             return localVarFp.deleteAsset(deleteAssetDto, options).then((request) => request(axios, basePath));
         },
         /**

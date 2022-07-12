@@ -50,6 +50,8 @@ part 'model/create_user_dto.dart';
 part 'model/curated_locations_response_dto.dart';
 part 'model/curated_objects_response_dto.dart';
 part 'model/delete_asset_dto.dart';
+part 'model/delete_asset_response_dto.dart';
+part 'model/delete_asset_status.dart';
 part 'model/device_info_response_dto.dart';
 part 'model/device_type_enum.dart';
 part 'model/exif_response_dto.dart';

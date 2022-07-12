@@ -43,6 +43,7 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
+import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -165,7 +166,10 @@ export class AssetController {
   }
 
   @Delete('/')
-  async deleteAsset(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) assetIds: DeleteAssetDto) {
+  async deleteAsset(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) assetIds: DeleteAssetDto,
+  ): Promise<DeleteAssetResponseDto[]> {
     const deleteAssetList: AssetResponseDto[] = [];
 
     for (const id of assetIds.ids) {
@@ -179,7 +183,7 @@ export class AssetController {
     const result = await this.assetService.deleteAssetById(authUser, assetIds);
 
     result.forEach((res) => {
-      deleteAssetList.filter((a) => a.id == res.id && res.status == 'success');
+      deleteAssetList.filter((a) => a.id == res.id && res.status == DeleteAssetStatusEnum.SUCCESS);
     });
 
     await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);

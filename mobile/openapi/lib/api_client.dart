@@ -224,6 +224,10 @@ class ApiClient {
           return CuratedObjectsResponseDto.fromJson(value);
         case 'DeleteAssetDto':
           return DeleteAssetDto.fromJson(value);
+        case 'DeleteAssetResponseDto':
+          return DeleteAssetResponseDto.fromJson(value);
+        case 'DeleteAssetStatus':
+          return DeleteAssetStatusTypeTransformer().decode(value);
         case 'DeviceInfoResponseDto':
           return DeviceInfoResponseDto.fromJson(value);
         case 'DeviceTypeEnum':

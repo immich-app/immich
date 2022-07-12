@@ -74,7 +74,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **deleteAsset**
-> deleteAsset(deleteAssetDto)
+> List<DeleteAssetResponseDto> deleteAsset(deleteAssetDto)
 
 
 
@@ -92,7 +92,8 @@ final api_instance = AssetApi();
 final deleteAssetDto = DeleteAssetDto(); // DeleteAssetDto | 
 
 try {
-    api_instance.deleteAsset(deleteAssetDto);
+    final result = api_instance.deleteAsset(deleteAssetDto);
+    print(result);
 } catch (e) {
     print('Exception when calling AssetApi->deleteAsset: $e\n');
 }
@@ -106,7 +107,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**List<DeleteAssetResponseDto>**](DeleteAssetResponseDto.md)
 
 ### Authorization
 
@@ -115,7 +116,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

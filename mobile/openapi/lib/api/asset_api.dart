@@ -104,11 +104,22 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [DeleteAssetDto] deleteAssetDto (required):
-  Future<void> deleteAsset(DeleteAssetDto deleteAssetDto,) async {
+  Future<List<DeleteAssetResponseDto>?> deleteAsset(DeleteAssetDto deleteAssetDto,) async {
     final response = await deleteAssetWithHttpInfo(deleteAssetDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<DeleteAssetResponseDto>') as List)
+        .cast<DeleteAssetResponseDto>()
+        .toList();
+
+    }
+    return null;
   }
 
   /// Performs an HTTP 'GET /asset/download' operation and returns the [Response].
