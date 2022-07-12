@@ -76,6 +76,7 @@ export class UserController {
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiBody({
+    description: 'A new avatar for the user',
     type: CreateProfileImageDto,
   })
   @Post('/profile-image')
