@@ -44,7 +44,8 @@ void main() async {
     Locale('en', 'US'),
     // Additional locales
     Locale('de', 'DE'),
-    Locale('fr', 'FR')
+    Locale('fr', 'FR'),
+    Locale('da', 'DK')
   ];
 
   runApp(
