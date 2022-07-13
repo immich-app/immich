@@ -27,11 +27,7 @@
 	import type { ImmichUser } from '$lib/models/immich-user';
 
 	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
-	import SideBarButton from '$lib/components/shared/side-bar-button.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-
-	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
-	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
@@ -39,13 +35,12 @@
 	import ImmichThumbnail from '$lib/components/asset-viewer/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
-	import StatusBox from '$lib/components/shared/status-box.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
 	import { AssetResponseDto } from '@api';
+	import { goto } from '$app/navigation';
+	import SideBar from '$lib/components/shared/side-bar.svelte';
 
 	export let user: ImmichUser;
-
-	let selectedAction: AppSideBarSelection;
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
@@ -56,14 +51,6 @@
 	let isShowAsset = false;
 	let currentViewAssetIndex = 0;
 	let currentSelectedAsset: AssetResponseDto;
-
-	const onButtonClicked = (buttonType: CustomEvent) => {
-		selectedAction = buttonType.detail['actionType'] as AppSideBarSelection;
-	};
-
-	onMount(async () => {
-		selectedAction = AppSideBarSelection.PHOTOS;
-	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
 		const { selectedGroupIndex }: { selectedGroupIndex: number } = event.detail;
@@ -109,7 +96,7 @@
 </script>
 
 <svelte:head>
-	<title>Immich - Photos</title>
+	<title>Photos - Immich</title>
 </svelte:head>
 
 <section>
@@ -117,22 +104,7 @@
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
-	<!-- Sidebar -->
-	<section id="sidebar" class="flex flex-col gap-4 pt-8 pr-6">
-		<SideBarButton
-			title="Photos"
-			logo={ImageOutline}
-			actionType={AppSideBarSelection.PHOTOS}
-			isSelected={selectedAction === AppSideBarSelection.PHOTOS}
-			on:selected={onButtonClicked}
-		/>
-
-		<!-- Status Box -->
-
-		<div class="mb-6 mt-auto">
-			<StatusBox />
-		</div>
-	</section>
+	<SideBar />
 
 	<!-- Main Section -->
 	<section class="overflow-y-auto relative">

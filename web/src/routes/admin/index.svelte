@@ -59,7 +59,7 @@
 </script>
 
 <svelte:head>
-	<title>Immich - Administration</title>
+	<title>Administration - Immich</title>
 </svelte:head>
 
 <NavigationBar {user} />

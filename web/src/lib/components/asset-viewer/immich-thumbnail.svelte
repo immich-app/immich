@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { AssetType } from '../../models/immich-asset';
 	import { session } from '$app/stores';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -8,7 +7,7 @@
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
 	import LoadingSpinner from '../shared/loading-spinner.svelte';
-	import { api, AssetResponseDto } from '@api';
+	import { api, AssetResponseDto, AssetTypeEnum } from '@api';
 
 	const dispatch = createEventDispatcher();
 
@@ -156,7 +155,7 @@
 		{/if}
 
 		<!-- Playback and info -->
-		{#if asset.type === AssetType.VIDEO}
+		{#if asset.type === AssetTypeEnum.Video}
 			<div class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10">
 				{#if isThumbnailVideoPlaying}
 					<span in:fly={{ x: -25, duration: 500 }}>
@@ -201,7 +200,7 @@
 			{/await}
 		{/if}
 
-		{#if mouseOver && asset.type === AssetType.VIDEO}
+		{#if mouseOver && asset.type === AssetTypeEnum.Video}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
 				<video muted autoplay preload="none" class="h-full object-cover" width="250px" bind:this={videoPlayerNode}>
 					<track kind="captions" />
