@@ -21,7 +21,6 @@ EXPOSE 24678
 CMD ["npm", "run", "dev"]
 
 FROM base as prod
-COPY --chown=node:node . .
 ENV NODE_ENV=production
 
 
