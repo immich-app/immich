@@ -15,11 +15,15 @@
 		selectedAction = buttonType.detail['actionType'] as AppSideBarSelection;
 
 		if (selectedAction == AppSideBarSelection.PHOTOS) {
-			goto('/photos');
+			if ($page.routeId != 'photos') {
+				goto('/photos');
+			}
 		}
 
 		if (selectedAction == AppSideBarSelection.ALBUMS) {
-			goto('/albums');
+			if ($page.routeId != 'albums') {
+				goto('/albums');
+			}
 		}
 	};
 
