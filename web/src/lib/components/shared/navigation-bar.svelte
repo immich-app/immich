@@ -125,7 +125,7 @@
 			id="account-info-panel"
 			class="absolute right-[25px] top-[75px] bg-white shadow-lg rounded-2xl w-[360px] text-center"
 			use:clickOutside
-			on:outclick={() => (shouldShowAccountInfoPanel = false)}
+			on:out-click={() => (shouldShowAccountInfoPanel = false)}
 		>
 			<div class="flex place-items-center place-content-center mt-6">
 				<button
