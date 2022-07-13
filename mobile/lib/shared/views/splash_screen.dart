@@ -19,10 +19,13 @@ class SplashScreenPage extends HookConsumerWidget {
         Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
 
     void performLoggingIn() async {
-      var isAuthenticated = await ref
-          .read(authenticationProvider.notifier)
-          .login(
-              loginInfo!.email, loginInfo.password, loginInfo.serverUrl, true);
+      var isAuthenticated =
+          await ref.read(authenticationProvider.notifier).login(
+                loginInfo!.email,
+                loginInfo.password,
+                loginInfo.serverUrl,
+                true,
+              );
 
       if (isAuthenticated) {
         // Resume backup (if enable) then navigate
@@ -33,14 +36,17 @@ class SplashScreenPage extends HookConsumerWidget {
       }
     }
 
-    useEffect(() {
-      if (loginInfo?.isSaveLogin == true) {
-        performLoggingIn();
-      } else {
-        AutoRouter.of(context).push(const LoginRoute());
-      }
-      return null;
-    }, []);
+    useEffect(
+      () {
+        if (loginInfo?.isSaveLogin == true) {
+          performLoggingIn();
+        } else {
+          AutoRouter.of(context).push(const LoginRoute());
+        }
+        return null;
+      },
+      [],
+    );
 
     return Scaffold(
       backgroundColor: immichBackgroundColor,

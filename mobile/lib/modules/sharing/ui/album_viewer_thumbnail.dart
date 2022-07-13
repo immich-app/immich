@@ -7,11 +7,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:openapi/api.dart';
 
 class AlbumViewerThumbnail extends HookConsumerWidget {
-  final ImmichAsset asset;
+  final AssetResponseDto asset;
 
   const AlbumViewerThumbnail({Key? key, required this.asset}) : super(key: key);
 
@@ -20,7 +20,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
     final cacheKey = useState(1);
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
+        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
     var deviceId = ref.watch(authenticationProvider).deviceId;
     final selectedAssetsInAlbumViewer =
         ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;
@@ -28,7 +28,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).isMultiselectEnable;
 
     _viewAsset() {
-      if (asset.type == 'IMAGE') {
+      if (asset.type == AssetTypeEnum.IMAGE) {
         AutoRouter.of(context).push(
           ImageViewerRoute(
             imageUrl:
@@ -41,9 +41,10 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
       } else {
         AutoRouter.of(context).push(
           VideoViewerRoute(
-              videoUrl:
-                  '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-              asset: asset),
+            videoUrl:
+                '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
+            asset: asset,
+          ),
         );
       }
     }
@@ -170,16 +171,13 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
     return GestureDetector(
       onTap: isMultiSelectionEnable ? _handleSelectionGesture : _viewAsset,
       onLongPress: _enableMultiSelection,
-      child: Hero(
-        tag: asset.id,
-        child: Stack(
-          children: [
-            _buildThumbnailImage(),
-            _buildAssetStoreLocationIcon(),
-            if (asset.type != 'IMAGE') _buildVideoLabel(),
-            if (isMultiSelectionEnable) _buildAssetSelectionIcon(),
-          ],
-        ),
+      child: Stack(
+        children: [
+          _buildThumbnailImage(),
+          _buildAssetStoreLocationIcon(),
+          if (asset.type != AssetTypeEnum.IMAGE) _buildVideoLabel(),
+          if (isMultiSelectionEnable) _buildAssetSelectionIcon(),
+        ],
       ),
     );
   }

@@ -1,10 +1,10 @@
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
+import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
-import 'package:immich_mobile/shared/models/server_info.model.dart';
 
 enum BackUpProgressEnum { idle, inProgress, done }
 
@@ -14,7 +14,7 @@ class BackUpState {
   final List<String> allAssetsInDatabase;
   final double progressInPercentage;
   final CancellationToken cancelToken;
-  final ServerInfo serverInfo;
+  final ServerInfoResponseDto serverInfo;
 
   /// All available albums on the device
   final List<AvailableAlbum> availableAlbums;
@@ -49,7 +49,7 @@ class BackUpState {
     List<String>? allAssetsInDatabase,
     double? progressInPercentage,
     CancellationToken? cancelToken,
-    ServerInfo? serverInfo,
+    ServerInfoResponseDto? serverInfo,
     List<AvailableAlbum>? availableAlbums,
     Set<AssetPathEntity>? selectedBackupAlbums,
     Set<AssetPathEntity>? excludedBackupAlbums,
@@ -93,8 +93,10 @@ class BackUpState {
         collectionEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
         collectionEquals(other.excludedBackupAlbums, excludedBackupAlbums) &&
         collectionEquals(other.allUniqueAssets, allUniqueAssets) &&
-        collectionEquals(other.selectedAlbumsBackupAssetsIds,
-            selectedAlbumsBackupAssetsIds) &&
+        collectionEquals(
+          other.selectedAlbumsBackupAssetsIds,
+          selectedAlbumsBackupAssetsIds,
+        ) &&
         other.currentUploadAsset == currentUploadAsset;
   }
 

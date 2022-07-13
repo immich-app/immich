@@ -29,13 +29,18 @@ class SearchResultPage extends HookConsumerWidget {
 
     late FocusNode searchFocusNode;
 
-    useEffect(() {
-      searchFocusNode = FocusNode();
+    useEffect(
+      () {
+        searchFocusNode = FocusNode();
 
-      Future.delayed(Duration.zero,
-          () => ref.read(searchResultPageProvider.notifier).search(searchTerm));
-      return () => searchFocusNode.dispose();
-    }, []);
+        Future.delayed(
+          Duration.zero,
+          () => ref.read(searchResultPageProvider.notifier).search(searchTerm),
+        );
+        return () => searchFocusNode.dispose();
+      },
+      [],
+    );
 
     _onSearchSubmitted(String newSearchTerm) {
       debugPrint("Re-Search with $newSearchTerm");
@@ -69,10 +74,10 @@ class SearchResultPage extends HookConsumerWidget {
         },
         decoration: InputDecoration(
           hintText: 'search_result_page_new_search_hint'.tr(),
-          enabledBorder: UnderlineInputBorder(
+          enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),
-          focusedBorder: UnderlineInputBorder(
+          focusedBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),
         ),
@@ -90,9 +95,10 @@ class SearchResultPage extends HookConsumerWidget {
             Text(
               currentSearchTerm.value,
               style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold),
+                color: Theme.of(context).primaryColor,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
               maxLines: 1,
             ),
             Icon(
@@ -116,9 +122,10 @@ class SearchResultPage extends HookConsumerWidget {
 
       if (searchResultPageState.isLoading) {
         return Center(
-            child: SpinKitDancingSquare(
-          color: Theme.of(context).primaryColor,
-        ));
+          child: SpinKitDancingSquare(
+            color: Theme.of(context).primaryColor,
+          ),
+        );
       }
 
       if (searchResultPageState.isSuccess) {
@@ -184,11 +191,12 @@ class SearchResultPage extends HookConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         title: GestureDetector(
-            onTap: () {
-              isNewSearch.value = true;
-              searchFocusNode.requestFocus();
-            },
-            child: isNewSearch.value ? _buildTextField() : _buildChip()),
+          onTap: () {
+            isNewSearch.value = true;
+            searchFocusNode.requestFocus();
+          },
+          child: isNewSearch.value ? _buildTextField() : _buildChip(),
+        ),
         centerTitle: false,
       ),
       body: GestureDetector(

@@ -5,9 +5,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 
 class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
-  SearchBar(
-      {Key? key, required this.searchFocusNode, required this.onSubmitted})
-      : super(key: key);
+  SearchBar({
+    Key? key,
+    required this.searchFocusNode,
+    required this.onSubmitted,
+  }) : super(key: key);
 
   final FocusNode searchFocusNode;
   final Function(String) onSubmitted;
@@ -26,7 +28,8 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
                 ref.watch(searchPageStateProvider.notifier).disableSearch();
                 searchTermController.clear();
               },
-              icon: const Icon(Icons.arrow_back_ios_rounded))
+              icon: const Icon(Icons.arrow_back_ios_rounded),
+            )
           : const Icon(Icons.search_rounded),
       title: TextField(
         controller: searchTermController,
@@ -50,10 +53,10 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
         },
         decoration: InputDecoration(
           hintText: 'search_bar_hint'.tr(),
-          enabledBorder: UnderlineInputBorder(
+          enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),
-          focusedBorder: UnderlineInputBorder(
+          focusedBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),
         ),

@@ -4,10 +4,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:openapi/api.dart';
 
 class SharedAlbumThumbnailImage extends HookConsumerWidget {
-  final ImmichAsset asset;
+  final AssetResponseDto asset;
 
   const SharedAlbumThumbnailImage({Key? key, required this.asset})
       : super(key: key);
@@ -18,7 +18,7 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
 
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
+        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
 
     return GestureDetector(
       onTap: () {
@@ -30,7 +30,7 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
             cacheKey: "${asset.id}-${cacheKey.value}",
             width: 500,
             height: 500,
-            memCacheHeight: asset.type == 'IMAGE' ? 500 : 500,
+            memCacheHeight: 500,
             fit: BoxFit.cover,
             imageUrl: thumbnailRequestUrl,
             httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},

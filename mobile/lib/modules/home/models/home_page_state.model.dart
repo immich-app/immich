@@ -1,12 +1,10 @@
-import 'dart:convert';
-
 import 'package:collection/collection.dart';
 
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:openapi/api.dart';
 
 class HomePageState {
   final bool isMultiSelectEnable;
-  final Set<ImmichAsset> selectedItems;
+  final Set<AssetResponseDto> selectedItems;
   final Set<String> selectedDateGroup;
   HomePageState({
     required this.isMultiSelectEnable,
@@ -16,7 +14,7 @@ class HomePageState {
 
   HomePageState copyWith({
     bool? isMultiSelectEnable,
-    Set<ImmichAsset>? selectedItems,
+    Set<AssetResponseDto>? selectedItems,
     Set<String>? selectedDateGroup,
   }) {
     return HomePageState(
@@ -25,28 +23,6 @@ class HomePageState {
       selectedDateGroup: selectedDateGroup ?? this.selectedDateGroup,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'isMultiSelectEnable': isMultiSelectEnable,
-      'selectedItems': selectedItems.map((x) => x.toMap()).toList(),
-      'selectedDateGroup': selectedDateGroup.toList(),
-    };
-  }
-
-  factory HomePageState.fromMap(Map<String, dynamic> map) {
-    return HomePageState(
-      isMultiSelectEnable: map['isMultiSelectEnable'] ?? false,
-      selectedItems: Set<ImmichAsset>.from(
-          map['selectedItems']?.map((x) => ImmichAsset.fromMap(x))),
-      selectedDateGroup: Set<String>.from(map['selectedDateGroup']),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory HomePageState.fromJson(String source) =>
-      HomePageState.fromMap(json.decode(source));
 
   @override
   String toString() =>

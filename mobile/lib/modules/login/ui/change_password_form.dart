@@ -140,35 +140,36 @@ class ChangePasswordButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          visualDensity: VisualDensity.standard,
-          primary: Theme.of(context).primaryColor,
-          onPrimary: Colors.grey[50],
-          elevation: 2,
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
-        ),
-        onPressed: () async {
-          if (formKey.currentState!.validate()) {
-            var isSuccess = await ref
-                .watch(authenticationProvider.notifier)
-                .changePassword(passwordController.value.text);
+      style: ElevatedButton.styleFrom(
+        visualDensity: VisualDensity.standard,
+        primary: Theme.of(context).primaryColor,
+        onPrimary: Colors.grey[50],
+        elevation: 2,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+      ),
+      onPressed: () async {
+        if (formKey.currentState!.validate()) {
+          var isSuccess = await ref
+              .watch(authenticationProvider.notifier)
+              .changePassword(passwordController.value.text);
 
-            if (isSuccess) {
-              bool res =
-                  await ref.watch(authenticationProvider.notifier).logout();
+          if (isSuccess) {
+            bool res =
+                await ref.watch(authenticationProvider.notifier).logout();
 
-              if (res) {
-                ref.watch(backupProvider.notifier).cancelBackup();
-                ref.watch(assetProvider.notifier).clearAllAsset();
-                ref.watch(websocketProvider.notifier).disconnect();
-                AutoRouter.of(context).replace(const LoginRoute());
-              }
+            if (res) {
+              ref.watch(backupProvider.notifier).cancelBackup();
+              ref.watch(assetProvider.notifier).clearAllAsset();
+              ref.watch(websocketProvider.notifier).disconnect();
+              AutoRouter.of(context).replace(const LoginRoute());
             }
           }
-        },
-        child: const Text(
-          "Change Password",
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ));
+        }
+      },
+      child: const Text(
+        "Change Password",
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      ),
+    );
   }
 }

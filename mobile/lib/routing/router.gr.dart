@@ -234,7 +234,7 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
       required String imageUrl,
       required String heroTag,
       required String thumbnailUrl,
-      required ImmichAsset asset})
+      required AssetResponseDto asset})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
             args: ImageViewerRouteArgs(
@@ -263,7 +263,7 @@ class ImageViewerRouteArgs {
 
   final String thumbnailUrl;
 
-  final ImmichAsset asset;
+  final AssetResponseDto asset;
 
   @override
   String toString() {
@@ -275,7 +275,7 @@ class ImageViewerRouteArgs {
 /// [VideoViewerPage]
 class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
   VideoViewerRoute(
-      {Key? key, required String videoUrl, required ImmichAsset asset})
+      {Key? key, required String videoUrl, required AssetResponseDto asset})
       : super(VideoViewerRoute.name,
             path: '/video-viewer-page',
             args: VideoViewerRouteArgs(
@@ -292,7 +292,7 @@ class VideoViewerRouteArgs {
 
   final String videoUrl;
 
-  final ImmichAsset asset;
+  final AssetResponseDto asset;
 
   @override
   String toString() {
@@ -390,7 +390,7 @@ class AlbumViewerRouteArgs {
 class SelectAdditionalUserForSharingRoute
     extends PageRouteInfo<SelectAdditionalUserForSharingRouteArgs> {
   SelectAdditionalUserForSharingRoute(
-      {Key? key, required SharedAlbum albumInfo})
+      {Key? key, required AlbumResponseDto albumInfo})
       : super(SelectAdditionalUserForSharingRoute.name,
             path: '/select-additional-user-for-sharing-page',
             args: SelectAdditionalUserForSharingRouteArgs(
@@ -405,7 +405,7 @@ class SelectAdditionalUserForSharingRouteArgs {
 
   final Key? key;
 
-  final SharedAlbum albumInfo;
+  final AlbumResponseDto albumInfo;
 
   @override
   String toString() {

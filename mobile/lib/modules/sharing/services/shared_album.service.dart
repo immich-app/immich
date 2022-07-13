@@ -1,73 +1,69 @@
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
-import 'package:immich_mobile/shared/services/network.service.dart';
+import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:openapi/api.dart';
 
-final sharedAlbumServiceProvider =
-    Provider((ref) => SharedAlbumService(ref.watch(networkServiceProvider)));
+final sharedAlbumServiceProvider = Provider(
+  (ref) => SharedAlbumService(
+    ref.watch(apiServiceProvider),
+  ),
+);
 
 class SharedAlbumService {
-  final NetworkService _networkService;
-  SharedAlbumService(this._networkService);
+  final ApiService _apiService;
+  SharedAlbumService(this._apiService);
 
-  Future<List<SharedAlbum>> getAllSharedAlbum() async {
+  Future<List<AlbumResponseDto>?> getAllSharedAlbum() async {
     try {
-      var res = await _networkService.getRequest(url: 'album?shared=true');
-      List<dynamic> decodedData = jsonDecode(res.toString());
-      List<SharedAlbum> result =
-          List.from(decodedData.map((e) => SharedAlbum.fromMap(e)));
-
-      return result;
+      return await _apiService.albumApi.getAllAlbums(shared: true);
     } catch (e) {
       debugPrint("Error getAllSharedAlbum  ${e.toString()}");
+      return null;
     }
-
-    return [];
   }
 
-  Future<bool> createSharedAlbum(String albumName, Set<ImmichAsset> assets,
-      List<String> sharedUserIds) async {
+  Future<bool> createSharedAlbum(
+    String albumName,
+    Set<AssetResponseDto> assets,
+    List<String> sharedUserIds,
+  ) async {
     try {
-      var res = await _networkService.postRequest(url: 'album', data: {
-        "albumName": albumName,
-        "sharedWithUserIds": sharedUserIds,
-        "assetIds": assets.map((asset) => asset.id).toList(),
-      });
+      _apiService.albumApi.createAlbum(
+        CreateAlbumDto(
+          albumName: albumName,
+          assetIds: assets.map((asset) => asset.id).toList(),
+          sharedWithUserIds: sharedUserIds,
+        ),
+      );
 
-      return res != null;
+      return true;
     } catch (e) {
       debugPrint("Error createSharedAlbum  ${e.toString()}");
       return false;
     }
   }
 
-  Future<SharedAlbum> getAlbumDetail(String albumId) async {
+  Future<AlbumResponseDto?> getAlbumDetail(String albumId) async {
     try {
-      var res = await _networkService.getRequest(url: 'album/$albumId');
-      dynamic decodedData = jsonDecode(res.toString());
-      SharedAlbum result = SharedAlbum.fromMap(decodedData);
-
-      return result;
+      return await _apiService.albumApi.getAlbumInfo(albumId);
     } catch (e) {
-      throw Exception('Error getAllSharedAlbum  ${e.toString()}');
+      debugPrint('Error [getAlbumDetail] ${e.toString()}');
+      return null;
     }
   }
 
   Future<bool> addAdditionalAssetToAlbum(
-      Set<ImmichAsset> assets, String albumId) async {
+    Set<AssetResponseDto> assets,
+    String albumId,
+  ) async {
     try {
-      var res =
-          await _networkService.putRequest(url: 'album/$albumId/assets', data: {
-        "albumId": albumId,
-        "assetIds": assets.map((asset) => asset.id).toList(),
-      });
-
-      return res != null;
+      var result = await _apiService.albumApi.addAssetsToAlbum(
+        albumId,
+        AddAssetsDto(assetIds: assets.map((asset) => asset.id).toList()),
+      );
+      return result != null;
     } catch (e) {
       debugPrint("Error addAdditionalAssetToAlbum  ${e.toString()}");
       return false;
@@ -75,14 +71,16 @@ class SharedAlbumService {
   }
 
   Future<bool> addAdditionalUserToAlbum(
-      List<String> sharedUserIds, String albumId) async {
+    List<String> sharedUserIds,
+    String albumId,
+  ) async {
     try {
-      var res =
-          await _networkService.putRequest(url: 'album/$albumId/users', data: {
-        "sharedUserIds": sharedUserIds,
-      });
+      var result = await _apiService.albumApi.addUsersToAlbum(
+        albumId,
+        AddUsersDto(sharedUserIds: sharedUserIds),
+      );
 
-      return res != null;
+      return result != null;
     } catch (e) {
       debugPrint("Error addAdditionalUserToAlbum  ${e.toString()}");
       return false;
@@ -91,12 +89,7 @@ class SharedAlbumService {
 
   Future<bool> deleteAlbum(String albumId) async {
     try {
-      Response res = await _networkService.deleteRequest(url: 'album/$albumId');
-
-      if (res.statusCode != 200) {
-        return false;
-      }
-
+      await _apiService.albumApi.deleteAlbum(albumId);
       return true;
     } catch (e) {
       debugPrint("Error deleteAlbum  ${e.toString()}");
@@ -106,12 +99,7 @@ class SharedAlbumService {
 
   Future<bool> leaveAlbum(String albumId) async {
     try {
-      Response res =
-          await _networkService.deleteRequest(url: 'album/$albumId/user/me');
-
-      if (res.statusCode != 200) {
-        return false;
-      }
+      await _apiService.albumApi.removeUserFromAlbum(albumId, "me");
 
       return true;
     } catch (e) {
@@ -121,16 +109,14 @@ class SharedAlbumService {
   }
 
   Future<bool> removeAssetFromAlbum(
-      String albumId, List<String> assetIds) async {
+    String albumId,
+    List<String> assetIds,
+  ) async {
     try {
-      Response res = await _networkService
-          .deleteRequest(url: 'album/$albumId/assets', data: {
-        "assetIds": assetIds,
-      });
-
-      if (res.statusCode != 200) {
-        return false;
-      }
+      await _apiService.albumApi.removeAssetFromAlbum(
+        albumId,
+        RemoveAssetsDto(assetIds: assetIds),
+      );
 
       return true;
     } catch (e) {
@@ -140,17 +126,18 @@ class SharedAlbumService {
   }
 
   Future<bool> changeTitleAlbum(
-      String albumId, String ownerId, String newAlbumTitle) async {
+    String albumId,
+    String ownerId,
+    String newAlbumTitle,
+  ) async {
     try {
-      Response res =
-          await _networkService.patchRequest(url: 'album/$albumId/', data: {
-        "ownerId": ownerId,
-        "albumName": newAlbumTitle,
-      });
-
-      if (res.statusCode != 200) {
-        return false;
-      }
+      await _apiService.albumApi.updateAlbumInfo(
+        albumId,
+        UpdateAlbumDto(
+          ownerId: ownerId,
+          albumName: newAlbumTitle,
+        ),
+      );
 
       return true;
     } catch (e) {

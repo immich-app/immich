@@ -22,22 +22,25 @@ class LoginForm extends HookConsumerWidget {
     final passwordController =
         useTextEditingController.fromValue(TextEditingValue.empty);
     final serverEndpointController =
-        useTextEditingController(text: 'login_endpoint_hint'.tr());
+        useTextEditingController(text: 'login_form_endpoint_hint'.tr());
     final isSaveLoginInfo = useState<bool>(false);
 
-    useEffect(() {
-      var loginInfo =
-          Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
+    useEffect(
+      () {
+        var loginInfo = Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
+            .get(savedLoginInfoKey);
 
-      if (loginInfo != null) {
-        usernameController.text = loginInfo.email;
-        passwordController.text = loginInfo.password;
-        serverEndpointController.text = loginInfo.serverUrl;
-        isSaveLoginInfo.value = loginInfo.isSaveLogin;
-      }
+        if (loginInfo != null) {
+          usernameController.text = loginInfo.email;
+          passwordController.text = loginInfo.password;
+          serverEndpointController.text = loginInfo.serverUrl;
+          isSaveLoginInfo.value = loginInfo.isSaveLogin;
+        }
 
-      return null;
-    }, []);
+        return null;
+      },
+      [],
+    );
 
     return Center(
       child: ConstrainedBox(
@@ -71,14 +74,16 @@ class LoginForm extends HookConsumerWidget {
                 dense: true,
                 side: const BorderSide(color: Colors.grey, width: 1.5),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5)),
+                  borderRadius: BorderRadius.circular(5),
+                ),
                 enableFeedback: true,
                 title: const Text(
                   "login_form_save_login",
                   style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
                 ).tr(),
                 value: isSaveLoginInfo.value,
                 onChanged: (switchValue) {
@@ -108,7 +113,6 @@ class ServerEndpointInput extends StatelessWidget {
       : super(key: key);
 
   String? _validateInput(String? url) {
-
     if (url?.startsWith(RegExp(r'https?://')) == true) {
       return null;
     } else {
@@ -122,7 +126,7 @@ class ServerEndpointInput extends StatelessWidget {
       controller: controller,
       decoration: InputDecoration(
         labelText: 'login_form_endpoint_url'.tr(),
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
         hintText: 'login_form_endpoint_hint'.tr(),
       ),
       validator: _validateInput,
@@ -140,8 +144,9 @@ class EmailInput extends StatelessWidget {
     if (email == null || email == '') return null;
     if (email.endsWith(' ')) return 'login_form_err_trailing_whitespace'.tr();
     if (email.startsWith(' ')) return 'login_form_err_leading_whitespace'.tr();
-    if (email.contains(' ') || !email.contains('@'))
+    if (email.contains(' ') || !email.contains('@')) {
       return 'login_form_err_invalid_email'.tr();
+    }
     return null;
   }
 
@@ -151,7 +156,7 @@ class EmailInput extends StatelessWidget {
       controller: controller,
       decoration: InputDecoration(
         labelText: 'login_form_label_email'.tr(),
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
         hintText: 'login_form_email_hint'.tr(),
       ),
       validator: _validateInput,
@@ -171,9 +176,10 @@ class PasswordInput extends StatelessWidget {
       obscureText: true,
       controller: controller,
       decoration: InputDecoration(
-          labelText: 'login_form_label_password'.tr(),
-          border: OutlineInputBorder(),
-          hintText: 'login_form_password_hint'.tr()),
+        labelText: 'login_form_label_password'.tr(),
+        border: const OutlineInputBorder(),
+        hintText: 'login_form_password_hint'.tr(),
+      ),
     );
   }
 }
@@ -195,43 +201,47 @@ class LoginButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          visualDensity: VisualDensity.standard,
-          primary: Theme.of(context).primaryColor,
-          onPrimary: Colors.grey[50],
-          elevation: 2,
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
-        ),
-        onPressed: () async {
-          // This will remove current cache asset state of previous user login.
-          ref.watch(assetProvider.notifier).clearAllAsset();
+      style: ElevatedButton.styleFrom(
+        visualDensity: VisualDensity.standard,
+        primary: Theme.of(context).primaryColor,
+        onPrimary: Colors.grey[50],
+        elevation: 2,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+      ),
+      onPressed: () async {
+        // This will remove current cache asset state of previous user login.
+        ref.watch(assetProvider.notifier).clearAllAsset();
 
-          var isAuthenticated = await ref
-              .watch(authenticationProvider.notifier)
-              .login(emailController.text, passwordController.text,
-                  serverEndpointController.text, isSavedLoginInfo);
+        var isAuthenticated =
+            await ref.watch(authenticationProvider.notifier).login(
+                  emailController.text,
+                  passwordController.text,
+                  serverEndpointController.text,
+                  isSavedLoginInfo,
+                );
 
-          if (isAuthenticated) {
-            // Resume backup (if enable) then navigate
+        if (isAuthenticated) {
+          // Resume backup (if enable) then navigate
 
-            if (ref.watch(authenticationProvider).shouldChangePassword &&
-                !ref.watch(authenticationProvider).isAdmin) {
-              AutoRouter.of(context).push(const ChangePasswordRoute());
-            } else {
-              ref.watch(backupProvider.notifier).resumeBackup();
-              AutoRouter.of(context).pushNamed("/tab-controller-page");
-            }
+          if (ref.watch(authenticationProvider).shouldChangePassword &&
+              !ref.watch(authenticationProvider).isAdmin) {
+            AutoRouter.of(context).push(const ChangePasswordRoute());
           } else {
-            ImmichToast.show(
-              context: context,
-              msg: "login_failed".tr(),
-              toastType: ToastType.error,
-            );
+            ref.watch(backupProvider.notifier).resumeBackup();
+            AutoRouter.of(context).pushNamed("/tab-controller-page");
           }
-        },
-        child: const Text(
-          "login_form_button_text",
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ).tr());
+        } else {
+          ImmichToast.show(
+            context: context,
+            msg: "login_form_failed_login".tr(),
+            toastType: ToastType.error,
+          );
+        }
+      },
+      child: const Text(
+        "login_form_button_text",
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      ).tr(),
+    );
   }
 }

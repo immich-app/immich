@@ -160,6 +160,12 @@ export interface AssetFileUploadResponseDto {
 export interface AssetResponseDto {
     /**
      * 
+     * @type {AssetTypeEnum}
+     * @memberof AssetResponseDto
+     */
+    'type': AssetTypeEnum;
+    /**
+     * 
      * @type {string}
      * @memberof AssetResponseDto
      */
@@ -182,12 +188,6 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'deviceId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetResponseDto
-     */
-    'type': AssetResponseDtoTypeEnum;
     /**
      * 
      * @type {string}
@@ -255,15 +255,21 @@ export interface AssetResponseDto {
      */
     'smartInfo'?: SmartInfoResponseDto;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
 
-export const AssetResponseDtoTypeEnum = {
+export const AssetTypeEnum = {
     Image: 'IMAGE',
     Video: 'VIDEO',
     Audio: 'AUDIO',
     Other: 'OTHER'
 } as const;
 
-export type AssetResponseDtoTypeEnum = typeof AssetResponseDtoTypeEnum[keyof typeof AssetResponseDtoTypeEnum];
+export type AssetTypeEnum = typeof AssetTypeEnum[keyof typeof AssetTypeEnum];
+
 
 /**
  * 
@@ -330,16 +336,16 @@ export interface CreateAlbumDto {
 export interface CreateDeviceInfoDto {
     /**
      * 
-     * @type {string}
+     * @type {DeviceTypeEnum}
      * @memberof CreateDeviceInfoDto
      */
-    'deviceId': string;
+    'deviceType': DeviceTypeEnum;
     /**
      * 
      * @type {string}
      * @memberof CreateDeviceInfoDto
      */
-    'deviceType': CreateDeviceInfoDtoDeviceTypeEnum;
+    'deviceId': string;
     /**
      * 
      * @type {boolean}
@@ -347,15 +353,6 @@ export interface CreateDeviceInfoDto {
      */
     'isAutoBackup'?: boolean;
 }
-
-export const CreateDeviceInfoDtoDeviceTypeEnum = {
-    Ios: 'IOS',
-    Android: 'ANDROID',
-    Web: 'WEB'
-} as const;
-
-export type CreateDeviceInfoDtoDeviceTypeEnum = typeof CreateDeviceInfoDtoDeviceTypeEnum[keyof typeof CreateDeviceInfoDtoDeviceTypeEnum];
-
 /**
  * 
  * @export
@@ -496,6 +493,39 @@ export interface DeleteAssetDto {
 /**
  * 
  * @export
+ * @interface DeleteAssetResponseDto
+ */
+export interface DeleteAssetResponseDto {
+    /**
+     * 
+     * @type {DeleteAssetStatus}
+     * @memberof DeleteAssetResponseDto
+     */
+    'status': DeleteAssetStatus;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeleteAssetResponseDto
+     */
+    'id': string;
+}
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const DeleteAssetStatus = {
+    Success: 'SUCCESS',
+    Failed: 'FAILED'
+} as const;
+
+export type DeleteAssetStatus = typeof DeleteAssetStatus[keyof typeof DeleteAssetStatus];
+
+
+/**
+ * 
+ * @export
  * @interface DeviceInfoResponseDto
  */
 export interface DeviceInfoResponseDto {
@@ -505,6 +535,12 @@ export interface DeviceInfoResponseDto {
      * @memberof DeviceInfoResponseDto
      */
     'id': number;
+    /**
+     * 
+     * @type {DeviceTypeEnum}
+     * @memberof DeviceInfoResponseDto
+     */
+    'deviceType': DeviceTypeEnum;
     /**
      * 
      * @type {string}
@@ -522,18 +558,6 @@ export interface DeviceInfoResponseDto {
      * @type {string}
      * @memberof DeviceInfoResponseDto
      */
-    'deviceType': DeviceInfoResponseDtoDeviceTypeEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof DeviceInfoResponseDto
-     */
-    'notificationToken': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof DeviceInfoResponseDto
-     */
     'createdAt': string;
     /**
      * 
@@ -542,14 +566,20 @@ export interface DeviceInfoResponseDto {
      */
     'isAutoBackup': boolean;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
 
-export const DeviceInfoResponseDtoDeviceTypeEnum = {
+export const DeviceTypeEnum = {
     Ios: 'IOS',
     Android: 'ANDROID',
     Web: 'WEB'
 } as const;
 
-export type DeviceInfoResponseDtoDeviceTypeEnum = typeof DeviceInfoResponseDtoDeviceTypeEnum[keyof typeof DeviceInfoResponseDtoDeviceTypeEnum];
+export type DeviceTypeEnum = typeof DeviceTypeEnum[keyof typeof DeviceTypeEnum];
+
 
 /**
  * 
@@ -562,121 +592,121 @@ export interface ExifResponseDto {
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'id': string;
+    'id'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'make': string | null;
+    'make'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'model': string | null;
+    'model'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'imageName': string | null;
+    'imageName'?: string | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'exifImageWidth': number | null;
+    'exifImageWidth'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'exifImageHeight': number | null;
+    'exifImageHeight'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'fileSizeInByte': number | null;
+    'fileSizeInByte'?: number | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'orientation': string | null;
+    'orientation'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'dateTimeOriginal': string | null;
+    'dateTimeOriginal'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'modifyDate': string | null;
+    'modifyDate'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'lensModel': string | null;
+    'lensModel'?: string | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'fNumber': number | null;
+    'fNumber'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'focalLength': number | null;
+    'focalLength'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'iso': number | null;
+    'iso'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'exposureTime': number | null;
+    'exposureTime'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'latitude': number | null;
+    'latitude'?: number | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'longitude': number | null;
+    'longitude'?: number | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'city': string | null;
+    'city'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'state': string | null;
+    'state'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'country': string | null;
+    'country'?: string | null;
 }
 /**
  * 
@@ -786,24 +816,6 @@ export interface SearchAssetDto {
 export interface ServerInfoResponseDto {
     /**
      * 
-     * @type {string}
-     * @memberof ServerInfoResponseDto
-     */
-    'diskSize': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ServerInfoResponseDto
-     */
-    'diskUse': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ServerInfoResponseDto
-     */
-    'diskAvailable': string;
-    /**
-     * 
      * @type {number}
      * @memberof ServerInfoResponseDto
      */
@@ -826,6 +838,24 @@ export interface ServerInfoResponseDto {
      * @memberof ServerInfoResponseDto
      */
     'diskUsagePercentage': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServerInfoResponseDto
+     */
+    'diskSize': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServerInfoResponseDto
+     */
+    'diskUse': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServerInfoResponseDto
+     */
+    'diskAvailable': string;
 }
 /**
  * 
@@ -949,6 +979,31 @@ export interface UpdateAlbumDto {
 /**
  * 
  * @export
+ * @interface UpdateDeviceInfoDto
+ */
+export interface UpdateDeviceInfoDto {
+    /**
+     * 
+     * @type {DeviceTypeEnum}
+     * @memberof UpdateDeviceInfoDto
+     */
+    'deviceType': DeviceTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateDeviceInfoDto
+     */
+    'deviceId': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdateDeviceInfoDto
+     */
+    'isAutoBackup'?: boolean;
+}
+/**
+ * 
+ * @export
  * @interface UpdateUserDto
  */
 export interface UpdateUserDto {
@@ -1062,6 +1117,19 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'isAdmin': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface ValidateAccessTokenResponseDto
+ */
+export interface ValidateAccessTokenResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ValidateAccessTokenResponseDto
+     */
+    'authStatus': boolean;
 }
 
 /**
@@ -2306,7 +2374,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteAsset(deleteAssetDto: DeleteAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async deleteAsset(deleteAssetDto: DeleteAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<DeleteAssetResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.deleteAsset(deleteAssetDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -2349,7 +2417,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAssetSearchTerms(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<object>>> {
+        async getAssetSearchTerms(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetSearchTerms(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -2451,7 +2519,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteAsset(deleteAssetDto: DeleteAssetDto, options?: any): AxiosPromise<void> {
+        deleteAsset(deleteAssetDto: DeleteAssetDto, options?: any): AxiosPromise<Array<DeleteAssetResponseDto>> {
             return localVarFp.deleteAsset(deleteAssetDto, options).then((request) => request(axios, basePath));
         },
         /**
@@ -2490,7 +2558,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetSearchTerms(options?: any): AxiosPromise<Array<object>> {
+        getAssetSearchTerms(options?: any): AxiosPromise<Array<string>> {
             return localVarFp.getAssetSearchTerms(options).then((request) => request(axios, basePath));
         },
         /**
@@ -2863,7 +2931,7 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async validateAccessToken(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async validateAccessToken(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ValidateAccessTokenResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.validateAccessToken(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -2900,7 +2968,7 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        validateAccessToken(options?: any): AxiosPromise<object> {
+        validateAccessToken(options?: any): AxiosPromise<ValidateAccessTokenResponseDto> {
             return localVarFp.validateAccessToken(options).then((request) => request(axios, basePath));
         },
     };
@@ -2994,13 +3062,13 @@ export const DeviceInfoApiAxiosParamCreator = function (configuration?: Configur
         },
         /**
          * 
-         * @param {object} body 
+         * @param {UpdateDeviceInfoDto} updateDeviceInfoDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateDeviceInfo: async (body: object, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'body' is not null or undefined
-            assertParamExists('updateDeviceInfo', 'body', body)
+        updateDeviceInfo: async (updateDeviceInfoDto: UpdateDeviceInfoDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'updateDeviceInfoDto' is not null or undefined
+            assertParamExists('updateDeviceInfo', 'updateDeviceInfoDto', updateDeviceInfoDto)
             const localVarPath = `/device-info`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3024,7 +3092,7 @@ export const DeviceInfoApiAxiosParamCreator = function (configuration?: Configur
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(body, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(updateDeviceInfoDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3053,12 +3121,12 @@ export const DeviceInfoApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {object} body 
+         * @param {UpdateDeviceInfoDto} updateDeviceInfoDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateDeviceInfo(body: object, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeviceInfoResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateDeviceInfo(body, options);
+        async updateDeviceInfo(updateDeviceInfoDto: UpdateDeviceInfoDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeviceInfoResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateDeviceInfo(updateDeviceInfoDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -3082,12 +3150,12 @@ export const DeviceInfoApiFactory = function (configuration?: Configuration, bas
         },
         /**
          * 
-         * @param {object} body 
+         * @param {UpdateDeviceInfoDto} updateDeviceInfoDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateDeviceInfo(body: object, options?: any): AxiosPromise<DeviceInfoResponseDto> {
-            return localVarFp.updateDeviceInfo(body, options).then((request) => request(axios, basePath));
+        updateDeviceInfo(updateDeviceInfoDto: UpdateDeviceInfoDto, options?: any): AxiosPromise<DeviceInfoResponseDto> {
+            return localVarFp.updateDeviceInfo(updateDeviceInfoDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3112,13 +3180,13 @@ export class DeviceInfoApi extends BaseAPI {
 
     /**
      * 
-     * @param {object} body 
+     * @param {UpdateDeviceInfoDto} updateDeviceInfoDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DeviceInfoApi
      */
-    public updateDeviceInfo(body: object, options?: AxiosRequestConfig) {
-        return DeviceInfoApiFp(this.configuration).updateDeviceInfo(body, options).then((request) => request(this.axios, this.basePath));
+    public updateDeviceInfo(updateDeviceInfoDto: UpdateDeviceInfoDto, options?: AxiosRequestConfig) {
+        return DeviceInfoApiFp(this.configuration).updateDeviceInfo(updateDeviceInfoDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

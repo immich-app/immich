@@ -21,10 +21,18 @@ linter:
   # or a specific dart file by using the `// ignore: name_of_lint` and
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
+
   rules:
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    # prefer_single_quotes: true # Uncomment to enable the `prefer_single_quotes` rule
     use_build_context_synchronously: false
+    require_trailing_commas: true
+    unrelated_type_equality_checks: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+analyzer:
+  exclude:
+    - openapi/
+    - openapi/test/
+    - lib/generated_plugin_registrant.dart

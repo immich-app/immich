@@ -5,12 +5,12 @@ class BackupInfoCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String info;
-  const BackupInfoCard(
-      {Key? key,
-      required this.title,
-      required this.subtitle,
-      required this.info})
-      : super(key: key);
+  const BackupInfoCard({
+    Key? key,
+    required this.title,
+    required this.subtitle,
+    required this.info,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

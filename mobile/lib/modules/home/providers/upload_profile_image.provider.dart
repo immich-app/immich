@@ -73,10 +73,12 @@ class UploadProfileImageState {
 class UploadProfileImageNotifier
     extends StateNotifier<UploadProfileImageState> {
   UploadProfileImageNotifier(this._userSErvice)
-      : super(UploadProfileImageState(
-          profileImagePath: '',
-          status: UploadProfileStatus.idle,
-        ));
+      : super(
+          UploadProfileImageState(
+            profileImagePath: '',
+            status: UploadProfileStatus.idle,
+          ),
+        );
 
   final UserService _userSErvice;
 
@@ -88,8 +90,9 @@ class UploadProfileImageNotifier
     if (res != null) {
       debugPrint("Succesfully upload profile image");
       state = state.copyWith(
-          status: UploadProfileStatus.success,
-          profileImagePath: res.profileImagePath);
+        status: UploadProfileStatus.success,
+        profileImagePath: res.profileImagePath,
+      );
       return true;
     }
 
@@ -100,4 +103,5 @@ class UploadProfileImageNotifier
 
 final uploadProfileImageProvider =
     StateNotifierProvider<UploadProfileImageNotifier, UploadProfileImageState>(
-        ((ref) => UploadProfileImageNotifier(ref.watch(userServiceProvider))));
+  ((ref) => UploadProfileImageNotifier(ref.watch(userServiceProvider))),
+);

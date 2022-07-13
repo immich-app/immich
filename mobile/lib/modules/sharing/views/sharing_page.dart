@@ -5,10 +5,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/sharing/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:openapi/api.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SharingPage extends HookConsumerWidget {
@@ -18,13 +18,16 @@ class SharingPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl = '${box.get(serverEndpointKey)}/asset/thumbnail';
-    final List<SharedAlbum> sharedAlbums = ref.watch(sharedAlbumProvider);
+    final List<AlbumResponseDto> sharedAlbums = ref.watch(sharedAlbumProvider);
 
-    useEffect(() {
-      ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+    useEffect(
+      () {
+        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
 
-      return null;
-    }, []);
+        return null;
+      },
+      [],
+    );
 
     _buildAlbumList() {
       return SliverList(
@@ -60,9 +63,10 @@ class SharingPage extends HookConsumerWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
               ),
               onTap: () {
                 AutoRouter.of(context)
@@ -133,9 +137,9 @@ class SharingPage extends HookConsumerWidget {
         slivers: [
           const SharingSliverAppBar(),
           SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             sliver: SliverToBoxAdapter(
-              child: Text(
+              child: const Text(
                 "sharing_page_album",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,

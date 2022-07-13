@@ -46,12 +46,15 @@ void main() async {
     Locale('de', 'DE')
   ];
 
-  runApp(EasyLocalization(
+  runApp(
+    EasyLocalization(
       supportedLocales: locales,
       path: 'assets/i18n',
       useFallbackTranslations: true,
       fallbackLocale: locales.first,
-      child: const ProviderScope(child: ImmichApp())));
+      child: const ProviderScope(child: ImmichApp()),
+    ),
+  );
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -111,6 +114,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   initState() {
     super.initState();
+
     initApp().then((_) => debugPrint("App Init Completed"));
   }
 
@@ -120,10 +124,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     super.dispose();
   }
 
-  final _immichRouter = AppRouter();
-
   @override
   Widget build(BuildContext context) {
+    var router = ref.watch(appRouterProvider);
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
     return MaterialApp(
@@ -142,7 +145,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
               primarySwatch: Colors.indigo,
               fontFamily: 'WorkSans',
               snackBarTheme: const SnackBarThemeData(
-                  contentTextStyle: TextStyle(fontFamily: 'WorkSans')),
+                contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+              ),
               scaffoldBackgroundColor: immichBackgroundColor,
               appBarTheme: const AppBarTheme(
                 backgroundColor: immichBackgroundColor,
@@ -152,9 +156,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
                 systemOverlayStyle: SystemUiOverlayStyle.dark,
               ),
             ),
-            routeInformationParser: _immichRouter.defaultRouteParser(),
-            routerDelegate: _immichRouter.delegate(
-                navigatorObservers: () => [TabNavigationObserver(ref: ref)]),
+            routeInformationParser: router.defaultRouteParser(),
+            routerDelegate: router.delegate(
+              navigatorObservers: () => [TabNavigationObserver(ref: ref)],
+            ),
           ),
           const ImmichLoadingOverlay(),
           const VersionAnnouncementOverlay(),

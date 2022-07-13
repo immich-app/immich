@@ -48,6 +48,9 @@ dependencies:
   collection: ^1.16.0
   http_parser: ^4.0.1
 
+  openapi:
+    path: openapi
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -76,3 +79,7 @@ flutter_icons:
   image_path_ios: "assets/immich-logo-no-outline.png"
   android: true # can specify file name here e.g. "ic_launcher"
   ios: true # can specify file name here e.g. "My-Launcher-Icon
+
+analyzer:
+  exclude:
+    - openapi/**

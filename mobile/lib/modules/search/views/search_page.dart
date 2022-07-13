@@ -5,8 +5,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/search/models/curated_location.model.dart';
-import 'package:immich_mobile/modules/search/models/curated_object.model.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
@@ -14,6 +12,7 @@ import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/capitalize_first_letter.dart';
+import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
 class SearchPage extends HookConsumerWidget {
@@ -25,15 +24,18 @@ class SearchPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var box = Hive.box(userInfoBox);
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
-    AsyncValue<List<CuratedLocation>> curatedLocation =
+    AsyncValue<List<CuratedLocationsResponseDto>> curatedLocation =
         ref.watch(getCuratedLocationProvider);
-    AsyncValue<List<CuratedObject>> curatedObjects =
+    AsyncValue<List<CuratedObjectsResponseDto>> curatedObjects =
         ref.watch(getCuratedObjectProvider);
 
-    useEffect(() {
-      searchFocusNode = FocusNode();
-      return () => searchFocusNode.dispose();
-    }, []);
+    useEffect(
+      () {
+        searchFocusNode = FocusNode();
+        return () => searchFocusNode.dispose();
+      },
+      [],
+    );
 
     _onSearchSubmitted(String searchTerm) async {
       searchFocusNode.unfocus();
@@ -58,16 +60,16 @@ class SearchPage extends HookConsumerWidget {
                     scrollDirection: Axis.horizontal,
                     itemCount: curatedLocation.value?.length,
                     itemBuilder: ((context, index) {
-                      CuratedLocation locationInfo = curatedLocations[index];
+                      var locationInfo = curatedLocations[index];
                       var thumbnailRequestUrl =
-                          '${box.get(serverEndpointKey)}/asset/file?aid=${locationInfo.deviceAssetId}&did=${locationInfo.deviceId}&isThumb=true';
-
+                          '${box.get(serverEndpointKey)}/asset/thumbnail/${locationInfo.id}';
                       return ThumbnailWithInfo(
                         imageUrl: thumbnailRequestUrl,
                         textInfo: locationInfo.city,
                         onTap: () {
                           AutoRouter.of(context).push(
-                              SearchResultRoute(searchTerm: locationInfo.city));
+                            SearchResultRoute(searchTerm: locationInfo.city),
+                          );
                         },
                       );
                     }),
@@ -109,7 +111,7 @@ class SearchPage extends HookConsumerWidget {
                     scrollDirection: Axis.horizontal,
                     itemCount: curatedObjects.value?.length,
                     itemBuilder: ((context, index) {
-                      CuratedObject curatedObjectInfo = objects[index];
+                      var curatedObjectInfo = objects[index];
                       var thumbnailRequestUrl =
                           '${box.get(serverEndpointKey)}/asset/file?aid=${curatedObjectInfo.deviceAssetId}&did=${curatedObjectInfo.deviceId}&isThumb=true';
 
@@ -117,9 +119,12 @@ class SearchPage extends HookConsumerWidget {
                         imageUrl: thumbnailRequestUrl,
                         textInfo: curatedObjectInfo.object,
                         onTap: () {
-                          AutoRouter.of(context).push(SearchResultRoute(
+                          AutoRouter.of(context).push(
+                            SearchResultRoute(
                               searchTerm: curatedObjectInfo.object
-                                  .capitalizeFirstLetter()));
+                                  .capitalizeFirstLetter(),
+                            ),
+                          );
                         },
                       );
                     }),
@@ -160,7 +165,7 @@ class SearchPage extends HookConsumerWidget {
             ListView(
               children: [
                 Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: const Text(
                     "search_page_places",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -168,8 +173,8 @@ class SearchPage extends HookConsumerWidget {
                 ),
                 _buildPlaces(),
                 Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: const  Text(
+                  padding: const EdgeInsets.all(16.0),
+                  child: const Text(
                     "search_page_things",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ).tr(),

@@ -1,0 +1,16 @@
+#
+# AUTO-GENERATED FILE, DO NOT MODIFY!
+#
+
+name: 'openapi'
+version: '1.0.0'
+description: 'OpenAPI API client'
+homepage: 'homepage'
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+dependencies:
+  http: '>=0.13.0 <0.14.0'
+  intl: '^0.17.0'
+  meta: '^1.1.8'
+dev_dependencies:
+  test: '>=1.16.0 <1.18.0'

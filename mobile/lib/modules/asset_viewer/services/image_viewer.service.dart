@@ -1,33 +1,35 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
-import 'package:http/http.dart' as http;
 
 import 'package:photo_manager/photo_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
+final imageViewerServiceProvider =
+    Provider((ref) => ImageViewerService(ref.watch(apiServiceProvider)));
+
 class ImageViewerService {
-  Future<bool> downloadAssetToDevice(ImmichAsset asset) async {
+  final ApiService _apiService;
+  ImageViewerService(this._apiService);
+
+  Future<bool> downloadAssetToDevice(AssetResponseDto asset) async {
     try {
       String fileName = p.basename(asset.originalPath);
-      var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
-      Uri filePath = Uri.parse(
-          "$savedEndpoint/asset/download?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false");
 
-      var res = await http.get(
-        filePath,
-        headers: {
-          "Authorization": "Bearer ${Hive.box(userInfoBox).get(accessTokenKey)}"
-        },
+      var res = await _apiService.assetApi.downloadFileWithHttpInfo(
+        asset.deviceAssetId,
+        asset.deviceId,
+        isThumb: false,
+        isWeb: false,
       );
 
       final AssetEntity? entity;
 
-      if (asset.type == 'IMAGE') {
+      if (asset.type == AssetTypeEnum.IMAGE) {
         entity = await PhotoManager.editor.saveImage(
           res.bodyBytes,
           title: p.basename(asset.originalPath),

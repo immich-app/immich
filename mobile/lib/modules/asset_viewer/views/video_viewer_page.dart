@@ -12,15 +12,14 @@ import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
-import 'package:immich_mobile/shared/models/immich_asset_with_exif.model.dart';
+import 'package:openapi/api.dart';
 import 'package:video_player/video_player.dart';
 
 // ignore: must_be_immutable
 class VideoViewerPage extends HookConsumerWidget {
   final String videoUrl;
-  final ImmichAsset asset;
-  ImmichAssetWithExif? assetDetail;
+  final AssetResponseDto asset;
+  AssetResponseDto? assetDetail;
 
   VideoViewerPage({Key? key, required this.videoUrl, required this.asset})
       : super(key: key);
@@ -49,10 +48,13 @@ class VideoViewerPage extends HookConsumerWidget {
           await ref.watch(assetServiceProvider).getAssetById(asset.id);
     }
 
-    useEffect(() {
-      getAssetExif();
-      return null;
-    }, []);
+    useEffect(
+      () {
+        getAssetExif();
+        return null;
+      },
+      [],
+    );
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -116,8 +118,10 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
 
   Future<void> initializePlayer() async {
     try {
-      videoPlayerController = VideoPlayerController.network(widget.url,
-          httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"});
+      videoPlayerController = VideoPlayerController.network(
+        widget.url,
+        httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"},
+      );
 
       await videoPlayerController.initialize();
       _createChewieController();

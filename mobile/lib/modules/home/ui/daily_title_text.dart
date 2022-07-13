@@ -2,8 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
-import 'package:intl/intl.dart';
+import 'package:openapi/api.dart';
 
 class DailyTitleText extends ConsumerWidget {
   const DailyTitleText({
@@ -13,14 +12,15 @@ class DailyTitleText extends ConsumerWidget {
   }) : super(key: key);
 
   final String isoDate;
-  final List<ImmichAsset> assetGroup;
+  final List<AssetResponseDto> assetGroup;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var currentYear = DateTime.now().year;
     var groupYear = DateTime.parse(isoDate).year;
-    var formatDateTemplate =
-        currentYear == groupYear ? "daily_title_text_date".tr() : "daily_title_text_date_year".tr();
+    var formatDateTemplate = currentYear == groupYear
+        ? "daily_title_text_date".tr()
+        : "daily_title_text_date_year".tr();
     var dateText =
         DateFormat(formatDateTemplate).format(DateTime.parse(isoDate));
     var isMultiSelectEnable =
@@ -74,7 +74,11 @@ class DailyTitleText extends ConsumerWidget {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.only(
-            top: 29.0, bottom: 29.0, left: 12.0, right: 12.0),
+          top: 29.0,
+          bottom: 29.0,
+          left: 12.0,
+          right: 12.0,
+        ),
         child: Row(
           children: [
             Text(

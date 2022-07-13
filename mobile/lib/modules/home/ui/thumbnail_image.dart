@@ -8,11 +8,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:openapi/api.dart';
 
 class ThumbnailImage extends HookConsumerWidget {
-  final ImmichAsset asset;
+  final AssetResponseDto asset;
 
   const ThumbnailImage({Key? key, required this.asset}) : super(key: key);
 
@@ -22,14 +22,13 @@ class ThumbnailImage extends HookConsumerWidget {
 
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
-
+        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
     var selectedAsset = ref.watch(homePageStateProvider).selectedItems;
     var isMultiSelectEnable =
         ref.watch(homePageStateProvider).isMultiSelectEnable;
     var deviceId = ref.watch(authenticationProvider).deviceId;
 
-    Widget _buildSelectionIcon(ImmichAsset asset) {
+    Widget _buildSelectionIcon(AssetResponseDto asset) {
       if (selectedAsset.contains(asset)) {
         return Icon(
           Icons.check_circle,
@@ -61,7 +60,7 @@ class ThumbnailImage extends HookConsumerWidget {
               .watch(homePageStateProvider.notifier)
               .addSingleSelectedItem(asset);
         } else {
-          if (asset.type == 'IMAGE') {
+          if (asset.type == AssetTypeEnum.IMAGE) {
             AutoRouter.of(context).push(
               ImageViewerRoute(
                 imageUrl:
@@ -74,9 +73,10 @@ class ThumbnailImage extends HookConsumerWidget {
           } else {
             AutoRouter.of(context).push(
               VideoViewerRoute(
-                  videoUrl:
-                      '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-                  asset: asset),
+                videoUrl:
+                    '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
+                asset: asset,
+              ),
             );
           }
         }
@@ -94,14 +94,16 @@ class ThumbnailImage extends HookConsumerWidget {
               decoration: BoxDecoration(
                 border: isMultiSelectEnable && selectedAsset.contains(asset)
                     ? Border.all(
-                        color: Theme.of(context).primaryColorLight, width: 10)
+                        color: Theme.of(context).primaryColorLight,
+                        width: 10,
+                      )
                     : const Border(),
               ),
               child: CachedNetworkImage(
                 cacheKey: "${asset.id}-${cacheKey.value}",
                 width: 300,
                 height: 300,
-                memCacheHeight: asset.type == 'IMAGE' ? 250 : 400,
+                memCacheHeight: asset.type == AssetTypeEnum.IMAGE ? 250 : 400,
                 fit: BoxFit.cover,
                 imageUrl: thumbnailRequestUrl,
                 httpHeaders: {
@@ -112,9 +114,11 @@ class ThumbnailImage extends HookConsumerWidget {
                     Transform.scale(
                   scale: 0.2,
                   child: CircularProgressIndicator(
-                      value: downloadProgress.progress),
+                    value: downloadProgress.progress,
+                  ),
                 ),
                 errorWidget: (context, url, error) {
+                  debugPrint("Error getting thumbnail $url = $error");
                   return Icon(
                     Icons.image_not_supported_outlined,
                     color: Theme.of(context).primaryColor,

@@ -35,23 +35,30 @@ class TabControllerPage extends ConsumerWidget {
                 ? null
                 : BottomNavigationBar(
                     selectedLabelStyle: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w600),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                     unselectedLabelStyle: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w600),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                     currentIndex: tabsRouter.activeIndex,
                     onTap: (index) {
                       tabsRouter.setActiveIndex(index);
                     },
                     items: [
                       BottomNavigationBarItem(
-                          label: 'tab_controller_nav_photos'.tr(),
-                          icon: const Icon(Icons.photo)),
+                        label: 'tab_controller_nav_photos'.tr(),
+                        icon: const Icon(Icons.photo),
+                      ),
                       BottomNavigationBarItem(
-                          label: 'tab_controller_nav_search'.tr(),
-                          icon: const Icon(Icons.search)),
+                        label: 'tab_controller_nav_search'.tr(),
+                        icon: const Icon(Icons.search),
+                      ),
                       BottomNavigationBarItem(
-                          label: 'tab_controller_nav_sharing'.tr(),
-                          icon: const Icon(Icons.group_outlined)),
+                        label: 'tab_controller_nav_sharing'.tr(),
+                        icon: const Icon(Icons.group_outlined),
+                      ),
                     ],
                   ),
           ),

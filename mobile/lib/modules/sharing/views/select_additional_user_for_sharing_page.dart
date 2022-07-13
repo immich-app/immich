@@ -3,29 +3,28 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
 import 'package:immich_mobile/modules/sharing/providers/suggested_shared_users.provider.dart';
-import 'package:immich_mobile/shared/models/user.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:openapi/api.dart';
 
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
-  final SharedAlbum albumInfo;
+  final AlbumResponseDto albumInfo;
 
   const SelectAdditionalUserForSharingPage({Key? key, required this.albumInfo})
       : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<User>> suggestedShareUsers =
+    AsyncValue<List<UserResponseDto>> suggestedShareUsers =
         ref.watch(suggestedSharedUsersProvider);
-    final sharedUsersList = useState<Set<User>>({});
+    final sharedUsersList = useState<Set<UserResponseDto>>({});
 
     _addNewUsersHandler() {
       AutoRouter.of(context)
           .pop(sharedUsersList.value.map((e) => e.id).toList());
     }
 
-    _buildTileIcon(User user) {
+    _buildTileIcon(UserResponseDto user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
@@ -43,7 +42,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
       }
     }
 
-    _buildUserList(List<User> users) {
+    _buildUserList(List<UserResponseDto> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
@@ -55,9 +54,10 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
               label: Text(
                 user.email,
                 style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold),
+                  fontSize: 12,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -70,13 +70,14 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
             children: [...usersChip],
           ),
           Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Text(
               'select_additional_user_for_sharing_page_suggestions'.tr(),
-              style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           ListView.builder(
@@ -87,13 +88,16 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
                 title: Text(
                   users[index].email,
                   style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.bold),
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 onTap: () {
                   if (sharedUsersList.value.contains(users[index])) {
                     sharedUsersList.value = sharedUsersList.value
-                        .where((selectedUser) =>
-                            selectedUser.id != users[index].id)
+                        .where(
+                          (selectedUser) => selectedUser.id != users[index].id,
+                        )
                         .toSet();
                   } else {
                     sharedUsersList.value = {
@@ -139,7 +143,8 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         data: (users) {
           for (var sharedUsers in albumInfo.sharedUsers) {
             users.removeWhere(
-                (u) => u.id == sharedUsers.id || u.id == albumInfo.ownerId);
+              (u) => u.id == sharedUsers.id || u.id == albumInfo.ownerId,
+            );
           }
 
           return _buildUserList(users);

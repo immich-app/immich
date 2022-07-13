@@ -55,7 +55,8 @@ class ProfileDrawer extends HookConsumerWidget {
           return CircleAvatar(
             radius: 35,
             backgroundImage: NetworkImage(
-                '$endpoint/user/profile-image/${authState.userId}?d=${dummmy++}'),
+              '$endpoint/user/profile-image/${authState.userId}?d=${dummmy++}',
+            ),
             backgroundColor: Colors.transparent,
           );
         } else {
@@ -71,7 +72,8 @@ class ProfileDrawer extends HookConsumerWidget {
         return CircleAvatar(
           radius: 35,
           backgroundImage: NetworkImage(
-              '$endpoint/user/profile-image/${authState.userId}?d=${dummmy++}'),
+            '$endpoint/user/profile-image/${authState.userId}?d=${dummmy++}',
+          ),
           backgroundColor: Colors.transparent,
         );
       }
@@ -93,7 +95,10 @@ class ProfileDrawer extends HookConsumerWidget {
 
     _pickUserProfileImage() async {
       final XFile? image = await ImagePicker().pickImage(
-          source: ImageSource.gallery, maxHeight: 1024, maxWidth: 1024);
+        source: ImageSource.gallery,
+        maxHeight: 1024,
+        maxWidth: 1024,
+      );
 
       if (image != null) {
         var success =
@@ -101,16 +106,20 @@ class ProfileDrawer extends HookConsumerWidget {
 
         if (success) {
           ref.watch(authenticationProvider.notifier).updateUserProfileImagePath(
-              ref.read(uploadProfileImageProvider).profileImagePath);
+                ref.read(uploadProfileImageProvider).profileImagePath,
+              );
         }
       }
     }
 
-    useEffect(() {
-      _getPackageInfo();
-      _buildUserProfileImage();
-      return null;
-    }, []);
+    useEffect(
+      () {
+        _getPackageInfo();
+        _buildUserProfileImage();
+        return null;
+      },
+      [],
+    );
     return Drawer(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -186,9 +195,10 @@ class ProfileDrawer extends HookConsumerWidget {
                 title: const Text(
                   "profile_drawer_sign_out",
                   style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.black54,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ).tr(),
                 onTap: () async {
                   bool res =
@@ -231,9 +241,10 @@ class ProfileDrawer extends HookConsumerWidget {
                             : "profile_drawer_client_server_up_to_date".tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 11,
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.w600),
+                          fontSize: 11,
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     const Divider(),
@@ -271,7 +282,7 @@ class ProfileDrawer extends HookConsumerWidget {
                           ),
                         ),
                         Text(
-                          "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}",
+                          "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch_}",
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[500],

@@ -30,7 +30,10 @@ class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   }
 
   Future<bool> changeAlbumTitle(
-      String albumId, String ownerId, String newAlbumTitle) async {
+    String albumId,
+    String ownerId,
+    String newAlbumTitle,
+  ) async {
     SharedAlbumService service = ref.watch(sharedAlbumServiceProvider);
 
     bool isSuccess =

@@ -17,16 +17,20 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     bool allowMoving = _status == _RemoteImageStatus.full;
 
     return PhotoView(
-        imageProvider: _imageProvider,
-        minScale: PhotoViewComputedScale.contained,
-        maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
-        enablePanAlways: true,
-        scaleStateChangedCallback: _scaleStateChanged,
-        onScaleEnd: _onScaleListener);
+      imageProvider: _imageProvider,
+      minScale: PhotoViewComputedScale.contained,
+      maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
+      enablePanAlways: true,
+      scaleStateChangedCallback: _scaleStateChanged,
+      onScaleEnd: _onScaleListener,
+    );
   }
 
-  void _onScaleListener(BuildContext context, ScaleEndDetails details,
-      PhotoViewControllerValue controllerValue) {
+  void _onScaleListener(
+    BuildContext context,
+    ScaleEndDetails details,
+    PhotoViewControllerValue controllerValue,
+  ) {
     // Disable swipe events when zoomed in
     if (_zoomedIn) return;
 
@@ -42,12 +46,17 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   CachedNetworkImageProvider _authorizedImageProvider(String url) {
-    return CachedNetworkImageProvider(url,
-        headers: {"Authorization": widget.authToken}, cacheKey: url);
+    return CachedNetworkImageProvider(
+      url,
+      headers: {"Authorization": widget.authToken},
+      cacheKey: url,
+    );
   }
 
   void _performStateTransition(
-      _RemoteImageStatus newStatus, CachedNetworkImageProvider provider) {
+    _RemoteImageStatus newStatus,
+    CachedNetworkImageProvider provider,
+  ) {
     // Transition to same status is forbidden
     if (_status == newStatus) return;
     // Transition full -> thumbnail is forbidden
@@ -67,19 +76,22 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
         _authorizedImageProvider(widget.thumbnailUrl);
     _imageProvider = thumbnailProvider;
 
-    thumbnailProvider
-        .resolve(const ImageConfiguration())
-        .addListener(ImageStreamListener((ImageInfo imageInfo, _) {
-      _performStateTransition(_RemoteImageStatus.thumbnail, thumbnailProvider);
-    }));
+    thumbnailProvider.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener((ImageInfo imageInfo, _) {
+        _performStateTransition(
+          _RemoteImageStatus.thumbnail,
+          thumbnailProvider,
+        );
+      }),
+    );
 
     CachedNetworkImageProvider fullProvider =
         _authorizedImageProvider(widget.imageUrl);
-    fullProvider
-        .resolve(const ImageConfiguration())
-        .addListener(ImageStreamListener((ImageInfo imageInfo, _) {
-      _performStateTransition(_RemoteImageStatus.full, fullProvider);
-    }));
+    fullProvider.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener((ImageInfo imageInfo, _) {
+        _performStateTransition(_RemoteImageStatus.full, fullProvider);
+      }),
+    );
   }
 
   @override
@@ -90,14 +102,14 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 }
 
 class RemotePhotoView extends StatefulWidget {
-  const RemotePhotoView(
-      {Key? key,
-      required this.thumbnailUrl,
-      required this.imageUrl,
-      required this.authToken,
-      required this.onSwipeDown,
-      required this.onSwipeUp})
-      : super(key: key);
+  const RemotePhotoView({
+    Key? key,
+    required this.thumbnailUrl,
+    required this.imageUrl,
+    required this.authToken,
+    required this.onSwipeDown,
+    required this.onSwipeUp,
+  }) : super(key: key);
 
   final String thumbnailUrl;
   final String imageUrl;

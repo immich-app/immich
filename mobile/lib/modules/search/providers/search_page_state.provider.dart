@@ -1,9 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/search/models/curated_location.model.dart';
-import 'package:immich_mobile/modules/search/models/curated_object.model.dart';
 import 'package:immich_mobile/modules/search/models/search_page_state.model.dart';
 
 import 'package:immich_mobile/modules/search/services/search.service.dart';
+import 'package:openapi/api.dart';
 
 class SearchPageStateNotifier extends StateNotifier<SearchPageState> {
   SearchPageStateNotifier(this._searchService)
@@ -58,7 +57,7 @@ final searchPageStateProvider =
 });
 
 final getCuratedLocationProvider =
-    FutureProvider.autoDispose<List<CuratedLocation>>((ref) async {
+    FutureProvider.autoDispose<List<CuratedLocationsResponseDto>>((ref) async {
   final SearchService searchService = ref.watch(searchServiceProvider);
 
   var curatedLocation = await searchService.getCuratedLocation();
@@ -66,7 +65,7 @@ final getCuratedLocationProvider =
 });
 
 final getCuratedObjectProvider =
-    FutureProvider.autoDispose<List<CuratedObject>>((ref) async {
+    FutureProvider.autoDispose<List<CuratedObjectsResponseDto>>((ref) async {
   final SearchService searchService = ref.watch(searchServiceProvider);
 
   var curatedObject = await searchService.getCuratedObjects();

@@ -2,15 +2,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 
 class ThumbnailWithInfo extends StatelessWidget {
-  const ThumbnailWithInfo(
-      {Key? key,
-      required this.textInfo,
-      required this.imageUrl,
-      required this.onTap})
-      : super(key: key);
+  const ThumbnailWithInfo({
+    Key? key,
+    required this.textInfo,
+    required this.imageUrl,
+    required this.onTap,
+  }) : super(key: key);
 
   final String textInfo;
   final String imageUrl;

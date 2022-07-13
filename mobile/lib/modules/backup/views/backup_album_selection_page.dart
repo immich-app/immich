@@ -17,10 +17,13 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
 
-    useEffect(() {
-      ref.read(backupProvider.notifier).getBackupInfo();
-      return null;
-    }, []);
+    useEffect(
+      () {
+        ref.read(backupProvider.notifier).getBackupInfo();
+        return null;
+      },
+      [],
+    );
 
     _buildAlbumSelectionList() {
       if (availableAlbums.isEmpty) {
@@ -42,8 +45,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   ? const EdgeInsets.only(left: 16.00)
                   : const EdgeInsets.all(0),
               child: AlbumInfoCard(
-                  imageData: thumbnailData,
-                  albumInfo: availableAlbums[index].albumEntity),
+                imageData: thumbnailData,
+                albumInfo: availableAlbums[index].albumEntity,
+              ),
             );
           }),
         ),
@@ -73,13 +77,15 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             child: Chip(
               visualDensity: VisualDensity.compact,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5)),
+                borderRadius: BorderRadius.circular(5),
+              ),
               label: Text(
                 album.name,
                 style: const TextStyle(
-                    fontSize: 10,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold),
+                  fontSize: 10,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               backgroundColor: Theme.of(context).primaryColor,
               deleteIconColor: Colors.white,
@@ -109,13 +115,15 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             child: Chip(
               visualDensity: VisualDensity.compact,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5)),
+                borderRadius: BorderRadius.circular(5),
+              ),
               label: Text(
                 album.name,
                 style: const TextStyle(
-                    fontSize: 10,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold),
+                  fontSize: 10,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               backgroundColor: Colors.red[300],
               deleteIconColor: Colors.white,
@@ -185,9 +193,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     title: Text(
                       "backup_album_selection_page_total_assets",
                       style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: Colors.grey[700]),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                      ),
                     ).tr(),
                     trailing: Text(
                       ref
@@ -234,7 +243,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   builder: (BuildContext context) {
                     return AlertDialog(
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 5,
                       title: Text(
                         'backup_album_selection_page_selection_info',
@@ -250,7 +260,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                             Text(
                               'backup_album_selection_page_assets_scatter',
                               style: TextStyle(
-                                  fontSize: 14, color: Colors.grey[700]),
+                                fontSize: 14,
+                                color: Colors.grey[700],
+                              ),
                             ).tr(),
                           ],
                         ),

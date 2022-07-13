@@ -11,7 +11,6 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
-import 'package:intl/intl.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
@@ -27,16 +26,19 @@ class BackupControllerPage extends HookConsumerWidget {
         ? false
         : true;
 
-    useEffect(() {
-      if (backupState.backupProgress != BackUpProgressEnum.inProgress) {
-        ref.watch(backupProvider.notifier).getBackupInfo();
-      }
+    useEffect(
+      () {
+        if (backupState.backupProgress != BackUpProgressEnum.inProgress) {
+          ref.watch(backupProvider.notifier).getBackupInfo();
+        }
 
-      ref
-          .watch(websocketProvider.notifier)
-          .stopListenToEvent('on_upload_success');
-      return null;
-    }, []);
+        ref
+            .watch(websocketProvider.notifier)
+            .stopListenToEvent('on_upload_success');
+        return null;
+      },
+      [],
+    );
 
     Widget _buildStorageInformation() {
       return ListTile(
@@ -68,10 +70,11 @@ class BackupControllerPage extends HookConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
                 child: const Text('backup_controller_page_storage_format').tr(
-                    args: [
-                      backupState.serverInfo.diskUse,
-                      backupState.serverInfo.diskSize
-                    ]),
+                  args: [
+                    backupState.serverInfo.diskUse,
+                    backupState.serverInfo.diskSize
+                  ],
+                ),
               ),
             ],
           ),
@@ -129,8 +132,10 @@ class BackupControllerPage extends HookConsumerWidget {
                           .setAutoBackup(true);
                     }
                   },
-                  child: Text(backupBtnText,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    backupBtnText,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               )
             ],
@@ -157,9 +162,10 @@ class BackupControllerPage extends HookConsumerWidget {
           child: Text(
             text.trim().substring(0, text.length - 2),
             style: TextStyle(
-                color: Theme.of(context).primaryColor,
-                fontSize: 12,
-                fontWeight: FontWeight.bold),
+              color: Theme.of(context).primaryColor,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         );
       } else {
@@ -168,9 +174,10 @@ class BackupControllerPage extends HookConsumerWidget {
           child: Text(
             "backup_controller_page_none_selected".tr(),
             style: TextStyle(
-                color: Theme.of(context).primaryColor,
-                fontSize: 12,
-                fontWeight: FontWeight.bold),
+              color: Theme.of(context).primaryColor,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         );
       }
@@ -190,9 +197,10 @@ class BackupControllerPage extends HookConsumerWidget {
           child: Text(
             text.trim().substring(0, text.length - 2),
             style: TextStyle(
-                color: Colors.red[300],
-                fontSize: 12,
-                fontWeight: FontWeight.bold),
+              color: Colors.red[300],
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         );
       } else {
@@ -213,9 +221,10 @@ class BackupControllerPage extends HookConsumerWidget {
         borderOnForeground: false,
         child: ListTile(
           minVerticalPadding: 15,
-          title: const Text("backup_controller_page_albums",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20))
-              .tr(),
+          title: const Text(
+            "backup_controller_page_albums",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ).tr(),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Column(
@@ -284,9 +293,9 @@ class BackupControllerPage extends HookConsumerWidget {
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
                   ),
-                ).tr(args: [
-                  ref.watch(errorBackupListProvider).length.toString()
-                ]),
+                ).tr(
+                  args: [ref.watch(errorBackupListProvider).length.toString()],
+                ),
                 backgroundColor: Colors.white,
                 onPressed: () {
                   AutoRouter.of(context).push(const FailedBackupStatusRoute());
@@ -331,12 +340,16 @@ class BackupControllerPage extends HookConsumerWidget {
                           child: const Text(
                             'backup_controller_page_filename',
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 10.0),
-                          ).tr(args: [
-                            backupState.currentUploadAsset.fileName,
-                            backupState.currentUploadAsset.fileType
-                                .toLowerCase()
-                          ]),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.0,
+                            ),
+                          ).tr(
+                            args: [
+                              backupState.currentUploadAsset.fileName,
+                              backupState.currentUploadAsset.fileType
+                                  .toLowerCase()
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -352,16 +365,20 @@ class BackupControllerPage extends HookConsumerWidget {
                           padding: const EdgeInsets.all(6.0),
                           child: const Text(
                             "backup_controller_page_created",
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 10.0),
-                          ).tr(args: [
-                            DateFormat.yMMMMd('en_US').format(
-                              DateTime.parse(
-                                backupState.currentUploadAsset.createdAt
-                                    .toString(),
-                              ),
-                            )
-                          ]),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.0,
+                            ),
+                          ).tr(
+                            args: [
+                              DateFormat.yMMMMd('en_US').format(
+                                DateTime.parse(
+                                  backupState.currentUploadAsset.createdAt
+                                      .toString(),
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -406,14 +423,15 @@ class BackupControllerPage extends HookConsumerWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ).tr(),
         leading: IconButton(
-            onPressed: () {
-              ref.watch(websocketProvider.notifier).listenUploadEvent();
-              AutoRouter.of(context).pop(true);
-            },
-            splashRadius: 24,
-            icon: const Icon(
-              Icons.arrow_back_ios_rounded,
-            )),
+          onPressed: () {
+            ref.watch(websocketProvider.notifier).listenUploadEvent();
+            AutoRouter.of(context).pop(true);
+          },
+          splashRadius: 24,
+          icon: const Icon(
+            Icons.arrow_back_ios_rounded,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 32),

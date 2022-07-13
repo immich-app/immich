@@ -31,7 +31,10 @@ class AlbumTitleTextField extends ConsumerWidget {
       },
       focusNode: albumTitleTextFieldFocusNode,
       style: TextStyle(
-          fontSize: 28, color: Colors.grey[700], fontWeight: FontWeight.bold),
+        fontSize: 28,
+        color: Colors.grey[700],
+        fontWeight: FontWeight.bold,
+      ),
       controller: albumTitleController,
       onTap: () {
         isAlbumTitleTextFieldFocus.value = true;

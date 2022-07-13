@@ -1,33 +1,33 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/models/server_info.model.dart';
-import 'package:immich_mobile/shared/models/server_version.model.dart';
-import 'package:immich_mobile/shared/services/network.service.dart';
+import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:openapi/api.dart';
 
-final serverInfoServiceProvider =
-    Provider((ref) => ServerInfoService(ref.watch(networkServiceProvider)));
+final serverInfoServiceProvider = Provider(
+  (ref) => ServerInfoService(
+    ref.watch(apiServiceProvider),
+  ),
+);
 
 class ServerInfoService {
-  final NetworkService _networkService;
-  ServerInfoService(this._networkService);
+  final ApiService _apiService;
+  ServerInfoService(this._apiService);
 
-  Future<ServerInfo> getServerInfo() async {
-    Response response = await _networkService.getRequest(url: 'server-info');
-
-    return ServerInfo.fromJson(response.toString());
+  Future<ServerInfoResponseDto?> getServerInfo() async {
+    try {
+      return await _apiService.serverInfoApi.getServerInfo();
+    } catch (e) {
+      debugPrint("Error [getServerInfo] ${e.toString()}");
+      return null;
+    }
   }
 
-  Future<ServerVersion?> getServerVersion() async {
+  Future<ServerVersionReponseDto?> getServerVersion() async {
     try {
-      Response response =
-          await _networkService.getRequest(url: 'server-info/version');
-
-      return ServerVersion.fromJson(response.toString());
+      return await _apiService.serverInfoApi.getServerVersion();
     } catch (e) {
       debugPrint("Error getting server info");
+      return null;
     }
-
-    return null;
   }
 }

@@ -2,13 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/models/immich_asset_with_exif.model.dart';
-import 'package:intl/intl.dart';
+import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:latlong2/latlong.dart';
 
 class ExifBottomSheet extends ConsumerWidget {
-  final ImmichAssetWithExif assetDetail;
+  final AssetResponseDto assetDetail;
 
   const ExifBottomSheet({Key? key, required this.assetDetail})
       : super(key: key);
@@ -26,8 +25,10 @@ class ExifBottomSheet extends ConsumerWidget {
           ),
           child: FlutterMap(
             options: MapOptions(
-              center: LatLng(assetDetail.exifInfo!.latitude!,
-                  assetDetail.exifInfo!.longitude!),
+              center: LatLng(
+                assetDetail.exifInfo?.latitude?.toDouble() ?? 0,
+                assetDetail.exifInfo?.longitude?.toDouble() ?? 0,
+              ),
               zoom: 16.0,
             ),
             layers: [
@@ -46,10 +47,13 @@ class ExifBottomSheet extends ConsumerWidget {
                 markers: [
                   Marker(
                     anchorPos: AnchorPos.align(AnchorAlign.top),
-                    point: LatLng(assetDetail.exifInfo!.latitude!,
-                        assetDetail.exifInfo!.longitude!),
+                    point: LatLng(
+                      assetDetail.exifInfo?.latitude?.toDouble() ?? 0,
+                      assetDetail.exifInfo?.longitude?.toDouble() ?? 0,
+                    ),
                     builder: (ctx) => const Image(
-                        image: AssetImage('assets/location-pin.png')),
+                      image: AssetImage('assets/location-pin.png'),
+                    ),
                   ),
                 ],
               ),
@@ -63,7 +67,10 @@ class ExifBottomSheet extends ConsumerWidget {
       return Text(
         "${assetDetail.exifInfo!.city}, ${assetDetail.exifInfo!.state}",
         style: TextStyle(
-            fontSize: 12, color: Colors.grey[200], fontWeight: FontWeight.bold),
+          fontSize: 12,
+          color: Colors.grey[200],
+          fontWeight: FontWeight.bold,
+        ),
       );
     }
 
@@ -74,7 +81,7 @@ class ExifBottomSheet extends ConsumerWidget {
           if (assetDetail.exifInfo?.dateTimeOriginal != null)
             Text(
               DateFormat('date_format'.tr()).format(
-                DateTime.parse(assetDetail.exifInfo!.dateTimeOriginal!),
+                assetDetail.exifInfo!.dateTimeOriginal!,
               ),
               style: TextStyle(
                 color: Colors.grey[400],
@@ -151,7 +158,8 @@ class ExifBottomSheet extends ConsumerWidget {
                     ),
                     subtitle: assetDetail.exifInfo?.exifImageHeight != null
                         ? Text(
-                            "${assetDetail.exifInfo?.exifImageHeight} x ${assetDetail.exifInfo?.exifImageWidth}  ${assetDetail.exifInfo?.fileSizeInByte!}B ")
+                            "${assetDetail.exifInfo?.exifImageHeight} x ${assetDetail.exifInfo?.exifImageWidth}  ${assetDetail.exifInfo?.fileSizeInByte!}B ",
+                          )
                         : null,
                   ),
                   if (assetDetail.exifInfo?.make != null)
@@ -166,7 +174,8 @@ class ExifBottomSheet extends ConsumerWidget {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                          "ƒ/${assetDetail.exifInfo?.fNumber}   1/${(1 / (assetDetail.exifInfo?.exposureTime ?? 1)).toStringAsFixed(0)}   ${assetDetail.exifInfo?.focalLength}mm   ISO${assetDetail.exifInfo?.iso} "),
+                        "ƒ/${assetDetail.exifInfo?.fNumber}   1/${(1 / (assetDetail.exifInfo?.exposureTime ?? 1)).toStringAsFixed(0)}   ${assetDetail.exifInfo?.focalLength}mm   ISO${assetDetail.exifInfo?.iso} ",
+                      ),
                     ),
                 ],
               ),

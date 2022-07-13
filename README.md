@@ -161,7 +161,7 @@ To *update* docker-compose with newest image (if you have started the docker-com
 docker-compose -f ./docker/docker-compose.yml pull && docker-compose -f ./docker/docker-compose.yml up
 ```
 
-The server will be running at `http://your-ip:2283/api` through `Nginx`
+The server will be running at `http://your-ip:2283/api`
 
 ## Step 3: Register User
 
@@ -224,6 +224,15 @@ make dev # required Makefile installed on the system.
 ``` 
 
 All servers and web container are hot reload for quick feedback loop.
+
+## Note for developers
+### 1 - OpenAPI
+OpenAPI is used to generate the client (Typescript, Dart) SDK. `openapi-generator-cli` can be installed [here](https://openapi-generator.tech/docs/installation/). When you add a new or modify an existing endpoint, you must run the generate command below to update the client SDK.
+
+```bash
+npm run api:generate # Run from server directory
+```
+You can find the generated client SDK in the [`web/src/api`](web/src/api) for Typescript SDK and [`mobile/openapi`](mobile/openapi) for Dart SDK.
 
 # Support
 

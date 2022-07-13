@@ -19,13 +19,14 @@ class FailedBackupStatusPage extends HookConsumerWidget {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
-            onPressed: () {
-              AutoRouter.of(context).pop(true);
-            },
-            splashRadius: 24,
-            icon: const Icon(
-              Icons.arrow_back_ios_rounded,
-            )),
+          onPressed: () {
+            AutoRouter.of(context).pop(true);
+          },
+          splashRadius: 24,
+          icon: const Icon(
+            Icons.arrow_back_ios_rounded,
+          ),
+        ),
       ),
       body: ListView.builder(
         shrinkWrap: true,
@@ -92,9 +93,10 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                                   ),
                                 ),
                                 style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[700]),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[700],
+                                ),
                               ),
                               Icon(
                                 Icons.error,

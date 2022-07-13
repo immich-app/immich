@@ -1,12 +1,10 @@
-import 'dart:convert';
-
 import 'package:collection/collection.dart';
 
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:openapi/api.dart';
 
 class AssetSelectionPageResult {
-  final Set<ImmichAsset> selectedNewAsset;
-  final Set<ImmichAsset> selectedAdditionalAsset;
+  final Set<AssetResponseDto> selectedNewAsset;
+  final Set<AssetResponseDto> selectedAdditionalAsset;
   final bool isAlbumExist;
 
   AssetSelectionPageResult({
@@ -16,8 +14,8 @@ class AssetSelectionPageResult {
   });
 
   AssetSelectionPageResult copyWith({
-    Set<ImmichAsset>? selectedNewAsset,
-    Set<ImmichAsset>? selectedAdditionalAsset,
+    Set<AssetResponseDto>? selectedNewAsset,
+    Set<AssetResponseDto>? selectedAdditionalAsset,
     bool? isAlbumExist,
   }) {
     return AssetSelectionPageResult(
@@ -27,35 +25,6 @@ class AssetSelectionPageResult {
       isAlbumExist: isAlbumExist ?? this.isAlbumExist,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    final result = <String, dynamic>{};
-
-    result.addAll(
-        {'selectedNewAsset': selectedNewAsset.map((x) => x.toMap()).toList()});
-    result.addAll({
-      'selectedAdditionalAsset':
-          selectedAdditionalAsset.map((x) => x.toMap()).toList()
-    });
-    result.addAll({'isAlbumExist': isAlbumExist});
-
-    return result;
-  }
-
-  factory AssetSelectionPageResult.fromMap(Map<String, dynamic> map) {
-    return AssetSelectionPageResult(
-      selectedNewAsset: Set<ImmichAsset>.from(
-          map['selectedNewAsset']?.map((x) => ImmichAsset.fromMap(x))),
-      selectedAdditionalAsset: Set<ImmichAsset>.from(
-          map['selectedAdditionalAsset']?.map((x) => ImmichAsset.fromMap(x))),
-      isAlbumExist: map['isAlbumExist'] ?? false,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory AssetSelectionPageResult.fromJson(String source) =>
-      AssetSelectionPageResult.fromMap(json.decode(source));
 
   @override
   String toString() =>

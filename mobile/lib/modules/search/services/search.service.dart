@@ -1,79 +1,54 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/search/models/curated_location.model.dart';
-import 'package:immich_mobile/modules/search/models/curated_object.model.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
-import 'package:immich_mobile/shared/services/network.service.dart';
+import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:openapi/api.dart';
 
-final searchServiceProvider =
-    Provider((ref) => SearchService(ref.watch(networkServiceProvider)));
+final searchServiceProvider = Provider(
+  (ref) => SearchService(
+    ref.watch(apiServiceProvider),
+  ),
+);
 
 class SearchService {
-  final NetworkService _networkService;
-  SearchService(this._networkService);
+  final ApiService _apiService;
+  SearchService(this._apiService);
 
   Future<List<String>?> getUserSuggestedSearchTerms() async {
     try {
-      var res = await _networkService.getRequest(url: "asset/searchTerm");
-      List<dynamic> decodedData = jsonDecode(res.toString());
-
-      return List.from(decodedData);
+      return await _apiService.assetApi.getAssetSearchTerms();
     } catch (e) {
       debugPrint("[ERROR] [getUserSuggestedSearchTerms] ${e.toString()}");
       return [];
     }
   }
 
-  Future<List<ImmichAsset>?> searchAsset(String searchTerm) async {
+  Future<List<AssetResponseDto>?> searchAsset(String searchTerm) async {
     try {
-      var res = await _networkService.postRequest(
-        url: "asset/search",
-        data: {"searchTerm": searchTerm},
-      );
-
-      List<dynamic> decodedData = jsonDecode(res.toString());
-
-      List<ImmichAsset> result =
-          List.from(decodedData.map((a) => ImmichAsset.fromMap(a)));
-
-      return result;
+      return await _apiService.assetApi
+          .searchAsset(SearchAssetDto(searchTerm: searchTerm));
     } catch (e) {
       debugPrint("[ERROR] [searchAsset] ${e.toString()}");
       return null;
     }
   }
 
-  Future<List<CuratedLocation>?> getCuratedLocation() async {
+  Future<List<CuratedLocationsResponseDto>?> getCuratedLocation() async {
     try {
-      var res = await _networkService.getRequest(url: "asset/allLocation");
+      var locations = await _apiService.assetApi.getCuratedLocations();
 
-      List<dynamic> decodedData = jsonDecode(res.toString());
-
-      List<CuratedLocation> result =
-          List.from(decodedData.map((a) => CuratedLocation.fromMap(a)));
-
-      return result;
+      return locations;
     } catch (e) {
-      debugPrint("[ERROR] [getCuratedLocation] ${e.toString()}");
-      throw Error();
+      debugPrint("Error [getCuratedLocation] ${e.toString()}");
+      return [];
     }
   }
 
-  Future<List<CuratedObject>?> getCuratedObjects() async {
+  Future<List<CuratedObjectsResponseDto>?> getCuratedObjects() async {
     try {
-      var res = await _networkService.getRequest(url: "asset/allObjects");
-
-      List<dynamic> decodedData = jsonDecode(res.toString());
-
-      List<CuratedObject> result =
-          List.from(decodedData.map((a) => CuratedObject.fromMap(a)));
-
-      return result;
+      return await _apiService.assetApi.getCuratedObjects();
     } catch (e) {
-      debugPrint("[ERROR] [CuratedObject] ${e.toString()}");
-      throw Error();
+      debugPrint("Error [getCuratedObjects] ${e.toString()}");
+      throw [];
     }
   }
 }

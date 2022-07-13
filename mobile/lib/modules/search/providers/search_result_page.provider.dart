@@ -3,8 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/models/search_result_page_state.model.dart';
 
 import 'package:immich_mobile/modules/search/services/search.service.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:intl/intl.dart';
+import 'package:openapi/api.dart';
 
 class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
   SearchResultPageNotifier(this._searchService)
@@ -21,19 +21,29 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
 
   void search(String searchTerm) async {
     state = state.copyWith(
-        searchResult: [], isError: false, isLoading: true, isSuccess: false);
+      searchResult: [],
+      isError: false,
+      isLoading: true,
+      isSuccess: false,
+    );
 
-    List<ImmichAsset>? assets = await _searchService.searchAsset(searchTerm);
+    List<AssetResponseDto>? assets =
+        await _searchService.searchAsset(searchTerm);
 
     if (assets != null) {
       state = state.copyWith(
-          searchResult: assets,
-          isError: false,
-          isLoading: false,
-          isSuccess: true);
+        searchResult: assets,
+        isError: false,
+        isLoading: false,
+        isSuccess: true,
+      );
     } else {
       state = state.copyWith(
-          searchResult: [], isError: true, isLoading: false, isSuccess: false);
+        searchResult: [],
+        isError: true,
+        isLoading: false,
+        isSuccess: false,
+      );
     }
   }
 }
@@ -48,7 +58,11 @@ final searchResultGroupByDateTimeProvider = StateProvider((ref) {
   var assets = ref.watch(searchResultPageProvider).searchResult;
 
   assets.sortByCompare<DateTime>(
-      (e) => DateTime.parse(e.createdAt), (a, b) => b.compareTo(a));
-  return assets.groupListsBy((element) =>
-      DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)));
+    (e) => DateTime.parse(e.createdAt),
+    (a, b) => b.compareTo(a),
+  );
+  return assets.groupListsBy(
+    (element) =>
+        DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)),
+  );
 });

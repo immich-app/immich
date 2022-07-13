@@ -54,13 +54,16 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                               child: RichText(
                                 text: TextSpan(
                                   style: const TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: 'WorkSans',
-                                      color: Colors.black87,
-                                      height: 1.2),
+                                    fontSize: 14,
+                                    fontFamily: 'WorkSans',
+                                    color: Colors.black87,
+                                    height: 1.2,
+                                  ),
                                   children: <TextSpan>[
                                     TextSpan(
-                                      text: 'version_announcement_overlay_text_1'.tr(),
+                                      text:
+                                          'version_announcement_overlay_text_1'
+                                              .tr(),
                                     ),
                                     const TextSpan(
                                       text: ' Immich ',
@@ -71,11 +74,14 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                       ),
                                     ),
                                     TextSpan(
-                                      text: "version_announcement_overlay_text_2".tr(),
+                                      text:
+                                          "version_announcement_overlay_text_2"
+                                              .tr(),
                                     ),
                                     TextSpan(
-                                      text: "version_announcement_overlay_release_notes"
-                                          .tr(),
+                                      text:
+                                          "version_announcement_overlay_release_notes"
+                                              .tr(),
                                       style: const TextStyle(
                                         decoration: TextDecoration.underline,
                                       ),
@@ -83,7 +89,9 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                         ..onTap = goToReleaseNote,
                                     ),
                                     TextSpan(
-                                      text: "version_announcement_overlay_text_3".tr(),
+                                      text:
+                                          "version_announcement_overlay_text_3"
+                                              .tr(),
                                     )
                                   ],
                                 ),
@@ -92,22 +100,25 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                             Padding(
                               padding: const EdgeInsets.only(top: 16.0),
                               child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    shape: const StadiumBorder(),
-                                    visualDensity: VisualDensity.standard,
-                                    primary: Colors.indigo,
-                                    onPrimary: Colors.grey[50],
-                                    elevation: 2,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10, horizontal: 25),
+                                style: ElevatedButton.styleFrom(
+                                  shape: const StadiumBorder(),
+                                  visualDensity: VisualDensity.standard,
+                                  primary: Colors.indigo,
+                                  onPrimary: Colors.grey[50],
+                                  elevation: 2,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 25,
                                   ),
-                                  onPressed: onAcknowledgeTapped,
-                                  child: const Text(
-                                    "version_announcement_overlay_ack",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                    ),
-                                  ).tr()),
+                                ),
+                                onPressed: onAcknowledgeTapped,
+                                child: const Text(
+                                  "version_announcement_overlay_ack",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                  ),
+                                ).tr(),
+                              ),
                             )
                           ],
                         ),

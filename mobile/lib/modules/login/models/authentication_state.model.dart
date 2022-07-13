@@ -1,10 +1,8 @@
-import 'dart:convert';
-
-import 'package:immich_mobile/shared/models/device_info.model.dart';
+import 'package:openapi/api.dart';
 
 class AuthenticationState {
   final String deviceId;
-  final String deviceType;
+  final DeviceTypeEnum deviceType;
   final String userId;
   final String userEmail;
   final bool isAuthenticated;
@@ -13,8 +11,7 @@ class AuthenticationState {
   final bool isAdmin;
   final bool shouldChangePassword;
   final String profileImagePath;
-  final DeviceInfoRemote deviceInfo;
-
+  final DeviceInfoResponseDto deviceInfo;
   AuthenticationState({
     required this.deviceId,
     required this.deviceType,
@@ -31,7 +28,7 @@ class AuthenticationState {
 
   AuthenticationState copyWith({
     String? deviceId,
-    String? deviceType,
+    DeviceTypeEnum? deviceType,
     String? userId,
     String? userEmail,
     bool? isAuthenticated,
@@ -40,7 +37,7 @@ class AuthenticationState {
     bool? isAdmin,
     bool? shouldChangePassword,
     String? profileImagePath,
-    DeviceInfoRemote? deviceInfo,
+    DeviceInfoResponseDto? deviceInfo,
   }) {
     return AuthenticationState(
       deviceId: deviceId ?? this.deviceId,
@@ -56,45 +53,6 @@ class AuthenticationState {
       deviceInfo: deviceInfo ?? this.deviceInfo,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    final result = <String, dynamic>{};
-
-    result.addAll({'deviceId': deviceId});
-    result.addAll({'deviceType': deviceType});
-    result.addAll({'userId': userId});
-    result.addAll({'userEmail': userEmail});
-    result.addAll({'isAuthenticated': isAuthenticated});
-    result.addAll({'firstName': firstName});
-    result.addAll({'lastName': lastName});
-    result.addAll({'isAdmin': isAdmin});
-    result.addAll({'shouldChangePassword': shouldChangePassword});
-    result.addAll({'profileImagePath': profileImagePath});
-    result.addAll({'deviceInfo': deviceInfo.toMap()});
-
-    return result;
-  }
-
-  factory AuthenticationState.fromMap(Map<String, dynamic> map) {
-    return AuthenticationState(
-      deviceId: map['deviceId'] ?? '',
-      deviceType: map['deviceType'] ?? '',
-      userId: map['userId'] ?? '',
-      userEmail: map['userEmail'] ?? '',
-      isAuthenticated: map['isAuthenticated'] ?? false,
-      firstName: map['firstName'] ?? '',
-      lastName: map['lastName'] ?? '',
-      isAdmin: map['isAdmin'] ?? false,
-      shouldChangePassword: map['shouldChangePassword'] ?? false,
-      profileImagePath: map['profileImagePath'] ?? '',
-      deviceInfo: DeviceInfoRemote.fromMap(map['deviceInfo']),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory AuthenticationState.fromJson(String source) =>
-      AuthenticationState.fromMap(json.decode(source));
 
   @override
   String toString() {

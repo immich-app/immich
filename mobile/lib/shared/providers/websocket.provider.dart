@@ -5,8 +5,8 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:openapi/api.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 class WebscoketState {
@@ -92,8 +92,11 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
 
         socket.on('on_upload_success', (data) {
           var jsonString = jsonDecode(data.toString());
-          ImmichAsset newAsset = ImmichAsset.fromMap(jsonString);
-          ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
+          AssetResponseDto? newAsset = AssetResponseDto.fromJson(jsonString);
+
+          if (newAsset != null) {
+            ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
+          }
         });
       } catch (e) {
         debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
@@ -119,8 +122,11 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
     debugPrint("[Websocket] Start listening to event on_upload_success");
     state.socket?.on('on_upload_success', (data) {
       var jsonString = jsonDecode(data.toString());
-      ImmichAsset newAsset = ImmichAsset.fromMap(jsonString);
-      ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
+      AssetResponseDto? newAsset = AssetResponseDto.fromJson(jsonString);
+
+      if (newAsset != null) {
+        ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
+      }
     });
   }
 }

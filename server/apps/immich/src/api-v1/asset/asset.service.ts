@@ -22,6 +22,7 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 import { AssetResponseDto, mapAsset } from './response-dto/asset-response.dto';
 import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
+import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -280,7 +281,7 @@ export class AssetService {
 
         return new StreamableFile(fileReadStream);
       } catch (e) {
-        Logger.error(`Cannot create read stream for asset ${asset.id}`, 'serveFile[IMAGE]');
+        Logger.error(`Cannot create read stream for asset ${asset.id} ${JSON.stringify(e)}`, 'serveFile[IMAGE]');
         throw new InternalServerErrorException(
           e,
           `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
@@ -354,8 +355,8 @@ export class AssetService {
     }
   }
 
-  public async deleteAssetById(authUser: AuthUserDto, assetIds: DeleteAssetDto) {
-    const result = [];
+  public async deleteAssetById(authUser: AuthUserDto, assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+    const result: DeleteAssetResponseDto[] = [];
 
     const target = assetIds.ids;
     for (const assetId of target) {
@@ -367,12 +368,12 @@ export class AssetService {
       if (res.affected) {
         result.push({
           id: assetId,
-          status: 'success',
+          status: DeleteAssetStatusEnum.SUCCESS,
         });
       } else {
         result.push({
           id: assetId,
-          status: 'failed',
+          status: DeleteAssetStatusEnum.FAILED,
         });
       }
     }

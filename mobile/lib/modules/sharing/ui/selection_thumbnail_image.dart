@@ -5,10 +5,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
+import 'package:openapi/api.dart';
 
 class SelectionThumbnailImage extends HookConsumerWidget {
-  final ImmichAsset asset;
+  final AssetResponseDto asset;
 
   const SelectionThumbnailImage({Key? key, required this.asset})
       : super(key: key);
@@ -18,14 +18,14 @@ class SelectionThumbnailImage extends HookConsumerWidget {
     final cacheKey = useState(1);
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=true';
+        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
     var selectedAsset =
         ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
     var newAssetsForAlbum =
         ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
     var isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
-    Widget _buildSelectionIcon(ImmichAsset asset) {
+    Widget _buildSelectionIcon(AssetResponseDto asset) {
       if (selectedAsset.contains(asset) && !isAlbumExist) {
         return Icon(
           Icons.check_circle,
@@ -103,7 +103,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
               cacheKey: "${asset.id}-${cacheKey.value}",
               width: 150,
               height: 150,
-              memCacheHeight: asset.type == 'IMAGE' ? 150 : 150,
+              memCacheHeight: asset.type == AssetTypeEnum.IMAGE ? 150 : 150,
               fit: BoxFit.cover,
               imageUrl: thumbnailRequestUrl,
               httpHeaders: {
@@ -131,14 +131,14 @@ class SelectionThumbnailImage extends HookConsumerWidget {
               child: _buildSelectionIcon(asset),
             ),
           ),
-          if (asset.type != 'IMAGE')
+          if (asset.type != AssetTypeEnum.IMAGE)
             Positioned(
               bottom: 5,
               right: 5,
               child: Row(
                 children: [
                   Text(
-                    '${asset.duration?.substring(0, 7)}',
+                    asset.duration.substring(0, 7),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
