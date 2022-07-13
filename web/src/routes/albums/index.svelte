@@ -37,9 +37,17 @@
 
 <script lang="ts">
 	import AlbumCard from '$lib/components/album/album-card.svelte';
+	import AlbumViewer from '$lib/components/album/album-viewer.svelte';
 
 	export let user: ImmichUser;
 	export let allAlbums: AlbumResponseDto[];
+
+	let isShowAlbum = false;
+	let selectedAlbum: AlbumResponseDto;
+	const showAlbum = (event: CustomEvent) => {
+		isShowAlbum = true;
+		selectedAlbum = event.detail;
+	};
 </script>
 
 <svelte:head>
@@ -81,11 +89,14 @@
 			<!-- Album Card -->
 			<div class="flex flex-wrap gap-8">
 				{#each allAlbums as album}
-					<AlbumCard {album} />
+					<AlbumCard {album} on:click={showAlbum} />
 				{/each}
 			</div>
-
-			<!-- Album Viewer -->
 		</section>
 	</section>
+
+	<!-- Album Viewer -->
+	{#if isShowAlbum}
+		<AlbumViewer album={selectedAlbum} on:back={() => (isShowAlbum = false)} />
+	{/if}
 </section>
