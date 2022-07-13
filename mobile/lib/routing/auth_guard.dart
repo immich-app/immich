@@ -1,5 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
+<<<<<<< HEAD
+=======
+import 'package:immich_mobile/routing/router.dart';
+>>>>>>> 20b94ef0bb9d9645c121c2f351909978e3fbd6d8
 import 'package:immich_mobile/shared/services/api.service.dart';
 
 class AuthGuard extends AutoRouteGuard {
@@ -8,20 +12,16 @@ class AuthGuard extends AutoRouteGuard {
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     try {
-      var test = await _apiService.authenticationApi.validateAccessToken();
+      var res = await _apiService.authenticationApi.validateAccessToken();
 
-      if (test == null) {
-        router.removeUntil((route) => route.name == "LoginRoute");
+      if (res != null && res.authStatus) {
+        resolver.next(true);
       } else {
-        if (test.authStatus) {
-          resolver.next(true);
-        } else {
-          router.removeUntil((route) => route.name == "LoginRoute");
-        }
+        router.replaceAll([const LoginRoute()]);
       }
     } catch (e) {
       debugPrint("Error [onNavigation] ${e.toString()}");
-      router.removeUntil((route) => route.name == "LoginRoute");
+      router.replaceAll([const LoginRoute()]);
       return;
     }
   }

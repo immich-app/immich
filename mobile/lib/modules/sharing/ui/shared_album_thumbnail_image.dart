@@ -30,7 +30,7 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
             cacheKey: "${asset.id}-${cacheKey.value}",
             width: 500,
             height: 500,
-            memCacheHeight: asset.type == AssetTypeEnum.IMAGE ? 500 : 500,
+            memCacheHeight: 500,
             fit: BoxFit.cover,
             imageUrl: thumbnailRequestUrl,
             httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},

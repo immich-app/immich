@@ -46,12 +46,12 @@ async function bootstrap() {
     customSiteTitle: 'Immich API Documentation',
   });
 
-  // Generate API Documentation
-  const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
-  writeFileSync(outputPath, JSON.stringify(apiDocument), { encoding: 'utf8' });
-
+  
   await app.listen(3001, () => {
     if (process.env.NODE_ENV == 'development') {
+      // Generate API Documentation only in development mode
+      const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
+      writeFileSync(outputPath, JSON.stringify(apiDocument), { encoding: 'utf8' });
       Logger.log('Running Immich Server in DEVELOPMENT environment', 'ImmichServer');
     }
 

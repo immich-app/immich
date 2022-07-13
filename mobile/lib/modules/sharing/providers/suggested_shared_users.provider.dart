@@ -6,11 +6,5 @@ final suggestedSharedUsersProvider =
     FutureProvider.autoDispose<List<UserResponseDto>>((ref) async {
   UserService userService = ref.watch(userServiceProvider);
 
-  var users = await userService.getAllUsersInfo(isAll: false);
-
-  if (users != null) {
-    return users;
-  } else {
-    return [];
-  }
+  return await userService.getAllUsersInfo(isAll: false) ?? [];
 });

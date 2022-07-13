@@ -1,1 +1,1 @@
-npm start microservices
+node dist/apps/microservices/apps/microservices/src/main

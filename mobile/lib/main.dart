@@ -43,7 +43,8 @@ void main() async {
     // Default locale
     Locale('en', 'US'),
     // Additional locales
-    Locale('de', 'DE')
+    Locale('de', 'DE'),
+    Locale('fr', 'FR')
   ];
 
   runApp(
