@@ -218,8 +218,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     Set<AssetEntity> allUniqueAssets =
         assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
-    List<String> allAssetsInDatabase =
-        await _backupService.getDeviceBackupAsset();
+    var allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
+
+    if (allAssetsInDatabase == null) {
+      return;
+    }
 
     // Find asset that were backup from selected albums
     Set<String> selectedAlbumsBackupAssets =

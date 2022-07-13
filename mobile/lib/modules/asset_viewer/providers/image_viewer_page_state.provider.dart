@@ -7,9 +7,9 @@ import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:openapi/api.dart';
 
 class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
-  final ImageViewerService _imageViewerService = ImageViewerService();
+  final ImageViewerService _imageViewerService;
 
-  ImageViewerStateNotifier()
+  ImageViewerStateNotifier(this._imageViewerService)
       : super(
           ImageViewerPageState(
             downloadAssetStatus: DownloadAssetStatus.idle,
@@ -46,5 +46,5 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
 
 final imageViewerStateProvider =
     StateNotifierProvider<ImageViewerStateNotifier, ImageViewerPageState>(
-  ((ref) => ImageViewerStateNotifier()),
+  ((ref) => ImageViewerStateNotifier(ref.watch(imageViewerServiceProvider))),
 );
