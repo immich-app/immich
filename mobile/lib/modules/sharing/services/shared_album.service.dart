@@ -3,20 +3,17 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:immich_mobile/shared/services/network.service.dart';
 import 'package:openapi/api.dart';
 
 final sharedAlbumServiceProvider = Provider(
   (ref) => SharedAlbumService(
-    ref.watch(networkServiceProvider),
     ref.watch(apiServiceProvider),
   ),
 );
 
 class SharedAlbumService {
-  final NetworkService _networkService;
   final ApiService _apiService;
-  SharedAlbumService(this._networkService, this._apiService);
+  SharedAlbumService(this._apiService);
 
   Future<List<AlbumResponseDto>?> getAllSharedAlbum() async {
     try {
@@ -33,16 +30,15 @@ class SharedAlbumService {
     List<String> sharedUserIds,
   ) async {
     try {
-      var res = await _networkService.postRequest(
-        url: 'album',
-        data: {
-          "albumName": albumName,
-          "sharedWithUserIds": sharedUserIds,
-          "assetIds": assets.map((asset) => asset.id).toList(),
-        },
+      _apiService.albumApi.createAlbum(
+        CreateAlbumDto(
+          albumName: albumName,
+          assetIds: assets.map((asset) => asset.id).toList(),
+          sharedWithUserIds: sharedUserIds,
+        ),
       );
 
-      return res != null;
+      return true;
     } catch (e) {
       debugPrint("Error createSharedAlbum  ${e.toString()}");
       return false;
