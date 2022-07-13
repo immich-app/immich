@@ -1,7 +1,6 @@
 import type { GetSession, Handle } from '@sveltejs/kit';
 import * as cookie from 'cookie';
 import { api } from '@api';
-import AxiosError from 'axios';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
@@ -31,12 +30,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 		return response;
 	} catch (error) {
-		if (error instanceof AxiosError) {
-			console.log('Error validating token');
-			return await resolve(event);
-		}
-
-		console.log('Error parsing session');
+		console.log('Error [handle]', error);
 		return await resolve(event);
 	}
 };
