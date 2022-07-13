@@ -141,6 +141,7 @@ Class | Method | HTTP request | Description
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UserCountResponseDto](doc//UserCountResponseDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
+ - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
 
 
 ## Documentation For Authorization

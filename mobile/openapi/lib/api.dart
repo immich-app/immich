@@ -69,6 +69,7 @@ part 'model/update_device_info_dto.dart';
 part 'model/update_user_dto.dart';
 part 'model/user_count_response_dto.dart';
 part 'model/user_response_dto.dart';
+part 'model/validate_access_token_response_dto.dart';
 
 
 const _delimiters = {'csv': ',', 'ssv': ' ', 'tsv': '\t', 'pipes': '|'};

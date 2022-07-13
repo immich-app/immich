@@ -262,6 +262,8 @@ class ApiClient {
           return UserCountResponseDto.fromJson(value);
         case 'UserResponseDto':
           return UserResponseDto.fromJson(value);
+        case 'ValidateAccessTokenResponseDto':
+          return ValidateAccessTokenResponseDto.fromJson(value);
         default:
           dynamic match;
           if (value is List && (match = _regList.firstMatch(targetType)?.group(1)) != null) {

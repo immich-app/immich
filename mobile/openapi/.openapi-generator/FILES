@@ -43,6 +43,7 @@ doc/UpdateUserDto.md
 doc/UserApi.md
 doc/UserCountResponseDto.md
 doc/UserResponseDto.md
+doc/ValidateAccessTokenResponseDto.md
 git_push.sh
 lib/api.dart
 lib/api/album_api.dart
@@ -94,4 +95,6 @@ lib/model/update_device_info_dto.dart
 lib/model/update_user_dto.dart
 lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
+lib/model/validate_access_token_response_dto.dart
 pubspec.yaml
+test/validate_access_token_response_dto_test.dart

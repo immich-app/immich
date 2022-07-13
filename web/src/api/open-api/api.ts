@@ -1118,6 +1118,19 @@ export interface UserResponseDto {
      */
     'isAdmin': boolean;
 }
+/**
+ * 
+ * @export
+ * @interface ValidateAccessTokenResponseDto
+ */
+export interface ValidateAccessTokenResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ValidateAccessTokenResponseDto
+     */
+    'authStatus': boolean;
+}
 
 /**
  * AlbumApi - axios parameter creator
@@ -2918,7 +2931,7 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async validateAccessToken(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async validateAccessToken(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ValidateAccessTokenResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.validateAccessToken(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -2955,7 +2968,7 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        validateAccessToken(options?: any): AxiosPromise<object> {
+        validateAccessToken(options?: any): AxiosPromise<ValidateAccessTokenResponseDto> {
             return localVarFp.validateAccessToken(options).then((request) => request(axios, basePath));
         },
     };
