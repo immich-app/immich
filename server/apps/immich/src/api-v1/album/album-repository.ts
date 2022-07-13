@@ -84,7 +84,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
-  getList(ownerId: string, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]> {
+  async getList(ownerId: string, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]> {
     const filteringByShared = typeof getAlbumsDto.shared == 'boolean';
     const userId = ownerId;
     let query = this.albumRepository.createQueryBuilder('album');
@@ -143,6 +143,9 @@ export class AlbumRepository implements IAlbumRepository {
           return `album.id IN ${subQuery}`;
         });
     }
+    // Get information of assets in albums
+    query = query.leftJoinAndSelect('album.assets', 'assets').leftJoinAndSelect('assets.assetInfo', 'assetInfo');
+
     return query.orderBy('album.createdAt', 'DESC').getMany();
   }
 
