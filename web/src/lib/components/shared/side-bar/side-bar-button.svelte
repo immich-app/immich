@@ -5,7 +5,7 @@
 	export let isSelected: boolean;
 
 	import { createEventDispatcher } from 'svelte';
-	import type { AdminSideBarSelection, AppSideBarSelection } from '../../models/admin-sidebar-selection';
+	import type { AdminSideBarSelection, AppSideBarSelection } from '../../../models/admin-sidebar-selection';
 
 	const dispatch = createEventDispatcher();
 

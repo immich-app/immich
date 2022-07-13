@@ -7,7 +7,7 @@
 	import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import SideBarButton from './side-bar-button.svelte';
-	import StatusBox from './status-box.svelte';
+	import StatusBox from '../status-box.svelte';
 
 	let selectedAction: AppSideBarSelection;
 

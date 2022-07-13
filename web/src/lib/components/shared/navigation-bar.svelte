@@ -7,7 +7,7 @@
 	import { fade, fly, slide } from 'svelte/transition';
 	import { serverEndpoint } from '../../constants';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
-	import { clickOutside } from './click-outside';
+	import { clickOutside } from '../../utils/click-outside';
 	import { api } from '@api';
 
 	export let user: ImmichUser;

@@ -28,7 +28,6 @@
 
 	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
@@ -37,8 +36,7 @@
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
 	import { AssetResponseDto } from '@api';
-	import { goto } from '$app/navigation';
-	import SideBar from '$lib/components/shared/side-bar.svelte';
+	import SideBar from '$lib/components/shared/side-bar/side-bar.svelte';
 
 	export let user: ImmichUser;
 

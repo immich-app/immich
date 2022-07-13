@@ -27,7 +27,7 @@
 
 	import type { ImmichUser } from '$lib/models/immich-user';
 	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import SideBarButton from '$lib/components/shared/side-bar-button.svelte';
+	import SideBarButton from '$lib/components/shared/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
 	import UserManagement from '$lib/components/admin/user-management.svelte';
