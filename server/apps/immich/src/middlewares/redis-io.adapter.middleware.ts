@@ -3,13 +3,20 @@ import { RedisClient } from 'redis';
 import { ServerOptions } from 'socket.io';
 import { createAdapter } from 'socket.io-redis';
 
-const redis_host = process.env.REDIS_HOSTNAME || 'immich_redis';
+const redisHost = process.env.REDIS_HOSTNAME || 'immich_redis';
+const redisPort = parseInt(process.env.REDIS_PORT || '6379');
+const redisDb = parseInt(process.env.REDIS_DBINDEX || '0');
+const redisPassword = process.env.REDIS_PASSWORD || undefined;
+const redisSocket = process.env.REDIS_SOCKET || undefined;
 // const pubClient = createClient({ url: `redis://${redis_host}:6379` });
 // const subClient = pubClient.duplicate();
 
 const pubClient = new RedisClient({
-  host: redis_host,
-  port: 6379,
+  host: redisHost,
+  port: redisPort,
+  db: redisDb,
+  password: redisPassword,
+  path: redisSocket,
 });
 
 const subClient = pubClient.duplicate();
