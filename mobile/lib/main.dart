@@ -124,10 +124,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     super.dispose();
   }
 
-  final _immichRouter = AppRouter();
-
   @override
   Widget build(BuildContext context) {
+    var router = ref.watch(appRouterProvider);
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
     return MaterialApp(
@@ -157,8 +156,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
                 systemOverlayStyle: SystemUiOverlayStyle.dark,
               ),
             ),
-            routeInformationParser: _immichRouter.defaultRouteParser(),
-            routerDelegate: _immichRouter.delegate(
+            routeInformationParser: router.defaultRouteParser(),
+            routerDelegate: router.delegate(
               navigatorObservers: () => [TabNavigationObserver(ref: ref)],
             ),
           ),
