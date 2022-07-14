@@ -26,6 +26,31 @@ def main():
             if sp.returncode != 0:
                 print(f"Outdated Key! {k}")
                 return 1
+                
+    print("CHECK DANISH TRANSLATIONS")
+    with open('assets/i18n/da-DK.json', 'r') as f:
+        data = json.load(f)
+
+        for k in data.keys():
+            print(k)
+            sp = subprocess.run(['sh', '-c', f'grep -r --include="./assets/i18n/en-US.json" "{k}"'])
+
+            if sp.returncode != 0:
+                print(f"Outdated Key! {k}")
+                return 1                
+
+    print("CHECK ITALIAN TRANSLATIONS")
+    with open('assets/i18n/it-IT.json', 'r') as f:
+        data = json.load(f)
+
+        for k in data.keys():
+            print(k)
+            sp = subprocess.run(['sh', '-c', f'grep -r --include="./assets/i18n/en-US.json" "{k}"'])
+
+            if sp.returncode != 0:
+                print(f"Outdated Key! {k}")
+                return 1
+
 
 if __name__ == '__main__':
     main()
