@@ -26,7 +26,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 			};
 		}
 
-		const response = await resolve(event);
+		const response = await resolve(event, { ssr: false });
 
 		return response;
 	} catch (error) {

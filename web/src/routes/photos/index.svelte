@@ -1,6 +1,4 @@
 <script context="module" lang="ts">
-	export const prerender = false;
-
 	import type { Load } from '@sveltejs/kit';
 	import { getAssetsInfo } from '$lib/stores/assets';
 
