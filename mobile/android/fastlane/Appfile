@@ -1,2 +1,2 @@
-json_key_file("/Users/alex/Documents/immich-fastlane-googleplaystore-key.json") # Path to the json secret file - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
-package_name("app.alextran.immich") # e.g. com.krausefx.app
+json_key_file("/Users/alex/Documents/immich-play-store-key.json")
+package_name("app.alextran.immich")
