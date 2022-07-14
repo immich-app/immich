@@ -51,7 +51,11 @@
 </script>
 
 <svelte:head>
-	<title>Albums - Immich</title>
+	{#if isShowAlbum}
+		<title>{selectedAlbum.albumName} - Immich</title>
+	{:else}
+		<title>Albums - Immich</title>
+	{/if}
 </svelte:head>
 
 <section>
@@ -97,6 +101,6 @@
 
 	<!-- Album Viewer -->
 	{#if isShowAlbum}
-		<AlbumViewer album={selectedAlbum} on:back={() => (isShowAlbum = false)} />
+		<AlbumViewer album={selectedAlbum} on:go-back={() => (isShowAlbum = false)} />
 	{/if}
 </section>

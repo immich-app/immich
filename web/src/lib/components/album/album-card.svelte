@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { AlbumResponseDto, api } from '@api';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	export let album: AlbumResponseDto;
@@ -24,7 +24,7 @@
 </script>
 
 <div class="h-[339px] w-[275px] hover:cursor-pointer mt-4" on:click={() => dispatch('click', album)}>
-	<div class={`h-[${height}px] w-[${width}px]`}>
+	<div class={`h-[275px] w-[275px]`}>
 		{#await loadImageData(album.albumThumbnailAssetId)}
 			<div class={`bg-immich-primary/10 w-full h-full  flex place-items-center place-content-center rounded-xl`}>
 				...
@@ -34,8 +34,7 @@
 				in:fade={{ duration: 250 }}
 				src={imageData}
 				alt={album.id}
-				class={`object-cover w-full h-full transition-all z-0 rounded-xl duration-300 hover:shadow-[-5px_5px_0px_0_#4250af]`}
-				loading="lazy"
+				class={`object-cover w-full h-full transition-all z-0 rounded-xl duration-300 hover:translate-x-2 hover:-translate-y-2 hover:shadow-[-8px_8px_0px_0_#FFB800]`}
 			/>
 		{/await}
 	</div>
@@ -55,3 +54,6 @@
 		</span>
 	</div>
 </div>
+
+<style>
+</style>

@@ -6,7 +6,7 @@
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-	import CircleIconButton from '../shared/circle_icon_button.svelte';
+	import CircleIconButton from '../shared/circle-icon-button.svelte';
 	const dispatch = createEventDispatcher();
 </script>
 
