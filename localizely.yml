@@ -4,16 +4,16 @@ file_type: json
 upload:
   files:
     - file: mobile/assets/i18n/en-US.json
-      locale_code: en
+      locale_code: en-US
     - file: mobile/assets/i18n/de-DE.json
-      locale_code: de
+      locale_code: de-DE
     - file: mobile/assets/i18n/fr-FR.json
-      locale_code: fr
+      locale_code: fr-FR
 download:
   files:
     - file: mobile/assets/i18n/en-US.json
-      locale_code: en
+      locale_code: en-US
     - file: mobile/assets/i18n/de-DE.json
-      locale_code: de
+      locale_code: de-DE
     - file: mobile/assets/i18n/fr-FR.json
-      locale_code: fr
+      locale_code: fr-FR
