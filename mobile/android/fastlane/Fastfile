@@ -16,8 +16,15 @@
 default_platform(:android)
 
 platform :android do
+  desc "Build Android"
+  lane :build do
+    gradle(
+      task: 'bundle', 
+      build_type: 'Release',
+    )
+  end
 
-  desc "Update AAB to PlayStore"
+  desc "Build and Release Android"
   lane :release do
     gradle(
       task: 'bundle', 
