@@ -87,7 +87,10 @@
     <array>
       <string>en</string>
       <string>de</string>
+      <string>da</string>
+      <string>es</string>
       <string>fr</string>
+      <string>it</string>
     </array>
   </dict>
 </plist>
