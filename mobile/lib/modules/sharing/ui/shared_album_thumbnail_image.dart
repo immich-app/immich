@@ -18,7 +18,7 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
 
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
+        '${box.get(serverEndpointKey)}/asset/thumbnail?assetId=${asset.id}';
 
     return GestureDetector(
       onTap: () {
