@@ -37,25 +37,26 @@
 </script>
 
 <section id="sidebar" class="flex flex-col gap-4 pt-8 pr-6">
-	<SideBarButton
-		title="Photos"
-		logo={ImageOutline}
-		actionType={AppSideBarSelection.PHOTOS}
-		isSelected={selectedAction === AppSideBarSelection.PHOTOS}
-		on:selected={onSidebarButtonClicked}
-	/>
+	<a sveltekit:prefetch href={`photos`}>
+		<SideBarButton
+			title="Photos"
+			logo={ImageOutline}
+			actionType={AppSideBarSelection.PHOTOS}
+			isSelected={selectedAction === AppSideBarSelection.PHOTOS}
+		/></a
+	>
 
 	<div class="text-xs ml-5">
 		<p>LIBRARY</p>
 	</div>
-
-	<SideBarButton
-		title="Albums"
-		logo={ImageAlbum}
-		actionType={AppSideBarSelection.ALBUMS}
-		isSelected={selectedAction === AppSideBarSelection.ALBUMS}
-		on:selected={onSidebarButtonClicked}
-	/>
+	<a sveltekit:prefetch href={`albums`}>
+		<SideBarButton
+			title="Albums"
+			logo={ImageAlbum}
+			actionType={AppSideBarSelection.ALBUMS}
+			isSelected={selectedAction === AppSideBarSelection.ALBUMS}
+		/>
+	</a>
 	<!-- Status Box -->
 
 	<div class="mb-6 mt-auto">

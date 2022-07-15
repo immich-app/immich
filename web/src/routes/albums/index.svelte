@@ -37,25 +37,18 @@
 
 <script lang="ts">
 	import AlbumCard from '$lib/components/album/album-card.svelte';
-	import AlbumViewer from '$lib/components/album/album-viewer.svelte';
+	import { goto } from '$app/navigation';
 
 	export let user: ImmichUser;
 	export let allAlbums: AlbumResponseDto[];
 
-	let isShowAlbum = false;
-	let selectedAlbum: AlbumResponseDto;
 	const showAlbum = (event: CustomEvent) => {
-		isShowAlbum = true;
-		selectedAlbum = event.detail;
+		goto('/albums/' + event.detail.id);
 	};
 </script>
 
 <svelte:head>
-	{#if isShowAlbum}
-		<title>{selectedAlbum.albumName} - Immich</title>
-	{:else}
-		<title>Albums - Immich</title>
-	{/if}
+	<title>Albums - Immich</title>
 </svelte:head>
 
 <section>
@@ -93,14 +86,9 @@
 			<!-- Album Card -->
 			<div class="flex flex-wrap gap-8">
 				{#each allAlbums as album}
-					<AlbumCard {album} on:click={showAlbum} />
+					<a sveltekit:prefetch href={`albums/${album.id}`}> <AlbumCard {album} /></a>
 				{/each}
 			</div>
 		</section>
 	</section>
-
-	<!-- Album Viewer -->
-	{#if isShowAlbum}
-		<AlbumViewer album={selectedAlbum} on:go-back={() => (isShowAlbum = false)} />
-	{/if}
 </section>

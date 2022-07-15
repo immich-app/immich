@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { assets } from '$app/paths';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 
 	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
@@ -9,44 +8,46 @@
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
 	import { fade } from 'svelte/transition';
 
-	export let album: AlbumResponseDto;
-
 	const dispatch = createEventDispatcher();
-
-	const getHighQualityImage = async (thubmnailId: string | null) => {
-		if (thubmnailId == null) {
-			return '/no-thumbnail.png';
-		}
-
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Jpeg, { responseType: 'blob' });
-		if (data instanceof Blob) {
-			return URL.createObjectURL(data);
-		}
-	};
-
-	const loadImageData = async (thubmnailId: string | null) => {
-		if (thubmnailId == null) {
-			return '/no-thumbnail.png';
-		}
-
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Webp, { responseType: 'blob' });
-		if (data instanceof Blob) {
-			const imageData = URL.createObjectURL(data);
-			getHighQualityImage(thubmnailId);
-			return imageData;
-		}
-	};
-
+	export let album: AlbumResponseDto;
 	let viewWidth: number;
 	let imageSize: number = 300;
 
 	$: {
 		if (album.assets.length < 6) {
-			imageSize = viewWidth / album.assets.length - album.assets.length;
+			imageSize = Math.floor(viewWidth / album.assets.length - album.assets.length);
 		} else {
-			imageSize = viewWidth / 6 - 6;
+			imageSize = Math.floor(viewWidth / 6 - 6);
 		}
 	}
+
+	const getThumbnail = async (thubmnailId: string | null, format: ThumbnailFormat) => {
+		if (thubmnailId == null) {
+			return '/no-thumbnail.png';
+		}
+
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, format, { responseType: 'blob' });
+		if (data instanceof Blob) {
+			return URL.createObjectURL(data);
+		}
+	};
+
+	const getDateRange = () => {
+		const startDate = new Date(album.assets[0].createdAt);
+		const endDate = new Date(album.assets[album.assets.length - 1].createdAt);
+
+		const startDateString = startDate.toLocaleDateString('us-EN', {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric',
+		});
+		const endDateString = endDate.toLocaleDateString('us-EN', {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric',
+		});
+		return `${startDateString} - ${endDateString}`;
+	};
 </script>
 
 <section class="absolute w-screen h-screen top-0 left-0 overflow-auto bg-immich-bg z-[9999]">
@@ -75,7 +76,7 @@
 			{album.albumName}
 		</p>
 
-		<p class="my-4">Date</p>
+		<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
 
 		<div class="flex flex-wrap gap-1 w-full" bind:clientWidth={viewWidth}>
 			{#each album.assets as asset}
@@ -83,7 +84,7 @@
 					<div style:width={imageSize + 'px'} style:height={imageSize + 'px'}>
 						{#if intersecting}
 							{#if album.assets.length < 7}
-								{#await getHighQualityImage(asset.id)}
+								{#await getThumbnail(asset.id, ThumbnailFormat.Jpeg)}
 									<div
 										style:width={imageSize + 'px'}
 										style:height={imageSize + 'px'}
@@ -103,7 +104,7 @@
 									/>
 								{/await}
 							{:else}
-								{#await loadImageData(asset.id)}
+								{#await getThumbnail(asset.id, ThumbnailFormat.Webp)}
 									<div
 										style:width={imageSize + 'px'}
 										style:height={imageSize + 'px'}
