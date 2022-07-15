@@ -7,12 +7,12 @@
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
 	import LoadingSpinner from '../shared/loading-spinner.svelte';
-	import { api, AssetResponseDto, AssetTypeEnum } from '@api';
+	import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
 
 	const dispatch = createEventDispatcher();
 
 	export let asset: AssetResponseDto;
-	export let groupIndex: number;
+	export let groupIndex: number = 0;
 
 	let imageData: string;
 	let videoData: string;
@@ -28,7 +28,7 @@
 
 	const loadImageData = async () => {
 		if ($session.user) {
-			const { data } = await api.assetApi.getAssetThumbnail(asset.id, false, { responseType: 'blob' });
+			const { data } = await api.assetApi.getAssetThumbnail(asset.id, ThumbnailFormat.Webp, { responseType: 'blob' });
 			if (data instanceof Blob) {
 				imageData = URL.createObjectURL(data);
 				return imageData;

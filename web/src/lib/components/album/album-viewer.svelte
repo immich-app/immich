@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { assets } from '$app/paths';
+	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 
-	import { AlbumResponseDto, api } from '@api';
+	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { thumbnail } from 'exifr';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
 	import { fade, fly } from 'svelte/transition';
+	import ImmichThumbnail from '../asset-viewer/immich-thumbnail.svelte';
 
 	export let album: AlbumResponseDto;
 
@@ -17,18 +19,19 @@
 			return '/no-thumbnail.png';
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, true, { responseType: 'blob' });
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Webp, { responseType: 'blob' });
 		if (data instanceof Blob) {
 			return URL.createObjectURL(data);
 		}
 	};
 
 	const loadImageData = async (thubmnailId: string | null) => {
+		console.log('loadImageData');
 		if (thubmnailId == null) {
 			return '/no-thumbnail.png';
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, true, { responseType: 'blob' });
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Webp, { responseType: 'blob' });
 		if (data instanceof Blob) {
 			const imageData = URL.createObjectURL(data);
 			getHighQualityImage(thubmnailId);
@@ -76,27 +79,31 @@
 
 		<p class="my-4">Date</p>
 
-		<div transition:fade={{ duration: 300 }} class="flex flex-wrap gap-1 w-full border" bind:clientWidth={viewWidth}>
+		<div class="flex flex-wrap gap-1 w-full border" bind:clientWidth={viewWidth}>
 			{#each album.assets as asset}
-				{#await loadImageData(asset.id)}
-					<div
-						style:width={imageSize + 'px'}
-						style:height={imageSize + 'px'}
-						transition:fade={{ duration: 300 }}
-						class={`bg-immich-primary/10 flex place-items-center place-content-center rounded-xl`}
-					>
-						...
-					</div>
-				{:then webpData}
-					<img
-						src={webpData}
-						alt={album.id}
-						style:width={imageSize + 'px'}
-						style:height={imageSize + 'px'}
-						transition:fade={{ duration: 300 }}
-						class={`object-cover transition-all z-0 duration-300`}
-					/>
-				{/await}
+				<IntersectionObserver once={true} let:intersecting>
+					{#if intersecting}
+						{#await loadImageData(asset.id)}
+							<div
+								style:width={imageSize + 'px'}
+								style:height={imageSize + 'px'}
+								class={`bg-immich-primary/10 flex place-items-center place-content-center rounded-xl`}
+							>
+								...
+							</div>
+						{:then webpData}
+							<img
+								src={webpData}
+								alt={album.id}
+								style:width={imageSize + 'px'}
+								style:height={imageSize + 'px'}
+								class={`object-cover transition-all z-0 duration-300`}
+								in:fade={{ duration: 250 }}
+								loading="lazy"
+							/>
+						{/await}
+					{/if}
+				</IntersectionObserver>
 			{/each}
 		</div>
 	</section>

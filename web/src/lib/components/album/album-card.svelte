@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AlbumResponseDto, api } from '@api';
+	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
@@ -13,7 +13,7 @@
 			return '/no-thumbnail.png';
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, true, { responseType: 'blob' });
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Jpeg, { responseType: 'blob' });
 		if (data instanceof Blob) {
 			imageData = URL.createObjectURL(data);
 			return imageData;
