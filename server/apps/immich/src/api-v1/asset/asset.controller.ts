@@ -109,9 +109,12 @@ export class AssetController {
     return this.assetService.serveFile(authUser, query, res, headers);
   }
 
-  @Get('/thumbnail')
-  async getAssetThumbnail(@Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto): Promise<any> {
-    return this.assetService.getAssetThumbnail(query);
+  @Get('/thumbnail/:assetId')
+  async getAssetThumbnail(
+    @Param('assetId') assetId: string,
+    @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
+  ): Promise<any> {
+    return this.assetService.getAssetThumbnail(assetId, query);
   }
 
   @Get('/allObjects')

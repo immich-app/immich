@@ -2,25 +2,18 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
-export class GetAssetThumbnailDto {
-  @IsString()
-  @IsNotEmpty()
-  @IsUUID()
-  assetId!: string;
+export enum GetAssetThumbnailFormatEnum {
+  JPEG = 'JPEG',
+  WEBP = 'WEBP',
+}
 
-  /**
-   * Get thumbnail in JPEG format which has higher resolution than webp thumbnail format
-   */
-  @IsBoolean()
+export class GetAssetThumbnailDto {
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value == 'true') {
-      return true;
-    } else if (value == 'false') {
-      return false;
-    }
-    return value;
+  @ApiProperty({
+    enum: GetAssetThumbnailFormatEnum,
+    default: GetAssetThumbnailFormatEnum.WEBP,
+    required: false,
+    enumName: 'ThumbnailFormat',
   })
-  @ApiProperty({ type: Boolean })
-  isHighQuality?: boolean;
+  format = GetAssetThumbnailFormatEnum.WEBP;
 }

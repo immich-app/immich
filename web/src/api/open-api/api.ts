@@ -960,6 +960,20 @@ export interface SmartInfoResponseDto {
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const ThumbnailFormat = {
+    Jpeg: 'JPEG',
+    Webp: 'WEBP'
+} as const;
+
+export type ThumbnailFormat = typeof ThumbnailFormat[keyof typeof ThumbnailFormat];
+
+
+/**
+ * 
+ * @export
  * @interface UpdateAlbumDto
  */
 export interface UpdateAlbumDto {
@@ -2069,14 +2083,15 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {string} assetId 
-         * @param {boolean} [isHighQuality] Get thumbnail in JPEG format which has higher resolution than webp thumbnail format
+         * @param {ThumbnailFormat} [format] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetThumbnail: async (assetId: string, isHighQuality?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAssetThumbnail: async (assetId: string, format?: ThumbnailFormat, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetId' is not null or undefined
             assertParamExists('getAssetThumbnail', 'assetId', assetId)
-            const localVarPath = `/asset/thumbnail`;
+            const localVarPath = `/asset/thumbnail/{assetId}`
+                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2092,12 +2107,8 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (isHighQuality !== undefined) {
-                localVarQueryParameter['isHighQuality'] = isHighQuality;
-            }
-
-            if (assetId !== undefined) {
-                localVarQueryParameter['assetId'] = assetId;
+            if (format !== undefined) {
+                localVarQueryParameter['format'] = format;
             }
 
 
@@ -2432,12 +2443,12 @@ export const AssetApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} assetId 
-         * @param {boolean} [isHighQuality] Get thumbnail in JPEG format which has higher resolution than webp thumbnail format
+         * @param {ThumbnailFormat} [format] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAssetThumbnail(assetId: string, isHighQuality?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetThumbnail(assetId, isHighQuality, options);
+        async getAssetThumbnail(assetId: string, format?: ThumbnailFormat, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetThumbnail(assetId, format, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -2573,12 +2584,12 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         /**
          * 
          * @param {string} assetId 
-         * @param {boolean} [isHighQuality] Get thumbnail in JPEG format which has higher resolution than webp thumbnail format
+         * @param {ThumbnailFormat} [format] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetThumbnail(assetId: string, isHighQuality?: boolean, options?: any): AxiosPromise<object> {
-            return localVarFp.getAssetThumbnail(assetId, isHighQuality, options).then((request) => request(axios, basePath));
+        getAssetThumbnail(assetId: string, format?: ThumbnailFormat, options?: any): AxiosPromise<object> {
+            return localVarFp.getAssetThumbnail(assetId, format, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2719,13 +2730,13 @@ export class AssetApi extends BaseAPI {
     /**
      * 
      * @param {string} assetId 
-     * @param {boolean} [isHighQuality] Get thumbnail in JPEG format which has higher resolution than webp thumbnail format
+     * @param {ThumbnailFormat} [format] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public getAssetThumbnail(assetId: string, isHighQuality?: boolean, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAssetThumbnail(assetId, isHighQuality, options).then((request) => request(this.axios, this.basePath));
+    public getAssetThumbnail(assetId: string, format?: ThumbnailFormat, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getAssetThumbnail(assetId, format, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

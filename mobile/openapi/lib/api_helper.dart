@@ -64,6 +64,9 @@ String parameterToString(dynamic value) {
   if (value is DeviceTypeEnum) {
     return DeviceTypeEnumTypeTransformer().encode(value).toString();
   }
+  if (value is ThumbnailFormat) {
+    return ThumbnailFormatTypeTransformer().encode(value).toString();
+  }
   return value.toString();
 }
 

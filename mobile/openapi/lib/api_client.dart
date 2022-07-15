@@ -252,6 +252,8 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
+        case 'ThumbnailFormat':
+          return ThumbnailFormatTypeTransformer().decode(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
         case 'UpdateDeviceInfoDto':

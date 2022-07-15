@@ -23,7 +23,7 @@ import { AssetResponseDto, mapAsset } from './response-dto/asset-response.dto';
 import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
-import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
+import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 
 const fileInfo = promisify(stat);
 
@@ -188,17 +188,17 @@ export class AssetService {
     }
   }
 
-  public async getAssetThumbnail(query: GetAssetThumbnailDto) {
+  public async getAssetThumbnail(assetId: string, query: GetAssetThumbnailDto) {
     let fileReadStream: ReadStream;
 
-    const asset = await this.assetRepository.findOne({ where: { id: query.assetId } });
+    const asset = await this.assetRepository.findOne({ where: { id: assetId } });
 
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
 
     try {
-      if (query.isHighQuality) {
+      if (query.format == GetAssetThumbnailFormatEnum.JPEG) {
         if (!asset.resizePath) {
           throw new NotFoundException('resizePath not set');
         }

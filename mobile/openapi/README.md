@@ -80,7 +80,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/searchTerm | 
-*AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail | 
+*AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/allLocation | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/allObjects | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
@@ -136,6 +136,7 @@ Class | Method | HTTP request | Description
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
+ - [ThumbnailFormat](doc//ThumbnailFormat.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)

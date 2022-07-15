@@ -342,16 +342,16 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/thumbnail' operation and returns the [Response].
+  /// Performs an HTTP 'GET /asset/thumbnail/{assetId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] assetId (required):
   ///
-  /// * [bool] isHighQuality:
-  ///   Get thumbnail in JPEG format which has higher resolution than webp thumbnail format
-  Future<Response> getAssetThumbnailWithHttpInfo(String assetId, { bool? isHighQuality, }) async {
+  /// * [ThumbnailFormat] format:
+  Future<Response> getAssetThumbnailWithHttpInfo(String assetId, { ThumbnailFormat? format, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/thumbnail';
+    final path = r'/asset/thumbnail/{assetId}'
+      .replaceAll('{assetId}', assetId);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -360,10 +360,9 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (isHighQuality != null) {
-      queryParams.addAll(_queryParams('', 'isHighQuality', isHighQuality));
+    if (format != null) {
+      queryParams.addAll(_queryParams('', 'format', format));
     }
-      queryParams.addAll(_queryParams('', 'assetId', assetId));
 
     const contentTypes = <String>[];
 
@@ -383,10 +382,9 @@ class AssetApi {
   ///
   /// * [String] assetId (required):
   ///
-  /// * [bool] isHighQuality:
-  ///   Get thumbnail in JPEG format which has higher resolution than webp thumbnail format
-  Future<Object?> getAssetThumbnail(String assetId, { bool? isHighQuality, }) async {
-    final response = await getAssetThumbnailWithHttpInfo(assetId,  isHighQuality: isHighQuality, );
+  /// * [ThumbnailFormat] format:
+  Future<Object?> getAssetThumbnail(String assetId, { ThumbnailFormat? format, }) async {
+    final response = await getAssetThumbnailWithHttpInfo(assetId,  format: format, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
