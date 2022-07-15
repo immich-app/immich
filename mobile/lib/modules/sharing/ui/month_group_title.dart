@@ -96,13 +96,16 @@ class MonthGroupTitle extends HookConsumerWidget {
                       color: Colors.grey,
                     ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                _getSimplifiedMonth(),
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Theme.of(context).primaryColor,
+            GestureDetector(
+              onTap: _handleTitleIconClick,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  _getSimplifiedMonth(),
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
               ),
             ),
