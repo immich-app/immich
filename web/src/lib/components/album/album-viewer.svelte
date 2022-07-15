@@ -3,12 +3,11 @@
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 
 	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
-	import { thumbnail } from 'exifr';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import _ from 'lodash';
+	import { createEventDispatcher } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
-	import { fade, fly } from 'svelte/transition';
-	import ImmichThumbnail from '../asset-viewer/immich-thumbnail.svelte';
+	import { fade } from 'svelte/transition';
 
 	export let album: AlbumResponseDto;
 
@@ -19,14 +18,13 @@
 			return '/no-thumbnail.png';
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Webp, { responseType: 'blob' });
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Jpeg, { responseType: 'blob' });
 		if (data instanceof Blob) {
 			return URL.createObjectURL(data);
 		}
 	};
 
 	const loadImageData = async (thubmnailId: string | null) => {
-		console.log('loadImageData');
 		if (thubmnailId == null) {
 			return '/no-thumbnail.png';
 		}
@@ -79,31 +77,52 @@
 
 		<p class="my-4">Date</p>
 
-		<div class="flex flex-wrap gap-1 w-full border" bind:clientWidth={viewWidth}>
+		<div class="flex flex-wrap gap-1 w-full" bind:clientWidth={viewWidth}>
 			{#each album.assets as asset}
 				<IntersectionObserver once={true} let:intersecting>
 					<div style:width={imageSize + 'px'} style:height={imageSize + 'px'}>
 						{#if intersecting}
-							{#await loadImageData(asset.id)}
-								<div
-									style:width={imageSize + 'px'}
-									style:height={imageSize + 'px'}
-									class={`bg-immich-primary/10 flex place-items-center place-content-center rounded-xl`}
-								>
-									...
-								</div>
-							{:then webpData}
-								<img
-									src={webpData}
-									alt={album.id}
-									style:width={imageSize + 'px'}
-									style:height={imageSize + 'px'}
-									class={`object-cover transition-all z-0 duration-300`}
-									in:fade={{ duration: 250 }}
-									loading="lazy"
-								/>
-								{new Date(asset.createdAt).toISOString()}
-							{/await}
+							{#if album.assets.length < 7}
+								{#await getHighQualityImage(asset.id)}
+									<div
+										style:width={imageSize + 'px'}
+										style:height={imageSize + 'px'}
+										class={`bg-immich-primary/10 flex place-items-center place-content-center rounded-xl`}
+									>
+										...
+									</div>
+								{:then jpegData}
+									<img
+										src={jpegData}
+										alt={album.id}
+										style:width={imageSize + 'px'}
+										style:height={imageSize + 'px'}
+										class={`object-cover transition-all z-0 duration-300`}
+										in:fade={{ duration: 250 }}
+										loading="lazy"
+									/>
+								{/await}
+							{:else}
+								{#await loadImageData(asset.id)}
+									<div
+										style:width={imageSize + 'px'}
+										style:height={imageSize + 'px'}
+										class={`bg-immich-primary/10 flex place-items-center place-content-center rounded-xl`}
+									>
+										...
+									</div>
+								{:then webpData}
+									<img
+										src={webpData}
+										alt={album.id}
+										style:width={imageSize + 'px'}
+										style:height={imageSize + 'px'}
+										class={`object-cover transition-all z-0 duration-300`}
+										in:fade={{ duration: 250 }}
+										loading="lazy"
+									/>
+								{/await}
+							{/if}
 						{/if}
 					</div>
 				</IntersectionObserver>

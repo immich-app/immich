@@ -148,7 +148,6 @@ export class AlbumRepository implements IAlbumRepository {
       .leftJoinAndSelect('album.assets', 'assets')
       .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
       .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC');
-
     const albums = await query.getMany();
 
     albums.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
@@ -161,6 +160,8 @@ export class AlbumRepository implements IAlbumRepository {
 
     const album = await query
       .where('album.id = :albumId', { albumId })
+      .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
+      .leftJoinAndSelect('sharedUser.userInfo', 'userInfo')
       .leftJoinAndSelect('album.assets', 'assets')
       .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
       .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC')
