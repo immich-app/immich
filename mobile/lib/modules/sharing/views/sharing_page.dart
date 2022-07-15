@@ -35,7 +35,7 @@ class SharingPage extends HookConsumerWidget {
           (BuildContext context, int index) {
             String thumbnailUrl = sharedAlbums[index].albumThumbnailAssetId !=
                     null
-                ? "$thumbnailRequestUrl?assetId=${sharedAlbums[index].albumThumbnailAssetId}"
+                ? "$thumbnailRequestUrl/${sharedAlbums[index].albumThumbnailAssetId}"
                 : "https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60";
 
             return ListTile(

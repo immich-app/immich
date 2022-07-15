@@ -18,7 +18,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
     final cacheKey = useState(1);
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/thumbnail?assetId=${asset.id}';
+        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
     var selectedAsset =
         ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
     var newAssetsForAlbum =

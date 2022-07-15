@@ -62,7 +62,7 @@ class SearchPage extends HookConsumerWidget {
                     itemBuilder: ((context, index) {
                       var locationInfo = curatedLocations[index];
                       var thumbnailRequestUrl =
-                          '${box.get(serverEndpointKey)}/asset/thumbnail?assetId=${locationInfo.id}';
+                          '${box.get(serverEndpointKey)}/asset/thumbnail/${locationInfo.id}';
                       return ThumbnailWithInfo(
                         imageUrl: thumbnailRequestUrl,
                         textInfo: locationInfo.city,
