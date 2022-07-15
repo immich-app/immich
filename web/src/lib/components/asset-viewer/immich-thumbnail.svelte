@@ -28,7 +28,7 @@
 
 	const loadImageData = async () => {
 		if ($session.user) {
-			const { data } = await api.assetApi.getAssetThumbnail(asset.id, { responseType: 'blob' });
+			const { data } = await api.assetApi.getAssetThumbnail(asset.id, false, { responseType: 'blob' });
 			if (data instanceof Blob) {
 				imageData = URL.createObjectURL(data);
 				return imageData;

@@ -342,14 +342,16 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/thumbnail/{assetId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /asset/thumbnail' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  Future<Response> getAssetThumbnailWithHttpInfo(String assetId,) async {
+  ///
+  /// * [bool] isHighQuality:
+  ///   Get thumbnail in JPEG format which has higher resolution than webp thumbnail format
+  Future<Response> getAssetThumbnailWithHttpInfo(String assetId, { bool? isHighQuality, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/thumbnail/{assetId}'
-      .replaceAll('{assetId}', assetId);
+    final path = r'/asset/thumbnail';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -357,6 +359,11 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (isHighQuality != null) {
+      queryParams.addAll(_queryParams('', 'isHighQuality', isHighQuality));
+    }
+      queryParams.addAll(_queryParams('', 'assetId', assetId));
 
     const contentTypes = <String>[];
 
@@ -375,8 +382,11 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  Future<Object?> getAssetThumbnail(String assetId,) async {
-    final response = await getAssetThumbnailWithHttpInfo(assetId,);
+  ///
+  /// * [bool] isHighQuality:
+  ///   Get thumbnail in JPEG format which has higher resolution than webp thumbnail format
+  Future<Object?> getAssetThumbnail(String assetId, { bool? isHighQuality, }) async {
+    final response = await getAssetThumbnailWithHttpInfo(assetId,  isHighQuality: isHighQuality, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

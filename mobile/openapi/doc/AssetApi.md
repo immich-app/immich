@@ -15,7 +15,7 @@ Method | HTTP request | Description
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 [**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/searchTerm | 
-[**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
+[**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/allLocation | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/allObjects | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
@@ -311,7 +311,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetThumbnail**
-> Object getAssetThumbnail(assetId)
+> Object getAssetThumbnail(assetId, isHighQuality)
 
 
 
@@ -327,9 +327,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
+final isHighQuality = true; // bool | Get thumbnail in JPEG format which has higher resolution than webp thumbnail format
 
 try {
-    final result = api_instance.getAssetThumbnail(assetId);
+    final result = api_instance.getAssetThumbnail(assetId, isHighQuality);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAssetThumbnail: $e\n');
@@ -341,6 +342,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetId** | **String**|  | 
+ **isHighQuality** | **bool**| Get thumbnail in JPEG format which has higher resolution than webp thumbnail format | [optional] 
 
 ### Return type
 

@@ -15,7 +15,7 @@
 			return '/no-thumbnail.png';
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, { responseType: 'blob' });
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, false, { responseType: 'blob' });
 		if (data instanceof Blob) {
 			imageData = URL.createObjectURL(data);
 			return imageData;

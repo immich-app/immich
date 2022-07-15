@@ -13,14 +13,28 @@
 
 	const dispatch = createEventDispatcher();
 
+	const getHighQualityImage = async (thubmnailId: string | null) => {
+		if (thubmnailId == null) {
+			return '/no-thumbnail.png';
+		}
+
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, true, { responseType: 'blob' });
+		if (data instanceof Blob) {
+			console.log('get high quality image');
+			imageData = URL.createObjectURL(data);
+			return imageData;
+		}
+	};
+
 	const loadImageData = async (thubmnailId: string | null) => {
 		if (thubmnailId == null) {
 			return '/no-thumbnail.png';
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, { responseType: 'blob' });
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, false, { responseType: 'blob' });
 		if (data instanceof Blob) {
 			imageData = URL.createObjectURL(data);
+			getHighQualityImage(thubmnailId);
 			return imageData;
 		}
 	};
