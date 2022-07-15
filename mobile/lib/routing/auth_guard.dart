@@ -1,9 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
-<<<<<<< HEAD
-=======
 import 'package:immich_mobile/routing/router.dart';
->>>>>>> 20b94ef0bb9d9645c121c2f351909978e3fbd6d8
 import 'package:immich_mobile/shared/services/api.service.dart';
 
 class AuthGuard extends AutoRouteGuard {

@@ -22,7 +22,7 @@ class ThumbnailImage extends HookConsumerWidget {
 
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
+        '${box.get(serverEndpointKey)}/asset/thumbnail?assetId=${asset.id}';
     var selectedAsset = ref.watch(homePageStateProvider).selectedItems;
     var isMultiSelectEnable =
         ref.watch(homePageStateProvider).isMultiSelectEnable;
