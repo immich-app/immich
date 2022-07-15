@@ -26,17 +26,21 @@ class SelectionThumbnailImage extends HookConsumerWidget {
     var isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
     Widget _buildSelectionIcon(AssetResponseDto asset) {
-      if (selectedAsset.contains(asset) && !isAlbumExist) {
+      var isSelected = selectedAsset.map((item) => item.id).contains(asset.id);
+      var isNewlySelected =
+          newAssetsForAlbum.map((item) => item.id).contains(asset.id);
+
+      if (isSelected && !isAlbumExist) {
         return Icon(
           Icons.check_circle,
           color: Theme.of(context).primaryColor,
         );
-      } else if (selectedAsset.contains(asset) && isAlbumExist) {
+      } else if (isSelected && isAlbumExist) {
         return const Icon(
           Icons.check_circle,
           color: Color.fromARGB(255, 233, 233, 233),
         );
-      } else if (newAssetsForAlbum.contains(asset) && isAlbumExist) {
+      } else if (isNewlySelected && isAlbumExist) {
         return Icon(
           Icons.check_circle,
           color: Theme.of(context).primaryColor,
@@ -50,17 +54,21 @@ class SelectionThumbnailImage extends HookConsumerWidget {
     }
 
     BoxBorder drawBorderColor() {
-      if (selectedAsset.contains(asset) && !isAlbumExist) {
+      var isSelected = selectedAsset.map((item) => item.id).contains(asset.id);
+      var isNewlySelected =
+          newAssetsForAlbum.map((item) => item.id).contains(asset.id);
+
+      if (isSelected && !isAlbumExist) {
         return Border.all(
           color: Theme.of(context).primaryColorLight,
           width: 10,
         );
-      } else if (selectedAsset.contains(asset) && isAlbumExist) {
+      } else if (isSelected && isAlbumExist) {
         return Border.all(
           color: const Color.fromARGB(255, 190, 190, 190),
           width: 10,
         );
-      } else if (newAssetsForAlbum.contains(asset) && isAlbumExist) {
+      } else if (isNewlySelected && isAlbumExist) {
         return Border.all(
           color: Theme.of(context).primaryColorLight,
           width: 10,
@@ -71,10 +79,15 @@ class SelectionThumbnailImage extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
+        var isSelected =
+            selectedAsset.map((item) => item.id).contains(asset.id);
+        var isNewlySelected =
+            newAssetsForAlbum.map((item) => item.id).contains(asset.id);
+
         if (isAlbumExist) {
           // Operation for existing album
-          if (!selectedAsset.contains(asset)) {
-            if (newAssetsForAlbum.contains(asset)) {
+          if (!isSelected) {
+            if (isNewlySelected) {
               ref
                   .watch(assetSelectionProvider.notifier)
                   .removeSelectedAdditionalAssets([asset]);
@@ -86,7 +99,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
           }
         } else {
           // Operation for new album
-          if (selectedAsset.contains(asset)) {
+          if (isSelected) {
             ref
                 .watch(assetSelectionProvider.notifier)
                 .removeSelectedNewAssets([asset]);
