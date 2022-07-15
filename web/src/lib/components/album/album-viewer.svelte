@@ -6,10 +6,9 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
+	import { fade, fly } from 'svelte/transition';
 
 	export let album: AlbumResponseDto;
-
-	let imageData: string = '/no-thumbnail.png';
 
 	const dispatch = createEventDispatcher();
 
@@ -20,9 +19,7 @@
 
 		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, true, { responseType: 'blob' });
 		if (data instanceof Blob) {
-			console.log('get high quality image');
-			imageData = URL.createObjectURL(data);
-			return imageData;
+			return URL.createObjectURL(data);
 		}
 	};
 
@@ -31,9 +28,9 @@
 			return '/no-thumbnail.png';
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, false, { responseType: 'blob' });
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, true, { responseType: 'blob' });
 		if (data instanceof Blob) {
-			imageData = URL.createObjectURL(data);
+			const imageData = URL.createObjectURL(data);
 			getHighQualityImage(thubmnailId);
 			return imageData;
 		}
@@ -79,22 +76,24 @@
 
 		<p class="my-4">Date</p>
 
-		<div class="flex flex-wrap gap-1 w-full border border-red-500" bind:clientWidth={viewWidth}>
+		<div transition:fade={{ duration: 300 }} class="flex flex-wrap gap-1 w-full border" bind:clientWidth={viewWidth}>
 			{#each album.assets as asset}
 				{#await loadImageData(asset.id)}
 					<div
 						style:width={imageSize + 'px'}
 						style:height={imageSize + 'px'}
+						transition:fade={{ duration: 300 }}
 						class={`bg-immich-primary/10 flex place-items-center place-content-center rounded-xl`}
 					>
 						...
 					</div>
-				{:then img}
+				{:then webpData}
 					<img
-						src={imageData}
+						src={webpData}
 						alt={album.id}
 						style:width={imageSize + 'px'}
 						style:height={imageSize + 'px'}
+						transition:fade={{ duration: 300 }}
 						class={`object-cover transition-all z-0 duration-300`}
 					/>
 				{/await}
