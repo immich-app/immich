@@ -4,8 +4,6 @@
 	import { fade } from 'svelte/transition';
 
 	export let album: AlbumResponseDto;
-	export let width = 275;
-	export let height = 275;
 
 	let imageData: string = '/no-thumbnail.png';
 	const dispatch = createEventDispatcher();

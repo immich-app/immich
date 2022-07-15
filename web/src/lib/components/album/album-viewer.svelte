@@ -89,7 +89,7 @@
 					>
 						...
 					</div>
-				{:then imageData}
+				{:then img}
 					<img
 						src={imageData}
 						alt={album.id}
