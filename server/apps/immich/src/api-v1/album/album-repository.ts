@@ -144,26 +144,31 @@ export class AlbumRepository implements IAlbumRepository {
         });
     }
     // Get information of assets in albums
-    query = query.leftJoinAndSelect('album.assets', 'assets').leftJoinAndSelect('assets.assetInfo', 'assetInfo');
+    query = query
+      .leftJoinAndSelect('album.assets', 'assets')
+      .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
+      .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC');
 
-    return query.orderBy('album.createdAt', 'DESC').getMany();
+    const albums = await query.getMany();
+
+    albums.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
+
+    return albums;
   }
 
   async get(albumId: string): Promise<AlbumEntity | undefined> {
-    const album = await this.albumRepository.findOne({
-      where: { id: albumId },
-      relations: ['sharedUsers', 'sharedUsers.userInfo', 'assets', 'assets.assetInfo'],
-    });
+    let query = this.albumRepository.createQueryBuilder('album');
+
+    const album = await query
+      .where('album.id = :albumId', { albumId })
+      .leftJoinAndSelect('album.assets', 'assets')
+      .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
+      .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC')
+      .getOne();
 
     if (!album) {
       return;
     }
-    // TODO: sort in query
-    const sortedSharedAsset = album.assets?.sort(
-      (a, b) => new Date(a.assetInfo.createdAt).valueOf() - new Date(b.assetInfo.createdAt).valueOf(),
-    );
-
-    album.assets = sortedSharedAsset;
 
     return album;
   }

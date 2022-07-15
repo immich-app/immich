@@ -82,27 +82,30 @@
 		<div class="flex flex-wrap gap-1 w-full border" bind:clientWidth={viewWidth}>
 			{#each album.assets as asset}
 				<IntersectionObserver once={true} let:intersecting>
-					{#if intersecting}
-						{#await loadImageData(asset.id)}
-							<div
-								style:width={imageSize + 'px'}
-								style:height={imageSize + 'px'}
-								class={`bg-immich-primary/10 flex place-items-center place-content-center rounded-xl`}
-							>
-								...
-							</div>
-						{:then webpData}
-							<img
-								src={webpData}
-								alt={album.id}
-								style:width={imageSize + 'px'}
-								style:height={imageSize + 'px'}
-								class={`object-cover transition-all z-0 duration-300`}
-								in:fade={{ duration: 250 }}
-								loading="lazy"
-							/>
-						{/await}
-					{/if}
+					<div style:width={imageSize + 'px'} style:height={imageSize + 'px'}>
+						{#if intersecting}
+							{#await loadImageData(asset.id)}
+								<div
+									style:width={imageSize + 'px'}
+									style:height={imageSize + 'px'}
+									class={`bg-immich-primary/10 flex place-items-center place-content-center rounded-xl`}
+								>
+									...
+								</div>
+							{:then webpData}
+								<img
+									src={webpData}
+									alt={album.id}
+									style:width={imageSize + 'px'}
+									style:height={imageSize + 'px'}
+									class={`object-cover transition-all z-0 duration-300`}
+									in:fade={{ duration: 250 }}
+									loading="lazy"
+								/>
+								{new Date(asset.createdAt).toISOString()}
+							{/await}
+						{/if}
+					</div>
 				</IntersectionObserver>
 			{/each}
 		</div>
