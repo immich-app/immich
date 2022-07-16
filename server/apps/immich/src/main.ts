@@ -1,3 +1,4 @@
+import { dataSource } from '@app/database/config/database.config';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -46,7 +47,6 @@ async function bootstrap() {
     customSiteTitle: 'Immich API Documentation',
   });
 
-  
   await app.listen(3001, () => {
     if (process.env.NODE_ENV == 'development') {
       // Generate API Documentation only in development mode
