@@ -12,7 +12,7 @@
 			};
 		}
 
-		await getAssetsInfo(session.user.accessToken);
+		await getAssetsInfo();
 
 		return {
 			status: 200,
