@@ -4,10 +4,6 @@
 
 	export let user: UserResponseDto;
 
-	onMount(() => {
-		console.log(user);
-	});
-
 	const getUserAvatar = async () => {
 		try {
 			const { data } = await api.userApi.getProfileImage(user.id, {
