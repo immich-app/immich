@@ -1,8 +1,8 @@
 version: "3.8"
 
 services:
-  immich_server_test:
-    image: immich-server-dev:latest
+  immich-server-test:
+    image: immich-server-test
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -17,15 +17,15 @@ services:
     environment:
       - NODE_ENV=development
     depends_on:
-      - redis
-      - database
+      - immich-redis-test
+      - immich-database-test
 
-  redis:
-    container_name: immich_redis_test
+  immich-redis-test:
+    container_name: immich-redis-test
     image: redis:6.2
 
-  database:
-    container_name: immich_postgres_test
+  immich-database-test:
+    container_name: immich-database-test
     image: postgres:14
     env_file:
       - .env.test
