@@ -8,7 +8,7 @@
 		if (!session.user) {
 			return {
 				status: 302,
-				redirect: '/auth/login',
+				redirect: '/auth/login'
 			};
 		}
 
@@ -17,8 +17,8 @@
 		return {
 			status: 200,
 			props: {
-				user: session.user,
-			},
+				user: session.user
+			}
 		};
 	};
 </script>
@@ -31,7 +31,7 @@
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
-	import ImmichThumbnail from '$lib/components/asset-viewer/immich-thumbnail.svelte';
+	import ImmichThumbnail from '$lib/components/shared/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
@@ -77,7 +77,7 @@
 					const files = Array.from<File>(e.target.files);
 
 					const acceptedFile = files.filter(
-						(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image',
+						(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
 					);
 
 					for (const asset of acceptedFile) {

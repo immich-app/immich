@@ -1,19 +1,17 @@
 <script lang="ts">
-	import { assets } from '$app/paths';
-	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
+	import { browser } from '$app/env';
 
-	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
-	import _ from 'lodash';
-	import { createEventDispatcher } from 'svelte';
+	import { AlbumResponseDto, ThumbnailFormat } from '@api';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
-	import { fade } from 'svelte/transition';
-	import ImmichThumbnail from '../asset-viewer/immich-thumbnail.svelte';
+	import ImmichThumbnail from '../shared/immich-thumbnail.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
 	let viewWidth: number;
 	let thumbnailSize: number = 300;
+	let border = '';
 
 	$: {
 		if (album.assets.length < 6) {
@@ -30,35 +28,47 @@
 		const startDateString = startDate.toLocaleDateString('us-EN', {
 			month: 'short',
 			day: 'numeric',
-			year: 'numeric',
+			year: 'numeric'
 		});
 		const endDateString = endDate.toLocaleDateString('us-EN', {
 			month: 'short',
 			day: 'numeric',
-			year: 'numeric',
+			year: 'numeric'
 		});
 		return `${startDateString} - ${endDateString}`;
 	};
+
+	onMount(() => {
+		window.onscroll = (event: Event) => {
+			if (window.pageYOffset > 80) {
+				border = 'border border-gray-200 bg-gray-50';
+			} else {
+				border = '';
+			}
+		};
+	});
 </script>
 
-<section class="absolute w-screen h-screen top-0 left-0 overflow-auto bg-immich-bg z-[9999]">
-	<div class="flex justify-between p-2" title="Go Back">
-		<button
-			id="immich-circle-icon-button"
-			class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
-			on:click={() => dispatch('go-back')}
-		>
-			<ArrowLeft size="24" />
-		</button>
-
-		<div class="right-button-group" title="Add Photos">
-			<button
-				id="immich-circle-icon-button"
-				class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
-				on:click={() => dispatch('click')}
-			>
-				<FileImagePlusOutline size="24" />
-			</button>
+<section class="w-screen h-screen bg-immich-bg">
+	<div class="fixed top-0 w-full bg-immich-bg z-[100]">
+		<div class={`flex justify-between rounded-lg ${border} p-2 mx-2 mt-2 transition-all`}>
+			<a sveltekit:prefetch href="/albums" title="Go Back">
+				<button
+					id="immich-circle-icon-button"
+					class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
+				>
+					<ArrowLeft size="24" />
+				</button>
+			</a>
+			<div class="right-button-group" title="Add Photos">
+				<button
+					id="immich-circle-icon-button"
+					class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
+					on:click={() => dispatch('click')}
+				>
+					<FileImagePlusOutline size="24" />
+				</button>
+			</div>
 		</div>
 	</div>
 

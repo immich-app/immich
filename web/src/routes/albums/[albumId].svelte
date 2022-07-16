@@ -8,7 +8,7 @@
 		if (!session.user) {
 			return {
 				status: 302,
-				redirect: '/auth/login',
+				redirect: '/auth/login'
 			};
 		}
 		const albumId = params['albumId'];
@@ -21,15 +21,15 @@
 		} catch (e) {
 			return {
 				status: 302,
-				redirect: '/albums',
+				redirect: '/albums'
 			};
 		}
 
 		return {
 			status: 200,
 			props: {
-				album: album,
-			},
+				album: album
+			}
 		};
 	};
 </script>
@@ -46,4 +46,4 @@
 	<title>{album.albumName} - Immich</title>
 </svelte:head>
 
-<AlbumViewer {album} on:go-back={() => goto('/albums')} />
+<AlbumViewer {album} />

@@ -6,7 +6,7 @@
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
-	import LoadingSpinner from '../shared/loading-spinner.svelte';
+	import LoadingSpinner from './loading-spinner.svelte';
 	import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
 
 	const dispatch = createEventDispatcher();
@@ -30,7 +30,9 @@
 
 	const loadImageData = async () => {
 		if ($session.user) {
-			const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, { responseType: 'blob' });
+			const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, {
+				responseType: 'blob'
+			});
 			if (data instanceof Blob) {
 				imageData = URL.createObjectURL(data);
 				return imageData;
@@ -43,9 +45,15 @@
 
 		if ($session.user) {
 			try {
-				const { data } = await api.assetApi.serveFile(asset.deviceAssetId, asset.deviceId, false, true, {
-					responseType: 'blob',
-				});
+				const { data } = await api.assetApi.serveFile(
+					asset.deviceAssetId,
+					asset.deviceId,
+					false,
+					true,
+					{
+						responseType: 'blob'
+					}
+				);
 
 				if (!(data instanceof Blob)) {
 					return;
@@ -164,7 +172,9 @@
 
 		<!-- Playback and info -->
 		{#if asset.type === AssetTypeEnum.Video}
-			<div class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10">
+			<div
+				class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10"
+			>
 				{#if isThumbnailVideoPlaying}
 					<span in:fly={{ x: -25, duration: 500 }}>
 						{videoProgress}
