@@ -16,7 +16,7 @@
 <script lang="ts">
 	import '../app.css';
 
-	import { blur } from 'svelte/transition';
+	import { blur, fade, slide } from 'svelte/transition';
 
 	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
 	import AnnouncementBox from '$lib/components/shared/announcement-box.svelte';
@@ -40,7 +40,7 @@
 
 <main>
 	{#key url}
-		<div transition:blur={{ duration: 250 }}>
+		<div in:fade={{ duration: 100 }}>
 			<slot />
 			<DownloadPanel />
 			<UploadPanel />

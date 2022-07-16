@@ -12,7 +12,9 @@
 	const dispatch = createEventDispatcher();
 
 	export let asset: AssetResponseDto;
-	export let groupIndex: number = 0;
+	export let groupIndex = 0;
+	export let thumbnailSize: number | undefined = undefined;
+	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 
 	let imageData: string;
 	let videoData: string;
@@ -28,7 +30,7 @@
 
 	const loadImageData = async () => {
 		if ($session.user) {
-			const { data } = await api.assetApi.getAssetThumbnail(asset.id, ThumbnailFormat.Webp, { responseType: 'blob' });
+			const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, { responseType: 'blob' });
 			if (data instanceof Blob) {
 				imageData = URL.createObjectURL(data);
 				return imageData;
@@ -108,6 +110,10 @@
 	});
 
 	const getSize = () => {
+		if (thumbnailSize) {
+			return `w-[${thumbnailSize}px] h-[${thumbnailSize}px]`;
+		}
+
 		if (asset.exifInfo?.orientation === 'Rotate 90 CW') {
 			return 'w-[176px] h-[235px]';
 		} else if (asset.exifInfo?.orientation === 'Horizontal (normal)') {
@@ -134,6 +140,8 @@
 
 <IntersectionObserver once={true} let:intersecting>
 	<div
+		style:width={`${thumbnailSize}px`}
+		style:height={`${thumbnailSize}px`}
 		class={`bg-gray-100 relative hover:cursor-pointer ${getSize()}`}
 		on:mouseenter={handleMouseOverThumbnail}
 		on:mouseleave={handleMouseLeaveThumbnail}
@@ -188,9 +196,17 @@
 		<!-- Thumbnail -->
 		{#if intersecting}
 			{#await loadImageData()}
-				<div class={`bg-immich-primary/10 ${getSize()} flex place-items-center place-content-center`}>...</div>
+				<div
+					style:width={`${thumbnailSize}px`}
+					style:height={`${thumbnailSize}px`}
+					class={`bg-immich-primary/10 ${getSize()} flex place-items-center place-content-center`}
+				>
+					...
+				</div>
 			{:then imageData}
 				<img
+					style:width={`${thumbnailSize}px`}
+					style:height={`${thumbnailSize}px`}
 					in:fade={{ duration: 250 }}
 					src={imageData}
 					alt={asset.id}
@@ -202,7 +218,15 @@
 
 		{#if mouseOver && asset.type === AssetTypeEnum.Video}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
-				<video muted autoplay preload="none" class="h-full object-cover" width="250px" bind:this={videoPlayerNode}>
+				<video
+					muted
+					autoplay
+					preload="none"
+					class="h-full object-cover"
+					width="250px"
+					style:width={`${thumbnailSize}px`}
+					bind:this={videoPlayerNode}
+				>
 					<track kind="captions" />
 				</video>
 			</div>

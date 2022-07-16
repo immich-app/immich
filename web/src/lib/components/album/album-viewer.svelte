@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { assets } from '$app/paths';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 
 	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
@@ -7,30 +8,20 @@
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
 	import { fade } from 'svelte/transition';
+	import ImmichThumbnail from '../asset-viewer/immich-thumbnail.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
 	let viewWidth: number;
-	let imageSize: number = 300;
+	let thumbnailSize: number = 300;
 
 	$: {
 		if (album.assets.length < 6) {
-			imageSize = Math.floor(viewWidth / album.assets.length - album.assets.length);
+			thumbnailSize = Math.floor(viewWidth / album.assets.length - album.assets.length);
 		} else {
-			imageSize = Math.floor(viewWidth / 6 - 6);
+			thumbnailSize = Math.floor(viewWidth / 6 - 6);
 		}
 	}
-
-	const getThumbnail = async (thubmnailId: string | null, format: ThumbnailFormat) => {
-		if (thubmnailId == null) {
-			return '/no-thumbnail.png';
-		}
-
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, format, { responseType: 'blob' });
-		if (data instanceof Blob) {
-			return URL.createObjectURL(data);
-		}
-	};
 
 	const getDateRange = () => {
 		const startDate = new Date(album.assets[0].createdAt);
@@ -78,55 +69,19 @@
 
 		<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
 
+		{#if album.sharedUsers.length > 0}
+			{#each album.sharedUsers as user}
+				<p class="my-4 text-sm text-gray-500">{user.email}</p>
+			{/each}
+		{/if}
+
 		<div class="flex flex-wrap gap-1 w-full" bind:clientWidth={viewWidth}>
 			{#each album.assets as asset}
-				<IntersectionObserver once={true} let:intersecting>
-					<div style:width={imageSize + 'px'} style:height={imageSize + 'px'}>
-						{#if intersecting}
-							{#if album.assets.length < 7}
-								{#await getThumbnail(asset.id, ThumbnailFormat.Jpeg)}
-									<div
-										style:width={imageSize + 'px'}
-										style:height={imageSize + 'px'}
-										class={`bg-immich-primary/10 flex place-items-center place-content-center rounded-xl`}
-									>
-										...
-									</div>
-								{:then jpegData}
-									<img
-										src={jpegData}
-										alt={album.id}
-										style:width={imageSize + 'px'}
-										style:height={imageSize + 'px'}
-										class={`object-cover transition-all z-0 duration-300`}
-										in:fade={{ duration: 250 }}
-										loading="lazy"
-									/>
-								{/await}
-							{:else}
-								{#await getThumbnail(asset.id, ThumbnailFormat.Webp)}
-									<div
-										style:width={imageSize + 'px'}
-										style:height={imageSize + 'px'}
-										class={`bg-immich-primary/10 flex place-items-center place-content-center rounded-xl`}
-									>
-										...
-									</div>
-								{:then webpData}
-									<img
-										src={webpData}
-										alt={album.id}
-										style:width={imageSize + 'px'}
-										style:height={imageSize + 'px'}
-										class={`object-cover transition-all z-0 duration-300`}
-										in:fade={{ duration: 250 }}
-										loading="lazy"
-									/>
-								{/await}
-							{/if}
-						{/if}
-					</div>
-				</IntersectionObserver>
+				{#if album.assets.length < 7}
+					<ImmichThumbnail {asset} {thumbnailSize} format={ThumbnailFormat.Jpeg} />
+				{:else}
+					<ImmichThumbnail {asset} {thumbnailSize} />
+				{/if}
 			{/each}
 		</div>
 	</section>

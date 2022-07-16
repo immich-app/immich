@@ -37,7 +37,7 @@
 </script>
 
 <section id="sidebar" class="flex flex-col gap-4 pt-8 pr-6">
-	<a sveltekit:prefetch href={`photos`}>
+	<a sveltekit:prefetch href={`/photos`}>
 		<SideBarButton
 			title="Photos"
 			logo={ImageOutline}
@@ -49,7 +49,7 @@
 	<div class="text-xs ml-5">
 		<p>LIBRARY</p>
 	</div>
-	<a sveltekit:prefetch href={`albums`}>
+	<a sveltekit:prefetch href={`/albums`}>
 		<SideBarButton
 			title="Albums"
 			logo={ImageAlbum}
