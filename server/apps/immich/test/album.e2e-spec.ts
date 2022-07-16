@@ -91,13 +91,13 @@ describe('Album', () => {
         // setup users
         const result = await Promise.all([
           userService.createUser({
-            email: 'one1@test.com',
+            email: 'one@test.com',
             password: '1234',
             firstName: 'one',
             lastName: 'test',
           }),
           userService.createUser({
-            email: 'two2@test.com',
+            email: 'two@test.com',
             password: '1234',
             firstName: 'two',
             lastName: 'test',
