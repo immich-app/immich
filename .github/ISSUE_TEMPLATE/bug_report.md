@@ -16,8 +16,11 @@ Note: Please search to see if an issue already exists for the bug you encountere
 A clear and concise description of what the bug is.
 
 **Task List**
+
+*Please complete the task list below. We need this information to help us reproduce the bug or point out problems in your setup. You are not providing enough info may delay our effort to help you.*
+
 - [ ] I have read thoroughly the README setup and installation instructions.
-- [ ] If my setup is different, I have included my docker-compose file.
+- [ ] I have included my `docker-compose` file.
 - [ ] I have included my redacted `.env` file.
 - [ ] I have included information on my machine, and environment.
 
@@ -34,13 +37,10 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Version [e.g. 22]
+**System**
+- Phone OS [iOS, Android]: `<version>`
+- Server Version: `<version>`
+- Mobile App Version: `<version>`
 
 **Additional context**
 Add any other context about the problem here.

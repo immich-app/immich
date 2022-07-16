@@ -7,11 +7,12 @@ import { ApiTags } from '@nestjs/swagger';
 import { ServerPingResponse } from './response-dto/server-ping-response.dto';
 import { ServerVersionReponseDto } from './response-dto/server-version-response.dto';
 import { ServerInfoResponseDto } from './response-dto/server-info-response.dto';
+import { DataSource } from 'typeorm';
 
 @ApiTags('Server Info')
 @Controller('server-info')
 export class ServerInfoController {
-  constructor(private readonly serverInfoService: ServerInfoService, private readonly configService: ConfigService) {}
+  constructor(private readonly serverInfoService: ServerInfoService) {}
 
   @Get()
   async getServerInfo(): Promise<ServerInfoResponseDto> {
