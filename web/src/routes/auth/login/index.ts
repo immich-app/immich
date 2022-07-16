@@ -2,7 +2,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 import * as cookie from 'cookie';
 import { api } from '@api';
 
-export const post: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request }) => {
 	const form = await request.formData();
 
 	const email = form.get('email');
@@ -11,7 +11,7 @@ export const post: RequestHandler = async ({ request }) => {
 	try {
 		const { data: authUser } = await api.authenticationApi.login({
 			email: String(email),
-			password: String(password),
+			password: String(password)
 		});
 
 		return {
@@ -24,9 +24,9 @@ export const post: RequestHandler = async ({ request }) => {
 					lastName: authUser.lastName,
 					isAdmin: authUser.isAdmin,
 					email: authUser.userEmail,
-					shouldChangePassword: authUser.shouldChangePassword,
+					shouldChangePassword: authUser.shouldChangePassword
 				},
-				success: 'success',
+				success: 'success'
 			},
 			headers: {
 				'Set-Cookie': cookie.serialize(
@@ -37,23 +37,23 @@ export const post: RequestHandler = async ({ request }) => {
 						firstName: authUser.firstName,
 						lastName: authUser.lastName,
 						isAdmin: authUser.isAdmin,
-						email: authUser.userEmail,
+						email: authUser.userEmail
 					}),
 					{
 						path: '/',
 						httpOnly: true,
 						sameSite: 'strict',
-						maxAge: 60 * 60 * 24 * 30,
-					},
-				),
-			},
+						maxAge: 60 * 60 * 24 * 30
+					}
+				)
+			}
 		};
 	} catch (error) {
 		return {
 			status: 400,
 			body: {
-				error: 'Incorrect email or password',
-			},
+				error: 'Incorrect email or password'
+			}
 		};
 	}
 };

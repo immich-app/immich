@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { browser } from '$app/env';
-
 	import { AlbumResponseDto, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
+	import CircleAvatar from '../shared/circle-avatar.svelte';
 	import ImmichThumbnail from '../shared/immich-thumbnail.svelte';
 
 	const dispatch = createEventDispatcher();
@@ -80,9 +79,13 @@
 		<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
 
 		{#if album.sharedUsers.length > 0}
-			{#each album.sharedUsers as user}
-				<p class="my-4 text-sm text-gray-500">{user.email}</p>
-			{/each}
+			<div class="mb-4">
+				{#each album.sharedUsers as user}
+					<span class="mr-1">
+						<CircleAvatar {user} />
+					</span>
+				{/each}
+			</div>
 		{/if}
 
 		<div class="flex flex-wrap gap-1 w-full" bind:clientWidth={viewWidth}>

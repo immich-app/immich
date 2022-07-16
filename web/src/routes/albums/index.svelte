@@ -13,7 +13,7 @@
 		if (!session.user) {
 			return {
 				status: 302,
-				redirect: '/auth/login',
+				redirect: '/auth/login'
 			};
 		}
 
@@ -29,8 +29,8 @@
 			status: 200,
 			props: {
 				user: session.user,
-				allAlbums: allAlbums,
-			},
+				allAlbums: allAlbums
+			}
 		};
 	};
 </script>
