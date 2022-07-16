@@ -19,11 +19,13 @@ services:
     depends_on:
       - immich-redis-test
       - immich-database-test
-
+    networks:
+      - immich-test-network
   immich-redis-test:
     container_name: immich-redis-test
     image: redis:6.2
-
+    networks:
+      - immich-test-network
   immich-database-test:
     container_name: immich-database-test
     image: postgres:14
@@ -36,5 +38,8 @@ services:
       PG_DATA: /var/lib/postgresql/data
     volumes:
       - /var/lib/postgresql/data
-    ports:
-      - 5432:5432
+    networks:
+      - immich-test-network
+
+networks:
+  immich-test-network:
