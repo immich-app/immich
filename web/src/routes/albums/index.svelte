@@ -3,10 +3,10 @@
 
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 
-	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import { ImmichUser } from '$lib/models/immich-user';
 	import type { Load } from '@sveltejs/kit';
-	import SideBar from '$lib/components/shared/side-bar/side-bar.svelte';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import { AlbumResponseDto, api } from '@api';
 
 	export const load: Load = async ({ session }) => {
@@ -36,7 +36,7 @@
 </script>
 
 <script lang="ts">
-	import AlbumCard from '$lib/components/album/album-card.svelte';
+	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import { goto } from '$app/navigation';
 
 	export let user: ImmichUser;
@@ -64,7 +64,7 @@
 		<section id="album-content" class="relative pt-8 pl-4 mb-12 bg-immich-bg">
 			<div class="px-4 flex justify-between place-items-center">
 				<div>
-					<p>Albums</p>
+					<p class="font-medium">Albums</p>
 				</div>
 
 				<div>

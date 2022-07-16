@@ -8,7 +8,7 @@
 		}
 
 		return {
-			props: { url },
+			props: { url }
 		};
 	};
 </script>
@@ -18,9 +18,9 @@
 
 	import { blur, fade, slide } from 'svelte/transition';
 
-	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
-	import AnnouncementBox from '$lib/components/shared/announcement-box.svelte';
-	import UploadPanel from '$lib/components/shared/upload-panel.svelte';
+	import DownloadPanel from '$lib/components/asset-viewer-page/download-panel.svelte';
+	import AnnouncementBox from '$lib/components/shared-components/announcement-box.svelte';
+	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import { onMount } from 'svelte';
 	import { api } from '@api';
 
@@ -45,7 +45,11 @@
 			<DownloadPanel />
 			<UploadPanel />
 			{#if shouldShowAnnouncement}
-				<AnnouncementBox {localVersion} {remoteVersion} on:close={() => (shouldShowAnnouncement = false)} />
+				<AnnouncementBox
+					{localVersion}
+					{remoteVersion}
+					on:close={() => (shouldShowAnnouncement = false)}
+				/>
 			{/if}
 		</div>
 	{/key}

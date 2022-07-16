@@ -6,7 +6,7 @@
 		if (!session.user) {
 			return {
 				status: 302,
-				redirect: '/auth/login',
+				redirect: '/auth/login'
 			};
 		}
 
@@ -16,8 +16,8 @@
 			status: 200,
 			props: {
 				user: session.user,
-				allUsers: data,
-			},
+				allUsers: data
+			}
 		};
 	};
 </script>
@@ -27,13 +27,13 @@
 
 	import type { ImmichUser } from '$lib/models/immich-user';
 	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import SideBarButton from '$lib/components/shared/side-bar/side-bar-button.svelte';
+	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
-	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
-	import UserManagement from '$lib/components/admin/user-management.svelte';
-	import FullScreenModal from '$lib/components/shared/full-screen-modal.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import UserManagement from '$lib/components/admin-page/user-management.svelte';
+	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
-	import StatusBox from '$lib/components/shared/status-box.svelte';
+	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 
 	let selectedAction: AdminSideBarSelection;
 

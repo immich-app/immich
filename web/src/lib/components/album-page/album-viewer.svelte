@@ -3,8 +3,8 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
-	import CircleAvatar from '../shared/circle-avatar.svelte';
-	import ImmichThumbnail from '../shared/immich-thumbnail.svelte';
+	import CircleAvatar from '../shared-components/circle-avatar.svelte';
+	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;

@@ -38,6 +38,14 @@ export class UserService {
     return allUserExceptRequestedUser.map(mapUser);
   }
 
+  async getUserById(userId: string): Promise<UserResponseDto> {
+    const user = await this.userRepository.get(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return mapUser(user);
+  }
   async getUserInfo(authUser: AuthUserDto): Promise<UserResponseDto> {
     const user = await this.userRepository.get(authUser.id);
     if (!user) {
@@ -94,7 +102,7 @@ export class UserService {
     }
 
     try {
-      await this.userRepository.createProfileImage(user, fileInfo)
+      await this.userRepository.createProfileImage(user, fileInfo);
 
       return mapCreateProfileImageResponse(authUser.id, fileInfo.path);
     } catch (e) {

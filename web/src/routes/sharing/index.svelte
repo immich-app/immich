@@ -16,6 +16,7 @@
 		let sharedAlbums: AlbumResponseDto[] = [];
 		try {
 			const { data } = await api.albumApi.getAllAlbums(true);
+			console.log(data);
 			sharedAlbums = data;
 		} catch (e) {
 			console.log('Error [getAllAlbums] ', e);
@@ -32,10 +33,11 @@
 </script>
 
 <script lang="ts">
-	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
-	import SideBar from '$lib/components/shared/side-bar/side-bar.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-	import AlbumCard from '$lib/components/album/album-card.svelte';
+	import AlbumCard from '$lib/components/album-page/album-card.svelte';
+	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
 
 	export let user: ImmichUser;
 	export let sharedAlbums: AlbumResponseDto[];
@@ -57,7 +59,7 @@
 			<!-- Main Section -->
 			<div class="px-4 flex justify-between place-items-center">
 				<div>
-					<p>Sharing</p>
+					<p class="font-medium">Sharing</p>
 				</div>
 
 				<div>
@@ -67,7 +69,7 @@
 						<span>
 							<PlusBoxOutline size="18" />
 						</span>
-						<p>Create album</p>
+						<p>Create shared album</p>
 					</button>
 				</div>
 			</div>
@@ -77,9 +79,9 @@
 			</div>
 
 			<!-- Share Album List -->
-			<div class="flex flex-wrap gap-8">
+			<div class="w-full flex flex-col place-items-center">
 				{#each sharedAlbums as album}
-					<a sveltekit:prefetch href={`albums/${album.id}`}> <AlbumCard {album} /></a>
+					<a sveltekit:prefetch href={`albums/${album.id}`}> <SharedAlbumListTile {album} /></a>
 				{/each}
 			</div>
 		</section>
