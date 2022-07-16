@@ -64,6 +64,7 @@ part 'model/server_ping_response.dart';
 part 'model/server_version_reponse_dto.dart';
 part 'model/sign_up_dto.dart';
 part 'model/smart_info_response_dto.dart';
+part 'model/thumbnail_format.dart';
 part 'model/update_album_dto.dart';
 part 'model/update_device_info_dto.dart';
 part 'model/update_user_dto.dart';

@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { api } from '@api';
 
-export const post: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request }) => {
 	const form = await request.formData();
 
 	const email = form.get('email');
@@ -13,22 +13,22 @@ export const post: RequestHandler = async ({ request }) => {
 		email: String(email),
 		password: String(password),
 		firstName: String(firstName),
-		lastName: String(lastName),
+		lastName: String(lastName)
 	});
 
 	if (status === 201) {
 		return {
 			status: 201,
 			body: {
-				success: 'Succesfully create admin account',
-			},
+				success: 'Succesfully create admin account'
+			}
 		};
 	} else {
 		return {
 			status: 400,
 			body: {
-				error: 'Error create admin account',
-			},
+				error: 'Error create admin account'
+			}
 		};
 	}
 };

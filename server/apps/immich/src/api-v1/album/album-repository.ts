@@ -84,7 +84,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
-  getList(ownerId: string, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]> {
+  async getList(ownerId: string, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]> {
     const filteringByShared = typeof getAlbumsDto.shared == 'boolean';
     const userId = ownerId;
     let query = this.albumRepository.createQueryBuilder('album');
@@ -132,35 +132,44 @@ export class AlbumRepository implements IAlbumRepository {
       query = query
         .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
         .leftJoinAndSelect('sharedUser.userInfo', 'userInfo')
-        .where('album.ownerId = :ownerId', { ownerId: userId })
-        .orWhere((qb) => {
-          const subQuery = qb
-            .subQuery()
-            .select('userAlbum.albumId')
-            .from(UserAlbumEntity, 'userAlbum')
-            .where('userAlbum.sharedUserId = :sharedUserId', { sharedUserId: userId })
-            .getQuery();
-          return `album.id IN ${subQuery}`;
-        });
+        .where('album.ownerId = :ownerId', { ownerId: userId });
+      // .orWhere((qb) => {
+      //   const subQuery = qb
+      //     .subQuery()
+      //     .select('userAlbum.albumId')
+      //     .from(UserAlbumEntity, 'userAlbum')
+      //     .where('userAlbum.sharedUserId = :sharedUserId', { sharedUserId: userId })
+      //     .getQuery();
+      //   return `album.id IN ${subQuery}`;
+      // });
     }
-    return query.orderBy('album.createdAt', 'DESC').getMany();
+    // Get information of assets in albums
+    query = query
+      .leftJoinAndSelect('album.assets', 'assets')
+      .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
+      .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC');
+    const albums = await query.getMany();
+
+    albums.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
+
+    return albums;
   }
 
   async get(albumId: string): Promise<AlbumEntity | undefined> {
-    const album = await this.albumRepository.findOne({
-      where: { id: albumId },
-      relations: ['sharedUsers', 'sharedUsers.userInfo', 'assets', 'assets.assetInfo'],
-    });
+    let query = this.albumRepository.createQueryBuilder('album');
+
+    const album = await query
+      .where('album.id = :albumId', { albumId })
+      .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
+      .leftJoinAndSelect('sharedUser.userInfo', 'userInfo')
+      .leftJoinAndSelect('album.assets', 'assets')
+      .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
+      .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC')
+      .getOne();
 
     if (!album) {
       return;
     }
-    // TODO: sort in query
-    const sortedSharedAsset = album.assets?.sort(
-      (a, b) => new Date(a.assetInfo.createdAt).valueOf() - new Date(b.assetInfo.createdAt).valueOf(),
-    );
-
-    album.assets = sortedSharedAsset;
 
     return album;
   }

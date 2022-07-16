@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { api } from '@api';
 
-export const post: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request }) => {
 	const form = await request.formData();
 
 	const email = form.get('email');
@@ -13,22 +13,22 @@ export const post: RequestHandler = async ({ request }) => {
 		email: String(email),
 		password: String(password),
 		firstName: String(firstName),
-		lastName: String(lastName),
+		lastName: String(lastName)
 	});
 
 	if (status === 201) {
 		return {
 			status: 201,
 			body: {
-				success: 'Succesfully create user account',
-			},
+				success: 'Succesfully create user account'
+			}
 		};
 	} else {
 		return {
 			status: 400,
 			body: {
-				error: 'Error create user account',
-			},
+				error: 'Error create user account'
+			}
 		};
 	}
 };

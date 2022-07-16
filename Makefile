@@ -18,3 +18,6 @@ prod:
 
 prod-scale:
 	docker-compose -f ./docker/docker-compose.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
+
+api:
+	cd ./server && npm run api:generate

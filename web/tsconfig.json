@@ -19,9 +19,15 @@
     "importsNotUsedAsValues": "preserve",
     "preserveValueImports": false,
     "paths": {
-      "$lib": ["src/lib"],
-      "$lib/*": ["src/lib/*"],
-      "@api": ["src/api"]
+      "$lib": [
+        "src/lib"
+      ],
+      "$lib/*": [
+        "src/lib/*"
+      ],
+      "@api": [
+        "src/api"
+      ]
     }
   },
 }

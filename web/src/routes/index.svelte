@@ -33,7 +33,7 @@
 </script>
 
 <svelte:head>
-	<title>Immich - Welcome 🎉</title>
+	<title>Welcome 🎉 - Immich</title>
 	<meta name="description" content="Immich Web Interface" />
 </svelte:head>
 

@@ -37,6 +37,7 @@ doc/ServerPingResponse.md
 doc/ServerVersionReponseDto.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
+doc/ThumbnailFormat.md
 doc/UpdateAlbumDto.md
 doc/UpdateDeviceInfoDto.md
 doc/UpdateUserDto.md
@@ -90,6 +91,7 @@ lib/model/server_ping_response.dart
 lib/model/server_version_reponse_dto.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
+lib/model/thumbnail_format.dart
 lib/model/update_album_dto.dart
 lib/model/update_device_info_dto.dart
 lib/model/update_user_dto.dart
@@ -97,4 +99,4 @@ lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 pubspec.yaml
-test/validate_access_token_response_dto_test.dart
+test/thumbnail_format_test.dart

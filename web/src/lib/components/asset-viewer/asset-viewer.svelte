@@ -5,13 +5,12 @@
 	import { flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-	import { AssetType } from '../../models/immich-asset';
 	import PhotoViewer from './photo-viewer.svelte';
 	import DetailPanel from './detail-panel.svelte';
 	import { session } from '$app/stores';
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
-	import { api, AssetResponseDto } from '@api';
+	import { api, AssetResponseDto, AssetTypeEnum } from '@api';
 
 	const dispatch = createEventDispatcher();
 
@@ -191,7 +190,7 @@
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key selectedIndex}
 			{#if viewAssetId && viewDeviceId}
-				{#if selectedAsset.type == AssetType.IMAGE}
+				{#if selectedAsset.type == AssetTypeEnum.Image}
 					<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={closeViewer} />
 				{:else}
 					<VideoViewer assetId={viewAssetId} on:close={closeViewer} />

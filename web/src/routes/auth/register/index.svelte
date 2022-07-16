@@ -29,7 +29,7 @@
 </script>
 
 <svelte:head>
-	<title>Immich - Admin Registration</title>
+	<title>Admin Registration - Immich</title>
 </svelte:head>
 
 <section class="h-screen w-screen flex place-items-center place-content-center">

@@ -43,6 +43,7 @@ import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
+import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -109,8 +110,11 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
-  async getAssetThumbnail(@Param('assetId') assetId: string): Promise<any> {
-    return this.assetService.getAssetThumbnail(assetId);
+  async getAssetThumbnail(
+    @Param('assetId') assetId: string,
+    @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
+  ): Promise<any> {
+    return this.assetService.getAssetThumbnail(assetId, query);
   }
 
   @Get('/allObjects')

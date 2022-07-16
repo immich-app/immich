@@ -136,6 +136,7 @@ Class | Method | HTTP request | Description
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
+ - [ThumbnailFormat](doc//ThumbnailFormat.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
