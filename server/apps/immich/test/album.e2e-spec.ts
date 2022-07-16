@@ -91,13 +91,13 @@ describe('Album', () => {
         // setup users
         const result = await Promise.all([
           userService.createUser({
-            email: 'one@test.com',
+            email: 'one1@test.com',
             password: '1234',
             firstName: 'one',
             lastName: 'test',
           }),
           userService.createUser({
-            email: 'two@test.com',
+            email: 'two2@test.com',
             password: '1234',
             firstName: 'two',
             lastName: 'test',
@@ -124,12 +124,11 @@ describe('Album', () => {
       it('returns the album collection including owned and shared', async () => {
         const { status, body } = await request(app.getHttpServer()).get('/album');
         expect(status).toEqual(200);
-        expect(body).toHaveLength(3);
+        expect(body).toHaveLength(2);
         expect(body).toEqual(
           expect.arrayContaining([
             expect.objectContaining({ ownerId: userOne.id, albumName: userOneShared, shared: true }),
             expect.objectContaining({ ownerId: userOne.id, albumName: userOneNotShared, shared: false }),
-            expect.objectContaining({ ownerId: userTwo.id, albumName: userTwoShared, shared: true }),
           ]),
         );
       });
