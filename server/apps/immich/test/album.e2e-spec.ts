@@ -10,6 +10,7 @@ import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
 import { UserService } from '../src/api-v1/user/user.service';
 import { UserModule } from '../src/api-v1/user/user.module';
+import { DataSource } from 'typeorm';
 
 function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   return request(app.getHttpServer()).post('/album').send(data);
@@ -17,9 +18,10 @@ function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
 
 describe('Album', () => {
   let app: INestApplication;
+  let database: DataSource;
 
   afterAll(async () => {
-    await clearDb();
+    await clearDb(database);
     await app.close();
   });
 
@@ -30,6 +32,7 @@ describe('Album', () => {
       }).compile();
 
       app = moduleFixture.createNestApplication();
+      database = app.get(DataSource);
       await app.init();
     });
 
@@ -56,12 +59,14 @@ describe('Album', () => {
 
       app = moduleFixture.createNestApplication();
       userService = app.get(UserService);
+      database = app.get(DataSource);
+
       await app.init();
     });
 
     describe('with empty DB', () => {
       afterEach(async () => {
-        await clearDb();
+        await clearDb(database);
       });
 
       it('creates an album', async () => {
@@ -91,13 +96,13 @@ describe('Album', () => {
         // setup users
         const result = await Promise.all([
           userService.createUser({
-            email: 'one1@test.com',
+            email: 'one@test.com',
             password: '1234',
             firstName: 'one',
             lastName: 'test',
           }),
           userService.createUser({
-            email: 'two2@test.com',
+            email: 'two@test.com',
             password: '1234',
             firstName: 'two',
             lastName: 'test',

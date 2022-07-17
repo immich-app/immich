@@ -9,6 +9,7 @@ import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { UserService } from '../src/api-v1/user/user.service';
 import { CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
 import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
+import { DataSource } from 'typeorm';
 
 function _createUser(userService: UserService, data: CreateUserDto) {
   return userService.createUser(data);
@@ -16,9 +17,10 @@ function _createUser(userService: UserService, data: CreateUserDto) {
 
 describe('User', () => {
   let app: INestApplication;
+  let database: DataSource;
 
   afterAll(async () => {
-    await clearDb();
+    await clearDb(database);
     await app.close();
   });
 
@@ -29,6 +31,7 @@ describe('User', () => {
       }).compile();
 
       app = moduleFixture.createNestApplication();
+      database = app.get(DataSource);
       await app.init();
     });
 
@@ -54,6 +57,7 @@ describe('User', () => {
 
       app = moduleFixture.createNestApplication();
       userService = app.get(UserService);
+      database = app.get(DataSource);
       await app.init();
     });
 
