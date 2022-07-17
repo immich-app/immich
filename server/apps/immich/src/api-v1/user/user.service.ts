@@ -39,6 +39,7 @@ export class UserService {
   }
 
   async getUserById(userId: string): Promise<UserResponseDto> {
+    console.log(userId);
     const user = await this.userRepository.get(userId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -46,6 +47,7 @@ export class UserService {
 
     return mapUser(user);
   }
+
   async getUserInfo(authUser: AuthUserDto): Promise<UserResponseDto> {
     const user = await this.userRepository.get(authUser.id);
     if (!user) {

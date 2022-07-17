@@ -261,13 +261,13 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/{userId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /user/info/{userId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] userId (required):
   Future<Response> getUserByIdWithHttpInfo(String userId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/user/{userId}'
+    final path = r'/user/info/{userId}'
       .replaceAll('{userId}', userId);
 
     // ignore: prefer_final_locals

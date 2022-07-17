@@ -14,7 +14,7 @@ Method | HTTP request | Description
 [**getAllUsers**](UserApi.md#getallusers) | **GET** /user | 
 [**getMyUserInfo**](UserApi.md#getmyuserinfo) | **GET** /user/me | 
 [**getProfileImage**](UserApi.md#getprofileimage) | **GET** /user/profile-image/{userId} | 
-[**getUserById**](UserApi.md#getuserbyid) | **GET** /user/{userId} | 
+[**getUserById**](UserApi.md#getuserbyid) | **GET** /user/info/{userId} | 
 [**getUserCount**](UserApi.md#getusercount) | **GET** /user/count | 
 [**updateUser**](UserApi.md#updateuser) | **PUT** /user | 
 
