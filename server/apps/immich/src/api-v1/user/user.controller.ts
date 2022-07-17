@@ -45,6 +45,11 @@ export class UserController {
     return await this.userService.getAllUsers(authUser, isAll);
   }
 
+  @Get('/:userId')
+  async getUserById(@Param('userId') userId: string): Promise<UserResponseDto> {
+    return await this.userService.getUserById(userId);
+  }
+
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('me')

@@ -12,7 +12,7 @@
 			};
 		}
 
-		await getAssetsInfo(session.user.accessToken);
+		await getAssetsInfo();
 
 		return {
 			status: 200,
@@ -26,17 +26,17 @@
 <script lang="ts">
 	import type { ImmichUser } from '$lib/models/immich-user';
 
-	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
-	import ImmichThumbnail from '$lib/components/shared/immich-thumbnail.svelte';
+	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
-	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
+	import AssetViewer from '$lib/components/asset-viewer-page/asset-viewer.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
 	import { AssetResponseDto } from '@api';
-	import SideBar from '$lib/components/shared/side-bar/side-bar.svelte';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 
 	export let user: ImmichUser;
 

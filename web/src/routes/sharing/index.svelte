@@ -1,13 +1,8 @@
 <script context="module" lang="ts">
 	export const prerender = false;
 
-	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-
-	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
-	import { ImmichUser } from '$lib/models/immich-user';
 	import type { Load } from '@sveltejs/kit';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import { AlbumResponseDto, api } from '@api';
+	import { AlbumResponseDto, api, UserResponseDto } from '@api';
 
 	export const load: Load = async ({ session }) => {
 		if (!session.user) {
@@ -17,10 +12,10 @@
 			};
 		}
 
-		let allAlbums: AlbumResponseDto[] = [];
+		let sharedAlbums: AlbumResponseDto[] = [];
 		try {
-			const { data } = await api.albumApi.getAllAlbums();
-			allAlbums = data;
+			const { data } = await api.albumApi.getAllAlbums(true);
+			sharedAlbums = data;
 		} catch (e) {
 			console.log('Error [getAllAlbums] ', e);
 		}
@@ -29,22 +24,21 @@
 			status: 200,
 			props: {
 				user: session.user,
-				allAlbums: allAlbums
+				sharedAlbums: sharedAlbums
 			}
 		};
 	};
 </script>
 
 <script lang="ts">
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
-	import { goto } from '$app/navigation';
+	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
 
-	export let user: ImmichUser;
-	export let allAlbums: AlbumResponseDto[];
-
-	const showAlbum = (event: CustomEvent) => {
-		goto('/albums/' + event.detail.id);
-	};
+	export let user: UserResponseDto;
+	export let sharedAlbums: AlbumResponseDto[];
 </script>
 
 <svelte:head>
@@ -58,13 +52,12 @@
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
 	<SideBar />
 
-	<!-- Main Section -->
-
 	<section class="overflow-y-auto relative">
 		<section id="album-content" class="relative pt-8 pl-4 mb-12 bg-immich-bg">
+			<!-- Main Section -->
 			<div class="px-4 flex justify-between place-items-center">
 				<div>
-					<p class="font-medium">Albums</p>
+					<p class="font-medium">Sharing</p>
 				</div>
 
 				<div>
@@ -74,7 +67,7 @@
 						<span>
 							<PlusBoxOutline size="18" />
 						</span>
-						<p>Create album</p>
+						<p>Create shared album</p>
 					</button>
 				</div>
 			</div>
@@ -83,10 +76,12 @@
 				<hr />
 			</div>
 
-			<!-- Album Card -->
-			<div class="flex flex-wrap gap-8">
-				{#each allAlbums as album}
-					<a sveltekit:prefetch href={`albums/${album.id}`}> <AlbumCard {album} /></a>
+			<!-- Share Album List -->
+			<div class="w-full flex flex-col place-items-center">
+				{#each sharedAlbums as album}
+					<a sveltekit:prefetch href={`albums/${album.id}`}>
+						<SharedAlbumListTile {album} {user} /></a
+					>
 				{/each}
 			</div>
 		</section>

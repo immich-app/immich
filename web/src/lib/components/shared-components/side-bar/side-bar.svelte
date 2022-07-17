@@ -6,37 +6,24 @@
 	import { page } from '$app/stores';
 	import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
+	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import SideBarButton from './side-bar-button.svelte';
 	import StatusBox from '../status-box.svelte';
 
 	let selectedAction: AppSideBarSelection;
-
-	const onSidebarButtonClicked = (buttonType: CustomEvent) => {
-		selectedAction = buttonType.detail['actionType'] as AppSideBarSelection;
-
-		if (selectedAction == AppSideBarSelection.PHOTOS) {
-			if ($page.routeId != 'photos') {
-				goto('/photos');
-			}
-		}
-
-		if (selectedAction == AppSideBarSelection.ALBUMS) {
-			if ($page.routeId != 'albums') {
-				goto('/albums');
-			}
-		}
-	};
 
 	onMount(async () => {
 		if ($page.routeId == 'albums') {
 			selectedAction = AppSideBarSelection.ALBUMS;
 		} else if ($page.routeId == 'photos') {
 			selectedAction = AppSideBarSelection.PHOTOS;
+		} else if ($page.routeId == 'sharing') {
+			selectedAction = AppSideBarSelection.SHARING;
 		}
 	});
 </script>
 
-<section id="sidebar" class="flex flex-col gap-4 pt-8 pr-6">
+<section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6">
 	<a sveltekit:prefetch href={$page.routeId != 'photos' ? `/photos` : null}>
 		<SideBarButton
 			title="Photos"
@@ -45,8 +32,15 @@
 			isSelected={selectedAction === AppSideBarSelection.PHOTOS}
 		/></a
 	>
-
-	<div class="text-xs ml-5">
+	<a sveltekit:prefetch href={$page.routeId != 'sharing' ? `/sharing` : null}>
+		<SideBarButton
+			title="Sharing"
+			logo={AccountMultipleOutline}
+			actionType={AppSideBarSelection.SHARING}
+			isSelected={selectedAction === AppSideBarSelection.SHARING}
+		/></a
+	>
+	<div class="text-xs ml-5 my-4">
 		<p>LIBRARY</p>
 	</div>
 	<a sveltekit:prefetch href={$page.routeId != 'albums' ? `/albums` : null}>
