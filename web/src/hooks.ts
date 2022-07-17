@@ -6,7 +6,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
 
 	if (!cookies.session) {
-		return await resolve(event);
+		return await resolve(event, { ssr: false });
 	}
 
 	try {
