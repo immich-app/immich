@@ -15,4 +15,4 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run Immich Server 2E2 Test
-        run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --abort-on-container-exit --exit-code-from immich_server_test
+        run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --abort-on-container-exit --exit-code-from immich-server-test

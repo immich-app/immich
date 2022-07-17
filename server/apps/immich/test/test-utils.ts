@@ -3,13 +3,10 @@ import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { TestingModuleBuilder } from '@nestjs/testing';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../src/modules/immich-jwt/guards/jwt-auth.guard';
-import { databaseConfig } from '@app/database/config/database.config';
 
 type CustomAuthCallback = () => AuthUserDto;
 
-export async function clearDb() {
-  const db = new DataSource(databaseConfig);
-
+export async function clearDb(db: DataSource) {
   const entities = db.entityMetadatas;
   for (const entity of entities) {
     const repository = db.getRepository(entity.name);
