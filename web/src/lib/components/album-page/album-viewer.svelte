@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { afterNavigate } from '$app/navigation';
+
 	import { AlbumResponseDto, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
@@ -11,7 +13,11 @@
 	let viewWidth: number;
 	let thumbnailSize: number = 300;
 	let border = '';
+	let backUrl = '/albums';
 
+	afterNavigate(({ from, to }) => {
+		backUrl = from?.pathname ?? '/albums';
+	});
 	$: {
 		if (album.assets.length < 6) {
 			thumbnailSize = Math.floor(viewWidth / album.assets.length - album.assets.length);
@@ -51,7 +57,7 @@
 <section class="w-screen h-screen bg-immich-bg">
 	<div class="fixed top-0 w-full bg-immich-bg z-[100]">
 		<div class={`flex justify-between rounded-lg ${border} p-2 mx-2 mt-2 transition-all`}>
-			<a sveltekit:prefetch href="/albums" title="Go Back">
+			<a sveltekit:prefetch href={backUrl} title="Go Back">
 				<button
 					id="immich-circle-icon-button"
 					class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}

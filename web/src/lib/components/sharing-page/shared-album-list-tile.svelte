@@ -4,13 +4,7 @@
 	import { fade } from 'svelte/transition';
 
 	export let album: AlbumResponseDto;
-
-	let albumOwner: UserResponseDto = '';
-
-	onMount(async () => {
-		const { data } = await api.userApi.getUserById(album.ownerId);
-		albumOwner = data;
-	});
+	export let user: UserResponseDto;
 
 	const loadImageData = async (thubmnailId: string | null) => {
 		if (thubmnailId == null) {
@@ -24,9 +18,17 @@
 			return URL.createObjectURL(data);
 		}
 	};
+
+	const getAlbumOwnerInfo = async (): Promise<UserResponseDto> => {
+		const { data } = await api.userApi.getUserById(album.ownerId);
+
+		return data;
+	};
 </script>
 
-<div class="flex min-w-[500px] border-b border-gray-300 place-items-center my-4 pb-4 gap-6">
+<div
+	class="flex min-w-[550px] border-b border-gray-300 place-items-center py-4  gap-6 transition-all hover:border-immich-primary"
+>
 	<div>
 		{#await loadImageData(album.albumThumbnailAssetId)}
 			<div
@@ -46,6 +48,13 @@
 
 	<div>
 		<p class="font-medium text-gray-800">{album.albumName}</p>
-		<p class="text-xs">Owner: {albumOwner?.firstName}</p>
+
+		{#await getAlbumOwnerInfo() then albumOwner}
+			{#if user.email == albumOwner.email}
+				<p class="text-xs text-gray-600">Owned</p>
+			{:else}
+				<p class="text-xs text-gray-600">Shared by {albumOwner.email}</p>
+			{/if}
+		{/await}
 	</div>
 </div>

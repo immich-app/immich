@@ -1,9 +1,8 @@
 <script context="module" lang="ts">
 	export const prerender = false;
 
-	import { ImmichUser } from '$lib/models/immich-user';
 	import type { Load } from '@sveltejs/kit';
-	import { AlbumResponseDto, api } from '@api';
+	import { AlbumResponseDto, api, UserResponseDto } from '@api';
 
 	export const load: Load = async ({ session }) => {
 		if (!session.user) {
@@ -16,7 +15,6 @@
 		let sharedAlbums: AlbumResponseDto[] = [];
 		try {
 			const { data } = await api.albumApi.getAllAlbums(true);
-			console.log(data);
 			sharedAlbums = data;
 		} catch (e) {
 			console.log('Error [getAllAlbums] ', e);
@@ -39,7 +37,7 @@
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
 
-	export let user: ImmichUser;
+	export let user: UserResponseDto;
 	export let sharedAlbums: AlbumResponseDto[];
 </script>
 
@@ -81,7 +79,9 @@
 			<!-- Share Album List -->
 			<div class="w-full flex flex-col place-items-center">
 				{#each sharedAlbums as album}
-					<a sveltekit:prefetch href={`albums/${album.id}`}> <SharedAlbumListTile {album} /></a>
+					<a sveltekit:prefetch href={`albums/${album.id}`}>
+						<SharedAlbumListTile {album} {user} /></a
+					>
 				{/each}
 			</div>
 		</section>
