@@ -1,40 +1,47 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
-	import { sendLoginForm } from '$lib/auth-api';
 	import { loginPageMessage } from '$lib/constants';
 	import { createEventDispatcher } from 'svelte';
+	import { api } from '@api';
 
 	let error: string;
 	const dispatch = createEventDispatcher();
 
-	async function login(event: SubmitEvent) {
+	let email: string = '';
+	let password: string = '';
+
+	async function login(_: SubmitEvent) {
 		error = '';
 
-		const formElement = event.target as HTMLFormElement;
+		try {
 
-		const response = await sendLoginForm(formElement);
+		const response = await api.authenticationApi.login({
+			email,
+			password
+		});
 
-		if (response.error) {
-			error = response.error;
+		const user = response.data;
+
+		$session.user = {
+			accessToken: user.accessToken,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			isAdmin: user.isAdmin,
+			id: user.userId,
+			email: user.userEmail,
+		};
+
+		if (!user.isAdmin && user.shouldChangePassword) {
+			return dispatch('first-login');
 		}
 
-		if (response.success) {
-			$session.user = {
-				accessToken: response.user!.accessToken,
-				firstName: response.user!.firstName,
-				lastName: response.user!.lastName,
-				isAdmin: response.user!.isAdmin,
-				id: response.user!.id,
-				email: response.user!.email,
-			};
+		return dispatch('success');
 
-			if (!response.user?.isAdmin && response.user?.shouldChangePassword) {
-				return dispatch('first-login');
-			}
-
-			return dispatch('success');
+		} catch (e) {
+			error = 'Incorrect email or password';
 		}
+
 	}
 </script>
 
@@ -53,12 +60,12 @@
 	<form on:submit|preventDefault={login} method="post" action="" autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="email">Email</label>
-			<input class="immich-form-input" id="email" name="email" type="email" required />
+			<input class="immich-form-input" id="email" name="email" type="email" required bind:value={email} />
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="password">Password</label>
-			<input class="immich-form-input" id="password" name="password" type="password" required />
+			<input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
 		</div>
 
 		{#if error}
