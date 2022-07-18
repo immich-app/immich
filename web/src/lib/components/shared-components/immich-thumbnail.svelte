@@ -2,7 +2,7 @@
 	import { session } from '$app/stores';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
-	import IntersectionObserver from '$lib/components/asset-viewer-page/intersection-observer.svelte';
+	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';

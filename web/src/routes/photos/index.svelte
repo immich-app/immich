@@ -33,7 +33,7 @@
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
-	import AssetViewer from '$lib/components/asset-viewer-page/asset-viewer.svelte';
+	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
 	import { AssetResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
@@ -42,13 +42,14 @@
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
+
 	$: if (isMouseOverGroup == false) {
 		selectedGroupThumbnail = null;
 	}
 
-	let isShowAsset = false;
+	let isShowAssetViewer = false;
 	let currentViewAssetIndex = 0;
-	let currentSelectedAsset: AssetResponseDto;
+	let selectedAsset: AssetResponseDto;
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
 		const { selectedGroupIndex }: { selectedGroupIndex: number } = event.detail;
@@ -60,8 +61,9 @@
 		const { assetId, deviceId }: { assetId: string; deviceId: string } = event.detail;
 
 		currentViewAssetIndex = $flattenAssetGroupByDate.findIndex((a) => a.id == assetId);
-		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
-		isShowAsset = true;
+		selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+		isShowAssetViewer = true;
+		pushState(selectedAsset.id);
 	};
 
 	const uploadClickedHandler = async () => {
@@ -90,6 +92,41 @@
 				console.log('Error seelcting file', e);
 			}
 		}
+	};
+
+	const navigateAssetForward = () => {
+		try {
+			if (currentViewAssetIndex < $flattenAssetGroupByDate.length - 1) {
+				currentViewAssetIndex++;
+				selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+				pushState(selectedAsset.id);
+			}
+		} catch (e) {
+			console.log('Error navigating asset forward', e);
+		}
+	};
+
+	const navigateAssetBackward = () => {
+		try {
+			if (currentViewAssetIndex > 0) {
+				currentViewAssetIndex--;
+				selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+				pushState(selectedAsset.id);
+			}
+		} catch (e) {
+			console.log('Error navigating asset backward', e);
+		}
+	};
+
+	const pushState = (assetId: string) => {
+		// add a URL to the browser's history
+		// changes the current URL in the address bar but doesn't perform any SvelteKit navigation
+		history.pushState(null, '', `/photos/${assetId}`);
+	};
+
+	const closeViewer = () => {
+		isShowAssetViewer = false;
+		history.pushState(null, '', `/photos`);
 	};
 </script>
 
@@ -149,10 +186,11 @@
 </section>
 
 <!-- Overlay Asset Viewer -->
-{#if isShowAsset}
+{#if isShowAssetViewer}
 	<AssetViewer
-		selectedAsset={currentSelectedAsset}
-		selectedIndex={currentViewAssetIndex}
-		on:close={() => (isShowAsset = false)}
+		asset={selectedAsset}
+		on:navigate-backward={navigateAssetBackward}
+		on:navigate-forward={navigateAssetForward}
+		on:close={closeViewer}
 	/>
 {/if}
