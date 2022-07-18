@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Post, Res, UseGuards, ValidationPipe } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -15,15 +15,27 @@ import { LoginResponseDto } from './response-dto/login-response.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto } from './response-dto/admin-signup-response.dto';
 import { ValidateAccessTokenResponseDto } from './response-dto/validate-asset-token-response.dto,';
-
+import { Response } from 'express';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/login')
-  async login(@Body(ValidationPipe) loginCredential: LoginCredentialDto): Promise<LoginResponseDto> {
-    return await this.authService.login(loginCredential);
+  async login(
+    @Body(ValidationPipe) loginCredential: LoginCredentialDto,
+    @Res() response: Response,
+  ): Promise<LoginResponseDto> {
+    const loginResponse = await this.authService.login(loginCredential);
+
+    // Set Cookies
+    const accessTokenCookie = this.authService.getCookieWithJwtToken(loginResponse);
+    const isAuthCookie = `immich_is_authenticated=true; Path=/; Max-Age=${7 * 24 * 3600}`;
+
+    response.setHeader('Set-Cookie', [accessTokenCookie, isAuthCookie]);
+    response.send(loginResponse);
+
+    return loginResponse;
   }
 
   @Post('/admin-sign-up')

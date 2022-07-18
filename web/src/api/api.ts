@@ -6,7 +6,7 @@ import {
 	Configuration,
 	DeviceInfoApi,
 	ServerInfoApi,
-	UserApi,
+	UserApi
 } from './open-api';
 
 class ImmichApi {

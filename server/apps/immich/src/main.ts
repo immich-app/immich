@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { AppModule } from './app.module';
@@ -12,7 +13,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.set('trust proxy');
-
+  app.use(cookieParser());
   if (process.env.NODE_ENV === 'development') {
     app.enableCors();
   }
@@ -25,7 +26,7 @@ async function bootstrap() {
     .setVersion('1.17.0')
     .addBearerAuth({
       type: 'http',
-      scheme: 'bearer',
+      scheme: 'Bearer',
       bearerFormat: 'JWT',
       name: 'JWT',
       description: 'Enter JWT token',
