@@ -1,34 +1,11 @@
-<script context="module" lang="ts">
+<script lang="ts">
 	import type { Load } from '@sveltejs/kit';
 	import { api } from '@api';
-
-	export const load: Load = async ({ session }) => {
-		const { data } = await api.userApi.getUserCount();
-
-		if (session.user) {
-			return {
-				status: 302,
-				redirect: '/photos',
-			};
-		}
-
-		return {
-			status: 200,
-			props: {
-				isAdminUserExist: data.userCount == 0 ? false : true,
-			},
-		};
-	};
-</script>
-
-<script lang="ts">
+	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { checkUserAuthStatus } from '$lib/user_auth';
 
-	export let isAdminUserExist: boolean;
-
-	async function onGettingStartedClicked() {
-		isAdminUserExist ? goto('/auth/login') : goto('/auth/register');
-	}
+	checkUserAuthStatus($session, true, false);
 </script>
 
 <svelte:head>

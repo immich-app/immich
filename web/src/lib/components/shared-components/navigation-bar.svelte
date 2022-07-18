@@ -2,15 +2,14 @@
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import type { ImmichUser } from '$lib/models/immich-user';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 	import { serverEndpoint } from '../../constants';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
 	import { clickOutside } from '../../utils/click-outside';
-	import { api } from '@api';
+	import { api, UserResponseDto } from '@api';
 
-	export let user: ImmichUser;
+	export let user: UserResponseDto;
 
 	let shouldShowAccountInfo = false;
 	let shouldShowProfileImage = false;

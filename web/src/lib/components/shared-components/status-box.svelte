@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { getRequest } from '$lib/utils/api-helper';
 	import { onDestroy, onMount } from 'svelte';
 	import { serverEndpoint } from '$lib/constants';
 	import Cloud from 'svelte-material-icons/Cloud.svelte';
 	import Dns from 'svelte-material-icons/Dns.svelte';
 	import LoadingSpinner from './loading-spinner.svelte';
 	import { goto } from '$app/navigation';
+	import { api } from '@api';
 
 	type ServerInfoType = {
 		diskAvailable: string;
@@ -23,21 +23,21 @@
 	let serverInfoRes: ServerInfoType;
 
 	onMount(async () => {
-		const res = await getRequest('server-info/version', '');
-		serverVersion = `v${res.major}.${res.minor}.${res.patch}`;
+		const serverVersionResponse = await api.serverInfoApi.getServerVersion();
+		serverVersion = `v${serverVersionResponse.data.major}.${serverVersionResponse.data.minor}.${serverVersionResponse.data.patch}`;
 
-		serverInfoRes = (await getRequest('server-info', '')) as ServerInfoType;
+		serverInfoRes = (await api.serverInfoApi.getServerInfo()).data;
 
 		getStorageUsagePercentage();
 	});
 
 	const pingServerInterval = setInterval(async () => {
-		const response = await getRequest('server-info/ping', '');
+		const response = await api.serverInfoApi.pingServer();
 
-		if (response.res === 'pong') isServerOk = true;
+		if (response.data.res === 'pong') isServerOk = true;
 		else isServerOk = false;
 
-		serverInfoRes = (await getRequest('server-info', '')) as ServerInfoType;
+		serverInfoRes = (await api.serverInfoApi.getServerInfo()).data;
 	}, 10000);
 
 	onDestroy(() => clearInterval(pingServerInterval));
