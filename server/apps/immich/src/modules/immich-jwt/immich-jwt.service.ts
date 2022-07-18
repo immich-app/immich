@@ -36,7 +36,10 @@ export class ImmichJwtService {
   }
 
   public extractJwtFromHeader(req: Request) {
-    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+    if (
+      req.headers.authorization &&
+      (req.headers.authorization.split(' ')[0] === 'Bearer' || req.headers.authorization.split(' ')[0] === 'bearer')
+    ) {
       const accessToken = req.headers.authorization.split(' ')[1];
       return accessToken;
     }
@@ -45,6 +48,10 @@ export class ImmichJwtService {
   }
 
   public extractJwtFromCookie(req: Request) {
-    return req.cookies?.immich_access_token;
+    if (req.cookies?.immich_access_token) {
+      return req.cookies.immich_access_token;
+    }
+
+    return null;
   }
 }
