@@ -25,6 +25,6 @@ class ApiService {
   }
 
   setAccessToken(String accessToken) {
-    _apiClient.addDefaultHeader('Authorization', 'bearer $accessToken');
+    _apiClient.addDefaultHeader('Authorization', 'Bearer $accessToken');
   }
 }
