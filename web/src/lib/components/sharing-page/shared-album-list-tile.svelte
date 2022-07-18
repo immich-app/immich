@@ -53,7 +53,7 @@
 			{#if user.email == albumOwner.email}
 				<p class="text-xs text-gray-600">Owned</p>
 			{:else}
-				<p class="text-xs text-gray-600">Shared by {albumOwner.email}</p>
+				<p class="text-xs text-gray-600">Shared by {albumOwner.firstName} {albumOwner.lastName}</p>
 			{/if}
 		{/await}
 	</div>

@@ -18,7 +18,7 @@
 
 	import { blur, fade, slide } from 'svelte/transition';
 
-	import DownloadPanel from '$lib/components/asset-viewer-page/download-panel.svelte';
+	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
 	import AnnouncementBox from '$lib/components/shared-components/announcement-box.svelte';
 	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import { onMount } from 'svelte';

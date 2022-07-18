@@ -33,7 +33,7 @@
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
-	import AssetViewer from '$lib/components/asset-viewer-page/asset-viewer.svelte';
+	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
 	import { AssetResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
