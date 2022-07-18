@@ -18,8 +18,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        immichJwtService.extractJwtFromHeader,
         immichJwtService.extractJwtFromCookie,
+        immichJwtService.extractJwtFromHeader,
       ]),
       ignoreExpiration: false,
       secretOrKey: jwtSecret,

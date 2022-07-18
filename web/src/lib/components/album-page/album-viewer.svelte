@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
+	import { assets } from '$app/paths';
 	import { page } from '$app/stores';
 	import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
@@ -132,32 +133,34 @@
 			{album.albumName}
 		</p>
 
-		<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
+		{#if album.assets.length > 0}
+			<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
 
-		{#if album.sharedUsers.length > 0}
-			<div class="mb-4">
-				{#each album.sharedUsers as user}
-					<span class="mr-1">
-						<CircleAvatar {user} />
-					</span>
+			{#if album.sharedUsers.length > 0}
+				<div class="mb-4">
+					{#each album.sharedUsers as user}
+						<span class="mr-1">
+							<CircleAvatar {user} />
+						</span>
+					{/each}
+				</div>
+			{/if}
+
+			<div class="flex flex-wrap gap-1 w-full" bind:clientWidth={viewWidth}>
+				{#each album.assets as asset}
+					{#if album.assets.length < 7}
+						<ImmichThumbnail
+							{asset}
+							{thumbnailSize}
+							format={ThumbnailFormat.Jpeg}
+							on:viewAsset={viewAsset}
+						/>
+					{:else}
+						<ImmichThumbnail {asset} {thumbnailSize} on:viewAsset={viewAsset} />
+					{/if}
 				{/each}
 			</div>
 		{/if}
-
-		<div class="flex flex-wrap gap-1 w-full" bind:clientWidth={viewWidth}>
-			{#each album.assets as asset}
-				{#if album.assets.length < 7}
-					<ImmichThumbnail
-						{asset}
-						{thumbnailSize}
-						format={ThumbnailFormat.Jpeg}
-						on:viewAsset={viewAsset}
-					/>
-				{:else}
-					<ImmichThumbnail {asset} {thumbnailSize} on:viewAsset={viewAsset} />
-				{/if}
-			{/each}
-		</div>
 	</section>
 </section>
 
