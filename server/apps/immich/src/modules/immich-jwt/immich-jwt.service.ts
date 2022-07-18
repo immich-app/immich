@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 import { JwtPayloadDto } from '../../api-v1/auth/dto/jwt-payload.dto';
 import { jwtSecret } from '../../constants/jwt.constant';
 
@@ -32,5 +33,18 @@ export class ImmichJwtService {
         status: false,
       };
     }
+  }
+
+  public extractJwtFromHeader(req: Request) {
+    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+      const accessToken = req.headers.authorization.split(' ')[1];
+      return accessToken;
+    }
+
+    return null;
+  }
+
+  public extractJwtFromCookie(req: Request) {
+    return req.cookies?.immich_access_token;
   }
 }
