@@ -49,7 +49,7 @@
 
 	let isShowAssetViewer = false;
 	let currentViewAssetIndex = 0;
-	let currentSelectedAsset: AssetResponseDto;
+	let selectedAsset: AssetResponseDto;
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
 		const { selectedGroupIndex }: { selectedGroupIndex: number } = event.detail;
@@ -61,9 +61,9 @@
 		const { assetId, deviceId }: { assetId: string; deviceId: string } = event.detail;
 
 		currentViewAssetIndex = $flattenAssetGroupByDate.findIndex((a) => a.id == assetId);
-		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+		selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
 		isShowAssetViewer = true;
-		pushState(currentSelectedAsset.id);
+		pushState(selectedAsset.id);
 	};
 
 	const uploadClickedHandler = async () => {
@@ -97,14 +97,14 @@
 	const navigateAssetForward = (e?: Event) => {
 		const nextAsset = $flattenAssetGroupByDate[currentViewAssetIndex + 1];
 		currentViewAssetIndex = currentViewAssetIndex + 1;
-		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+		selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
 		pushState(nextAsset.id);
 	};
 
 	const navigateAssetBackward = (e?: Event) => {
 		const lastAsset = $flattenAssetGroupByDate[currentViewAssetIndex - 1];
 		currentViewAssetIndex = currentViewAssetIndex - 1;
-		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+		selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
 		pushState(lastAsset.id);
 	};
 
@@ -178,8 +178,7 @@
 <!-- Overlay Asset Viewer -->
 {#if isShowAssetViewer}
 	<AssetViewer
-		selectedAsset={currentSelectedAsset}
-		selectedIndex={currentViewAssetIndex}
+		asset={selectedAsset}
 		on:navigate-backward={navigateAssetBackward}
 		on:navigate-forward={navigateAssetForward}
 		on:close={closeViewer}
