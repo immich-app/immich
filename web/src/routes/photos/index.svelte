@@ -42,11 +42,12 @@
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
+
 	$: if (isMouseOverGroup == false) {
 		selectedGroupThumbnail = null;
 	}
 
-	let isShowAsset = false;
+	let isShowAssetViewer = false;
 	let currentViewAssetIndex = 0;
 	let currentSelectedAsset: AssetResponseDto;
 
@@ -61,7 +62,8 @@
 
 		currentViewAssetIndex = $flattenAssetGroupByDate.findIndex((a) => a.id == assetId);
 		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
-		isShowAsset = true;
+		isShowAssetViewer = true;
+		pushState(currentSelectedAsset.id);
 	};
 
 	const uploadClickedHandler = async () => {
@@ -90,6 +92,31 @@
 				console.log('Error seelcting file', e);
 			}
 		}
+	};
+
+	const navigateAssetForward = (e?: Event) => {
+		const nextAsset = $flattenAssetGroupByDate[currentViewAssetIndex + 1];
+		currentViewAssetIndex = currentViewAssetIndex + 1;
+		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+		pushState(nextAsset.id);
+	};
+
+	const navigateAssetBackward = (e?: Event) => {
+		const lastAsset = $flattenAssetGroupByDate[currentViewAssetIndex - 1];
+		currentViewAssetIndex = currentViewAssetIndex - 1;
+		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+		pushState(lastAsset.id);
+	};
+
+	const pushState = (assetId: string) => {
+		// add a URL to the browser's history
+		// changes the current URL in the address bar but doesn't perform any SvelteKit navigation
+		history.pushState(null, '', `/photos/${assetId}`);
+	};
+
+	const closeViewer = () => {
+		isShowAssetViewer = false;
+		history.pushState(null, '', `/photos`);
 	};
 </script>
 
@@ -149,10 +176,12 @@
 </section>
 
 <!-- Overlay Asset Viewer -->
-{#if isShowAsset}
+{#if isShowAssetViewer}
 	<AssetViewer
 		selectedAsset={currentSelectedAsset}
 		selectedIndex={currentViewAssetIndex}
-		on:close={() => (isShowAsset = false)}
+		on:navigate-backward={navigateAssetBackward}
+		on:navigate-forward={navigateAssetForward}
+		on:close={closeViewer}
 	/>
 {/if}

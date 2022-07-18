@@ -15,21 +15,13 @@
 	const dispatch = createEventDispatcher();
 
 	export let selectedAsset: AssetResponseDto;
-
 	export let selectedIndex: number;
-
-	let viewDeviceId: string;
-	let viewAssetId: string;
 
 	let halfLeftHover = false;
 	let halfRightHover = false;
 	let isShowDetail = false;
 
 	onMount(() => {
-		viewAssetId = selectedAsset.id;
-		viewDeviceId = selectedAsset.deviceId;
-		pushState(viewAssetId);
-
 		document.addEventListener('keydown', (keyInfo) => handleKeyboardPress(keyInfo.key));
 	});
 
@@ -57,38 +49,17 @@
 	};
 
 	const closeViewer = () => {
-		history.pushState(null, '', `/photos`);
 		dispatch('close');
 	};
 
 	const navigateAssetForward = (e?: Event) => {
 		e?.stopPropagation();
-
-		const nextAsset = $flattenAssetGroupByDate[selectedIndex + 1];
-		viewDeviceId = nextAsset.deviceId;
-		viewAssetId = nextAsset.id;
-
-		selectedIndex = selectedIndex + 1;
-		selectedAsset = $flattenAssetGroupByDate[selectedIndex];
-		pushState(viewAssetId);
+		dispatch('navigate-forward');
 	};
 
 	const navigateAssetBackward = (e?: Event) => {
 		e?.stopPropagation();
-
-		const lastAsset = $flattenAssetGroupByDate[selectedIndex - 1];
-		viewDeviceId = lastAsset.deviceId;
-		viewAssetId = lastAsset.id;
-
-		selectedIndex = selectedIndex - 1;
-		selectedAsset = $flattenAssetGroupByDate[selectedIndex];
-		pushState(viewAssetId);
-	};
-
-	const pushState = (assetId: string) => {
-		// add a URL to the browser's history
-		// changes the current URL in the address bar but doesn't perform any SvelteKit navigation
-		history.pushState(null, '', `/photos/${assetId}`);
+		dispatch('navigate-backward');
 	};
 
 	const showDetailInfoHandler = () => {
@@ -98,7 +69,9 @@
 	const downloadFile = async () => {
 		if ($session.user) {
 			try {
-				const imageName = selectedAsset.exifInfo?.imageName ? selectedAsset.exifInfo?.imageName : selectedAsset.id;
+				const imageName = selectedAsset.exifInfo?.imageName
+					? selectedAsset.exifInfo?.imageName
+					: selectedAsset.id;
 				const imageExtension = selectedAsset.originalPath.split('.')[1];
 				const imageFileName = imageName + '.' + imageExtension;
 
@@ -123,8 +96,8 @@
 
 								$downloadAssets[imageFileName] = percentCompleted;
 							}
-						},
-					},
+						}
+					}
 				);
 
 				if (!(data instanceof Blob)) {
@@ -162,7 +135,11 @@
 	class="absolute h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4  "
 >
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
-		<AsserViewerNavBar on:goBack={closeViewer} on:showDetail={showDetailInfoHandler} on:download={downloadFile} />
+		<AsserViewerNavBar
+			on:goBack={closeViewer}
+			on:showDetail={showDetailInfoHandler}
+			on:download={downloadFile}
+		/>
 	</div>
 
 	<div
@@ -189,19 +166,21 @@
 
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key selectedIndex}
-			{#if viewAssetId && viewDeviceId}
-				{#if selectedAsset.type == AssetTypeEnum.Image}
-					<PhotoViewer assetId={viewAssetId} deviceId={viewDeviceId} on:close={closeViewer} />
-				{:else}
-					<VideoViewer assetId={viewAssetId} on:close={closeViewer} />
-				{/if}
+			{#if selectedAsset.type == AssetTypeEnum.Image}
+				<PhotoViewer
+					assetId={selectedAsset.id}
+					deviceId={selectedAsset.deviceId}
+					on:close={closeViewer}
+				/>
+			{:else}
+				<VideoViewer assetId={selectedAsset.id} on:close={closeViewer} />
 			{/if}
 		{/key}
 	</div>
 
 	<div
 		class={`row-start-2 row-span-full col-start-3 col-span-2 flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end ${
-			selectedAsset.type == 'VIDEO' ? '' : 'z-[500]'
+			selectedAsset.type == AssetTypeEnum.Video ? '' : 'z-[500]'
 		}`}
 		on:click={navigateAssetForward}
 		on:mouseenter={() => {
