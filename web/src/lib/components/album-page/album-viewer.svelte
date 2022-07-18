@@ -1,15 +1,21 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
-
-	import { AlbumResponseDto, ThumbnailFormat } from '@api';
+	import { page } from '$app/stores';
+	import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
+	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
+
+	let isShowAssetViewer = false;
+	let selectedAsset: AssetResponseDto;
+	let currentViewAssetIndex = 0;
+
 	let viewWidth: number;
 	let thumbnailSize: number = 300;
 	let border = '';
@@ -52,6 +58,50 @@
 			}
 		};
 	});
+
+	const viewAsset = (event: CustomEvent) => {
+		const { assetId, deviceId }: { assetId: string; deviceId: string } = event.detail;
+
+		currentViewAssetIndex = album.assets.findIndex((a) => a.id == assetId);
+		selectedAsset = album.assets[currentViewAssetIndex];
+		isShowAssetViewer = true;
+		pushState(selectedAsset.id);
+	};
+
+	const navigateAssetForward = () => {
+		try {
+			if (currentViewAssetIndex < album.assets.length - 1) {
+				currentViewAssetIndex++;
+				selectedAsset = album.assets[currentViewAssetIndex];
+				pushState(selectedAsset.id);
+			}
+		} catch (e) {
+			console.error(e);
+		}
+	};
+
+	const navigateAssetBackward = () => {
+		try {
+			if (currentViewAssetIndex > 0) {
+				currentViewAssetIndex--;
+				selectedAsset = album.assets[currentViewAssetIndex];
+				pushState(selectedAsset.id);
+			}
+		} catch (e) {
+			console.error(e);
+		}
+	};
+
+	const pushState = (assetId: string) => {
+		// add a URL to the browser's history
+		// changes the current URL in the address bar but doesn't perform any SvelteKit navigation
+		history.pushState(null, '', `${$page.url.pathname}/photos/${assetId}`);
+	};
+
+	const closeViewer = () => {
+		isShowAssetViewer = false;
+		history.pushState(null, '', `${$page.url.pathname}`);
+	};
 </script>
 
 <section class="w-screen h-screen bg-immich-bg">
@@ -97,11 +147,26 @@
 		<div class="flex flex-wrap gap-1 w-full" bind:clientWidth={viewWidth}>
 			{#each album.assets as asset}
 				{#if album.assets.length < 7}
-					<ImmichThumbnail {asset} {thumbnailSize} format={ThumbnailFormat.Jpeg} />
+					<ImmichThumbnail
+						{asset}
+						{thumbnailSize}
+						format={ThumbnailFormat.Jpeg}
+						on:viewAsset={viewAsset}
+					/>
 				{:else}
-					<ImmichThumbnail {asset} {thumbnailSize} />
+					<ImmichThumbnail {asset} {thumbnailSize} on:viewAsset={viewAsset} />
 				{/if}
 			{/each}
 		</div>
 	</section>
 </section>
+
+<!-- Overlay Asset Viewer -->
+{#if isShowAssetViewer}
+	<AssetViewer
+		asset={selectedAsset}
+		on:navigate-backward={navigateAssetBackward}
+		on:navigate-forward={navigateAssetForward}
+		on:close={closeViewer}
+	/>
+{/if}

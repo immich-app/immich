@@ -94,18 +94,28 @@
 		}
 	};
 
-	const navigateAssetForward = (e?: Event) => {
-		const nextAsset = $flattenAssetGroupByDate[currentViewAssetIndex + 1];
-		currentViewAssetIndex = currentViewAssetIndex + 1;
-		selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
-		pushState(nextAsset.id);
+	const navigateAssetForward = () => {
+		try {
+			if (currentViewAssetIndex < $flattenAssetGroupByDate.length - 1) {
+				currentViewAssetIndex++;
+				selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+				pushState(selectedAsset.id);
+			}
+		} catch (e) {
+			console.log('Error navigating asset forward', e);
+		}
 	};
 
-	const navigateAssetBackward = (e?: Event) => {
-		const lastAsset = $flattenAssetGroupByDate[currentViewAssetIndex - 1];
-		currentViewAssetIndex = currentViewAssetIndex - 1;
-		selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
-		pushState(lastAsset.id);
+	const navigateAssetBackward = () => {
+		try {
+			if (currentViewAssetIndex > 0) {
+				currentViewAssetIndex--;
+				selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+				pushState(selectedAsset.id);
+			}
+		} catch (e) {
+			console.log('Error navigating asset backward', e);
+		}
 	};
 
 	const pushState = (assetId: string) => {

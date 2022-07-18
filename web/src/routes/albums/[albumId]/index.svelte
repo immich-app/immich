@@ -35,8 +35,6 @@
 </script>
 
 <script lang="ts">
-	import { goto } from '$app/navigation';
-
 	import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
 
 	export let album: AlbumResponseDto;
