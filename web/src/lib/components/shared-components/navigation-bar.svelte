@@ -7,7 +7,7 @@
 	import { fade, fly, slide } from 'svelte/transition';
 	import { serverEndpoint } from '../../constants';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
-	import { clickOutside } from './click-outside';
+	import { clickOutside } from '../../utils/click-outside';
 	import { api } from '@api';
 
 	export let user: ImmichUser;
@@ -56,7 +56,7 @@
 
 <section id="dashboard-navbar" class="fixed w-screen  z-[100] bg-immich-bg text-sm">
 	<div class="flex border-b place-items-center px-6 py-2 ">
-		<a class="flex gap-2 place-items-center hover:cursor-pointer" href="/photos">
+		<a sveltekit:prefetch class="flex gap-2 place-items-center hover:cursor-pointer" href="/photos">
 			<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" />
 			<h1 class="font-immich-title text-2xl text-immich-primary">IMMICH</h1>
 		</a>
@@ -76,12 +76,13 @@
 			{/if}
 
 			{#if user.isAdmin}
-				<button
-					class={`flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5 p-2 rounded-lg font-medium ${
-						$page.url.pathname == '/admin' && 'text-immich-primary underline'
-					}`}
-					on:click={navigateToAdmin}>Administration</button
-				>
+				<a sveltekit:prefetch href={`admin`}>
+					<button
+						class={`flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5 p-2 rounded-lg font-medium ${
+							$page.url.pathname == '/admin' && 'text-immich-primary underline'
+						}`}>Administration</button
+					>
+				</a>
 			{/if}
 
 			<div
@@ -125,7 +126,7 @@
 			id="account-info-panel"
 			class="absolute right-[25px] top-[75px] bg-white shadow-lg rounded-2xl w-[360px] text-center"
 			use:clickOutside
-			on:outclick={() => (shouldShowAccountInfoPanel = false)}
+			on:out-click={() => (shouldShowAccountInfoPanel = false)}
 		>
 			<div class="flex place-items-center place-content-center mt-6">
 				<button

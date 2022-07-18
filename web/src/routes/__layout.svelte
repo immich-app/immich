@@ -8,7 +8,7 @@
 		}
 
 		return {
-			props: { url },
+			props: { url }
 		};
 	};
 </script>
@@ -16,11 +16,11 @@
 <script lang="ts">
 	import '../app.css';
 
-	import { blur } from 'svelte/transition';
+	import { blur, fade, slide } from 'svelte/transition';
 
 	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
-	import AnnouncementBox from '$lib/components/shared/announcement-box.svelte';
-	import UploadPanel from '$lib/components/shared/upload-panel.svelte';
+	import AnnouncementBox from '$lib/components/shared-components/announcement-box.svelte';
+	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import { onMount } from 'svelte';
 	import { api } from '@api';
 
@@ -40,12 +40,16 @@
 
 <main>
 	{#key url}
-		<div transition:blur={{ duration: 250 }}>
+		<div in:fade={{ duration: 100 }}>
 			<slot />
 			<DownloadPanel />
 			<UploadPanel />
 			{#if shouldShowAnnouncement}
-				<AnnouncementBox {localVersion} {remoteVersion} on:close={() => (shouldShowAnnouncement = false)} />
+				<AnnouncementBox
+					{localVersion}
+					{remoteVersion}
+					on:close={() => (shouldShowAnnouncement = false)}
+				/>
 			{/if}
 		</div>
 	{/key}

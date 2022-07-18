@@ -23,6 +23,7 @@ import { AssetResponseDto, mapAsset } from './response-dto/asset-response.dto';
 import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
+import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 
 const fileInfo = promisify(stat);
 
@@ -187,7 +188,7 @@ export class AssetService {
     }
   }
 
-  public async getAssetThumbnail(assetId: string) {
+  public async getAssetThumbnail(assetId: string, query: GetAssetThumbnailDto) {
     let fileReadStream: ReadStream;
 
     const asset = await this.assetRepository.findOne({ where: { id: assetId } });
@@ -197,16 +198,25 @@ export class AssetService {
     }
 
     try {
-      if (asset.webpPath && asset.webpPath.length > 0) {
-        await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
-        fileReadStream = createReadStream(asset.webpPath);
-      } else {
+      if (query.format == GetAssetThumbnailFormatEnum.JPEG) {
         if (!asset.resizePath) {
           throw new NotFoundException('resizePath not set');
         }
 
         await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
         fileReadStream = createReadStream(asset.resizePath);
+      } else {
+        if (asset.webpPath && asset.webpPath.length > 0) {
+          await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
+          fileReadStream = createReadStream(asset.webpPath);
+        } else {
+          if (!asset.resizePath) {
+            throw new NotFoundException('resizePath not set');
+          }
+
+          await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
+          fileReadStream = createReadStream(asset.resizePath);
+        }
       }
 
       return new StreamableFile(fileReadStream);

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { AssetType } from '../../models/immich-asset';
 	import { session } from '$app/stores';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -7,13 +6,15 @@
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
-	import LoadingSpinner from '../shared/loading-spinner.svelte';
-	import { api, AssetResponseDto } from '@api';
+	import LoadingSpinner from './loading-spinner.svelte';
+	import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
 
 	const dispatch = createEventDispatcher();
 
 	export let asset: AssetResponseDto;
-	export let groupIndex: number;
+	export let groupIndex = 0;
+	export let thumbnailSize: number | undefined = undefined;
+	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 
 	let imageData: string;
 	let videoData: string;
@@ -29,7 +30,9 @@
 
 	const loadImageData = async () => {
 		if ($session.user) {
-			const { data } = await api.assetApi.getAssetThumbnail(asset.id, { responseType: 'blob' });
+			const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, {
+				responseType: 'blob'
+			});
 			if (data instanceof Blob) {
 				imageData = URL.createObjectURL(data);
 				return imageData;
@@ -42,9 +45,15 @@
 
 		if ($session.user) {
 			try {
-				const { data } = await api.assetApi.serveFile(asset.deviceAssetId, asset.deviceId, false, true, {
-					responseType: 'blob',
-				});
+				const { data } = await api.assetApi.serveFile(
+					asset.deviceAssetId,
+					asset.deviceId,
+					false,
+					true,
+					{
+						responseType: 'blob'
+					}
+				);
 
 				if (!(data instanceof Blob)) {
 					return;
@@ -109,6 +118,10 @@
 	});
 
 	const getSize = () => {
+		if (thumbnailSize) {
+			return `w-[${thumbnailSize}px] h-[${thumbnailSize}px]`;
+		}
+
 		if (asset.exifInfo?.orientation === 'Rotate 90 CW') {
 			return 'w-[176px] h-[235px]';
 		} else if (asset.exifInfo?.orientation === 'Horizontal (normal)') {
@@ -135,6 +148,8 @@
 
 <IntersectionObserver once={true} let:intersecting>
 	<div
+		style:width={`${thumbnailSize}px`}
+		style:height={`${thumbnailSize}px`}
 		class={`bg-gray-100 relative hover:cursor-pointer ${getSize()}`}
 		on:mouseenter={handleMouseOverThumbnail}
 		on:mouseleave={handleMouseLeaveThumbnail}
@@ -156,8 +171,10 @@
 		{/if}
 
 		<!-- Playback and info -->
-		{#if asset.type === AssetType.VIDEO}
-			<div class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10">
+		{#if asset.type === AssetTypeEnum.Video}
+			<div
+				class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10"
+			>
 				{#if isThumbnailVideoPlaying}
 					<span in:fly={{ x: -25, duration: 500 }}>
 						{videoProgress}
@@ -189,9 +206,17 @@
 		<!-- Thumbnail -->
 		{#if intersecting}
 			{#await loadImageData()}
-				<div class={`bg-immich-primary/10 ${getSize()} flex place-items-center place-content-center`}>...</div>
+				<div
+					style:width={`${thumbnailSize}px`}
+					style:height={`${thumbnailSize}px`}
+					class={`bg-immich-primary/10 ${getSize()} flex place-items-center place-content-center`}
+				>
+					...
+				</div>
 			{:then imageData}
 				<img
+					style:width={`${thumbnailSize}px`}
+					style:height={`${thumbnailSize}px`}
 					in:fade={{ duration: 250 }}
 					src={imageData}
 					alt={asset.id}
@@ -201,9 +226,17 @@
 			{/await}
 		{/if}
 
-		{#if mouseOver && asset.type === AssetType.VIDEO}
+		{#if mouseOver && asset.type === AssetTypeEnum.Video}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
-				<video muted autoplay preload="none" class="h-full object-cover" width="250px" bind:this={videoPlayerNode}>
+				<video
+					muted
+					autoplay
+					preload="none"
+					class="h-full object-cover"
+					width="250px"
+					style:width={`${thumbnailSize}px`}
+					bind:this={videoPlayerNode}
+				>
 					<track kind="captions" />
 				</video>
 			</div>

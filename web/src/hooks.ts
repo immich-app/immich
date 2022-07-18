@@ -22,7 +22,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 				firstName,
 				lastName,
 				isAdmin,
-				email,
+				email
 			};
 		}
 
@@ -30,7 +30,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 		return response;
 	} catch (error) {
-		console.log('Error [handle]', error);
+		console.log('Error [handle]');
 		return await resolve(event);
 	}
 };
@@ -45,7 +45,7 @@ export const getSession: GetSession = async ({ locals }) => {
 			firstName: locals.user.firstName,
 			lastName: locals.user.lastName,
 			isAdmin: locals.user.isAdmin,
-			email: locals.user.email,
-		},
+			email: locals.user.email
+		}
 	};
 };

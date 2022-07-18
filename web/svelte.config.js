@@ -8,17 +8,9 @@ const config = {
 	kit: {
 		adapter: adapter({ out: 'build' }),
 		methodOverride: {
-			allowed: ['PATCH', 'DELETE'],
-		},
-		vite: {
-			resolve: {
-				alias: {
-					'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',
-					'@api': path.resolve('./src/api'),
-				},
-			},
-		},
-	},
+			allowed: ['PATCH', 'DELETE']
+		}
+	}
 };
 
 export default config;

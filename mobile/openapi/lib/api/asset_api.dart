@@ -346,7 +346,9 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  Future<Response> getAssetThumbnailWithHttpInfo(String assetId,) async {
+  ///
+  /// * [ThumbnailFormat] format:
+  Future<Response> getAssetThumbnailWithHttpInfo(String assetId, { ThumbnailFormat? format, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/thumbnail/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -357,6 +359,10 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (format != null) {
+      queryParams.addAll(_queryParams('', 'format', format));
+    }
 
     const contentTypes = <String>[];
 
@@ -375,8 +381,10 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  Future<Object?> getAssetThumbnail(String assetId,) async {
-    final response = await getAssetThumbnailWithHttpInfo(assetId,);
+  ///
+  /// * [ThumbnailFormat] format:
+  Future<Object?> getAssetThumbnail(String assetId, { ThumbnailFormat? format, }) async {
+    final response = await getAssetThumbnailWithHttpInfo(assetId,  format: format, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

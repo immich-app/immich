@@ -79,7 +79,7 @@ This project is under heavy development, there will be continuous functions, fea
 
 I haven't tested with `Docker for Windows` as well as `WSL` on Windows
 
-*Raspberry Pi can be used but `microservices` container has to be comment out in `docker-compose` since TensorFlow has not been supported in Docker image on arm64v7 yet.*
+*Raspberry Pi can be used but `immich-machine-learning` container has to be comment out in `docker-compose` since TensorFlow has not been supported in Docker image on arm64v7 yet.*
 
 **RAM**: At least 2GB, preffered 4GB.
 

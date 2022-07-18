@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 
 	import { createEventDispatcher, onMount } from 'svelte';
-	import LoadingSpinner from '../shared/loading-spinner.svelte';
+	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import { api, AssetResponseDto } from '@api';
 
 	export let assetId: string;
@@ -23,9 +23,15 @@
 	const loadAssetData = async () => {
 		if ($session.user) {
 			try {
-				const { data } = await api.assetApi.serveFile(assetInfo.deviceAssetId, deviceId, false, true, {
-					responseType: 'blob',
-				});
+				const { data } = await api.assetApi.serveFile(
+					assetInfo.deviceAssetId,
+					deviceId,
+					false,
+					true,
+					{
+						responseType: 'blob'
+					}
+				);
 
 				if (!(data instanceof Blob)) {
 					return;
@@ -38,7 +44,10 @@
 	};
 </script>
 
-<div transition:fade={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
+<div
+	transition:fade={{ duration: 150 }}
+	class="flex place-items-center place-content-center h-full select-none"
+>
 	{#if assetInfo}
 		{#await loadAssetData()}
 			<LoadingSpinner />

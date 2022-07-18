@@ -6,17 +6,17 @@
 		if (!session.user) {
 			return {
 				status: 302,
-				redirect: '/auth/login',
+				redirect: '/auth/login'
 			};
 		}
 
-		await getAssetsInfo(session.user.accessToken);
+		await getAssetsInfo();
 
 		return {
 			status: 200,
 			props: {
-				user: session.user,
-			},
+				user: session.user
+			}
 		};
 	};
 </script>
@@ -24,44 +24,30 @@
 <script lang="ts">
 	import type { ImmichUser } from '$lib/models/immich-user';
 
-	import NavigationBar from '$lib/components/shared/navigation-bar.svelte';
-	import SideBarButton from '$lib/components/shared/side-bar-button.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-
-	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
-	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
-	import ImmichThumbnail from '$lib/components/asset-viewer/immich-thumbnail.svelte';
+	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
-	import StatusBox from '$lib/components/shared/status-box.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
 	import { AssetResponseDto } from '@api';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 
 	export let user: ImmichUser;
 
-	let selectedAction: AppSideBarSelection;
-
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
+
 	$: if (isMouseOverGroup == false) {
 		selectedGroupThumbnail = null;
 	}
 
-	let isShowAsset = false;
+	let isShowAssetViewer = false;
 	let currentViewAssetIndex = 0;
-	let currentSelectedAsset: AssetResponseDto;
-
-	const onButtonClicked = (buttonType: CustomEvent) => {
-		selectedAction = buttonType.detail['actionType'] as AppSideBarSelection;
-	};
-
-	onMount(async () => {
-		selectedAction = AppSideBarSelection.PHOTOS;
-	});
+	let selectedAsset: AssetResponseDto;
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
 		const { selectedGroupIndex }: { selectedGroupIndex: number } = event.detail;
@@ -73,8 +59,9 @@
 		const { assetId, deviceId }: { assetId: string; deviceId: string } = event.detail;
 
 		currentViewAssetIndex = $flattenAssetGroupByDate.findIndex((a) => a.id == assetId);
-		currentSelectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
-		isShowAsset = true;
+		selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+		isShowAssetViewer = true;
+		pushState(selectedAsset.id);
 	};
 
 	const uploadClickedHandler = async () => {
@@ -90,7 +77,7 @@
 					const files = Array.from<File>(e.target.files);
 
 					const acceptedFile = files.filter(
-						(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image',
+						(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
 					);
 
 					for (const asset of acceptedFile) {
@@ -104,10 +91,45 @@
 			}
 		}
 	};
+
+	const navigateAssetForward = () => {
+		try {
+			if (currentViewAssetIndex < $flattenAssetGroupByDate.length - 1) {
+				currentViewAssetIndex++;
+				selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+				pushState(selectedAsset.id);
+			}
+		} catch (e) {
+			console.log('Error navigating asset forward', e);
+		}
+	};
+
+	const navigateAssetBackward = () => {
+		try {
+			if (currentViewAssetIndex > 0) {
+				currentViewAssetIndex--;
+				selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
+				pushState(selectedAsset.id);
+			}
+		} catch (e) {
+			console.log('Error navigating asset backward', e);
+		}
+	};
+
+	const pushState = (assetId: string) => {
+		// add a URL to the browser's history
+		// changes the current URL in the address bar but doesn't perform any SvelteKit navigation
+		history.pushState(null, '', `/photos/${assetId}`);
+	};
+
+	const closeViewer = () => {
+		isShowAssetViewer = false;
+		history.pushState(null, '', `/photos`);
+	};
 </script>
 
 <svelte:head>
-	<title>Immich - Photos</title>
+	<title>Photos - Immich</title>
 </svelte:head>
 
 <section>
@@ -115,22 +137,7 @@
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
-	<!-- Sidebar -->
-	<section id="sidebar" class="flex flex-col gap-4 pt-8 pr-6">
-		<SideBarButton
-			title="Photos"
-			logo={ImageOutline}
-			actionType={AppSideBarSelection.PHOTOS}
-			isSelected={selectedAction === AppSideBarSelection.PHOTOS}
-			on:selected={onButtonClicked}
-		/>
-
-		<!-- Status Box -->
-
-		<div class="mb-6 mt-auto">
-			<StatusBox />
-		</div>
-	</section>
+	<SideBar />
 
 	<!-- Main Section -->
 	<section class="overflow-y-auto relative">
@@ -177,10 +184,11 @@
 </section>
 
 <!-- Overlay Asset Viewer -->
-{#if isShowAsset}
+{#if isShowAssetViewer}
 	<AssetViewer
-		selectedAsset={currentSelectedAsset}
-		selectedIndex={currentViewAssetIndex}
-		on:close={() => (isShowAsset = false)}
+		asset={selectedAsset}
+		on:navigate-backward={navigateAssetBackward}
+		on:navigate-forward={navigateAssetForward}
+		on:close={closeViewer}
 	/>
 {/if}

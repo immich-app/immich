@@ -1,8 +1,8 @@
 version: "3.8"
 
 services:
-  immich_server_test:
-    image: immich-server-dev:latest
+  immich-server-test:
+    image: immich-server-test
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -17,15 +17,17 @@ services:
     environment:
       - NODE_ENV=development
     depends_on:
-      - redis
-      - database
-
-  redis:
-    container_name: immich_redis_test
+      - immich-redis-test
+      - immich-database-test
+    networks:
+      - immich-test-network
+  immich-redis-test:
+    container_name: immich-redis-test
     image: redis:6.2
-
-  database:
-    container_name: immich_postgres_test
+    networks:
+      - immich-test-network
+  immich-database-test:
+    container_name: immich-database-test
     image: postgres:14
     env_file:
       - .env.test
@@ -36,5 +38,8 @@ services:
       PG_DATA: /var/lib/postgresql/data
     volumes:
       - /var/lib/postgresql/data
-    ports:
-      - 5432:5432
+    networks:
+      - immich-test-network
+
+networks:
+  immich-test-network:

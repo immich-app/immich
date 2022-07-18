@@ -63,6 +63,12 @@ export class AuthService {
     return mapLoginResponse(validatedUser, accessToken);
   }
 
+  public getCookieWithJwtToken(authLoginInfo: LoginResponseDto) {
+    const maxAge = 7 * 24 * 3600; // 7 days
+    return `immich_access_token=${authLoginInfo.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}`;
+  }
+
+  // !TODO: refactor this method to use the userService createUser method
   public async adminSignUp(signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
     const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
 

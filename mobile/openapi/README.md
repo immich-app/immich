@@ -100,6 +100,7 @@ Class | Method | HTTP request | Description
 *UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
 *UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
 *UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/profile-image/{userId} | 
+*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{userId} | 
 *UserApi* | [**getUserCount**](doc//UserApi.md#getusercount) | **GET** /user/count | 
 *UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /user | 
 
@@ -136,6 +137,7 @@ Class | Method | HTTP request | Description
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
+ - [ThumbnailFormat](doc//ThumbnailFormat.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
