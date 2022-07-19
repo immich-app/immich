@@ -6,7 +6,9 @@
 	import LoginForm from '$lib/components/forms/login-form.svelte';
 	import { checkUserAuthStatus } from '$lib/user_auth';
 
-	checkUserAuthStatus($session, true);
+	checkUserAuthStatus($session).then(() => {
+		goto('/photos');
+	});
 
 	const onLoginSuccess = async () => {
 		goto('/photos');

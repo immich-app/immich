@@ -1,44 +1,25 @@
-<script context="module" lang="ts">
-	export const prerender = false;
-
-	import type { Load } from '@sveltejs/kit';
-	import { AlbumResponseDto, api, UserResponseDto } from '@api';
-
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-
-		let sharedAlbums: AlbumResponseDto[] = [];
-		try {
-			const { data } = await api.albumApi.getAllAlbums(true);
-			sharedAlbums = data;
-		} catch (e) {
-			console.log('Error [getAllAlbums] ', e);
-		}
-
-		return {
-			status: 200,
-			props: {
-				user: session.user,
-				sharedAlbums: sharedAlbums
-			}
-		};
-	};
-</script>
-
 <script lang="ts">
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
+	import { session } from '$app/stores';
+	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
+	import { AlbumResponseDto, api, UserResponseDto } from '@api';
 
-	export let user: UserResponseDto;
-	export let sharedAlbums: AlbumResponseDto[];
+	let user: UserResponseDto;
+	let sharedAlbums: AlbumResponseDto[] = [];
+
+	checkUserAuthStatus($session).then(usr => {
+		user = usr;
+	}).catch(() => {
+		gotoLogin();
+	});
+
+	api.albumApi.getAllAlbums(true).then(resp => {
+		sharedAlbums = resp.data;
+	});
 </script>
 
 <svelte:head>
@@ -46,7 +27,9 @@
 </svelte:head>
 
 <section>
-	<NavigationBar {user} on:uploadClicked={() => {}} />
+	{#if user}
+		<NavigationBar {user} on:uploadClicked={() => {}} />
+	{/if}
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">

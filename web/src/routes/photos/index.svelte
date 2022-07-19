@@ -3,14 +3,14 @@
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
-	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
+	import { assetsGroupByDate, flattenAssetGroupByDate, getAssetsInfo } from '$lib/stores/assets';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
 	import { AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import { checkUserAuthStatus } from '$lib/user_auth';
+	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
@@ -24,8 +24,11 @@
 	let selectedAsset: AssetResponseDto;
 
 	let user: UserResponseDto;
-	checkUserAuthStatus($session).then(usr => {
+	checkUserAuthStatus($session).then((usr) => {
 		user = usr;
+		getAssetsInfo();
+	}).catch(() => {
+		gotoLogin();
 	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
