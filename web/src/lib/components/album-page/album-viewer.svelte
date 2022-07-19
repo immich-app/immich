@@ -5,6 +5,7 @@
 	import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+	import Plus from 'svelte-material-icons/Plus.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
@@ -21,6 +22,7 @@
 	let thumbnailSize: number = 300;
 	let border = '';
 	let backUrl = '/albums';
+	let isEditingTitle = false;
 
 	afterNavigate(({ from, to }) => {
 		backUrl = from?.pathname ?? '/albums';
@@ -130,10 +132,14 @@
 
 	<section class="m-6 py-[72px] px-[160px]">
 		<input
-			class="transition-all text-6xl text-immich-primary w-full border-b-2 border-transparent outline-none hover:border-gray-400 focus:outline-none focus:border-b-2 focus:border-immich-primary bg-immich-bg focus:bg-gray-100"
+			on:focus={() => (isEditingTitle = true)}
+			on:blur={() => (isEditingTitle = false)}
+			class="transition-all text-6xl text-immich-primary w-full border-b-2 border-transparent outline-none hover:border-gray-400 focus:outline-none focus:border-b-2 focus:border-immich-primary bg-immich-bg"
 			type="text"
 			bind:value={album.albumName}
 		/>
+
+		{isEditingTitle}
 
 		{#if album.assets.length > 0}
 			<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
@@ -163,7 +169,18 @@
 				{/each}
 			</div>
 		{:else}
-			<section id="empty-album">Empty Album Choose here</section>
+			<!-- Album is empty - Show asset selectection buttons -->
+			<section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
+				<div class="w-[300px]">
+					<p class="text-xs">ADD PHOTOS</p>
+					<button
+						class="w-full py-8 border bg-gray-100 rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-200"
+					>
+						<span><Plus color="#4250af" size="24" /> </span>
+						<span class="text-lg">Select photos</span>
+					</button>
+				</div>
+			</section>
 		{/if}
 	</section>
 </section>
