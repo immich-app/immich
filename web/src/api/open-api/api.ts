@@ -785,6 +785,19 @@ export interface LoginResponseDto {
 /**
  * 
  * @export
+ * @interface LogoutResponseDto
+ */
+export interface LogoutResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof LogoutResponseDto
+     */
+    'successful': boolean;
+}
+/**
+ * 
+ * @export
  * @interface RemoveAssetsDto
  */
 export interface RemoveAssetsDto {
@@ -2890,6 +2903,35 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        logout: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/auth/logout`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         validateAccessToken: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/auth/validateToken`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -2953,6 +2995,15 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async logout(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LogoutResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.logout(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async validateAccessToken(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ValidateAccessTokenResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.validateAccessToken(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -2984,6 +3035,14 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          */
         login(loginCredentialDto: LoginCredentialDto, options?: any): AxiosPromise<LoginResponseDto> {
             return localVarFp.login(loginCredentialDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        logout(options?: any): AxiosPromise<LogoutResponseDto> {
+            return localVarFp.logout(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3023,6 +3082,16 @@ export class AuthenticationApi extends BaseAPI {
      */
     public login(loginCredentialDto: LoginCredentialDto, options?: AxiosRequestConfig) {
         return AuthenticationApiFp(this.configuration).login(loginCredentialDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuthenticationApi
+     */
+    public logout(options?: AxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).logout(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

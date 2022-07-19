@@ -16,6 +16,8 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto } from './response-dto/admin-signup-response.dto';
 import { ValidateAccessTokenResponseDto } from './response-dto/validate-asset-token-response.dto,';
 import { Response } from 'express';
+import { LogoutResponseDto } from './response-dto/logout-response.dto';
+
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
@@ -51,4 +53,16 @@ export class AuthController {
   async validateAccessToken(@GetAuthUser() authUser: AuthUserDto): Promise<ValidateAccessTokenResponseDto> {
     return new ValidateAccessTokenResponseDto(true);
   }
+
+  @Post('/logout')
+  async logout(@Res() response: Response): Promise<LogoutResponseDto> {
+    response.clearCookie('immich_access_token');
+    response.clearCookie('immich_is_authenticated');
+
+    const status = new LogoutResponseDto(true);
+
+    response.send(status)
+    return status;
+  }
+
 }

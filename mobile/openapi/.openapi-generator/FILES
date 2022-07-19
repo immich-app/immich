@@ -29,6 +29,7 @@ doc/DeviceTypeEnum.md
 doc/ExifResponseDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
+doc/LogoutResponseDto.md
 doc/RemoveAssetsDto.md
 doc/SearchAssetDto.md
 doc/ServerInfoApi.md
@@ -84,6 +85,7 @@ lib/model/device_type_enum.dart
 lib/model/exif_response_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
+lib/model/logout_response_dto.dart
 lib/model/remove_assets_dto.dart
 lib/model/search_asset_dto.dart
 lib/model/server_info_response_dto.dart
@@ -99,3 +101,4 @@ lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 pubspec.yaml
+test/logout_response_dto_test.dart
