@@ -129,9 +129,11 @@
 	</div>
 
 	<section class="m-6 py-[72px] px-[160px]">
-		<p class="text-6xl text-immich-primary">
-			{album.albumName}
-		</p>
+		<input
+			class="transition-all text-6xl text-immich-primary w-full border-b-2 border-transparent outline-none hover:border-gray-400 focus:outline-none focus:border-b-2 focus:border-immich-primary bg-immich-bg focus:bg-gray-100"
+			type="text"
+			bind:value={album.albumName}
+		/>
 
 		{#if album.assets.length > 0}
 			<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
@@ -160,6 +162,8 @@
 					{/if}
 				{/each}
 			</div>
+		{:else}
+			<section id="empty-album">Empty Album Choose here</section>
 		{/if}
 	</section>
 </section>
