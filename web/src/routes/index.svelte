@@ -3,9 +3,21 @@
 	import { api } from '@api';
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { checkUserAuthStatus } from '$lib/user_auth';
+	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
 
-	checkUserAuthStatus($session, true, false);
+	checkUserAuthStatus($session).then(user => {
+		goto('/photos');
+	});
+
+	function onGettingStartedClicked() {
+		api.userApi.getUserCount().then(resp => {
+			if (resp.data.userCount === 0) {
+				goto('/auth/register')
+			} else {
+				gotoLogin();
+			}
+		});
+	}
 </script>
 
 <svelte:head>
