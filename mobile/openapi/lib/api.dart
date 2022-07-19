@@ -57,6 +57,7 @@ part 'model/device_type_enum.dart';
 part 'model/exif_response_dto.dart';
 part 'model/login_credential_dto.dart';
 part 'model/login_response_dto.dart';
+part 'model/logout_response_dto.dart';
 part 'model/remove_assets_dto.dart';
 part 'model/search_asset_dto.dart';
 part 'model/server_info_response_dto.dart';

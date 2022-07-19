@@ -11,6 +11,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**adminSignUp**](AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 [**login**](AuthenticationApi.md#login) | **POST** /auth/login | 
+[**logout**](AuthenticationApi.md#logout) | **POST** /auth/logout | 
 [**validateAccessToken**](AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 
 
@@ -92,6 +93,43 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **logout**
+> LogoutResponseDto logout()
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = AuthenticationApi();
+
+try {
+    final result = api_instance.logout();
+    print(result);
+} catch (e) {
+    print('Exception when calling AuthenticationApi->logout: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**LogoutResponseDto**](LogoutResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

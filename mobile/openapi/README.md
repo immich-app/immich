@@ -89,6 +89,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
+*AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeviceInfoApi* | [**createDeviceInfo**](doc//DeviceInfoApi.md#createdeviceinfo) | **POST** /device-info | 
 *DeviceInfoApi* | [**updateDeviceInfo**](doc//DeviceInfoApi.md#updatedeviceinfo) | **PATCH** /device-info | 
@@ -130,6 +131,7 @@ Class | Method | HTTP request | Description
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
+ - [LogoutResponseDto](doc//LogoutResponseDto.md)
  - [RemoveAssetsDto](doc//RemoveAssetsDto.md)
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)

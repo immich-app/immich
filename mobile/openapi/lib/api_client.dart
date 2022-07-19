@@ -238,6 +238,8 @@ class ApiClient {
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':
           return LoginResponseDto.fromJson(value);
+        case 'LogoutResponseDto':
+          return LogoutResponseDto.fromJson(value);
         case 'RemoveAssetsDto':
           return RemoveAssetsDto.fromJson(value);
         case 'SearchAssetDto':
