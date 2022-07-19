@@ -6,26 +6,26 @@
 @tailwind utilities;
 
 :root {
-  font-family: 'Work Sans', sans-serif;
+	font-family: 'Work Sans', sans-serif;
 }
 
 body {
-	min-height: 100vh;
+	/* min-height: 100vh; */
 	margin: 0;
 	background-color: #f6f8fe;
-  color: #5f6368;
+	color: #5f6368;
 }
 
 @layer utilities {
-  .immich-form-input {
-    @apply bg-slate-100 p-2 rounded-md focus:border-immich-primary text-sm
-  }
+	.immich-form-input {
+		@apply bg-slate-100 p-2 rounded-md focus:border-immich-primary text-sm;
+	}
 
-  .immich-form-label {
-    @apply font-medium text-sm text-gray-500
-  }
+	.immich-form-label {
+		@apply font-medium text-sm text-gray-500;
+	}
 
-  .immich-btn-primary {
-    @apply bg-immich-primary text-gray-100 border rounded-xl py-2 px-4 transition-all duration-150 hover:bg-immich-primary hover:shadow-lg text-sm font-medium
-  }
+	.immich-btn-primary {
+		@apply bg-immich-primary text-gray-100 border rounded-xl py-2 px-4 transition-all duration-150 hover:bg-immich-primary hover:shadow-lg text-sm font-medium;
+	}
 }

@@ -10,11 +10,13 @@
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
+	import AssetSelection from './asset-selection.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
 
 	let isShowAssetViewer = false;
+	let ifShowAssetSelection = false;
 	let selectedAsset: AssetResponseDto;
 	let currentViewAssetIndex = 0;
 
@@ -24,7 +26,7 @@
 	let backUrl = '/albums';
 	let isEditingTitle = false;
 
-	afterNavigate(({ from, to }) => {
+	afterNavigate(({ from }) => {
 		backUrl = from?.pathname ?? '/albums';
 	});
 	$: {
@@ -39,16 +41,14 @@
 		const startDate = new Date(album.assets[0].createdAt);
 		const endDate = new Date(album.assets[album.assets.length - 1].createdAt);
 
-		const startDateString = startDate.toLocaleDateString('us-EN', {
+		const timeFormatOption: Intl.DateTimeFormatOptions = {
 			month: 'short',
 			day: 'numeric',
 			year: 'numeric'
-		});
-		const endDateString = endDate.toLocaleDateString('us-EN', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
+		};
+
+		const startDateString = startDate.toLocaleDateString('us-EN', timeFormatOption);
+		const endDateString = endDate.toLocaleDateString('us-EN', timeFormatOption);
 		return `${startDateString} - ${endDateString}`;
 	};
 
@@ -107,7 +107,7 @@
 	};
 </script>
 
-<section class="w-screen h-screen bg-immich-bg">
+<section class="bg-immich-bg relative">
 	<div class="fixed top-0 w-full bg-immich-bg z-[100]">
 		<div class={`flex justify-between rounded-lg ${border} p-2 mx-2 mt-2 transition-all`}>
 			<a sveltekit:prefetch href={backUrl} title="Go Back">
@@ -130,7 +130,7 @@
 		</div>
 	</div>
 
-	<section class="m-6 py-[72px] px-[160px]">
+	<section class="m-auto mt-[160px] w-[60%]">
 		<input
 			on:focus={() => (isEditingTitle = true)}
 			on:blur={() => (isEditingTitle = false)}
@@ -174,10 +174,11 @@
 				<div class="w-[300px]">
 					<p class="text-xs">ADD PHOTOS</p>
 					<button
-						class="w-full py-8 border bg-gray-100 rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-200"
+						on:click={() => (ifShowAssetSelection = true)}
+						class="w-full py-8 border bg-white rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-100 hover:text-immich-primary"
 					>
 						<span><Plus color="#4250af" size="24" /> </span>
-						<span class="text-lg">Select photos</span>
+						<span class="text-lg text-immich-fg">Select photos</span>
 					</button>
 				</div>
 			</section>
@@ -193,4 +194,8 @@
 		on:navigate-forward={navigateAssetForward}
 		on:close={closeViewer}
 	/>
+{/if}
+
+{#if ifShowAssetSelection}
+	<AssetSelection on:go-back={() => (ifShowAssetSelection = false)} />
 {/if}
