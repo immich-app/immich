@@ -16,7 +16,7 @@
 	export let album: AlbumResponseDto;
 
 	let isShowAssetViewer = false;
-	let ifShowAssetSelection = false;
+	let isShowAssetSelection = false;
 	let selectedAsset: AssetResponseDto;
 	let currentViewAssetIndex = 0;
 
@@ -135,6 +135,19 @@
 				});
 		}
 	}
+
+	const createAlbumHandler = async (event: CustomEvent) => {
+		const { assets }: { assets: string[] } = event.detail;
+
+		try {
+			const { data } = await api.albumApi.addAssetsToAlbum(album.id, { assetIds: assets });
+			album = data;
+
+			isShowAssetSelection = false;
+		} catch (e) {
+			console.log('Error [createAlbumHandler] ', e);
+		}
+	};
 </script>
 
 <section class="bg-immich-bg relative">
@@ -152,7 +165,7 @@
 				<button
 					id="immich-circle-icon-button"
 					class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
-					on:click={() => dispatch('click')}
+					on:click={() => (isShowAssetSelection = true)}
 				>
 					<FileImagePlusOutline size="24" />
 				</button>
@@ -191,10 +204,10 @@
 							{asset}
 							{thumbnailSize}
 							format={ThumbnailFormat.Jpeg}
-							on:viewAsset={viewAsset}
+							on:click={viewAsset}
 						/>
 					{:else}
-						<ImmichThumbnail {asset} {thumbnailSize} on:viewAsset={viewAsset} />
+						<ImmichThumbnail {asset} {thumbnailSize} on:click={viewAsset} />
 					{/if}
 				{/each}
 			</div>
@@ -204,7 +217,7 @@
 				<div class="w-[300px]">
 					<p class="text-xs">ADD PHOTOS</p>
 					<button
-						on:click={() => (ifShowAssetSelection = true)}
+						on:click={() => (isShowAssetSelection = true)}
 						class="w-full py-8 border bg-white rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-100 hover:text-immich-primary"
 					>
 						<span><Plus color="#4250af" size="24" /> </span>
@@ -226,6 +239,10 @@
 	/>
 {/if}
 
-{#if ifShowAssetSelection}
-	<AssetSelection on:go-back={() => (ifShowAssetSelection = false)} />
+{#if isShowAssetSelection}
+	<AssetSelection
+		existedAssets={album.assets}
+		on:go-back={() => (isShowAssetSelection = false)}
+		on:create-album={createAlbumHandler}
+	/>
 {/if}

@@ -44,8 +44,10 @@
 	export let albums: AlbumResponseDto[];
 
 	onMount(async () => {
-		// Delete album that has no photos and is named 'Untitled'
+		const { data } = await api.albumApi.getAllAlbums();
+		albums = data;
 
+		// Delete album that has no photos and is named 'Untitled'
 		for (const album of albums) {
 			if (album.albumName === 'Untitled' && album.assets.length === 0) {
 				const isDeleted = await deleteAlbum(album);
