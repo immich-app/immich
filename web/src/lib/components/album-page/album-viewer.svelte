@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
-	import { assets } from '$app/paths';
 	import { page } from '$app/stores';
-	import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat } from '@api';
+	import { AlbumResponseDto, api, AssetResponseDto, ThumbnailFormat, UserResponseDto } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
@@ -11,6 +10,7 @@
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import AssetSelection from './asset-selection.svelte';
+	import _ from 'lodash-es';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
@@ -25,6 +25,10 @@
 	let border = '';
 	let backUrl = '/albums';
 	let isEditingTitle = false;
+	let currentAlbumName = '';
+	let currentUser: UserResponseDto;
+
+	$: isOwned = currentUser?.id == album.ownerId;
 
 	afterNavigate(({ from }) => {
 		backUrl = from?.pathname ?? '/albums';
@@ -52,7 +56,7 @@
 		return `${startDateString} - ${endDateString}`;
 	};
 
-	onMount(() => {
+	onMount(async () => {
 		window.onscroll = (event: Event) => {
 			if (window.pageYOffset > 80) {
 				border = 'border border-gray-200 bg-gray-50';
@@ -60,6 +64,15 @@
 				border = '';
 			}
 		};
+
+		currentAlbumName = album.albumName;
+
+		try {
+			const { data } = await api.userApi.getMyUserInfo();
+			currentUser = data;
+		} catch (e) {
+			console.log('Error [getMyUserInfo - album-viewer] ', e);
+		}
 	});
 
 	const viewAsset = (event: CustomEvent) => {
@@ -105,6 +118,23 @@
 		isShowAssetViewer = false;
 		history.pushState(null, '', `${$page.url.pathname}`);
 	};
+
+	// Update Album Name
+	$: {
+		if (!isEditingTitle && currentAlbumName != album.albumName && isOwned) {
+			api.albumApi
+				.updateAlbumInfo(album.id, {
+					ownerId: album.ownerId,
+					albumName: album.albumName
+				})
+				.then(() => {
+					currentAlbumName = album.albumName;
+				})
+				.catch((e) => {
+					console.log('Error [updateAlbumInfo] ', e);
+				});
+		}
+	}
 </script>
 
 <section class="bg-immich-bg relative">
@@ -133,12 +163,13 @@
 		<input
 			on:focus={() => (isEditingTitle = true)}
 			on:blur={() => (isEditingTitle = false)}
-			class="transition-all text-6xl text-immich-primary w-full border-b-2 border-transparent outline-none hover:border-gray-400 focus:outline-none focus:border-b-2 focus:border-immich-primary bg-immich-bg"
+			class={`transition-all text-6xl text-immich-primary w-full border-b-2 border-transparent outline-none ${
+				isOwned ? 'hover:border-gray-400' : 'hover:border-transparent'
+			} focus:outline-none focus:border-b-2 focus:border-immich-primary bg-immich-bg`}
 			type="text"
 			bind:value={album.albumName}
+			disabled={!isOwned}
 		/>
-
-		{isEditingTitle}
 
 		{#if album.assets.length > 0}
 			<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
