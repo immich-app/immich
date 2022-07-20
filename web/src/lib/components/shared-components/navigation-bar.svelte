@@ -61,14 +61,17 @@
 			<h1 class="font-immich-title text-2xl text-immich-primary">IMMICH</h1>
 		</a>
 		<div class="flex-1 ml-24">
-			<input class="w-[50%] border rounded-md bg-gray-200 px-8 py-4" placeholder="Search - Coming soon" />
+			<input
+				class="w-[50%] border rounded-md bg-gray-200 px-8 py-4"
+				placeholder="Search - Coming soon"
+			/>
 		</div>
 		<section class="flex gap-4 place-items-center">
 			{#if $page.url.pathname !== '/admin'}
 				<button
 					in:fly={{ x: 50, duration: 250 }}
 					on:click={() => dispatch('uploadClicked')}
-					class="flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5 p-2 rounded-lg font-medium"
+					class="immich-text-button"
 				>
 					<TrayArrowUp size="20" />
 					<span> Upload </span>
@@ -158,7 +161,9 @@
 			</div>
 
 			<div class="mb-6">
-				<button class="border rounded-3xl px-6 py-2 hover:bg-gray-50" on:click={logOut}>Sign Out</button>
+				<button class="border rounded-3xl px-6 py-2 hover:bg-gray-50" on:click={logOut}
+					>Sign Out</button
+				>
 			</div>
 		</div>
 	{/if}

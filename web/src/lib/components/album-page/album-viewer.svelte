@@ -108,7 +108,7 @@
 </script>
 
 <section class="bg-immich-bg relative">
-	<div class="fixed top-0 w-full bg-immich-bg z-[100]">
+	<div class="fixed top-0 w-full bg-transparent z-[100]">
 		<div class={`flex justify-between rounded-lg ${border} p-2 mx-2 mt-2 transition-all`}>
 			<a sveltekit:prefetch href={backUrl} title="Go Back">
 				<button
@@ -129,7 +129,6 @@
 			</div>
 		</div>
 	</div>
-
 	<section class="m-auto mt-[160px] w-[60%]">
 		<input
 			on:focus={() => (isEditingTitle = true)}

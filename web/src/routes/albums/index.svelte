@@ -101,10 +101,7 @@
 				</div>
 
 				<div>
-					<button
-						on:click={createAlbum}
-						class="flex place-items-center gap-1 text-sm hover:bg-immich-primary/5 p-2 rounded-lg font-medium hover:text-gray-700"
-					>
+					<button on:click={createAlbum} class="immich-text-button text-sm">
 						<span>
 							<PlusBoxOutline size="18" />
 						</span>
