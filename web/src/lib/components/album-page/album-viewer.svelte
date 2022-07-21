@@ -241,7 +241,7 @@
 
 {#if isShowAssetSelection}
 	<AssetSelection
-		existedAssets={album.assets}
+		assetsInAlbum={album.assets}
 		on:go-back={() => (isShowAssetSelection = false)}
 		on:create-album={createAlbumHandler}
 	/>

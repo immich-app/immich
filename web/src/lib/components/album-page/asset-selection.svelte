@@ -12,13 +12,15 @@
 
 	const dispatch = createEventDispatcher();
 
-	export let existedAssets: AssetResponseDto[];
+	export let assetsInAlbum: AssetResponseDto[];
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
 	let border = '';
 	let selectedAsset: Set<string> = new Set();
 	let selectedGroup: Set<number> = new Set();
+	let existingGroup: Set<number> = new Set();
+	let groupWithAssetsInAlbum: Record<any, Set<string>> = {};
 
 	$: if (isMouseOverGroup == false) {
 		selectedGroupThumbnail = null;
@@ -63,6 +65,8 @@
 	};
 
 	const selectAssetGroupHandler = (groupIndex: number) => {
+		if (existingGroup.has(groupIndex)) return;
+
 		let tempSelectedGroup = new Set(selectedGroup);
 		let tempSelectedAsset = new Set(selectedAsset);
 
@@ -81,6 +85,15 @@
 			]);
 		}
 
+		// Remove existed assets in the date group
+		if (groupWithAssetsInAlbum[groupIndex]) {
+			tempSelectedAsset.forEach((assetId) => {
+				if (groupWithAssetsInAlbum[groupIndex].has(assetId)) {
+					tempSelectedAsset.delete(assetId);
+				}
+			});
+		}
+
 		selectedAsset = tempSelectedAsset;
 		selectedGroup = tempSelectedGroup;
 	};
@@ -93,12 +106,40 @@
 				border = '';
 			}
 		};
+
+		scanForExistingSelectedGroup();
 	});
 
 	const addSelectedAssets = async () => {
 		dispatch('create-album', {
 			assets: Array.from(selectedAsset)
 		});
+	};
+
+	const scanForExistingSelectedGroup = () => {
+		if (assetsInAlbum) {
+			// Convert to each assetGroup to set of assetIds
+			const distinctAssetGroup = $assetsGroupByDate.map((assetGroup) => {
+				return new Set(assetGroup.map((asset) => asset.id));
+			});
+
+			// Find the group that contains all existed assets with the same set of assetIds
+			for (const assetInAlbum of assetsInAlbum) {
+				distinctAssetGroup.forEach((group, index) => {
+					if (group.has(assetInAlbum.id)) {
+						groupWithAssetsInAlbum[index] = new Set(groupWithAssetsInAlbum[index] || []).add(
+							assetInAlbum.id
+						);
+					}
+				});
+			}
+
+			Object.keys(groupWithAssetsInAlbum).forEach((key) => {
+				if (distinctAssetGroup[parseInt(key)].size == groupWithAssetsInAlbum[key].size) {
+					existingGroup = existingGroup.add(parseInt(key));
+				}
+			});
+		}
 	};
 </script>
 
@@ -157,6 +198,8 @@
 					>
 						{#if selectedGroup.has(groupIndex)}
 							<CheckCircle size="24" color="#4250af" />
+						{:else if existingGroup.has(groupIndex)}
+							<CheckCircle size="24" color="#757575" />
 						{:else}
 							<CircleOutline size="24" color="#757575" />
 						{/if}
@@ -174,7 +217,7 @@
 							on:click={() => selectAssetHandler(asset.id, groupIndex)}
 							{groupIndex}
 							selected={selectedAsset.has(asset.id)}
-							isExisted={existedAssets.findIndex((a) => a.id == asset.id) != -1}
+							isExisted={assetsInAlbum.findIndex((a) => a.id == asset.id) != -1}
 						/>
 					{/each}
 				</div>

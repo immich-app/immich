@@ -161,10 +161,22 @@
 			return '';
 		}
 	};
+
+	$: getOverlaySelectorIconStyle = () => {
+		if (selected || isExisted) {
+			return '';
+		} else {
+			return 'bg-gradient-to-b from-gray-800/50';
+		}
+	};
+	const thumbnailClickedHandler = () => {
+		if (!isExisted) {
+			dispatch('click', { assetId: asset.id, deviceId: asset.deviceId });
+		}
+	};
 </script>
 
 <IntersectionObserver once={true} let:intersecting>
-	{isExisted}
 	<div
 		style:width={`${thumbnailSize}px`}
 		style:height={`${thumbnailSize}px`}
@@ -173,18 +185,12 @@
 		}`}
 		on:mouseenter={handleMouseOverThumbnail}
 		on:mouseleave={handleMouseLeaveThumbnail}
-		on:click={() => {
-			if (!isExisted) {
-				dispatch('click', { assetId: asset.id, deviceId: asset.deviceId });
-			}
-		}}
+		on:click={thumbnailClickedHandler}
 	>
 		{#if mouseOver || selected || isExisted}
 			<div
 				in:fade={{ duration: 200 }}
-				class={`w-full ${
-					selected || isExisted ? '' : 'bg-gradient-to-b from-gray-800/50 '
-				}via-white/0 to-white/0 absolute p-2  z-10`}
+				class={`w-full ${getOverlaySelectorIconStyle()} via-white/0 to-white/0 absolute p-2  z-10`}
 			>
 				<div
 					on:mouseenter={() => (mouseOverIcon = true)}
