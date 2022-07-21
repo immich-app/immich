@@ -8,12 +8,9 @@
 	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
 	import { AlbumResponseDto, api, UserResponseDto } from '@api';
 
-	let user: UserResponseDto;
 	let sharedAlbums: AlbumResponseDto[] = [];
 
-	checkUserAuthStatus($session).then(usr => {
-		user = usr;
-	}).catch(() => {
+	checkUserAuthStatus().catch(() => {
 		gotoLogin();
 	});
 
@@ -27,8 +24,8 @@
 </svelte:head>
 
 <section>
-	{#if user}
-		<NavigationBar {user} on:uploadClicked={() => {}} />
+	{#if $session.user}
+		<NavigationBar user={$session.user} on:uploadClicked={() => {}} />
 	{/if}
 </section>
 

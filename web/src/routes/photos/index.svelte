@@ -23,9 +23,7 @@
 	let currentViewAssetIndex = 0;
 	let selectedAsset: AssetResponseDto;
 
-	let user: UserResponseDto;
-	checkUserAuthStatus($session).then((usr) => {
-		user = usr;
+	checkUserAuthStatus().then(() => {
 		getAssetsInfo();
 	}).catch(() => {
 		gotoLogin();
@@ -115,8 +113,8 @@
 </svelte:head>
 
 <section>
-	{#if user}
-		<NavigationBar {user} on:uploadClicked={uploadClickedHandler} />
+	{#if $session.user}
+		<NavigationBar user={$session.user} on:uploadClicked={uploadClickedHandler} />
 	{/if}
 </section>
 

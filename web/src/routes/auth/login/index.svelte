@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
-	import { session } from '$app/stores';
-
+	
 	import LoginForm from '$lib/components/forms/login-form.svelte';
 	import { checkUserAuthStatus } from '$lib/user_auth';
 
-	checkUserAuthStatus($session).then(() => {
+	checkUserAuthStatus().then(() => {
 		goto('/photos');
 	});
 

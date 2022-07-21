@@ -1,11 +1,10 @@
 <script lang="ts">
 	import type { Load } from '@sveltejs/kit';
 	import { api } from '@api';
-	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
 
-	checkUserAuthStatus($session).then(user => {
+	checkUserAuthStatus().then(() => {
 		goto('/photos');
 	});
 

@@ -8,7 +8,7 @@
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
 	import { clickOutside } from '../../utils/click-outside';
 	import { api, UserResponseDto } from '@api';
-import { gotoLogin } from '$lib/user_auth';
+	import { gotoLogin, logoutUser } from '$lib/user_auth';
 
 	export let user: UserResponseDto;
 
@@ -46,11 +46,7 @@ import { gotoLogin } from '$lib/user_auth';
 	};
 
 	const logOut = async () => {
-		const { data } = await api.authenticationApi.logout();
-		
-		if (data.successful) {
-			gotoLogin();
-		}
+		logoutUser().then(() => gotoLogin());
 	};
 </script>
 
