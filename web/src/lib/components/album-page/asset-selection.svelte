@@ -58,6 +58,9 @@
 				}
 			});
 
+			if (groupWithAssetsInAlbum[groupIndex]) {
+				selectedAssetsInGroupCount += groupWithAssetsInAlbum[groupIndex].size;
+			}
 			if (selectedAssetsInGroupCount == assetsInGroup.length) {
 				selectedGroup = selectedGroup.add(groupIndex);
 			}
