@@ -172,11 +172,11 @@
 			</div>
 		</div>
 	</div>
-	<section class="m-auto mt-[160px] w-[60%]">
+	<section class="m-auto my-[160px] w-[60%]">
 		<input
 			on:focus={() => (isEditingTitle = true)}
 			on:blur={() => (isEditingTitle = false)}
-			class={`transition-all text-6xl text-immich-primary w-full border-b-2 border-transparent outline-none ${
+			class={`transition-all text-6xl text-immich-primary w-[99%] border-b-2 border-transparent outline-none ${
 				isOwned ? 'hover:border-gray-400' : 'hover:border-transparent'
 			} focus:outline-none focus:border-b-2 focus:border-immich-primary bg-immich-bg`}
 			type="text"

@@ -14,23 +14,23 @@
 
 	export let assetsInAlbum: AssetResponseDto[];
 
-	let selectedGroupThumbnail: number | null;
-	let isMouseOverGroup: boolean;
-	let border = '';
+	let appBarBorder = '';
 	let selectedAsset: Set<string> = new Set();
 	let selectedGroup: Set<number> = new Set();
 	let existingGroup: Set<number> = new Set();
 	let groupWithAssetsInAlbum: Record<any, Set<string>> = {};
 
-	$: if (isMouseOverGroup == false) {
-		selectedGroupThumbnail = null;
-	}
+	onMount(() => {
+		window.onscroll = (event: Event) => {
+			if (window.pageYOffset > 80) {
+				appBarBorder = 'border border-gray-200 bg-gray-50';
+			} else {
+				appBarBorder = '';
+			}
+		};
 
-	const thumbnailMouseEventHandler = (event: CustomEvent) => {
-		const { selectedGroupIndex }: { selectedGroupIndex: number } = event.detail;
-
-		selectedGroupThumbnail = selectedGroupIndex;
-	};
+		scanForExistingSelectedGroup();
+	});
 
 	const selectAssetHandler = (assetId: string, groupIndex: number) => {
 		const tempSelectedAsset = new Set(selectedAsset);
@@ -47,7 +47,7 @@
 
 		selectedAsset = tempSelectedAsset;
 
-		// Check if all assets are selected in a group
+		// Check if all assets are selected in a group to toggle the group selection's icon
 		if (!selectedGroup.has(groupIndex)) {
 			const assetsInGroup = $assetsGroupByDate[groupIndex];
 			let selectedAssetsInGroupCount = 0;
@@ -58,9 +58,12 @@
 				}
 			});
 
+			// Taking into account of assets in group that are already in album
 			if (groupWithAssetsInAlbum[groupIndex]) {
 				selectedAssetsInGroupCount += groupWithAssetsInAlbum[groupIndex].size;
 			}
+
+			// if all assets are selected in a group, add the group to selected group
 			if (selectedAssetsInGroupCount == assetsInGroup.length) {
 				selectedGroup = selectedGroup.add(groupIndex);
 			}
@@ -101,24 +104,18 @@
 		selectedGroup = tempSelectedGroup;
 	};
 
-	onMount(() => {
-		window.onscroll = (event: Event) => {
-			if (window.pageYOffset > 80) {
-				border = 'border border-gray-200 bg-gray-50';
-			} else {
-				border = '';
-			}
-		};
-
-		scanForExistingSelectedGroup();
-	});
-
 	const addSelectedAssets = async () => {
 		dispatch('create-album', {
 			assets: Array.from(selectedAsset)
 		});
 	};
 
+	/**
+	 * This function is used to scan for existing selected group in the album
+	 * and format it into the form of Record<any, Set<string>> to conditionally render and perform interaction
+	 * relationship between the noneselected assets/groups
+	 * with the existing assets/groups
+	 */
 	const scanForExistingSelectedGroup = () => {
 		if (assetsInAlbum) {
 			// Convert to each assetGroup to set of assetIds
@@ -152,7 +149,8 @@
 >
 	<div class="fixed top-0 w-full bg-transparent z-[100] ">
 		<div
-			class={`flex justify-between ${border} rounded-lg p-2 mx-2 mt-2  transition-all place-items-center`}
+			id="asset-selection-app-bar"
+			class={`flex justify-between ${appBarBorder} rounded-lg p-2 mx-2 mt-2  transition-all place-items-center`}
 		>
 			<!-- Left button group -->
 			<div class="flex place-items-center gap-6">
@@ -186,11 +184,7 @@
 	<section id="image-grid" class="flex flex-wrap gap-14 mt-[160px] px-20">
 		{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
 			<!-- Asset Group By Date -->
-			<div
-				class="flex flex-col"
-				on:mouseenter={() => (isMouseOverGroup = true)}
-				on:mouseleave={() => (isMouseOverGroup = false)}
-			>
+			<div class="flex flex-col">
 				<!-- Date group title -->
 				<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
 					<span
@@ -216,7 +210,6 @@
 					{#each assetsInDateGroup as asset}
 						<ImmichThumbnail
 							{asset}
-							on:mouseEvent={thumbnailMouseEventHandler}
 							on:click={() => selectAssetHandler(asset.id, groupIndex)}
 							{groupIndex}
 							selected={selectedAsset.has(asset.id)}
