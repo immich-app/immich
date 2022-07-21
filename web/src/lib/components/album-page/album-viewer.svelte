@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { AlbumResponseDto, api, AssetResponseDto, ThumbnailFormat, UserResponseDto } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
@@ -12,7 +12,9 @@
 	import AssetSelection from './asset-selection.svelte';
 	import _ from 'lodash-es';
 	import { assets } from '$app/paths';
-	import UserSelection from './user-selection.svelte';
+	import UserSelection from './user-selection-modal.svelte';
+	import AlbumAppBar from './album-app-bar.svelte';
+	import UserSelectionModal from './user-selection-modal.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
@@ -21,7 +23,7 @@
 	let isShowAssetSelection = false;
 	let isShowShareUserSelection = false;
 	let isEditingTitle = false;
-	let isCreatingSharedAlbum = false;
+	let isCreatingSharedAlbum = true;
 
 	let selectedAsset: AssetResponseDto;
 	let currentViewAssetIndex = 0;
@@ -161,40 +163,27 @@
 </script>
 
 <section class="bg-immich-bg relative">
-	<div class="fixed top-0 w-full bg-transparent z-[100]">
-		<div
-			class={`flex justify-between place-items-center rounded-lg ${border} p-2 mx-2 mt-2 transition-all`}
-		>
-			<a sveltekit:prefetch href={backUrl} title="Go Back">
+	<AlbumAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
+		<svelte:fragment slot="trailing">
+			{#if album.assets.length > 0}
 				<button
 					id="immich-circle-icon-button"
 					class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
+					on:click={() => (isShowAssetSelection = true)}
 				>
-					<ArrowLeft size="24" />
+					<FileImagePlusOutline size="24" />
 				</button>
-			</a>
+			{/if}
 
-			<div class="right-button-group" title="Add Photos">
-				{#if album.assets.length > 0}
-					<button
-						id="immich-circle-icon-button"
-						class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
-						on:click={() => (isShowAssetSelection = true)}
-					>
-						<FileImagePlusOutline size="24" />
-					</button>
-				{/if}
-
-				{#if isCreatingSharedAlbum}
-					<button
-						on:click={() => (isShowShareUserSelection = true)}
-						class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
-						><span class="px-2">Share</span></button
-					>
-				{/if}
-			</div>
-		</div>
-	</div>
+			{#if isCreatingSharedAlbum}
+				<button
+					on:click={() => (isShowShareUserSelection = true)}
+					class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
+					><span class="px-2">Share</span></button
+				>
+			{/if}
+		</svelte:fragment>
+	</AlbumAppBar>
 
 	<section class="m-auto my-[160px] w-[60%]">
 		<input
@@ -272,5 +261,5 @@
 {/if}
 
 {#if isShowShareUserSelection}
-	<UserSelection />
+	<UserSelectionModal />
 {/if}
