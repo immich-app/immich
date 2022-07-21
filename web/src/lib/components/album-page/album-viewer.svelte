@@ -11,12 +11,18 @@
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import AssetSelection from './asset-selection.svelte';
 	import _ from 'lodash-es';
+	import { assets } from '$app/paths';
+	import UserSelection from './user-selection.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
 
 	let isShowAssetViewer = false;
 	let isShowAssetSelection = false;
+	let isShowShareUserSelection = false;
+	let isEditingTitle = false;
+	let isCreatingSharedAlbum = false;
+
 	let selectedAsset: AssetResponseDto;
 	let currentViewAssetIndex = 0;
 
@@ -24,7 +30,6 @@
 	let thumbnailSize: number = 300;
 	let border = '';
 	let backUrl = '/albums';
-	let isEditingTitle = false;
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;
 
@@ -32,7 +37,12 @@
 
 	afterNavigate(({ from }) => {
 		backUrl = from?.pathname ?? '/albums';
+
+		if (from?.pathname === '/sharing') {
+			isCreatingSharedAlbum = true;
+		}
 	});
+
 	$: {
 		if (album.assets.length < 6) {
 			thumbnailSize = Math.floor(viewWidth / album.assets.length - album.assets.length);
@@ -152,7 +162,9 @@
 
 <section class="bg-immich-bg relative">
 	<div class="fixed top-0 w-full bg-transparent z-[100]">
-		<div class={`flex justify-between rounded-lg ${border} p-2 mx-2 mt-2 transition-all`}>
+		<div
+			class={`flex justify-between place-items-center rounded-lg ${border} p-2 mx-2 mt-2 transition-all`}
+		>
 			<a sveltekit:prefetch href={backUrl} title="Go Back">
 				<button
 					id="immich-circle-icon-button"
@@ -161,17 +173,29 @@
 					<ArrowLeft size="24" />
 				</button>
 			</a>
+
 			<div class="right-button-group" title="Add Photos">
-				<button
-					id="immich-circle-icon-button"
-					class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
-					on:click={() => (isShowAssetSelection = true)}
-				>
-					<FileImagePlusOutline size="24" />
-				</button>
+				{#if album.assets.length > 0}
+					<button
+						id="immich-circle-icon-button"
+						class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
+						on:click={() => (isShowAssetSelection = true)}
+					>
+						<FileImagePlusOutline size="24" />
+					</button>
+				{/if}
+
+				{#if isCreatingSharedAlbum}
+					<button
+						on:click={() => (isShowShareUserSelection = true)}
+						class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
+						><span class="px-2">Share</span></button
+					>
+				{/if}
 			</div>
 		</div>
 	</div>
+
 	<section class="m-auto my-[160px] w-[60%]">
 		<input
 			on:focus={() => (isEditingTitle = true)}
@@ -245,4 +269,8 @@
 		on:go-back={() => (isShowAssetSelection = false)}
 		on:create-album={createAlbumHandler}
 	/>
+{/if}
+
+{#if isShowShareUserSelection}
+	<UserSelection />
 {/if}

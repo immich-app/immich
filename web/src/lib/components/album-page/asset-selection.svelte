@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { quintOut } from 'svelte/easing';
-	import Close from 'svelte-material-icons/Close.svelte';
 	import { fly } from 'svelte/transition';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
@@ -9,28 +8,18 @@
 	import moment from 'moment';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import { AssetResponseDto } from '@api';
+	import AlbumAppBar from './album-app-bar.svelte';
 
 	const dispatch = createEventDispatcher();
 
 	export let assetsInAlbum: AssetResponseDto[];
 
-	let appBarBorder = '';
 	let selectedAsset: Set<string> = new Set();
 	let selectedGroup: Set<number> = new Set();
 	let existingGroup: Set<number> = new Set();
-	let groupWithAssetsInAlbum: Record<any, Set<string>> = {};
+	let groupWithAssetsInAlbum: Record<number, Set<string>> = {};
 
-	onMount(() => {
-		window.onscroll = (event: Event) => {
-			if (window.pageYOffset > 80) {
-				appBarBorder = 'border border-gray-200 bg-gray-50';
-			} else {
-				appBarBorder = '';
-			}
-		};
-
-		scanForExistingSelectedGroup();
-	});
+	onMount(() => scanForExistingSelectedGroup());
 
 	const selectAssetHandler = (assetId: string, groupIndex: number) => {
 		const tempSelectedAsset = new Set(selectedAsset);
@@ -135,7 +124,7 @@
 			}
 
 			Object.keys(groupWithAssetsInAlbum).forEach((key) => {
-				if (distinctAssetGroup[parseInt(key)].size == groupWithAssetsInAlbum[key].size) {
+				if (distinctAssetGroup[parseInt(key)].size == groupWithAssetsInAlbum[parseInt(key)].size) {
 					existingGroup = existingGroup.add(parseInt(key));
 				}
 			});
@@ -147,39 +136,24 @@
 	transition:fly={{ y: 1000, duration: 200, easing: quintOut }}
 	class="absolute top-0 left-0 w-full h-full  bg-immich-bg z-[200]"
 >
-	<div class="fixed top-0 w-full bg-transparent z-[100] ">
-		<div
-			id="asset-selection-app-bar"
-			class={`flex justify-between ${appBarBorder} rounded-lg p-2 mx-2 mt-2  transition-all place-items-center`}
-		>
-			<!-- Left button group -->
-			<div class="flex place-items-center gap-6">
-				<button
-					on:click={() => dispatch('go-back')}
-					id="immich-circle-icon-button"
-					class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
-				>
-					<Close size="24" />
-				</button>
+	<AlbumAppBar on:close-button-click={() => dispatch('go-back')}>
+		<svelte:fragment slot="leading">
+			{#if selectedAsset.size == 0}
+				<p class="text-lg">Add to album</p>
+			{:else}
+				<p class="text-lg">{selectedAsset.size} selected</p>
+			{/if}
+		</svelte:fragment>
 
-				{#if selectedAsset.size == 0}
-					<p class="text-lg">Add to album</p>
-				{:else}
-					<p class="text-lg">{selectedAsset.size} selected</p>
-				{/if}
-			</div>
-
-			<!-- Right Button Group -->
-			<div class="flex place-items-center gap-6 mr-4">
-				<button
-					disabled={selectedAsset.size === 0}
-					on:click={addSelectedAssets}
-					class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
-					><span class="px-2">Done</span></button
-				>
-			</div>
-		</div>
-	</div>
+		<svelte:fragment slot="trailing">
+			<button
+				disabled={selectedAsset.size === 0}
+				on:click={addSelectedAssets}
+				class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
+				><span class="px-2">Done</span></button
+			>
+		</svelte:fragment>
+	</AlbumAppBar>
 
 	<section id="image-grid" class="flex flex-wrap gap-14 mt-[160px] px-20">
 		{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
