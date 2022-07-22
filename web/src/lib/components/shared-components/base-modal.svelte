@@ -39,14 +39,7 @@
 				</slot>
 			</div>
 
-			<CircleIconButton
-				on:click={() => dispatch('close')}
-				logo={Close}
-				backgroundColor={'transparent'}
-				logoColor={'#5f6368'}
-				hoverColor={'#e2e7e9'}
-				size={'20'}
-			/>
+			<CircleIconButton on:click={() => dispatch('close')} logo={Close} size={'20'} />
 		</div>
 
 		<div class="">

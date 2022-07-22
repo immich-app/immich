@@ -90,12 +90,12 @@
 	<NavigationBar {user} on:uploadClicked={() => {}} />
 </section>
 
-<section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
+<section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg ">
 	<SideBar />
 
 	<!-- Main Section -->
 
-	<section class="overflow-y-auto relative">
+	<section class="overflow-y-auto relative immich-scrollbar">
 		<section id="album-content" class="relative pt-8 pl-4 mb-12 bg-immich-bg">
 			<div class="px-4 flex justify-between place-items-center">
 				<div>

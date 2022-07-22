@@ -1,10 +1,13 @@
 <script lang="ts">
+	/**
+	 * This is the circle icon component.
+	 */
 	import { createEventDispatcher } from 'svelte';
 
 	export let logo: any;
-	export let backgroundColor: string = '#d3d3d3';
-	export let hoverColor: string = '#d0d0d0';
-	export let logoColor: string;
+	export let backgroundColor: string = 'transparent';
+	export let hoverColor: string = '#e2e7e9';
+	export let logoColor: string = '#5f6368';
 	export let size = '24';
 	let iconButton: HTMLButtonElement;
 	const dispatch = createEventDispatcher();

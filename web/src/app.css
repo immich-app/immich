@@ -14,6 +14,29 @@ html {
 	height: 100%;
 	width: 100%;
 }
+
+html::-webkit-scrollbar {
+	width: 8px;
+}
+
+/* Track */
+html::-webkit-scrollbar-track {
+	background: #f1f1f1;
+	border-radius: 16px;
+}
+
+/* Handle */
+html::-webkit-scrollbar-thumb {
+	background: rgba(85, 86, 87, 0.408);
+	border-radius: 16px;
+}
+
+/* Handle on hover */
+html::-webkit-scrollbar-thumb:hover {
+	background: #4250afad;
+	border-radius: 16px;
+}
+
 body {
 	/* min-height: 100vh; */
 	margin: 0;

@@ -16,6 +16,7 @@
 	import AlbumAppBar from './album-app-bar.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import ShareInfoModal from './share-info-modal.svelte';
+	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
@@ -176,13 +177,18 @@
 	<AlbumAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
 		<svelte:fragment slot="trailing">
 			{#if album.assets.length > 0}
-				<button
+				<!-- <button
 					id="immich-circle-icon-button"
 					class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
 					on:click={() => (isShowAssetSelection = true)}
 				>
 					<FileImagePlusOutline size="24" />
-				</button>
+				</button> -->
+
+				<CircleIconButton
+					on:click={() => (isShowAssetSelection = true)}
+					logo={FileImagePlusOutline}
+				/>
 			{/if}
 
 			{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
