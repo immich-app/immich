@@ -5,23 +5,26 @@
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
+	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
+	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 
 	export let album: AlbumResponseDto;
-	let users: UserResponseDto[] = [];
-	let selectedUsers: Set<UserResponseDto> = new Set();
 
+	let isShowMenu = false;
+	let position = { x: 0, y: 0 };
 	const dispatch = createEventDispatcher();
 
-	// onMount(async () => {
-	// 	const { data } = await api.userApi.getAllUsers(false);
+	const showContextMenu = (userId: string) => {
+		const iconButton = document.getElementById('icon-' + userId);
 
-	// 	users = data;
-
-	// 	// Remove the existed shared users from the album
-	// 	sharedUsersInAlbum.forEach((sharedUser) => {
-	// 		users = users.filter((user) => user.id !== sharedUser.id);
-	// 	});
-	// });
+		if (iconButton) {
+			position = {
+				x: iconButton.getBoundingClientRect().left,
+				y: iconButton.getBoundingClientRect().bottom
+			};
+		}
+		isShowMenu = !isShowMenu;
+	};
 </script>
 
 <BaseModal on:close={() => dispatch('close')}>
@@ -41,8 +44,9 @@
 					<p class="font-medium text-sm">{user.firstName} {user.lastName}</p>
 				</div>
 
-				<div>
+				<div id={`icon-${user.id}`}>
 					<CircleIconButton
+						on:click={() => showContextMenu(user.id)}
 						logo={DotsVertical}
 						backgroundColor={'transparent'}
 						logoColor={'#5f6368'}
@@ -53,4 +57,12 @@
 			</div>
 		{/each}
 	</section>
+
+	{#if isShowMenu}
+		<ContextMenu {...position} on:clickoutside={() => (isShowMenu = false)}>
+			<MenuOption on:click={() => console.log('Remove')} text="Remove" />
+			<MenuOption on:click={() => console.log('Info')} text="Info" />
+			<MenuOption on:click={() => console.log('More')} text="More" />
+		</ContextMenu>
+	{/if}
 </BaseModal>

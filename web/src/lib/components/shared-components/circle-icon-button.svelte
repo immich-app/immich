@@ -9,6 +9,7 @@
 	export let hoverColor: string = '#e2e7e9';
 	export let logoColor: string = '#5f6368';
 	export let size = '24';
+
 	let iconButton: HTMLButtonElement;
 	const dispatch = createEventDispatcher();
 
