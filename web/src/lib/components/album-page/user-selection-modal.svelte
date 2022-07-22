@@ -1,12 +1,8 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition';
-	import { quintOut } from 'svelte/easing';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { api, UserResponseDto } from '@api';
-	import AlbumAppBar from './album-app-bar.svelte';
 	import BaseModal from '../shared-components/base-modal.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
-	import { size, template } from 'lodash';
 
 	let users: UserResponseDto[] = [];
 	let selectedUsers: Set<UserResponseDto> = new Set();
@@ -30,6 +26,14 @@
 
 		selectedUsers = tempSelectedUsers;
 	};
+
+	const deselectUser = (user: UserResponseDto) => {
+		const tempSelectedUsers = new Set(selectedUsers);
+
+		tempSelectedUsers.delete(user);
+
+		selectedUsers = tempSelectedUsers;
+	};
 </script>
 
 <BaseModal on:close={() => dispatch('close')}>
@@ -43,14 +47,15 @@
 	<div class="max-h-[400px] overflow-y-auto immich-scrollbar">
 		{#if selectedUsers.size > 0}
 			<div class="flex gap-4 py-2 px-5 overflow-x-auto place-items-center mb-2">
-				<p>To</p>
+				<p class="font-medium">To</p>
 
 				{#each Array.from(selectedUsers) as user}
 					<button
+						on:click={() => deselectUser(user)}
 						class="flex gap-1 place-items-center border border-gray-400 rounded-full p-1 hover:bg-gray-200 transition-colors"
 					>
 						<CircleAvatar size={28} {user} />
-						<p class="text-xs">{user.firstName} {user.lastName}</p>
+						<p class="text-xs font-medium">{user.firstName} {user.lastName}</p>
 					</button>
 				{/each}
 			</div>
@@ -83,5 +88,15 @@
 				</button>
 			{/each}
 		</div>
+
+		{#if selectedUsers.size > 0}
+			<div class="flex place-content-end p-5 ">
+				<button
+					on:click={() => dispatch('add-user', { selectedUsers })}
+					class="text-white bg-immich-primary px-4 py-2 rounded-lg text-sm font-bold transition-colors hover:bg-immich-primary/75"
+					>Add</button
+				>
+			</div>
+		{/if}
 	</div>
 </BaseModal>

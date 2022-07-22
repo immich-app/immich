@@ -23,7 +23,7 @@
 	let isShowAssetSelection = false;
 	let isShowShareUserSelection = false;
 	let isEditingTitle = false;
-	let isCreatingSharedAlbum = true;
+	let isCreatingSharedAlbum = false;
 
 	let selectedAsset: AssetResponseDto;
 	let currentViewAssetIndex = 0;
@@ -160,6 +160,22 @@
 			console.log('Error [createAlbumHandler] ', e);
 		}
 	};
+
+	const addUserHandler = async (event: CustomEvent) => {
+		const { selectedUsers }: { selectedUsers: UserResponseDto[] } = event.detail;
+
+		try {
+			const { data } = await api.albumApi.addUsersToAlbum(album.id, {
+				sharedUserIds: Array.from(selectedUsers).map((u) => u.id)
+			});
+
+			album = data;
+
+			isShowShareUserSelection = false;
+		} catch (e) {
+			console.log('Error [createAlbumHandler] ', e);
+		}
+	};
 </script>
 
 <section class="bg-immich-bg relative">
@@ -175,7 +191,7 @@
 				</button>
 			{/if}
 
-			{#if isCreatingSharedAlbum}
+			{#if isCreatingSharedAlbum && album.assets.length == 0}
 				<button
 					on:click={() => (isShowShareUserSelection = true)}
 					class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
@@ -199,17 +215,19 @@
 
 		{#if album.assets.length > 0}
 			<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
+		{/if}
 
-			{#if album.sharedUsers.length > 0}
-				<div class="mb-4">
-					{#each album.sharedUsers as user}
-						<span class="mr-1">
-							<CircleAvatar {user} />
-						</span>
-					{/each}
-				</div>
-			{/if}
+		{#if album.sharedUsers.length > 0}
+			<div class="my-4">
+				{#each album.sharedUsers as user}
+					<span class="mr-1">
+						<CircleAvatar {user} />
+					</span>
+				{/each}
+			</div>
+		{/if}
 
+		{#if album.assets.length > 0}
 			<div class="flex flex-wrap gap-1 w-full" bind:clientWidth={viewWidth}>
 				{#each album.assets as asset}
 					{#if album.assets.length < 7}
@@ -261,5 +279,8 @@
 {/if}
 
 {#if isShowShareUserSelection}
-	<UserSelectionModal />
+	<UserSelectionModal
+		on:close={() => (isShowShareUserSelection = false)}
+		on:add-user={addUserHandler}
+	/>
 {/if}
