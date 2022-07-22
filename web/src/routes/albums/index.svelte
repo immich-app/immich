@@ -17,10 +17,10 @@
 			};
 		}
 
-		let allAlbums: AlbumResponseDto[] = [];
+		let albums: AlbumResponseDto[] = [];
 		try {
 			const { data } = await api.albumApi.getAllAlbums();
-			allAlbums = data;
+			albums = data;
 		} catch (e) {
 			console.log('Error [getAllAlbums] ', e);
 		}
@@ -29,7 +29,7 @@
 			status: 200,
 			props: {
 				user: session.user,
-				allAlbums: allAlbums
+				albums: albums
 			}
 		};
 	};
@@ -38,12 +38,47 @@
 <script lang="ts">
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	export let user: ImmichUser;
-	export let allAlbums: AlbumResponseDto[];
+	export let albums: AlbumResponseDto[];
 
-	const showAlbum = (event: CustomEvent) => {
-		goto('/albums/' + event.detail.id);
+	onMount(async () => {
+		const { data } = await api.albumApi.getAllAlbums();
+		albums = data;
+
+		// Delete album that has no photos and is named 'Untitled'
+		for (const album of albums) {
+			if (album.albumName === 'Untitled' && album.assets.length === 0) {
+				const isDeleted = await deleteAlbum(album);
+
+				if (isDeleted) {
+					albums = albums.filter((a) => a.id !== album.id);
+				}
+			}
+		}
+	});
+
+	const createAlbum = async () => {
+		try {
+			const { data: newAlbum } = await api.albumApi.createAlbum({
+				albumName: 'Untitled'
+			});
+
+			goto('/albums/' + newAlbum.id);
+		} catch (e) {
+			console.log('Error [createAlbum] ', e);
+		}
+	};
+
+	const deleteAlbum = async (album: AlbumResponseDto) => {
+		try {
+			await api.albumApi.deleteAlbum(album.id);
+			return true;
+		} catch (e) {
+			console.log('Error [deleteAlbum] ', e);
+			return false;
+		}
 	};
 </script>
 
@@ -68,9 +103,7 @@
 				</div>
 
 				<div>
-					<button
-						class="flex place-items-center gap-1 text-sm hover:bg-immich-primary/5 p-2 rounded-lg font-medium hover:text-gray-700"
-					>
+					<button on:click={createAlbum} class="immich-text-button text-sm">
 						<span>
 							<PlusBoxOutline size="18" />
 						</span>
@@ -85,8 +118,10 @@
 
 			<!-- Album Card -->
 			<div class="flex flex-wrap gap-8">
-				{#each allAlbums as album}
-					<a sveltekit:prefetch href={`albums/${album.id}`}> <AlbumCard {album} /></a>
+				{#each albums as album}
+					<a sveltekit:prefetch href={`albums/${album.id}`}>
+						<AlbumCard {album} />
+					</a>
 				{/each}
 			</div>
 		</section>

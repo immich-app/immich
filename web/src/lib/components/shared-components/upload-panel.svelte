@@ -79,9 +79,7 @@
 		isUploading = value;
 
 		if (isUploading == false) {
-			if ($session.user) {
-				getAssetsInfo($session.user.accessToken);
-			}
+			getAssetsInfo();
 		}
 	});
 </script>
@@ -107,7 +105,7 @@
 					</button>
 				</div>
 
-				<div id="upload-item-list" class="max-h-[400px] overflow-y-auto pr-2 rounded-lg">
+				<div class="max-h-[400px] overflow-y-auto pr-2 rounded-lg immich-scrollbar">
 					{#each $uploadAssetsStore as uploadAsset}
 						<div
 							in:fade={{ duration: 250 }}
@@ -136,7 +134,9 @@
 								<input
 									disabled
 									class="bg-gray-100 border w-full p-1 rounded-md text-[10px] px-2"
-									value={`[${getSizeInHumanReadableFormat(uploadAsset.file.size)}] ${uploadAsset.file.name}`}
+									value={`[${getSizeInHumanReadableFormat(uploadAsset.file.size)}] ${
+										uploadAsset.file.name
+									}`}
 								/>
 
 								<div class="w-full bg-gray-300 h-[15px] rounded-md mt-[5px] text-white relative">
@@ -144,7 +144,9 @@
 										class="bg-immich-primary h-[15px] rounded-md transition-all"
 										style={`width: ${uploadAsset.progress}%`}
 									/>
-									<p class="absolute h-full w-full text-center top-0 text-[10px] ">{uploadAsset.progress}/100</p>
+									<p class="absolute h-full w-full text-center top-0 text-[10px] ">
+										{uploadAsset.progress}/100
+									</p>
 								</div>
 							</div>
 						</div>
@@ -173,28 +175,3 @@
 		{/if}
 	</div>
 {/if}
-
-<style>
-	/* width */
-	#upload-item-list::-webkit-scrollbar {
-		width: 5px;
-	}
-
-	/* Track */
-	#upload-item-list::-webkit-scrollbar-track {
-		background: #f1f1f1;
-		border-radius: 16px;
-	}
-
-	/* Handle */
-	#upload-item-list::-webkit-scrollbar-thumb {
-		background: #4250af68;
-		border-radius: 16px;
-	}
-
-	/* Handle on hover */
-	#upload-item-list::-webkit-scrollbar-thumb:hover {
-		background: #4250afad;
-		border-radius: 16px;
-	}
-</style>

@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { api, UserResponseDto } from '@api';
-	import { onMount } from 'svelte';
 
 	export let user: UserResponseDto;
+
+	// Avatar Size In Pixel
+	export let size: number = 48;
 
 	const getUserAvatar = async () => {
 		try {
@@ -20,12 +22,18 @@
 </script>
 
 {#await getUserAvatar()}
-	<div class="w-12 h-12 rounded-full bg-immich-primary/25" />
+	<div
+		style:width={`${size}px`}
+		style:height={`${size}px`}
+		class={` rounded-full bg-immich-primary/25`}
+	/>
 {:then data}
 	<img
 		src={data}
 		alt="profile-img"
-		class="inline rounded-full w-12 h-12 object-cover border shadow-md"
+		style:width={`${size}px`}
+		style:height={`${size}px`}
+		class={`inline rounded-full  object-cover border shadow-md`}
 		title={user.email}
 	/>
 {/await}

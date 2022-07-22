@@ -173,7 +173,7 @@
 								<ImmichThumbnail
 									{asset}
 									on:mouseEvent={thumbnailMouseEventHandler}
-									on:viewAsset={viewAssetHandler}
+									on:click={viewAssetHandler}
 									{groupIndex}
 								/>
 							{/each}

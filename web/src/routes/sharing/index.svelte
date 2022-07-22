@@ -28,6 +28,28 @@
 			}
 		};
 	};
+
+	const createSharedAlbum = async () => {
+		try {
+			const { data: newAlbum } = await api.albumApi.createAlbum({
+				albumName: 'Untitled'
+			});
+
+			goto('/albums/' + newAlbum.id);
+		} catch (e) {
+			console.log('Error [createAlbum] ', e);
+		}
+	};
+
+	const deleteAlbum = async (album: AlbumResponseDto) => {
+		try {
+			await api.albumApi.deleteAlbum(album.id);
+			return true;
+		} catch (e) {
+			console.log('Error [deleteAlbum] ', e);
+			return false;
+		}
+	};
 </script>
 
 <script lang="ts">
@@ -36,6 +58,7 @@
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
+	import { goto } from '$app/navigation';
 
 	export let user: UserResponseDto;
 	export let sharedAlbums: AlbumResponseDto[];
@@ -62,6 +85,7 @@
 
 				<div>
 					<button
+						on:click={createSharedAlbum}
 						class="flex place-items-center gap-1 text-sm hover:bg-immich-primary/5 p-2 rounded-lg font-medium hover:text-gray-700"
 					>
 						<span>
