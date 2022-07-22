@@ -4,6 +4,7 @@
 	import BaseModal from '../shared-components/base-modal.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 
+	export let sharedUsersInAlbum: Set<UserResponseDto>;
 	let users: UserResponseDto[] = [];
 	let selectedUsers: Set<UserResponseDto> = new Set();
 
@@ -13,6 +14,11 @@
 		const { data } = await api.userApi.getAllUsers(false);
 
 		users = data;
+
+		// Remove the existed shared users from the album
+		sharedUsersInAlbum.forEach((sharedUser) => {
+			users = users.filter((user) => user.id !== sharedUser.id);
+		});
 	});
 
 	const selectUser = (user: UserResponseDto) => {

@@ -34,6 +34,7 @@
 	let backUrl = '/albums';
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;
+	let bodyElement: HTMLElement;
 
 	$: isOwned = currentUser?.id == album.ownerId;
 
@@ -176,8 +177,18 @@
 			console.log('Error [createAlbumHandler] ', e);
 		}
 	};
+
+	// Prevent scrolling when modal is open
+	$: {
+		if (isShowShareUserSelection == true) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+	}
 </script>
 
+<svelte:body bind:this={bodyElement} />
 <section class="bg-immich-bg relative">
 	<AlbumAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
 		<svelte:fragment slot="trailing">
@@ -191,7 +202,7 @@
 				</button>
 			{/if}
 
-			{#if isCreatingSharedAlbum && album.assets.length == 0}
+			{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
 				<button
 					on:click={() => (isShowShareUserSelection = true)}
 					class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
@@ -217,13 +228,20 @@
 			<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
 		{/if}
 
-		{#if album.sharedUsers.length > 0}
-			<div class="my-4">
+		{#if album.shared}
+			<div class="my-4 flex">
 				{#each album.sharedUsers as user}
 					<span class="mr-1">
 						<CircleAvatar {user} />
 					</span>
 				{/each}
+
+				<button
+					on:click={() => (isShowShareUserSelection = true)}
+					title="Add more users"
+					class="h-12 w-12 border bg-white transition-colors hover:bg-gray-300 text-3xl flex place-items-center place-content-center rounded-full"
+					>+</button
+				>
 			</div>
 		{/if}
 
@@ -282,5 +300,6 @@
 	<UserSelectionModal
 		on:close={() => (isShowShareUserSelection = false)}
 		on:add-user={addUserHandler}
+		sharedUsersInAlbum={new Set(album.sharedUsers)}
 	/>
 {/if}
