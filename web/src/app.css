@@ -9,6 +9,10 @@
 	font-family: 'Work Sans', sans-serif;
 }
 
+html {
+	height: 100%;
+	width: 100%;
+}
 body {
 	/* min-height: 100vh; */
 	margin: 0;

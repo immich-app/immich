@@ -1,18 +1,26 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { browser } from '$app/env';
+
+	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 
 	export let backIcon = Close;
 	let appBarBorder = '';
 	const dispatch = createEventDispatcher();
 	onMount(() => {
-		window.onscroll = () => {
+		document.addEventListener('scroll', (e) => {
 			if (window.pageYOffset > 80) {
 				appBarBorder = 'border border-gray-200 bg-gray-50';
 			} else {
 				appBarBorder = '';
 			}
-		};
+		});
+	});
+
+	onDestroy(() => {
+		if (browser) {
+			document.removeEventListener('scroll', (e) => {});
+		}
 	});
 </script>
 

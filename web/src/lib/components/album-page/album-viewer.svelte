@@ -34,7 +34,6 @@
 	let backUrl = '/albums';
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;
-	let bodyElement: HTMLElement;
 
 	$: isOwned = currentUser?.id == album.ownerId;
 
@@ -70,14 +69,6 @@
 	};
 
 	onMount(async () => {
-		window.onscroll = (event: Event) => {
-			if (window.pageYOffset > 80) {
-				border = 'border border-gray-200 bg-gray-50';
-			} else {
-				border = '';
-			}
-		};
-
 		currentAlbumName = album.albumName;
 
 		try {
@@ -177,19 +168,9 @@
 			console.log('Error [createAlbumHandler] ', e);
 		}
 	};
-
-	// Prevent scrolling when modal is open
-	$: {
-		if (isShowShareUserSelection == true) {
-			document.body.style.overflow = 'hidden';
-		} else {
-			document.body.style.overflow = '';
-		}
-	}
 </script>
 
-<svelte:body bind:this={bodyElement} />
-<section class="bg-immich-bg relative">
+<section class="bg-immich-bg">
 	<AlbumAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
 		<svelte:fragment slot="trailing">
 			{#if album.assets.length > 0}
