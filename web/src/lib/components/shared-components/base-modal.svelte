@@ -4,6 +4,8 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/env';
+	import CircleIconButton from './circle-icon-button.svelte';
+	import { clickOutside } from '$lib/utils/click-outside';
 
 	const dispatch = createEventDispatcher();
 
@@ -25,19 +27,29 @@
 	transition:fade={{ duration: 100, easing: quintOut }}
 	class="fixed top-0 w-full h-full z-[9999] bg-black/50 flex place-items-center place-content-center overflow-hidden"
 >
-	<div class="bg-white w-[450px] min-h-[200px] max-h-[500px] rounded-lg shadow-md">
+	<div
+		use:clickOutside
+		on:out-click={() => dispatch('close')}
+		class="bg-white w-[450px] min-h-[200px] max-h-[500px] rounded-lg shadow-md"
+	>
 		<div class="flex justify-between place-items-center p-5">
 			<div>
 				<slot name="title">
 					<p>Modal Title</p>
 				</slot>
 			</div>
-			<button on:click={() => dispatch('close')}>
-				<Close size="24" />
-			</button>
+
+			<CircleIconButton
+				on:click={() => dispatch('close')}
+				logo={Close}
+				backgroundColor={'transparent'}
+				logoColor={'#5f6368'}
+				hoverColor={'#e2e7e9'}
+				size={'20'}
+			/>
 		</div>
 
-		<div class="mt-4">
+		<div class="">
 			<slot />
 		</div>
 	</div>

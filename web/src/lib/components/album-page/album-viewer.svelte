@@ -15,6 +15,7 @@
 	import UserSelection from './user-selection-modal.svelte';
 	import AlbumAppBar from './album-app-bar.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
+	import ShareInfoModal from './share-info-modal.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
@@ -24,6 +25,7 @@
 	let isShowShareUserSelection = false;
 	let isEditingTitle = false;
 	let isCreatingSharedAlbum = false;
+	let isShowShareInfoModal = false;
 
 	let selectedAsset: AssetResponseDto;
 	let currentViewAssetIndex = 0;
@@ -214,7 +216,7 @@
 			<div class="my-4 flex">
 				{#each album.sharedUsers as user}
 					<span class="mr-1">
-						<CircleAvatar {user} />
+						<CircleAvatar {user} on:click={() => (isShowShareInfoModal = true)} />
 					</span>
 				{/each}
 
@@ -285,4 +287,8 @@
 		on:add-user={addUserHandler}
 		sharedUsersInAlbum={new Set(album.sharedUsers)}
 	/>
+{/if}
+
+{#if isShowShareInfoModal}
+	<ShareInfoModal on:close={() => (isShowShareInfoModal = false)} {album} />
 {/if}

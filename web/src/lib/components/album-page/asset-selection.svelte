@@ -134,7 +134,7 @@
 
 <section
 	transition:fly={{ y: 1000, duration: 200, easing: quintOut }}
-	class="absolute top-0 left-0 w-full h-full  bg-immich-bg z-[200]"
+	class="absolute top-0 left-0 w-full h-full  bg-immich-bg z-[9999]"
 >
 	<AlbumAppBar on:close-button-click={() => dispatch('go-back')}>
 		<svelte:fragment slot="leading">
