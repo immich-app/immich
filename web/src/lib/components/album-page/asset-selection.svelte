@@ -134,7 +134,7 @@
 
 <section
 	transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-	class="absolute top-0 left-0 w-full h-full  bg-immich-bg z-[9999] overflow-y-auto immich-scrollbar"
+	class="absolute top-0 left-0 w-full h-full  bg-immich-bg z-[9999]"
 >
 	<AlbumAppBar on:close-button-click={() => dispatch('go-back')}>
 		<svelte:fragment slot="leading">
@@ -155,7 +155,7 @@
 		</svelte:fragment>
 	</AlbumAppBar>
 
-	<section class="flex flex-wrap gap-14 mt-[160px] px-20 overflow-y-auto immich-scrollbar">
+	<section class="flex flex-wrap gap-14 mt-[160px] px-20 overflow-y-auto">
 		{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
 			<!-- Asset Group By Date -->
 			<div class="flex flex-col">

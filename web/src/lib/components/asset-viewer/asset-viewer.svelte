@@ -10,6 +10,7 @@
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import { api, AssetResponseDto, AssetTypeEnum } from '@api';
+	import { browser } from '$app/env';
 
 	const dispatch = createEventDispatcher();
 
@@ -20,7 +21,9 @@
 	let isShowDetail = false;
 
 	onMount(() => {
-		document.addEventListener('keydown', (keyInfo) => handleKeyboardPress(keyInfo.key));
+		if (browser) {
+			document.addEventListener('keydown', (keyInfo) => handleKeyboardPress(keyInfo.key));
+		}
 	});
 
 	const handleKeyboardPress = (key: string) => {

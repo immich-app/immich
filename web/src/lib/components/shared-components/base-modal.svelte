@@ -10,15 +10,19 @@
 	const dispatch = createEventDispatcher();
 
 	onMount(() => {
-		const scrollTop = document?.documentElement.scrollTop;
-		const scrollLeft = document?.documentElement.scrollLeft;
-		window.onscroll = function () {
-			window.scrollTo(scrollLeft, scrollTop);
-		};
+		if (browser) {
+			const scrollTop = document.documentElement.scrollTop;
+			const scrollLeft = document.documentElement.scrollLeft;
+			window.onscroll = function () {
+				window.scrollTo(scrollLeft, scrollTop);
+			};
+		}
 	});
 
 	onDestroy(() => {
-		window.onscroll = function () {};
+		if (browser) {
+			window.onscroll = function () {};
+		}
 	});
 </script>
 

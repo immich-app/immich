@@ -8,14 +8,17 @@
 	export let backIcon = Close;
 	let appBarBorder = 'bg-immich-bg';
 	const dispatch = createEventDispatcher();
+
 	onMount(() => {
-		document.addEventListener('scroll', (e) => {
-			if (window.pageYOffset > 80) {
-				appBarBorder = 'border border-gray-200 bg-gray-50';
-			} else {
-				appBarBorder = 'bg-immich-bg';
-			}
-		});
+		if (browser) {
+			document.addEventListener('scroll', (e) => {
+				if (window.pageYOffset > 80) {
+					appBarBorder = 'border border-gray-200 bg-gray-50';
+				} else {
+					appBarBorder = 'bg-immich-bg';
+				}
+			});
+		}
 	});
 
 	onDestroy(() => {
