@@ -66,34 +66,43 @@
 				{/each}
 			</div>
 		{/if}
-		<p class="text-xs font-medium px-5">SUGGESTIONS</p>
-		<div class="my-4">
-			{#each users as user}
-				<button
-					on:click={() => selectUser(user)}
-					class="w-full flex place-items-center gap-4 py-4 px-5 hover:bg-gray-200  transition-all"
-				>
-					{#if selectedUsers.has(user)}
-						<span
-							class="bg-immich-primary text-white rounded-full w-12 h-12 border flex place-items-center place-content-center text-3xl"
-							>✓</span
-						>
-					{:else}
-						<CircleAvatar {user} />
-					{/if}
 
-					<div class="text-left">
-						<p class="text-immich-fg">
-							{user.firstName}
-							{user.lastName}
-						</p>
-						<p class="text-xs ">
-							{user.email}
-						</p>
-					</div>
-				</button>
-			{/each}
-		</div>
+		{#if users.length > 0}
+			<p class="text-xs font-medium px-5">SUGGESTIONS</p>
+
+			<div class="my-4">
+				{#each users as user}
+					<button
+						on:click={() => selectUser(user)}
+						class="w-full flex place-items-center gap-4 py-4 px-5 hover:bg-gray-200  transition-all"
+					>
+						{#if selectedUsers.has(user)}
+							<span
+								class="bg-immich-primary text-white rounded-full w-12 h-12 border flex place-items-center place-content-center text-3xl"
+								>✓</span
+							>
+						{:else}
+							<CircleAvatar {user} />
+						{/if}
+
+						<div class="text-left">
+							<p class="text-immich-fg">
+								{user.firstName}
+								{user.lastName}
+							</p>
+							<p class="text-xs ">
+								{user.email}
+							</p>
+						</div>
+					</button>
+				{/each}
+			</div>
+		{:else}
+			<p class="text-sm px-5">
+				Looks like you have shared this album with all users or you don't have any user to share
+				with.
+			</p>
+		{/if}
 
 		{#if selectedUsers.size > 0}
 			<div class="flex place-content-end p-5 ">

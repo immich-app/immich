@@ -204,6 +204,7 @@
 
 			{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
 				<button
+					disabled={album.assets.length == 0}
 					on:click={() => (isShowShareUserSelection = true)}
 					class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
 					><span class="px-2">Share</span></button
@@ -237,6 +238,7 @@
 				{/each}
 
 				<button
+					style:display={isOwned ? 'block' : 'none'}
 					on:click={() => (isShowShareUserSelection = true)}
 					title="Add more users"
 					class="h-12 w-12 border bg-white transition-colors hover:bg-gray-300 text-3xl flex place-items-center place-content-center rounded-full"

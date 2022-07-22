@@ -12,7 +12,7 @@
 	transition:fly={{ y: 1000, duration: 200, easing: quintOut }}
 	class="absolute top-0 w-screen h-screen z-[9999] bg-black/50 flex place-items-center place-content-center"
 >
-	<div class="bg-white min-w-[450px] min-h-[200px]  max-h-[500px] rounded-lg shadow-md">
+	<div class="bg-white w-[450px] min-h-[200px] max-h-[500px] rounded-lg shadow-md">
 		<div class="flex justify-between place-items-center p-5">
 			<div>
 				<slot name="title">
