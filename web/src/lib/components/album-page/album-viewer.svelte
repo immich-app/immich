@@ -253,7 +253,7 @@
 		{/if}
 
 		{#if album.assets.length > 0}
-			<div class="flex flex-wrap gap-1 w-full" bind:clientWidth={viewWidth}>
+			<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
 				{#each album.assets as asset}
 					{#if album.assets.length < 7}
 						<ImmichThumbnail
