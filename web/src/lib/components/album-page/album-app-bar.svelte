@@ -46,7 +46,7 @@
 			<slot name="leading" />
 		</div>
 
-		<div class="flex place-items-center gap-6 mr-4">
+		<div class="flex place-items-center gap-1 mr-4">
 			<slot name="trailing" />
 		</div>
 	</div>

@@ -9,7 +9,7 @@
 	export let hoverColor: string = '#e2e7e9';
 	export let logoColor: string = '#5f6368';
 	export let size = '24';
-
+	export let title = '';
 	let iconButton: HTMLButtonElement;
 	const dispatch = createEventDispatcher();
 
@@ -22,6 +22,7 @@
 </script>
 
 <button
+	{title}
 	bind:this={iconButton}
 	class={`immich-circle-icon-button rounded-full p-3 flex place-items-center place-content-center transition-all`}
 	on:click={() => dispatch('click')}

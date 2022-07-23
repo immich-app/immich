@@ -6,13 +6,12 @@
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
+	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import AssetSelection from './asset-selection.svelte';
 	import _ from 'lodash-es';
-	import { assets } from '$app/paths';
-	import UserSelection from './user-selection-modal.svelte';
 	import AlbumAppBar from './album-app-bar.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import ShareInfoModal from './share-info-modal.svelte';
@@ -196,8 +195,15 @@
 		<svelte:fragment slot="trailing">
 			{#if album.assets.length > 0}
 				<CircleIconButton
+					title="Add Photos"
 					on:click={() => (isShowAssetSelection = true)}
 					logo={FileImagePlusOutline}
+				/>
+
+				<CircleIconButton
+					title="Share"
+					on:click={() => (isShowShareUserSelection = true)}
+					logo={ShareVariantOutline}
 				/>
 			{/if}
 
@@ -225,11 +231,11 @@
 		/>
 
 		{#if album.assets.length > 0}
-			<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
+			<p class="my-4 text-sm text-gray-500 font-medium">{getDateRange()}</p>
 		{/if}
 
 		{#if album.shared}
-			<div class="my-4 flex">
+			<div class="my-6 flex">
 				{#each album.sharedUsers as user}
 					<span class="mr-1">
 						<CircleAvatar {user} on:click={() => (isShowShareInfoModal = true)} />
