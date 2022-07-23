@@ -10,6 +10,7 @@ RUN apt-get update
 RUN apt-get install gcc g++ make cmake python3 python3-pip ffmpeg -y
 
 RUN npm ci
+RUN npm rebuild @tensorflow/tfjs-node --build-from-source
 
 COPY . .
 
