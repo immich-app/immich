@@ -16,6 +16,8 @@
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import ShareInfoModal from './share-info-modal.svelte';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
+	import Close from 'svelte-material-icons/Close.svelte';
+	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
@@ -38,6 +40,9 @@
 	let currentUser: UserResponseDto;
 
 	$: isOwned = currentUser?.id == album.ownerId;
+
+	let multiSelectAsset: Set<AssetResponseDto> = new Set();
+	$: isMultiSelectionMode = multiSelectAsset.size > 0;
 
 	afterNavigate(({ from }) => {
 		backUrl = from?.pathname ?? '/albums';
@@ -81,13 +86,30 @@
 		}
 	});
 
-	const viewAsset = (event: CustomEvent) => {
-		const { assetId, deviceId }: { assetId: string; deviceId: string } = event.detail;
+	const viewAssetHandler = (event: CustomEvent) => {
+		const { asset }: { asset: AssetResponseDto } = event.detail;
 
-		currentViewAssetIndex = album.assets.findIndex((a) => a.id == assetId);
+		currentViewAssetIndex = album.assets.findIndex((a) => a.id == asset.id);
 		selectedAsset = album.assets[currentViewAssetIndex];
 		isShowAssetViewer = true;
 		pushState(selectedAsset.id);
+	};
+
+	const selectAssetHandler = (event: CustomEvent) => {
+		const { asset }: { asset: AssetResponseDto } = event.detail;
+		let temp = new Set(multiSelectAsset);
+
+		if (multiSelectAsset.has(asset)) {
+			temp.delete(asset);
+		} else {
+			temp.add(asset);
+		}
+
+		multiSelectAsset = temp;
+	};
+
+	const clearMultiSelectAssetAssetHandler = () => {
+		multiSelectAsset = new Set();
 	};
 
 	const navigateAssetForward = () => {
@@ -191,32 +213,57 @@
 </script>
 
 <section class="bg-immich-bg">
-	<AlbumAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
-		<svelte:fragment slot="trailing">
-			{#if album.assets.length > 0}
-				<CircleIconButton
-					title="Add Photos"
-					on:click={() => (isShowAssetSelection = true)}
-					logo={FileImagePlusOutline}
-				/>
+	<!-- Multiselection mode app bar -->
+	{#if isMultiSelectionMode}
+		<AlbumAppBar
+			on:close-button-click={clearMultiSelectAssetAssetHandler}
+			backIcon={Close}
+			tailwindClasses={'bg-white shadow-md'}
+		>
+			<svelte:fragment slot="leading">
+				<p class="font-medium text-immich-primary">Selected {multiSelectAsset.size}</p>
+			</svelte:fragment>
+			<svelte:fragment slot="trailing">
+				{#if isOwned}
+					<CircleIconButton
+						title="Delete"
+						on:click={() => console.log('Remove selected assets from album')}
+						logo={DeleteOutline}
+					/>
+				{/if}
+			</svelte:fragment>
+		</AlbumAppBar>
+	{/if}
 
-				<CircleIconButton
-					title="Share"
-					on:click={() => (isShowShareUserSelection = true)}
-					logo={ShareVariantOutline}
-				/>
-			{/if}
+	<!-- Default app bar -->
+	{#if !isMultiSelectionMode}
+		<AlbumAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
+			<svelte:fragment slot="trailing">
+				{#if album.assets.length > 0}
+					<CircleIconButton
+						title="Add Photos"
+						on:click={() => (isShowAssetSelection = true)}
+						logo={FileImagePlusOutline}
+					/>
 
-			{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
-				<button
-					disabled={album.assets.length == 0}
-					on:click={() => (isShowShareUserSelection = true)}
-					class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
-					><span class="px-2">Share</span></button
-				>
-			{/if}
-		</svelte:fragment>
-	</AlbumAppBar>
+					<CircleIconButton
+						title="Share"
+						on:click={() => (isShowShareUserSelection = true)}
+						logo={ShareVariantOutline}
+					/>
+				{/if}
+
+				{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
+					<button
+						disabled={album.assets.length == 0}
+						on:click={() => (isShowShareUserSelection = true)}
+						class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
+						><span class="px-2">Share</span></button
+					>
+				{/if}
+			</svelte:fragment>
+		</AlbumAppBar>
+	{/if}
 
 	<section class="m-auto my-[160px] w-[60%]">
 		<input
@@ -260,10 +307,18 @@
 							{asset}
 							{thumbnailSize}
 							format={ThumbnailFormat.Jpeg}
-							on:click={viewAsset}
+							on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
+							on:select={selectAssetHandler}
+							selected={multiSelectAsset.has(asset)}
 						/>
 					{:else}
-						<ImmichThumbnail {asset} {thumbnailSize} on:click={viewAsset} />
+						<ImmichThumbnail
+							{asset}
+							{thumbnailSize}
+							on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
+							on:select={selectAssetHandler}
+							selected={multiSelectAsset.has(asset)}
+						/>
 					{/if}
 				{/each}
 			</div>

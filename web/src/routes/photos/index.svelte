@@ -58,9 +58,9 @@
 	};
 
 	const viewAssetHandler = (event: CustomEvent) => {
-		const { assetId, deviceId }: { assetId: string; deviceId: string } = event.detail;
+		const { asset }: { asset: AssetResponseDto } = event.detail;
 
-		currentViewAssetIndex = $flattenAssetGroupByDate.findIndex((a) => a.id == assetId);
+		currentViewAssetIndex = $flattenAssetGroupByDate.findIndex((a) => a.id == asset.id);
 		selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
 		isShowAssetViewer = true;
 		pushState(selectedAsset.id);
