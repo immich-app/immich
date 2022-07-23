@@ -1,52 +1,22 @@
-<script context="module" lang="ts">
-	export const prerender = false;
-
-	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-
-	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
-	import { ImmichUser } from '$lib/models/immich-user';
-	import type { Load } from '@sveltejs/kit';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import { AlbumResponseDto, api } from '@api';
-
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-
-		let albums: AlbumResponseDto[] = [];
-		try {
-			const { data } = await api.albumApi.getAllAlbums();
-			albums = data;
-		} catch (e) {
-			console.log('Error [getAllAlbums] ', e);
-		}
-
-		return {
-			status: 200,
-			props: {
-				user: session.user,
-				albums: albums
-			}
-		};
-	};
-</script>
-
 <script lang="ts">
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import { ImmichUser } from '$lib/models/immich-user';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import { AlbumResponseDto, api } from '@api';
+	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
+	import { session } from '$app/stores';
+	import UserManagement from '$lib/components/admin-page/user-management.svelte';
 
-	export let user: ImmichUser;
-	export let albums: AlbumResponseDto[];
+	let albums: AlbumResponseDto[] = [];
 
-	onMount(async () => {
-		const { data } = await api.albumApi.getAllAlbums();
+	checkUserAuthStatus().catch(() => gotoLogin());
+
+	api.albumApi.getAllAlbums().then(async ({ data }) => {
 		albums = data;
-
 		// Delete album that has no photos and is named 'Untitled'
 		for (const album of albums) {
 			if (album.albumName === 'Untitled' && album.assets.length === 0) {
@@ -87,7 +57,9 @@
 </svelte:head>
 
 <section>
-	<NavigationBar {user} on:uploadClicked={() => {}} />
+	{#if $session.user}
+		<NavigationBar user={$session.user} on:uploadClicked={() => {}} />
+	{/if}
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg ">
