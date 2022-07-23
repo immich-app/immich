@@ -1,18 +1,30 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { browser } from '$app/env';
+
+	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
+	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 
 	export let backIcon = Close;
-	let appBarBorder = '';
+	let appBarBorder = 'bg-immich-bg';
 	const dispatch = createEventDispatcher();
+
 	onMount(() => {
-		window.onscroll = () => {
-			if (window.pageYOffset > 80) {
-				appBarBorder = 'border border-gray-200 bg-gray-50';
-			} else {
-				appBarBorder = '';
-			}
-		};
+		if (browser) {
+			document.addEventListener('scroll', (e) => {
+				if (window.pageYOffset > 80) {
+					appBarBorder = 'border border-gray-200 bg-gray-50';
+				} else {
+					appBarBorder = 'bg-immich-bg';
+				}
+			});
+		}
+	});
+
+	onDestroy(() => {
+		if (browser) {
+			document.removeEventListener('scroll', (e) => {});
+		}
 	});
 </script>
 
@@ -22,17 +34,19 @@
 		class={`flex justify-between ${appBarBorder} rounded-lg p-2 mx-2 mt-2  transition-all place-items-center`}
 	>
 		<div class="flex place-items-center gap-6">
-			<button
+			<CircleIconButton
 				on:click={() => dispatch('close-button-click')}
-				id="immich-circle-icon-button"
-				class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
-			>
-				<svelte:component this={backIcon} size="24" />
-			</button>
+				logo={backIcon}
+				backgroundColor={'transparent'}
+				logoColor={'rgb(75 85 99)'}
+				hoverColor={'#e2e7e9'}
+				size={'24'}
+			/>
+
 			<slot name="leading" />
 		</div>
 
-		<div class="flex place-items-center gap-6 mr-4">
+		<div class="flex place-items-center gap-1 mr-4">
 			<slot name="trailing" />
 		</div>
 	</div>

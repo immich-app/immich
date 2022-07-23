@@ -1,0 +1,3 @@
+const key = {};
+
+export { key };

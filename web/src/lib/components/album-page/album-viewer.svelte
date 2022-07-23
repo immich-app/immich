@@ -6,15 +6,16 @@
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
+	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import AssetSelection from './asset-selection.svelte';
 	import _ from 'lodash-es';
-	import { assets } from '$app/paths';
-	import UserSelection from './user-selection-modal.svelte';
 	import AlbumAppBar from './album-app-bar.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
+	import ShareInfoModal from './share-info-modal.svelte';
+	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
@@ -24,6 +25,7 @@
 	let isShowShareUserSelection = false;
 	let isEditingTitle = false;
 	let isCreatingSharedAlbum = false;
+	let isShowShareInfoModal = false;
 
 	let selectedAsset: AssetResponseDto;
 	let currentViewAssetIndex = 0;
@@ -34,7 +36,6 @@
 	let backUrl = '/albums';
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;
-	let bodyElement: HTMLElement;
 
 	$: isOwned = currentUser?.id == album.ownerId;
 
@@ -70,14 +71,6 @@
 	};
 
 	onMount(async () => {
-		window.onscroll = (event: Event) => {
-			if (window.pageYOffset > 80) {
-				border = 'border border-gray-200 bg-gray-50';
-			} else {
-				border = '';
-			}
-		};
-
 		currentAlbumName = album.albumName;
 
 		try {
@@ -178,28 +171,40 @@
 		}
 	};
 
-	// Prevent scrolling when modal is open
-	$: {
-		if (isShowShareUserSelection == true) {
-			document.body.style.overflow = 'hidden';
-		} else {
-			document.body.style.overflow = '';
+	const sharedUserDeletedHandler = async (event: CustomEvent) => {
+		const { userId }: { userId: string } = event.detail;
+
+		if (userId == 'me') {
+			isShowShareInfoModal = false;
+			goto(backUrl);
 		}
-	}
+
+		try {
+			const { data } = await api.albumApi.getAlbumInfo(album.id);
+
+			album = data;
+			isShowShareInfoModal = false;
+		} catch (e) {
+			console.log('Error [sharedUserDeletedHandler] ', e);
+		}
+	};
 </script>
 
-<svelte:body bind:this={bodyElement} />
-<section class="bg-immich-bg relative">
+<section class="bg-immich-bg">
 	<AlbumAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
 		<svelte:fragment slot="trailing">
 			{#if album.assets.length > 0}
-				<button
-					id="immich-circle-icon-button"
-					class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
+				<CircleIconButton
+					title="Add Photos"
 					on:click={() => (isShowAssetSelection = true)}
-				>
-					<FileImagePlusOutline size="24" />
-				</button>
+					logo={FileImagePlusOutline}
+				/>
+
+				<CircleIconButton
+					title="Share"
+					on:click={() => (isShowShareUserSelection = true)}
+					logo={ShareVariantOutline}
+				/>
 			{/if}
 
 			{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
@@ -226,14 +231,14 @@
 		/>
 
 		{#if album.assets.length > 0}
-			<p class="my-4 text-sm text-gray-500">{getDateRange()}</p>
+			<p class="my-4 text-sm text-gray-500 font-medium">{getDateRange()}</p>
 		{/if}
 
 		{#if album.shared}
-			<div class="my-4 flex">
+			<div class="my-6 flex">
 				{#each album.sharedUsers as user}
 					<span class="mr-1">
-						<CircleAvatar {user} />
+						<CircleAvatar {user} on:click={() => (isShowShareInfoModal = true)} />
 					</span>
 				{/each}
 
@@ -248,7 +253,7 @@
 		{/if}
 
 		{#if album.assets.length > 0}
-			<div class="flex flex-wrap gap-1 w-full" bind:clientWidth={viewWidth}>
+			<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
 				{#each album.assets as asset}
 					{#if album.assets.length < 7}
 						<ImmichThumbnail
@@ -303,5 +308,13 @@
 		on:close={() => (isShowShareUserSelection = false)}
 		on:add-user={addUserHandler}
 		sharedUsersInAlbum={new Set(album.sharedUsers)}
+	/>
+{/if}
+
+{#if isShowShareInfoModal}
+	<ShareInfoModal
+		on:close={() => (isShowShareInfoModal = false)}
+		{album}
+		on:user-deleted={sharedUserDeletedHandler}
 	/>
 {/if}

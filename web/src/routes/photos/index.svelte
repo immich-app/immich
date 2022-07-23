@@ -142,7 +142,7 @@
 	<SideBar />
 
 	<!-- Main Section -->
-	<section class="overflow-y-auto relative">
+	<section class="overflow-y-auto relative immich-scrollbar">
 		<section id="assets-content" class="relative pt-8 pl-4 mb-12 bg-immich-bg">
 			<section id="image-grid" class="flex flex-wrap gap-14">
 				{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}

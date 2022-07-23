@@ -10,6 +10,7 @@
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import { api, AssetResponseDto, AssetTypeEnum } from '@api';
+	import { browser } from '$app/env';
 
 	const dispatch = createEventDispatcher();
 
@@ -20,7 +21,9 @@
 	let isShowDetail = false;
 
 	onMount(() => {
-		document.addEventListener('keydown', (keyInfo) => handleKeyboardPress(keyInfo.key));
+		if (browser) {
+			document.addEventListener('keydown', (keyInfo) => handleKeyboardPress(keyInfo.key));
+		}
 	});
 
 	const handleKeyboardPress = (key: string) => {
@@ -123,7 +126,7 @@
 
 <section
 	id="immich-asset-viewer"
-	class="absolute h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4  "
+	class="fixed h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4  "
 >
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
 		<AsserViewerNavBar

@@ -16,7 +16,7 @@
 <script lang="ts">
 	import '../app.css';
 
-	import { blur, fade, slide } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 
 	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
 	import AnnouncementBox from '$lib/components/shared-components/announcement-box.svelte';

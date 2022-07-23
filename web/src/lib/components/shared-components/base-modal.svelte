@@ -1,30 +1,54 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import Close from 'svelte-material-icons/Close.svelte';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+	import { browser } from '$app/env';
+	import CircleIconButton from './circle-icon-button.svelte';
+	import { clickOutside } from '$lib/utils/click-outside';
 
 	const dispatch = createEventDispatcher();
+	export let zIndex = 9999;
+
+	onMount(() => {
+		if (browser) {
+			const scrollTop = document.documentElement.scrollTop;
+			const scrollLeft = document.documentElement.scrollLeft;
+			window.onscroll = function () {
+				window.scrollTo(scrollLeft, scrollTop);
+			};
+		}
+	});
+
+	onDestroy(() => {
+		if (browser) {
+			window.onscroll = function () {};
+		}
+	});
 </script>
 
 <div
 	id="immich-modal"
-	transition:fly={{ y: 1000, duration: 200, easing: quintOut }}
-	class="absolute top-0 w-screen h-screen z-[9999] bg-black/50 flex place-items-center place-content-center"
+	style:z-index={zIndex}
+	transition:fade={{ duration: 100, easing: quintOut }}
+	class="fixed top-0 w-full h-full  bg-black/50 flex place-items-center place-content-center overflow-hidden"
 >
-	<div class="bg-white w-[450px] min-h-[200px] max-h-[500px] rounded-lg shadow-md">
+	<div
+		use:clickOutside
+		on:out-click={() => dispatch('close')}
+		class="bg-white w-[450px] min-h-[200px] max-h-[500px] rounded-lg shadow-md"
+	>
 		<div class="flex justify-between place-items-center p-5">
 			<div>
 				<slot name="title">
 					<p>Modal Title</p>
 				</slot>
 			</div>
-			<button on:click={() => dispatch('close')}>
-				<Close size="24" />
-			</button>
+
+			<CircleIconButton on:click={() => dispatch('close')} logo={Close} size={'20'} />
 		</div>
 
-		<div class="mt-4">
+		<div class="">
 			<slot />
 		</div>
 	</div>

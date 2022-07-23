@@ -44,4 +44,6 @@
 	<title>{album.albumName} - Immich</title>
 </svelte:head>
 
-<AlbumViewer {album} />
+<div class="relative immich-scrollbar">
+	<AlbumViewer {album} />
+</div>
