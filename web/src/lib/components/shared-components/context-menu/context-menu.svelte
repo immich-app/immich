@@ -10,13 +10,15 @@
 	const dispatch = createEventDispatcher();
 	let menuEl: HTMLElement;
 
-	$: () => {
+	$: (() => {
 		if (!menuEl) return;
 
 		const rect = menuEl.getBoundingClientRect();
 		x = Math.min(window.innerWidth - rect.width, x);
-		if (y > window.innerHeight - rect.height) y -= rect.height;
-	};
+		if (y > window.innerHeight - rect.height) {
+			y -= rect.height;
+		}
+	})();
 </script>
 
 <div

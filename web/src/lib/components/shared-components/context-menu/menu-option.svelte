@@ -1,8 +1,9 @@
 <script>
+	import { createEventDispatcher } from 'svelte';
+
 	export let isDisabled = false;
 	export let text = '';
 
-	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
 	const handleClick = () => {
@@ -12,30 +13,14 @@
 	};
 </script>
 
-<div class:disabled={isDisabled} on:click={handleClick}>
+<button
+	class:disabled={isDisabled}
+	on:click={handleClick}
+	class="bg-white hover:bg-immich-bg transition-all p-4 w-full text-left rounded-lg"
+>
 	{#if text}
 		{text}
 	{:else}
 		<slot />
 	{/if}
-</div>
-
-<style>
-	div {
-		padding: 4px 15px;
-		cursor: default;
-		font-size: 14px;
-		display: flex;
-		align-items: center;
-		grid-gap: 5px;
-	}
-	div:hover {
-		background: #0002;
-	}
-	div.disabled {
-		color: #0006;
-	}
-	div.disabled:hover {
-		background: white;
-	}
-</style>
+</button>

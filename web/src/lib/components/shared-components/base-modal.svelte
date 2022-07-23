@@ -8,6 +8,7 @@
 	import { clickOutside } from '$lib/utils/click-outside';
 
 	const dispatch = createEventDispatcher();
+	export let zIndex = 9999;
 
 	onMount(() => {
 		if (browser) {
@@ -28,8 +29,9 @@
 
 <div
 	id="immich-modal"
+	style:z-index={zIndex}
 	transition:fade={{ duration: 100, easing: quintOut }}
-	class="fixed top-0 w-full h-full z-[9999] bg-black/50 flex place-items-center place-content-center overflow-hidden"
+	class="fixed top-0 w-full h-full  bg-black/50 flex place-items-center place-content-center overflow-hidden"
 >
 	<div
 		use:clickOutside

@@ -10,9 +10,22 @@
 
 	export let album: AlbumResponseDto;
 
+	const dispatch = createEventDispatcher();
+
+	let currentUser: UserResponseDto;
 	let isShowMenu = false;
 	let position = { x: 0, y: 0 };
-	const dispatch = createEventDispatcher();
+	let targetUserId: string;
+	$: isOwned = currentUser?.id == album.ownerId;
+
+	onMount(async () => {
+		try {
+			const { data } = await api.userApi.getMyUserInfo();
+			currentUser = data;
+		} catch (e) {
+			console.error('Error [share-info-modal] [getAllUsers]', e);
+		}
+	});
 
 	const showContextMenu = (userId: string) => {
 		const iconButton = document.getElementById('icon-' + userId);
@@ -23,7 +36,18 @@
 				y: iconButton.getBoundingClientRect().bottom
 			};
 		}
+
+		targetUserId = userId;
 		isShowMenu = !isShowMenu;
+	};
+
+	const removeUser = async (userId: string | undefined) => {
+		try {
+			await api.albumApi.removeUserFromAlbum(album.id, userId || targetUserId);
+			dispatch('user-deleted');
+		} catch (e) {
+			console.error('Error [share-info-modal] [removeUser]', e);
+		}
 	};
 </script>
 
@@ -44,15 +68,23 @@
 					<p class="font-medium text-sm">{user.firstName} {user.lastName}</p>
 				</div>
 
-				<div id={`icon-${user.id}`}>
-					<CircleIconButton
-						on:click={() => showContextMenu(user.id)}
-						logo={DotsVertical}
-						backgroundColor={'transparent'}
-						logoColor={'#5f6368'}
-						hoverColor={'#e2e7e9'}
-						size={'20'}
-					/>
+				<div id={`icon-${user.id}`} class="flex place-items-center">
+					{#if isOwned}
+						<CircleIconButton
+							on:click={() => showContextMenu(user.id)}
+							logo={DotsVertical}
+							backgroundColor={'transparent'}
+							logoColor={'#5f6368'}
+							hoverColor={'#e2e7e9'}
+							size={'20'}
+						/>
+					{:else if user.id == currentUser?.id}
+						<button
+							on:click={() => removeUser(user.id)}
+							class="text-sm text-immich-primary font-medium transition-colors hover:text-immich-primary/75"
+							>Leave</button
+						>
+					{/if}
 				</div>
 			</div>
 		{/each}
@@ -60,9 +92,7 @@
 
 	{#if isShowMenu}
 		<ContextMenu {...position} on:clickoutside={() => (isShowMenu = false)}>
-			<MenuOption on:click={() => console.log('Remove')} text="Remove" />
-			<MenuOption on:click={() => console.log('Info')} text="Info" />
-			<MenuOption on:click={() => console.log('More')} text="More" />
+			<MenuOption on:click={() => removeUser(undefined)} text="Remove" />
 		</ContextMenu>
 	{/if}
 </BaseModal>

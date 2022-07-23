@@ -171,6 +171,17 @@
 			console.log('Error [createAlbumHandler] ', e);
 		}
 	};
+
+	const sharedUserDeletedHandler = async () => {
+		try {
+			const { data } = await api.albumApi.getAlbumInfo(album.id);
+
+			album = data;
+			isShowShareInfoModal = false;
+		} catch (e) {
+			console.log('Error [sharedUserDeletedHandler] ', e);
+		}
+	};
 </script>
 
 <section class="bg-immich-bg">
@@ -296,5 +307,9 @@
 {/if}
 
 {#if isShowShareInfoModal}
-	<ShareInfoModal on:close={() => (isShowShareInfoModal = false)} {album} />
+	<ShareInfoModal
+		on:close={() => (isShowShareInfoModal = false)}
+		{album}
+		on:user-deleted={sharedUserDeletedHandler}
+	/>
 {/if}
