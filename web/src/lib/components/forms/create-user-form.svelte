@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { sendRegistrationForm } from '$lib/auth-api';
+import { api } from '@api';
+
 	import { createEventDispatcher } from 'svelte';
 
 	let error: string;
@@ -7,6 +8,10 @@
 
 	let password: string = '';
 	let confirmPassowrd: string = '';
+
+	let firstName: string = '';
+	let lastName: string = '';
+	let email: string = '';
 
 	let canCreateUser = false;
 
@@ -25,18 +30,18 @@
 		if (canCreateUser) {
 			error = '';
 
-			const formElement = event.target as HTMLFormElement;
+			try {
+				await api.userApi.createUser({
+					email,
+					password,
+					firstName,
+					lastName
+				});
 
-			const response = await sendRegistrationForm(formElement);
-
-			if (response.error) {
-				error = JSON.stringify(response.error);
-			}
-
-			if (response.success) {
 				success = 'New user created';
-
 				dispatch('user-created');
+			} catch (err) {
+				error = 'User creation failed';
 			}
 		}
 	}
@@ -54,7 +59,7 @@
 	<form on:submit|preventDefault={registerUser} method="post" action="/admin/api/create-user" autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="email">Email</label>
-			<input class="immich-form-input" id="email" name="email" type="email" required />
+			<input class="immich-form-input" id="email" name="email" type="email" required bind:value={email} />
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
@@ -76,12 +81,12 @@
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="firstName">First Name</label>
-			<input class="immich-form-input" id="firstName" name="firstName" type="text" required />
+			<input class="immich-form-input" id="firstName" name="firstName" type="text" required bind:value={firstName} />
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="lastName">Last Name</label>
-			<input class="immich-form-input" id="lastName" name="lastName" type="text" required />
+			<input class="immich-form-input" id="lastName" name="lastName" type="text" required bind:value={lastName} />
 		</div>
 
 		{#if error}
