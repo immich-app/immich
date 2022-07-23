@@ -41,10 +41,10 @@
 		isShowMenu = !isShowMenu;
 	};
 
-	const removeUser = async (userId: string | undefined) => {
+	const removeUser = async (userId: string) => {
 		try {
-			await api.albumApi.removeUserFromAlbum(album.id, userId || targetUserId);
-			dispatch('user-deleted');
+			await api.albumApi.removeUserFromAlbum(album.id, userId);
+			dispatch('user-deleted', { userId });
 		} catch (e) {
 			console.error('Error [share-info-modal] [removeUser]', e);
 		}
@@ -80,7 +80,7 @@
 						/>
 					{:else if user.id == currentUser?.id}
 						<button
-							on:click={() => removeUser(user.id)}
+							on:click={() => removeUser('me')}
 							class="text-sm text-immich-primary font-medium transition-colors hover:text-immich-primary/75"
 							>Leave</button
 						>
@@ -92,7 +92,7 @@
 
 	{#if isShowMenu}
 		<ContextMenu {...position} on:clickoutside={() => (isShowMenu = false)}>
-			<MenuOption on:click={() => removeUser(undefined)} text="Remove" />
+			<MenuOption on:click={() => removeUser(targetUserId)} text="Remove" />
 		</ContextMenu>
 	{/if}
 </BaseModal>

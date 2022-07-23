@@ -172,7 +172,14 @@
 		}
 	};
 
-	const sharedUserDeletedHandler = async () => {
+	const sharedUserDeletedHandler = async (event: CustomEvent) => {
+		const { userId }: { userId: string } = event.detail;
+
+		if (userId == 'me') {
+			isShowShareInfoModal = false;
+			goto(backUrl);
+		}
+
 		try {
 			const { data } = await api.albumApi.getAlbumInfo(album.id);
 
@@ -188,14 +195,6 @@
 	<AlbumAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
 		<svelte:fragment slot="trailing">
 			{#if album.assets.length > 0}
-				<!-- <button
-					id="immich-circle-icon-button"
-					class={`rounded-full p-3 flex place-items-center place-content-center text-gray-600 transition-all hover:bg-gray-200`}
-					on:click={() => (isShowAssetSelection = true)}
-				>
-					<FileImagePlusOutline size="24" />
-				</button> -->
-
 				<CircleIconButton
 					on:click={() => (isShowAssetSelection = true)}
 					logo={FileImagePlusOutline}
