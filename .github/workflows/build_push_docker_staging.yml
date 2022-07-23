@@ -23,20 +23,22 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2.0.0
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push Immich Mono Repo
         uses: docker/build-push-action@v3.1.0
         with:
           context: ./server
           file: ./server/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
-          push: ${{ github.event_name == 'pull_request' }}
           tags: |
             altran1502/immich-server:staging
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker push
+        if: ${{ github.event_name == 'pull_request' }}
+        run: docker push altran1502/immich-server:staging
 
   build_and_push_machine_learning_staging:
     runs-on: ubuntu-latest
@@ -51,20 +53,22 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2.0.0
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and Push Machine Learning
         uses: docker/build-push-action@v3.1.0
         with:
           context: ./machine-learning
           file: ./machine-learning/Dockerfile
           platforms: linux/arm/v7,linux/amd64
-          push: ${{ github.event_name == 'pull_request' }}
           tags: |
             altran1502/immich-machine-learning:staging
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker push
+        if: ${{ github.event_name == 'pull_request' }}
+        run: docker push altran1502/immich-machine-learning:staging
 
   build_and_push_web_staging:
     runs-on: ubuntu-latest
@@ -78,11 +82,6 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2.0.0
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and Push Web
         uses: docker/build-push-action@v3.1.0
         with:
@@ -90,9 +89,16 @@ jobs:
           file: ./web/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           target: prod
-          push: ${{ github.event_name == 'pull_request' }}
           tags: |
             altran1502/immich-web:staging
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker push
+        if: ${{ github.event_name == 'pull_request' }}
+        run: docker push altran1502/immich-web:staging
 
   build_and_push_nginx_staging:
     runs-on: ubuntu-latest
@@ -106,17 +112,19 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2.0.0
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and Push Proxy
         uses: docker/build-push-action@v3.1.0
         with:
           context: ./nginx
           file: ./nginx/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
-          push: ${{ github.event_name == 'pull_request' }}
           tags: |
             altran1502/immich-proxy:staging
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker push
+        if: ${{ github.event_name == 'pull_request' }}
+        run: docker push altran1502/immich-proxy:staging
