@@ -155,7 +155,7 @@
 		</svelte:fragment>
 	</AlbumAppBar>
 
-	<section class="flex flex-wrap gap-14 mt-[160px] px-20 overflow-y-auto">
+	<section class="flex flex-wrap gap-14  px-20 overflow-y-auto">
 		{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
 			<!-- Asset Group By Date -->
 			<div class="flex flex-col">
