@@ -2,11 +2,11 @@
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
 	import { session } from '$app/stores';
 	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
 	import { AlbumResponseDto, api, UserResponseDto } from '@api';
+	import { goto } from '$app/navigation';
 
 	let sharedAlbums: AlbumResponseDto[] = [];
 
@@ -17,6 +17,28 @@
 	api.albumApi.getAllAlbums(true).then(resp => {
 		sharedAlbums = resp.data;
 	});
+
+	const createSharedAlbum = async () => {
+		try {
+			const { data: newAlbum } = await api.albumApi.createAlbum({
+				albumName: 'Untitled'
+			});
+
+			goto('/albums/' + newAlbum.id);
+		} catch (e) {
+			console.log('Error [createAlbum] ', e);
+		}
+	};
+
+	const deleteAlbum = async (album: AlbumResponseDto) => {
+		try {
+			await api.albumApi.deleteAlbum(album.id);
+			return true;
+		} catch (e) {
+			console.log('Error [deleteAlbum] ', e);
+			return false;
+		}
+	};
 </script>
 
 <svelte:head>
@@ -42,6 +64,7 @@
 
 				<div>
 					<button
+						on:click={createSharedAlbum}
 						class="flex place-items-center gap-1 text-sm hover:bg-immich-primary/5 p-2 rounded-lg font-medium hover:text-gray-700"
 					>
 						<span>
@@ -58,11 +81,13 @@
 
 			<!-- Share Album List -->
 			<div class="w-full flex flex-col place-items-center">
-				{#each sharedAlbums as album}
-					<a sveltekit:prefetch href={`albums/${album.id}`}>
-						<SharedAlbumListTile {album} {user} /></a
-					>
-				{/each}
+				{#if $session.user}
+					{#each sharedAlbums as album}
+						<a sveltekit:prefetch href={`albums/${album.id}`}>
+							<SharedAlbumListTile {album} user={$session.user} />
+						</a>
+					{/each}
+				{/if}
 			</div>
 		</section>
 	</section>

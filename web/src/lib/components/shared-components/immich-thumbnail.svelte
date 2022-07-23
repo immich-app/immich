@@ -15,6 +15,8 @@
 	export let groupIndex = 0;
 	export let thumbnailSize: number | undefined = undefined;
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
+	export let selected: boolean = false;
+	export let isExisted: boolean = false;
 
 	let imageData: string;
 	let videoData: string;
@@ -27,6 +29,7 @@
 	let isThumbnailVideoPlaying = false;
 	let calculateVideoDurationIntervalHandler: NodeJS.Timer;
 	let videoProgress = '00:00';
+	let videoAbortController: AbortController;
 
 	const loadImageData = async () => {
 		if ($session.user) {
@@ -42,52 +45,51 @@
 
 	const loadVideoData = async () => {
 		isThumbnailVideoPlaying = false;
+		videoAbortController = new AbortController();
 
-		if ($session.user) {
-			try {
-				const { data } = await api.assetApi.serveFile(
-					asset.deviceAssetId,
-					asset.deviceId,
-					false,
-					true,
-					{
-						responseType: 'blob'
-					}
-				);
-
-				if (!(data instanceof Blob)) {
-					return;
+		try {
+			const { data } = await api.assetApi.serveFile(
+				asset.deviceAssetId,
+				asset.deviceId,
+				false,
+				true,
+				{
+					responseType: 'blob',
+					signal: videoAbortController.signal
 				}
+			);
 
-				videoData = URL.createObjectURL(data);
+			if (!(data instanceof Blob)) {
+				return;
+			}
 
-				videoPlayerNode.src = videoData;
-				// videoPlayerNode.src = videoData + '#t=0,5';
+			videoData = URL.createObjectURL(data);
 
-				videoPlayerNode.load();
+			videoPlayerNode.src = videoData;
 
-				videoPlayerNode.onloadeddata = () => {
-					console.log('first frame load');
-				};
+			videoPlayerNode.load();
 
-				videoPlayerNode.oncanplaythrough = () => {
-					console.log('can play through');
-				};
+			videoPlayerNode.onloadeddata = () => {
+				console.log('first frame load');
+			};
 
-				videoPlayerNode.oncanplay = () => {
-					console.log('can play');
-					videoPlayerNode.muted = true;
-					videoPlayerNode.play();
+			videoPlayerNode.oncanplaythrough = () => {
+				console.log('can play through');
+			};
 
-					isThumbnailVideoPlaying = true;
-					calculateVideoDurationIntervalHandler = setInterval(() => {
-						videoProgress = getVideoDurationInString(Math.round(videoPlayerNode.currentTime));
-					}, 1000);
-				};
+			videoPlayerNode.oncanplay = () => {
+				console.log('can play');
+				videoPlayerNode.muted = true;
+				videoPlayerNode.play();
 
-				return videoData;
-			} catch (e) {}
-		}
+				isThumbnailVideoPlaying = true;
+				calculateVideoDurationIntervalHandler = setInterval(() => {
+					videoProgress = getVideoDurationInString(Math.round(videoPlayerNode.currentTime));
+				}, 1000);
+			};
+
+			return videoData;
+		} catch (e) {}
 	};
 
 	const getVideoDurationInString = (currentTime: number) => {
@@ -137,6 +139,11 @@
 
 	const handleMouseLeaveThumbnail = () => {
 		mouseOver = false;
+
+		// Stop XHR download of video
+		videoAbortController?.abort();
+
+		// Stop video playback
 		URL.revokeObjectURL(videoData);
 
 		clearInterval(calculateVideoDurationIntervalHandler);
@@ -144,28 +151,59 @@
 		isThumbnailVideoPlaying = false;
 		videoProgress = '00:00';
 	};
+
+	$: getThumbnailBorderStyle = () => {
+		if (selected) {
+			return 'border-[20px] border-immich-primary/20';
+		} else if (isExisted) {
+			return 'border-[20px] border-gray-300';
+		} else {
+			return '';
+		}
+	};
+
+	$: getOverlaySelectorIconStyle = () => {
+		if (selected || isExisted) {
+			return '';
+		} else {
+			return 'bg-gradient-to-b from-gray-800/50';
+		}
+	};
+	const thumbnailClickedHandler = () => {
+		if (!isExisted) {
+			dispatch('click', { assetId: asset.id, deviceId: asset.deviceId });
+		}
+	};
 </script>
 
 <IntersectionObserver once={true} let:intersecting>
 	<div
 		style:width={`${thumbnailSize}px`}
 		style:height={`${thumbnailSize}px`}
-		class={`bg-gray-100 relative hover:cursor-pointer ${getSize()}`}
+		class={`bg-gray-100 relative  ${getSize()} ${
+			isExisted ? 'cursor-not-allowed' : 'hover:cursor-pointer'
+		}`}
 		on:mouseenter={handleMouseOverThumbnail}
 		on:mouseleave={handleMouseLeaveThumbnail}
-		on:click={() => dispatch('viewAsset', { assetId: asset.id, deviceId: asset.deviceId })}
+		on:click={thumbnailClickedHandler}
 	>
-		{#if mouseOver}
+		{#if mouseOver || selected || isExisted}
 			<div
 				in:fade={{ duration: 200 }}
-				class="w-full  bg-gradient-to-b from-gray-800/50 via-white/0 to-white/0 absolute p-2  z-10"
+				class={`w-full ${getOverlaySelectorIconStyle()} via-white/0 to-white/0 absolute p-2  z-10`}
 			>
 				<div
 					on:mouseenter={() => (mouseOverIcon = true)}
 					on:mouseleave={() => (mouseOverIcon = false)}
 					class="inline-block"
 				>
-					<CheckCircle size="24" color={mouseOverIcon ? 'white' : '#d8dadb'} />
+					{#if selected}
+						<CheckCircle size="24" color="#4250af" />
+					{:else if isExisted}
+						<CheckCircle size="24" color="#252525" />
+					{:else}
+						<CheckCircle size="24" color={mouseOverIcon ? 'white' : '#d8dadb'} />
+					{/if}
 				</div>
 			</div>
 		{/if}
@@ -209,7 +247,7 @@
 				<div
 					style:width={`${thumbnailSize}px`}
 					style:height={`${thumbnailSize}px`}
-					class={`bg-immich-primary/10 ${getSize()} flex place-items-center place-content-center`}
+					class={`bg-immich-primary/10 ${getSize()} flex place-items-center place-content-center `}
 				>
 					...
 				</div>
@@ -220,7 +258,7 @@
 					in:fade={{ duration: 250 }}
 					src={imageData}
 					alt={asset.id}
-					class={`object-cover ${getSize()} transition-all duration-100 z-0`}
+					class={`object-cover ${getSize()} transition-all duration-100 z-0 ${getThumbnailBorderStyle()}`}
 					loading="lazy"
 				/>
 			{/await}

@@ -10,6 +10,9 @@ dev-scale:
 stage:
 	docker-compose -f ./docker/docker-compose.staging.yml up --build -V --remove-orphans
 
+pull-stage:
+	docker-compose -f ./docker/docker-compose.staging.yml pull
+
 test-e2e:
 	docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test -p immich-test-e2e up  --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans --build
 
