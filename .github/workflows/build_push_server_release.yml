@@ -72,7 +72,7 @@ jobs:
         with:
           context: ./machine-learning
           file: ./machine-learning/Dockerfile
-          platforms: linux/arm/v7,linux/amd64
+          platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: true
           tags: |
             altran1502/immich-machine-learning:${{ steps.previoustag.outputs.tag }}
