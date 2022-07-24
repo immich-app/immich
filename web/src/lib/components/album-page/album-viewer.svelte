@@ -258,11 +258,14 @@
 						logo={FileImagePlusOutline}
 					/>
 
-					<CircleIconButton
-						title="Share"
-						on:click={() => (isShowShareUserSelection = true)}
-						logo={ShareVariantOutline}
-					/>
+					<!-- Sharing only for owner -->
+					{#if isOwned}
+						<CircleIconButton
+							title="Share"
+							on:click={() => (isShowShareUserSelection = true)}
+							logo={ShareVariantOutline}
+						/>
+					{/if}
 				{/if}
 
 				{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
