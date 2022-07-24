@@ -2,7 +2,7 @@
 	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { AlbumResponseDto, api, AssetResponseDto, ThumbnailFormat, UserResponseDto } from '@api';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
@@ -18,8 +18,6 @@
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-	import { fade } from 'svelte/transition';
-	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
 
 	let isShowAssetViewer = false;
@@ -112,6 +110,19 @@
 		multiSelectAsset = new Set();
 	};
 
+	const removeSelectedAssetFromAlbum = async () => {
+		if (window.confirm('Do you want the selected assets from the album?')) {
+			try {
+				const { data } = await api.albumApi.removeAssetFromAlbum(album.id, {
+					assetIds: Array.from(multiSelectAsset).map((a) => a.id)
+				});
+
+				goto('/albums/' + album.id);
+			} catch (e) {
+				console.log('Error [album-viewer] [removeAssetFromAlbum]', e);
+			}
+		}
+	};
 	const navigateAssetForward = () => {
 		try {
 			if (currentViewAssetIndex < album.assets.length - 1) {
@@ -226,8 +237,8 @@
 			<svelte:fragment slot="trailing">
 				{#if isOwned}
 					<CircleIconButton
-						title="Delete"
-						on:click={() => console.log('Remove selected assets from album')}
+						title="Remove from album"
+						on:click={removeSelectedAssetFromAlbum}
 						logo={DeleteOutline}
 					/>
 				{/if}
