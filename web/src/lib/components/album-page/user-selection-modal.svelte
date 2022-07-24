@@ -6,7 +6,7 @@
 
 	export let sharedUsersInAlbum: Set<UserResponseDto>;
 	let users: UserResponseDto[] = [];
-	let selectedUsers: Set<UserResponseDto> = new Set();
+	let selectedUsers: UserResponseDto[] = [];
 
 	const dispatch = createEventDispatcher();
 
@@ -22,23 +22,15 @@
 	});
 
 	const selectUser = (user: UserResponseDto) => {
-		const tempSelectedUsers = new Set(selectedUsers);
-
-		if (selectedUsers.has(user)) {
-			tempSelectedUsers.delete(user);
+		if (selectedUsers.includes(user)) {
+			selectedUsers = selectedUsers.filter((selectedUser) => selectedUser.id !== user.id);
 		} else {
-			tempSelectedUsers.add(user);
+			selectedUsers = [...selectedUsers, user];
 		}
-
-		selectedUsers = tempSelectedUsers;
 	};
 
 	const deselectUser = (user: UserResponseDto) => {
-		const tempSelectedUsers = new Set(selectedUsers);
-
-		tempSelectedUsers.delete(user);
-
-		selectedUsers = tempSelectedUsers;
+		selectedUsers = selectedUsers.filter((selectedUser) => selectedUser.id !== user.id);
 	};
 </script>
 
@@ -51,18 +43,20 @@
 	</svelte:fragment>
 
 	<div class=" max-h-[400px] overflow-y-auto immich-scrollbar">
-		{#if selectedUsers.size > 0}
+		{#if selectedUsers.length > 0}
 			<div class="flex gap-4 py-2 px-5 overflow-x-auto place-items-center mb-2">
 				<p class="font-medium">To</p>
 
-				{#each Array.from(selectedUsers) as user}
-					<button
-						on:click={() => deselectUser(user)}
-						class="flex gap-1 place-items-center border border-gray-400 rounded-full p-1 hover:bg-gray-200 transition-colors"
-					>
-						<CircleAvatar size={28} {user} />
-						<p class="text-xs font-medium">{user.firstName} {user.lastName}</p>
-					</button>
+				{#each selectedUsers as user}
+					{#key user.id}
+						<button
+							on:click={() => deselectUser(user)}
+							class="flex gap-1 place-items-center border border-gray-400 rounded-full p-1 hover:bg-gray-200 transition-colors"
+						>
+							<CircleAvatar size={28} {user} />
+							<p class="text-xs font-medium">{user.firstName} {user.lastName}</p>
+						</button>
+					{/key}
 				{/each}
 			</div>
 		{/if}
@@ -76,7 +70,7 @@
 						on:click={() => selectUser(user)}
 						class="w-full flex place-items-center gap-4 py-4 px-5 hover:bg-gray-200  transition-all"
 					>
-						{#if selectedUsers.has(user)}
+						{#if selectedUsers.includes(user)}
 							<span
 								class="bg-immich-primary text-white rounded-full w-12 h-12 border flex place-items-center place-content-center text-3xl"
 								>✓</span
@@ -104,7 +98,7 @@
 			</p>
 		{/if}
 
-		{#if selectedUsers.size > 0}
+		{#if selectedUsers.length > 0}
 			<div class="flex place-content-end p-5 ">
 				<button
 					on:click={() => dispatch('add-user', { selectedUsers })}
