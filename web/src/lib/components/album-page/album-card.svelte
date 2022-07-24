@@ -4,12 +4,8 @@
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import { fade } from 'svelte/transition';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
-	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
-	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-	export let album: AlbumResponseDto;
 
-	let isShowMenu = false;
-	let contextMenuPosition = { x: 0, y: 0 };
+	export let album: AlbumResponseDto;
 
 	let imageData: string = '/no-thumbnail.png';
 	const dispatch = createEventDispatcher();
@@ -29,12 +25,10 @@
 	};
 
 	const showAlbumContextMenu = (e: MouseEvent) => {
-		contextMenuPosition = {
-			x: 24,
-			y: 24
-		};
-
-		isShowMenu = !isShowMenu;
+		dispatch('showalbumcontextmenu', {
+			x: e.clientX,
+			y: e.clientY
+		});
 	};
 </script>
 
@@ -53,12 +47,6 @@
 			hoverColor={'rgba(95,99,104, 0.2)'}
 			logoColor={'#4250af'}
 		/>
-
-		{#if isShowMenu}
-			<ContextMenu {...contextMenuPosition}>
-				<MenuOption on:click={() => console.log('ok')} text="Remove" />
-			</ContextMenu>
-		{/if}
 	</div>
 
 	<div class={`h-[275px] w-[275px] z-[-1]`}>

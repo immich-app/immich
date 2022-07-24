@@ -4,10 +4,20 @@
 	import { quintOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 
+	/**
+	 * x coordiante of the context menu.
+	 * @type {number}
+	 */
 	export let x: number = 0;
+
+	/**
+	 * x coordiante of the context menu.
+	 * @type {number}
+	 */
 	export let y: number = 0;
 
 	const dispatch = createEventDispatcher();
+
 	let menuEl: HTMLElement;
 
 	$: (() => {

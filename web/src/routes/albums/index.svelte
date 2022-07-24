@@ -39,9 +39,14 @@
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
+	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 
 	export let user: ImmichUser;
 	export let albums: AlbumResponseDto[];
+
+	let isShowMenu = false;
+	let contextMenuPosition = { x: 0, y: 0 };
 
 	onMount(async () => {
 		const { data } = await api.albumApi.getAllAlbums();
@@ -79,6 +84,14 @@
 			console.log('Error [deleteAlbum] ', e);
 			return false;
 		}
+	};
+
+	const showAlbumContextMenu = (event: CustomEvent) => {
+		contextMenuPosition = {
+			x: event.detail.x,
+			y: event.detail.y
+		};
+		isShowMenu = !isShowMenu;
 	};
 </script>
 
@@ -120,10 +133,17 @@
 			<div class="flex flex-wrap gap-8">
 				{#each albums as album}
 					<a sveltekit:prefetch href={`albums/${album.id}`}>
-						<AlbumCard {album} />
+						<AlbumCard {album} on:showalbumcontextmenu={showAlbumContextMenu} />
 					</a>
 				{/each}
 			</div>
 		</section>
 	</section>
+
+	<!-- Context Menu -->
+	{#if isShowMenu}
+		<ContextMenu {...contextMenuPosition}>
+			<MenuOption on:click={() => console.log('ok')} text="Remove" />
+		</ContextMenu>
+	{/if}
 </section>
