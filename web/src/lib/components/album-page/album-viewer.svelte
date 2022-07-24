@@ -117,7 +117,8 @@
 					assetIds: Array.from(multiSelectAsset).map((a) => a.id)
 				});
 
-				goto('/albums/' + album.id);
+				album = data;
+				multiSelectAsset = new Set();
 			} catch (e) {
 				console.log('Error [album-viewer] [removeAssetFromAlbum]', e);
 			}
@@ -295,9 +296,11 @@
 		{#if album.shared}
 			<div class="my-6 flex">
 				{#each album.sharedUsers as user}
-					<span class="mr-1">
-						<CircleAvatar {user} on:click={() => (isShowShareInfoModal = true)} />
-					</span>
+					{#key user.id}
+						<span class="mr-1">
+							<CircleAvatar {user} on:click={() => (isShowShareInfoModal = true)} />
+						</span>
+					{/key}
 				{/each}
 
 				<button
@@ -313,24 +316,28 @@
 		{#if album.assets.length > 0}
 			<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
 				{#each album.assets as asset}
-					{#if album.assets.length < 7}
-						<ImmichThumbnail
-							{asset}
-							{thumbnailSize}
-							format={ThumbnailFormat.Jpeg}
-							on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
-							on:select={selectAssetHandler}
-							selected={multiSelectAsset.has(asset)}
-						/>
-					{:else}
-						<ImmichThumbnail
-							{asset}
-							{thumbnailSize}
-							on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
-							on:select={selectAssetHandler}
-							selected={multiSelectAsset.has(asset)}
-						/>
-					{/if}
+					{#key asset.id}
+						{#if album.assets.length < 7}
+							<ImmichThumbnail
+								{asset}
+								{thumbnailSize}
+								format={ThumbnailFormat.Jpeg}
+								on:click={(e) =>
+									isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e)}
+								on:select={selectAssetHandler}
+								selected={multiSelectAsset.has(asset)}
+							/>
+						{:else}
+							<ImmichThumbnail
+								{asset}
+								{thumbnailSize}
+								on:click={(e) =>
+									isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e)}
+								on:select={selectAssetHandler}
+								selected={multiSelectAsset.has(asset)}
+							/>
+						{/if}
+					{/key}
 				{/each}
 			</div>
 		{:else}

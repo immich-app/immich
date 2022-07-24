@@ -170,12 +170,14 @@
 						<!-- Image grid -->
 						<div class="flex flex-wrap gap-[2px]">
 							{#each assetsInDateGroup as asset}
-								<ImmichThumbnail
-									{asset}
-									on:mouseEvent={thumbnailMouseEventHandler}
-									on:click={viewAssetHandler}
-									{groupIndex}
-								/>
+								{#key asset.id}
+									<ImmichThumbnail
+										{asset}
+										on:mouseEvent={thumbnailMouseEventHandler}
+										on:click={viewAssetHandler}
+										{groupIndex}
+									/>
+								{/key}
 							{/each}
 						</div>
 					</div>
