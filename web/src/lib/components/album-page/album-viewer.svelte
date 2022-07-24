@@ -18,7 +18,7 @@
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-
+	import { fade } from 'svelte/transition';
 	const dispatch = createEventDispatcher();
 	export let album: AlbumResponseDto;
 

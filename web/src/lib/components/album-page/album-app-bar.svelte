@@ -31,7 +31,10 @@
 	});
 </script>
 
-<div transition:fly={{ y: 10, duration: 200 }} class="fixed top-0 w-full bg-transparent z-[100]">
+<div
+	transition:fly|local={{ y: 10, duration: 200 }}
+	class="fixed top-0 w-full bg-transparent z-[100]"
+>
 	<div
 		id="asset-selection-app-bar"
 		class={`flex justify-between ${appBarBorder} rounded-lg p-2 mx-2 mt-2 transition-all place-items-center ${tailwindClasses}`}
