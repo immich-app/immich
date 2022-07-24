@@ -30,7 +30,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 		return response;
 	} catch (error) {
-		console.log('Error [handle]');
+		console.log('Error [handle]', error);
 		return await resolve(event);
 	}
 };
