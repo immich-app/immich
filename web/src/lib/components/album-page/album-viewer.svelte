@@ -111,7 +111,7 @@
 	};
 
 	const removeSelectedAssetFromAlbum = async () => {
-		if (window.confirm('Do you want the selected assets from the album?')) {
+		if (window.confirm('Do you want to remove selected assets from the album?')) {
 			try {
 				const { data } = await api.albumApi.removeAssetFromAlbum(album.id, {
 					assetIds: Array.from(multiSelectAsset).map((a) => a.id)
