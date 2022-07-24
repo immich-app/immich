@@ -13,7 +13,9 @@
 			return '/no-thumbnail.png';
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Jpeg, { responseType: 'blob' });
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Webp, {
+			responseType: 'blob'
+		});
 		if (data instanceof Blob) {
 			imageData = URL.createObjectURL(data);
 			return imageData;
@@ -21,10 +23,15 @@
 	};
 </script>
 
-<div class="h-[339px] w-[275px] hover:cursor-pointer mt-4" on:click={() => dispatch('click', album)}>
+<div
+	class="h-[339px] w-[275px] hover:cursor-pointer mt-4"
+	on:click={() => dispatch('click', album)}
+>
 	<div class={`h-[275px] w-[275px]`}>
 		{#await loadImageData(album.albumThumbnailAssetId)}
-			<div class={`bg-immich-primary/10 w-full h-full  flex place-items-center place-content-center rounded-xl`}>
+			<div
+				class={`bg-immich-primary/10 w-full h-full  flex place-items-center place-content-center rounded-xl`}
+			>
 				...
 			</div>
 		{:then imageData}
