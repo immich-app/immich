@@ -44,8 +44,8 @@
 		<CircleIconButton
 			logo={DotsVertical}
 			size={'20'}
-			hoverColor={'rgba(95,99,104, 0.2)'}
-			logoColor={'#4250af'}
+			hoverColor={'rgba(95,99,104, 0.5)'}
+			logoColor={'#fdf8ec'}
 		/>
 	</div>
 
