@@ -9,12 +9,17 @@
 	import { goto } from '$app/navigation';
 
 	let sharedAlbums: AlbumResponseDto[] = [];
+	let user: UserResponseDto;
 
-	checkUserAuthStatus().catch(() => {
-		gotoLogin();
-	});
+	checkUserAuthStatus()
+		.then((authUser) => {
+			user = authUser;
+		})
+		.catch(() => {
+			gotoLogin();
+		});
 
-	api.albumApi.getAllAlbums(true).then(resp => {
+	api.albumApi.getAllAlbums(true).then((resp) => {
 		sharedAlbums = resp.data;
 	});
 
@@ -46,8 +51,8 @@
 </svelte:head>
 
 <section>
-	{#if $session.user}
-		<NavigationBar user={$session.user} on:uploadClicked={() => {}} />
+	{#if user}
+		<NavigationBar {user} on:uploadClicked={() => {}} />
 	{/if}
 </section>
 
@@ -81,10 +86,10 @@
 
 			<!-- Share Album List -->
 			<div class="w-full flex flex-col place-items-center">
-				{#if $session.user}
+				{#if user}
 					{#each sharedAlbums as album}
 						<a sveltekit:prefetch href={`albums/${album.id}`}>
-							<SharedAlbumListTile {album} user={$session.user} />
+							<SharedAlbumListTile {album} {user} />
 						</a>
 					{/each}
 				{/if}

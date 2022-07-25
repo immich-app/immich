@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { session } from '$app/stores';
 	import { loginPageMessage } from '$lib/constants';
 	import { createEventDispatcher } from 'svelte';
 	import { api } from '@api';
@@ -11,7 +9,7 @@
 	let email: string = '';
 	let password: string = '';
 
-	async function login(_: SubmitEvent) {
+	async function login() {
 		error = '';
 
 		try {

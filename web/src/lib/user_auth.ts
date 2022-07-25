@@ -3,35 +3,35 @@ import { goto } from '$app/navigation';
 import { get } from 'svelte/store';
 import { session } from '$app/stores';
 
-export async function checkUserAuthStatus(): Promise<UserResponseDto>  {
-    const user = get(session).user;
-    if (user) return user;
+export async function checkUserAuthStatus(): Promise<UserResponseDto> {
+	const user = get(session).user;
+	if (user) return user;
 
 	const { data } = await api.userApi.getMyUserInfo();
 
-    session.update(sessionData => {
-        return {
-            ...sessionData,
-            user: data
-        };
-    });
+	session.update((sessionData) => {
+		return {
+			...sessionData,
+			user: data
+		};
+	});
 
-    return data;
-};
+	return data;
+}
 
 export async function logoutUser(): Promise<void> {
-    const { data } = await api.authenticationApi.logout();
+	const { data } = await api.authenticationApi.logout();
 
-    if (data.successful) {
-        session.update(sessionData => {
-            return {
-                ...sessionData,
-                user: undefined
-            };
-        });
-    }
+	if (data.successful) {
+		session.update((sessionData) => {
+			return {
+				...sessionData,
+				user: undefined
+			};
+		});
+	}
 }
 
 export function gotoLogin() {
-    goto('/auth/login');
+	goto('/auth/login');
 }
