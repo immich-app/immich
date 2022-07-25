@@ -15,33 +15,21 @@
 		error = '';
 
 		try {
+			const response = await api.authenticationApi.login({
+				email,
+				password
+			});
 
-		const response = await api.authenticationApi.login({
-			email,
-			password
-		});
+			const user = response.data;
 
-		const user = response.data;
+			if (!user.isAdmin && user.shouldChangePassword) {
+				return dispatch('first-login');
+			}
 
-		$session.user = {
-			accessToken: user.accessToken,
-			firstName: user.firstName,
-			lastName: user.lastName,
-			isAdmin: user.isAdmin,
-			id: user.userId,
-			email: user.userEmail,
-		};
-
-		if (!user.isAdmin && user.shouldChangePassword) {
-			return dispatch('first-login');
-		}
-
-		return dispatch('success');
-
+			return dispatch('success');
 		} catch (e) {
 			error = 'Incorrect email or password';
 		}
-
 	}
 </script>
 
@@ -52,7 +40,9 @@
 	</div>
 
 	{#if loginPageMessage}
-		<p class="text-sm border rounded-md m-4 p-4 text-immich-primary font-medium bg-immich-primary/5">
+		<p
+			class="text-sm border rounded-md m-4 p-4 text-immich-primary font-medium bg-immich-primary/5"
+		>
 			{@html loginPageMessage}
 		</p>
 	{/if}
@@ -60,12 +50,26 @@
 	<form on:submit|preventDefault={login} method="post" action="" autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="email">Email</label>
-			<input class="immich-form-input" id="email" name="email" type="email" required bind:value={email} />
+			<input
+				class="immich-form-input"
+				id="email"
+				name="email"
+				type="email"
+				required
+				bind:value={email}
+			/>
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="password">Password</label>
-			<input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
+			<input
+				class="immich-form-input"
+				id="password"
+				name="password"
+				type="password"
+				required
+				bind:value={password}
+			/>
 		</div>
 
 		{#if error}
