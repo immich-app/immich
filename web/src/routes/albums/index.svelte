@@ -161,6 +161,19 @@
 					{/key}
 				{/each}
 			</div>
+
+			<!-- Empty Message -->
+			{#if albums.length === 0}
+				<div
+					class="border p-5 w-[50%] m-auto mt-10 bg-gray-50 rounded-lg flex flex-col place-content-center place-items-center"
+				>
+					<img src="/empty-1.svg" alt="Empty shared album" width="500" />
+
+					<p class="text-center text-immich-text-gray-500">
+						Create an album to organize your photos and videos
+					</p>
+				</div>
+			{/if}
 		</section>
 	</section>
 
