@@ -171,8 +171,13 @@
 	};
 	const thumbnailClickedHandler = () => {
 		if (!isExisted) {
-			dispatch('click', { assetId: asset.id, deviceId: asset.deviceId });
+			dispatch('click', { asset });
 		}
+	};
+
+	const onIconClickedHandler = (e: MouseEvent) => {
+		e.stopPropagation();
+		dispatch('select', { asset });
 	};
 </script>
 
@@ -192,7 +197,8 @@
 				in:fade={{ duration: 200 }}
 				class={`w-full ${getOverlaySelectorIconStyle()} via-white/0 to-white/0 absolute p-2  z-10`}
 			>
-				<div
+				<button
+					on:click={onIconClickedHandler}
 					on:mouseenter={() => (mouseOverIcon = true)}
 					on:mouseleave={() => (mouseOverIcon = false)}
 					class="inline-block"
@@ -204,7 +210,7 @@
 					{:else}
 						<CheckCircle size="24" color={mouseOverIcon ? 'white' : '#d8dadb'} />
 					{/if}
-				</div>
+				</button>
 			</div>
 		{/if}
 

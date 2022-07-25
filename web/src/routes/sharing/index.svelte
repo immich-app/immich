@@ -89,6 +89,18 @@
 					{/each}
 				{/if}
 			</div>
+
+			<!-- Empty List -->
+			{#if sharedAlbums.length === 0}
+				<div
+					class="border p-5 w-[50%] m-auto mt-10 bg-gray-50 rounded-3xl flex flex-col place-content-center place-items-center"
+				>
+					<img src="/empty-2.svg" alt="Empty shared album" width="500" />
+					<p class="text-center text-immich-text-gray-500">
+						Create a shared album to share photos and videos with people in your network
+					</p>
+				</div>
+			{/if}
 		</section>
 	</section>
 </section>

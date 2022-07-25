@@ -1608,7 +1608,7 @@ export const AlbumApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async removeAssetFromAlbum(albumId: string, removeAssetsDto: RemoveAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async removeAssetFromAlbum(albumId: string, removeAssetsDto: RemoveAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.removeAssetFromAlbum(albumId, removeAssetsDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -1707,7 +1707,7 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeAssetFromAlbum(albumId: string, removeAssetsDto: RemoveAssetsDto, options?: any): AxiosPromise<void> {
+        removeAssetFromAlbum(albumId: string, removeAssetsDto: RemoveAssetsDto, options?: any): AxiosPromise<AlbumResponseDto> {
             return localVarFp.removeAssetFromAlbum(albumId, removeAssetsDto, options).then((request) => request(axios, basePath));
         },
         /**

@@ -23,6 +23,7 @@ import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AlbumResponseDto } from './response-dto/album-response.dto';
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
 @UseGuards(JwtAuthGuard)
@@ -76,7 +77,7 @@ export class AlbumController {
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) removeAssetsDto: RemoveAssetsDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
-  ) {
+  ): Promise<AlbumResponseDto> {
     return this.albumService.removeAssetsFromAlbum(authUser, removeAssetsDto, albumId);
   }
 

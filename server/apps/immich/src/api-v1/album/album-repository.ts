@@ -1,7 +1,7 @@
 import { AlbumEntity } from '@app/database/entities/album.entity';
 import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, DataSource } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
@@ -10,6 +10,7 @@ import { CreateAlbumDto } from './dto/create-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
+import { AlbumResponseDto } from './response-dto/album-response.dto';
 
 export interface IAlbumRepository {
   create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
@@ -18,7 +19,7 @@ export interface IAlbumRepository {
   delete(album: AlbumEntity): Promise<void>;
   addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity>;
   removeUser(album: AlbumEntity, userId: string): Promise<void>;
-  removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<boolean>;
+  removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<AlbumEntity>;
   addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AlbumEntity>;
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
 }
@@ -198,7 +199,7 @@ export class AlbumRepository implements IAlbumRepository {
     await this.userAlbumRepository.delete({ albumId: album.id, sharedUserId: userId });
   }
 
-  async removeAssets(album: AlbumEntity, removeAssetsDto: RemoveAssetsDto): Promise<boolean> {
+  async removeAssets(album: AlbumEntity, removeAssetsDto: RemoveAssetsDto): Promise<AlbumEntity> {
     let deleteAssetCount = 0;
     // TODO: should probably do a single delete query?
     for (const assetId of removeAssetsDto.assetIds) {
@@ -207,7 +208,11 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     // TODO: No need to return boolean if using a singe delete query
-    return deleteAssetCount == removeAssetsDto.assetIds.length;
+    if (deleteAssetCount == removeAssetsDto.assetIds.length) {
+      return this.get(album.id) as Promise<AlbumEntity>;
+    } else {
+      throw new BadRequestException('Some assets were not found in the album');
+    }
   }
 
   async addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AlbumEntity> {
