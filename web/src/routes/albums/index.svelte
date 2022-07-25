@@ -9,30 +9,13 @@
 	import { AlbumResponseDto, api } from '@api';
 	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
 	import { session } from '$app/stores';
-	import UserManagement from '$lib/components/admin-page/user-management.svelte';
-
-	let albums: AlbumResponseDto[] = [];
-
-		return {
-			status: 200,
-			props: {
-				user: session.user,
-				albums: albums
-			}
-		};
-	};
-</script>
-
-<script lang="ts">
-	import AlbumCard from '$lib/components/album-page/album-card.svelte';
-	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 
-	export let user: ImmichUser;
-	export let albums: AlbumResponseDto[];
+	let albums: AlbumResponseDto[] = [];
+
+	checkUserAuthStatus().catch(() => gotoLogin());
 
 	let isShowContextMenu = false;
 	let contextMenuPosition = { x: 0, y: 0 };
