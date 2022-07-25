@@ -222,6 +222,21 @@
 			console.log('Error [sharedUserDeletedHandler] ', e);
 		}
 	};
+
+	const removeAlbum = async () => {
+		if (
+			window.confirm(
+				`Are you sure you want to delete album ${album.albumName}? If the album is shared, other users will not be able to access it.`
+			)
+		) {
+			try {
+				await api.albumApi.deleteAlbum(album.id);
+				goto(backUrl);
+			} catch (e) {
+				console.log('Error [userDeleteMenu] ', e);
+			}
+		}
+	};
 </script>
 
 <section class="bg-immich-bg">
@@ -265,6 +280,7 @@
 							on:click={() => (isShowShareUserSelection = true)}
 							logo={ShareVariantOutline}
 						/>
+						<CircleIconButton title="Remove album" on:click={removeAlbum} logo={DeleteOutline} />
 					{/if}
 				{/if}
 

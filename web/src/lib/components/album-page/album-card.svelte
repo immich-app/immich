@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
+	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import { fade } from 'svelte/transition';
+	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 
 	export let album: AlbumResponseDto;
 
@@ -21,13 +23,33 @@
 			return imageData;
 		}
 	};
+
+	const showAlbumContextMenu = (e: MouseEvent) => {
+		dispatch('showalbumcontextmenu', {
+			x: e.clientX,
+			y: e.clientY
+		});
+	};
 </script>
 
 <div
-	class="h-[339px] w-[275px] hover:cursor-pointer mt-4"
+	class="h-[339px] w-[275px] hover:cursor-pointer mt-4 relative"
 	on:click={() => dispatch('click', album)}
 >
-	<div class={`h-[275px] w-[275px]`}>
+	<div
+		id={`icon-${album.id}`}
+		class="absolute top-2 right-2"
+		on:click|stopPropagation|preventDefault={showAlbumContextMenu}
+	>
+		<CircleIconButton
+			logo={DotsVertical}
+			size={'20'}
+			hoverColor={'rgba(95,99,104, 0.5)'}
+			logoColor={'#fdf8ec'}
+		/>
+	</div>
+
+	<div class={`h-[275px] w-[275px] z-[-1]`}>
 		{#await loadImageData(album.albumThumbnailAssetId)}
 			<div
 				class={`bg-immich-primary/10 w-full h-full  flex place-items-center place-content-center rounded-xl`}
@@ -39,7 +61,7 @@
 				in:fade={{ duration: 250 }}
 				src={imageData}
 				alt={album.id}
-				class={`object-cover w-full h-full transition-all z-0 rounded-xl duration-300 hover:translate-x-2 hover:-translate-y-2 hover:shadow-[-8px_8px_0px_0_#FFB800]`}
+				class={`object-cover w-full h-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
 			/>
 		{/await}
 	</div>
@@ -59,6 +81,3 @@
 		</span>
 	</div>
 </div>
-
-<style>
-</style>

@@ -39,9 +39,16 @@
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
+	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 
 	export let user: ImmichUser;
 	export let albums: AlbumResponseDto[];
+
+	let isShowContextMenu = false;
+	let contextMenuPosition = { x: 0, y: 0 };
+	let targetAlbum: AlbumResponseDto;
 
 	onMount(async () => {
 		const { data } = await api.albumApi.getAllAlbums();
@@ -50,7 +57,7 @@
 		// Delete album that has no photos and is named 'Untitled'
 		for (const album of albums) {
 			if (album.albumName === 'Untitled' && album.assets.length === 0) {
-				const isDeleted = await deleteAlbum(album);
+				const isDeleted = await autoDeleteAlbum(album);
 
 				if (isDeleted) {
 					albums = albums.filter((a) => a.id !== album.id);
@@ -71,14 +78,42 @@
 		}
 	};
 
-	const deleteAlbum = async (album: AlbumResponseDto) => {
+	const autoDeleteAlbum = async (album: AlbumResponseDto) => {
 		try {
 			await api.albumApi.deleteAlbum(album.id);
 			return true;
 		} catch (e) {
-			console.log('Error [deleteAlbum] ', e);
+			console.log('Error [autoDeleteAlbum] ', e);
 			return false;
 		}
+	};
+
+	const userDeleteMenu = async () => {
+		if (
+			window.confirm(
+				`Are you sure you want to delete album ${targetAlbum.albumName}? If the album is shared, other users will not be able to access it.`
+			)
+		) {
+			try {
+				await api.albumApi.deleteAlbum(targetAlbum.id);
+				albums = albums.filter((a) => a.id !== targetAlbum.id);
+			} catch (e) {
+				console.log('Error [userDeleteMenu] ', e);
+			}
+		}
+
+		isShowContextMenu = false;
+	};
+
+	const showAlbumContextMenu = (event: CustomEvent, album: AlbumResponseDto) => {
+		targetAlbum = album;
+
+		contextMenuPosition = {
+			x: event.detail.x,
+			y: event.detail.y
+		};
+
+		isShowContextMenu = !isShowContextMenu;
 	};
 </script>
 
@@ -119,11 +154,25 @@
 			<!-- Album Card -->
 			<div class="flex flex-wrap gap-8">
 				{#each albums as album}
-					<a sveltekit:prefetch href={`albums/${album.id}`}>
-						<AlbumCard {album} />
-					</a>
+					{#key album.id}
+						<a sveltekit:prefetch href={`albums/${album.id}`}>
+							<AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e, album)} />
+						</a>
+					{/key}
 				{/each}
 			</div>
 		</section>
 	</section>
+
+	<!-- Context Menu -->
+	{#if isShowContextMenu}
+		<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowContextMenu = false)}>
+			<MenuOption on:click={userDeleteMenu}>
+				<span class="flex place-items-center place-content-center gap-2">
+					<DeleteOutline size="18" />
+					<p>Delete album</p>
+				</span>
+			</MenuOption>
+		</ContextMenu>
+	{/if}
 </section>

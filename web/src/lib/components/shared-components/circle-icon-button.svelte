@@ -25,7 +25,7 @@
 	{title}
 	bind:this={iconButton}
 	class={`immich-circle-icon-button rounded-full p-3 flex place-items-center place-content-center transition-all`}
-	on:click={() => dispatch('click')}
+	on:click={(mouseEvent) => dispatch('click', { mouseEvent })}
 >
 	<svelte:component this={logo} {size} color={logoColor} />
 </button>
