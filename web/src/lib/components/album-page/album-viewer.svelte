@@ -18,7 +18,9 @@
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+
 	export let album: AlbumResponseDto;
+	export let backUrl = '/albums';
 
 	let isShowAssetViewer = false;
 	let isShowAssetSelection = false;
@@ -33,7 +35,6 @@
 	let viewWidth: number;
 	let thumbnailSize: number = 300;
 	let border = '';
-	export let backUrl = '/albums';
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;
 

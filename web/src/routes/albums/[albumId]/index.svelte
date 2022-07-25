@@ -15,7 +15,9 @@
 	});
 
 	afterNavigate(({ from }) => {
-		backUrl = from?.pathname ?? '/albums';
+		if (from?.pathname === '/sharing') {
+			backUrl = '/sharing';
+		}
 	});
 </script>
 
