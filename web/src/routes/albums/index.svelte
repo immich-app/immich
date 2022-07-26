@@ -9,29 +9,24 @@
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import { AlbumResponseDto, api } from '@api';
 
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
+	export const load: Load = async () => {
+		try {
+			const { data: user } = await api.userApi.getMyUserInfo();
+			const { data: albums } = await api.albumApi.getAllAlbums();
+
+			return {
+				status: 200,
+				props: {
+					user: user,
+					albums: albums
+				}
+			};
+		} catch (e) {
 			return {
 				status: 302,
 				redirect: '/auth/login'
 			};
 		}
-
-		let albums: AlbumResponseDto[] = [];
-		try {
-			const { data } = await api.albumApi.getAllAlbums();
-			albums = data;
-		} catch (e) {
-			console.log('Error [getAllAlbums] ', e);
-		}
-
-		return {
-			status: 200,
-			props: {
-				user: session.user,
-				albums: albums
-			}
-		};
 	};
 </script>
 

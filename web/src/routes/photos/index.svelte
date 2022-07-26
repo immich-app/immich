@@ -4,41 +4,39 @@
 	import type { Load } from '@sveltejs/kit';
 	import { getAssetsInfo } from '$lib/stores/assets';
 
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
+	export const load: Load = async () => {
+		try {
+			const { data } = await api.userApi.getMyUserInfo();
+			await getAssetsInfo();
+
+			return {
+				status: 200,
+				props: {
+					user: data
+				}
+			};
+		} catch (e) {
 			return {
 				status: 302,
 				redirect: '/auth/login'
 			};
 		}
-
-		await getAssetsInfo();
-
-		return {
-			status: 200,
-			props: {
-				user: session.user
-			}
-		};
 	};
 </script>
 
 <script lang="ts">
-	import type { ImmichUser } from '$lib/models/immich-user';
-
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import { fly } from 'svelte/transition';
-	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
-	import { AssetResponseDto } from '@api';
+	import { api, AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 
-	export let user: ImmichUser;
+	export let user: UserResponseDto;
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
@@ -67,30 +65,28 @@
 	};
 
 	const uploadClickedHandler = async () => {
-		if ($session.user) {
-			try {
-				let fileSelector = document.createElement('input');
+		try {
+			let fileSelector = document.createElement('input');
 
-				fileSelector.type = 'file';
-				fileSelector.multiple = true;
-				fileSelector.accept = 'image/*,video/*,.heic,.heif';
+			fileSelector.type = 'file';
+			fileSelector.multiple = true;
+			fileSelector.accept = 'image/*,video/*,.heic,.heif';
 
-				fileSelector.onchange = async (e: any) => {
-					const files = Array.from<File>(e.target.files);
+			fileSelector.onchange = async (e: any) => {
+				const files = Array.from<File>(e.target.files);
 
-					const acceptedFile = files.filter(
-						(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
-					);
+				const acceptedFile = files.filter(
+					(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
+				);
 
-					for (const asset of acceptedFile) {
-						await fileUploader(asset, $session.user!.accessToken);
-					}
-				};
+				for (const asset of acceptedFile) {
+					await fileUploader(asset);
+				}
+			};
 
-				fileSelector.click();
-			} catch (e) {
-				console.log('Error seelcting file', e);
-			}
+			fileSelector.click();
+		} catch (e) {
+			console.log('Error seelcting file', e);
 		}
 	};
 

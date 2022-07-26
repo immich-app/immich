@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { session } from '$app/stores';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
@@ -32,14 +31,12 @@
 	let videoAbortController: AbortController;
 
 	const loadImageData = async () => {
-		if ($session.user) {
-			const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, {
-				responseType: 'blob'
-			});
-			if (data instanceof Blob) {
-				imageData = URL.createObjectURL(data);
-				return imageData;
-			}
+		const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, {
+			responseType: 'blob'
+		});
+		if (data instanceof Blob) {
+			imageData = URL.createObjectURL(data);
+			return imageData;
 		}
 	};
 

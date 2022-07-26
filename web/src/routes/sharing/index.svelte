@@ -4,30 +4,36 @@
 	import type { Load } from '@sveltejs/kit';
 	import { AlbumResponseDto, api, UserResponseDto } from '@api';
 
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
+	export const load: Load = async () => {
+		try {
+			const { data: user } = await api.userApi.getMyUserInfo();
+			const { data: sharedAlbums } = await api.albumApi.getAllAlbums(true);
+
+			return {
+				status: 200,
+				props: {
+					user: user,
+					sharedAlbums: sharedAlbums
+				}
+			};
+		} catch (e) {
 			return {
 				status: 302,
 				redirect: '/auth/login'
 			};
 		}
-
-		let sharedAlbums: AlbumResponseDto[] = [];
-		try {
-			const { data } = await api.albumApi.getAllAlbums(true);
-			sharedAlbums = data;
-		} catch (e) {
-			console.log('Error [getAllAlbums] ', e);
-		}
-
-		return {
-			status: 200,
-			props: {
-				user: session.user,
-				sharedAlbums: sharedAlbums
-			}
-		};
 	};
+</script>
+
+<script lang="ts">
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
+	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
+	import { goto } from '$app/navigation';
+
+	export let user: UserResponseDto;
+	export let sharedAlbums: AlbumResponseDto[];
 
 	const createSharedAlbum = async () => {
 		try {
@@ -40,28 +46,6 @@
 			console.log('Error [createAlbum] ', e);
 		}
 	};
-
-	const deleteAlbum = async (album: AlbumResponseDto) => {
-		try {
-			await api.albumApi.deleteAlbum(album.id);
-			return true;
-		} catch (e) {
-			console.log('Error [deleteAlbum] ', e);
-			return false;
-		}
-	};
-</script>
-
-<script lang="ts">
-	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-	import AlbumCard from '$lib/components/album-page/album-card.svelte';
-	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
-	import { goto } from '$app/navigation';
-
-	export let user: UserResponseDto;
-	export let sharedAlbums: AlbumResponseDto[];
 </script>
 
 <svelte:head>

@@ -24,23 +24,27 @@
 
 			<section class="max-h-[400px] overflow-y-auto">
 				<div class="font-thin">
-					Hi friend, there is a new release of <span class="font-immich-title text-immich-primary font-bold"
-						>IMMICH</span
+					Hi friend, there is a new release of <span
+						class="font-immich-title text-immich-primary font-bold">IMMICH</span
 					>, please take your time to visit the
 					<span class="underline font-medium"
-						><a href="https://github.com/alextran1502/immich/releases/latest" target="_blank" rel="noopener noreferrer"
-							>release note</a
+						><a
+							href="https://github.com/alextran1502/immich/releases/latest"
+							target="_blank"
+							rel="noopener noreferrer">release note</a
 						></span
 					>
-					and ensure your <code>docker-compose</code>, and <code>.env</code> setup is up-to-date to prevent any misconfigurations,
-					especially if you use WatchTower or any mechanism that handles updating your application automatically.
+					and ensure your <code>docker-compose</code>, and <code>.env</code> setup is up-to-date to prevent
+					any misconfigurations, especially if you use WatchTower or any mechanism that handles updating
+					your application automatically.
 				</div>
 
 				{#if remoteVersion == 'v1.11.0_17-dev'}
 					<div class="mt-2 font-thin">
-						This specific version <span class="font-medium">v1.11.0_17-dev</span> includes changes in the docker-compose
-						setup that added additional containters. Please make sure to update the docker-compose file, pull new images
-						and check your setup for the latest features and bug fixes.
+						This specific version <span class="font-medium">v1.11.0_17-dev</span> includes changes in
+						the docker-compose setup that added additional containters. Please make sure to update the
+						docker-compose file, pull new images and check your setup for the latest features and bug
+						fixes.
 					</div>
 				{/if}
 			</section>

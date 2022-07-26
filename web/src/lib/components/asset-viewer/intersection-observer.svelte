@@ -22,8 +22,8 @@
 					}
 				},
 				{
-					rootMargin,
-				},
+					rootMargin
+				}
 			);
 
 			observer.observe(container);

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { session } from '$app/stores';
 	import { fade } from 'svelte/transition';
 
 	import { createEventDispatcher, onMount } from 'svelte';
@@ -14,33 +13,29 @@
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
-		if ($session.user) {
-			const { data } = await api.assetApi.getAssetById(assetId);
-			assetInfo = data;
-		}
+		const { data } = await api.assetApi.getAssetById(assetId);
+		assetInfo = data;
 	});
 
 	const loadAssetData = async () => {
-		if ($session.user) {
-			try {
-				const { data } = await api.assetApi.serveFile(
-					assetInfo.deviceAssetId,
-					deviceId,
-					false,
-					true,
-					{
-						responseType: 'blob'
-					}
-				);
-
-				if (!(data instanceof Blob)) {
-					return;
+		try {
+			const { data } = await api.assetApi.serveFile(
+				assetInfo.deviceAssetId,
+				deviceId,
+				false,
+				true,
+				{
+					responseType: 'blob'
 				}
+			);
 
-				const assetData = URL.createObjectURL(data);
-				return assetData;
-			} catch (e) {}
-		}
+			if (!(data instanceof Blob)) {
+				return;
+			}
+
+			const assetData = URL.createObjectURL(data);
+			return assetData;
+		} catch (e) {}
 	};
 </script>
 

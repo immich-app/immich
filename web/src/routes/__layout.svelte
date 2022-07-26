@@ -2,11 +2,7 @@
 	import type { Load } from '@sveltejs/kit';
 	import { checkAppVersion } from '$lib/utils/check-app-version';
 
-	export const load: Load = async ({ url, session }) => {
-		if (session.user) {
-			api.setAccessToken(session.user.accessToken);
-		}
-
+	export const load: Load = async ({ url }) => {
 		return {
 			props: { url }
 		};
@@ -17,12 +13,10 @@
 	import '../app.css';
 
 	import { fade } from 'svelte/transition';
-
 	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
 	import AnnouncementBox from '$lib/components/shared-components/announcement-box.svelte';
 	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import { onMount } from 'svelte';
-	import { api } from '@api';
 
 	export let url: string;
 	let shouldShowAnnouncement: boolean;
@@ -43,7 +37,9 @@
 		<div in:fade={{ duration: 100 }}>
 			<slot />
 			<DownloadPanel />
+
 			<UploadPanel />
+
 			{#if shouldShowAnnouncement}
 				<AnnouncementBox
 					{localVersion}

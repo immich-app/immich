@@ -4,19 +4,16 @@ import { serverEndpoint } from '../constants';
 
 let websocket: Socket;
 
-export const openWebsocketConnection = (accessToken: string) => {
+export const openWebsocketConnection = () => {
 	const websocketEndpoint = serverEndpoint.replace('/api', '');
 
 	try {
-		websocket = io(websocketEndpoint, {
+		websocket = io('', {
 			path: '/api/socket.io',
 			transports: ['polling'],
 			reconnection: true,
 			forceNew: true,
-			autoConnect: true,
-			extraHeaders: {
-				Authorization: 'Bearer ' + accessToken,
-			},
+			autoConnect: true
 		});
 
 		listenToEvent(websocket);

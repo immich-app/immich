@@ -11,8 +11,8 @@ type GithubRelease = {
 export const checkAppVersion = async (): Promise<CheckAppVersionReponse> => {
 	const res = await fetch('https://api.github.com/repos/alextran1502/immich/releases/latest', {
 		headers: {
-			Accept: 'application/vnd.github.v3+json',
-		},
+			Accept: 'application/vnd.github.v3+json'
+		}
 	});
 
 	if (res.status == 200) {
@@ -23,7 +23,7 @@ export const checkAppVersion = async (): Promise<CheckAppVersionReponse> => {
 			return {
 				shouldShowAnnouncement: true,
 				remoteVersion: latestRelease.tag_name,
-				localVersion: 'empty',
+				localVersion: 'empty'
 			};
 		}
 
@@ -31,20 +31,20 @@ export const checkAppVersion = async (): Promise<CheckAppVersionReponse> => {
 			return {
 				shouldShowAnnouncement: true,
 				remoteVersion: latestRelease.tag_name,
-				localVersion: appVersion,
+				localVersion: appVersion
 			};
 		}
 
 		return {
 			shouldShowAnnouncement: false,
 			remoteVersion: latestRelease.tag_name,
-			localVersion: appVersion,
+			localVersion: appVersion
 		};
 	} else {
 		return {
 			shouldShowAnnouncement: false,
 			remoteVersion: '0',
-			localVersion: '0',
+			localVersion: '0'
 		};
 	}
 };

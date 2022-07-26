@@ -3,14 +3,7 @@
 
 	import type { Load } from '@sveltejs/kit';
 
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
-			return {
-				status: 302,
-				redirect: '/auth/login',
-			};
-		}
-
+	export const load: Load = async () => {
 		try {
 			const { data: userInfo } = await api.userApi.getMyUserInfo();
 
@@ -18,20 +11,19 @@
 				return {
 					status: 200,
 					props: {
-						user: userInfo,
-					},
+						user: userInfo
+					}
 				};
 			} else {
 				return {
 					status: 302,
-					redirect: '/photos',
+					redirect: '/photos'
 				};
 			}
 		} catch (e) {
-			console.log('ERROR Getting user info', e);
 			return {
 				status: 302,
-				redirect: '/photos',
+				redirect: '/auth/login'
 			};
 		}
 	};

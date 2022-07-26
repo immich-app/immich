@@ -3,21 +3,23 @@
 	import type { Load } from '@sveltejs/kit';
 	import { api } from '@api';
 
-	export const load: Load = async ({ session }) => {
-		const { data } = await api.userApi.getUserCount();
+	export const load: Load = async () => {
+		try {
+			const { data: user } = await api.userApi.getMyUserInfo();
 
-		if (session.user) {
 			return {
 				status: 302,
-				redirect: '/photos',
+				redirect: '/photos'
 			};
-		}
+		} catch (e) {}
+
+		const { data } = await api.userApi.getUserCount();
 
 		return {
 			status: 200,
 			props: {
-				isAdminUserExist: data.userCount == 0 ? false : true,
-			},
+				isAdminUserExist: data.userCount == 0 ? false : true
+			}
 		};
 	};
 </script>

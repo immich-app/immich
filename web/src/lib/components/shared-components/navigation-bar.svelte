@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import type { ImmichUser } from '$lib/models/immich-user';
@@ -23,14 +22,12 @@
 	});
 
 	const getUserProfileImage = async () => {
-		if ($session.user) {
-			try {
-				await api.userApi.getProfileImage(user.id);
-				shouldShowProfileImage = true;
-			} catch (e) {
-				console.log('User does not have a profile image');
-				shouldShowProfileImage = false;
-			}
+		try {
+			await api.userApi.getProfileImage(user.id);
+			shouldShowProfileImage = true;
+		} catch (e) {
+			console.log('User does not have a profile image');
+			shouldShowProfileImage = false;
 		}
 	};
 	const getFirstLetter = (text?: string) => {

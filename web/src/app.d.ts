@@ -3,30 +3,15 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare namespace App {
-  interface Locals {
-    user?: {
-      id: string,
-      email: string,
-      accessToken: string,
-      firstName: string,
-      lastName: string,
-      isAdmin: boolean,
-    }
-  }
+	interface Locals {
+		user?: import('@api').UserResponseDto;
+	}
 
-  // interface Platform {}
+	// interface Platform {}
 
-  interface Session {
-    user?: {
-      id: string,
-      email: string,
-      accessToken: string,
-      firstName: string,
-      lastName: string
-      isAdmin: boolean,
-    }
-  }
+	interface Session {
+		user?: import('@api').UserResponseDto;
+	}
 
-  // interface Stuff {}
+	// interface Stuff {}
 }
-

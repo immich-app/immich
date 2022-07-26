@@ -6,7 +6,6 @@
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import PhotoViewer from './photo-viewer.svelte';
 	import DetailPanel from './detail-panel.svelte';
-	import { session } from '$app/stores';
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import { api, AssetResponseDto, AssetTypeEnum } from '@api';
@@ -62,64 +61,62 @@
 	};
 
 	const downloadFile = async () => {
-		if ($session.user) {
-			try {
-				const imageName = asset.exifInfo?.imageName ? asset.exifInfo?.imageName : asset.id;
-				const imageExtension = asset.originalPath.split('.')[1];
-				const imageFileName = imageName + '.' + imageExtension;
+		try {
+			const imageName = asset.exifInfo?.imageName ? asset.exifInfo?.imageName : asset.id;
+			const imageExtension = asset.originalPath.split('.')[1];
+			const imageFileName = imageName + '.' + imageExtension;
 
-				// If assets is already download -> return;
-				if ($downloadAssets[imageFileName]) {
-					return;
-				}
+			// If assets is already download -> return;
+			if ($downloadAssets[imageFileName]) {
+				return;
+			}
 
-				$downloadAssets[imageFileName] = 0;
+			$downloadAssets[imageFileName] = 0;
 
-				const { data, status } = await api.assetApi.downloadFile(
-					asset.deviceAssetId,
-					asset.deviceId,
-					false,
-					false,
-					{
-						responseType: 'blob',
-						onDownloadProgress: (progressEvent) => {
-							if (progressEvent.lengthComputable) {
-								const total = progressEvent.total;
-								const current = progressEvent.loaded;
-								let percentCompleted = Math.floor((current / total) * 100);
+			const { data, status } = await api.assetApi.downloadFile(
+				asset.deviceAssetId,
+				asset.deviceId,
+				false,
+				false,
+				{
+					responseType: 'blob',
+					onDownloadProgress: (progressEvent) => {
+						if (progressEvent.lengthComputable) {
+							const total = progressEvent.total;
+							const current = progressEvent.loaded;
+							let percentCompleted = Math.floor((current / total) * 100);
 
-								$downloadAssets[imageFileName] = percentCompleted;
-							}
+							$downloadAssets[imageFileName] = percentCompleted;
 						}
 					}
-				);
-
-				if (!(data instanceof Blob)) {
-					return;
 				}
+			);
 
-				if (status === 200) {
-					const fileUrl = URL.createObjectURL(data);
-					const anchor = document.createElement('a');
-					anchor.href = fileUrl;
-					anchor.download = imageFileName;
-
-					document.body.appendChild(anchor);
-					anchor.click();
-					document.body.removeChild(anchor);
-
-					URL.revokeObjectURL(fileUrl);
-
-					// Remove item from download list
-					setTimeout(() => {
-						const copy = $downloadAssets;
-						delete copy[imageFileName];
-						$downloadAssets = copy;
-					}, 2000);
-				}
-			} catch (e) {
-				console.log('Error downloading file ', e);
+			if (!(data instanceof Blob)) {
+				return;
 			}
+
+			if (status === 200) {
+				const fileUrl = URL.createObjectURL(data);
+				const anchor = document.createElement('a');
+				anchor.href = fileUrl;
+				anchor.download = imageFileName;
+
+				document.body.appendChild(anchor);
+				anchor.click();
+				document.body.removeChild(anchor);
+
+				URL.revokeObjectURL(fileUrl);
+
+				// Remove item from download list
+				setTimeout(() => {
+					const copy = $downloadAssets;
+					delete copy[imageFileName];
+					$downloadAssets = copy;
+				}, 2000);
+			}
+		} catch (e) {
+			console.log('Error downloading file ', e);
 		}
 	};
 </script>
