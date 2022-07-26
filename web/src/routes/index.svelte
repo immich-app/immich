@@ -3,9 +3,10 @@
 	import type { Load } from '@sveltejs/kit';
 	import { api } from '@api';
 
-	export const load: Load = async ({ session }) => {
+	export const load: Load = async () => {
 		try {
-			await api.userApi.getMyUserInfo();
+			const { data: user } = await api.userApi.getMyUserInfo();
+
 			return {
 				status: 302,
 				redirect: '/photos'

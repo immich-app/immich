@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { browser } from '$app/env';
-	import { session } from '$app/stores';
-
 	import { loginPageMessage } from '$lib/constants';
 	import { api } from '@api';
 	import { createEventDispatcher } from 'svelte';
@@ -21,14 +18,6 @@
 				email,
 				password
 			});
-
-			// $session.user = {
-			// 	firstName: data.firstName,
-			// 	lastName: data.lastName,
-			// 	isAdmin: data.isAdmin,
-			// 	id: data.userId,
-			// 	email: data.userEmail
-			// };
 
 			if (!data.isAdmin && data.shouldChangePassword) {
 				dispatch('first-login');

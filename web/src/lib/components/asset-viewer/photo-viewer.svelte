@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { session } from '$app/stores';
 	import { fade } from 'svelte/transition';
 
 	import { createEventDispatcher, onMount } from 'svelte';

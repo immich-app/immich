@@ -4,7 +4,7 @@
 	import { api } from '@api';
 	import type { Load } from '@sveltejs/kit';
 
-	export const load: Load = async ({ session, params }) => {
+	export const load: Load = async ({ params }) => {
 		try {
 			await api.userApi.getMyUserInfo();
 		} catch (e) {

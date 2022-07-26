@@ -4,7 +4,7 @@
 	import type { Load } from '@sveltejs/kit';
 	import { AlbumResponseDto, api } from '@api';
 
-	export const load: Load = async ({ session, params }) => {
+	export const load: Load = async ({ params }) => {
 		try {
 			const albumId = params['albumId'];
 

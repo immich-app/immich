@@ -30,6 +30,10 @@ class ImmichApi {
 	public setAccessToken(accessToken: string) {
 		this.config.accessToken = accessToken;
 	}
+
+	public removeAccessToken() {
+		this.config.accessToken = undefined;
+	}
 }
 
 export const api = new ImmichApi();

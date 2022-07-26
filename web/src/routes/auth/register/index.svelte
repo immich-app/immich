@@ -1,7 +1,7 @@
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
 
-	export const load: Load = async ({ session }) => {
+	export const load: Load = async () => {
 		const { data } = await api.userApi.getUserCount();
 		if (data.userCount != 0) {
 			// Admin has been registered, redirect to login

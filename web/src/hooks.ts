@@ -1,4 +1,4 @@
-import type { GetSession, Handle } from '@sveltejs/kit';
+import type { ExternalFetch, GetSession, Handle } from '@sveltejs/kit';
 import * as cookie from 'cookie';
 import { api } from '@api';
 
@@ -16,7 +16,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 		const { data, status } = await api.userApi.getMyUserInfo();
 
-		if (status === 201) {
+		if (status === 200) {
 			event.locals.user = {
 				id: data.id,
 				firstName: data.firstName,

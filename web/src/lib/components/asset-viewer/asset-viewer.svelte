@@ -6,7 +6,6 @@
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import PhotoViewer from './photo-viewer.svelte';
 	import DetailPanel from './detail-panel.svelte';
-	import { session } from '$app/stores';
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import { api, AssetResponseDto, AssetTypeEnum } from '@api';

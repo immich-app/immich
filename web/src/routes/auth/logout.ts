@@ -1,6 +1,9 @@
+import { api } from '@api';
 import type { RequestHandler } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async () => {
+	api.removeAccessToken();
+
 	return {
 		headers: {
 			'Set-Cookie': [

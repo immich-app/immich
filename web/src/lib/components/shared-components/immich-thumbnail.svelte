@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { session } from '$app/stores';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';

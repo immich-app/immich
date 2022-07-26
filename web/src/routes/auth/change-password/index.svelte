@@ -3,7 +3,7 @@
 
 	import type { Load } from '@sveltejs/kit';
 
-	export const load: Load = async ({ session }) => {
+	export const load: Load = async () => {
 		try {
 			const { data: userInfo } = await api.userApi.getMyUserInfo();
 

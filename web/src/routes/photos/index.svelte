@@ -28,7 +28,6 @@
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import { fly } from 'svelte/transition';
-	import { session } from '$app/stores';
 	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
