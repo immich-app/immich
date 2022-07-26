@@ -20,7 +20,7 @@ function createUploadStore() {
 				if (asset.id == id) {
 					return {
 						...asset,
-						progress: progress,
+						progress: progress
 					};
 				}
 
@@ -38,7 +38,7 @@ function createUploadStore() {
 		isUploading,
 		addNewUploadAsset,
 		updateProgress,
-		removeUploadAsset,
+		removeUploadAsset
 	};
 }
 

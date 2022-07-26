@@ -14,9 +14,14 @@
 				<div class="mb-2" transition:slide>
 					<p class="font-medium text-xs truncate">■ {fileName}</p>
 					<div class="flex flex-row-reverse place-items-center gap-5">
-						<p><span class="text-immich-primary font-medium">{$downloadAssets[fileName]}</span>/100</p>
+						<p>
+							<span class="text-immich-primary font-medium">{$downloadAssets[fileName]}</span>/100
+						</p>
 						<div class="w-full bg-gray-200 rounded-full h-[7px] dark:bg-gray-700">
-							<div class="bg-immich-primary h-[7px] rounded-full" style={`width: ${$downloadAssets[fileName]}%`} />
+							<div
+								class="bg-immich-primary h-[7px] rounded-full"
+								style={`width: ${$downloadAssets[fileName]}%`}
+							/>
 						</div>
 					</div>
 				</div>

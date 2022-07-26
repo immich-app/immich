@@ -37,7 +37,7 @@ export async function sendRegistrationForm(form: HTMLFormElement): AdminRegistra
 	const response = await fetch(form.action, {
 		method: form.method,
 		body: new FormData(form),
-		headers: { accept: 'application/json' },
+		headers: { accept: 'application/json' }
 	});
 
 	return await response.json();
@@ -47,7 +47,7 @@ export async function sendLoginForm(form: HTMLFormElement): LoginResult {
 	const response = await fetch(form.action, {
 		method: form.method,
 		body: new FormData(form),
-		headers: { accept: 'application/json' },
+		headers: { accept: 'application/json' }
 	});
 
 	return await response.json();
@@ -57,7 +57,7 @@ export async function sendUpdateForm(form: HTMLFormElement): UpdateResult {
 	const response = await fetch(form.action, {
 		method: form.method,
 		body: new FormData(form),
-		headers: { accept: 'application/json' },
+		headers: { accept: 'application/json' }
 	});
 
 	return await response.json();

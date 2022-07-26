@@ -2,7 +2,7 @@
 	import type { Load } from '@sveltejs/kit';
 	import { checkAppVersion } from '$lib/utils/check-app-version';
 
-	export const load: Load = async ({ url, session }) => {
+	export const load: Load = async ({ url }) => {
 		return {
 			props: { url }
 		};
@@ -18,7 +18,6 @@
 	import AnnouncementBox from '$lib/components/shared-components/announcement-box.svelte';
 	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import { onMount } from 'svelte';
-	import { api } from '@api';
 
 	export let url: string;
 	let shouldShowAnnouncement: boolean;

@@ -15,8 +15,8 @@ export const openWebsocketConnection = (accessToken: string) => {
 			forceNew: true,
 			autoConnect: true,
 			extraHeaders: {
-				Authorization: 'Bearer ' + accessToken,
-			},
+				Authorization: 'Bearer ' + accessToken
+			}
 		});
 
 		listenToEvent(websocket);

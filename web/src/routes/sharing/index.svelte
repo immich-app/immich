@@ -23,6 +23,17 @@
 			};
 		}
 	};
+</script>
+
+<script lang="ts">
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
+	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
+	import { goto } from '$app/navigation';
+
+	export let user: UserResponseDto;
+	export let sharedAlbums: AlbumResponseDto[];
 
 	const createSharedAlbum = async () => {
 		try {
@@ -35,17 +46,6 @@
 			console.log('Error [createAlbum] ', e);
 		}
 	};
-</script>
-
-<script lang="ts">
-	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
-	import { goto } from '$app/navigation';
-
-	export let user: UserResponseDto;
-	export let sharedAlbums: AlbumResponseDto[];
 </script>
 
 <svelte:head>

@@ -37,7 +37,7 @@
 			map = leaflet.map('map');
 			leaflet
 				.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 				})
 				.addTo(map);
 		}
@@ -124,7 +124,7 @@
 							{moment(
 								asset.exifInfo.dateTimeOriginal
 									.toString()
-									.slice(0, asset.exifInfo.dateTimeOriginal.toString().length - 1),
+									.slice(0, asset.exifInfo.dateTimeOriginal.toString().length - 1)
 							).format('ddd, hh:mm A')}
 						</p>
 						<p>GMT{moment(asset.exifInfo.dateTimeOriginal).format('Z')}</p>
@@ -141,7 +141,9 @@
 					<div class="flex text-sm gap-2">
 						{#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
 							{#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
-								<p>{getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}MP</p>
+								<p>
+									{getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}MP
+								</p>
 							{/if}
 
 							<p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
