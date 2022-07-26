@@ -36,6 +36,7 @@
 	let backUrl = '/albums';
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;
+	let titleInput: HTMLInputElement;
 
 	$: isOwned = currentUser?.id == album.ownerId;
 
@@ -298,6 +299,12 @@
 
 	<section class="m-auto my-[160px] w-[60%]">
 		<input
+			on:keydown={(e) => {
+				if (e.key == 'Enter') {
+					isEditingTitle = false;
+					titleInput.blur();
+				}
+			}}
 			on:focus={() => (isEditingTitle = true)}
 			on:blur={() => (isEditingTitle = false)}
 			class={`transition-all text-6xl text-immich-primary w-[99%] border-b-2 border-transparent outline-none ${
@@ -306,6 +313,7 @@
 			type="text"
 			bind:value={album.albumName}
 			disabled={!isOwned}
+			bind:this={titleInput}
 		/>
 
 		{#if album.assets.length > 0}
