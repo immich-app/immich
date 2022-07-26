@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
@@ -34,6 +36,7 @@ void main() async {
   await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
   await Hive.openBox(hiveGithubReleaseInfoBox);
   await Hive.openBox(userSettingInfoBox);
+  await Hive.openBox(hiveBackgroundInfoBox);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -95,6 +98,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
 
         if (isAuthenticated) {
+          ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
           ref.watch(backupProvider.notifier).resumeBackup();
           ref.watch(assetProvider.notifier).getAllAsset();
           ref.watch(serverInfoProvider.notifier).getServerVersion();
@@ -128,6 +132,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   Future<void> initApp() async {
     WidgetsBinding.instance.addObserver(this);
+    ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
   }
 
   @override

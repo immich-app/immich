@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:photo_manager/photo_manager.dart';
 
 class AlbumInfoCard extends HookConsumerWidget {
   final Uint8List? imageData;
-  final AssetPathEntity albumInfo;
+  final AvailableAlbum albumInfo;
 
   const AlbumInfoCard({Key? key, this.imageData, required this.albumInfo})
       : super(key: key);
@@ -223,7 +223,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                   IconButton(
                     onPressed: () {
                       AutoRouter.of(context).push(
-                        AlbumPreviewRoute(album: albumInfo),
+                        AlbumPreviewRoute(album: albumInfo.albumEntity),
                       );
                     },
                     icon: Icon(

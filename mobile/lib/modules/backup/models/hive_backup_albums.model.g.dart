@@ -19,17 +19,25 @@ class HiveBackupAlbumsAdapter extends TypeAdapter<HiveBackupAlbums> {
     return HiveBackupAlbums(
       selectedAlbumIds: (fields[0] as List).cast<String>(),
       excludedAlbumsIds: (fields[1] as List).cast<String>(),
+      lastSelectedBackupTime:
+          fields[2] == null ? [] : (fields[2] as List).cast<DateTime>(),
+      lastExcludedBackupTime:
+          fields[3] == null ? [] : (fields[3] as List).cast<DateTime>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, HiveBackupAlbums obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.selectedAlbumIds)
       ..writeByte(1)
-      ..write(obj.excludedAlbumsIds);
+      ..write(obj.excludedAlbumsIds)
+      ..writeByte(2)
+      ..write(obj.lastSelectedBackupTime)
+      ..writeByte(3)
+      ..write(obj.lastExcludedBackupTime);
   }
 
   @override

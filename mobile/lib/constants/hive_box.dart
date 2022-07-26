@@ -19,3 +19,7 @@ const String githubReleaseInfoKey = "immichGithubReleaseInfoKey"; // Key 1
 
 // User Setting Info
 const String userSettingInfoBox = "immichUserSettingInfoBox";
+// Background Backup Info
+const String hiveBackgroundInfoBox = "immichBackgroundInfoBox"; // Box
+const String backgroundBackupEnabledKey =
+    "immichBackgroundServiceEnabled"; // Key 1

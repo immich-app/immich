@@ -6,7 +6,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 
-enum BackUpProgressEnum { idle, inProgress, done }
+enum BackUpProgressEnum { idle, inProgress, inBackground, done }
 
 class BackUpState {
   // enum
@@ -15,11 +15,12 @@ class BackUpState {
   final double progressInPercentage;
   final CancellationToken cancelToken;
   final ServerInfoResponseDto serverInfo;
+  final bool backgroundBackup;
 
   /// All available albums on the device
   final List<AvailableAlbum> availableAlbums;
-  final Set<AssetPathEntity> selectedBackupAlbums;
-  final Set<AssetPathEntity> excludedBackupAlbums;
+  final Set<AvailableAlbum> selectedBackupAlbums;
+  final Set<AvailableAlbum> excludedBackupAlbums;
 
   /// Assets that are not overlapping in selected backup albums and excluded backup albums
   final Set<AssetEntity> allUniqueAssets;
@@ -36,6 +37,7 @@ class BackUpState {
     required this.progressInPercentage,
     required this.cancelToken,
     required this.serverInfo,
+    required this.backgroundBackup,
     required this.availableAlbums,
     required this.selectedBackupAlbums,
     required this.excludedBackupAlbums,
@@ -50,9 +52,10 @@ class BackUpState {
     double? progressInPercentage,
     CancellationToken? cancelToken,
     ServerInfoResponseDto? serverInfo,
+    bool? backgroundBackup,
     List<AvailableAlbum>? availableAlbums,
-    Set<AssetPathEntity>? selectedBackupAlbums,
-    Set<AssetPathEntity>? excludedBackupAlbums,
+    Set<AvailableAlbum>? selectedBackupAlbums,
+    Set<AvailableAlbum>? excludedBackupAlbums,
     Set<AssetEntity>? allUniqueAssets,
     Set<String>? selectedAlbumsBackupAssetsIds,
     CurrentUploadAsset? currentUploadAsset,
@@ -63,6 +66,7 @@ class BackUpState {
       progressInPercentage: progressInPercentage ?? this.progressInPercentage,
       cancelToken: cancelToken ?? this.cancelToken,
       serverInfo: serverInfo ?? this.serverInfo,
+      backgroundBackup: backgroundBackup ?? this.backgroundBackup,
       availableAlbums: availableAlbums ?? this.availableAlbums,
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
       excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
@@ -75,7 +79,7 @@ class BackUpState {
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, backgroundBackup: $backgroundBackup, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
@@ -89,6 +93,7 @@ class BackUpState {
         other.progressInPercentage == progressInPercentage &&
         other.cancelToken == cancelToken &&
         other.serverInfo == serverInfo &&
+        other.backgroundBackup == backgroundBackup &&
         collectionEquals(other.availableAlbums, availableAlbums) &&
         collectionEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
         collectionEquals(other.excludedBackupAlbums, excludedBackupAlbums) &&
@@ -107,6 +112,7 @@ class BackUpState {
         progressInPercentage.hashCode ^
         cancelToken.hashCode ^
         serverInfo.hashCode ^
+        backgroundBackup.hashCode ^
         availableAlbums.hashCode ^
         selectedBackupAlbums.hashCode ^
         excludedBackupAlbums.hashCode ^
