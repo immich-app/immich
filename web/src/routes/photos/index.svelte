@@ -32,7 +32,7 @@
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
-	import { openFileUploadDialog } from '$lib/utils/file-uploader';
+	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
 	import { api, AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 
@@ -105,7 +105,7 @@
 </svelte:head>
 
 <section>
-	<NavigationBar {user} on:uploadClicked={openFileUploadDialog} />
+	<NavigationBar {user} on:uploadClicked={() => openFileUploadDialog(UploadType.GENERAL)} />
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">

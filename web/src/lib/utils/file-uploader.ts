@@ -4,8 +4,26 @@ import { serverEndpoint } from '../constants';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
-import { albumUploadAsset } from '$lib/stores/album-upload-asset';
-export const openFileUploadDialog = () => {
+import { albumUploadAssetStore } from '$lib/stores/album-upload-asset';
+
+/**
+ * Determine if the upload is for album or for the user general backup
+ * @variant GENERAL - Upload assets to the server for general backup
+ * @variant ALBUM - Upload assets to the server for backup and add to the album
+ */
+export enum UploadType {
+	/**
+	 * Upload assets to the server
+	 */
+	GENERAL = 'GENERAL',
+
+	/**
+	 * Upload assets to the server and add to album
+	 */
+	ALBUM = 'ALBUM'
+}
+
+export const openFileUploadDialog = (uploadType: UploadType) => {
 	try {
 		let fileSelector = document.createElement('input');
 
@@ -20,8 +38,13 @@ export const openFileUploadDialog = () => {
 				(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
 			);
 
+			if (uploadType === UploadType.ALBUM) {
+				albumUploadAssetStore.asset.set([]);
+				albumUploadAssetStore.count.set(acceptedFile.length);
+			}
+
 			for (const asset of acceptedFile) {
-				await fileUploader(asset);
+				await fileUploader(asset, uploadType);
 			}
 		};
 
@@ -31,9 +54,7 @@ export const openFileUploadDialog = () => {
 	}
 };
 
-async function fileUploader(asset: File) {
-	albumUploadAsset.set([]);
-
+async function fileUploader(asset: File, uploadType: UploadType) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
 	const fileExtension = temp[temp.length - 1];
@@ -113,14 +134,16 @@ async function fileUploader(asset: File) {
 		};
 
 		request.onreadystatechange = () => {
-			if (request.readyState === 4) {
-				const res: AssetFileUploadResponseDto = JSON.parse(request.response);
+			try {
+				if (request.readyState === 4 && uploadType === UploadType.ALBUM) {
+					const res: AssetFileUploadResponseDto = JSON.parse(request.response);
 
-				console.log('Uploaded asset', res.id);
-
-				albumUploadAsset.update((assets) => {
-					return [...assets, res.id];
-				});
+					albumUploadAssetStore.asset.update((assets) => {
+						return [...assets, res.id];
+					});
+				}
+			} catch (e) {
+				console.error('ERROR parsing data JSON in upload onreadystatechange');
 			}
 		};
 
