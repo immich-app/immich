@@ -14,25 +14,41 @@ class CheckDuplicateAssetResponseDto {
   /// Returns a new [CheckDuplicateAssetResponseDto] instance.
   CheckDuplicateAssetResponseDto({
     required this.isExist,
+    this.id,
   });
 
   bool isExist;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? id;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is CheckDuplicateAssetResponseDto &&
-     other.isExist == isExist;
+     other.isExist == isExist &&
+     other.id == id;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (isExist.hashCode);
+    (isExist.hashCode) +
+    (id == null ? 0 : id!.hashCode);
 
   @override
-  String toString() => 'CheckDuplicateAssetResponseDto[isExist=$isExist]';
+  String toString() => 'CheckDuplicateAssetResponseDto[isExist=$isExist, id=$id]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'isExist'] = isExist;
+    if (id != null) {
+      _json[r'id'] = id;
+    } else {
+      _json[r'id'] = null;
+    }
     return _json;
   }
 
@@ -56,6 +72,7 @@ class CheckDuplicateAssetResponseDto {
 
       return CheckDuplicateAssetResponseDto(
         isExist: mapValueOfType<bool>(json, r'isExist')!,
+        id: mapValueOfType<String>(json, r'id'),
       );
     }
     return null;

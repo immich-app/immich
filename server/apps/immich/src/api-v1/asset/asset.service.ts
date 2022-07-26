@@ -24,6 +24,7 @@ import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -487,7 +488,10 @@ export class AssetService {
     return curatedObjects;
   }
 
-  async checkDuplicatedAsset(authUser: AuthUserDto, checkDuplicateAssetDto: CheckDuplicateAssetDto): Promise<boolean> {
+  async checkDuplicatedAsset(
+    authUser: AuthUserDto,
+    checkDuplicateAssetDto: CheckDuplicateAssetDto,
+  ): Promise<CheckDuplicateAssetResponseDto> {
     const res = await this.assetRepository.findOne({
       where: {
         deviceAssetId: checkDuplicateAssetDto.deviceAssetId,
@@ -496,6 +500,8 @@ export class AssetService {
       },
     });
 
-    return res ? true : false;
+    const isDuplicated = res ? true : false;
+
+    return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
   }
 }

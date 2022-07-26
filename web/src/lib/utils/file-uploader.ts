@@ -110,6 +110,11 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 
 		if (status === 200) {
 			if (data.isExist) {
+				if (uploadType === UploadType.ALBUM && data.id) {
+					albumUploadAssetStore.asset.update((a) => {
+						return [...a, data.id!];
+					});
+				}
 				return;
 			}
 		}
