@@ -8,7 +8,7 @@
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
-	import { AssetResponseDto, UserResponseDto } from '@api';
+	import { AssetResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
 
@@ -23,11 +23,13 @@
 	let currentViewAssetIndex = 0;
 	let selectedAsset: AssetResponseDto;
 
-	checkUserAuthStatus().then(() => {
-		getAssetsInfo();
-	}).catch(() => {
-		gotoLogin();
-	});
+	checkUserAuthStatus()
+		.then(() => {
+			getAssetsInfo();
+		})
+		.catch(() => {
+			gotoLogin();
+		});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
 		const { selectedGroupIndex }: { selectedGroupIndex: number } = event.detail;

@@ -1,6 +1,5 @@
 /* @vite-ignore */
 import * as exifr from 'exifr';
-import { serverEndpoint } from '../constants';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api } from '@api';
@@ -56,7 +55,7 @@ export async function fileUploader(asset: File) {
 
 		const { data, status } = await api.assetApi.checkDuplicateAsset({
 			deviceAssetId: String(deviceAssetId),
-			deviceId: 'WEB',
+			deviceId: 'WEB'
 		});
 
 		if (status === 200) {
@@ -72,7 +71,7 @@ export async function fileUploader(asset: File) {
 				id: deviceAssetId,
 				file: asset,
 				progress: 0,
-				fileExtension: fileExtension,
+				fileExtension: fileExtension
 			};
 
 			uploadAssetsStore.addNewUploadAsset(newUploadAsset);
@@ -100,7 +99,7 @@ export async function fileUploader(asset: File) {
 			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 		};
 
-		request.open('POST', `${serverEndpoint}/asset/upload`);
+		request.open('POST', `/api/asset/upload`);
 
 		request.send(formData);
 	} catch (e) {

@@ -4,7 +4,6 @@
 	import { page } from '$app/stores';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
-	import { serverEndpoint } from '../../constants';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
 	import { clickOutside } from '../../utils/click-outside';
 	import { api, UserResponseDto } from '@api';
@@ -93,7 +92,7 @@
 				>
 					{#if shouldShowProfileImage}
 						<img
-							src={`${serverEndpoint}/user/profile-image/${user.id}`}
+							src={`/api/user/profile-image/${user.id}`}
 							alt="profile-img"
 							class="inline rounded-full h-12 w-12 object-cover shadow-md"
 						/>
@@ -131,7 +130,7 @@
 				>
 					{#if shouldShowProfileImage}
 						<img
-							src={`${serverEndpoint}/user/profile-image/${user.id}`}
+							src={`/api/user/profile-image/${user.id}`}
 							alt="profile-img"
 							class="inline rounded-full h-20 w-20 object-cover shadow-md"
 						/>
