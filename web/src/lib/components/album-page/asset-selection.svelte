@@ -147,6 +147,11 @@
 
 		<svelte:fragment slot="trailing">
 			<button
+				class="text-immich-primary text-sm hover:bg-immich-primary/10 transition-all px-6 py-2 rounded-lg font-medium"
+			>
+				Select from computer
+			</button>
+			<button
 				disabled={selectedAsset.size === 0}
 				on:click={addSelectedAssets}
 				class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"

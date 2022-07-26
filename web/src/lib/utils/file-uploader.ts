@@ -3,9 +3,37 @@ import * as exifr from 'exifr';
 import { serverEndpoint } from '../constants';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
-import { api } from '@api';
+import { api, AssetFileUploadResponseDto } from '@api';
+import { albumUploadAsset } from '$lib/stores/album-upload-asset';
+export const openFileUploadDialog = () => {
+	try {
+		let fileSelector = document.createElement('input');
 
-export async function fileUploader(asset: File) {
+		fileSelector.type = 'file';
+		fileSelector.multiple = true;
+		fileSelector.accept = 'image/*,video/*,.heic,.heif';
+
+		fileSelector.onchange = async (e: any) => {
+			const files = Array.from<File>(e.target.files);
+
+			const acceptedFile = files.filter(
+				(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
+			);
+
+			for (const asset of acceptedFile) {
+				await fileUploader(asset);
+			}
+		};
+
+		fileSelector.click();
+	} catch (e) {
+		console.log('Error seelcting file', e);
+	}
+};
+
+async function fileUploader(asset: File) {
+	albumUploadAsset.set([]);
+
 	const assetType = asset.type.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
 	const fileExtension = temp[temp.length - 1];
@@ -78,10 +106,22 @@ export async function fileUploader(asset: File) {
 			uploadAssetsStore.addNewUploadAsset(newUploadAsset);
 		};
 
-		request.upload.onload = () => {
+		request.upload.onload = (e) => {
 			setTimeout(() => {
 				uploadAssetsStore.removeUploadAsset(deviceAssetId);
 			}, 1000);
+		};
+
+		request.onreadystatechange = () => {
+			if (request.readyState === 4) {
+				const res: AssetFileUploadResponseDto = JSON.parse(request.response);
+
+				console.log('Uploaded asset', res.id);
+
+				albumUploadAsset.update((assets) => {
+					return [...assets, res.id];
+				});
+			}
 		};
 
 		// listen for `error` event
