@@ -36,6 +36,10 @@
 		});
 	});
 
+	/**
+	 * Watch for the uploading event - when the uploaded assets are the same number of the chosen asset
+	 * navigate back and add them to the album
+	 */
 	$: {
 		if (uploadAssets.length == uploadAssetsCount) {
 			// Add the just uploaded assets to the album
