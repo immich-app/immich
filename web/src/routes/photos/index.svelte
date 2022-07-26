@@ -4,28 +4,27 @@
 	import type { Load } from '@sveltejs/kit';
 	import { getAssetsInfo } from '$lib/stores/assets';
 
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
+	export const load: Load = async () => {
+		try {
+			const { data } = await api.userApi.getMyUserInfo();
+			await getAssetsInfo();
+
+			return {
+				status: 200,
+				props: {
+					user: data
+				}
+			};
+		} catch (e) {
 			return {
 				status: 302,
 				redirect: '/auth/login'
 			};
 		}
-
-		await getAssetsInfo();
-
-		return {
-			status: 200,
-			props: {
-				user: session.user
-			}
-		};
 	};
 </script>
 
 <script lang="ts">
-	import type { ImmichUser } from '$lib/models/immich-user';
-
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import { fly } from 'svelte/transition';
@@ -35,10 +34,10 @@
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
-	import { AssetResponseDto } from '@api';
+	import { api, AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 
-	export let user: ImmichUser;
+	export let user: UserResponseDto;
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
@@ -83,7 +82,7 @@
 					);
 
 					for (const asset of acceptedFile) {
-						await fileUploader(asset, $session.user!.accessToken);
+						await fileUploader(asset);
 					}
 				};
 

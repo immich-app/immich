@@ -70,6 +70,8 @@ services:
       - ../web:/usr/src/app
       - /usr/src/app/node_modules
     restart: always
+    depends_on:
+      - immich-server
 
   redis:
     container_name: immich_redis

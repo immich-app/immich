@@ -5,7 +5,7 @@ import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api } from '@api';
 
-export async function fileUploader(asset: File, accessToken: string) {
+export async function fileUploader(asset: File) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
 	const fileExtension = temp[temp.length - 1];
@@ -56,7 +56,7 @@ export async function fileUploader(asset: File, accessToken: string) {
 
 		const { data, status } = await api.assetApi.checkDuplicateAsset({
 			deviceAssetId: String(deviceAssetId),
-			deviceId: 'WEB',
+			deviceId: 'WEB'
 		});
 
 		if (status === 200) {
@@ -72,7 +72,7 @@ export async function fileUploader(asset: File, accessToken: string) {
 				id: deviceAssetId,
 				file: asset,
 				progress: 0,
-				fileExtension: fileExtension,
+				fileExtension: fileExtension
 			};
 
 			uploadAssetsStore.addNewUploadAsset(newUploadAsset);
@@ -101,7 +101,6 @@ export async function fileUploader(asset: File, accessToken: string) {
 		};
 
 		request.open('POST', `${serverEndpoint}/asset/upload`);
-		request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
 
 		request.send(formData);
 	} catch (e) {

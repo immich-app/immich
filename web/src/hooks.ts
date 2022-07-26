@@ -5,24 +5,24 @@ import { api } from '@api';
 export const handle: Handle = async ({ event, resolve }) => {
 	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
 
-	if (!cookies.session) {
+	if (!cookies['immich_is_authenticated']) {
 		return await resolve(event);
 	}
 
 	try {
-		const { email, isAdmin, firstName, lastName, id, accessToken } = JSON.parse(cookies.session);
+		const accessToken = cookies['immich_access_token'];
 
 		api.setAccessToken(accessToken);
-		const { status } = await api.authenticationApi.validateAccessToken();
+
+		const { data, status } = await api.userApi.getMyUserInfo();
 
 		if (status === 201) {
 			event.locals.user = {
-				id,
-				accessToken,
-				firstName,
-				lastName,
-				isAdmin,
-				email
+				id: data.id,
+				firstName: data.firstName,
+				lastName: data.lastName,
+				isAdmin: data.isAdmin,
+				email: data.email
 			};
 		}
 
@@ -30,7 +30,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 		return response;
 	} catch (error) {
-		console.log('Error [handle]', error);
 		return await resolve(event);
 	}
 };
@@ -41,7 +40,6 @@ export const getSession: GetSession = async ({ locals }) => {
 	return {
 		user: {
 			id: locals.user.id,
-			accessToken: locals.user.accessToken,
 			firstName: locals.user.firstName,
 			lastName: locals.user.lastName,
 			isAdmin: locals.user.isAdmin,
