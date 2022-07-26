@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { sendRegistrationForm } from '$lib/auth-api';
+	import { api } from '@api';
 	import { createEventDispatcher } from 'svelte';
 
 	let error: string;
@@ -22,21 +22,33 @@
 	const dispatch = createEventDispatcher();
 
 	async function registerUser(event: SubmitEvent) {
+		console.log('registerUser');
 		if (canCreateUser) {
 			error = '';
 
 			const formElement = event.target as HTMLFormElement;
 
-			const response = await sendRegistrationForm(formElement);
+			const form = new FormData(formElement);
 
-			if (response.error) {
-				error = JSON.stringify(response.error);
-			}
+			const email = form.get('email');
+			const password = form.get('password');
+			const firstName = form.get('firstName');
+			const lastName = form.get('lastName');
 
-			if (response.success) {
+			const { status } = await api.userApi.createUser({
+				email: String(email),
+				password: String(password),
+				firstName: String(firstName),
+				lastName: String(lastName)
+			});
+
+			if (status === 201) {
 				success = 'New user created';
 
 				dispatch('user-created');
+				return;
+			} else {
+				error = 'Error create user account';
 			}
 		}
 	}
@@ -52,12 +64,7 @@
 		</p>
 	</div>
 
-	<form
-		on:submit|preventDefault={registerUser}
-		method="post"
-		action="/admin/api/create-user"
-		autocomplete="off"
-	>
+	<form on:submit|preventDefault={registerUser} autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="email">Email</label>
 			<input class="immich-form-input" id="email" name="email" type="email" required />

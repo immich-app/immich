@@ -13,7 +13,6 @@
 		try {
 			error = '';
 
-			// const response = await sendLoginForm(formElement);
 			const { data } = await api.authenticationApi.login({
 				email,
 				password
