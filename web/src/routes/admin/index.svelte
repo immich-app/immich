@@ -3,22 +3,24 @@
 	import { api, UserResponseDto } from '@api';
 
 	export const load: Load = async ({ session }) => {
-		if (!session.user) {
+		console.log(session);
+		try {
+			const { data: allUsers } = await api.userApi.getAllUsers(false);
+			const { data: user } = await api.userApi.getMyUserInfo();
+
+			return {
+				status: 200,
+				props: {
+					user: user,
+					allUsers: allUsers
+				}
+			};
+		} catch (e) {
 			return {
 				status: 302,
 				redirect: '/auth/login'
 			};
 		}
-
-		const { data } = await api.userApi.getAllUsers(false);
-
-		return {
-			status: 200,
-			props: {
-				user: session.user,
-				allUsers: data
-			}
-		};
 	};
 </script>
 
