@@ -66,30 +66,28 @@
 	};
 
 	const uploadClickedHandler = async () => {
-		if ($session.user) {
-			try {
-				let fileSelector = document.createElement('input');
+		try {
+			let fileSelector = document.createElement('input');
 
-				fileSelector.type = 'file';
-				fileSelector.multiple = true;
-				fileSelector.accept = 'image/*,video/*,.heic,.heif';
+			fileSelector.type = 'file';
+			fileSelector.multiple = true;
+			fileSelector.accept = 'image/*,video/*,.heic,.heif';
 
-				fileSelector.onchange = async (e: any) => {
-					const files = Array.from<File>(e.target.files);
+			fileSelector.onchange = async (e: any) => {
+				const files = Array.from<File>(e.target.files);
 
-					const acceptedFile = files.filter(
-						(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
-					);
+				const acceptedFile = files.filter(
+					(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
+				);
 
-					for (const asset of acceptedFile) {
-						await fileUploader(asset);
-					}
-				};
+				for (const asset of acceptedFile) {
+					await fileUploader(asset);
+				}
+			};
 
-				fileSelector.click();
-			} catch (e) {
-				console.log('Error seelcting file', e);
-			}
+			fileSelector.click();
+		} catch (e) {
+			console.log('Error seelcting file', e);
 		}
 	};
 

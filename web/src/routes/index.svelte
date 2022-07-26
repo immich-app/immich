@@ -4,20 +4,21 @@
 	import { api } from '@api';
 
 	export const load: Load = async ({ session }) => {
-		const { data } = await api.userApi.getUserCount();
-
-		if (session.user) {
+		try {
+			await api.userApi.getMyUserInfo();
 			return {
 				status: 302,
-				redirect: '/photos',
+				redirect: '/photos'
 			};
-		}
+		} catch (e) {}
+
+		const { data } = await api.userApi.getUserCount();
 
 		return {
 			status: 200,
 			props: {
-				isAdminUserExist: data.userCount == 0 ? false : true,
-			},
+				isAdminUserExist: data.userCount == 0 ? false : true
+			}
 		};
 	};
 </script>

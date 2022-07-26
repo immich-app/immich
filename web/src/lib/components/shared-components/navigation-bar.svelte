@@ -23,14 +23,12 @@
 	});
 
 	const getUserProfileImage = async () => {
-		if ($session.user) {
-			try {
-				await api.userApi.getProfileImage(user.id);
-				shouldShowProfileImage = true;
-			} catch (e) {
-				console.log('User does not have a profile image');
-				shouldShowProfileImage = false;
-			}
+		try {
+			await api.userApi.getProfileImage(user.id);
+			shouldShowProfileImage = true;
+		} catch (e) {
+			console.log('User does not have a profile image');
+			shouldShowProfileImage = false;
 		}
 	};
 	const getFirstLetter = (text?: string) => {

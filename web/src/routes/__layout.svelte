@@ -3,10 +3,6 @@
 	import { checkAppVersion } from '$lib/utils/check-app-version';
 
 	export const load: Load = async ({ url, session }) => {
-		if (session.user) {
-			api.setAccessToken(session.user.accessToken);
-		}
-
 		return {
 			props: { url }
 		};
