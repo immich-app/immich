@@ -2,8 +2,7 @@
 	import type { Load } from '@sveltejs/kit';
 	import { api, UserResponseDto } from '@api';
 
-	export const load: Load = async ({ session }) => {
-		console.log(session);
+	export const load: Load = async () => {
 		try {
 			const { data: allUsers } = await api.userApi.getAllUsers(false);
 			const { data: user } = await api.userApi.getMyUserInfo();
@@ -37,7 +36,7 @@
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 
-	let selectedAction: AdminSideBarSelection;
+	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
 	export let user: ImmichUser;
 	export let allUsers: UserResponseDto[];

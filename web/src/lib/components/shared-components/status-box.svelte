@@ -12,29 +12,39 @@
 	let serverInfo: ServerInfoResponseDto;
 
 	onMount(async () => {
-		const { data: version } = await api.serverInfoApi.getServerVersion();
+		try {
+			const { data: version } = await api.serverInfoApi.getServerVersion();
 
-		serverVersion = `v${version.major}.${version.minor}.${version.patch}`;
+			serverVersion = `v${version.major}.${version.minor}.${version.patch}`;
 
-		const { data: serverInfoRes } = await api.serverInfoApi.getServerInfo();
-		serverInfo = serverInfoRes;
-		getStorageUsagePercentage();
+			const { data: serverInfoRes } = await api.serverInfoApi.getServerInfo();
+			serverInfo = serverInfoRes;
+			getStorageUsagePercentage();
+		} catch (e) {
+			console.log('Error [StatusBox] [onMount]');
+			isServerOk = false;
+		}
 	});
 
 	const pingServerInterval = setInterval(async () => {
-		const { data: pingReponse } = await api.serverInfoApi.pingServer();
+		try {
+			const { data: pingReponse } = await api.serverInfoApi.pingServer();
 
-		if (pingReponse.res === 'pong') isServerOk = true;
-		else isServerOk = false;
+			if (pingReponse.res === 'pong') isServerOk = true;
+			else isServerOk = false;
 
-		const { data: serverInfoRes } = await api.serverInfoApi.getServerInfo();
-		serverInfo = serverInfoRes;
+			const { data: serverInfoRes } = await api.serverInfoApi.getServerInfo();
+			serverInfo = serverInfoRes;
+		} catch (e) {
+			console.log('Error [StatusBox] [pingServerInterval]');
+			isServerOk = false;
+		}
 	}, 10000);
 
 	onDestroy(() => clearInterval(pingServerInterval));
 
 	const getStorageUsagePercentage = () => {
-		return Math.round((serverInfo.diskUseRaw / serverInfo.diskSizeRaw) * 100);
+		return Math.round((serverInfo?.diskUseRaw / serverInfo?.diskSizeRaw) * 100);
 	};
 </script>
 
