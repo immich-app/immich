@@ -22,13 +22,13 @@
 				password
 			});
 
-			$session.user = {
-				firstName: data.firstName,
-				lastName: data.lastName,
-				isAdmin: data.isAdmin,
-				id: data.userId,
-				email: data.userEmail
-			};
+			// $session.user = {
+			// 	firstName: data.firstName,
+			// 	lastName: data.lastName,
+			// 	isAdmin: data.isAdmin,
+			// 	id: data.userId,
+			// 	email: data.userEmail
+			// };
 
 			if (!data.isAdmin && data.shouldChangePassword) {
 				dispatch('first-login');

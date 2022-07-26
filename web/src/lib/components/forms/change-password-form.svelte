@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { sendUpdateForm } from '$lib/auth-api';
+	import { api } from '@api';
 	import { createEventDispatcher } from 'svelte';
 	import type { ImmichUser } from '../../models/immich-user';
 
@@ -21,24 +21,24 @@
 			changeChagePassword = true;
 		}
 	}
+
 	const dispatch = createEventDispatcher();
 
-	async function changePassword(event: SubmitEvent) {
+	async function changePassword() {
 		if (changeChagePassword) {
 			error = '';
 
-			const formElement = event.target as HTMLFormElement;
+			const { status } = await api.userApi.updateUser({
+				id: user.id,
+				password: String(password),
+				shouldChangePassword: false
+			});
 
-			const response = await sendUpdateForm(formElement);
-
-			if (response.error) {
-				error = JSON.stringify(response.error);
-			}
-
-			if (response.success) {
-				success = 'Password has been changed';
-
+			if (status === 200) {
 				dispatch('success');
+				return;
+			} else {
+				console.error('Error changing password');
 			}
 		}
 	}
@@ -54,15 +54,22 @@
 			{user.lastName} ({user.email}),
 			<br />
 			<br />
-			This is either the first time you are signing into the system or a request has been made to change your password. Please
-			enter the new password below.
+			This is either the first time you are signing into the system or a request has been made to change
+			your password. Please enter the new password below.
 		</p>
 	</div>
 
 	<form on:submit|preventDefault={changePassword} method="post" autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="password">New Password</label>
-			<input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
+			<input
+				class="immich-form-input"
+				id="password"
+				name="password"
+				type="password"
+				required
+				bind:value={password}
+			/>
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">

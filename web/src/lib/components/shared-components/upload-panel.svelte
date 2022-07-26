@@ -7,6 +7,7 @@
 	import type { UploadAsset } from '$lib/models/upload-asset';
 	import { getAssetsInfo } from '$lib/stores/assets';
 	import { session } from '$app/stores';
+	import { onMount } from 'svelte';
 
 	let showDetail = true;
 
@@ -75,12 +76,15 @@
 	}
 
 	let isUploading = false;
-	uploadAssetsStore.isUploading.subscribe((value) => {
-		isUploading = value;
 
-		if (isUploading == false) {
-			getAssetsInfo();
-		}
+	onMount(() => {
+		uploadAssetsStore.isUploading.subscribe((value) => {
+			isUploading = value;
+
+			if (isUploading == false) {
+				getAssetsInfo();
+			}
+		});
 	});
 </script>
 
