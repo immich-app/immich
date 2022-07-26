@@ -44,6 +44,10 @@ body {
 	color: #5f6368;
 }
 
+input:focus-visible {
+	outline-offset: 0px !important;
+	outline: none !important;
+}
 @layer utilities {
 	.immich-form-input {
 		@apply bg-slate-100 p-2 rounded-md focus:border-immich-primary text-sm;

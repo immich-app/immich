@@ -246,25 +246,15 @@
 
 		<!-- Thumbnail -->
 		{#if intersecting}
-			{#await loadImageData()}
-				<div
-					style:width={`${thumbnailSize}px`}
-					style:height={`${thumbnailSize}px`}
-					class={`bg-immich-primary/10 ${getSize()} flex place-items-center place-content-center `}
-				>
-					...
-				</div>
-			{:then imageData}
-				<img
-					style:width={`${thumbnailSize}px`}
-					style:height={`${thumbnailSize}px`}
-					in:fade={{ duration: 250 }}
-					src={imageData}
-					alt={asset.id}
-					class={`object-cover ${getSize()} transition-all duration-100 z-0 ${getThumbnailBorderStyle()}`}
-					loading="lazy"
-				/>
-			{/await}
+			<img
+				style:width={`${thumbnailSize}px`}
+				style:height={`${thumbnailSize}px`}
+				in:fade={{ duration: 250 }}
+				src={`/api/asset/thumbnail/${asset.id}?format=${format}`}
+				alt={asset.id}
+				class={`object-cover ${getSize()} transition-all duration-100 z-0 ${getThumbnailBorderStyle()}`}
+				loading="lazy"
+			/>
 		{/if}
 
 		{#if mouseOver && asset.type === AssetTypeEnum.Video}
