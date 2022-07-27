@@ -42,9 +42,13 @@
 	 */
 	$: {
 		if (uploadAssets.length == uploadAssetsCount) {
+			// Filter assets that are already in the album
+			const assetsToAdd = uploadAssets.filter(
+				(asset) => !assetsInAlbum.some((a) => a.id === asset)
+			);
 			// Add the just uploaded assets to the album
 			dispatch('create-album', {
-				assets: uploadAssets
+				assets: assetsToAdd
 			});
 
 			// Clean up states.
