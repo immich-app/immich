@@ -202,8 +202,6 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) checkDuplicateAssetDto: CheckDuplicateAssetDto,
   ): Promise<CheckDuplicateAssetResponseDto> {
-    const res = await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
-
-    return new CheckDuplicateAssetResponseDto(res);
+    return await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
   }
 }

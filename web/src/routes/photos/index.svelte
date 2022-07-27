@@ -32,7 +32,7 @@
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
-	import { fileUploader } from '$lib/utils/file-uploader';
+	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
 	import { api, AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 
@@ -62,32 +62,6 @@
 		selectedAsset = $flattenAssetGroupByDate[currentViewAssetIndex];
 		isShowAssetViewer = true;
 		pushState(selectedAsset.id);
-	};
-
-	const uploadClickedHandler = async () => {
-		try {
-			let fileSelector = document.createElement('input');
-
-			fileSelector.type = 'file';
-			fileSelector.multiple = true;
-			fileSelector.accept = 'image/*,video/*,.heic,.heif';
-
-			fileSelector.onchange = async (e: any) => {
-				const files = Array.from<File>(e.target.files);
-
-				const acceptedFile = files.filter(
-					(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
-				);
-
-				for (const asset of acceptedFile) {
-					await fileUploader(asset);
-				}
-			};
-
-			fileSelector.click();
-		} catch (e) {
-			console.log('Error seelcting file', e);
-		}
 	};
 
 	const navigateAssetForward = () => {
@@ -131,7 +105,7 @@
 </svelte:head>
 
 <section>
-	<NavigationBar {user} on:uploadClicked={uploadClickedHandler} />
+	<NavigationBar {user} on:uploadClicked={() => openFileUploadDialog(UploadType.GENERAL)} />
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">

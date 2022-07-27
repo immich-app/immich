@@ -9,6 +9,8 @@
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import { AssetResponseDto } from '@api';
 	import AlbumAppBar from './album-app-bar.svelte';
+	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
+	import { albumUploadAssetStore } from '$lib/stores/album-upload-asset';
 
 	const dispatch = createEventDispatcher();
 
@@ -19,7 +21,41 @@
 	let existingGroup: Set<number> = new Set();
 	let groupWithAssetsInAlbum: Record<number, Set<string>> = {};
 
-	onMount(() => scanForExistingSelectedGroup());
+	let uploadAssets: string[] = [];
+	let uploadAssetsCount = 9999;
+
+	onMount(() => {
+		scanForExistingSelectedGroup();
+
+		albumUploadAssetStore.asset.subscribe((uploadedAsset) => {
+			uploadAssets = uploadedAsset;
+		});
+
+		albumUploadAssetStore.count.subscribe((count) => {
+			uploadAssetsCount = count;
+		});
+	});
+
+	/**
+	 * Watch for the uploading event - when the uploaded assets are the same number of the chosen asset
+	 * navigate back and add them to the album
+	 */
+	$: {
+		if (uploadAssets.length == uploadAssetsCount) {
+			// Filter assets that are already in the album
+			const assetsToAdd = uploadAssets.filter(
+				(asset) => !assetsInAlbum.some((a) => a.id === asset)
+			);
+			// Add the just uploaded assets to the album
+			dispatch('create-album', {
+				assets: assetsToAdd
+			});
+
+			// Clean up states.
+			albumUploadAssetStore.asset.set([]);
+			albumUploadAssetStore.count.set(9999);
+		}
+	}
 
 	const selectAssetHandler = (assetId: string, groupIndex: number) => {
 		const tempSelectedAsset = new Set(selectedAsset);
@@ -146,6 +182,12 @@
 		</svelte:fragment>
 
 		<svelte:fragment slot="trailing">
+			<button
+				on:click={() => openFileUploadDialog(UploadType.ALBUM)}
+				class="text-immich-primary text-sm hover:bg-immich-primary/10 transition-all px-6 py-2 rounded-lg font-medium"
+			>
+				Select from computer
+			</button>
 			<button
 				disabled={selectedAsset.size === 0}
 				on:click={addSelectedAssets}
