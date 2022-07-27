@@ -104,6 +104,6 @@ export class AlbumController {
     @Body(ValidationPipe) updateAlbumInfoDto: UpdateAlbumDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
   ) {
-    return this.albumService.updateAlbumTitle(authUser, updateAlbumInfoDto, albumId);
+    return this.albumService.updateAlbumInfo(authUser, updateAlbumInfoDto, albumId);
   }
 }

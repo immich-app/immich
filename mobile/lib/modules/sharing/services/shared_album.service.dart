@@ -134,7 +134,6 @@ class SharedAlbumService {
       await _apiService.albumApi.updateAlbumInfo(
         albumId,
         UpdateAlbumDto(
-          ownerId: ownerId,
           albumName: newAlbumTitle,
         ),
       );

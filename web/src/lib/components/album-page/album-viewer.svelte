@@ -18,6 +18,11 @@
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
+	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+	import ThumbnailSelection from './thumbnail-selection.svelte';
+
 	export let album: AlbumResponseDto;
 
 	let isShowAssetViewer = false;
@@ -26,6 +31,8 @@
 	let isEditingTitle = false;
 	let isCreatingSharedAlbum = false;
 	let isShowShareInfoModal = false;
+	let isShowAlbumOptions = false;
+	let isShowThumbnailSelection = false;
 
 	let selectedAsset: AssetResponseDto;
 	let currentViewAssetIndex = 0;
@@ -37,6 +44,7 @@
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;
 	let titleInput: HTMLInputElement;
+	let contextMenuPosition = { x: 0, y: 0 };
 
 	$: isOwned = currentUser?.id == album.ownerId;
 
@@ -165,7 +173,6 @@
 		if (!isEditingTitle && currentAlbumName != album.albumName && isOwned) {
 			api.albumApi
 				.updateAlbumInfo(album.id, {
-					ownerId: album.ownerId,
 					albumName: album.albumName
 				})
 				.then(() => {
@@ -238,6 +245,28 @@
 			}
 		}
 	};
+
+	const showAlbumOptionsMenu = (event: CustomEvent) => {
+		contextMenuPosition = {
+			x: event.detail.mouseEvent.x,
+			y: event.detail.mouseEvent.y
+		};
+
+		isShowAlbumOptions = !isShowAlbumOptions;
+	};
+
+	const setAlbumThumbnailHandler = (event: CustomEvent) => {
+		const { asset }: { asset: AssetResponseDto } = event.detail;
+		try {
+			api.albumApi.updateAlbumInfo(album.id, {
+				albumThumbnailAssetId: asset.id
+			});
+		} catch (e) {
+			console.log('Error [setAlbumThumbnailHandler] ', e);
+		}
+
+		isShowThumbnailSelection = false;
+	};
 </script>
 
 <section class="bg-immich-bg">
@@ -274,7 +303,7 @@
 						logo={FileImagePlusOutline}
 					/>
 
-					<!-- Sharing only for owner -->
+					<!-- Share and remove album -->
 					{#if isOwned}
 						<CircleIconButton
 							title="Share"
@@ -283,6 +312,12 @@
 						/>
 						<CircleIconButton title="Remove album" on:click={removeAlbum} logo={DeleteOutline} />
 					{/if}
+
+					<CircleIconButton
+						title="Album options"
+						on:click={(event) => showAlbumOptionsMenu(event)}
+						logo={DotsVertical}
+					/>
 				{/if}
 
 				{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
@@ -416,5 +451,27 @@
 		on:close={() => (isShowShareInfoModal = false)}
 		{album}
 		on:user-deleted={sharedUserDeletedHandler}
+	/>
+{/if}
+
+{#if isShowAlbumOptions}
+	<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAlbumOptions = false)}>
+		{#if isOwned}
+			<MenuOption
+				on:click={() => {
+					isShowThumbnailSelection = true;
+					isShowAlbumOptions = false;
+				}}
+				text="Set album cover"
+			/>
+		{/if}
+	</ContextMenu>
+{/if}
+
+{#if isShowThumbnailSelection}
+	<ThumbnailSelection
+		{album}
+		on:close={() => (isShowThumbnailSelection = false)}
+		on:thumbnail-selected={setAlbumThumbnailHandler}
 	/>
 {/if}

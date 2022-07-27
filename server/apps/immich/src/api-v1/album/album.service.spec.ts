@@ -260,17 +260,16 @@ describe('Album service', () => {
     const albumEntity = _getOwnedAlbum();
     const albumId = albumEntity.id;
     const updatedAlbumName = 'new album name';
-
+    const updatedAlbumThumbnailAssetId = '69d2f917-0b31-48d8-9d7d-673b523f1aac';
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.updateAlbum.mockImplementation(() =>
       Promise.resolve<AlbumEntity>({ ...albumEntity, albumName: updatedAlbumName }),
     );
 
-    const result = await sut.updateAlbumTitle(
+    const result = await sut.updateAlbumInfo(
       authUser,
       {
         albumName: updatedAlbumName,
-        ownerId: 'this is not used and will be removed',
       },
       albumId,
     );
@@ -280,7 +279,7 @@ describe('Album service', () => {
     expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledTimes(1);
     expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledWith(albumEntity, {
       albumName: updatedAlbumName,
-      ownerId: 'this is not used and will be removed',
+      thumbnailAssetId: updatedAlbumThumbnailAssetId,
     });
   });
 
@@ -291,11 +290,11 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
     await expect(
-      sut.updateAlbumTitle(
+      sut.updateAlbumInfo(
         authUser,
         {
           albumName: 'new album name',
-          ownerId: 'this is not used and will be removed',
+          albumThumbnailAssetId: '69d2f917-0b31-48d8-9d7d-673b523f1aac',
         },
         albumId,
       ),
@@ -361,7 +360,7 @@ describe('Album service', () => {
   it('removes assets from owned album', async () => {
     const albumEntity = _getOwnedAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.removeAssets.mockImplementation(() => Promise.resolve(true));
+    albumRepositoryMock.removeAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
     await expect(
       sut.removeAssetsFromAlbum(
@@ -381,7 +380,7 @@ describe('Album service', () => {
   it('removes assets from shared album (shared with auth user)', async () => {
     const albumEntity = _getOwnedSharedAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.removeAssets.mockImplementation(() => Promise.resolve(true));
+    albumRepositoryMock.removeAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
     await expect(
       sut.removeAssetsFromAlbum(
