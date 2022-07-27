@@ -11,15 +11,17 @@ import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:openapi/api.dart';
 
+// ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
-  final List<AssetResponseDto> assetList;
+  late List<AssetResponseDto> assetList;
   final AssetResponseDto asset;
   final Box<dynamic> box;
   final String thumbnailRequestUrl;
 
-  const GalleryViewerPage({
+  GalleryViewerPage({
     Key? key,
     required this.assetList,
     required this.asset,
@@ -27,11 +29,23 @@ class GalleryViewerPage extends HookConsumerWidget {
     required this.thumbnailRequestUrl,
   }) : super(key: key);
 
-  // @override
-  // State<StatefulWidget> createState() => GalleryViewerPageState();
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    //get the list of whats in the assets
+    //*might save it at the beginning on launch in SavedPrefs to limit the amount of operations*
+    var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
+    List<AssetResponseDto> tempList = [];
+
+    //testing + hacky way to let users swipe around forever
+    for (var group in assetGroupByDateTime.values) {
+      for (var value in group) {
+        tempList.add(value);
+      }
+    }
+    assetList = tempList;
+
+    //everything else here is to keep the appbar
+    //and gestures in place for the image + video views
     AssetResponseDto? assetDetail;
     int indexOfAsset = 0;
     PageController controller =
