@@ -10,12 +10,12 @@
 	let imageData: string = '/no-thumbnail.png';
 	const dispatch = createEventDispatcher();
 
-	const loadImageData = async (thubmnailId: string | null) => {
+	const loadHighQualityThumbnail = async (thubmnailId: string | null) => {
 		if (thubmnailId == null) {
 			return '/no-thumbnail.png';
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Webp, {
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Jpeg, {
 			responseType: 'blob'
 		});
 		if (data instanceof Blob) {
@@ -50,15 +50,14 @@
 	</div>
 
 	<div class={`h-[275px] w-[275px] z-[-1]`}>
-		{#await loadImageData(album.albumThumbnailAssetId)}
-			<div
-				class={`bg-immich-primary/10 w-full h-full  flex place-items-center place-content-center rounded-xl`}
-			>
-				...
-			</div>
+		{#await loadHighQualityThumbnail(album.albumThumbnailAssetId)}
+			<img
+				src={`/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`}
+				alt={album.id}
+				class={`object-cover w-full h-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
+			/>
 		{:then imageData}
 			<img
-				in:fade={{ duration: 250 }}
 				src={imageData}
 				alt={album.id}
 				class={`object-cover w-full h-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
