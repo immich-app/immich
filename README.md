@@ -65,21 +65,18 @@ This project is under heavy development, there will be continuous functions, fea
 | Selective album(s) for backup | Yes | N/A
 | Download photos and videos to local device | Yes | Yes
 | Multi-user support | Yes | Yes
-| Shared Albums | Yes | No
+| Album | No | Yes
+| Shared Albums | Yes | Yes
 | Quick navigation with draggable scrollbar | Yes | Yes
 | Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes | Yes
 | Metadata view (EXIF, map) | Yes | Yes
 | Search by metadata, objects and image tags | Yes | No
-| Administrative functions (user management) | No | Yes
+| Administrative functions (user management) | N/A | Yes
 
 
 # System Requirement
 
 **OS**: Preferred unix-based operating system (Ubuntu, Debian, MacOS...etc). 
-
-I haven't tested with `Docker for Windows` as well as `WSL` on Windows
-
-*Raspberry Pi can be used but `immich-machine-learning` container has to be comment out in `docker-compose` since TensorFlow has not been supported in Docker image on arm64v7 yet.*
 
 **RAM**: At least 2GB, preffered 4GB.
 
@@ -248,7 +245,7 @@ Cheers! 🎉
 
 ## TensorFlow Build Issue
 
-*This is a known issue on RaspberryPi 4 arm64-v7 and incorrect Promox setup*
+*This is a known issue for incorrect Promox setup*
 
 TensorFlow doesn't run with older CPU architecture, it requires a CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
  
@@ -261,7 +258,3 @@ If you are running virtualization in Promox, the VM doesn't have the flag enable
 You need to change the CPU type from `kvm64` to `host` under VMs hardware tab.
   
 `Hardware > Processors > Edit > Advanced > Type (dropdown menu) > host`
- 
-Otherwise you can:
-- edit `docker-compose.yml` file and comment the whole `immich-machine-learning` service **which will disable machine learning features like object detection and image classification**
-- switch to a different VM/desktop with different architecture.
