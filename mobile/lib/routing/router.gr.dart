@@ -41,6 +41,17 @@ class _$AppRouter extends RootStackRouter {
           opaque: true,
           barrierDismissible: false);
     },
+    GalleryViewerRoute.name: (routeData) {
+      final args = routeData.argsAs<GalleryViewerRouteArgs>();
+      return MaterialPageX<dynamic>(
+          routeData: routeData,
+          child: GalleryViewerPage(
+              key: args.key,
+              assetList: args.assetList,
+              asset: args.asset,
+              box: args.box,
+              thumbnailRequestUrl: args.thumbnailRequestUrl));
+    },
     ImageViewerRoute.name: (routeData) {
       final args = routeData.argsAs<ImageViewerRouteArgs>();
       return MaterialPageX<dynamic>(
@@ -163,6 +174,8 @@ class _$AppRouter extends RootStackRouter {
                   parent: TabControllerRoute.name,
                   guards: [authGuard])
             ]),
+        RouteConfig(GalleryViewerRoute.name,
+            path: '/gallery-viewer-page', guards: [authGuard]),
         RouteConfig(ImageViewerRoute.name,
             path: '/image-viewer-page', guards: [authGuard]),
         RouteConfig(VideoViewerRoute.name,
@@ -224,6 +237,47 @@ class TabControllerRoute extends PageRouteInfo<void> {
             path: '/tab-controller-page', initialChildren: children);
 
   static const String name = 'TabControllerRoute';
+}
+
+/// generated route for
+/// [GalleryViewerPage]
+class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
+  GalleryViewerRoute(
+      {Key? key,
+      required List<AssetResponseDto> assetList,
+      required Box<dynamic> box,
+      required String thumbnailRequestUrl,
+      required AssetResponseDto asset})
+      : super(GalleryViewerRoute.name,
+            path: '/gallery-viewer-page',
+            args: GalleryViewerRouteArgs(
+                key: key,
+                assetList: assetList,
+                box: box,
+                thumbnailRequestUrl: thumbnailRequestUrl,
+                asset: asset));
+
+  static const String name = 'GalleryViewerRoute';
+}
+
+class GalleryViewerRouteArgs {
+  const GalleryViewerRouteArgs(
+      {this.key,
+      required this.assetList,
+      required this.box,
+      required this.thumbnailRequestUrl,
+      required this.asset});
+
+  final Key? key;
+  final List<AssetResponseDto> assetList;
+  final AssetResponseDto asset;
+  final Box<dynamic> box;
+  final String thumbnailRequestUrl;
+
+  @override
+  String toString() {
+    return 'GalleryViewerRouteArgs{key: $key, assetList: $assetList, box: $box, thumbnailRequestUrl: $thumbnailRequestUrl, asset: $asset}';
+  }
 }
 
 /// generated route for

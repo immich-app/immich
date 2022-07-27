@@ -24,7 +24,10 @@ class ImageGrid extends ConsumerWidget {
             onTap: () {},
             child: Stack(
               children: [
-                ThumbnailImage(asset: assetGroup[index]),
+                ThumbnailImage(
+                  asset: assetGroup[index],
+                  assetList: assetGroup,
+                ),
                 if (assetType != AssetTypeEnum.IMAGE)
                   Positioned(
                     top: 5,
