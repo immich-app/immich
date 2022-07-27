@@ -16,14 +16,12 @@
 					album: albumInfo
 				}
 			};
-		} catch (e) {
-			if (e instanceof AxiosError) {
-				if (e.response?.status === 404) {
-					return {
-						status: 302,
-						redirect: '/albums'
-					};
-				}
+		} catch (e: any) {
+			if (e.response?.status === 404) {
+				return {
+					status: 302,
+					redirect: '/albums'
+				};
 			}
 
 			return {
@@ -36,7 +34,6 @@
 
 <script lang="ts">
 	import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
-	import { AxiosError } from 'axios';
 
 	export let album: AlbumResponseDto;
 </script>
