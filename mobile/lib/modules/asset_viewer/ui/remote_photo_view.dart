@@ -16,13 +16,17 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   Widget build(BuildContext context) {
     bool allowMoving = _status == _RemoteImageStatus.full;
 
-    return PhotoView(
-      imageProvider: _imageProvider,
-      minScale: PhotoViewComputedScale.contained,
-      maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
-      enablePanAlways: true,
-      scaleStateChangedCallback: _scaleStateChanged,
-      onScaleEnd: _onScaleListener,
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      child: PhotoView(
+        imageProvider: _imageProvider,
+        minScale: PhotoViewComputedScale.contained,
+        maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
+        enablePanAlways: true,
+        scaleStateChangedCallback: _scaleStateChanged,
+        onScaleEnd: _onScaleListener,
+      ),
     );
   }
 
@@ -123,3 +127,73 @@ class RemotePhotoView extends StatefulWidget {
     return _RemotePhotoViewState();
   }
 }
+
+// ignore: camel_case_types
+// class testClass {
+//   CachedNetworkImageProvider? _imageProvider;
+//   _RemoteImageStatus _status = _RemoteImageStatus.empty;
+
+//   testClass({
+//     required this.thumbnailUrl,
+//     required this.imageUrl,
+//     required this.authToken,
+//   });
+
+//   final String thumbnailUrl;
+//   final String imageUrl;
+//   final String authToken;
+
+//   CachedNetworkImageProvider _authorizedImageProvider(String url) {
+//     return CachedNetworkImageProvider(
+//       url,
+//       headers: {"Authorization": authToken},
+//       cacheKey: url,
+//     );
+//   }
+
+//   void _loadImages() {
+//     CachedNetworkImageProvider thumbnailProvider =
+//         _authorizedImageProvider(thumbnailUrl);
+//     _imageProvider = thumbnailProvider;
+
+//     thumbnailProvider.resolve(const ImageConfiguration()).addListener(
+//       ImageStreamListener((ImageInfo imageInfo, _) {
+//         _performStateTransition(
+//           _RemoteImageStatus.thumbnail,
+//           thumbnailProvider,
+//         );
+//       }),
+//     );
+
+//     CachedNetworkImageProvider fullProvider =
+//         _authorizedImageProvider(imageUrl);
+//     fullProvider.resolve(const ImageConfiguration()).addListener(
+//       ImageStreamListener((ImageInfo imageInfo, _) {
+//         _performStateTransition(_RemoteImageStatus.full, fullProvider);
+//       }),
+//     );
+//   }
+
+//   void _performStateTransition(
+//     _RemoteImageStatus newStatus,
+//     CachedNetworkImageProvider provider,
+//   ) {
+//     // Transition to same status is forbidden
+//     if (_status == newStatus) return;
+//     // Transition full -> thumbnail is forbidden
+//     if (_status == _RemoteImageStatus.full &&
+//         newStatus == _RemoteImageStatus.thumbnail) return;
+//   }
+
+//   //  getImage() {
+
+//   // }
+
+//   Future<CachedNetworkImageProvider?> returnImage() async {
+//     print("getting image");
+//     await _loadImages;
+//     print("got image");
+//     print("returning image");
+//     return _imageProvider;
+//   }
+// }

@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/asset_viewer/views/gallery_viewer.dart';
 import 'package:immich_mobile/modules/backup/views/album_preview_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_album_selection_page.dart';
 import 'package:immich_mobile/modules/backup/views/failed_backup_status_page.dart';
@@ -44,6 +46,7 @@ part 'router.gr.dart';
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
+    AutoRoute(page: GalleryViewerPage, guards: [AuthGuard]),
     AutoRoute(page: ImageViewerPage, guards: [AuthGuard]),
     AutoRoute(page: VideoViewerPage, guards: [AuthGuard]),
     AutoRoute(page: BackupControllerPage, guards: [AuthGuard]),
