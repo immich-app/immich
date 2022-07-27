@@ -1001,13 +1001,13 @@ export interface UpdateAlbumDto {
      * @type {string}
      * @memberof UpdateAlbumDto
      */
-    'albumName': string;
+    'albumName'?: string;
     /**
      * 
      * @type {string}
      * @memberof UpdateAlbumDto
      */
-    'ownerId': string;
+    'albumThumbnailAssetId'?: string;
 }
 /**
  * 

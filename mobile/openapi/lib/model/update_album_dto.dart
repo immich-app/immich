@@ -13,32 +13,52 @@ part of openapi.api;
 class UpdateAlbumDto {
   /// Returns a new [UpdateAlbumDto] instance.
   UpdateAlbumDto({
-    required this.albumName,
-    required this.ownerId,
+    this.albumName,
+    this.albumThumbnailAssetId,
   });
 
-  String albumName;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? albumName;
 
-  String ownerId;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? albumThumbnailAssetId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
      other.albumName == albumName &&
-     other.ownerId == ownerId;
+     other.albumThumbnailAssetId == albumThumbnailAssetId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (albumName.hashCode) +
-    (ownerId.hashCode);
+    (albumName == null ? 0 : albumName!.hashCode) +
+    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumDto[albumName=$albumName, ownerId=$ownerId]';
+  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
+    if (albumName != null) {
       _json[r'albumName'] = albumName;
-      _json[r'ownerId'] = ownerId;
+    } else {
+      _json[r'albumName'] = null;
+    }
+    if (albumThumbnailAssetId != null) {
+      _json[r'albumThumbnailAssetId'] = albumThumbnailAssetId;
+    } else {
+      _json[r'albumThumbnailAssetId'] = null;
+    }
     return _json;
   }
 
@@ -61,8 +81,8 @@ class UpdateAlbumDto {
       }());
 
       return UpdateAlbumDto(
-        albumName: mapValueOfType<String>(json, r'albumName')!,
-        ownerId: mapValueOfType<String>(json, r'ownerId')!,
+        albumName: mapValueOfType<String>(json, r'albumName'),
+        albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
       );
     }
     return null;
@@ -112,8 +132,6 @@ class UpdateAlbumDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'albumName',
-    'ownerId',
   };
 }
 
