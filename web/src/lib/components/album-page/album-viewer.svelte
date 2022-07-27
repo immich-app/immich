@@ -173,7 +173,6 @@
 		if (!isEditingTitle && currentAlbumName != album.albumName && isOwned) {
 			api.albumApi
 				.updateAlbumInfo(album.id, {
-					ownerId: album.ownerId,
 					albumName: album.albumName
 				})
 				.then(() => {
@@ -258,10 +257,10 @@
 
 	const setAlbumThumbnailHandler = (event: CustomEvent) => {
 		const { asset }: { asset: AssetResponseDto } = event.detail;
-		console.log('setAlbumThumbnailHandler', asset);
 		try {
-			// api.albumApi.updateAlbumInfo(album.id, {
-			// });
+			api.albumApi.updateAlbumInfo(album.id, {
+				albumThumbnailAssetId: asset.id
+			});
 		} catch (e) {
 			console.log('Error [setAlbumThumbnailHandler] ', e);
 		}
