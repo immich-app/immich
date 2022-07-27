@@ -21,6 +21,7 @@
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+	import ThumbnailSelection from './thumbnail-selection.svelte';
 
 	export let album: AlbumResponseDto;
 
@@ -31,6 +32,7 @@
 	let isCreatingSharedAlbum = false;
 	let isShowShareInfoModal = false;
 	let isShowAlbumOptions = false;
+	let isShowThumbnailSelection = false;
 
 	let selectedAsset: AssetResponseDto;
 	let currentViewAssetIndex = 0;
@@ -253,6 +255,19 @@
 
 		isShowAlbumOptions = !isShowAlbumOptions;
 	};
+
+	const setAlbumThumbnailHandler = (event: CustomEvent) => {
+		const { asset }: { asset: AssetResponseDto } = event.detail;
+		console.log('setAlbumThumbnailHandler', asset);
+		try {
+			// api.albumApi.updateAlbumInfo(album.id, {
+			// });
+		} catch (e) {
+			console.log('Error [setAlbumThumbnailHandler] ', e);
+		}
+
+		isShowThumbnailSelection = false;
+	};
 </script>
 
 <section class="bg-immich-bg">
@@ -443,7 +458,21 @@
 {#if isShowAlbumOptions}
 	<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAlbumOptions = false)}>
 		{#if isOwned}
-			<MenuOption on:click={() => {}} text="Set album cover" />
+			<MenuOption
+				on:click={() => {
+					isShowThumbnailSelection = true;
+					isShowAlbumOptions = false;
+				}}
+				text="Set album cover"
+			/>
 		{/if}
 	</ContextMenu>
+{/if}
+
+{#if isShowThumbnailSelection}
+	<ThumbnailSelection
+		{album}
+		on:close={() => (isShowThumbnailSelection = false)}
+		on:thumbnail-selected={setAlbumThumbnailHandler}
+	/>
 {/if}

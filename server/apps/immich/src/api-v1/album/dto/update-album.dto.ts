@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpdateAlbumDto {
   @IsNotEmpty()
@@ -6,4 +6,7 @@ export class UpdateAlbumDto {
 
   @IsNotEmpty()
   ownerId!: string;
+
+  @IsOptional()
+  albumThumbnailAssetId?: string;
 }
