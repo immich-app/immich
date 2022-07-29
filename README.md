@@ -233,9 +233,23 @@ You can find the generated client SDK in the [`web/src/api`](web/src/api) for Ty
 
 # Support
 
-If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsor**](https://github.com/sponsors/alextran1502), or a one time donation with the Buy Me a coffee link below.
+If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**one time**](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) or monthly donation from [**Github Sponsor**](https://github.com/sponsors/alextran1502)
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/altran1502)
+You can also donate using crypto currency with the following addresses:
+
+<p align="left" style="display: flex; place-items: center; gap: 20px" title="Bitcoin(BTC)">
+<img src="design/bitcoin.png" width="25" title="Bitcoin">
+<code>1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX</code>
+</p>
+
+  
+<p align="left" style="display: flex; place-items: center; gap: 15px" title="Cardano(ADA)">
+<img src="design/cardano.png" width="30" title="Cardano">
+<code>
+addr1qyy567vqhqrr3p7vpszr5p264gw89sqcwts2z8wqy4yek87cdmy79zazyjp7tmwhkluhk3krvslkzfvg0h43tytp3f5q49nycc
+</code>
+</p>
+
 
 This is also a meaningful way to give me motivation and encouragement to continue working on the app.
 
