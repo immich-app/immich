@@ -65,7 +65,7 @@ class SharingPage extends HookConsumerWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
+                  //color: Colors.grey.shade700,
                 ),
               ),
               onTap: () {

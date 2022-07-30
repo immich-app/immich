@@ -33,22 +33,22 @@ class SelectionThumbnailImage extends HookConsumerWidget {
       if (isSelected && !isAlbumExist) {
         return Icon(
           Icons.check_circle,
-          color: Theme.of(context).primaryColor,
+          color: Theme.of(context).unselectedWidgetColor,
         );
       } else if (isSelected && isAlbumExist) {
-        return const Icon(
+        return Icon(
           Icons.check_circle,
-          color: Color.fromARGB(255, 233, 233, 233),
+          color: Theme.of(context).unselectedWidgetColor,
         );
       } else if (isNewlySelected && isAlbumExist) {
         return Icon(
           Icons.check_circle,
-          color: Theme.of(context).primaryColor,
+          color: Theme.of(context).unselectedWidgetColor,
         );
       } else {
-        return const Icon(
+        return Icon(
           Icons.circle_outlined,
-          color: Colors.white,
+          color: Theme.of(context).toggleableActiveColor,
         );
       }
     }
@@ -132,7 +132,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
               errorWidget: (context, url, error) {
                 return Icon(
                   Icons.image_not_supported_outlined,
-                  color: Theme.of(context).primaryColor,
+                  // color: Theme.of(context).primaryColor,
                 );
               },
             ),
@@ -153,13 +153,13 @@ class SelectionThumbnailImage extends HookConsumerWidget {
                   Text(
                     asset.duration.substring(0, 7),
                     style: const TextStyle(
-                      color: Colors.white,
+                      //   color: Colors.white,
                       fontSize: 10,
                     ),
                   ),
                   const Icon(
                     Icons.play_circle_outline_rounded,
-                    color: Colors.white,
+                    //color: Colors.white,
                   ),
                 ],
               ),

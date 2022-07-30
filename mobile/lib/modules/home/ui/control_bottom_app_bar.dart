@@ -18,7 +18,7 @@ class ControlBottomAppBar extends StatelessWidget {
             topLeft: Radius.circular(15),
             topRight: Radius.circular(15),
           ),
-          color: Colors.grey[300]?.withOpacity(0.98),
+          color: Colors.indigo.shade600,
         ),
         child: Column(
           children: [
@@ -29,7 +29,7 @@ class ControlBottomAppBar extends StatelessWidget {
                 children: [
                   ControlBoxButton(
                     iconData: Icons.delete_forever_rounded,
-                    label: "control_bottom_app_bar_delete".tr(),
+                    //label: Text("control_bottom_app_bar_delete"),
                     onPressed: () {
                       showDialog(
                         context: context,
@@ -52,12 +52,12 @@ class ControlBottomAppBar extends StatelessWidget {
 class ControlBoxButton extends StatelessWidget {
   const ControlBoxButton({
     Key? key,
-    required this.label,
+    //required this.label,
     required this.iconData,
     required this.onPressed,
   }) : super(key: key);
 
-  final String label;
+  //final String label;
   final IconData iconData;
   final Function onPressed;
 
@@ -73,9 +73,16 @@ class ControlBoxButton extends StatelessWidget {
             onPressed: () {
               onPressed();
             },
-            icon: Icon(iconData, size: 30),
+            icon: Icon(
+              iconData,
+              size: 30,
+              color: Colors.red,
+            ),
           ),
-          Text(label)
+          Text(
+            "Delete",
+            style: TextStyle(color: Colors.white),
+          ),
         ],
       ),
     );

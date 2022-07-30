@@ -55,7 +55,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
                 user.email,
                 style: const TextStyle(
                   fontSize: 12,
-                  color: Colors.black87,
+                  // color: Colors.black87,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -118,7 +118,6 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
       appBar: AppBar(
         title: const Text(
           'share_invite',
-          style: TextStyle(color: Colors.black),
         ).tr(),
         elevation: 0,
         centerTitle: false,

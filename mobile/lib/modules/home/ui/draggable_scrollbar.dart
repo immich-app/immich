@@ -74,7 +74,7 @@ class DraggableScrollbar extends StatefulWidget {
     required this.child,
     required this.controller,
     this.heightScrollThumb = 48.0,
-    this.backgroundColor = Colors.white,
+    this.backgroundColor = Colors.indigo,
     this.padding,
     this.scrollbarAnimationDuration = const Duration(milliseconds: 300),
     this.scrollbarTimeToFade = const Duration(milliseconds: 600),

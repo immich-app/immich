@@ -24,16 +24,17 @@ class AlbumActionOutlinedButton extends StatelessWidget {
           ),
           side: const BorderSide(
             width: 1,
-            color: Color.fromARGB(255, 215, 215, 215),
+            color: Colors.grey,
           ),
         ),
         icon: Icon(iconData, size: 15),
         label: Text(
           labelText,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Theme.of(context).primaryColor,
+            // color: Colors.black87,
           ),
         ),
         onPressed: onPressed,

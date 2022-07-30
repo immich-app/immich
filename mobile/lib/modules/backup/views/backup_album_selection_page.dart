@@ -180,7 +180,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5), // if you need this
                 side: const BorderSide(
-                  color: Color.fromARGB(255, 235, 235, 235),
+                  color: Colors.grey,
                   width: 1,
                 ),
               ),
@@ -190,12 +190,12 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                 children: [
                   ListTile(
                     visualDensity: VisualDensity.compact,
-                    title: Text(
+                    title: const Text(
                       "backup_album_selection_page_total_assets",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
-                        color: Colors.grey[700],
+                        //color: Colors.grey[600],
                       ),
                     ).tr(),
                     trailing: Text(
@@ -261,7 +261,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                               'backup_album_selection_page_assets_scatter',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey[700],
+                                //color: Colors.grey[700],
                               ),
                             ).tr(),
                           ],

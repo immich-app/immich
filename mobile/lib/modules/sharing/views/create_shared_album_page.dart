@@ -90,9 +90,7 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
                 alignment: Alignment.centerLeft,
                 padding:
                     const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
-                side: const BorderSide(
-                  color: Color.fromARGB(255, 206, 206, 206),
-                ),
+                side: const BorderSide(color: Colors.grey),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -101,11 +99,10 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
               icon: const Icon(Icons.add_rounded),
               label: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
+                child: const Text(
                   'create_shared_album_page_share_select_photos',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey[700],
                     fontWeight: FontWeight.bold,
                   ),
                 ).tr(),
@@ -178,7 +175,6 @@ class CreateSharedAlbumPage extends HookConsumerWidget {
         ),
         title: const Text(
           'share_create_album',
-          style: TextStyle(color: Colors.black),
         ).tr(),
         actions: [
           TextButton(

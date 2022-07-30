@@ -120,8 +120,8 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       } else {
         if (_albumInfo.asData?.value?.ownerId == userId) {
           return ListTile(
-            leading: const Icon(Icons.delete_forever_rounded),
-            title: const Text(
+            leading: Icon(Icons.delete_forever_rounded),
+            title: Text(
               'album_viewer_appbar_share_delete',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
@@ -129,8 +129,8 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           );
         } else {
           return ListTile(
-            leading: const Icon(Icons.person_remove_rounded),
-            title: const Text(
+            leading: Icon(Icons.person_remove_rounded),
+            title: Text(
               'album_viewer_appbar_share_leave',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
@@ -142,7 +142,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
 
     void _buildBottomSheet() {
       showModalBottomSheet(
-        backgroundColor: immichBackgroundColor,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         isScrollControlled: false,
         context: context,
         builder: (context) {

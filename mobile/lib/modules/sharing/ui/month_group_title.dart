@@ -89,11 +89,10 @@ class MonthGroupTitle extends HookConsumerWidget {
               child: selectedDateGroup.contains(month)
                   ? Icon(
                       Icons.check_circle_rounded,
-                      color: Theme.of(context).primaryColor,
                     )
-                  : const Icon(
-                      Icons.circle_outlined,
-                      color: Colors.grey,
+                  : Icon(
+                      Icons.check_circle_outline_rounded,
+                      color: Theme.of(context).unselectedWidgetColor,
                     ),
             ),
             GestureDetector(
@@ -104,7 +103,7 @@ class MonthGroupTitle extends HookConsumerWidget {
                   _getSimplifiedMonth(),
                   style: TextStyle(
                     fontSize: 24,
-                    color: Theme.of(context).primaryColor,
+                    //color: Theme.of(context).primaryColor,
                   ),
                 ),
               ),

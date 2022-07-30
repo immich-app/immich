@@ -134,7 +134,9 @@ class BackupControllerPage extends HookConsumerWidget {
                   },
                   child: Text(
                     backupBtnText,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor),
                   ),
                 ),
               )
@@ -254,9 +256,11 @@ class BackupControllerPage extends HookConsumerWidget {
               padding: const EdgeInsets.symmetric(
                 vertical: 16.0,
               ),
-              child: const Text(
+              child: Text(
                 "backup_controller_page_select",
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor),
               ).tr(),
             ),
           ),
@@ -330,7 +334,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 children: [
                   TableRow(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Theme.of(context).disabledColor,
                     ),
                     children: [
                       TableCell(
@@ -356,7 +360,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   ),
                   TableRow(
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
+                      color: Theme.of(context).disabledColor,
                     ),
                     children: [
                       TableCell(
@@ -385,7 +389,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   ),
                   TableRow(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Theme.of(context).disabledColor,
                     ),
                     children: [
                       TableCell(

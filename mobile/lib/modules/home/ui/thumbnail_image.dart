@@ -32,9 +32,8 @@ class ThumbnailImage extends HookConsumerWidget {
 
     Widget _buildSelectionIcon(AssetResponseDto asset) {
       if (selectedAsset.contains(asset)) {
-        return Icon(
+        return const Icon(
           Icons.check_circle,
-          color: Theme.of(context).primaryColor,
         );
       } else {
         return const Icon(

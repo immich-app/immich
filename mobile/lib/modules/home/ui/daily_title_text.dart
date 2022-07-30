@@ -86,7 +86,6 @@ class DailyTitleText extends ConsumerWidget {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
               ),
             ),
             const Spacer(),
@@ -95,11 +94,10 @@ class DailyTitleText extends ConsumerWidget {
               child: isMultiSelectEnable && selectedDateGroup.contains(dateText)
                   ? Icon(
                       Icons.check_circle_rounded,
-                      color: Theme.of(context).primaryColor,
                     )
-                  : const Icon(
+                  : Icon(
                       Icons.check_circle_outline_rounded,
-                      color: Colors.grey,
+                      color: Theme.of(context).unselectedWidgetColor,
                     ),
             )
           ],

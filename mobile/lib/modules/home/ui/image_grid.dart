@@ -37,7 +37,6 @@ class ImageGrid extends ConsumerWidget {
                         Text(
                           assetGroup[index].duration.toString().substring(0, 7),
                           style: const TextStyle(
-                            color: Colors.white,
                             fontSize: 10,
                           ),
                         ),

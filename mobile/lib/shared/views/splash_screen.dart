@@ -49,7 +49,7 @@ class SplashScreenPage extends HookConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: immichBackgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

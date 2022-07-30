@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
@@ -14,10 +13,10 @@ import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/shared/providers/theme_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
-
 import 'constants/hive_box.dart';
 
 void main() async {
@@ -27,15 +26,10 @@ void main() async {
   Hive.registerAdapter(HiveBackupAlbumsAdapter());
 
   await Hive.openBox(userInfoBox);
+  await Hive.openBox(themeInfoBox);
   await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
   await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
   await Hive.openBox(hiveGithubReleaseInfoBox);
-
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarIconBrightness: Brightness.light,
-    ),
-  );
 
   await EasyLocalization.ensureInitialized();
 
@@ -86,7 +80,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         }
 
         ref.watch(websocketProvider.notifier).connect();
-
         ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
         break;
@@ -118,7 +111,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   initState() {
     super.initState();
-
     initApp().then((_) => debugPrint("App Init Completed"));
   }
 
@@ -130,9 +122,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   @override
   Widget build(BuildContext context) {
+    var themeMode = ref.watch(themeModeProvider);
     var router = ref.watch(appRouterProvider);
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
-
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
@@ -143,23 +135,11 @@ class ImmichAppState extends ConsumerState<ImmichApp>
           MaterialApp.router(
             title: 'Immich',
             debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              useMaterial3: true,
-              brightness: Brightness.light,
-              primarySwatch: Colors.indigo,
-              fontFamily: 'WorkSans',
-              snackBarTheme: const SnackBarThemeData(
-                contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
-              ),
-              scaffoldBackgroundColor: immichBackgroundColor,
-              appBarTheme: const AppBarTheme(
-                backgroundColor: immichBackgroundColor,
-                foregroundColor: Colors.indigo,
-                elevation: 1,
-                centerTitle: true,
-                systemOverlayStyle: SystemUiOverlayStyle.dark,
-              ),
-            ),
+            // themeMode: Hive.box(themeInfoBox).get(themeInfoKey)
+            //     ? ThemeMode.dark
+            //     : ThemeMode.light,
+            theme: lightTheme,
+            darkTheme: darkTheme,
             routeInformationParser: router.defaultRouteParser(),
             routerDelegate: router.delegate(
               navigatorObservers: () => [TabNavigationObserver(ref: ref)],

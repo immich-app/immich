@@ -106,9 +106,10 @@ class AlbumViewerPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
                   albumInfo.albumName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               ),
@@ -248,7 +249,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                   minHeight: 50,
                   maxHeight: 50,
                   child: Container(
-                    color: immichBackgroundColor,
+                    color: Theme.of(context).scaffoldBackgroundColor,
                     child: _buildControlButton(albumInfo),
                   ),
                 ),
