@@ -1,15 +1,15 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/services/shared_album.service.dart';
+import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:openapi/api.dart';
 
 class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
   SharedAlbumNotifier(this._sharedAlbumService) : super([]);
 
-  final SharedAlbumService _sharedAlbumService;
+  final AlbumService _sharedAlbumService;
 
   getAllSharedAlbums() async {
     List<AlbumResponseDto>? sharedAlbums =
-        await _sharedAlbumService.getAllSharedAlbum();
+        await _sharedAlbumService.getAlbums(isShared: true);
 
     if (sharedAlbums != null) {
       state = sharedAlbums;
@@ -54,13 +54,12 @@ class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
 
 final sharedAlbumProvider =
     StateNotifierProvider<SharedAlbumNotifier, List<AlbumResponseDto>>((ref) {
-  return SharedAlbumNotifier(ref.watch(sharedAlbumServiceProvider));
+  return SharedAlbumNotifier(ref.watch(albumServiceProvider));
 });
 
 final sharedAlbumDetailProvider = FutureProvider.autoDispose
     .family<AlbumResponseDto?, String>((ref, albumId) async {
-  final SharedAlbumService sharedAlbumService =
-      ref.watch(sharedAlbumServiceProvider);
+  final AlbumService sharedAlbumService = ref.watch(albumServiceProvider);
 
   return await sharedAlbumService.getAlbumDetail(albumId);
 });

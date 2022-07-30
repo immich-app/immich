@@ -66,7 +66,7 @@ class TabControllerPage extends ConsumerWidget {
                       BottomNavigationBarItem(
                         label: 'tab_controller_nav_library'.tr(),
                         icon: const Icon(
-                          Icons.stacked_bar_chart_outlined,
+                          Icons.photo_album_outlined,
                         ),
                       )
                     ],

@@ -5,19 +5,20 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
 
-final sharedAlbumServiceProvider = Provider(
-  (ref) => SharedAlbumService(
+final albumServiceProvider = Provider(
+  (ref) => AlbumService(
     ref.watch(apiServiceProvider),
   ),
 );
 
-class SharedAlbumService {
+class AlbumService {
   final ApiService _apiService;
-  SharedAlbumService(this._apiService);
 
-  Future<List<AlbumResponseDto>?> getAllSharedAlbum() async {
+  AlbumService(this._apiService);
+
+  Future<List<AlbumResponseDto>?> getAlbums({required bool isShared}) async {
     try {
-      return await _apiService.albumApi.getAllAlbums(shared: true);
+      return await _apiService.albumApi.getAllAlbums(shared: isShared);
     } catch (e) {
       debugPrint("Error getAllSharedAlbum  ${e.toString()}");
       return null;

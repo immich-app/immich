@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
@@ -37,6 +38,9 @@ class TabNavigationObserver extends AutoRouterObserver {
       ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
     }
 
+    if (route.name == 'LibraryRoute') {
+      ref.read(albumProvider.notifier).getAllAlbums();
+    }
     ref.watch(serverInfoProvider.notifier).getServerVersion();
   }
 }

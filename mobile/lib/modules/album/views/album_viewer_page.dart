@@ -9,7 +9,7 @@ import 'package:immich_mobile/modules/login/providers/authentication.provider.da
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
-import 'package:immich_mobile/modules/album/services/shared_album.service.dart';
+import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_appbar.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_editable_title.dart';
@@ -53,12 +53,11 @@ class AlbumViewerPage extends HookConsumerWidget {
         if (returnPayload.selectedAdditionalAsset.isNotEmpty) {
           ImmichLoadingOverlayController.appLoader.show();
 
-          var isSuccess = await ref
-              .watch(sharedAlbumServiceProvider)
-              .addAdditionalAssetToAlbum(
-                returnPayload.selectedAdditionalAsset,
-                albumId,
-              );
+          var isSuccess =
+              await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
+                    returnPayload.selectedAdditionalAsset,
+                    albumId,
+                  );
 
           if (isSuccess) {
             ref.refresh(sharedAlbumDetailProvider(albumId));
@@ -83,7 +82,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         ImmichLoadingOverlayController.appLoader.show();
 
         var isSuccess = await ref
-            .watch(sharedAlbumServiceProvider)
+            .watch(albumServiceProvider)
             .addAdditionalUserToAlbum(sharedUserIds, albumId);
 
         if (isSuccess) {
