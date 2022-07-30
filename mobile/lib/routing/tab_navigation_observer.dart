@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
-import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 
 class TabNavigationObserver extends AutoRouterObserver {

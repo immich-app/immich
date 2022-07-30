@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/sharing/ui/selection_thumbnail_image.dart';
+import 'package:immich_mobile/modules/album/ui/selection_thumbnail_image.dart';
 import 'package:openapi/api.dart';
 
 class AssetGridByMonth extends HookConsumerWidget {

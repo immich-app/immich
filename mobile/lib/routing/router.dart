@@ -9,13 +9,13 @@ import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
-import 'package:immich_mobile/modules/sharing/models/asset_selection_page_result.model.dart';
-import 'package:immich_mobile/modules/sharing/views/album_viewer_page.dart';
-import 'package:immich_mobile/modules/sharing/views/asset_selection_page.dart';
-import 'package:immich_mobile/modules/sharing/views/create_shared_album_page.dart';
-import 'package:immich_mobile/modules/sharing/views/select_additional_user_for_sharing_page.dart';
-import 'package:immich_mobile/modules/sharing/views/select_user_for_sharing_page.dart';
-import 'package:immich_mobile/modules/sharing/views/sharing_page.dart';
+import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
+import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
+import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
+import 'package:immich_mobile/modules/album/views/create_shared_album_page.dart';
+import 'package:immich_mobile/modules/album/views/select_additional_user_for_sharing_page.dart';
+import 'package:immich_mobile/modules/album/views/select_user_for_sharing_page.dart';
+import 'package:immich_mobile/modules/album/views/sharing_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/modules/backup/views/backup_controller_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
@@ -76,6 +76,7 @@ part 'router.gr.dart';
 )
 class AppRouter extends _$AppRouter {
   final ApiService _apiService;
+
   AppRouter(this._apiService) : super(authGuard: AuthGuard(_apiService));
 }
 
