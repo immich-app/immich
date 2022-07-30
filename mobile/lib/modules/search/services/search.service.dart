@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
 
@@ -11,6 +12,7 @@ final searchServiceProvider = Provider(
 
 class SearchService {
   final ApiService _apiService;
+
   SearchService(this._apiService);
 
   Future<List<String>?> getUserSuggestedSearchTerms() async {

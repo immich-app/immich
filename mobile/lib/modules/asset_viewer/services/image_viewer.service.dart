@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
@@ -14,6 +15,7 @@ final imageViewerServiceProvider =
 
 class ImageViewerService {
   final ApiService _apiService;
+
   ImageViewerService(this._apiService);
 
   Future<bool> downloadAssetToDevice(AssetResponseDto asset) async {
