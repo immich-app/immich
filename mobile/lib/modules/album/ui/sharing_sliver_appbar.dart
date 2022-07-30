@@ -16,8 +16,6 @@ class SharingSliverAppBar extends StatelessWidget {
       pinned: true,
       snap: false,
       automaticallyImplyLeading: false,
-      // leading: Container(),
-      // elevation: 0,
       title: Text(
         'IMMICH',
         style: TextStyle(

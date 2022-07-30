@@ -19,7 +19,8 @@ class AlbumService {
 
   Future<List<AlbumResponseDto>?> getAlbums({required bool isShared}) async {
     try {
-      return await _apiService.albumApi.getAllAlbums(shared: isShared);
+      return await _apiService.albumApi
+          .getAllAlbums(shared: isShared ? isShared : null);
     } catch (e) {
       debugPrint("Error getAllSharedAlbum  ${e.toString()}");
       return null;

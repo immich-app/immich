@@ -13,11 +13,10 @@ class AlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
     if (albums != null) {
       state = albums;
     }
-
-    print(albums);
   }
 }
 
-final albumProvider = StateNotifierProvider((ref) {
+final albumProvider =
+    StateNotifierProvider<AlbumNotifier, List<AlbumResponseDto>>((ref) {
   return AlbumNotifier(ref.watch(albumServiceProvider));
 });
