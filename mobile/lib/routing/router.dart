@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/views/library_page.dart';
 import 'package:immich_mobile/modules/backup/views/album_preview_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_album_selection_page.dart';
 import 'package:immich_mobile/modules/backup/views/failed_backup_status_page.dart';
@@ -40,7 +41,8 @@ part 'router.gr.dart';
       children: [
         AutoRoute(page: HomePage, guards: [AuthGuard]),
         AutoRoute(page: SearchPage, guards: [AuthGuard]),
-        AutoRoute(page: SharingPage, guards: [AuthGuard])
+        AutoRoute(page: SharingPage, guards: [AuthGuard]),
+        AutoRoute(page: LibraryPage, guards: [AuthGuard])
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),

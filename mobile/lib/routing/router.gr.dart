@@ -136,6 +136,10 @@ class _$AppRouter extends RootStackRouter {
     SharingRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const SharingPage());
+    },
+    LibraryRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const LibraryPage());
     }
   };
 
@@ -160,6 +164,10 @@ class _$AppRouter extends RootStackRouter {
                   guards: [authGuard]),
               RouteConfig(SharingRoute.name,
                   path: 'sharing-page',
+                  parent: TabControllerRoute.name,
+                  guards: [authGuard]),
+              RouteConfig(LibraryRoute.name,
+                  path: 'library-page',
                   parent: TabControllerRoute.name,
                   guards: [authGuard])
             ]),
@@ -491,4 +499,12 @@ class SharingRoute extends PageRouteInfo<void> {
   const SharingRoute() : super(SharingRoute.name, path: 'sharing-page');
 
   static const String name = 'SharingRoute';
+}
+
+/// generated route for
+/// [LibraryPage]
+class LibraryRoute extends PageRouteInfo<void> {
+  const LibraryRoute() : super(LibraryRoute.name, path: 'library-page');
+
+  static const String name = 'LibraryRoute';
 }
