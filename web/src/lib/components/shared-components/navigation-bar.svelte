@@ -44,10 +44,10 @@
 
 	const logOut = async () => {
 		const res = await fetch('auth/logout', { method: 'POST' });
-
-		if (res.status == 200 && res.statusText == 'OK') {
-			goto('/auth/login');
-		}
+		// console.log(res);
+		// if (res.status == 200 && res.statusText == 'OK') {
+		// }
+		goto('/auth/login');
 	};
 </script>
 
