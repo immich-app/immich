@@ -43,11 +43,7 @@
 	};
 
 	const logOut = async () => {
-		const res = await fetch('auth/logout', { method: 'POST' });
-		console.log(res);
-		// console.log(res);
-		// if (res.status == 200 && res.statusText == 'OK') {
-		// }
+		await fetch('auth/logout', { method: 'POST' });
 		goto('/auth/login');
 	};
 </script>
