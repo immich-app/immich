@@ -7,20 +7,20 @@
 
 	export let album: AlbumResponseDto;
 
-	let imageData: string = '/no-thumbnail.png';
+	let imageData: string = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
 	const dispatch = createEventDispatcher();
 
 	const loadHighQualityThumbnail = async (thubmnailId: string | null) => {
 		if (thubmnailId == null) {
-			return '/no-thumbnail.png';
+			return;
 		}
 
 		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Jpeg, {
 			responseType: 'blob'
 		});
+
 		if (data instanceof Blob) {
-			imageData = URL.createObjectURL(data);
-			return imageData;
+			return URL.createObjectURL(data);
 		}
 	};
 
@@ -30,6 +30,10 @@
 			y: e.clientY
 		});
 	};
+
+	onMount(async () => {
+		imageData = await loadHighQualityThumbnail(album.albumThumbnailAssetId) || 'no-thumbnail.png';
+	});
 </script>
 
 <div
@@ -50,19 +54,11 @@
 	</div>
 
 	<div class={`h-[275px] w-[275px] z-[-1]`}>
-		{#await loadHighQualityThumbnail(album.albumThumbnailAssetId)}
-			<img
-				src={`/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`}
-				alt={album.id}
-				class={`object-cover w-full h-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
-			/>
-		{:then imageData}
-			<img
-				src={imageData}
-				alt={album.id}
-				class={`object-cover w-full h-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
-			/>
-		{/await}
+		<img
+			src={imageData}
+			alt={album.id}
+			class={`object-cover h-full w-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
+		/>
 	</div>
 
 	<div class="mt-4">
