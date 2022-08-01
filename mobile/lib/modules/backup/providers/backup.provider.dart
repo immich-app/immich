@@ -77,8 +77,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void addExcludedAlbumForBackup(AssetPathEntity album) {
-    print("Excluded album: $album");
-
     if (state.selectedBackupAlbums.contains(album)) {
       removeAlbumForBackup(album);
     }
