@@ -36,16 +36,8 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     );
     // Disable swipe events when zoomed in
     if (_zoomedIn) {
-      // widget.isZoomedListener.value = true;
       return;
     }
-    //  else {
-    //   widget.isZoomedListener.value = false;
-    //   return;
-    // }
-    // print("calling Zoomed Method");
-    // widget.isZoomedFunction();
-
     if (controllerValue.position.dy > swipeThreshold) {
       print("calling SwipeDown ${controllerValue.position.dy}");
       widget.onSwipeDown();
@@ -122,7 +114,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 }
 
-// ignore: must_be_immutable
 class RemotePhotoView extends StatefulWidget {
   const RemotePhotoView({
     Key? key,

@@ -79,11 +79,13 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
   _createChewieController() {
     chewieController = ChewieController(
       showOptions: true,
-      showControlsOnInitialize: false,
+      showControlsOnInitialize: true,
       videoPlayerController: videoPlayerController,
       autoPlay: true,
-      autoInitialize: false,
+      autoInitialize: true,
       allowFullScreen: true,
+      showControls: true,
+      hideControlsTimer: Duration(seconds: 5),
     );
   }
 

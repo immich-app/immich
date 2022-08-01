@@ -39,8 +39,6 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
             authToken: '',
             isZoomedFunction: () {},
             isZoomedListener: false as ValueNotifier<bool>,
-            onSwipeDown: () {},
-            onSwipeUp: () {},
           ),
         );
       } else {
