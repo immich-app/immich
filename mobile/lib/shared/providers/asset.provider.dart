@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:collection/collection.dart';
@@ -11,13 +15,29 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
   final AssetService _assetService;
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
 
+  final cacheBox = Hive.box(hiveAssetsCacheBox);
+
   AssetNotifier(this._assetService) : super([]);
+
+  @override
+  List<AssetResponseDto> get state {
+    try {
+      if (state.isEmpty && cacheBox.containsKey(hiveAssetsCacheKey)) {
+        List<dynamic> jsonResponseList = json.decode(cacheBox.get(hiveAssetsCacheKey));
+        return jsonResponseList.map((e) => AssetResponseDto.fromJson(e)!).toList();
+      }
+    } catch (e) {
+      debugPrint('${e}');
+    }
+    return super.state;
+  }
 
   getAllAsset() async {
     var allAssets = await _assetService.getAllAsset();
 
     if (allAssets != null) {
       state = allAssets;
+      cacheBox.put(hiveAssetsCacheKey, json.encode(allAssets.sublist(0, 40)));
     }
   }
 
