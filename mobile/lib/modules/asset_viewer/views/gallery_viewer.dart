@@ -93,47 +93,50 @@ class GalleryViewerPage extends HookConsumerWidget {
               .downloadAsset(assetList[indexOfAsset], context);
         },
       ),
-      body: SwipeDetector(
-        onSwipeDown: (_) {
-          AutoRouter.of(context).pop();
-        },
-        onSwipeUp: (_) {
-          showInfo();
-        },
-        child: SafeArea(
-          child: PageView.builder(
-            controller: controller,
-            pageSnapping: true,
-            physics: isZoomed.value
-                ? const NeverScrollableScrollPhysics()
-                : const BouncingScrollPhysics(),
-            itemCount: assetList.length,
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) {
-              initState(index);
-              // ignore: avoid_print
-              print("looking at $indexOfAsset out of ${assetList.length}");
-              if (assetList[index].type == AssetTypeEnum.IMAGE) {
-                return ImageViewerPage(
-                  thumbnailUrl:
-                      '${box.get(serverEndpointKey)}/asset/thumbnail/${assetList[index].id}',
-                  imageUrl:
-                      '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}&isThumb=false',
-                  authToken: 'Bearer ${box.get(accessTokenKey)}',
-                  isZoomedFunction: isZoomedMethod,
-                  isZoomedListener: isZoomedListener,
-                  asset: assetList[index],
-                  heroTag: assetList[index].id,
-                );
-              } else {
-                return VideoViewerPage(
-                  asset: assetList[index],
-                  videoUrl:
-                      '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}',
-                );
-              }
-            },
-          ),
+      body: SafeArea(
+        child: PageView.builder(
+          controller: controller,
+          pageSnapping: true,
+          physics: isZoomed.value
+              ? const NeverScrollableScrollPhysics()
+              : const BouncingScrollPhysics(),
+          itemCount: assetList.length,
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, index) {
+            initState(index);
+            // ignore: avoid_print
+            print("looking at $indexOfAsset out of ${assetList.length}");
+            if (assetList[index].type == AssetTypeEnum.IMAGE) {
+              return ImageViewerPage(
+                thumbnailUrl:
+                    '${box.get(serverEndpointKey)}/asset/thumbnail/${assetList[index].id}',
+                imageUrl:
+                    '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}&isThumb=false',
+                authToken: 'Bearer ${box.get(accessTokenKey)}',
+                isZoomedFunction: isZoomedMethod,
+                isZoomedListener: isZoomedListener,
+                asset: assetList[index],
+                heroTag: assetList[index].id,
+              );
+            } else {
+              return SwipeDetector(
+                onSwipeDown: (_) {
+                  AutoRouter.of(context).pop();
+                },
+                onSwipeUp: (_) {
+                  showInfo();
+                },
+                child: Hero(
+                  tag: assetList[index].id,
+                  child: VideoViewerPage(
+                    asset: assetList[index],
+                    videoUrl:
+                        '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}',
+                  ),
+                ),
+              );
+            }
+          },
         ),
       ),
     );

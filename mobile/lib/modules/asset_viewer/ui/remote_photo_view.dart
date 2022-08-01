@@ -54,6 +54,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     } else {
       widget.isZoomedListener.value = false;
     }
+
     print("calling Zoomed Method");
     widget.isZoomedFunction();
   }

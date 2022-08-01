@@ -105,11 +105,13 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
               controller: chewieController!,
             ),
           )
-        : const SizedBox(
-            width: 75,
-            height: 75,
-            child: CircularProgressIndicator.adaptive(
-              strokeWidth: 2,
+        : const Center(
+            child: SizedBox(
+              width: 75,
+              height: 75,
+              child: CircularProgressIndicator.adaptive(
+                strokeWidth: 2,
+              ),
             ),
           );
   }
