@@ -16,17 +16,13 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   Widget build(BuildContext context) {
     bool allowMoving = _status == _RemoteImageStatus.full;
 
-    return SizedBox(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      child: PhotoView(
-        imageProvider: _imageProvider,
-        minScale: PhotoViewComputedScale.contained,
-        maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
-        enablePanAlways: true,
-        scaleStateChangedCallback: _scaleStateChanged,
-        onScaleEnd: _onScaleListener,
-      ),
+    return PhotoView(
+      imageProvider: _imageProvider,
+      minScale: PhotoViewComputedScale.contained,
+      maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
+      enablePanAlways: true,
+      scaleStateChangedCallback: _scaleStateChanged,
+      onScaleEnd: _onScaleListener,
     );
   }
 
@@ -35,18 +31,39 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     ScaleEndDetails details,
     PhotoViewControllerValue controllerValue,
   ) {
+    print(
+      "checking onScaleListner ${widget.isZoomedListener.value} & $_zoomedIn",
+    );
     // Disable swipe events when zoomed in
-    if (_zoomedIn) return;
+    if (_zoomedIn) {
+      // widget.isZoomedListener.value = true;
+      return;
+    }
+    //  else {
+    //   widget.isZoomedListener.value = false;
+    //   return;
+    // }
+    // print("calling Zoomed Method");
+    // widget.isZoomedFunction();
 
     if (controllerValue.position.dy > swipeThreshold) {
+      print("calling SwipeDown ${controllerValue.position.dy}");
       widget.onSwipeDown();
     } else if (controllerValue.position.dy < -swipeThreshold) {
+      print("calling SwipeUp ${controllerValue.position.dy}");
       widget.onSwipeUp();
     }
   }
 
   void _scaleStateChanged(PhotoViewScaleState state) {
     _zoomedIn = state == PhotoViewScaleState.zoomedIn;
+    if (_zoomedIn) {
+      widget.isZoomedListener.value = true;
+    } else {
+      widget.isZoomedListener.value = false;
+    }
+    print("calling Zoomed Method");
+    widget.isZoomedFunction();
   }
 
   CachedNetworkImageProvider _authorizedImageProvider(String url) {
@@ -105,12 +122,15 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 }
 
+// ignore: must_be_immutable
 class RemotePhotoView extends StatefulWidget {
   const RemotePhotoView({
     Key? key,
     required this.thumbnailUrl,
     required this.imageUrl,
     required this.authToken,
+    required this.isZoomedFunction,
+    required this.isZoomedListener,
     required this.onSwipeDown,
     required this.onSwipeUp,
   }) : super(key: key);
@@ -121,6 +141,9 @@ class RemotePhotoView extends StatefulWidget {
 
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;
+  final void Function() isZoomedFunction;
+
+  final ValueNotifier<bool> isZoomedListener;
 
   @override
   State<StatefulWidget> createState() {

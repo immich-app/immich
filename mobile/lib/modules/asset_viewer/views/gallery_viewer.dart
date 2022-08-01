@@ -9,6 +9,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_s
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
+import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
@@ -57,6 +58,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     String jwtToken = Hive.box(userInfoBox).get(accessTokenKey);
 
     void showInfo() {
+      print("calling show info2");
       showModalBottomSheet(
         backgroundColor: Colors.black,
         barrierColor: Colors.transparent,
@@ -74,17 +76,24 @@ class GalleryViewerPage extends HookConsumerWidget {
           .getAssetById(assetList[indexOfAsset].id);
     }
 
-    useEffect(
-      () {
-        getAssetExif();
-        return null;
-      },
-      [],
-    );
     @override
     void initState(int index) {
       indexOfAsset = index;
       getAssetExif();
+    }
+
+    final isZoomed = useState<bool>(false);
+    ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
+
+    //make isZoomed listener call instead
+    void isZoomedMethod() {
+      print("Zoomed listener value: ${isZoomedListener.value}");
+      if (isZoomedListener.value) {
+        isZoomed.value = true;
+      } else {
+        isZoomed.value = false;
+      }
+      print("Zoom is enabled: ${isZoomed.value}");
     }
 
     return Scaffold(
@@ -111,28 +120,32 @@ class GalleryViewerPage extends HookConsumerWidget {
           child: PageView.builder(
             controller: controller,
             pageSnapping: true,
-            physics: const BouncingScrollPhysics(),
+            physics: isZoomed.value
+                ? const NeverScrollableScrollPhysics()
+                : const FixedExtentScrollPhysics(),
             itemCount: assetList.length,
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) {
               initState(index);
               // ignore: avoid_print
-              print("looking at $indexOfAsset");
+              print("looking at $indexOfAsset out of ${assetList.length}");
               if (assetList[index].type == AssetTypeEnum.IMAGE) {
-                return RemotePhotoView(
+                return ImageViewerPage(
                   thumbnailUrl:
                       '${box.get(serverEndpointKey)}/asset/thumbnail/${assetList[index].id}',
                   imageUrl:
                       '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}&isThumb=false',
-                  authToken: "Bearer ${box.get(accessTokenKey)}",
-                  onSwipeDown: () => AutoRouter.of(context).pop(),
-                  onSwipeUp: () => showInfo(),
+                  authToken: 'Bearer ${box.get(accessTokenKey)}',
+                  isZoomedFunction: isZoomedMethod,
+                  isZoomedListener: isZoomedListener,
+                  asset: assetList[index],
+                  heroTag: assetList[index].id,
                 );
               } else {
-                return VideoThumbnailPlayer(
-                  url:
+                return VideoViewerPage(
+                  asset: assetList[index],
+                  videoUrl:
                       '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}',
-                  jwtToken: jwtToken,
                 );
               }
             },

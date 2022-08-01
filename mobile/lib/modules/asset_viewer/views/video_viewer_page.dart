@@ -1,7 +1,4 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_swipe_detector/flutter_swipe_detector.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -9,9 +6,6 @@ import 'package:chewie/chewie.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
-import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:openapi/api.dart';
 import 'package:video_player/video_player.dart';
 
@@ -31,66 +25,17 @@ class VideoViewerPage extends HookConsumerWidget {
 
     String jwtToken = Hive.box(userInfoBox).get(accessTokenKey);
 
-    void showInfo() {
-      showModalBottomSheet(
-        backgroundColor: Colors.black,
-        barrierColor: Colors.transparent,
-        isScrollControlled: false,
-        context: context,
-        builder: (context) {
-          return ExifBottomSheet(assetDetail: assetDetail!);
-        },
-      );
-    }
-
-    getAssetExif() async {
-      assetDetail =
-          await ref.watch(assetServiceProvider).getAssetById(asset.id);
-    }
-
-    useEffect(
-      () {
-        getAssetExif();
-        return null;
-      },
-      [],
-    );
-
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: TopControlAppBar(
-        asset: asset,
-        onMoreInfoPressed: () {
-          showInfo();
-        },
-        onDownloadPressed: () {
-          ref
-              .watch(imageViewerStateProvider.notifier)
-              .downloadAsset(asset, context);
-        },
-      ),
-      body: SwipeDetector(
-        onSwipeDown: (_) {
-          AutoRouter.of(context).pop();
-        },
-        onSwipeUp: (_) {
-          showInfo();
-        },
-        child: SafeArea(
-          child: Stack(
-            children: [
-              VideoThumbnailPlayer(
-                url: videoUrl,
-                jwtToken: jwtToken,
-              ),
-              if (downloadAssetStatus == DownloadAssetStatus.loading)
-                const Center(
-                  child: DownloadLoadingIndicator(),
-                ),
-            ],
-          ),
+    return Stack(
+      children: [
+        VideoThumbnailPlayer(
+          url: videoUrl,
+          jwtToken: jwtToken,
         ),
-      ),
+        if (downloadAssetStatus == DownloadAssetStatus.loading)
+          const Center(
+            child: DownloadLoadingIndicator(),
+          ),
+      ],
     );
   }
 }
@@ -138,6 +83,7 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
       videoPlayerController: videoPlayerController,
       autoPlay: true,
       autoInitialize: false,
+      allowFullScreen: true,
     );
   }
 

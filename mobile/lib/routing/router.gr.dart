@@ -57,11 +57,15 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
           routeData: routeData,
           child: ImageViewerPage(
-              key: args.key,
-              imageUrl: args.imageUrl,
-              heroTag: args.heroTag,
-              thumbnailUrl: args.thumbnailUrl,
-              asset: args.asset));
+            isZoomedFunction: args.isZoomedFunction,
+            key: args.key,
+            imageUrl: args.imageUrl,
+            heroTag: args.heroTag,
+            thumbnailUrl: args.thumbnailUrl,
+            asset: args.asset,
+            authToken: args.authToken,
+            isZoomedListener: args.isZoomedListener,
+          ));
     },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
@@ -288,26 +292,39 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
       required String imageUrl,
       required String heroTag,
       required String thumbnailUrl,
-      required AssetResponseDto asset})
+      required AssetResponseDto asset,
+      required ValueNotifier<bool> isZoomedListener,
+      required void Function() isZoomedFunction,
+      required void Function() onSwipeDown,
+      required void Function() onSwipeUp,
+      required String authToken})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
             args: ImageViewerRouteArgs(
-                key: key,
-                imageUrl: imageUrl,
-                heroTag: heroTag,
-                thumbnailUrl: thumbnailUrl,
-                asset: asset));
+              key: key,
+              isZoomedListener: isZoomedListener,
+              imageUrl: imageUrl,
+              heroTag: heroTag,
+              thumbnailUrl: thumbnailUrl,
+              asset: asset,
+              authToken: authToken,
+              isZoomedFunction: isZoomedFunction,
+            ));
 
   static const String name = 'ImageViewerRoute';
 }
 
 class ImageViewerRouteArgs {
-  const ImageViewerRouteArgs(
-      {this.key,
-      required this.imageUrl,
-      required this.heroTag,
-      required this.thumbnailUrl,
-      required this.asset});
+  ImageViewerRouteArgs({
+    this.key,
+    required this.imageUrl,
+    required this.heroTag,
+    required this.thumbnailUrl,
+    required this.asset,
+    required this.isZoomedFunction,
+    required this.isZoomedListener,
+    required this.authToken,
+  });
 
   final Key? key;
 
@@ -318,6 +335,12 @@ class ImageViewerRouteArgs {
   final String thumbnailUrl;
 
   final AssetResponseDto asset;
+
+  final String authToken;
+
+  final void Function() isZoomedFunction;
+
+  final ValueNotifier<bool> isZoomedListener;
 
   @override
   String toString() {

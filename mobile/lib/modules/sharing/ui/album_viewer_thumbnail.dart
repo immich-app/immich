@@ -36,6 +36,11 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
             heroTag: asset.id,
             thumbnailUrl: thumbnailRequestUrl,
             asset: asset,
+            authToken: '',
+            isZoomedFunction: () {},
+            isZoomedListener: false as ValueNotifier<bool>,
+            onSwipeDown: () {},
+            onSwipeUp: () {},
           ),
         );
       } else {
