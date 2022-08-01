@@ -102,10 +102,12 @@ class AlbumInfoCard extends HookConsumerWidget {
         HapticFeedback.selectionClick();
 
         if (isExcluded) {
+          // Remove from exclude album list
           ref
               .watch(backupProvider.notifier)
               .removeExcludedAlbumForBackup(albumInfo);
         } else {
+          // Add to exclude album list
           if (ref.watch(backupProvider).selectedBackupAlbums.length == 1 &&
               ref
                   .watch(backupProvider)
@@ -114,6 +116,16 @@ class AlbumInfoCard extends HookConsumerWidget {
             ImmichToast.show(
               context: context,
               msg: "backup_err_only_album".tr(),
+              toastType: ToastType.error,
+              gravity: ToastGravity.BOTTOM,
+            );
+            return;
+          }
+
+          if (albumInfo.id == 'isAll') {
+            ImmichToast.show(
+              context: context,
+              msg: 'Cannot exclude album contains all assets',
               toastType: ToastType.error,
               gravity: ToastGravity.BOTTOM,
             );
