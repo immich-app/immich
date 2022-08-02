@@ -15,7 +15,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   @override
   Widget build(BuildContext context) {
     bool allowMoving = _status == _RemoteImageStatus.full;
-
     return PhotoView(
       imageProvider: _imageProvider,
       minScale: PhotoViewComputedScale.contained,
@@ -31,9 +30,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     ScaleEndDetails details,
     PhotoViewControllerValue controllerValue,
   ) {
-    print(
-      "checking onScaleListner ${widget.isZoomedListener.value} & $_zoomedIn",
-    );
     // Disable swipe events when zoomed in
     if (_zoomedIn) {
       return;
@@ -48,7 +44,8 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   void _scaleStateChanged(PhotoViewScaleState state) {
-    _zoomedIn = state == PhotoViewScaleState.zoomedIn;
+    // _onScaleListener;
+    _zoomedIn = state != PhotoViewScaleState.initial;
     if (_zoomedIn) {
       widget.isZoomedListener.value = true;
     } else {
