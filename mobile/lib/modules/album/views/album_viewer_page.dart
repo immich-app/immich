@@ -29,6 +29,7 @@ class AlbumViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     FocusNode titleFocusNode = useFocusNode();
     ScrollController scrollController = useScrollController();
+
     AsyncValue<AlbumResponseDto?> albumInfo =
         ref.watch(sharedAlbumDetailProvider(albumId));
 
@@ -260,10 +261,19 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AlbumViewerAppbar(
-        albumInfo: albumInfo,
-        userId: userId,
-        albumId: albumId,
+      appBar: albumInfo.when(
+        data: (AlbumResponseDto? data) {
+          if (data != null) {
+            return AlbumViewerAppbar(
+              albumInfo: data,
+              userId: userId,
+              albumId: albumId,
+            );
+          }
+          return null;
+        },
+        error: (e, _) => null,
+        loading: () => null,
       ),
       body: albumInfo.when(
         data: (albumInfo) => albumInfo != null

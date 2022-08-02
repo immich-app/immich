@@ -15,13 +15,12 @@ import 'package:openapi/api.dart';
 class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
   const AlbumViewerAppbar({
     Key? key,
-    required AsyncValue<AlbumResponseDto?> albumInfo,
+    required this.albumInfo,
     required this.userId,
     required this.albumId,
-  })  : _albumInfo = albumInfo,
-        super(key: key);
+  }) : super(key: key);
 
-  final AsyncValue<AlbumResponseDto?> _albumInfo;
+  final AlbumResponseDto albumInfo;
   final String userId;
   final String albumId;
 
@@ -41,11 +40,13 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
 
       if (isSuccess) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          Navigator.of(context).pop();
-        });
-        // AutoRouter.of(context)
-        //     .navigate(const TabControllerRoute(children: [LibraryRoute()]));
+        if (albumInfo.shared) {
+          AutoRouter.of(context)
+              .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        } else {
+          AutoRouter.of(context)
+              .navigate(const TabControllerRoute(children: [LibraryRoute()]));
+        }
       } else {
         ImmichToast.show(
           context: context,
@@ -108,7 +109,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
 
     _buildBottomSheetActionButton() {
       if (isMultiSelectionEnable) {
-        if (_albumInfo.asData?.value?.ownerId == userId) {
+        if (albumInfo.ownerId == userId) {
           return ListTile(
             leading: const Icon(Icons.delete_sweep_rounded),
             title: const Text(
@@ -121,7 +122,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           return const SizedBox();
         }
       } else {
-        if (_albumInfo.asData?.value?.ownerId == userId) {
+        if (albumInfo.ownerId == userId) {
           return ListTile(
             leading: const Icon(Icons.delete_forever_rounded),
             title: const Text(
