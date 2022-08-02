@@ -41,8 +41,11 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
 
       if (isSuccess) {
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        Future.delayed(const Duration(milliseconds: 500), () {
+          Navigator.of(context).pop();
+        });
+        // AutoRouter.of(context)
+        //     .navigate(const TabControllerRoute(children: [LibraryRoute()]));
       } else {
         ImmichToast.show(
           context: context,
