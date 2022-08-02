@@ -14,6 +14,10 @@ class AlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
       state = albums;
     }
   }
+
+  deleteAlbum(String albumId) {
+    state = state.where((album) => album.id != albumId).toList();
+  }
 }
 
 final albumProvider =

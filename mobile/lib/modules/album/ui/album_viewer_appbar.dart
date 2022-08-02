@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
@@ -37,13 +39,15 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       ImmichLoadingOverlayController.appLoader.show();
 
       bool isSuccess =
-          await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
+          await ref.watch(albumServiceProvider).deleteAlbum(albumId);
 
       if (isSuccess) {
         if (albumInfo.shared) {
+          ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
           AutoRouter.of(context)
               .navigate(const TabControllerRoute(children: [SharingRoute()]));
         } else {
+          ref.watch(albumProvider.notifier).deleteAlbum(albumId);
           AutoRouter.of(context)
               .navigate(const TabControllerRoute(children: [LibraryRoute()]));
         }

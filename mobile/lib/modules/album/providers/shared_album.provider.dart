@@ -41,15 +41,8 @@ class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
     }
   }
 
-  Future<bool> deleteAlbum(String albumId) async {
-    var res = await _sharedAlbumService.deleteAlbum(albumId);
-
-    if (res) {
-      state = state.where((album) => album.id != albumId).toList();
-      return true;
-    } else {
-      return false;
-    }
+  deleteAlbum(String albumId) async {
+    state = state.where((album) => album.id != albumId).toList();
   }
 
   Future<bool> leaveAlbum(String albumId) async {
