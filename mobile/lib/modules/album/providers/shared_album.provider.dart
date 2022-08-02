@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:openapi/api.dart';
@@ -6,6 +7,30 @@ class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
   SharedAlbumNotifier(this._sharedAlbumService) : super([]);
 
   final AlbumService _sharedAlbumService;
+
+  Future<AlbumResponseDto?> createSharedAlbum(
+    String albumName,
+    Set<AssetResponseDto> assets,
+    List<String> sharedUserIds,
+  ) async {
+    try {
+      var newAlbum = await _sharedAlbumService.createSharedAlbum(
+        albumName,
+        assets,
+        sharedUserIds,
+      );
+
+      if (newAlbum != null) {
+        state = [...state, newAlbum];
+      }
+
+      return newAlbum;
+    } catch (e) {
+      debugPrint("Error createSharedAlbum  ${e.toString()}");
+
+      return null;
+    }
+  }
 
   getAllSharedAlbums() async {
     List<AlbumResponseDto>? sharedAlbums =

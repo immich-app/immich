@@ -27,24 +27,22 @@ class AlbumService {
     }
   }
 
-  Future<bool> createSharedAlbum(
+  Future<AlbumResponseDto?> createSharedAlbum(
     String albumName,
     Set<AssetResponseDto> assets,
     List<String> sharedUserIds,
   ) async {
     try {
-      _apiService.albumApi.createAlbum(
+      return await _apiService.albumApi.createAlbum(
         CreateAlbumDto(
           albumName: albumName,
           assetIds: assets.map((asset) => asset.id).toList(),
           sharedWithUserIds: sharedUserIds,
         ),
       );
-
-      return true;
     } catch (e) {
       debugPrint("Error createSharedAlbum  ${e.toString()}");
-      return false;
+      return null;
     }
   }
 

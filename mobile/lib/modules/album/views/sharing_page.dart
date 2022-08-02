@@ -23,7 +23,6 @@ class SharingPage extends HookConsumerWidget {
     useEffect(
       () {
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
-
         return null;
       },
       [],

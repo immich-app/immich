@@ -7,7 +7,6 @@ import 'package:immich_mobile/modules/album/providers/album_title.provider.dart'
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/suggested_shared_users.provider.dart';
-import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:openapi/api.dart';
@@ -22,13 +21,14 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         ref.watch(suggestedSharedUsersProvider);
 
     _createSharedAlbum() async {
-      var isSuccess = await ref.watch(albumServiceProvider).createSharedAlbum(
-            ref.watch(albumTitleProvider),
-            ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
-            sharedUsersList.value.map((userInfo) => userInfo.id).toList(),
-          );
+      var newAlbum =
+          await ref.watch(sharedAlbumProvider.notifier).createSharedAlbum(
+                ref.watch(albumTitleProvider),
+                ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
+                sharedUsersList.value.map((userInfo) => userInfo.id).toList(),
+              );
 
-      if (isSuccess) {
+      if (newAlbum != null) {
         await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
