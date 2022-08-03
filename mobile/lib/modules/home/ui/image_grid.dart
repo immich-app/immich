@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/ui/thumbnail_image.dart';
-import 'package:immich_mobile/modules/login/models/hive_saved_image_sort_info.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:openapi/api.dart';
 
@@ -14,7 +11,6 @@ class ImageGrid extends ConsumerWidget {
   ImageGrid({Key? key, required this.assetGroup}) : super(key: key);
 
   List<AssetResponseDto> imageSortedList = [];
-  var box = Hive.box<HiveSavedImageSortInfo>(hiveImageSortInfoBox);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,7 +37,7 @@ class ImageGrid extends ConsumerWidget {
               children: [
                 ThumbnailImage(
                   asset: assetGroup[index],
-                  assetList: imageSortedList,
+                  assetList: assetGroup,
                 ),
                 if (assetType != AssetTypeEnum.IMAGE)
                   Positioned(

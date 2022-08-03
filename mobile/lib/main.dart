@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
-import 'package:immich_mobile/modules/login/models/hive_asset_type_enum_info.model.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -18,10 +17,7 @@ import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
-
 import 'constants/hive_box.dart';
-import 'modules/login/models/hive_asset_responsedto_info.model.dart';
-import 'modules/login/models/hive_saved_image_sort_info.model.dart';
 
 void main() async {
   await Hive.initFlutter();
@@ -29,12 +25,7 @@ void main() async {
   Hive.registerAdapter(HiveSavedLoginInfoAdapter());
   Hive.registerAdapter(HiveBackupAlbumsAdapter());
 
-  Hive.registerAdapter(HiveAssetResponseDtoAdapter());
-  Hive.registerAdapter(HiveAssetTypeEnumAdapter());
-  Hive.registerAdapter(HiveSavedImageSortInfoAdapter());
-
   await Hive.openBox(userInfoBox);
-  await Hive.openBox<HiveSavedImageSortInfo>(hiveImageSortInfoBox);
   await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
   await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
   await Hive.openBox(hiveGithubReleaseInfoBox);
