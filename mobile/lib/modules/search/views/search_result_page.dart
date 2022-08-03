@@ -11,6 +11,7 @@ import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
+import 'package:openapi/api.dart';
 
 class SearchResultPage extends HookConsumerWidget {
   const SearchResultPage({Key? key, required this.searchTerm})
@@ -27,7 +28,9 @@ class SearchResultPage extends HookConsumerWidget {
 
     final List<Widget> imageGridGroup = [];
 
-    late FocusNode searchFocusNode;
+    FocusNode? searchFocusNode;
+
+    List<AssetResponseDto> sortedAssetList = [];
 
     useEffect(
       () {
@@ -37,14 +40,14 @@ class SearchResultPage extends HookConsumerWidget {
           Duration.zero,
           () => ref.read(searchResultPageProvider.notifier).search(searchTerm),
         );
-        return () => searchFocusNode.dispose();
+        return () => searchFocusNode?.dispose();
       },
       [],
     );
 
     _onSearchSubmitted(String newSearchTerm) {
       debugPrint("Re-Search with $newSearchTerm");
-      searchFocusNode.unfocus();
+      searchFocusNode?.unfocus();
       isNewSearch.value = false;
       currentSearchTerm.value = newSearchTerm;
       ref.watch(searchResultPageProvider.notifier).search(newSearchTerm);
@@ -58,7 +61,7 @@ class SearchResultPage extends HookConsumerWidget {
         onTap: () {
           searchTermController.clear();
           ref.watch(searchPageStateProvider.notifier).setSearchTerm("");
-          searchFocusNode.requestFocus();
+          searchFocusNode?.requestFocus();
         },
         textInputAction: TextInputAction.search,
         onSubmitted: (searchTerm) {
@@ -131,7 +134,12 @@ class SearchResultPage extends HookConsumerWidget {
       if (searchResultPageState.isSuccess) {
         if (searchResultPageState.searchResult.isNotEmpty) {
           int? lastMonth;
-
+          // set sorted List
+          for (var group in assetGroupByDateTime.values) {
+            for (var value in group) {
+              sortedAssetList.add(value);
+            }
+          }
           assetGroupByDateTime.forEach((dateGroup, immichAssetList) {
             DateTime parseDateGroup = DateTime.parse(dateGroup);
             int currentMonth = parseDateGroup.month;
@@ -154,7 +162,10 @@ class SearchResultPage extends HookConsumerWidget {
             );
 
             imageGridGroup.add(
-              ImageGrid(assetGroup: immichAssetList),
+              ImageGrid(
+                assetGroup: immichAssetList,
+                sortedAssetGroup: sortedAssetList,
+              ),
             );
 
             lastMonth = currentMonth;
@@ -193,7 +204,7 @@ class SearchResultPage extends HookConsumerWidget {
         title: GestureDetector(
           onTap: () {
             isNewSearch.value = true;
-            searchFocusNode.requestFocus();
+            searchFocusNode?.requestFocus();
           },
           child: isNewSearch.value ? _buildTextField() : _buildChip(),
         ),
@@ -201,7 +212,10 @@ class SearchResultPage extends HookConsumerWidget {
       ),
       body: GestureDetector(
         onTap: () {
-          searchFocusNode.unfocus();
+          if (searchFocusNode != null) {
+            searchFocusNode?.unfocus();
+          }
+
           ref.watch(searchPageStateProvider.notifier).disableSearch();
         },
         child: Stack(
