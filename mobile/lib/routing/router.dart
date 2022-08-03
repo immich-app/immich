@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/gallery_viewer.dart';
 import 'package:immich_mobile/modules/backup/views/album_preview_page.dart';

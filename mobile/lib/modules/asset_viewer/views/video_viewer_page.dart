@@ -85,7 +85,7 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
       // autoInitialize: true,
       allowFullScreen: true,
       showControls: true,
-      hideControlsTimer: Duration(seconds: 5),
+      hideControlsTimer: const Duration(seconds: 5),
     );
   }
 

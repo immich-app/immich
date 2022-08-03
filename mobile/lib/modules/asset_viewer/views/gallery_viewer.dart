@@ -11,7 +11,6 @@ import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
