@@ -27,7 +27,7 @@ class AlbumService {
     }
   }
 
-  Future<AlbumResponseDto?> createSharedAlbum(
+  Future<AlbumResponseDto?> createAlbum(
     String albumName,
     Set<AssetResponseDto> assets,
     List<String> sharedUserIds,

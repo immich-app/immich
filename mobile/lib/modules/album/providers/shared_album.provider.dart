@@ -14,7 +14,7 @@ class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
     List<String> sharedUserIds,
   ) async {
     try {
-      var newAlbum = await _sharedAlbumService.createSharedAlbum(
+      var newAlbum = await _sharedAlbumService.createAlbum(
         albumName,
         assets,
         sharedUserIds,

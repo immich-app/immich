@@ -1,8 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class LibraryPage extends HookConsumerWidget {
   const LibraryPage({Key? key}) : super(key: key);
@@ -39,38 +41,43 @@ class LibraryPage extends HookConsumerWidget {
     }
 
     Widget _buildCreateAlbumButton() {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: MediaQuery.of(context).size.width / 2 - 18,
-            height: MediaQuery.of(context).size.width / 2 - 18,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.grey,
+      return GestureDetector(
+        onTap: () {
+          AutoRouter.of(context).push(CreateAlbumRoute(isSharedAlbum: false));
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width / 2 - 18,
+              height: MediaQuery.of(context).size.width / 2 - 18,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.grey,
+                ),
+                borderRadius: BorderRadius.circular(8),
               ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Icon(
-                Icons.add_rounded,
-                size: 28,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: Text(
-              "New album",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+              child: Center(
+                child: Icon(
+                  Icons.add_rounded,
+                  size: 28,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
             ),
-          )
-        ],
+            const Padding(
+              padding: EdgeInsets.only(top: 8.0),
+              child: Text(
+                "New album",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          ],
+        ),
       );
     }
 

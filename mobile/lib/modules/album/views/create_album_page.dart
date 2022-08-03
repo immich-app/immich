@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
+import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_title.provider.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
@@ -11,6 +12,7 @@ import 'package:immich_mobile/modules/album/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/album/ui/shared_album_thumbnail_image.dart';
 import 'package:immich_mobile/routing/router.dart';
 
+// ignore: must_be_immutable
 class CreateAlbumPage extends HookConsumerWidget {
   bool isSharedAlbum;
 
@@ -167,6 +169,21 @@ class CreateAlbumPage extends HookConsumerWidget {
       return const SliverToBoxAdapter();
     }
 
+    _createNonSharedAlbum() async {
+      var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
+            ref.watch(albumTitleProvider),
+            ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
+          );
+
+      if (newAlbum != null) {
+        ref.watch(albumProvider.notifier).getAllAlbums();
+        ref.watch(assetSelectionProvider.notifier).removeAll();
+        ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
+
+        AutoRouter.of(context).replace(AlbumViewerRoute(albumId: newAlbum.id));
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -183,17 +200,31 @@ class CreateAlbumPage extends HookConsumerWidget {
           style: TextStyle(color: Colors.black),
         ).tr(),
         actions: [
-          TextButton(
-            onPressed: albumTitleController.text.isNotEmpty
-                ? _showSelectUserPage
-                : null,
-            child: Text(
-              'create_shared_album_page_share'.tr(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
+          if (isSharedAlbum)
+            TextButton(
+              onPressed: albumTitleController.text.isNotEmpty
+                  ? _showSelectUserPage
+                  : null,
+              child: Text(
+                'create_shared_album_page_share'.tr(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
+          if (!isSharedAlbum)
+            TextButton(
+              onPressed: albumTitleController.text.isNotEmpty &&
+                      selectedAssets.isNotEmpty
+                  ? _createNonSharedAlbum
+                  : null,
+              child: Text(
+                'create_shared_album_page_create'.tr(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
         ],
       ),
       body: GestureDetector(
