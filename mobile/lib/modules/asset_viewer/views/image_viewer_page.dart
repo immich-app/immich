@@ -57,7 +57,7 @@ class ImageViewerPage extends HookConsumerWidget {
         isScrollControlled: false,
         context: context,
         builder: (context) {
-          return ExifBottomSheet(assetDetail: assetDetail!);
+          return ExifBottomSheet(assetDetail: assetDetail ?? asset);
         },
       );
     }

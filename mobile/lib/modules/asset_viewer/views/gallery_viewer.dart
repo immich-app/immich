@@ -31,21 +31,6 @@ class GalleryViewerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final Box<dynamic> box = Hive.box(userInfoBox);
-    //get the list of whats in the assets
-    //*might save it at the beginning on launch in SavedPrefs to limit the amount of operations*
-    var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
-    List<AssetResponseDto> tempList = [];
-
-    // //testing + hacky way to let users swipe around forever
-    for (var group in assetGroupByDateTime.values) {
-      for (var value in group) {
-        tempList.add(value);
-      }
-    }
-    assetList = tempList;
-
-    //everything else here is to keep the appbar
-    //and gestures in place for the image + video views
 
     int indexOfAsset = assetList.indexOf(asset);
 

@@ -28,13 +28,13 @@ void main() async {
 
   Hive.registerAdapter(HiveSavedLoginInfoAdapter());
   Hive.registerAdapter(HiveBackupAlbumsAdapter());
-  //for now i wont try saving the list internally
-  // Hive.registerAdapter(HiveAssetResponseDtoAdapter());
-  // Hive.registerAdapter(HiveAssetTypeEnumAdapter());
-  // Hive.registerAdapter(HiveSavedImageSortInfoAdapter());
+
+  Hive.registerAdapter(HiveAssetResponseDtoAdapter());
+  Hive.registerAdapter(HiveAssetTypeEnumAdapter());
+  Hive.registerAdapter(HiveSavedImageSortInfoAdapter());
 
   await Hive.openBox(userInfoBox);
-  //await Hive.openBox<HiveSavedImageSortInfo>(hiveImageSortInfoBox);
+  await Hive.openBox<HiveSavedImageSortInfo>(hiveImageSortInfoBox);
   await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
   await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
   await Hive.openBox(hiveGithubReleaseInfoBox);
