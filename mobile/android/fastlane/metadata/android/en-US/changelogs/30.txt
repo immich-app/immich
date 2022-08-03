@@ -1,0 +1,2 @@
+* New feature - Gallery view now enable with swipping action
+* New feature - Add album feature
