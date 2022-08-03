@@ -13,8 +13,10 @@ import 'package:openapi/api.dart';
 
 class ThumbnailImage extends HookConsumerWidget {
   final AssetResponseDto asset;
+  final List<AssetResponseDto> assetList;
 
-  const ThumbnailImage({Key? key, required this.asset}) : super(key: key);
+  const ThumbnailImage({Key? key, required this.asset, required this.assetList})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,29 +62,17 @@ class ThumbnailImage extends HookConsumerWidget {
               .watch(homePageStateProvider.notifier)
               .addSingleSelectedItem(asset);
         } else {
-          if (asset.type == AssetTypeEnum.IMAGE) {
-            AutoRouter.of(context).push(
-              ImageViewerRoute(
-                imageUrl:
-                    '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
-                heroTag: asset.id,
-                thumbnailUrl: thumbnailRequestUrl,
-                asset: asset,
-              ),
-            );
-          } else {
-            AutoRouter.of(context).push(
-              VideoViewerRoute(
-                videoUrl:
-                    '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-                asset: asset,
-              ),
-            );
-          }
+          AutoRouter.of(context).push(
+            GalleryViewerRoute(
+              assetList: assetList,
+              thumbnailRequestUrl: thumbnailRequestUrl,
+              asset: asset,
+            ),
+          );
         }
       },
       onLongPress: () {
-        // Enable multi selecte function
+        // Enable multi select function
         ref.watch(homePageStateProvider.notifier).enableMultiSelect({asset});
         HapticFeedback.heavyImpact();
       },

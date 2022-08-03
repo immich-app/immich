@@ -17,7 +17,6 @@ import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
-
 import 'constants/hive_box.dart';
 
 void main() async {

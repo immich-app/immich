@@ -162,6 +162,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         onlyAll: true,
         type: RequestType.common,
       );
+
+      if (list.isEmpty) {
+        return;
+      }
       AssetPathEntity albumHasAllAssets = list.first;
 
       backupAlbumInfoBox.put(

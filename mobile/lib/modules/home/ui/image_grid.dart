@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/thumbnail_image.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:openapi/api.dart';
 
+// ignore: must_be_immutable
 class ImageGrid extends ConsumerWidget {
   final List<AssetResponseDto> assetGroup;
 
-  const ImageGrid({Key? key, required this.assetGroup}) : super(key: key);
+  ImageGrid({Key? key, required this.assetGroup}) : super(key: key);
+
+  List<AssetResponseDto> imageSortedList = [];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
+    // set sorted List
+    for (var group in assetGroupByDateTime.values) {
+      for (var value in group) {
+        imageSortedList.add(value);
+      }
+    }
+
     return SliverGrid(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
@@ -19,12 +31,14 @@ class ImageGrid extends ConsumerWidget {
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
           var assetType = assetGroup[index].type;
-
           return GestureDetector(
             onTap: () {},
             child: Stack(
               children: [
-                ThumbnailImage(asset: assetGroup[index]),
+                ThumbnailImage(
+                  asset: assetGroup[index],
+                  assetList: assetGroup,
+                ),
                 if (assetType != AssetTypeEnum.IMAGE)
                   Positioned(
                     top: 5,
