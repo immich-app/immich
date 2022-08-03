@@ -49,7 +49,6 @@ class _$AppRouter extends RootStackRouter {
               key: args.key,
               assetList: args.assetList,
               asset: args.asset,
-              box: args.box,
               thumbnailRequestUrl: args.thumbnailRequestUrl));
     },
     ImageViewerRoute.name: (routeData) {
@@ -249,7 +248,6 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
       {Key? key,
       required List<AssetResponseDto> assetList,
       required AssetResponseDto asset,
-      required Box<dynamic> box,
       required String thumbnailRequestUrl})
       : super(GalleryViewerRoute.name,
             path: '/gallery-viewer-page',
@@ -257,7 +255,6 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
                 key: key,
                 assetList: assetList,
                 asset: asset,
-                box: box,
                 thumbnailRequestUrl: thumbnailRequestUrl));
 
   static const String name = 'GalleryViewerRoute';
@@ -268,7 +265,6 @@ class GalleryViewerRouteArgs {
       {this.key,
       required this.assetList,
       required this.asset,
-      required this.box,
       required this.thumbnailRequestUrl});
 
   final Key? key;
@@ -277,13 +273,11 @@ class GalleryViewerRouteArgs {
 
   final AssetResponseDto asset;
 
-  final Box<dynamic> box;
-
   final String thumbnailRequestUrl;
 
   @override
   String toString() {
-    return 'GalleryViewerRouteArgs{key: $key, assetList: $assetList, asset: $asset, box: $box, thumbnailRequestUrl: $thumbnailRequestUrl}';
+    return 'GalleryViewerRouteArgs{key: $key, assetList: $assetList, asset: $asset, thumbnailRequestUrl: $thumbnailRequestUrl}';
   }
 }
 

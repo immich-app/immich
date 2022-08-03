@@ -10,26 +10,26 @@ import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
   late List<AssetResponseDto> assetList;
   final AssetResponseDto asset;
-  final Box<dynamic> box;
   final String thumbnailRequestUrl;
 
   GalleryViewerPage({
     Key? key,
     required this.assetList,
     required this.asset,
-    required this.box,
     required this.thumbnailRequestUrl,
   }) : super(key: key);
 
+  AssetResponseDto? assetDetail;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final Box<dynamic> box = Hive.box(userInfoBox);
     //get the list of whats in the assets
     //*might save it at the beginning on launch in SavedPrefs to limit the amount of operations*
     // var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
@@ -45,26 +45,33 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     //everything else here is to keep the appbar
     //and gestures in place for the image + video views
+
     int indexOfAsset = assetList.indexOf(asset);
+
+    @override
+    void initState(int index) {
+      indexOfAsset = index;
+    }
+
     PageController controller =
         PageController(initialPage: assetList.indexOf(asset));
 
+    getAssetExif() async {
+      assetDetail = await ref
+          .watch(assetServiceProvider)
+          .getAssetById(assetList[indexOfAsset].id);
+    }
+
     void showInfo() {
-      //print("info ${assetList[indexOfAsset].id}");
       showModalBottomSheet(
         backgroundColor: Colors.black,
         barrierColor: Colors.transparent,
         isScrollControlled: false,
         context: context,
         builder: (context) {
-          return ExifBottomSheet(assetDetail: assetList[indexOfAsset]);
+          return ExifBottomSheet(assetDetail: assetDetail!);
         },
       );
-    }
-
-    @override
-    void initState(int index) {
-      indexOfAsset = index;
     }
 
     final isZoomed = useState<bool>(false);
@@ -103,10 +110,8 @@ class GalleryViewerPage extends HookConsumerWidget {
           scrollDirection: Axis.horizontal,
           itemBuilder: (context, index) {
             initState(index);
-            // ignore: avoid_print
-            print("looking at $indexOfAsset out of ${assetList.length}");
+            getAssetExif();
             if (assetList[index].type == AssetTypeEnum.IMAGE) {
-              print(assetList[index].exifInfo);
               return ImageViewerPage(
                 thumbnailUrl:
                     '${box.get(serverEndpointKey)}/asset/thumbnail/${assetList[index].id}',

@@ -183,7 +183,6 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     Widget _buildImageGrid(AlbumResponseDto albumInfo) {
       if (albumInfo.assets.isNotEmpty) {
-        print(albumInfo.assets[2].exifInfo);
         return SliverPadding(
           padding: const EdgeInsets.only(top: 10.0),
           sliver: SliverGrid(

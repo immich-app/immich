@@ -1,13 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
+import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:openapi/api.dart';
-
-import '../ui/exif_bottom_sheet.dart';
 
 // ignore: must_be_immutable
 class ImageViewerPage extends HookConsumerWidget {
@@ -19,7 +20,7 @@ class ImageViewerPage extends HookConsumerWidget {
   final ValueNotifier<bool> isZoomedListener;
   final void Function() isZoomedFunction;
 
-  const ImageViewerPage({
+  ImageViewerPage({
     Key? key,
     required this.imageUrl,
     required this.heroTag,
@@ -30,10 +31,25 @@ class ImageViewerPage extends HookConsumerWidget {
     required this.isZoomedListener,
   }) : super(key: key);
 
+  AssetResponseDto? assetDetail;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final downloadAssetStatus =
         ref.watch(imageViewerStateProvider).downloadAssetStatus;
+
+    getAssetExif() async {
+      assetDetail =
+          await ref.watch(assetServiceProvider).getAssetById(asset.id);
+    }
+
+    useEffect(
+      () {
+        getAssetExif();
+        return null;
+      },
+      [],
+    );
+
     showInfo() {
       showModalBottomSheet(
         backgroundColor: Colors.black,
@@ -41,7 +57,7 @@ class ImageViewerPage extends HookConsumerWidget {
         isScrollControlled: false,
         context: context,
         builder: (context) {
-          return ExifBottomSheet(assetDetail: asset);
+          return ExifBottomSheet(assetDetail: assetDetail!);
         },
       );
     }

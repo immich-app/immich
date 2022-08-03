@@ -33,12 +33,10 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).isMultiselectEnable;
 
     _viewAsset() {
-      //print(assetList.assets.first.exifInfo);
       AutoRouter.of(context).push(
         GalleryViewerRoute(
           asset: asset,
           assetList: assetList,
-          box: box,
           thumbnailRequestUrl: thumbnailRequestUrl,
         ),
       );
