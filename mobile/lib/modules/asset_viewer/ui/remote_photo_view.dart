@@ -35,10 +35,8 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       return;
     }
     if (controllerValue.position.dy > swipeThreshold) {
-      print("calling SwipeDown ${controllerValue.position.dy}");
       widget.onSwipeDown();
     } else if (controllerValue.position.dy < -swipeThreshold) {
-      print("calling SwipeUp ${controllerValue.position.dy}");
       widget.onSwipeUp();
     }
   }
@@ -51,8 +49,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     } else {
       widget.isZoomedListener.value = false;
     }
-
-    print("calling Zoomed Method");
     widget.isZoomedFunction();
   }
 

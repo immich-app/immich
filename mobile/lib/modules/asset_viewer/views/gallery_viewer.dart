@@ -32,24 +32,25 @@ class GalleryViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     //get the list of whats in the assets
     //*might save it at the beginning on launch in SavedPrefs to limit the amount of operations*
-    var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
-    List<AssetResponseDto> tempList = [];
+    // var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
+    // List<AssetResponseDto> tempList = [];
 
-    //testing + hacky way to let users swipe around forever
-    for (var group in assetGroupByDateTime.values) {
-      for (var value in group) {
-        tempList.add(value);
-      }
-    }
-    assetList = tempList;
+    // //testing + hacky way to let users swipe around forever
+    // for (var group in assetGroupByDateTime.values) {
+    //   for (var value in group) {
+    //     tempList.add(value);
+    //   }
+    // }
+    // assetList = tempList;
 
     //everything else here is to keep the appbar
     //and gestures in place for the image + video views
-    int indexOfAsset = 0;
+    int indexOfAsset = assetList.indexOf(asset);
     PageController controller =
         PageController(initialPage: assetList.indexOf(asset));
 
     void showInfo() {
+      //print("info ${assetList[indexOfAsset].id}");
       showModalBottomSheet(
         backgroundColor: Colors.black,
         barrierColor: Colors.transparent,
@@ -71,13 +72,11 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     //make isZoomed listener call instead
     void isZoomedMethod() {
-      print("Zoomed listener value: ${isZoomedListener.value}");
       if (isZoomedListener.value) {
         isZoomed.value = true;
       } else {
         isZoomed.value = false;
       }
-      print("Zoom is enabled: ${isZoomed.value}");
     }
 
     return Scaffold(
@@ -107,6 +106,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             // ignore: avoid_print
             print("looking at $indexOfAsset out of ${assetList.length}");
             if (assetList[index].type == AssetTypeEnum.IMAGE) {
+              print(assetList[index].exifInfo);
               return ImageViewerPage(
                 thumbnailUrl:
                     '${box.get(serverEndpointKey)}/asset/thumbnail/${assetList[index].id}',

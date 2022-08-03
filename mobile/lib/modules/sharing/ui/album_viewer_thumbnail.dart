@@ -12,8 +12,13 @@ import 'package:openapi/api.dart';
 
 class AlbumViewerThumbnail extends HookConsumerWidget {
   final AssetResponseDto asset;
+  final List<AssetResponseDto> assetList;
 
-  const AlbumViewerThumbnail({Key? key, required this.asset}) : super(key: key);
+  const AlbumViewerThumbnail({
+    Key? key,
+    required this.asset,
+    required this.assetList,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,28 +33,37 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).isMultiselectEnable;
 
     _viewAsset() {
-      if (asset.type == AssetTypeEnum.IMAGE) {
-        AutoRouter.of(context).push(
-          ImageViewerRoute(
-            imageUrl:
-                '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
-            heroTag: asset.id,
-            thumbnailUrl: thumbnailRequestUrl,
-            asset: asset,
-            authToken: '',
-            isZoomedFunction: () {},
-            isZoomedListener: false as ValueNotifier<bool>,
-          ),
-        );
-      } else {
-        AutoRouter.of(context).push(
-          VideoViewerRoute(
-            videoUrl:
-                '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-            asset: asset,
-          ),
-        );
-      }
+      //print(assetList.assets.first.exifInfo);
+      AutoRouter.of(context).push(
+        GalleryViewerRoute(
+          asset: asset,
+          assetList: assetList,
+          box: box,
+          thumbnailRequestUrl: thumbnailRequestUrl,
+        ),
+      );
+      // if (asset.type == AssetTypeEnum.IMAGE) {
+      //   AutoRouter.of(context).push(
+      //     ImageViewerRoute(
+      //       imageUrl:s
+      //           '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
+      //       heroTag: asset.id,
+      //       thumbnailUrl: thumbnailRequestUrl,
+      //       asset: asset,
+      //       authToken: '',
+      //       isZoomedFunction: () {},
+      //       isZoomedListener: false as ValueNotifier<bool>,
+      //     ),
+      //   );
+      // } else {
+      //   AutoRouter.of(context).push(
+      //     VideoViewerRoute(
+      //       videoUrl:
+      //           '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
+      //       asset: asset,
+      //     ),
+      //   );
+      // }
     }
 
     BoxBorder drawBorderColor() {
