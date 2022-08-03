@@ -29,9 +29,7 @@ class AlbumViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     FocusNode titleFocusNode = useFocusNode();
     ScrollController scrollController = useScrollController();
-
-    AsyncValue<AlbumResponseDto?> albumInfo =
-        ref.watch(sharedAlbumDetailProvider(albumId));
+    var albumInfo = ref.watch(sharedAlbumDetailProvider(albumId));
 
     final userId = ref.watch(authenticationProvider).userId;
 
@@ -200,7 +198,10 @@ class AlbumViewerPage extends HookConsumerWidget {
             ),
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                return AlbumViewerThumbnail(asset: albumInfo.assets[index]);
+                return AlbumViewerThumbnail(
+                  asset: albumInfo.assets[index],
+                  assetList: albumInfo.assets,
+                );
               },
               childCount: albumInfo.assets.length,
             ),

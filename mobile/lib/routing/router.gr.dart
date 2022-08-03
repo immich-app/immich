@@ -41,6 +41,16 @@ class _$AppRouter extends RootStackRouter {
           opaque: true,
           barrierDismissible: false);
     },
+    GalleryViewerRoute.name: (routeData) {
+      final args = routeData.argsAs<GalleryViewerRouteArgs>();
+      return MaterialPageX<dynamic>(
+          routeData: routeData,
+          child: GalleryViewerPage(
+              key: args.key,
+              assetList: args.assetList,
+              asset: args.asset,
+              thumbnailRequestUrl: args.thumbnailRequestUrl));
+    },
     ImageViewerRoute.name: (routeData) {
       final args = routeData.argsAs<ImageViewerRouteArgs>();
       return MaterialPageX<dynamic>(
@@ -50,7 +60,10 @@ class _$AppRouter extends RootStackRouter {
               imageUrl: args.imageUrl,
               heroTag: args.heroTag,
               thumbnailUrl: args.thumbnailUrl,
-              asset: args.asset));
+              asset: args.asset,
+              authToken: args.authToken,
+              isZoomedFunction: args.isZoomedFunction,
+              isZoomedListener: args.isZoomedListener));
     },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
@@ -174,6 +187,8 @@ class _$AppRouter extends RootStackRouter {
                   parent: TabControllerRoute.name,
                   guards: [authGuard])
             ]),
+        RouteConfig(GalleryViewerRoute.name,
+            path: '/gallery-viewer-page', guards: [authGuard]),
         RouteConfig(ImageViewerRoute.name,
             path: '/image-viewer-page', guards: [authGuard]),
         RouteConfig(VideoViewerRoute.name,
@@ -238,6 +253,46 @@ class TabControllerRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [GalleryViewerPage]
+class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
+  GalleryViewerRoute(
+      {Key? key,
+      required List<AssetResponseDto> assetList,
+      required AssetResponseDto asset,
+      required String thumbnailRequestUrl})
+      : super(GalleryViewerRoute.name,
+            path: '/gallery-viewer-page',
+            args: GalleryViewerRouteArgs(
+                key: key,
+                assetList: assetList,
+                asset: asset,
+                thumbnailRequestUrl: thumbnailRequestUrl));
+
+  static const String name = 'GalleryViewerRoute';
+}
+
+class GalleryViewerRouteArgs {
+  const GalleryViewerRouteArgs(
+      {this.key,
+      required this.assetList,
+      required this.asset,
+      required this.thumbnailRequestUrl});
+
+  final Key? key;
+
+  final List<AssetResponseDto> assetList;
+
+  final AssetResponseDto asset;
+
+  final String thumbnailRequestUrl;
+
+  @override
+  String toString() {
+    return 'GalleryViewerRouteArgs{key: $key, assetList: $assetList, asset: $asset, thumbnailRequestUrl: $thumbnailRequestUrl}';
+  }
+}
+
+/// generated route for
 /// [ImageViewerPage]
 class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
   ImageViewerRoute(
@@ -245,7 +300,10 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
       required String imageUrl,
       required String heroTag,
       required String thumbnailUrl,
-      required AssetResponseDto asset})
+      required AssetResponseDto asset,
+      required String authToken,
+      required void Function() isZoomedFunction,
+      required ValueNotifier<bool> isZoomedListener})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
             args: ImageViewerRouteArgs(
@@ -253,7 +311,10 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
                 imageUrl: imageUrl,
                 heroTag: heroTag,
                 thumbnailUrl: thumbnailUrl,
-                asset: asset));
+                asset: asset,
+                authToken: authToken,
+                isZoomedFunction: isZoomedFunction,
+                isZoomedListener: isZoomedListener));
 
   static const String name = 'ImageViewerRoute';
 }
@@ -264,7 +325,10 @@ class ImageViewerRouteArgs {
       required this.imageUrl,
       required this.heroTag,
       required this.thumbnailUrl,
-      required this.asset});
+      required this.asset,
+      required this.authToken,
+      required this.isZoomedFunction,
+      required this.isZoomedListener});
 
   final Key? key;
 
@@ -276,9 +340,15 @@ class ImageViewerRouteArgs {
 
   final AssetResponseDto asset;
 
+  final String authToken;
+
+  final void Function() isZoomedFunction;
+
+  final ValueNotifier<bool> isZoomedListener;
+
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, imageUrl: $imageUrl, heroTag: $heroTag, thumbnailUrl: $thumbnailUrl, asset: $asset}';
+    return 'ImageViewerRouteArgs{key: $key, imageUrl: $imageUrl, heroTag: $heroTag, thumbnailUrl: $thumbnailUrl, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener}';
   }
 }
 

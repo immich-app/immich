@@ -3,10 +3,18 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/thumbnail_image.dart';
 import 'package:openapi/api.dart';
 
+// ignore: must_be_immutable
 class ImageGrid extends ConsumerWidget {
   final List<AssetResponseDto> assetGroup;
+  final List<AssetResponseDto> sortedAssetGroup;
 
-  const ImageGrid({Key? key, required this.assetGroup}) : super(key: key);
+  ImageGrid({
+    Key? key,
+    required this.assetGroup,
+    required this.sortedAssetGroup,
+  }) : super(key: key);
+
+  List<AssetResponseDto> imageSortedList = [];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,12 +27,14 @@ class ImageGrid extends ConsumerWidget {
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
           var assetType = assetGroup[index].type;
-
           return GestureDetector(
             onTap: () {},
             child: Stack(
               children: [
-                ThumbnailImage(asset: assetGroup[index]),
+                ThumbnailImage(
+                  asset: assetGroup[index],
+                  assetList: sortedAssetGroup,
+                ),
                 if (assetType != AssetTypeEnum.IMAGE)
                   Positioned(
                     top: 5,

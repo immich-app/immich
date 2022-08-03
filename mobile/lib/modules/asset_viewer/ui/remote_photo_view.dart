@@ -15,7 +15,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   @override
   Widget build(BuildContext context) {
     bool allowMoving = _status == _RemoteImageStatus.full;
-
     return PhotoView(
       imageProvider: _imageProvider,
       minScale: PhotoViewComputedScale.contained,
@@ -32,8 +31,9 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     PhotoViewControllerValue controllerValue,
   ) {
     // Disable swipe events when zoomed in
-    if (_zoomedIn) return;
-
+    if (_zoomedIn) {
+      return;
+    }
     if (controllerValue.position.dy > swipeThreshold) {
       widget.onSwipeDown();
     } else if (controllerValue.position.dy < -swipeThreshold) {
@@ -42,7 +42,14 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   void _scaleStateChanged(PhotoViewScaleState state) {
-    _zoomedIn = state == PhotoViewScaleState.zoomedIn;
+    // _onScaleListener;
+    _zoomedIn = state != PhotoViewScaleState.initial;
+    if (_zoomedIn) {
+      widget.isZoomedListener.value = true;
+    } else {
+      widget.isZoomedListener.value = false;
+    }
+    widget.isZoomedFunction();
   }
 
   CachedNetworkImageProvider _authorizedImageProvider(String url) {
@@ -107,6 +114,8 @@ class RemotePhotoView extends StatefulWidget {
     required this.thumbnailUrl,
     required this.imageUrl,
     required this.authToken,
+    required this.isZoomedFunction,
+    required this.isZoomedListener,
     required this.onSwipeDown,
     required this.onSwipeUp,
   }) : super(key: key);
@@ -117,6 +126,9 @@ class RemotePhotoView extends StatefulWidget {
 
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;
+  final void Function() isZoomedFunction;
+
+  final ValueNotifier<bool> isZoomedListener;
 
   @override
   State<StatefulWidget> createState() {

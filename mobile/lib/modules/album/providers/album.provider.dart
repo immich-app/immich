@@ -20,7 +20,9 @@ class AlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
   }
 
   Future<AlbumResponseDto?> createAlbum(
-      String albumTitle, Set<AssetResponseDto> assets) async {
+    String albumTitle,
+    Set<AssetResponseDto> assets,
+  ) async {
     AlbumResponseDto? album =
         await _albumService.createAlbum(albumTitle, assets, []);
 
