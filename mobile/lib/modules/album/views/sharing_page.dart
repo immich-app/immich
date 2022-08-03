@@ -5,8 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
-import 'package:immich_mobile/modules/sharing/ui/sharing_sliver_appbar.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:openapi/api.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -23,7 +23,6 @@ class SharingPage extends HookConsumerWidget {
     useEffect(
       () {
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
-
         return null;
       },
       [],

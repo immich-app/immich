@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/sharing/models/album_viewer_page_state.model.dart';
-import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
-import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
+import 'package:immich_mobile/modules/album/models/album_viewer_page_state.model.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/album/services/album.service.dart';
 
 class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   AlbumViewerNotifier(this.ref)
@@ -34,7 +34,7 @@ class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
     String ownerId,
     String newAlbumTitle,
   ) async {
-    SharedAlbumService service = ref.watch(sharedAlbumServiceProvider);
+    AlbumService service = ref.watch(albumServiceProvider);
 
     bool isSuccess =
         await service.changeTitleAlbum(albumId, ownerId, newAlbumTitle);

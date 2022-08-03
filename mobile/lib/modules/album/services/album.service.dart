@@ -2,46 +2,47 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
 
-final sharedAlbumServiceProvider = Provider(
-  (ref) => SharedAlbumService(
+final albumServiceProvider = Provider(
+  (ref) => AlbumService(
     ref.watch(apiServiceProvider),
   ),
 );
 
-class SharedAlbumService {
+class AlbumService {
   final ApiService _apiService;
-  SharedAlbumService(this._apiService);
 
-  Future<List<AlbumResponseDto>?> getAllSharedAlbum() async {
+  AlbumService(this._apiService);
+
+  Future<List<AlbumResponseDto>?> getAlbums({required bool isShared}) async {
     try {
-      return await _apiService.albumApi.getAllAlbums(shared: true);
+      return await _apiService.albumApi
+          .getAllAlbums(shared: isShared ? isShared : null);
     } catch (e) {
       debugPrint("Error getAllSharedAlbum  ${e.toString()}");
       return null;
     }
   }
 
-  Future<bool> createSharedAlbum(
+  Future<AlbumResponseDto?> createAlbum(
     String albumName,
     Set<AssetResponseDto> assets,
     List<String> sharedUserIds,
   ) async {
     try {
-      _apiService.albumApi.createAlbum(
+      return await _apiService.albumApi.createAlbum(
         CreateAlbumDto(
           albumName: albumName,
           assetIds: assets.map((asset) => asset.id).toList(),
           sharedWithUserIds: sharedUserIds,
         ),
       );
-
-      return true;
     } catch (e) {
       debugPrint("Error createSharedAlbum  ${e.toString()}");
-      return false;
+      return null;
     }
   }
 

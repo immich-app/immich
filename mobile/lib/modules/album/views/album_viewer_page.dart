@@ -6,14 +6,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/modules/sharing/models/asset_selection_page_result.model.dart';
-import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
-import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
-import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
-import 'package:immich_mobile/modules/sharing/ui/album_action_outlined_button.dart';
-import 'package:immich_mobile/modules/sharing/ui/album_viewer_appbar.dart';
-import 'package:immich_mobile/modules/sharing/ui/album_viewer_editable_title.dart';
-import 'package:immich_mobile/modules/sharing/ui/album_viewer_thumbnail.dart';
+import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
+import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
+import 'package:immich_mobile/modules/album/ui/album_viewer_appbar.dart';
+import 'package:immich_mobile/modules/album/ui/album_viewer_editable_title.dart';
+import 'package:immich_mobile/modules/album/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
@@ -29,6 +29,7 @@ class AlbumViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     FocusNode titleFocusNode = useFocusNode();
     ScrollController scrollController = useScrollController();
+
     AsyncValue<AlbumResponseDto?> albumInfo =
         ref.watch(sharedAlbumDetailProvider(albumId));
 
@@ -53,12 +54,11 @@ class AlbumViewerPage extends HookConsumerWidget {
         if (returnPayload.selectedAdditionalAsset.isNotEmpty) {
           ImmichLoadingOverlayController.appLoader.show();
 
-          var isSuccess = await ref
-              .watch(sharedAlbumServiceProvider)
-              .addAdditionalAssetToAlbum(
-                returnPayload.selectedAdditionalAsset,
-                albumId,
-              );
+          var isSuccess =
+              await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
+                    returnPayload.selectedAdditionalAsset,
+                    albumId,
+                  );
 
           if (isSuccess) {
             ref.refresh(sharedAlbumDetailProvider(albumId));
@@ -83,7 +83,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         ImmichLoadingOverlayController.appLoader.show();
 
         var isSuccess = await ref
-            .watch(sharedAlbumServiceProvider)
+            .watch(albumServiceProvider)
             .addAdditionalUserToAlbum(sharedUserIds, albumId);
 
         if (isSuccess) {
@@ -132,7 +132,11 @@ class AlbumViewerPage extends HookConsumerWidget {
       String endDate = DateFormat('LLL d, y').format(parsedEndDate);
 
       return Padding(
-        padding: const EdgeInsets.only(left: 16.0, top: 8),
+        padding: EdgeInsets.only(
+          left: 16.0,
+          top: 8.0,
+          bottom: albumInfo.shared ? 0.0 : 8.0,
+        ),
         child: Text(
           "$startDate-$endDate",
           style: const TextStyle(
@@ -152,31 +156,33 @@ class AlbumViewerPage extends HookConsumerWidget {
             _buildTitle(albumInfo),
             if (albumInfo.assets.isNotEmpty == true)
               _buildAlbumDateRange(albumInfo),
-            SizedBox(
-              height: 60,
-              child: ListView.builder(
-                padding: const EdgeInsets.only(left: 16),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: ((context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.grey[300],
-                      radius: 18,
-                      child: Padding(
-                        padding: const EdgeInsets.all(2.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50.0),
-                          child:
-                              Image.asset('assets/immich-logo-no-outline.png'),
+            if (albumInfo.shared)
+              SizedBox(
+                height: 60,
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(left: 16),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: ((context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.grey[300],
+                        radius: 18,
+                        child: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(50.0),
+                            child: Image.asset(
+                              'assets/immich-logo-no-outline.png',
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                }),
-                itemCount: albumInfo.sharedUsers.length,
-              ),
-            )
+                    );
+                  }),
+                  itemCount: albumInfo.sharedUsers.length,
+                ),
+              )
           ],
         ),
       );
@@ -261,10 +267,19 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AlbumViewerAppbar(
-        albumInfo: albumInfo,
-        userId: userId,
-        albumId: albumId,
+      appBar: albumInfo.when(
+        data: (AlbumResponseDto? data) {
+          if (data != null) {
+            return AlbumViewerAppbar(
+              albumInfo: data,
+              userId: userId,
+              albumId: albumId,
+            );
+          }
+          return null;
+        },
+        error: (e, _) => null,
+        loading: () => null,
       ),
       body: albumInfo.when(
         data: (albumInfo) => albumInfo != null

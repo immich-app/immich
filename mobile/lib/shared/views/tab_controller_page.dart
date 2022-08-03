@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -18,6 +19,7 @@ class TabControllerPage extends ConsumerWidget {
         const HomeRoute(),
         SearchRoute(),
         const SharingRoute(),
+        const LibraryRoute()
       ],
       builder: (context, child, animation) {
         final tabsRouter = AutoTabsRouter.of(context);
@@ -34,12 +36,14 @@ class TabControllerPage extends ConsumerWidget {
             bottomNavigationBar: isMultiSelectEnable
                 ? null
                 : BottomNavigationBar(
+                    type: BottomNavigationBarType.fixed,
+                    backgroundColor: immichBackgroundColor,
                     selectedLabelStyle: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                     unselectedLabelStyle: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                     currentIndex: tabsRouter.activeIndex,
@@ -59,6 +63,12 @@ class TabControllerPage extends ConsumerWidget {
                         label: 'tab_controller_nav_sharing'.tr(),
                         icon: const Icon(Icons.group_outlined),
                       ),
+                      BottomNavigationBarItem(
+                        label: 'tab_controller_nav_library'.tr(),
+                        icon: const Icon(
+                          Icons.photo_album_outlined,
+                        ),
+                      )
                     ],
                   ),
           ),

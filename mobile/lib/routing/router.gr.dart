@@ -69,9 +69,12 @@ class _$AppRouter extends RootStackRouter {
           routeData: routeData,
           child: SearchResultPage(key: args.key, searchTerm: args.searchTerm));
     },
-    CreateSharedAlbumRoute.name: (routeData) {
+    CreateAlbumRoute.name: (routeData) {
+      final args = routeData.argsAs<CreateAlbumRouteArgs>();
       return MaterialPageX<dynamic>(
-          routeData: routeData, child: const CreateSharedAlbumPage());
+          routeData: routeData,
+          child: CreateAlbumPage(
+              key: args.key, isSharedAlbum: args.isSharedAlbum));
     },
     AssetSelectionRoute.name: (routeData) {
       return CustomPage<AssetSelectionPageResult?>(
@@ -136,6 +139,10 @@ class _$AppRouter extends RootStackRouter {
     SharingRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const SharingPage());
+    },
+    LibraryRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const LibraryPage());
     }
   };
 
@@ -161,6 +168,10 @@ class _$AppRouter extends RootStackRouter {
               RouteConfig(SharingRoute.name,
                   path: 'sharing-page',
                   parent: TabControllerRoute.name,
+                  guards: [authGuard]),
+              RouteConfig(LibraryRoute.name,
+                  path: 'library-page',
+                  parent: TabControllerRoute.name,
                   guards: [authGuard])
             ]),
         RouteConfig(ImageViewerRoute.name,
@@ -171,8 +182,8 @@ class _$AppRouter extends RootStackRouter {
             path: '/backup-controller-page', guards: [authGuard]),
         RouteConfig(SearchResultRoute.name,
             path: '/search-result-page', guards: [authGuard]),
-        RouteConfig(CreateSharedAlbumRoute.name,
-            path: '/create-shared-album-page', guards: [authGuard]),
+        RouteConfig(CreateAlbumRoute.name,
+            path: '/create-album-page', guards: [authGuard]),
         RouteConfig(AssetSelectionRoute.name,
             path: '/asset-selection-page', guards: [authGuard]),
         RouteConfig(SelectUserForSharingRoute.name,
@@ -334,12 +345,27 @@ class SearchResultRouteArgs {
 }
 
 /// generated route for
-/// [CreateSharedAlbumPage]
-class CreateSharedAlbumRoute extends PageRouteInfo<void> {
-  const CreateSharedAlbumRoute()
-      : super(CreateSharedAlbumRoute.name, path: '/create-shared-album-page');
+/// [CreateAlbumPage]
+class CreateAlbumRoute extends PageRouteInfo<CreateAlbumRouteArgs> {
+  CreateAlbumRoute({Key? key, required bool isSharedAlbum})
+      : super(CreateAlbumRoute.name,
+            path: '/create-album-page',
+            args: CreateAlbumRouteArgs(key: key, isSharedAlbum: isSharedAlbum));
 
-  static const String name = 'CreateSharedAlbumRoute';
+  static const String name = 'CreateAlbumRoute';
+}
+
+class CreateAlbumRouteArgs {
+  const CreateAlbumRouteArgs({this.key, required this.isSharedAlbum});
+
+  final Key? key;
+
+  final bool isSharedAlbum;
+
+  @override
+  String toString() {
+    return 'CreateAlbumRouteArgs{key: $key, isSharedAlbum: $isSharedAlbum}';
+  }
 }
 
 /// generated route for
@@ -491,4 +517,12 @@ class SharingRoute extends PageRouteInfo<void> {
   const SharingRoute() : super(SharingRoute.name, path: 'sharing-page');
 
   static const String name = 'SharingRoute';
+}
+
+/// generated route for
+/// [LibraryPage]
+class LibraryRoute extends PageRouteInfo<void> {
+  const LibraryRoute() : super(LibraryRoute.name, path: 'library-page');
+
+  static const String name = 'LibraryRoute';
 }

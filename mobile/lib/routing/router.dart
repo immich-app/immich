@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/views/library_page.dart';
 import 'package:immich_mobile/modules/backup/views/album_preview_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_album_selection_page.dart';
 import 'package:immich_mobile/modules/backup/views/failed_backup_status_page.dart';
@@ -9,16 +10,17 @@ import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
-import 'package:immich_mobile/modules/sharing/models/asset_selection_page_result.model.dart';
-import 'package:immich_mobile/modules/sharing/views/album_viewer_page.dart';
-import 'package:immich_mobile/modules/sharing/views/asset_selection_page.dart';
-import 'package:immich_mobile/modules/sharing/views/create_shared_album_page.dart';
-import 'package:immich_mobile/modules/sharing/views/select_additional_user_for_sharing_page.dart';
-import 'package:immich_mobile/modules/sharing/views/select_user_for_sharing_page.dart';
-import 'package:immich_mobile/modules/sharing/views/sharing_page.dart';
+import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
+import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
+import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
+import 'package:immich_mobile/modules/album/views/create_album_page.dart';
+import 'package:immich_mobile/modules/album/views/select_additional_user_for_sharing_page.dart';
+import 'package:immich_mobile/modules/album/views/select_user_for_sharing_page.dart';
+import 'package:immich_mobile/modules/album/views/sharing_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/modules/backup/views/backup_controller_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
+import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/views/splash_screen.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
@@ -40,7 +42,8 @@ part 'router.gr.dart';
       children: [
         AutoRoute(page: HomePage, guards: [AuthGuard]),
         AutoRoute(page: SearchPage, guards: [AuthGuard]),
-        AutoRoute(page: SharingPage, guards: [AuthGuard])
+        AutoRoute(page: SharingPage, guards: [AuthGuard]),
+        AutoRoute(page: LibraryPage, guards: [AuthGuard])
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
@@ -48,7 +51,7 @@ part 'router.gr.dart';
     AutoRoute(page: VideoViewerPage, guards: [AuthGuard]),
     AutoRoute(page: BackupControllerPage, guards: [AuthGuard]),
     AutoRoute(page: SearchResultPage, guards: [AuthGuard]),
-    AutoRoute(page: CreateSharedAlbumPage, guards: [AuthGuard]),
+    AutoRoute(page: CreateAlbumPage, guards: [AuthGuard]),
     CustomRoute<AssetSelectionPageResult?>(
       page: AssetSelectionPage,
       guards: [AuthGuard],
@@ -76,6 +79,7 @@ part 'router.gr.dart';
 )
 class AppRouter extends _$AppRouter {
   final ApiService _apiService;
+
   AppRouter(this._apiService) : super(authGuard: AuthGuard(_apiService));
 }
 
