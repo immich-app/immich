@@ -132,7 +132,11 @@ class AlbumViewerPage extends HookConsumerWidget {
       String endDate = DateFormat('LLL d, y').format(parsedEndDate);
 
       return Padding(
-        padding: const EdgeInsets.only(left: 16.0, top: 8),
+        padding: EdgeInsets.only(
+          left: 16.0,
+          top: 8.0,
+          bottom: albumInfo.shared ? 0.0 : 8.0,
+        ),
         child: Text(
           "$startDate-$endDate",
           style: const TextStyle(
@@ -152,31 +156,33 @@ class AlbumViewerPage extends HookConsumerWidget {
             _buildTitle(albumInfo),
             if (albumInfo.assets.isNotEmpty == true)
               _buildAlbumDateRange(albumInfo),
-            SizedBox(
-              height: 60,
-              child: ListView.builder(
-                padding: const EdgeInsets.only(left: 16),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: ((context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.grey[300],
-                      radius: 18,
-                      child: Padding(
-                        padding: const EdgeInsets.all(2.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50.0),
-                          child:
-                              Image.asset('assets/immich-logo-no-outline.png'),
+            if (albumInfo.shared)
+              SizedBox(
+                height: 60,
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(left: 16),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: ((context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.grey[300],
+                        radius: 18,
+                        child: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(50.0),
+                            child: Image.asset(
+                              'assets/immich-logo-no-outline.png',
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                }),
-                itemCount: albumInfo.sharedUsers.length,
-              ),
-            )
+                    );
+                  }),
+                  itemCount: albumInfo.sharedUsers.length,
+                ),
+              )
           ],
         ),
       );

@@ -11,8 +11,10 @@ import 'package:immich_mobile/modules/album/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/album/ui/shared_album_thumbnail_image.dart';
 import 'package:immich_mobile/routing/router.dart';
 
-class CreateSharedAlbumPage extends HookConsumerWidget {
-  const CreateSharedAlbumPage({Key? key}) : super(key: key);
+class CreateAlbumPage extends HookConsumerWidget {
+  bool isSharedAlbum;
+
+  CreateAlbumPage({Key? key, required this.isSharedAlbum}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

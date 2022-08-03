@@ -13,7 +13,7 @@ import 'package:immich_mobile/modules/search/views/search_result_page.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
-import 'package:immich_mobile/modules/album/views/create_shared_album_page.dart';
+import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/select_additional_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/album/views/select_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/album/views/sharing_page.dart';
@@ -51,7 +51,7 @@ part 'router.gr.dart';
     AutoRoute(page: VideoViewerPage, guards: [AuthGuard]),
     AutoRoute(page: BackupControllerPage, guards: [AuthGuard]),
     AutoRoute(page: SearchResultPage, guards: [AuthGuard]),
-    AutoRoute(page: CreateSharedAlbumPage, guards: [AuthGuard]),
+    AutoRoute(page: CreateAlbumPage, guards: [AuthGuard]),
     CustomRoute<AssetSelectionPageResult?>(
       page: AssetSelectionPage,
       guards: [AuthGuard],

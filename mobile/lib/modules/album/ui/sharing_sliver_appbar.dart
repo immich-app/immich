@@ -44,7 +44,7 @@ class SharingSliverAppBar extends StatelessWidget {
                     ),
                     onPressed: () {
                       AutoRouter.of(context)
-                          .push(const CreateSharedAlbumRoute());
+                          .push(CreateAlbumRoute(isSharedAlbum: true));
                     },
                     icon: const Icon(
                       Icons.photo_album_outlined,
