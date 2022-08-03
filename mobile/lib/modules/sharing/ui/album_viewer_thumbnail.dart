@@ -40,28 +40,6 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
           thumbnailRequestUrl: thumbnailRequestUrl,
         ),
       );
-      // if (asset.type == AssetTypeEnum.IMAGE) {
-      //   AutoRouter.of(context).push(
-      //     ImageViewerRoute(
-      //       imageUrl:s
-      //           '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
-      //       heroTag: asset.id,
-      //       thumbnailUrl: thumbnailRequestUrl,
-      //       asset: asset,
-      //       authToken: '',
-      //       isZoomedFunction: () {},
-      //       isZoomedListener: false as ValueNotifier<bool>,
-      //     ),
-      //   );
-      // } else {
-      //   AutoRouter.of(context).push(
-      //     VideoViewerRoute(
-      //       videoUrl:
-      //           '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-      //       asset: asset,
-      //     ),
-      //   );
-      // }
     }
 
     BoxBorder drawBorderColor() {
