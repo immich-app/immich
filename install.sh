@@ -28,7 +28,7 @@ populate_upload_location() {
   # Replace value of UPLOAD_LOCATION in .env with upload_location path
 
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed "s|UPLOAD_LOCATION=.*|UPLOAD_LOCATION=$upload_location|" ../.env
+    sed -i '' "s|UPLOAD_LOCATION=.*|UPLOAD_LOCATION=$upload_location|" ../.env
   else
     sed -i "s|UPLOAD_LOCATION=.*|UPLOAD_LOCATION=$upload_location|" ../.env
   fi
@@ -41,7 +41,7 @@ populate_server_endpoint() {
 
   if [[ "$OSTYPE" == "darwin"* ]]; then
     ip_address=$(ipconfig getifaddr en0)
-    sed "s|VITE_SERVER_ENDPOINT=.*|VITE_SERVER_ENDPOINT=http://$ip_address/api|" ./.env
+    sed -i '' "s|VITE_SERVER_ENDPOINT=.*|VITE_SERVER_ENDPOINT=http://$ip_address/api|" ./.env
   else
     ip_address=$(hostname -I | awk '{print $1}')
     sed -i "s|VITE_SERVER_ENDPOINT=.*|VITE_SERVER_ENDPOINT=http://$ip_address/api|" ./.env
