@@ -33,8 +33,11 @@ populate_upload_location() {
 populate_server_endpoint() {
   echo "Populating server endpoint..."
 
-  # Get local IP address
-  ip_address=$(hostname -I | awk '{print $1}')
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    ip_address=$(ipconfig getifaddr en0)
+  else
+    ip_address=$(hostname -I | awk '{print $1}')
+  fi
 
   # Replace value of VITE_SERVER_ENDPOINT
   sed -i "s|VITE_SERVER_ENDPOINT=.*|VITE_SERVER_ENDPOINT=http://$ip_address/api|" ./.env
