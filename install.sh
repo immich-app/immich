@@ -26,7 +26,13 @@ populate_upload_location() {
   cd ./immich-app/immich-data
   local upload_location=$(pwd)
   # Replace value of UPLOAD_LOCATION in .env with upload_location path
-  sed -i "s|UPLOAD_LOCATION=.*|UPLOAD_LOCATION=$upload_location|" ../.env
+
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed "s|UPLOAD_LOCATION=.*|UPLOAD_LOCATION=$upload_location|" ../.env
+  else
+    sed -i "s|UPLOAD_LOCATION=.*|UPLOAD_LOCATION=$upload_location|" ../.env
+  fi
+
   cd ..
 }
 
