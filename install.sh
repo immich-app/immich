@@ -24,7 +24,7 @@ download_dot_env_file() {
 populate_upload_location() {
   echo "Populating default UPLOAD_LOCATION value..."
   cd ./immich-app/immich-data
-  local upload_location=$(pwd)
+  upload_location=$(pwd)
   # Replace value of UPLOAD_LOCATION in .env with upload_location path
 
   if [[ "$OSTYPE" == "darwin"* ]]; then
