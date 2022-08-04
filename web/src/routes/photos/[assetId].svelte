@@ -1,12 +1,12 @@
 <script context="module" lang="ts">
 	export const prerender = false;
 
-	import { api } from '@api';
 	import type { Load } from '@sveltejs/kit';
 
-	export const load: Load = async () => {
+	export const load: Load = async ({ fetch }) => {
 		try {
-			await api.userApi.getMyUserInfo();
+			await fetch('/data/get-my-user-info.json');
+
 			return {
 				status: 302,
 				redirect: '/photos'

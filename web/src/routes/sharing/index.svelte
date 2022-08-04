@@ -4,15 +4,16 @@
 	import type { Load } from '@sveltejs/kit';
 	import { AlbumResponseDto, api, UserResponseDto } from '@api';
 
-	export const load: Load = async () => {
+	export const load: Load = async ({ fetch }) => {
 		try {
-			const { data: user } = await api.userApi.getMyUserInfo();
+			const getMyUserInfoRes = await fetch('/data/get-my-user-info.json');
+			const getMyUserInfoData = await getMyUserInfoRes.json();
 			const { data: sharedAlbums } = await api.albumApi.getAllAlbums(true);
 
 			return {
 				status: 200,
 				props: {
-					user: user,
+					user: getMyUserInfoData,
 					sharedAlbums: sharedAlbums
 				}
 			};
