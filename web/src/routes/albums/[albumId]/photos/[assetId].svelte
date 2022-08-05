@@ -1,7 +1,5 @@
 <script context="module" lang="ts">
 	export const prerender = false;
-
-	import { api } from '@api';
 	import type { Load } from '@sveltejs/kit';
 
 	export const load: Load = async ({ params }) => {
