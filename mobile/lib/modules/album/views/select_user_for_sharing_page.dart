@@ -3,11 +3,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/sharing/providers/album_title.provider.dart';
-import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
-import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
-import 'package:immich_mobile/modules/sharing/providers/suggested_shared_users.provider.dart';
-import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
+import 'package:immich_mobile/modules/album/providers/album_title.provider.dart';
+import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:openapi/api.dart';
@@ -22,14 +21,14 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         ref.watch(suggestedSharedUsersProvider);
 
     _createSharedAlbum() async {
-      var isSuccess =
-          await ref.watch(sharedAlbumServiceProvider).createSharedAlbum(
+      var newAlbum =
+          await ref.watch(sharedAlbumProvider.notifier).createSharedAlbum(
                 ref.watch(albumTitleProvider),
                 ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
                 sharedUsersList.value.map((userInfo) => userInfo.id).toList(),
               );
 
-      if (isSuccess) {
+      if (newAlbum != null) {
         await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();

@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
+import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:openapi/api.dart';
 
 class SelectionThumbnailImage extends HookConsumerWidget {

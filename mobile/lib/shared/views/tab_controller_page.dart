@@ -18,6 +18,7 @@ class TabControllerPage extends ConsumerWidget {
         const HomeRoute(),
         SearchRoute(),
         const SharingRoute(),
+        const LibraryRoute()
       ],
       builder: (context, child, animation) {
         final tabsRouter = AutoTabsRouter.of(context);
@@ -34,6 +35,16 @@ class TabControllerPage extends ConsumerWidget {
             bottomNavigationBar: isMultiSelectEnable
                 ? null
                 : BottomNavigationBar(
+                    type: BottomNavigationBarType.fixed,
+                    // backgroundColor: immichBackgroundColor,
+                    selectedLabelStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                     currentIndex: tabsRouter.activeIndex,
                     onTap: (index) {
                       tabsRouter.setActiveIndex(index);
@@ -51,6 +62,12 @@ class TabControllerPage extends ConsumerWidget {
                         label: 'tab_controller_nav_sharing'.tr(),
                         icon: const Icon(Icons.group_outlined),
                       ),
+                      BottomNavigationBarItem(
+                        label: 'tab_controller_nav_library'.tr(),
+                        icon: const Icon(
+                          Icons.photo_album_outlined,
+                        ),
+                      )
                     ],
                   ),
           ),

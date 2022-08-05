@@ -7,54 +7,45 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
+import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
   late List<AssetResponseDto> assetList;
   final AssetResponseDto asset;
-  final Box<dynamic> box;
   final String thumbnailRequestUrl;
 
   GalleryViewerPage({
     Key? key,
     required this.assetList,
     required this.asset,
-    required this.box,
     required this.thumbnailRequestUrl,
   }) : super(key: key);
 
+  AssetResponseDto? assetDetail;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    //get the list of whats in the assets
-    //*might save it at the beginning on launch in SavedPrefs to limit the amount of operations*
-    var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
-    List<AssetResponseDto> tempList = [];
+    final Box<dynamic> box = Hive.box(userInfoBox);
 
-    //testing + hacky way to let users swipe around forever
-    for (var group in assetGroupByDateTime.values) {
-      for (var value in group) {
-        tempList.add(value);
-      }
+    int indexOfAsset = assetList.indexOf(asset);
+
+    @override
+    void initState(int index) {
+      indexOfAsset = index;
     }
-    assetList = tempList;
 
-    //everything else here is to keep the appbar
-    //and gestures in place for the image + video views
-    AssetResponseDto? assetDetail;
-    int indexOfAsset = 0;
     PageController controller =
         PageController(initialPage: assetList.indexOf(asset));
 
-    var downloadAssetStatus =
-        ref.watch(imageViewerStateProvider).downloadAssetStatus;
-
-    String jwtToken = Hive.box(userInfoBox).get(accessTokenKey);
+    getAssetExif() async {
+      assetDetail = await ref
+          .watch(assetServiceProvider)
+          .getAssetById(assetList[indexOfAsset].id);
+    }
 
     void showInfo() {
       showModalBottomSheet(
@@ -68,23 +59,16 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    getAssetExif() async {
-      assetDetail = await ref
-          .watch(assetServiceProvider)
-          .getAssetById(assetList[indexOfAsset].id);
-    }
+    final isZoomed = useState<bool>(false);
+    ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
 
-    useEffect(
-      () {
-        getAssetExif();
-        return null;
-      },
-      [],
-    );
-    @override
-    void initState(int index) {
-      indexOfAsset = index;
-      getAssetExif();
+    //make isZoomed listener call instead
+    void isZoomedMethod() {
+      if (isZoomedListener.value) {
+        isZoomed.value = true;
+      } else {
+        isZoomed.value = false;
+      }
     }
 
     return Scaffold(
@@ -100,43 +84,49 @@ class GalleryViewerPage extends HookConsumerWidget {
               .downloadAsset(assetList[indexOfAsset], context);
         },
       ),
-      body: SwipeDetector(
-        onSwipeDown: (_) {
-          AutoRouter.of(context).pop();
-        },
-        onSwipeUp: (_) {
-          showInfo();
-        },
-        child: SafeArea(
-          child: PageView.builder(
-            controller: controller,
-            pageSnapping: true,
-            physics: const BouncingScrollPhysics(),
-            itemCount: assetList.length,
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) {
-              initState(index);
-              // ignore: avoid_print
-              print("looking at $indexOfAsset");
-              if (assetList[index].type == AssetTypeEnum.IMAGE) {
-                return RemotePhotoView(
-                  thumbnailUrl:
-                      '${box.get(serverEndpointKey)}/asset/thumbnail/${assetList[index].id}',
-                  imageUrl:
-                      '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}&isThumb=false',
-                  authToken: "Bearer ${box.get(accessTokenKey)}",
-                  onSwipeDown: () => AutoRouter.of(context).pop(),
-                  onSwipeUp: () => showInfo(),
-                );
-              } else {
-                return VideoThumbnailPlayer(
-                  url:
-                      '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}',
-                  jwtToken: jwtToken,
-                );
-              }
-            },
-          ),
+      body: SafeArea(
+        child: PageView.builder(
+          controller: controller,
+          pageSnapping: true,
+          physics: isZoomed.value
+              ? const NeverScrollableScrollPhysics()
+              : const BouncingScrollPhysics(),
+          itemCount: assetList.length,
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, index) {
+            initState(index);
+            getAssetExif();
+            if (assetList[index].type == AssetTypeEnum.IMAGE) {
+              return ImageViewerPage(
+                thumbnailUrl:
+                    '${box.get(serverEndpointKey)}/asset/thumbnail/${assetList[index].id}',
+                imageUrl:
+                    '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}&isThumb=false',
+                authToken: 'Bearer ${box.get(accessTokenKey)}',
+                isZoomedFunction: isZoomedMethod,
+                isZoomedListener: isZoomedListener,
+                asset: assetList[index],
+                heroTag: assetList[index].id,
+              );
+            } else {
+              return SwipeDetector(
+                onSwipeDown: (_) {
+                  AutoRouter.of(context).pop();
+                },
+                onSwipeUp: (_) {
+                  showInfo();
+                },
+                child: Hero(
+                  tag: assetList[index].id,
+                  child: VideoViewerPage(
+                    asset: assetList[index],
+                    videoUrl:
+                        '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}',
+                  ),
+                ),
+              );
+            }
+          },
         ),
       ),
     );

@@ -103,16 +103,17 @@ export class AlbumService {
     return mapAlbum(updatedAlbum);
   }
 
-  async updateAlbumTitle(
+  async updateAlbumInfo(
     authUser: AuthUserDto,
     updateAlbumDto: UpdateAlbumDto,
     albumId: string,
   ): Promise<AlbumResponseDto> {
-    // TODO: this should not come from request DTO. To be removed from here and DTO
-    // if (authUser.id != updateAlbumDto.ownerId) {
-    //   throw new BadRequestException('Unauthorized to change album info');
-    // }
     const album = await this._getAlbum({ authUser, albumId });
+
+    if (authUser.id != album.ownerId) {
+      throw new BadRequestException('Unauthorized to change album info');
+    }
+
     const updatedAlbum = await this._albumRepository.updateAlbum(album, updateAlbumDto);
     return mapAlbum(updatedAlbum);
   }

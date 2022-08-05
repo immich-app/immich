@@ -237,7 +237,8 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity> {
-    album.albumName = updateAlbumDto.albumName;
+    album.albumName = updateAlbumDto.albumName || album.albumName;
+    album.albumThumbnailAssetId = updateAlbumDto.albumThumbnailAssetId || album.albumThumbnailAssetId;
 
     return this.albumRepository.save(album);
   }

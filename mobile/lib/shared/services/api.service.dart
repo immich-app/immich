@@ -1,7 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:openapi/api.dart';
-
-final apiServiceProvider = Provider((ref) => ApiService());
 
 class ApiService {
   late ApiClient _apiClient;
@@ -15,7 +12,6 @@ class ApiService {
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint);
-
     userApi = UserApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
     albumApi = AlbumApi(_apiClient);

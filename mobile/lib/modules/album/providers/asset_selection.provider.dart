@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/sharing/models/asset_selection_state.model.dart';
+import 'package:immich_mobile/modules/album/models/asset_selection_state.model.dart';
 
 import 'package:openapi/api.dart';
 

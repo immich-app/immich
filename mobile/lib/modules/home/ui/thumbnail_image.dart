@@ -64,7 +64,6 @@ class ThumbnailImage extends HookConsumerWidget {
           AutoRouter.of(context).push(
             GalleryViewerRoute(
               assetList: assetList,
-              box: box,
               thumbnailRequestUrl: thumbnailRequestUrl,
               asset: asset,
             ),
@@ -72,7 +71,7 @@ class ThumbnailImage extends HookConsumerWidget {
         }
       },
       onLongPress: () {
-        // Enable multi selecte function
+        // Enable multi select function
         ref.watch(homePageStateProvider.notifier).enableMultiSelect({asset});
         HapticFeedback.heavyImpact();
       },

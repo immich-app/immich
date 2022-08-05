@@ -65,21 +65,18 @@ This project is under heavy development, there will be continuous functions, fea
 | Selective album(s) for backup | Yes | N/A
 | Download photos and videos to local device | Yes | Yes
 | Multi-user support | Yes | Yes
-| Shared Albums | Yes | No
+| Album | No | Yes
+| Shared Albums | Yes | Yes
 | Quick navigation with draggable scrollbar | Yes | Yes
 | Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes | Yes
 | Metadata view (EXIF, map) | Yes | Yes
 | Search by metadata, objects and image tags | Yes | No
-| Administrative functions (user management) | No | Yes
+| Administrative functions (user management) | N/A | Yes
 
 
 # System Requirement
 
 **OS**: Preferred unix-based operating system (Ubuntu, Debian, MacOS...etc). 
-
-I haven't tested with `Docker for Windows` as well as `WSL` on Windows
-
-*Raspberry Pi can be used but `immich-machine-learning` container has to be comment out in `docker-compose` since TensorFlow has not been supported in Docker image on arm64v7 yet.*
 
 **RAM**: At least 2GB, preffered 4GB.
 
@@ -236,9 +233,23 @@ You can find the generated client SDK in the [`web/src/api`](web/src/api) for Ty
 
 # Support
 
-If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**Github Sponsor**](https://github.com/sponsors/alextran1502), or a one time donation with the Buy Me a coffee link below.
+If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**one time**](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) or monthly donation from [**Github Sponsor**](https://github.com/sponsors/alextran1502)
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/altran1502)
+You can also donate using crypto currency with the following addresses:
+
+<p align="left" style="display: flex; place-items: center; gap: 20px" title="Bitcoin(BTC)">
+<img src="design/bitcoin.png" width="25" title="Bitcoin">
+<code>1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX</code>
+</p>
+
+  
+<p align="left" style="display: flex; place-items: center; gap: 15px" title="Cardano(ADA)">
+<img src="design/cardano.png" width="30" title="Cardano">
+<code>
+addr1qyy567vqhqrr3p7vpszr5p264gw89sqcwts2z8wqy4yek87cdmy79zazyjp7tmwhkluhk3krvslkzfvg0h43tytp3f5q49nycc
+</code>
+</p>
+
 
 This is also a meaningful way to give me motivation and encouragement to continue working on the app.
 
@@ -248,7 +259,7 @@ Cheers! 🎉
 
 ## TensorFlow Build Issue
 
-*This is a known issue on RaspberryPi 4 arm64-v7 and incorrect Promox setup*
+*This is a known issue for incorrect Promox setup*
 
 TensorFlow doesn't run with older CPU architecture, it requires a CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
  
@@ -261,7 +272,3 @@ If you are running virtualization in Promox, the VM doesn't have the flag enable
 You need to change the CPU type from `kvm64` to `host` under VMs hardware tab.
   
 `Hardware > Processors > Edit > Advanced > Type (dropdown menu) > host`
- 
-Otherwise you can:
-- edit `docker-compose.yml` file and comment the whole `immich-machine-learning` service **which will disable machine learning features like object detection and image classification**
-- switch to a different VM/desktop with different architecture.

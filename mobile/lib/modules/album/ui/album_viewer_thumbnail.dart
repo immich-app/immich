@@ -6,14 +6,19 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
+import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:openapi/api.dart';
 
 class AlbumViewerThumbnail extends HookConsumerWidget {
   final AssetResponseDto asset;
+  final List<AssetResponseDto> assetList;
 
-  const AlbumViewerThumbnail({Key? key, required this.asset}) : super(key: key);
+  const AlbumViewerThumbnail({
+    Key? key,
+    required this.asset,
+    required this.assetList,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,25 +33,13 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).isMultiselectEnable;
 
     _viewAsset() {
-      if (asset.type == AssetTypeEnum.IMAGE) {
-        AutoRouter.of(context).push(
-          ImageViewerRoute(
-            imageUrl:
-                '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
-            heroTag: asset.id,
-            thumbnailUrl: thumbnailRequestUrl,
-            asset: asset,
-          ),
-        );
-      } else {
-        AutoRouter.of(context).push(
-          VideoViewerRoute(
-            videoUrl:
-                '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-            asset: asset,
-          ),
-        );
-      }
+      AutoRouter.of(context).push(
+        GalleryViewerRoute(
+          asset: asset,
+          assetList: assetList,
+          thumbnailRequestUrl: thumbnailRequestUrl,
+        ),
+      );
     }
 
     BoxBorder drawBorderColor() {

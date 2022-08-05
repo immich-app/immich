@@ -16,8 +16,6 @@ class SharingSliverAppBar extends StatelessWidget {
       pinned: true,
       snap: false,
       automaticallyImplyLeading: false,
-      // leading: Container(),
-      // elevation: 0,
       title: Text(
         'IMMICH',
         style: TextStyle(
@@ -46,7 +44,7 @@ class SharingSliverAppBar extends StatelessWidget {
                     ),
                     onPressed: () {
                       AutoRouter.of(context)
-                          .push(const CreateSharedAlbumRoute());
+                          .push(CreateAlbumRoute(isSharedAlbum: true));
                     },
                     icon: const Icon(
                       Icons.photo_album_outlined,

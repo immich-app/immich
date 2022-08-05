@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
+import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:openapi/api.dart';
@@ -24,6 +25,7 @@ final backupServiceProvider = Provider(
 
 class BackupService {
   final ApiService _apiService;
+
   BackupService(this._apiService);
 
   Future<List<String>?> getDeviceBackupAsset() async {
