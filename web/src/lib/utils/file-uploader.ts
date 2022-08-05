@@ -168,7 +168,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 		};
 
-		request.open('POST', `${serverEndpoint}/asset/upload`);
+		request.open('POST', `api/asset/upload`);
 
 		request.send(formData);
 	} catch (e) {

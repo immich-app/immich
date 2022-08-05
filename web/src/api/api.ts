@@ -42,4 +42,4 @@ class ImmichApi {
 
 export const api = new ImmichApi();
 export const serverApi = new ImmichApi();
-serverApi.setBaseUrl('http://immich-proxy/api');
+serverApi.setBaseUrl('http://immich-server:3001');
