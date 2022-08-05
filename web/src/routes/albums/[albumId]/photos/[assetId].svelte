@@ -6,7 +6,7 @@
 
 	export const load: Load = async ({ params }) => {
 		try {
-			await api.userApi.getMyUserInfo();
+			await fetch('/data/user/get-my-user-info');
 		} catch (e) {
 			return {
 				status: 302,

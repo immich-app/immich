@@ -5,7 +5,7 @@
 
 	export const load: Load = async ({ fetch }) => {
 		try {
-			await fetch('/data/get-my-user-info.json');
+			await fetch('/data/user/get-my-user-info');
 
 			return {
 				status: 302,

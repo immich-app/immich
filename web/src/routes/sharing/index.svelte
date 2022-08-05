@@ -6,14 +6,15 @@
 
 	export const load: Load = async ({ fetch }) => {
 		try {
-			const getMyUserInfoRes = await fetch('/data/get-my-user-info.json');
-			const getMyUserInfoData = await getMyUserInfoRes.json();
-			const { data: sharedAlbums } = await api.albumApi.getAllAlbums(true);
+			const [user, sharedAlbums] = await Promise.all([
+				fetch('/data/user/get-my-user-info').then((r) => r.json()),
+				fetch('/data/album/get-all-albums?isShared=true').then((r) => r.json())
+			]);
 
 			return {
 				status: 200,
 				props: {
-					user: getMyUserInfoData,
+					user: user,
 					sharedAlbums: sharedAlbums
 				}
 			};

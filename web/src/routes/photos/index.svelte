@@ -6,15 +6,14 @@
 
 	export const load: Load = async ({ fetch }) => {
 		try {
-			const getMyUserInfoRes = await fetch('/data/get-my-user-info.json');
-			const getMyUserInfoData = await getMyUserInfoRes.json();
+			const userInfo = await fetch('/data/user/get-my-user-info').then((r) => r.json());
 
 			await getAssetsInfo();
 
 			return {
 				status: 200,
 				props: {
-					user: getMyUserInfoData
+					user: userInfo
 				}
 			};
 		} catch (e) {
