@@ -8,13 +8,12 @@ import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
 class ImageViewerPage extends HookConsumerWidget {
-  final String imageUrl;
   final String heroTag;
-  final String thumbnailUrl;
   final AssetResponseDto asset;
   final String authToken;
   final ValueNotifier<bool> isZoomedListener;
@@ -22,9 +21,7 @@ class ImageViewerPage extends HookConsumerWidget {
 
   ImageViewerPage({
     Key? key,
-    required this.imageUrl,
     required this.heroTag,
-    required this.thumbnailUrl,
     required this.asset,
     required this.authToken,
     required this.isZoomedFunction,

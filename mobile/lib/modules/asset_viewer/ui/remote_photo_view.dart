@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
-enum _RemoteImageStatus { empty, thumbnail, full }
+enum _RemoteImageStatus { empty, thumbnail, preview, full }
 
 class _RemotePhotoViewState extends State<RemotePhotoView> {
   late CachedNetworkImageProvider _imageProvider;
@@ -64,11 +64,16 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     _RemoteImageStatus newStatus,
     CachedNetworkImageProvider provider,
   ) {
-    // Transition to same status is forbidden
     if (_status == newStatus) return;
-    // Transition full -> thumbnail is forbidden
+
     if (_status == _RemoteImageStatus.full &&
         newStatus == _RemoteImageStatus.thumbnail) return;
+
+    if (_status == _RemoteImageStatus.preview &&
+        newStatus == _RemoteImageStatus.thumbnail) return;
+
+    if (_status == _RemoteImageStatus.full &&
+        newStatus == _RemoteImageStatus.preview) return;
 
     if (!mounted) return;
 
@@ -92,8 +97,18 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       }),
     );
 
+    if (widget.previewUrl != null) {
+      CachedNetworkImageProvider previewProvider =
+      _authorizedImageProvider(widget.previewUrl!);
+      previewProvider.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo imageInfo, _) {
+          _performStateTransition(_RemoteImageStatus.preview, previewProvider);
+        }),
+      );
+    }
+
     CachedNetworkImageProvider fullProvider =
-        _authorizedImageProvider(widget.imageUrl);
+    _authorizedImageProvider(widget.imageUrl);
     fullProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
         _performStateTransition(_RemoteImageStatus.full, fullProvider);
@@ -118,11 +133,14 @@ class RemotePhotoView extends StatefulWidget {
     required this.isZoomedListener,
     required this.onSwipeDown,
     required this.onSwipeUp,
+    this.previewUrl
+
   }) : super(key: key);
 
   final String thumbnailUrl;
   final String imageUrl;
   final String authToken;
+  final String? previewUrl;
 
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;
