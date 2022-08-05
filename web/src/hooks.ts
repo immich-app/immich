@@ -30,9 +30,3 @@ export const getSession: GetSession = async ({ locals }) => {
 		user: locals.user
 	};
 };
-
-export async function externalFetch(request: Request): Promise<Response> {
-	console.log('externalFetch', request);
-
-	return fetch(request);
-}
