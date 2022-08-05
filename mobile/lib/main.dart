@@ -31,7 +31,6 @@ void main() async {
   await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
   await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
   await Hive.openBox(hiveGithubReleaseInfoBox);
-  await Hive.openBox(hiveAssetsCacheBox);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

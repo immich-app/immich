@@ -17,6 +17,3 @@ const String backupInfoKey = "immichBackupAlbumInfoKey"; // Key 1
 const String hiveGithubReleaseInfoBox = "immichGithubReleaseInfoBox"; // Box
 const String githubReleaseInfoKey = "immichGithubReleaseInfoKey"; // Key 1
 
-// Assets cache
-const String hiveAssetsCacheBox = "immichAssetsCacheBox";
-const String hiveAssetsCacheKey = "immichAssetsCacheKey";
