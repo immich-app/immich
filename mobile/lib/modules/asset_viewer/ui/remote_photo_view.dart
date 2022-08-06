@@ -116,6 +116,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     fullProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
         _performStateTransition(_RemoteImageStatus.full, fullProvider);
+        if (widget.onLoadingCompleted != null) widget.onLoadingCompleted!();
       }),
     );
   }
@@ -137,14 +138,15 @@ class RemotePhotoView extends StatefulWidget {
     required this.isZoomedListener,
     required this.onSwipeDown,
     required this.onSwipeUp,
-    this.previewUrl
-
+    this.previewUrl,
+    this.onLoadingCompleted
   }) : super(key: key);
 
   final String thumbnailUrl;
   final String imageUrl;
   final String authToken;
   final String? previewUrl;
+  final Function? onLoadingCompleted;
 
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;

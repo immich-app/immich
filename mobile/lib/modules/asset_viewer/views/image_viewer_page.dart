@@ -33,6 +33,9 @@ class ImageViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final downloadAssetStatus =
         ref.watch(imageViewerStateProvider).downloadAssetStatus;
+    var box = Hive.box(userInfoBox);
+
+    final loadingHook = useState(true);
 
     getAssetExif() async {
       assetDetail =
@@ -54,7 +57,7 @@ class ImageViewerPage extends HookConsumerWidget {
         isScrollControlled: false,
         context: context,
         builder: (context) {
-          return ExifBottomSheet(assetDetail: assetDetail ?? asset);
+          return ExifBottomSheet(assetDetail: assetDetail!);
         },
       );
     }
