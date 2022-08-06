@@ -21,7 +21,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       child: PhotoView(
         imageProvider: _imageProvider,
         minScale: PhotoViewComputedScale.contained,
-        maxScale: PhotoViewComputedScale.contained,
         enablePanAlways: true,
         scaleStateChangedCallback: _scaleStateChanged,
         onScaleEnd: _onScaleListener,
@@ -56,6 +55,14 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     widget.isZoomedFunction();
   }
 
+  void _fireStartLoadingEvent() {
+    if (widget.onLoadingStart != null) widget.onLoadingStart!();
+  }
+
+  void _fireFinishedLoadingEvent() {
+    if (widget.onLoadingCompleted != null) widget.onLoadingCompleted!();
+  }
+
   CachedNetworkImageProvider _authorizedImageProvider(String url) {
     return CachedNetworkImageProvider(
       url,
@@ -80,6 +87,12 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
         newStatus == _RemoteImageStatus.preview) return;
 
     if (!mounted) return;
+
+    if (newStatus != _RemoteImageStatus.full) {
+      _fireStartLoadingEvent();
+    } else {
+      _fireFinishedLoadingEvent();
+    }
 
     setState(() {
       _status = newStatus;
@@ -116,7 +129,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     fullProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
         _performStateTransition(_RemoteImageStatus.full, fullProvider);
-        if (widget.onLoadingCompleted != null) widget.onLoadingCompleted!();
       }),
     );
   }
@@ -139,7 +151,8 @@ class RemotePhotoView extends StatefulWidget {
     required this.onSwipeDown,
     required this.onSwipeUp,
     this.previewUrl,
-    this.onLoadingCompleted
+    this.onLoadingCompleted,
+    this.onLoadingStart
   }) : super(key: key);
 
   final String thumbnailUrl;
@@ -147,6 +160,7 @@ class RemotePhotoView extends StatefulWidget {
   final String authToken;
   final String? previewUrl;
   final Function? onLoadingCompleted;
+  final Function? onLoadingStart;
 
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;

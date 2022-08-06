@@ -18,6 +18,8 @@ class ImageViewerPage extends HookConsumerWidget {
   final String authToken;
   final ValueNotifier<bool> isZoomedListener;
   final void Function() isZoomedFunction;
+  final void Function() onLoadingCompleted;
+  final void Function() onLoadingStart;
 
   ImageViewerPage({
     Key? key,
@@ -26,6 +28,8 @@ class ImageViewerPage extends HookConsumerWidget {
     required this.authToken,
     required this.isZoomedFunction,
     required this.isZoomedListener,
+    required this.onLoadingCompleted,
+    required this.onLoadingStart
   }) : super(key: key);
 
   AssetResponseDto? assetDetail;
@@ -33,9 +37,6 @@ class ImageViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final downloadAssetStatus =
         ref.watch(imageViewerStateProvider).downloadAssetStatus;
-    var box = Hive.box(userInfoBox);
-
-    final loadingHook = useState(true);
 
     getAssetExif() async {
       assetDetail =
@@ -68,13 +69,16 @@ class ImageViewerPage extends HookConsumerWidget {
           child: Hero(
             tag: heroTag,
             child: RemotePhotoView(
-              thumbnailUrl: thumbnailUrl,
-              imageUrl: imageUrl,
+              thumbnailUrl: getThumbnailUrl(asset),
+              imageUrl: getImageUrl(asset),
+              previewUrl: getThumbnailUrl(asset, type: ThumbnailFormat.JPEG),
               authToken: authToken,
               isZoomedFunction: isZoomedFunction,
               isZoomedListener: isZoomedListener,
               onSwipeDown: () => AutoRouter.of(context).pop(),
               onSwipeUp: () => showInfo(),
+              onLoadingCompleted: onLoadingCompleted,
+              onLoadingStart: onLoadingStart
             ),
           ),
         ),

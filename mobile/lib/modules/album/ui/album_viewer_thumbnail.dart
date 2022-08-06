@@ -37,7 +37,6 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         GalleryViewerRoute(
           asset: asset,
           assetList: assetList,
-          thumbnailRequestUrl: thumbnailRequestUrl,
         ),
       );
     }

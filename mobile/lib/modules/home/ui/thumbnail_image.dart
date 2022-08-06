@@ -65,7 +65,6 @@ class ThumbnailImage extends HookConsumerWidget {
           AutoRouter.of(context).push(
             GalleryViewerRoute(
               assetList: assetList,
-              thumbnailRequestUrl: thumbnailRequestUrl,
               asset: asset,
             ),
           );
