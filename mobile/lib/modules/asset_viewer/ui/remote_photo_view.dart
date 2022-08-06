@@ -15,13 +15,17 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   @override
   Widget build(BuildContext context) {
     bool allowMoving = _status == _RemoteImageStatus.full;
-    return PhotoView(
-      imageProvider: _imageProvider,
-      minScale: PhotoViewComputedScale.contained,
-      maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
-      enablePanAlways: true,
-      scaleStateChangedCallback: _scaleStateChanged,
-      onScaleEnd: _onScaleListener,
+
+    return IgnorePointer(
+      ignoring: !allowMoving,
+      child: PhotoView(
+        imageProvider: _imageProvider,
+        minScale: PhotoViewComputedScale.contained,
+        maxScale: PhotoViewComputedScale.contained,
+        enablePanAlways: true,
+        scaleStateChangedCallback: _scaleStateChanged,
+        onScaleEnd: _onScaleListener,
+      ),
     );
   }
 
