@@ -16,7 +16,7 @@ class ImmichApi {
 	public authenticationApi: AuthenticationApi;
 	public deviceInfoApi: DeviceInfoApi;
 	public serverInfoApi: ServerInfoApi;
-	private config = new Configuration({ basePath: serverEndpoint });
+	private config = new Configuration({ basePath: '/api' });
 
 	constructor() {
 		this.userApi = new UserApi(this.config);
@@ -34,6 +34,12 @@ class ImmichApi {
 	public removeAccessToken() {
 		this.config.accessToken = undefined;
 	}
+
+	public setBaseUrl(baseUrl: string) {
+		this.config.basePath = baseUrl;
+	}
 }
 
 export const api = new ImmichApi();
+export const serverApi = new ImmichApi();
+serverApi.setBaseUrl('http://immich-server:3001');

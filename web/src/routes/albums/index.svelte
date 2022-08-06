@@ -9,10 +9,12 @@
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import { AlbumResponseDto, api } from '@api';
 
-	export const load: Load = async () => {
+	export const load: Load = async ({ fetch }) => {
 		try {
-			const { data: user } = await api.userApi.getMyUserInfo();
-			const { data: albums } = await api.albumApi.getAllAlbums();
+			const [user, albums] = await Promise.all([
+				fetch('/data/user/get-my-user-info').then((r) => r.json()),
+				fetch('/data/album/get-all-albums').then((r) => r.json())
+			]);
 
 			return {
 				status: 200,

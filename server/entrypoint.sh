@@ -1,1 +1,0 @@
-npm start immich

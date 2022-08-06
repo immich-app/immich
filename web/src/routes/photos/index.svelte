@@ -2,20 +2,25 @@
 	export const prerender = false;
 
 	import type { Load } from '@sveltejs/kit';
-	import { getAssetsInfo } from '$lib/stores/assets';
+	import { setAssetInfo } from '$lib/stores/assets';
 
-	export const load: Load = async () => {
+	export const load: Load = async ({ fetch }) => {
 		try {
-			const { data } = await api.userApi.getMyUserInfo();
-			await getAssetsInfo();
+			const [userInfo, assets] = await Promise.all([
+				fetch('/data/user/get-my-user-info').then((r) => r.json()),
+				fetch('/data/asset/get-all-assets').then((r) => r.json())
+			]);
+
+			setAssetInfo(assets);
 
 			return {
 				status: 200,
 				props: {
-					user: data
+					user: userInfo
 				}
 			};
 		} catch (e) {
+			console.log('ERROR load photos index');
 			return {
 				status: 302,
 				redirect: '/auth/login'
@@ -33,7 +38,7 @@
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { api, AssetResponseDto, UserResponseDto } from '@api';
+	import { AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 
 	export let user: UserResponseDto;

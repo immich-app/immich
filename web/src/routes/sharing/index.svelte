@@ -4,10 +4,12 @@
 	import type { Load } from '@sveltejs/kit';
 	import { AlbumResponseDto, api, UserResponseDto } from '@api';
 
-	export const load: Load = async () => {
+	export const load: Load = async ({ fetch }) => {
 		try {
-			const { data: user } = await api.userApi.getMyUserInfo();
-			const { data: sharedAlbums } = await api.albumApi.getAllAlbums(true);
+			const [user, sharedAlbums] = await Promise.all([
+				fetch('/data/user/get-my-user-info').then((r) => r.json()),
+				fetch('/data/album/get-all-albums?isShared=true').then((r) => r.json())
+			]);
 
 			return {
 				status: 200,
