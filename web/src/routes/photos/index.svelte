@@ -2,13 +2,16 @@
 	export const prerender = false;
 
 	import type { Load } from '@sveltejs/kit';
-	import { getAssetsInfo } from '$lib/stores/assets';
+	import { setAssetInfo } from '$lib/stores/assets';
 
 	export const load: Load = async ({ fetch }) => {
 		try {
-			const userInfo = await fetch('/data/user/get-my-user-info').then((r) => r.json());
+			const [userInfo, assets] = await Promise.all([
+				fetch('/data/user/get-my-user-info').then((r) => r.json()),
+				fetch('/data/asset/get-all-assets').then((r) => r.json())
+			]);
 
-			await getAssetsInfo();
+			setAssetInfo(assets);
 
 			return {
 				status: 200,
@@ -35,9 +38,8 @@
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { api, AssetResponseDto, serverApi, UserResponseDto } from '@api';
+	import { AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import { browser } from '$app/env';
 
 	export let user: UserResponseDto;
 
