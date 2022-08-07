@@ -169,7 +169,7 @@ MAPBOX_KEY=
 
 ### Step 3 - Start the containers
 
-Run `docker-compose up` or `docker-compose up` (based on your docker's version)
+Run `docker-compose up` or `docker compose up` (based on your docker's version)
 
 ### Step 4 - Register admin user
 
