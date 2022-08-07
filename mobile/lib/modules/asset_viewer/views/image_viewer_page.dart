@@ -20,6 +20,7 @@ class ImageViewerPage extends HookConsumerWidget {
   final void Function() isZoomedFunction;
   final void Function() onLoadingCompleted;
   final void Function() onLoadingStart;
+  final bool threeStageLoading;
 
   ImageViewerPage({
     Key? key,
@@ -29,7 +30,8 @@ class ImageViewerPage extends HookConsumerWidget {
     required this.isZoomedFunction,
     required this.isZoomedListener,
     required this.onLoadingCompleted,
-    required this.onLoadingStart
+    required this.onLoadingStart,
+    required this.threeStageLoading,
   }) : super(key: key);
 
   AssetResponseDto? assetDetail;
@@ -69,17 +71,18 @@ class ImageViewerPage extends HookConsumerWidget {
           child: Hero(
             tag: heroTag,
             child: RemotePhotoView(
-              thumbnailUrl: getThumbnailUrl(asset),
-              imageUrl: getImageUrl(asset),
-              previewUrl: getThumbnailUrl(asset, type: ThumbnailFormat.JPEG),
-              authToken: authToken,
-              isZoomedFunction: isZoomedFunction,
-              isZoomedListener: isZoomedListener,
-              onSwipeDown: () => AutoRouter.of(context).pop(),
-              onSwipeUp: () => showInfo(),
-              onLoadingCompleted: onLoadingCompleted,
-              onLoadingStart: onLoadingStart
-            ),
+                thumbnailUrl: getThumbnailUrl(asset),
+                imageUrl: getImageUrl(asset),
+                previewUrl: threeStageLoading
+                    ? getThumbnailUrl(asset, type: ThumbnailFormat.JPEG)
+                    : null,
+                authToken: authToken,
+                isZoomedFunction: isZoomedFunction,
+                isZoomedListener: isZoomedListener,
+                onSwipeDown: () => AutoRouter.of(context).pop(),
+                onSwipeUp: () => showInfo(),
+                onLoadingCompleted: onLoadingCompleted,
+                onLoadingStart: onLoadingStart),
           ),
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)

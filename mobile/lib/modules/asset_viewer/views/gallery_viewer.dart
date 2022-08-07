@@ -18,6 +18,8 @@ class GalleryViewerPage extends HookConsumerWidget {
   late List<AssetResponseDto> assetList;
   final AssetResponseDto asset;
 
+  static const _threeStageLoading = false;
+
   GalleryViewerPage({
     Key? key,
     required this.assetList,
@@ -102,9 +104,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isZoomedFunction: isZoomedMethod,
                 isZoomedListener: isZoomedListener,
                 onLoadingCompleted: () => loading.value = false,
-                onLoadingStart: () => loading.value = true,
+                onLoadingStart: () => loading.value = _threeStageLoading,
                 asset: assetList[index],
                 heroTag: assetList[index].id,
+                threeStageLoading: _threeStageLoading
               );
             } else {
               return SwipeDetector(
