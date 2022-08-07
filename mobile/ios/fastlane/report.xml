@@ -5,32 +5,34 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000227">
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000213">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: increment_version_number" time="0.526426">
+      <testcase classname="fastlane.lanes" name="1: increment_version_number" time="2.088407">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: latest_testflight_build_number" time="7.096281">
+      <testcase classname="fastlane.lanes" name="2: latest_testflight_build_number" time="22.635867">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: increment_build_number" time="0.476898">
+      <testcase classname="fastlane.lanes" name="3: increment_build_number" time="0.376681">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: build_app" time="102.893162">
+      <testcase classname="fastlane.lanes" name="4: build_app" time="91.762747">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="5: upload_to_testflight" time="130.468341">
+      <testcase classname="fastlane.lanes" name="5: upload_to_testflight" time="49.149884">
+        
+          <failure message="/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/actions/actions_helper.rb:67:in `execute_action&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/runner.rb:255:in `block in execute_action&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/runner.rb:229:in `chdir&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/runner.rb:229:in `execute_action&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/runner.rb:157:in `trigger_action_by_name&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/fast_file.rb:159:in `method_missing&apos;&#10;Fastfile:30:in `block (2 levels) in parsing_binding&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/lane.rb:33:in `call&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/runner.rb:49:in `block in execute&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/runner.rb:45:in `chdir&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/runner.rb:45:in `execute&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/lane_manager.rb:47:in `cruise_lane&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/command_line_handler.rb:36:in `handle&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/commands_generator.rb:110:in `block (2 levels) in run&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/commander-4.6.0/lib/commander/command.rb:187:in `call&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/commander-4.6.0/lib/commander/command.rb:157:in `run&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/commander-4.6.0/lib/commander/runner.rb:444:in `run_active_command&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:124:in `run!&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/commander-4.6.0/lib/commander/delegates.rb:18:in `run!&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/commands_generator.rb:354:in `run&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/commands_generator.rb:43:in `start&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/fastlane/lib/fastlane/cli_tools_distributor.rb:123:in `take_off&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/gems/fastlane-2.207.0/bin/fastlane:23:in `&lt;top (required)&gt;&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/bin/fastlane:25:in `load&apos;&#10;/opt/homebrew/Cellar/fastlane/2.207.0/libexec/bin/fastlane:25:in `&lt;main&gt;&apos;&#10;&#10;Error uploading ipa file: &#10; [Transporter Error Output]: ERROR ITMS-90186: Invalid Pre-Release Train. The train version &apos;1.19.0&apos; is closed for new build submissions&#10;[Transporter Error Output]: ERROR ITMS-90062: This bundle is invalid. The value for key CFBundleShortVersionString [1.19.0] in the Info.plist file must contain a higher version than that of the previously approved version [1.19.0]. Please find more information about CFBundleShortVersionString at https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundleshortversionstring&#10;[Transporter Error Output]: Return status of iTunes Transporter was 1: ERROR ITMS-90186: Invalid Pre-Release Train. The train version &apos;1.19.0&apos; is closed for new build submissions\nERROR ITMS-90062: This bundle is invalid. The value for key CFBundleShortVersionString [1.19.0] in the Info.plist file must contain a higher version than that of the previously approved version [1.19.0]. Please find more information about CFBundleShortVersionString at https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundleshortversionstring&#10;[Transporter Error Output]: The call to the iTMSTransporter completed with a non-zero exit status: 1. This indicates a failure." />
         
       </testcase>
     

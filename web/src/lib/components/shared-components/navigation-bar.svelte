@@ -93,7 +93,7 @@
 				>
 					{#if shouldShowProfileImage}
 						<img
-							src={`${serverEndpoint}/user/profile-image/${user.id}`}
+							src={`api/user/profile-image/${user.id}`}
 							alt="profile-img"
 							class="inline rounded-full h-12 w-12 object-cover shadow-md"
 						/>

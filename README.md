@@ -61,11 +61,11 @@ This project is under heavy development, there will be continuous functions, fea
 |  | Mobile | Web |
 | - | - | - |
 | Upload and view videos and photos | Yes | Yes
-| Auto backup when app is opened | Yes | N/A
+| Auto backup when the app is opened | Yes | N/A
 | Selective album(s) for backup | Yes | N/A
 | Download photos and videos to local device | Yes | Yes
 | Multi-user support | Yes | Yes
-| Album | No | Yes
+| Album | Yes | Yes
 | Shared Albums | Yes | Yes
 | Quick navigation with draggable scrollbar | Yes | Yes
 | Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes | Yes
@@ -82,9 +82,9 @@ This project is under heavy development, there will be continuous functions, fea
 
 **Core**: At least 2 cores, preffered 4 cores.
 
-# Getting Started
+# Technology Stack
 
-You can use docker compose for development and testing out the application, there are several services that compose Immich:
+There are several services that compose Immich:
 
 1. **NestJs** - Backend of the application
 2. **SvelteKit** - Web frontend of the application
@@ -93,19 +93,51 @@ You can use docker compose for development and testing out the application, ther
 5. **Nginx** - Load balancing and optimized file uploading.
 6. **TensorFlow** - Object Detection (COCO SSD) and Image Classification (ImageNet).
 
-## Step 1: Populate .env file
+# Installing
 
-Navigate to `docker` directory and run
+## One-step installation - for evaluating only
 
+*Applicable system: Ubuntu, Debian, MacOS*
+
+*This installation method is for evaluating Immich before futher customization to meet the users' needs.*
+
+In the shell, from the directory of your choice, run the following command:
+
+```bash
+curl -o- https://raw.githubusercontent.com/immich-app/immich/main/install.sh | bash
 ```
-cp .env.example .env
+
+This script will download the `docker-compose.yml` file and the `.env` file, then populate the necessary information, and finally run the `docker-compose up` or `docker compose up` (based on your docker's version) command. 
+
+The web application will be available at `http://<machine-ip-address>:2283`, and the server URL for the mobile app will be `http://<machine-ip-address>:2283/api`.
+
+The directory which is used to store the backup file is `./immich-app/immich-data`.
+
+
+## Customize installation - for production usage
+
+### Step 1 - Download necessary files
+
+Create a directory called `immich-app` and cd into it. Then
+
+Get `docker-compose.yml`
+
+```bash
+wget https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml
 ```
 
-Then populate the value in there.
+Get `.env`
 
-Notice that if set `ENABLE_MAPBOX` to `true`, you will have to provide `MAPBOX_KEY` for the server to run.
+```bash
+wget -O .env wget https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
+```
 
-Pay attention to the key `UPLOAD_LOCATION`, this directory must exist and is owned by the user that run the `docker-compose` command below.
+### Step 2 - Populate .env file with customed information
+
+* Populate customised database information if necessary.
+* Populate `UPLOAD_LOCATION` as prefered location for storing backup assets.
+* Populate a secret value for `JWT_SECRET`
+* [Optional] Popluate Mapbox value.
 
 **Example**
 
@@ -133,36 +165,15 @@ JWT_SECRET=randomstringthatissolongandpowerfulthatnoonecanguess
 # ENABLE_MAPBOX is either true of false -> if true, you have to provide MAPBOX_KEY
 ENABLE_MAPBOX=false
 MAPBOX_KEY=
-
-###################################################################################
-# WEB
-###################################################################################
-# This is the URL of your vm/server where you host Immich, so that the web frontend
-# know where can it make the request to.
-# For example: If your server IP address is 10.1.11.50, the environment variable will
-# be VITE_SERVER_ENDPOINT=http://10.1.11.50:2283/api
-VITE_SERVER_ENDPOINT=http://192.168.1.216:2283/api
 ```
 
-## Step 2: Start the server
+### Step 3 - Start the containers
 
-To **start**, run
+Run `docker-compose up` or `docker-compose up` (based on your docker's version)
 
-```bash
-docker-compose -f ./docker/docker-compose.yml up 
-```
+### Step 4 - Register admin user
 
-To *update* docker-compose with newest image (if you have started the docker-compose previously)
-
-```bash
-docker-compose -f ./docker/docker-compose.yml pull && docker-compose -f ./docker/docker-compose.yml up
-```
-
-The server will be running at `http://your-ip:2283/api`
-
-## Step 3: Register User
-
-Access the web interface at `http://your-ip:2283` to register an admin account.
+Navigate to the web at `http://<machine-ip-address>:2283` and follow the prompts to register admin user.
 
 <p align="left">
   <img src="design/admin-registration-form.png" width="300" title="Admin Registration">
@@ -174,13 +185,15 @@ Additional accounts on the server can be created by the admin account.
   <img src="design/admin-interface.png" width="500" title="Admin User Management">
 <p/>
 
-## Step 4: Run mobile app
+### Step 5 - Access the mobile app
 
-Login the mobile app with your server address
+Login the mobile app with the server endpoint URL at `http://<machine-ip-address>:2283/api`
 
 <p align="left">
   <img src="design/login-screen.jpeg" width="250" title="Example login screen">
 <p/>
+
+## Mobile app
 
 ## F-Droid
 You can get the app on F-droid by clicking the image below.
