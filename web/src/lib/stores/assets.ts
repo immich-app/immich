@@ -29,3 +29,7 @@ export const getAssetsInfo = async () => {
 		console.log('Error [getAssetsInfo]');
 	}
 };
+
+export const setAssetInfo = (data: AssetResponseDto[]) => {
+	assets.set(data);
+};

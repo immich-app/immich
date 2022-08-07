@@ -2,10 +2,12 @@
 	import type { Load } from '@sveltejs/kit';
 	import { api, UserResponseDto } from '@api';
 
-	export const load: Load = async () => {
+	export const load: Load = async ({ fetch }) => {
 		try {
-			const { data: allUsers } = await api.userApi.getAllUsers(false);
-			const { data: user } = await api.userApi.getMyUserInfo();
+			const [user, allUsers] = await Promise.all([
+				fetch('/data/user/get-my-user-info').then((r) => r.json()),
+				fetch('/data/user/get-all-users?isAll=false').then((r) => r.json())
+			]);
 
 			return {
 				status: 200,

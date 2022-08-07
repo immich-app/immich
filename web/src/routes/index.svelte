@@ -4,28 +4,31 @@
 	import { api } from '@api';
 
 	export const load: Load = async () => {
-		try {
-			const { data: user } = await api.userApi.getMyUserInfo();
+		if (browser) {
+			try {
+				const { data: user } = await api.userApi.getMyUserInfo();
+
+				return {
+					status: 302,
+					redirect: '/photos'
+				};
+			} catch (e) {}
+
+			const { data } = await api.userApi.getUserCount();
 
 			return {
-				status: 302,
-				redirect: '/photos'
+				status: 200,
+				props: {
+					isAdminUserExist: data.userCount == 0 ? false : true
+				}
 			};
-		} catch (e) {}
-
-		const { data } = await api.userApi.getUserCount();
-
-		return {
-			status: 200,
-			props: {
-				isAdminUserExist: data.userCount == 0 ? false : true
-			}
-		};
+		}
 	};
 </script>
 
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { browser } from '$app/env';
 
 	export let isAdminUserExist: boolean;
 

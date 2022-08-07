@@ -1,0 +1,1 @@
+This directory contain SSR endpoints to user serverApi instance to make request directly to DNS

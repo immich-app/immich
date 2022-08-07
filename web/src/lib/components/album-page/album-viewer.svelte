@@ -60,7 +60,7 @@
 	});
 
 	$: {
-		if (album.assets.length < 6) {
+		if (album.assets?.length < 6) {
 			thumbnailSize = Math.floor(viewWidth / album.assets.length - album.assets.length);
 		} else {
 			thumbnailSize = Math.floor(viewWidth / 6 - 6);
