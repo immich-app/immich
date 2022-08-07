@@ -133,15 +133,6 @@ JWT_SECRET=randomstringthatissolongandpowerfulthatnoonecanguess
 # ENABLE_MAPBOX is either true of false -> if true, you have to provide MAPBOX_KEY
 ENABLE_MAPBOX=false
 MAPBOX_KEY=
-
-###################################################################################
-# WEB
-###################################################################################
-# This is the URL of your vm/server where you host Immich, so that the web frontend
-# know where can it make the request to.
-# For example: If your server IP address is 10.1.11.50, the environment variable will
-# be VITE_SERVER_ENDPOINT=http://10.1.11.50:2283/api
-VITE_SERVER_ENDPOINT=http://192.168.1.216:2283/api
 ```
 
 ## Step 2: Start the server
