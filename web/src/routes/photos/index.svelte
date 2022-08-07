@@ -3,8 +3,14 @@
 
 	import type { Load } from '@sveltejs/kit';
 	import { setAssetInfo } from '$lib/stores/assets';
+	export const load: Load = async ({ fetch, session }) => {
+		if (!browser && !session.user) {
+			return {
+				status: 302,
+				redirect: '/auth/login'
+			};
+		}
 
-	export const load: Load = async ({ fetch }) => {
 		try {
 			const [userInfo, assets] = await Promise.all([
 				fetch('/data/user/get-my-user-info').then((r) => r.json()),
@@ -40,6 +46,7 @@
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
 	import { AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import { browser } from '$app/env';
 
 	export let user: UserResponseDto;
 

@@ -2,7 +2,14 @@
 	import type { Load } from '@sveltejs/kit';
 	import { api, UserResponseDto } from '@api';
 
-	export const load: Load = async ({ fetch }) => {
+	export const load: Load = async ({ fetch, session }) => {
+		if (!browser && !session.user) {
+			return {
+				status: 302,
+				redirect: '/auth/login'
+			};
+		}
+
 		try {
 			const [user, allUsers] = await Promise.all([
 				fetch('/data/user/get-my-user-info').then((r) => r.json()),
@@ -37,6 +44,7 @@
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
+	import { browser } from '$app/env';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
