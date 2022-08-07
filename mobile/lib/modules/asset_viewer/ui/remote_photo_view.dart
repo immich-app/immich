@@ -116,7 +116,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
     if (widget.previewUrl != null) {
       CachedNetworkImageProvider previewProvider =
-      _authorizedImageProvider(widget.previewUrl!);
+          _authorizedImageProvider(widget.previewUrl!);
       previewProvider.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((ImageInfo imageInfo, _) {
           _performStateTransition(_RemoteImageStatus.preview, previewProvider);
@@ -125,7 +125,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     }
 
     CachedNetworkImageProvider fullProvider =
-    _authorizedImageProvider(widget.imageUrl);
+        _authorizedImageProvider(widget.imageUrl);
     fullProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
         _performStateTransition(_RemoteImageStatus.full, fullProvider);
@@ -141,19 +141,19 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 }
 
 class RemotePhotoView extends StatefulWidget {
-  const RemotePhotoView({
-    Key? key,
-    required this.thumbnailUrl,
-    required this.imageUrl,
-    required this.authToken,
-    required this.isZoomedFunction,
-    required this.isZoomedListener,
-    required this.onSwipeDown,
-    required this.onSwipeUp,
-    this.previewUrl,
-    this.onLoadingCompleted,
-    this.onLoadingStart
-  }) : super(key: key);
+  const RemotePhotoView(
+      {Key? key,
+      required this.thumbnailUrl,
+      required this.imageUrl,
+      required this.authToken,
+      required this.isZoomedFunction,
+      required this.isZoomedListener,
+      required this.onSwipeDown,
+      required this.onSwipeUp,
+      this.previewUrl,
+      this.onLoadingCompleted,
+      this.onLoadingStart})
+      : super(key: key);
 
   final String thumbnailUrl;
   final String imageUrl;
