@@ -42,6 +42,23 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
 
     state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.idle);
   }
+
+  void shareAsset(AssetResponseDto asset, BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext buildContext) {
+        _imageViewerService
+            .shareAsset(asset)
+            .then((_) => Navigator.pop(buildContext));
+        return AlertDialog(
+          content: Row(children: const [
+            CircularProgressIndicator()
+          ]),
+        );
+      },
+      barrierDismissible: true,
+    );
+  }
 }
 
 final imageViewerStateProvider =
