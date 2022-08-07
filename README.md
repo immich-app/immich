@@ -114,9 +114,11 @@ The web application will be available at `http://<machine-ip-address>:2283`, and
 The directory which is used to store the backup file is `./immich-app/immich-data`.
 
 
-## Customed installation - for production usage
+## Customize installation - for production usage
 
-## Step 1 - Download necessary files
+### Step 1 - Download necessary files
+
+Create a directory called `immich-app` and cd into it. Then
 
 Get `docker-compose.yml`
 
@@ -130,7 +132,7 @@ Get `.env`
 wget -O .env wget https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
 ```
 
-## Step 2 - Populate .env file with customed information
+### Step 2 - Populate .env file with customed information
 
 * Populate customised database information if necessary.
 * Populate `UPLOAD_LOCATION` as prefered location for storing backup assets.
@@ -165,11 +167,11 @@ ENABLE_MAPBOX=false
 MAPBOX_KEY=
 ```
 
-## Step 3 - Start the containers
+### Step 3 - Start the containers
 
 Run `docker-compose up` or `docker-compose up` (based on your docker's version)
 
-## Step 4 - Register admin user
+### Step 4 - Register admin user
 
 Navigate to the web at `http://<machine-ip-address>:2283` and follow the prompts to register admin user.
 
@@ -183,14 +185,15 @@ Additional accounts on the server can be created by the admin account.
   <img src="design/admin-interface.png" width="500" title="Admin User Management">
 <p/>
 
-## Step 5 - Access the mobile app
+### Step 5 - Access the mobile app
 
-Login the mobile app with the server endpoint URL at `http://<machine-ip-address>:2283/api`.
+Login the mobile app with the server endpoint URL at `http://<machine-ip-address>:2283/api`
 
 <p align="left">
   <img src="design/login-screen.jpeg" width="250" title="Example login screen">
 <p/>
 
+## Mobile app
 
 ## F-Droid
 You can get the app on F-droid by clicking the image below.

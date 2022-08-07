@@ -65,9 +65,14 @@ show_friendly_message() {
   echo "You can access the website at http://$ip_address:2283 and the server URL for the mobile app is http://$ip_address:2283/api"
   echo "The backup (or upload) location is $upload_location"
   echo "---------------------------------------------------"
-  echo "If you want to confgure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc."
+  echo "If you want to confgure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc. 
+  
+  1. First bring down the containers with the command 'docker-compose down' in the immich-app directory, 
+  
+  2. Then change the information that fits your needs in the '.env' file, 
+  
+  3. Finally, bring the containers back up with the command 'docker-compose up --remove-orphans -d' in the immich-app directory"
 
-  echo "Before updating the content of the configuration file, please bring down the containers with the command 'docker-compose down' in the immich-app directory, then change the information that fits your needs in the '.env' file, and then bring the containers back up with the command 'docker-compose up --remove-orphans -d' in the immich-app directory"
 }
 
 # MAIN
@@ -75,5 +80,4 @@ create_immich_directory
 download_docker_compose_file
 download_dot_env_file
 populate_upload_location
-populate_server_endpoint
 start_docker_compose
