@@ -1,6 +1,5 @@
 /* @vite-ignore */
 import * as exifr from 'exifr';
-import { serverEndpoint } from '../constants';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
@@ -168,7 +167,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 		};
 
-		request.open('POST', `api/asset/upload`);
+		request.open('POST', `/api/asset/upload`);
 
 		request.send(formData);
 	} catch (e) {

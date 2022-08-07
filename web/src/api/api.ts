@@ -1,4 +1,3 @@
-import { serverEndpoint } from '$lib/constants';
 import {
 	AlbumApi,
 	AssetApi,
