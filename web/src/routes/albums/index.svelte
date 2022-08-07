@@ -9,7 +9,14 @@
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import { AlbumResponseDto, api } from '@api';
 
-	export const load: Load = async ({ fetch }) => {
+	export const load: Load = async ({ fetch, session }) => {
+		if (!browser && !session.user) {
+			return {
+				status: 302,
+				redirect: '/auth/login'
+			};
+		}
+
 		try {
 			const [user, albums] = await Promise.all([
 				fetch('/data/user/get-my-user-info').then((r) => r.json()),
@@ -39,6 +46,7 @@
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import { browser } from '$app/env';
 
 	export let user: ImmichUser;
 	export let albums: AlbumResponseDto[];
