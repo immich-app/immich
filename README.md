@@ -137,7 +137,7 @@ wget -O .env wget https://raw.githubusercontent.com/immich-app/immich/main/docke
 * Populate customised database information if necessary.
 * Populate `UPLOAD_LOCATION` as prefered location for storing backup assets.
 * Populate a secret value for `JWT_SECRET`
-* [Optional] Popluate Mapbox value.
+* [Optional] Populate Mapbox value.
 
 **Example**
 
