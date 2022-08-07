@@ -40,11 +40,18 @@
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
 	import { AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 
 	export let user: UserResponseDto;
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
+
+	let multiSelectedAssets = new Set<AssetResponseDto>();
+	$: isMultiSelectionMode = multiSelectedAssets.size > 0;
+
+	let selectedGroup: Set<number> = new Set();
+	let existingGroup: Set<number> = new Set();
 
 	$: if (isMouseOverGroup == false) {
 		selectedGroupThumbnail = null;
@@ -103,6 +110,65 @@
 		isShowAssetViewer = false;
 		history.pushState(null, '', `/photos`);
 	};
+
+	const selectAssetHandler = (asset: AssetResponseDto, groupIndex: number) => {
+		let temp = new Set(multiSelectedAssets);
+
+		if (multiSelectedAssets.has(asset)) {
+			temp.delete(asset);
+
+			const tempSelectedGroup = new Set(selectedGroup);
+			tempSelectedGroup.delete(groupIndex);
+			selectedGroup = tempSelectedGroup;
+		} else {
+			temp.add(asset);
+		}
+
+		multiSelectedAssets = temp;
+
+		// Check if all assets are selected in a group to toggle the group selection's icon
+		if (!selectedGroup.has(groupIndex)) {
+			const assetsInGroup = $assetsGroupByDate[groupIndex];
+			let selectedAssetsInGroupCount = 0;
+
+			assetsInGroup.forEach((asset) => {
+				if (multiSelectedAssets.has(asset)) {
+					selectedAssetsInGroupCount++;
+				}
+			});
+
+			// if all assets are selected in a group, add the group to selected group
+			if (selectedAssetsInGroupCount == assetsInGroup.length) {
+				selectedGroup = selectedGroup.add(groupIndex);
+			}
+		}
+	};
+
+	const clearMultiSelectAssetAssetHandler = () => {
+		multiSelectedAssets = new Set();
+	};
+
+	const selectAssetGroupHandler = (groupIndex: number) => {
+		if (existingGroup.has(groupIndex)) return;
+
+		let tempSelectedGroup = new Set(selectedGroup);
+		let tempSelectedAsset = new Set(multiSelectedAssets);
+
+		if (selectedGroup.has(groupIndex)) {
+			tempSelectedGroup.delete(groupIndex);
+			tempSelectedAsset.forEach((asset) => {
+				if ($assetsGroupByDate[groupIndex].find((a) => a.id == asset.id)) {
+					tempSelectedAsset.delete(asset);
+				}
+			});
+		} else {
+			tempSelectedGroup.add(groupIndex);
+			tempSelectedAsset = new Set([...multiSelectedAssets, ...$assetsGroupByDate[groupIndex]]);
+		}
+
+		multiSelectedAssets = tempSelectedAsset;
+		selectedGroup = tempSelectedGroup;
+	};
 </script>
 
 <svelte:head>
@@ -134,8 +200,15 @@
 									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
 									out:fly={{ x: -24, duration: 200 }}
 									class="inline-block px-2 hover:cursor-pointer"
+									on:click={() => selectAssetGroupHandler(groupIndex)}
 								>
-									<CheckCircle size="24" color="#757575" />
+									{#if selectedGroup.has(groupIndex)}
+										<CheckCircle size="24" color="#4250af" />
+									{:else if existingGroup.has(groupIndex)}
+										<CheckCircle size="24" color="#757575" />
+									{:else}
+										<CircleOutline size="24" color="#757575" />
+									{/if}
 								</div>
 							{/if}
 
@@ -150,6 +223,8 @@
 										{asset}
 										on:mouseEvent={thumbnailMouseEventHandler}
 										on:click={viewAssetHandler}
+										on:select={() => selectAssetHandler(asset, groupIndex)}
+										selected={multiSelectedAssets.has(asset)}
 										{groupIndex}
 									/>
 								{/key}
