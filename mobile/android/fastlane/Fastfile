@@ -30,7 +30,7 @@ platform :android do
       task: 'bundle', 
       build_type: 'Release',
       properties: {
-        "android.injected.version.code" => 29,
+        "android.injected.version.code" => 30,
         "android.injected.version.name" => "1.20.0",
       }
     )
