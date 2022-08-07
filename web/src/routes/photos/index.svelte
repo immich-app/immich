@@ -41,6 +41,10 @@
 	import { AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
+	import AlbumAppBar from '$lib/components/album-page/album-app-bar.svelte';
+	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
+	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import Close from 'svelte-material-icons/Close.svelte';
 
 	export let user: UserResponseDto;
 
@@ -176,7 +180,24 @@
 </svelte:head>
 
 <section>
-	<NavigationBar {user} on:uploadClicked={() => openFileUploadDialog(UploadType.GENERAL)} />
+	{#if isMultiSelectionMode}
+		<AlbumAppBar
+			on:close-button-click={clearMultiSelectAssetAssetHandler}
+			backIcon={Close}
+			tailwindClasses={'bg-white shadow-md'}
+		>
+			<svelte:fragment slot="leading">
+				<p class="font-medium text-immich-primary">Selected {multiSelectedAssets.size}</p>
+			</svelte:fragment>
+			<svelte:fragment slot="trailing">
+				<CircleIconButton title="Delete" logo={DeleteOutline} />
+			</svelte:fragment>
+		</AlbumAppBar>
+	{/if}
+
+	{#if !isMultiSelectionMode}
+		<NavigationBar {user} on:uploadClicked={() => openFileUploadDialog(UploadType.GENERAL)} />
+	{/if}
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
