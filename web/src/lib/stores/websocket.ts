@@ -1,12 +1,9 @@
 import { Socket, io } from 'socket.io-client';
 import { writable } from 'svelte/store';
-import { serverEndpoint } from '../constants';
 
 let websocket: Socket;
 
 export const openWebsocketConnection = () => {
-	const websocketEndpoint = serverEndpoint.replace('/api', '');
-
 	try {
 		websocket = io('', {
 			path: '/api/socket.io',
