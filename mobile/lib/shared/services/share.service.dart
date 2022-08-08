@@ -13,7 +13,6 @@ final shareServiceProvider =
   Provider((ref) => ShareService(ref.watch(apiServiceProvider)));
 
 class ShareService {
-
   final ApiService _apiService;
 
   ShareService(this._apiService);

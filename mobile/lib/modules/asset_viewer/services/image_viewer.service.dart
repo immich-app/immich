@@ -49,5 +49,4 @@ class ImageViewerService {
       return false;
     }
   }
-
 }
