@@ -67,7 +67,7 @@ class AlbumThumbnailCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 10,
                   ),
-                ).tr(),
+                ).tr(args: ['${album.assets.length }']),
                 if (album.shared)
                   const Text(
                     'album_thumbnail_card_shared',
