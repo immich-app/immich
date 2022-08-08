@@ -9,6 +9,7 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
 class ThumbnailImage extends HookConsumerWidget {
@@ -23,8 +24,7 @@ class ThumbnailImage extends HookConsumerWidget {
     final cacheKey = useState(1);
 
     var box = Hive.box(userInfoBox);
-    var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
+    var thumbnailRequestUrl = getThumbnailUrl(asset);
     var selectedAsset = ref.watch(homePageStateProvider).selectedItems;
     var isMultiSelectEnable =
         ref.watch(homePageStateProvider).isMultiSelectEnable;
@@ -65,7 +65,6 @@ class ThumbnailImage extends HookConsumerWidget {
           AutoRouter.of(context).push(
             GalleryViewerRoute(
               assetList: assetList,
-              thumbnailRequestUrl: thumbnailRequestUrl,
               asset: asset,
             ),
           );

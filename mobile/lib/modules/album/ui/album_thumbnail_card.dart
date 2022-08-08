@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -15,6 +16,8 @@ class AlbumThumbnailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     var box = Hive.box(userInfoBox);
 
+    final cardSize = MediaQuery.of(context).size.width / 2 - 18;
+
     return GestureDetector(
       onTap: () {
         AutoRouter.of(context).push(AlbumViewerRoute(albumId: album.id));
@@ -27,8 +30,8 @@ class AlbumThumbnailCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: FadeInImage(
-                width: MediaQuery.of(context).size.width / 2 - 18,
-                height: MediaQuery.of(context).size.width / 2 - 18,
+                width: cardSize,
+                height: cardSize,
                 fit: BoxFit.cover,
                 placeholder: MemoryImage(kTransparentImage),
                 image: NetworkImage(
@@ -43,11 +46,14 @@ class AlbumThumbnailCard extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
-              child: Text(
-                album.albumName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
+              child: SizedBox(
+                width: cardSize,
+                child: Text(
+                  album.albumName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ),
@@ -55,18 +61,20 @@ class AlbumThumbnailCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '${album.assets.length} item${album.assets.length > 1 ? 's' : ''}',
+                  album.assets.length == 1
+                      ? 'album_thumbnail_card_item'
+                      : 'album_thumbnail_card_items',
                   style: const TextStyle(
                     fontSize: 10,
                   ),
-                ),
+                ).tr(args: ['${album.assets.length }']),
                 if (album.shared)
                   const Text(
-                    ' · Shared',
+                    'album_thumbnail_card_shared',
                     style: TextStyle(
                       fontSize: 10,
                     ),
-                  )
+                  ).tr()
               ],
             )
           ],
