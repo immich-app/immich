@@ -4,13 +4,16 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/services/image_viewer.service.dart';
+import 'package:immich_mobile/shared/services/share.service.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/shared/ui/share_dialog.dart';
 import 'package:openapi/api.dart';
 
 class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
   final ImageViewerService _imageViewerService;
+  final ShareService _shareService;
 
-  ImageViewerStateNotifier(this._imageViewerService)
+  ImageViewerStateNotifier(this._imageViewerService, this._shareService)
       : super(
           ImageViewerPageState(
             downloadAssetStatus: DownloadAssetStatus.idle,
@@ -48,22 +51,10 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
     showDialog(
       context: context,
       builder: (BuildContext buildContext) {
-        _imageViewerService
+        _shareService
             .shareAsset(asset)
             .then((_) => Navigator.pop(buildContext));
-        return AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                child: const Text('image_viewer_state_notifier_share_preparing')
-                    .tr(),
-              )
-            ],
-          ),
-        );
+        return const ShareDialog();
       },
       barrierDismissible: false,
     );
@@ -72,5 +63,6 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
 
 final imageViewerStateProvider =
     StateNotifierProvider<ImageViewerStateNotifier, ImageViewerPageState>(
-  ((ref) => ImageViewerStateNotifier(ref.watch(imageViewerServiceProvider))),
+  ((ref) => ImageViewerStateNotifier(
+      ref.watch(imageViewerServiceProvider), ref.watch(shareServiceProvider))),
 );

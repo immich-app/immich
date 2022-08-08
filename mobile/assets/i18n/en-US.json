@@ -105,5 +105,6 @@
   "version_announcement_overlay_text_2": "please take your time to visit the ",
   "version_announcement_overlay_text_3": " and ensure your docker-compose and .env setup is up-to-date to prevent any misconfigurations, especially if you use WatchTower or any mechanism that handles updating your server application automatically.",
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
-  "image_viewer_state_notifier_share_preparing": "Preparing..."
+  "share_dialog_preparing": "Preparing...",
+  "control_bottom_app_bar_share": "Share"
 }

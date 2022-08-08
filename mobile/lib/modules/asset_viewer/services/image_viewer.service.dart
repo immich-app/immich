@@ -9,7 +9,6 @@ import 'package:path/path.dart' as p;
 
 import 'package:photo_manager/photo_manager.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 final imageViewerServiceProvider =
     Provider((ref) => ImageViewerService(ref.watch(apiServiceProvider)));
@@ -51,20 +50,4 @@ class ImageViewerService {
     }
   }
 
-  Future<void> shareAsset(AssetResponseDto asset) async {
-    var res = await _apiService.assetApi.downloadFileWithHttpInfo(
-      asset.deviceAssetId,
-      asset.deviceId,
-      isThumb: false,
-      isWeb: false,
-    );
-
-    final fileName = p.basename(asset.originalPath);
-
-    final tempDir = await getTemporaryDirectory();
-    final tempFile = await File('${tempDir.path}/$fileName').create();
-    tempFile.writeAsBytesSync(res.bodyBytes);
-
-    Share.shareFiles([tempFile.path]);
-  }
 }
