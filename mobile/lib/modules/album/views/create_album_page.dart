@@ -37,8 +37,10 @@ class CreateAlbumPage extends HookConsumerWidget {
       isAlbumTitleTextFieldFocus.value = false;
 
       if (albumTitleController.text.isEmpty) {
-        albumTitleController.text = 'Untitled';
-        ref.watch(albumTitleProvider.notifier).setAlbumTitle('Untitled');
+        albumTitleController.text = 'create_album_page_untitled'.tr();
+        ref
+            .watch(albumTitleProvider.notifier)
+            .setAlbumTitle('create_album_page_untitled'.tr());
       }
     }
 

@@ -104,5 +104,11 @@
   "version_announcement_overlay_text_1": "Hi friend, there is a new release of",
   "version_announcement_overlay_text_2": "please take your time to visit the ",
   "version_announcement_overlay_text_3": " and ensure your docker-compose and .env setup is up-to-date to prevent any misconfigurations, especially if you use WatchTower or any mechanism that handles updating your server application automatically.",
-  "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89"
+  "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
+  "album_thumbnail_card_item": "1 item",
+  "album_thumbnail_card_items": "{} items",
+  "album_thumbnail_card_shared": " · Shared",
+  "library_page_albums": "Albums",
+  "library_page_new_album": "New album",
+  "create_album_page_untitled": "Untitled"
 }
