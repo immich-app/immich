@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -66,15 +67,15 @@ class LibraryPage extends HookConsumerWidget {
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.only(top: 8.0),
-              child: Text(
-                "New album",
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: const Text(
+                'library_page_new_album',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
+              ).tr(),
             )
           ],
         ),
@@ -85,13 +86,13 @@ class LibraryPage extends HookConsumerWidget {
       body: CustomScrollView(
         slivers: [
           _buildAppBar(),
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(12.0),
-              child: Text(
-                "Albums",
+              padding: const EdgeInsets.all(12.0),
+              child: const Text(
+                'library_page_albums',
                 style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              ).tr(),
             ),
           ),
           SliverPadding(
