@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -51,12 +52,20 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
             .shareAsset(asset)
             .then((_) => Navigator.pop(buildContext));
         return AlertDialog(
-          content: Row(children: const [
-            CircularProgressIndicator()
-          ]),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                child: const Text('image_viewer_state_notifier_share_preparing')
+                    .tr(),
+              )
+            ],
+          ),
         );
       },
-      barrierDismissible: true,
+      barrierDismissible: false,
     );
   }
 }
