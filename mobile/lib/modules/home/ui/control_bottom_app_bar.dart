@@ -1,12 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 
-class ControlBottomAppBar extends StatelessWidget {
+import '../../../shared/providers/asset.provider.dart';
+import '../providers/home_page_state.provider.dart';
+
+class ControlBottomAppBar extends ConsumerWidget {
   const ControlBottomAppBar({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -25,7 +29,7 @@ class ControlBottomAppBar extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ControlBoxButton(
                     iconData: Icons.delete_forever_rounded,
@@ -37,6 +41,20 @@ class ControlBottomAppBar extends StatelessWidget {
                           return const DeleteDialog();
                         },
                       );
+                    },
+                  ),
+                  ControlBoxButton(
+                    iconData: Icons.share,
+                    label: "control_bottom_app_bar_share".tr(),
+                    onPressed: () {
+                      final homePageState = ref.watch(homePageStateProvider);
+                      ref.watch(homePageStateProvider.notifier).shareAssets(
+                            homePageState.selectedItems.toList(),
+                            context,
+                          );
+                      ref
+                          .watch(homePageStateProvider.notifier)
+                          .disableMultiSelect();
                     },
                   ),
                 ],
@@ -67,7 +85,7 @@ class ControlBoxButton extends StatelessWidget {
       width: 60,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           IconButton(
             onPressed: () {

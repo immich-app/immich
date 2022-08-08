@@ -1,9 +1,16 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/models/home_page_state.model.dart';
+import 'package:immich_mobile/shared/services/share.service.dart';
+import 'package:immich_mobile/shared/ui/share_dialog.dart';
 import 'package:openapi/api.dart';
 
 class HomePageStateNotifier extends StateNotifier<HomePageState> {
-  HomePageStateNotifier()
+
+  final ShareService _shareService;
+
+  HomePageStateNotifier(this._shareService)
       : super(
           HomePageState(
             isMultiSelectEnable: false,
@@ -64,9 +71,22 @@ class HomePageStateNotifier extends StateNotifier<HomePageState> {
 
     state = state.copyWith(selectedItems: currentList);
   }
+
+  void shareAssets(List<AssetResponseDto> assets, BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext buildContext) {
+        _shareService
+            .shareAssets(assets)
+            .then((_) => Navigator.of(buildContext).pop());
+        return const ShareDialog();
+      },
+      barrierDismissible: false,
+    );
+  }
 }
 
 final homePageStateProvider =
     StateNotifierProvider<HomePageStateNotifier, HomePageState>(
-  ((ref) => HomePageStateNotifier()),
+  ((ref) => HomePageStateNotifier(ref.watch(shareServiceProvider))),
 );

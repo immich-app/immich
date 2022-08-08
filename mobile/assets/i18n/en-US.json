@@ -110,5 +110,7 @@
   "album_thumbnail_card_shared": " · Shared",
   "library_page_albums": "Albums",
   "library_page_new_album": "New album",
-  "create_album_page_untitled": "Untitled"
+  "create_album_page_untitled": "Untitled",
+  "share_dialog_preparing": "Preparing...",
+  "control_bottom_app_bar_share": "Share"
 }
