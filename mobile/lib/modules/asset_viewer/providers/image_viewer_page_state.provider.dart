@@ -1,4 +1,4 @@
-import 'package:easy_localization/easy_localization.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -53,7 +53,7 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
       builder: (BuildContext buildContext) {
         _shareService
             .shareAsset(asset)
-            .then((_) => Navigator.pop(buildContext));
+            .then((_) => Navigator.of(buildContext).pop());
         return const ShareDialog();
       },
       barrierDismissible: false,
