@@ -76,6 +76,7 @@ class HomePage extends HookConsumerWidget {
 
           imageGridGroup.add(
             DailyTitleText(
+              key: Key('${dateGroup.toString()}title'),
               isoDate: dateGroup,
               assetGroup: immichAssetList,
             ),

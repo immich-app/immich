@@ -4,7 +4,14 @@
 	import type { Load } from '@sveltejs/kit';
 	import { AlbumResponseDto, api, UserResponseDto } from '@api';
 
-	export const load: Load = async ({ fetch }) => {
+	export const load: Load = async ({ fetch, session }) => {
+		if (!browser && !session.user) {
+			return {
+				status: 302,
+				redirect: '/auth/login'
+			};
+		}
+
 		try {
 			const [user, sharedAlbums] = await Promise.all([
 				fetch('/data/user/get-my-user-info').then((r) => r.json()),
@@ -33,6 +40,7 @@
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
 	import { goto } from '$app/navigation';
+	import { browser } from '$app/env';
 
 	export let user: UserResponseDto;
 	export let sharedAlbums: AlbumResponseDto[];

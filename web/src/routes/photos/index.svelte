@@ -4,7 +4,14 @@
 	import type { Load } from '@sveltejs/kit';
 	import { setAssetInfo } from '$lib/stores/assets';
 
-	export const load: Load = async ({ fetch }) => {
+	export const load: Load = async ({ fetch, session }) => {
+		if (!browser && !session.user) {
+			return {
+				status: 302,
+				redirect: '/auth/login'
+			};
+		}
+
 		try {
 			const [userInfo, assets] = await Promise.all([
 				fetch('/data/user/get-my-user-info').then((r) => r.json()),
@@ -45,6 +52,7 @@
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
+	import { browser } from '$app/env';
 
 	export let user: UserResponseDto;
 

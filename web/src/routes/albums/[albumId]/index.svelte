@@ -4,7 +4,14 @@
 	import type { Load } from '@sveltejs/kit';
 	import { AlbumResponseDto } from '@api';
 
-	export const load: Load = async ({ fetch, params }) => {
+	export const load: Load = async ({ fetch, params, session }) => {
+		if (!browser && !session.user) {
+			return {
+				status: 302,
+				redirect: '/auth/login'
+			};
+		}
+
 		try {
 			const albumId = params['albumId'];
 
@@ -36,6 +43,7 @@
 
 <script lang="ts">
 	import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
+	import { browser } from '$app/env';
 
 	export let album: AlbumResponseDto;
 </script>

@@ -17,13 +17,13 @@ import 'package:openapi/api.dart';
 class GalleryViewerPage extends HookConsumerWidget {
   late List<AssetResponseDto> assetList;
   final AssetResponseDto asset;
-  final String thumbnailRequestUrl;
+
+  static const _threeStageLoading = false;
 
   GalleryViewerPage({
     Key? key,
     required this.assetList,
     required this.asset,
-    required this.thumbnailRequestUrl,
   }) : super(key: key);
 
   AssetResponseDto? assetDetail;
@@ -32,6 +32,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final Box<dynamic> box = Hive.box(userInfoBox);
 
     int indexOfAsset = assetList.indexOf(asset);
+    final loading = useState(false);
 
     @override
     void initState(int index) {
@@ -74,6 +75,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: TopControlAppBar(
+        loading: loading.value,
         asset: assetList[indexOfAsset],
         onMoreInfoPressed: () {
           showInfo();
@@ -98,15 +100,14 @@ class GalleryViewerPage extends HookConsumerWidget {
             getAssetExif();
             if (assetList[index].type == AssetTypeEnum.IMAGE) {
               return ImageViewerPage(
-                thumbnailUrl:
-                    '${box.get(serverEndpointKey)}/asset/thumbnail/${assetList[index].id}',
-                imageUrl:
-                    '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}&isThumb=false',
                 authToken: 'Bearer ${box.get(accessTokenKey)}',
                 isZoomedFunction: isZoomedMethod,
                 isZoomedListener: isZoomedListener,
+                onLoadingCompleted: () => loading.value = false,
+                onLoadingStart: () => loading.value = _threeStageLoading,
                 asset: assetList[index],
                 heroTag: assetList[index].id,
+                threeStageLoading: _threeStageLoading
               );
             } else {
               return SwipeDetector(

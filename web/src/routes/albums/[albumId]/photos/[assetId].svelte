@@ -1,11 +1,10 @@
 <script context="module" lang="ts">
 	export const prerender = false;
+	import { browser } from '$app/env';
 	import type { Load } from '@sveltejs/kit';
 
-	export const load: Load = async ({ params }) => {
-		try {
-			await fetch('/data/user/get-my-user-info');
-		} catch (e) {
+	export const load: Load = async ({ params, session }) => {
+		if (!browser && !session.user) {
 			return {
 				status: 302,
 				redirect: '/auth/login'
