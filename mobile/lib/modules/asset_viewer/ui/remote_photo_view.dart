@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
-enum _RemoteImageStatus { empty, thumbnail, full }
+enum _RemoteImageStatus { empty, thumbnail, preview, full }
 
 class _RemotePhotoViewState extends State<RemotePhotoView> {
   late CachedNetworkImageProvider _imageProvider;
@@ -15,13 +15,16 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   @override
   Widget build(BuildContext context) {
     bool allowMoving = _status == _RemoteImageStatus.full;
-    return PhotoView(
-      imageProvider: _imageProvider,
-      minScale: PhotoViewComputedScale.contained,
-      maxScale: allowMoving ? 1.0 : PhotoViewComputedScale.contained,
-      enablePanAlways: true,
-      scaleStateChangedCallback: _scaleStateChanged,
-      onScaleEnd: _onScaleListener,
+
+    return IgnorePointer(
+      ignoring: !allowMoving,
+      child: PhotoView(
+        imageProvider: _imageProvider,
+        minScale: PhotoViewComputedScale.contained,
+        enablePanAlways: true,
+        scaleStateChangedCallback: _scaleStateChanged,
+        onScaleEnd: _onScaleListener,
+      ),
     );
   }
 
@@ -52,6 +55,14 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     widget.isZoomedFunction();
   }
 
+  void _fireStartLoadingEvent() {
+    if (widget.onLoadingStart != null) widget.onLoadingStart!();
+  }
+
+  void _fireFinishedLoadingEvent() {
+    if (widget.onLoadingCompleted != null) widget.onLoadingCompleted!();
+  }
+
   CachedNetworkImageProvider _authorizedImageProvider(String url) {
     return CachedNetworkImageProvider(
       url,
@@ -64,13 +75,24 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     _RemoteImageStatus newStatus,
     CachedNetworkImageProvider provider,
   ) {
-    // Transition to same status is forbidden
     if (_status == newStatus) return;
-    // Transition full -> thumbnail is forbidden
+
     if (_status == _RemoteImageStatus.full &&
         newStatus == _RemoteImageStatus.thumbnail) return;
 
+    if (_status == _RemoteImageStatus.preview &&
+        newStatus == _RemoteImageStatus.thumbnail) return;
+
+    if (_status == _RemoteImageStatus.full &&
+        newStatus == _RemoteImageStatus.preview) return;
+
     if (!mounted) return;
+
+    if (newStatus != _RemoteImageStatus.full) {
+      _fireStartLoadingEvent();
+    } else {
+      _fireFinishedLoadingEvent();
+    }
 
     setState(() {
       _status = newStatus;
@@ -92,6 +114,16 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       }),
     );
 
+    if (widget.previewUrl != null) {
+      CachedNetworkImageProvider previewProvider =
+          _authorizedImageProvider(widget.previewUrl!);
+      previewProvider.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo imageInfo, _) {
+          _performStateTransition(_RemoteImageStatus.preview, previewProvider);
+        }),
+      );
+    }
+
     CachedNetworkImageProvider fullProvider =
         _authorizedImageProvider(widget.imageUrl);
     fullProvider.resolve(const ImageConfiguration()).addListener(
@@ -109,20 +141,26 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 }
 
 class RemotePhotoView extends StatefulWidget {
-  const RemotePhotoView({
-    Key? key,
-    required this.thumbnailUrl,
-    required this.imageUrl,
-    required this.authToken,
-    required this.isZoomedFunction,
-    required this.isZoomedListener,
-    required this.onSwipeDown,
-    required this.onSwipeUp,
-  }) : super(key: key);
+  const RemotePhotoView(
+      {Key? key,
+      required this.thumbnailUrl,
+      required this.imageUrl,
+      required this.authToken,
+      required this.isZoomedFunction,
+      required this.isZoomedListener,
+      required this.onSwipeDown,
+      required this.onSwipeUp,
+      this.previewUrl,
+      this.onLoadingCompleted,
+      this.onLoadingStart})
+      : super(key: key);
 
   final String thumbnailUrl;
   final String imageUrl;
   final String authToken;
+  final String? previewUrl;
+  final Function? onLoadingCompleted;
+  final Function? onLoadingStart;
 
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;

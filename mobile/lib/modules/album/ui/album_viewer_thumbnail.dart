@@ -8,6 +8,7 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
 class AlbumViewerThumbnail extends HookConsumerWidget {
@@ -24,8 +25,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cacheKey = useState(1);
     var box = Hive.box(userInfoBox);
-    var thumbnailRequestUrl =
-        '${box.get(serverEndpointKey)}/asset/thumbnail/${asset.id}';
+    var thumbnailRequestUrl = getThumbnailUrl(asset);
     var deviceId = ref.watch(authenticationProvider).deviceId;
     final selectedAssetsInAlbumViewer =
         ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;
@@ -37,7 +37,6 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         GalleryViewerRoute(
           asset: asset,
           assetList: assetList,
-          thumbnailRequestUrl: thumbnailRequestUrl,
         ),
       );
     }

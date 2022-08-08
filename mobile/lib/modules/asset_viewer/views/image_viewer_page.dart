@@ -8,27 +8,30 @@ import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
 class ImageViewerPage extends HookConsumerWidget {
-  final String imageUrl;
   final String heroTag;
-  final String thumbnailUrl;
   final AssetResponseDto asset;
   final String authToken;
   final ValueNotifier<bool> isZoomedListener;
   final void Function() isZoomedFunction;
+  final void Function() onLoadingCompleted;
+  final void Function() onLoadingStart;
+  final bool threeStageLoading;
 
   ImageViewerPage({
     Key? key,
-    required this.imageUrl,
     required this.heroTag,
-    required this.thumbnailUrl,
     required this.asset,
     required this.authToken,
     required this.isZoomedFunction,
     required this.isZoomedListener,
+    required this.onLoadingCompleted,
+    required this.onLoadingStart,
+    required this.threeStageLoading,
   }) : super(key: key);
 
   AssetResponseDto? assetDetail;
@@ -68,14 +71,18 @@ class ImageViewerPage extends HookConsumerWidget {
           child: Hero(
             tag: heroTag,
             child: RemotePhotoView(
-              thumbnailUrl: thumbnailUrl,
-              imageUrl: imageUrl,
-              authToken: authToken,
-              isZoomedFunction: isZoomedFunction,
-              isZoomedListener: isZoomedListener,
-              onSwipeDown: () => AutoRouter.of(context).pop(),
-              onSwipeUp: () => showInfo(),
-            ),
+                thumbnailUrl: getThumbnailUrl(asset),
+                imageUrl: getImageUrl(asset),
+                previewUrl: threeStageLoading
+                    ? getThumbnailUrl(asset, type: ThumbnailFormat.JPEG)
+                    : null,
+                authToken: authToken,
+                isZoomedFunction: isZoomedFunction,
+                isZoomedListener: isZoomedListener,
+                onSwipeDown: () => AutoRouter.of(context).pop(),
+                onSwipeUp: () => showInfo(),
+                onLoadingCompleted: onLoadingCompleted,
+                onLoadingStart: onLoadingStart),
           ),
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)

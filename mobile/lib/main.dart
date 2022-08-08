@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
@@ -48,6 +50,10 @@ void main() async {
     Locale('fr', 'FR'),
     Locale('it', 'IT'),
   ];
+
+  if (kReleaseMode) {
+    await FlutterDisplayMode.setHighRefreshRate();
+  }
 
   runApp(
     EasyLocalization(
