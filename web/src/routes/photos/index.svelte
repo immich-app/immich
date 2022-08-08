@@ -48,11 +48,11 @@
 	import { AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
-	import AlbumAppBar from '$lib/components/album-page/album-app-bar.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import { browser } from '$app/env';
+	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 
 	export let user: UserResponseDto;
 
@@ -189,7 +189,7 @@
 
 <section>
 	{#if isMultiSelectionMode}
-		<AlbumAppBar
+		<ControlAppBar
 			on:close-button-click={clearMultiSelectAssetAssetHandler}
 			backIcon={Close}
 			tailwindClasses={'bg-white shadow-md'}
@@ -200,7 +200,7 @@
 			<svelte:fragment slot="trailing">
 				<CircleIconButton title="Delete" logo={DeleteOutline} />
 			</svelte:fragment>
-		</AlbumAppBar>
+		</ControlAppBar>
 	{/if}
 
 	{#if !isMultiSelectionMode}

@@ -12,7 +12,6 @@
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import AssetSelection from './asset-selection.svelte';
 	import _ from 'lodash-es';
-	import AlbumAppBar from './album-app-bar.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import ShareInfoModal from './share-info-modal.svelte';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
@@ -22,6 +21,7 @@
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import ThumbnailSelection from './thumbnail-selection.svelte';
+	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 
 	export let album: AlbumResponseDto;
 
@@ -272,7 +272,7 @@
 <section class="bg-immich-bg">
 	<!-- Multiselection mode app bar -->
 	{#if isMultiSelectionMode}
-		<AlbumAppBar
+		<ControlAppBar
 			on:close-button-click={clearMultiSelectAssetAssetHandler}
 			backIcon={Close}
 			tailwindClasses={'bg-white shadow-md'}
@@ -289,12 +289,12 @@
 					/>
 				{/if}
 			</svelte:fragment>
-		</AlbumAppBar>
+		</ControlAppBar>
 	{/if}
 
 	<!-- Default app bar -->
 	{#if !isMultiSelectionMode}
-		<AlbumAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
+		<ControlAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
 			<svelte:fragment slot="trailing">
 				{#if album.assets.length > 0}
 					<CircleIconButton
@@ -329,7 +329,7 @@
 					>
 				{/if}
 			</svelte:fragment>
-		</AlbumAppBar>
+		</ControlAppBar>
 	{/if}
 
 	<section class="m-auto my-[160px] w-[60%]">
