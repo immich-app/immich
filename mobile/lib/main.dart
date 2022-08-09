@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -51,8 +53,12 @@ void main() async {
     Locale('it', 'IT'),
   ];
 
-  if (kReleaseMode) {
-    await FlutterDisplayMode.setHighRefreshRate();
+  if (kReleaseMode && Platform.isAndroid) {
+    try {
+      await FlutterDisplayMode.setHighRefreshRate();
+    } catch (e) {
+      debugPrint("Error setting high refresh rate: $e");
+    }
   }
 
   runApp(
