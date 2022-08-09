@@ -10,7 +10,7 @@ export interface IServerVersion {
 
 export const serverVersion: IServerVersion = {
   major: 1,
-  minor: 20,
-  patch: 3,
+  minor: 21,
+  patch: 0,
   build: 0,
 };
