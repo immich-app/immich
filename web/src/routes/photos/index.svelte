@@ -188,7 +188,7 @@
 		try {
 			if (
 				window.confirm(
-					`Are you sure you want to delete ${multiSelectedAssets.size} assets? This action cannot be undone.`
+					`Caution! Are you sure you want to delete ${multiSelectedAssets.size} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!`
 				)
 			) {
 				const { data: deletedAssets } = await api.assetApi.deleteAsset({
