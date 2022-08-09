@@ -224,7 +224,7 @@
 					>
 						<!-- Date group title -->
 						<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
-							{#if selectedGroupThumbnail === groupIndex && isMouseOverGroup}
+							{#if (selectedGroupThumbnail === groupIndex && isMouseOverGroup) || isMultiSelectionMode}
 								<div
 									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
 									out:fly={{ x: -24, duration: 200 }}
@@ -251,7 +251,10 @@
 									<ImmichThumbnail
 										{asset}
 										on:mouseEvent={thumbnailMouseEventHandler}
-										on:click={viewAssetHandler}
+										on:click={(event) =>
+											isMultiSelectionMode
+												? selectAssetHandler(asset, groupIndex)
+												: viewAssetHandler(event)}
 										on:select={() => selectAssetHandler(asset, groupIndex)}
 										selected={multiSelectedAssets.has(asset)}
 										{groupIndex}
