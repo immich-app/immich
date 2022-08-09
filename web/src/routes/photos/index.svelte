@@ -40,12 +40,12 @@
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import { fly } from 'svelte/transition';
-	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
+	import { assetsGroupByDate, flattenAssetGroupByDate, assets } from '$lib/stores/assets';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { AssetResponseDto, UserResponseDto } from '@api';
+	import { api, AssetResponseDto, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
@@ -158,6 +158,8 @@
 
 	const clearMultiSelectAssetAssetHandler = () => {
 		multiSelectedAssets = new Set();
+		selectedGroup = new Set();
+		existingGroup = new Set();
 	};
 
 	const selectAssetGroupHandler = (groupIndex: number) => {
@@ -181,6 +183,30 @@
 		multiSelectedAssets = tempSelectedAsset;
 		selectedGroup = tempSelectedGroup;
 	};
+
+	const deleteSelectedAssetHandler = async () => {
+		try {
+			if (
+				window.confirm(
+					`Are you sure you want to delete ${multiSelectedAssets.size} assets? This action cannot be undone.`
+				)
+			) {
+				const { data: deletedAssets } = await api.assetApi.deleteAsset({
+					ids: Array.from(multiSelectedAssets).map((a) => a.id)
+				});
+
+				for (const asset of deletedAssets) {
+					if (asset.status == 'SUCCESS') {
+						$assets = $assets.filter((a) => a.id !== asset.id);
+					}
+				}
+
+				clearMultiSelectAssetAssetHandler();
+			}
+		} catch (e) {
+			console.log('Error deleteSelectedAssetHandler', e);
+		}
+	};
 </script>
 
 <svelte:head>
@@ -198,7 +224,11 @@
 				<p class="font-medium text-immich-primary">Selected {multiSelectedAssets.size}</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
-				<CircleIconButton title="Delete" logo={DeleteOutline} />
+				<CircleIconButton
+					title="Delete"
+					logo={DeleteOutline}
+					on:click={deleteSelectedAssetHandler}
+				/>
 			</svelte:fragment>
 		</ControlAppBar>
 	{/if}
