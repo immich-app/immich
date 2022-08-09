@@ -8,9 +8,9 @@
 	import moment from 'moment';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import { AssetResponseDto } from '@api';
-	import AlbumAppBar from './album-app-bar.svelte';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
 	import { albumUploadAssetStore } from '$lib/stores/album-upload-asset';
+	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -172,7 +172,7 @@
 	transition:fly={{ y: 500, duration: 100, easing: quintOut }}
 	class="absolute top-0 left-0 w-full h-full py-[160px]  bg-immich-bg z-[9999]"
 >
-	<AlbumAppBar on:close-button-click={() => dispatch('go-back')}>
+	<ControlAppBar on:close-button-click={() => dispatch('go-back')}>
 		<svelte:fragment slot="leading">
 			{#if selectedAsset.size == 0}
 				<p class="text-lg">Add to album</p>
@@ -195,7 +195,7 @@
 				><span class="px-2">Done</span></button
 			>
 		</svelte:fragment>
-	</AlbumAppBar>
+	</ControlAppBar>
 
 	<section class="flex flex-wrap gap-14  px-20 overflow-y-auto">
 		{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
