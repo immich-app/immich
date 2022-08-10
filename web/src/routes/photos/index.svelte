@@ -254,7 +254,7 @@
 					>
 						<!-- Date group title -->
 						<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
-							{#if (selectedGroupThumbnail === groupIndex && isMouseOverGroup) || isMultiSelectionMode}
+							{#if (selectedGroupThumbnail === groupIndex && isMouseOverGroup) || selectedGroup.has(groupIndex)}
 								<div
 									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
 									out:fly={{ x: -24, duration: 200 }}
