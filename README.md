@@ -129,7 +129,7 @@ wget https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-comp
 Get `.env`
 
 ```bash
-wget -O .env wget https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
+wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
 ```
 
 ### Step 2 - Populate .env file with customed information
