@@ -138,6 +138,12 @@ export interface AlbumResponseDto {
      * @memberof AlbumResponseDto
      */
     'assets': Array<AssetResponseDto>;
+    /**
+     * 
+     * @type {number}
+     * @memberof AlbumResponseDto
+     */
+    'assetCount': number;
 }
 /**
  * 

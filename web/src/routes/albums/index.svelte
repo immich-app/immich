@@ -61,7 +61,7 @@
 
 		// Delete album that has no photos and is named 'Untitled'
 		for (const album of albums) {
-			if (album.albumName === 'Untitled' && album.assets.length === 0) {
+			if (album.albumName === 'Untitled' && album.assetCount === 0) {
 				const isDeleted = await autoDeleteAlbum(album);
 
 				if (isDeleted) {

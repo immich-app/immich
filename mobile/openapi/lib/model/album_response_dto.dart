@@ -21,6 +21,7 @@ class AlbumResponseDto {
     required this.shared,
     this.sharedUsers = const [],
     this.assets = const [],
+    required this.assetCount,
   });
 
   String id;
@@ -39,6 +40,8 @@ class AlbumResponseDto {
 
   List<AssetResponseDto> assets;
 
+  num assetCount;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
      other.id == id &&
@@ -48,7 +51,8 @@ class AlbumResponseDto {
      other.albumThumbnailAssetId == albumThumbnailAssetId &&
      other.shared == shared &&
      other.sharedUsers == sharedUsers &&
-     other.assets == assets;
+     other.assets == assets &&
+     other.assetCount == assetCount;
 
   @override
   int get hashCode =>
@@ -60,10 +64,11 @@ class AlbumResponseDto {
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
     (shared.hashCode) +
     (sharedUsers.hashCode) +
-    (assets.hashCode);
+    (assets.hashCode) +
+    (assetCount.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets]';
+  String toString() => 'AlbumResponseDto[id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets, assetCount=$assetCount]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -79,6 +84,7 @@ class AlbumResponseDto {
       _json[r'shared'] = shared;
       _json[r'sharedUsers'] = sharedUsers;
       _json[r'assets'] = assets;
+      _json[r'assetCount'] = assetCount;
     return _json;
   }
 
@@ -109,6 +115,9 @@ class AlbumResponseDto {
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers'])!,
         assets: AssetResponseDto.listFromJson(json[r'assets'])!,
+        assetCount: json[r'assetCount'] == null
+            ? null
+            : num.parse(json[r'assetCount'].toString()),
       );
     }
     return null;
@@ -166,6 +175,7 @@ class AlbumResponseDto {
     'shared',
     'sharedUsers',
     'assets',
+    'assetCount',
   };
 }
 

@@ -7,7 +7,7 @@ import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
-import { AlbumResponseDto, mapAlbum } from './response-dto/album-response.dto';
+import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from './response-dto/album-response.dto';
 import { ALBUM_REPOSITORY, IAlbumRepository } from './album-repository';
 
 @Injectable()
@@ -49,7 +49,8 @@ export class AlbumService {
    */
   async getAllAlbums(authUser: AuthUserDto, getAlbumsDto: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     const albums = await this._albumRepository.getList(authUser.id, getAlbumsDto);
-    return albums.map((album) => mapAlbum(album));
+
+    return albums.map((album) => mapAlbumExcludeAssetInfo(album));
   }
 
   async getAlbumInfo(authUser: AuthUserDto, albumId: string): Promise<AlbumResponseDto> {
