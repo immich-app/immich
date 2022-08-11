@@ -1,6 +1,7 @@
 import { AlbumEntity } from '../../../../../../libs/database/src/entities/album.entity';
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { AssetResponseDto, mapAsset } from '../../asset/response-dto/asset-response.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class AlbumResponseDto {
   id!: string;
@@ -11,6 +12,8 @@ export class AlbumResponseDto {
   shared!: boolean;
   sharedUsers!: UserResponseDto[];
   assets!: AssetResponseDto[];
+
+  @ApiProperty({ type: 'integer' })
   assetCount!: number;
 }
 

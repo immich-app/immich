@@ -92,6 +92,12 @@ export interface AdminSignupResponseDto {
 export interface AlbumResponseDto {
     /**
      * 
+     * @type {number}
+     * @memberof AlbumResponseDto
+     */
+    'assetCount': number;
+    /**
+     * 
      * @type {string}
      * @memberof AlbumResponseDto
      */
@@ -138,12 +144,6 @@ export interface AlbumResponseDto {
      * @memberof AlbumResponseDto
      */
     'assets': Array<AssetResponseDto>;
-    /**
-     * 
-     * @type {number}
-     * @memberof AlbumResponseDto
-     */
-    'assetCount': number;
 }
 /**
  * 

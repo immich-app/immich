@@ -13,6 +13,7 @@ part of openapi.api;
 class AlbumResponseDto {
   /// Returns a new [AlbumResponseDto] instance.
   AlbumResponseDto({
+    required this.assetCount,
     required this.id,
     required this.ownerId,
     required this.albumName,
@@ -21,8 +22,9 @@ class AlbumResponseDto {
     required this.shared,
     this.sharedUsers = const [],
     this.assets = const [],
-    required this.assetCount,
   });
+
+  int assetCount;
 
   String id;
 
@@ -40,10 +42,9 @@ class AlbumResponseDto {
 
   List<AssetResponseDto> assets;
 
-  num assetCount;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
+     other.assetCount == assetCount &&
      other.id == id &&
      other.ownerId == ownerId &&
      other.albumName == albumName &&
@@ -51,12 +52,12 @@ class AlbumResponseDto {
      other.albumThumbnailAssetId == albumThumbnailAssetId &&
      other.shared == shared &&
      other.sharedUsers == sharedUsers &&
-     other.assets == assets &&
-     other.assetCount == assetCount;
+     other.assets == assets;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (assetCount.hashCode) +
     (id.hashCode) +
     (ownerId.hashCode) +
     (albumName.hashCode) +
@@ -64,14 +65,14 @@ class AlbumResponseDto {
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
     (shared.hashCode) +
     (sharedUsers.hashCode) +
-    (assets.hashCode) +
-    (assetCount.hashCode);
+    (assets.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets, assetCount=$assetCount]';
+  String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
+      _json[r'assetCount'] = assetCount;
       _json[r'id'] = id;
       _json[r'ownerId'] = ownerId;
       _json[r'albumName'] = albumName;
@@ -84,7 +85,6 @@ class AlbumResponseDto {
       _json[r'shared'] = shared;
       _json[r'sharedUsers'] = sharedUsers;
       _json[r'assets'] = assets;
-      _json[r'assetCount'] = assetCount;
     return _json;
   }
 
@@ -107,6 +107,7 @@ class AlbumResponseDto {
       }());
 
       return AlbumResponseDto(
+        assetCount: mapValueOfType<int>(json, r'assetCount')!,
         id: mapValueOfType<String>(json, r'id')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         albumName: mapValueOfType<String>(json, r'albumName')!,
@@ -115,9 +116,6 @@ class AlbumResponseDto {
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers'])!,
         assets: AssetResponseDto.listFromJson(json[r'assets'])!,
-        assetCount: json[r'assetCount'] == null
-            ? null
-            : num.parse(json[r'assetCount'].toString()),
       );
     }
     return null;
@@ -167,6 +165,7 @@ class AlbumResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'assetCount',
     'id',
     'ownerId',
     'albumName',
@@ -175,7 +174,6 @@ class AlbumResponseDto {
     'shared',
     'sharedUsers',
     'assets',
-    'assetCount',
   };
 }
 
