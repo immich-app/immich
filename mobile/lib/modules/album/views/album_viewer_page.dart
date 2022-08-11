@@ -203,7 +203,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                   assetList: albumInfo.assets,
                 );
               },
-              childCount: albumInfo.assetCount.toInt(),
+              childCount: albumInfo.assetCount,
             ),
           ),
         );
