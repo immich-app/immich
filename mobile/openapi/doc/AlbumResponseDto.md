@@ -8,6 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**assetCount** | **int** |  | 
 **id** | **String** |  | 
 **ownerId** | **String** |  | 
 **albumName** | **String** |  | 

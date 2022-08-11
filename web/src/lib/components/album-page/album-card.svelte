@@ -32,7 +32,7 @@
 	};
 
 	onMount(async () => {
-		imageData = await loadHighQualityThumbnail(album.albumThumbnailAssetId) || 'no-thumbnail.png';
+		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || 'no-thumbnail.png';
 	});
 </script>
 
@@ -67,7 +67,7 @@
 		</p>
 
 		<span class="text-xs flex gap-2">
-			<p>{album.assets.length} items</p>
+			<p>{album.assetCount} items</p>
 
 			{#if album.shared}
 				<p>·</p>

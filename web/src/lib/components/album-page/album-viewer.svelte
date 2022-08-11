@@ -61,7 +61,7 @@
 
 	$: {
 		if (album.assets?.length < 6) {
-			thumbnailSize = Math.floor(viewWidth / album.assets.length - album.assets.length);
+			thumbnailSize = Math.floor(viewWidth / album.assetCount - album.assetCount);
 		} else {
 			thumbnailSize = Math.floor(viewWidth / 6 - 6);
 		}
@@ -69,7 +69,7 @@
 
 	const getDateRange = () => {
 		const startDate = new Date(album.assets[0].createdAt);
-		const endDate = new Date(album.assets[album.assets.length - 1].createdAt);
+		const endDate = new Date(album.assets[album.assetCount - 1].createdAt);
 
 		const timeFormatOption: Intl.DateTimeFormatOptions = {
 			month: 'short',
@@ -135,7 +135,7 @@
 	};
 	const navigateAssetForward = () => {
 		try {
-			if (currentViewAssetIndex < album.assets.length - 1) {
+			if (currentViewAssetIndex < album.assetCount - 1) {
 				currentViewAssetIndex++;
 				selectedAsset = album.assets[currentViewAssetIndex];
 				pushState(selectedAsset.id);
@@ -296,7 +296,7 @@
 	{#if !isMultiSelectionMode}
 		<ControlAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
 			<svelte:fragment slot="trailing">
-				{#if album.assets.length > 0}
+				{#if album.assetCount > 0}
 					<CircleIconButton
 						title="Add Photos"
 						on:click={() => (isShowAssetSelection = true)}
@@ -322,7 +322,7 @@
 
 				{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
 					<button
-						disabled={album.assets.length == 0}
+						disabled={album.assetCount == 0}
 						on:click={() => (isShowShareUserSelection = true)}
 						class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
 						><span class="px-2">Share</span></button
@@ -351,7 +351,7 @@
 			bind:this={titleInput}
 		/>
 
-		{#if album.assets.length > 0}
+		{#if album.assetCount > 0}
 			<p class="my-4 text-sm text-gray-500 font-medium">{getDateRange()}</p>
 		{/if}
 
@@ -375,11 +375,11 @@
 			</div>
 		{/if}
 
-		{#if album.assets.length > 0}
+		{#if album.assetCount > 0}
 			<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
 				{#each album.assets as asset}
 					{#key asset.id}
-						{#if album.assets.length < 7}
+						{#if album.assetCount < 7}
 							<ImmichThumbnail
 								{asset}
 								{thumbnailSize}

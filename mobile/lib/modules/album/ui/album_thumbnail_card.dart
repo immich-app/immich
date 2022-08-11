@@ -61,13 +61,13 @@ class AlbumThumbnailCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  album.assets.length == 1
+                  album.assetCount == 1
                       ? 'album_thumbnail_card_item'
                       : 'album_thumbnail_card_items',
                   style: const TextStyle(
                     fontSize: 10,
                   ),
-                ).tr(args: ['${album.assets.length }']),
+                ).tr(args: ['${album.assetCount}']),
                 if (album.shared)
                   const Text(
                     'album_thumbnail_card_shared',
