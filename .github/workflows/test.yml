@@ -2,11 +2,12 @@ name: Test
 on:
   workflow_dispatch:
   pull_request:
-  push: { branches: master }
+  push:
+    branches: [main]
 
 jobs:
-  test-server-e2e:
-    name: Run test suite
+  e2e-tests:
+    name: Run end-to-end test suites
 
     runs-on: ubuntu-latest
 
@@ -16,3 +17,13 @@ jobs:
 
       - name: Run Immich Server 2E2 Test
         run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --abort-on-container-exit --exit-code-from immich-server-test
+
+  unit-tests:
+    name: Run unit test suites
+    runs-on: ubuntu-latest
+      steps:
+      - name: Checkout code
+        uses: actions/checkout@v2      
+
+      - name: Run tests
+        run: cd server && npm install && npm run test
