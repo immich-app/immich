@@ -1,6 +1,6 @@
-
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:openapi/api.dart';
@@ -10,7 +10,7 @@ import 'package:path/path.dart' as p;
 import 'api.service.dart';
 
 final shareServiceProvider =
-  Provider((ref) => ShareService(ref.watch(apiServiceProvider)));
+    Provider((ref) => ShareService(ref.watch(apiServiceProvider)));
 
 class ShareService {
   final ApiService _apiService;
@@ -39,7 +39,9 @@ class ShareService {
       return tempFile.path;
     });
 
-    Share.shareFiles(await Future.wait(downloadedFilePaths));
+    Share.shareFiles(
+      await Future.wait(downloadedFilePaths),
+      sharePositionOrigin: Rect.zero,
+    );
   }
-
 }
