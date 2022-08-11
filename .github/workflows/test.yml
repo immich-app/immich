@@ -21,9 +21,9 @@ jobs:
   unit-tests:
     name: Run unit test suites
     runs-on: ubuntu-latest
-      steps:
+    steps:
       - name: Checkout code
-        uses: actions/checkout@v2      
+        uses: actions/checkout@v2
 
       - name: Run tests
         run: cd server && npm install && npm run test
