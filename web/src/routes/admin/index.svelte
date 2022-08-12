@@ -12,10 +12,17 @@
     }
 
     try {
-      const [user, allUsers] = await Promise.all([
-        fetch('/data/user/get-my-user-info').then((r) => r.json()),
-        fetch('/data/user/get-all-users?isAll=false').then((r) => r.json())
-      ]);
+
+
+      const user: UserResponseDto = await fetch('/data/user/get-my-user-info').then((r) => r.json());
+      const allUsers: UserResponseDto[] = await fetch<UserResponseDto[]>('/data/user/get-all-users?isAll=false').then((r) => r.json());
+
+      if (!user.isAdmin) {
+        return {
+          status: 302,
+          redirect: '/photos'
+        };
+      }
 
       return {
         status: 200,
@@ -36,7 +43,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  import type { ImmichUser } from '$lib/models/immich-user';
   import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
   import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
   import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
@@ -44,14 +50,19 @@
   import UserManagement from '$lib/components/admin-page/user-management.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
+  import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import StatusBox from '$lib/components/shared-components/status-box.svelte';
+
 
   let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
-  export let user: ImmichUser;
+  export let user: UserResponseDto;
   export let allUsers: UserResponseDto[];
 
-  let shouldShowCreateUserForm: boolean;
+  let editUser: UserResponseDto;
+
+  let shouldShowEditUserForm = false;
+  let shouldShowCreateUserForm = false;
 
   const onButtonClicked = (buttonType: CustomEvent) => {
     selectedAction = buttonType.detail['actionType'] as AdminSideBarSelection;
@@ -71,8 +82,8 @@
 
   const editUserHandler = async (event: CustomEvent) => {
     const {user} = event.detail;
-
-    console.log('editUserHandler', user);
+    editUser = user;
+    shouldShowEditUserForm = true;
   };
 
 </script>
@@ -85,12 +96,15 @@
 
 {#if shouldShowCreateUserForm}
     <FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>
-        <div>
-            <CreateUserForm on:user-created={onUserCreated}/>
-        </div>
+        <CreateUserForm on:user-created={onUserCreated}/>
     </FullScreenModal>
 {/if}
 
+{#if shouldShowEditUserForm}
+    <FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
+        <EditUserForm user={editUser}/>
+    </FullScreenModal>
+{/if}
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
     <section id="admin-sidebar" class="pt-8 pr-6 flex flex-col">
         <SideBarButton
