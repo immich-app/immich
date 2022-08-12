@@ -67,6 +67,12 @@
 
 		shouldShowCreateUserForm = false;
 	};
+
+	const editUserHandler = async (event: CustomEvent) => {
+		const { user } = event.detail;
+
+		console.log('editUserHandler', user);
+	};
 </script>
 
 <svelte:head>
@@ -106,7 +112,11 @@
 		<section id="setting-content" class="relative pt-[85px] flex place-content-center">
 			<section class="w-[800px] pt-4">
 				{#if selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
-					<UserManagement {allUsers} on:createUser={() => (shouldShowCreateUserForm = true)} />
+					<UserManagement
+						{allUsers}
+						on:create-user={() => (shouldShowCreateUserForm = true)}
+						on:edit-user={editUserHandler}
+					/>
 				{/if}
 			</section>
 		</section>
