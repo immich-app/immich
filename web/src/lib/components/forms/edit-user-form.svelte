@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { UserResponseDto } from '@api';
+  import { api, UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import AccountEditOutline from 'svelte-material-icons/AccountEditOutline.svelte';
 
@@ -10,7 +10,8 @@
 
   const dispatch = createEventDispatcher();
 
-  async function editUser(event: SubmitEvent) {
+  // eslint-disable-next-line no-undef
+  const editUser = async (event: SubmitEvent) => {
 
     const formElement = event.target as HTMLFormElement;
     const form = new FormData(formElement);
@@ -18,7 +19,31 @@
     const firstName = form.get('firstName');
     const lastName = form.get('lastName');
 
-    console.log(firstName, lastName)
+
+    const {status} = await api.userApi.updateUser({
+      id: user.id,
+      firstName: firstName.toString(),
+      lastName: lastName.toString()
+    }).catch(e => console.log("Error updating user ", e));
+
+    if (status == 200) {
+      dispatch('edit-success');
+    }
+  }
+
+  const resetPassword = async () => {
+    const defaultPassword = 'password'
+
+    const {status} = await api.userApi.updateUser({
+      id: user.id,
+      password: defaultPassword,
+      shouldChangePassword: true,
+
+    }).catch(e => console.log("Error updating user ", e));
+
+    if (status == 200) {
+      dispatch('reset-password-success');
+    }
   }
 </script>
 
@@ -33,7 +58,7 @@
         <div class="m-4 flex flex-col gap-2">
             <label class="immich-form-label" for="email">Email
                 (cannot change)</label>
-            <input class="immich-form-input disabled:bg-gray-300  hover:cursor-not-allowed"
+            <input class="immich-form-input disabled:bg-gray-200 hover:cursor-not-allowed"
                    id="email" name="email"
                    type="email" disabled
                    bind:value={user.email}/>
@@ -61,7 +86,9 @@
             <p class="text-immich-primary ml-4 text-sm">{success}</p>
         {/if}
         <div class="flex w-full px-4 gap-4 mt-8">
-            <button class="flex-1 transition-colors bg-[#F9DEDC] hover:bg-red-50 text-[#410E0B] px-6 py-3 rounded-full w-full font-medium"
+            <button on:click={resetPassword}
+                    class="flex-1 transition-colors bg-[#F9DEDC] hover:bg-red-50 text-[#410E0B] px-6 py-3 rounded-full w-full font-medium"
+
             >Reset password
             </button
             >

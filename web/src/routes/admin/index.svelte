@@ -63,6 +63,7 @@
 
   let shouldShowEditUserForm = false;
   let shouldShowCreateUserForm = false;
+  let shouldShowInfoPanel = false;
 
   const onButtonClicked = (buttonType: CustomEvent) => {
     selectedAction = buttonType.detail['actionType'] as AdminSideBarSelection;
@@ -75,8 +76,6 @@
   const onUserCreated = async () => {
     const {data} = await api.userApi.getAllUsers(false);
     allUsers = data;
-
-
     shouldShowCreateUserForm = false;
   };
 
@@ -86,6 +85,18 @@
     shouldShowEditUserForm = true;
   };
 
+  const onEditUserSuccess = async () => {
+    const {data} = await api.userApi.getAllUsers(false);
+    allUsers = data;
+    shouldShowEditUserForm = false;
+  }
+
+  const onEditPasswordSuccess = async () => {
+    const {data} = await api.userApi.getAllUsers(false);
+    allUsers = data;
+    shouldShowEditUserForm = false;
+    shouldShowInfoPanel = true;
+  }
 </script>
 
 <svelte:head>
@@ -102,9 +113,37 @@
 
 {#if shouldShowEditUserForm}
     <FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
-        <EditUserForm user={editUser}/>
+        <EditUserForm user={editUser} on:edit-success={onEditUserSuccess}
+                      on:reset-password-success={onEditPasswordSuccess}/>
     </FullScreenModal>
 {/if}
+
+{#if shouldShowInfoPanel}
+    <FullScreenModal on:clickOutside={() => (shouldShowInfoPanel = false)}>
+
+        <div class="border bg-white shadow-sm w-[500px] rounded-3xl p-8 text-sm">
+            <h1 class="font-bold text-immich-primary text-lg mb-4">Password reset success</h1>
+
+            <p>
+                The user's password has been reset to the default <code
+                    class="font-bold bg-gray-200 px-2 py-1 rounded-md text-immich-primary">password</code>
+                <br>
+                Please inform the user, and they will need to change the password at the next log-on.
+            </p>
+
+            <div class="flex w-full">
+                <button
+                        on:click={() => shouldShowInfoPanel = false}
+                        class="mt-6 bg-immich-primary hover:bg-immich-primary/75 px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
+                >Done
+                </button
+                >
+            </div>
+        </div>
+    </FullScreenModal>
+{/if}
+
+
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
     <section id="admin-sidebar" class="pt-8 pr-6 flex flex-col">
         <SideBarButton
