@@ -66,14 +66,14 @@
     allUsers = data;
 
 
-		shouldShowCreateUserForm = false;
-	};
+    shouldShowCreateUserForm = false;
+  };
 
-	const editUserHandler = async (event: CustomEvent) => {
-		const { user } = event.detail;
+  const editUserHandler = async (event: CustomEvent) => {
+    const {user} = event.detail;
 
-		console.log('editUserHandler', user);
-	};
+    console.log('editUserHandler', user);
+  };
 
 </script>
 
@@ -111,27 +111,18 @@
             <hr/>
         </div>
 
-<<<<<<< HEAD
+
         <section id="setting-content" class="relative pt-[85px] flex place-content-center">
             <section class="w-[800px] pt-4">
                 {#if selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
-                    <UserManagement {allUsers} on:createUser={() => (shouldShowCreateUserForm = true)}/>
+                    <UserManagement
+                            {allUsers}
+                            on:create-user={() => (shouldShowCreateUserForm = true)}
+                            on:edit-user={editUserHandler}
+                    />
                 {/if}
             </section>
         </section>
     </section>
-=======
-		<section id="setting-content" class="relative pt-[85px] flex place-content-center">
-			<section class="w-[800px] pt-4">
-				{#if selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
-					<UserManagement
-						{allUsers}
-						on:create-user={() => (shouldShowCreateUserForm = true)}
-						on:edit-user={editUserHandler}
-					/>
-				{/if}
-			</section>
-		</section>
-	</section>
->>>>>>> 5caada63d2889f08e811c02550a276d2cfc219f2
+
 </section>
