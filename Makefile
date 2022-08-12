@@ -1,6 +1,9 @@
 dev:
 	rm -rf ./server/dist && docker-compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
+dev-new:
+	rm -rf ./server/dist && docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
+
 dev-update:
 	rm -rf ./server/dist && docker-compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
