@@ -81,8 +81,6 @@ export class AlbumService {
     await this._albumRepository.removeUser(album, sharedUserId);
   }
 
-  // async removeUsersFromAlbum() {}
-
   async removeAssetsFromAlbum(
     authUser: AuthUserDto,
     removeAssetsDto: RemoveAssetsDto,
@@ -90,7 +88,6 @@ export class AlbumService {
   ): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId });
     const updateAlbum = await this._albumRepository.removeAssets(album, removeAssetsDto);
-
     return mapAlbum(updateAlbum);
   }
 

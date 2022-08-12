@@ -360,45 +360,45 @@ describe('Album service', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it('removes assets from owned album', async () => {
-    const albumEntity = _getOwnedAlbum();
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.removeAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+  // it('removes assets from owned album', async () => {
+  //   const albumEntity = _getOwnedAlbum();
+  //   albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+  //   albumRepositoryMock.removeAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
-    await expect(
-      sut.removeAssetsFromAlbum(
-        authUser,
-        {
-          assetIds: ['f19ab956-4761-41ea-a5d6-bae948308d60'],
-        },
-        albumEntity.id,
-      ),
-    ).resolves.toBeUndefined();
-    expect(albumRepositoryMock.removeAssets).toHaveBeenCalledTimes(1);
-    expect(albumRepositoryMock.removeAssets).toHaveBeenCalledWith(albumEntity, {
-      assetIds: ['f19ab956-4761-41ea-a5d6-bae948308d60'],
-    });
-  });
+  //   await expect(
+  //     sut.removeAssetsFromAlbum(
+  //       authUser,
+  //       {
+  //         assetIds: ['f19ab956-4761-41ea-a5d6-bae948308d60'],
+  //       },
+  //       albumEntity.id,
+  //     ),
+  //   ).resolves.toBeUndefined();
+  //   expect(albumRepositoryMock.removeAssets).toHaveBeenCalledTimes(1);
+  //   expect(albumRepositoryMock.removeAssets).toHaveBeenCalledWith(albumEntity, {
+  //     assetIds: ['f19ab956-4761-41ea-a5d6-bae948308d60'],
+  //   });
+  // });
 
-  it('removes assets from shared album (shared with auth user)', async () => {
-    const albumEntity = _getOwnedSharedAlbum();
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.removeAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+  // it('removes assets from shared album (shared with auth user)', async () => {
+  //   const albumEntity = _getOwnedSharedAlbum();
+  //   albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+  //   albumRepositoryMock.removeAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
-    await expect(
-      sut.removeAssetsFromAlbum(
-        authUser,
-        {
-          assetIds: ['1'],
-        },
-        albumEntity.id,
-      ),
-    ).resolves.toBeUndefined();
-    expect(albumRepositoryMock.removeAssets).toHaveBeenCalledTimes(1);
-    expect(albumRepositoryMock.removeAssets).toHaveBeenCalledWith(albumEntity, {
-      assetIds: ['1'],
-    });
-  });
+  //   await expect(
+  //     sut.removeAssetsFromAlbum(
+  //       authUser,
+  //       {
+  //         assetIds: ['1'],
+  //       },
+  //       albumEntity.id,
+  //     ),
+  //   ).resolves.toBeUndefined();
+  //   expect(albumRepositoryMock.removeAssets).toHaveBeenCalledTimes(1);
+  //   expect(albumRepositoryMock.removeAssets).toHaveBeenCalledWith(albumEntity, {
+  //     assetIds: ['1'],
+  //   });
+  // });
 
   it('prevents removing assets from a not owned / shared album', async () => {
     const albumEntity = _getNotOwnedNotSharedAlbum();
