@@ -31,6 +31,9 @@
 				<td class="text-sm px-4 w-1/4 text-ellipsis">{user.lastName}</td>
 				<td class="text-sm px-4 w-1/4 text-ellipsis"
 					><button
+						on:click={() => {
+							dispatch('edit-user', { user });
+						}}
 						class="bg-immich-primary text-gray-100 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
 						><PencilOutline size="20" /></button
 					></td
@@ -40,4 +43,4 @@
 	</tbody>
 </table>
 
-<button on:click={() => dispatch('createUser')} class="immich-btn-primary">Create user</button>
+<button on:click={() => dispatch('create-user')} class="immich-btn-primary">Create user</button>
