@@ -155,6 +155,44 @@ class ImmichAppState extends ConsumerState<ImmichApp>
           MaterialApp.router(
             title: 'Immich',
             debugShowCheckedModeBanner: false,
+            themeMode: ThemeMode.light,
+            darkTheme: ThemeData(
+              useMaterial3: true,
+              brightness: Brightness.dark,
+              primarySwatch: Colors.indigo,
+              fontFamily: 'WorkSans',
+              snackBarTheme: const SnackBarThemeData(
+                contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+              ),
+              scaffoldBackgroundColor: immichDarkBackgroundColor,
+              appBarTheme: AppBarTheme(
+                titleTextStyle: const TextStyle(
+                  color: Color.fromARGB(255, 178, 190, 245),
+                ),
+                backgroundColor: Colors.grey[900],
+                foregroundColor: Colors.grey[300],
+                elevation: 1,
+                centerTitle: true,
+                systemOverlayStyle: SystemUiOverlayStyle.light,
+              ),
+              bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: immichDarkBackgroundColor,
+                selectedItemColor: Color.fromARGB(255, 132, 144, 207),
+              ),
+              textTheme: TextTheme(
+                headline1: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[300],
+                ),
+                headline2: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[300],
+                ),
+              ),
+            ),
             theme: ThemeData(
               useMaterial3: true,
               brightness: Brightness.light,
@@ -165,11 +203,31 @@ class ImmichAppState extends ConsumerState<ImmichApp>
               ),
               scaffoldBackgroundColor: immichBackgroundColor,
               appBarTheme: const AppBarTheme(
+                titleTextStyle: TextStyle(
+                  color: Colors.indigo,
+                ),
                 backgroundColor: immichBackgroundColor,
                 foregroundColor: Colors.indigo,
                 elevation: 1,
                 centerTitle: true,
-                systemOverlayStyle: SystemUiOverlayStyle.dark,
+                systemOverlayStyle: SystemUiOverlayStyle.light,
+              ),
+              bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: immichBackgroundColor,
+                selectedItemColor: Colors.indigo,
+              ),
+              textTheme: TextTheme(
+                headline1: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
+                ),
+                headline2: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
             ),
             routeInformationParser: router.defaultRouteParser(),

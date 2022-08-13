@@ -77,13 +77,13 @@ class ImmichSliverAppBar extends ConsumerWidget {
           );
         },
       ),
-      title: Text(
+      title: const Text(
         'IMMICH',
         style: TextStyle(
           fontFamily: 'SnowburstOne',
           fontWeight: FontWeight.bold,
           fontSize: 22,
-          color: Theme.of(context).primaryColor,
+          // color: Theme.of(context).primaryColor,
         ),
       ),
       actions: [
