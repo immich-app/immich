@@ -108,7 +108,8 @@ class ProfileDrawerHeader extends HookConsumerWidget {
         gradient: LinearGradient(
           colors: [
             Color.fromARGB(255, 216, 219, 238),
-            Color.fromARGB(255, 226, 230, 231)
+            Color.fromARGB(255, 242, 242, 242),
+            Colors.white,
           ],
           begin: Alignment.centerRight,
           end: Alignment.centerLeft,

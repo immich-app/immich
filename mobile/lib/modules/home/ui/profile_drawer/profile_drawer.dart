@@ -15,6 +15,63 @@ class ProfileDrawer extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    _buildSignoutButton() {
+      return ListTile(
+        horizontalTitleGap: 0,
+        leading: SizedBox(
+          height: double.infinity,
+          child: Icon(
+            Icons.logout_rounded,
+            color: Colors.grey[700],
+            size: 20,
+          ),
+        ),
+        title: Text(
+          "profile_drawer_sign_out",
+          style: TextStyle(
+            color: Colors.grey[700],
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ).tr(),
+        onTap: () async {
+          bool res = await ref.watch(authenticationProvider.notifier).logout();
+
+          if (res) {
+            ref.watch(backupProvider.notifier).cancelBackup();
+            ref.watch(assetProvider.notifier).clearAllAsset();
+            ref.watch(websocketProvider.notifier).disconnect();
+            AutoRouter.of(context).replace(const LoginRoute());
+          }
+        },
+      );
+    }
+
+    _buildSettingButton() {
+      return ListTile(
+        horizontalTitleGap: 0,
+        leading: SizedBox(
+          height: double.infinity,
+          child: Icon(
+            Icons.settings_rounded,
+            color: Colors.grey[700],
+            size: 20,
+          ),
+        ),
+        title: Text(
+          "profile_drawer_settings",
+          style: TextStyle(
+            color: Colors.grey[700],
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ).tr(),
+        onTap: () {
+          AutoRouter.of(context).push(const SettingsRoute());
+        },
+      );
+    }
+
     return Drawer(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -24,33 +81,8 @@ class ProfileDrawer extends HookConsumerWidget {
             padding: EdgeInsets.zero,
             children: [
               const ProfileDrawerHeader(),
-              ListTile(
-                tileColor: Colors.grey[100],
-                leading: const Icon(
-                  Icons.logout_rounded,
-                  color: Colors.black54,
-                ),
-                title: const Text(
-                  "profile_drawer_sign_out",
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ).tr(),
-                onTap: () async {
-                  bool res =
-                      await ref.watch(authenticationProvider.notifier).logout();
-
-                  if (res) {
-                    ref.watch(backupProvider.notifier).cancelBackup();
-                    ref.watch(assetProvider.notifier).clearAllAsset();
-                    ref.watch(websocketProvider.notifier).disconnect();
-                    // AutoRouter.of(context).popUntilRoot();
-                    AutoRouter.of(context).replace(const LoginRoute());
-                  }
-                },
-              )
+              _buildSettingButton(),
+              _buildSignoutButton(),
             ],
           ),
           const ServerInfoBox()
