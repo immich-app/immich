@@ -8,8 +8,6 @@
 	const dispatch = createEventDispatcher();
 </script>
 
-<p class="text-sm">USER LIST</p>
-
 <table class="text-left w-full my-4">
 	<thead class="border rounded-md mb-2 bg-gray-50 flex text-immich-primary w-full h-12 ">
 		<tr class="flex w-full place-items-center">
