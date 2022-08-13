@@ -56,11 +56,11 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   void _fireStartLoadingEvent() {
-    if (widget.onLoadingStart != null) widget.onLoadingStart!();
+    widget.onLoadingStart();
   }
 
   void _fireFinishedLoadingEvent() {
-    if (widget.onLoadingCompleted != null) widget.onLoadingCompleted!();
+    widget.onLoadingCompleted();
   }
 
   CachedNetworkImageProvider _authorizedImageProvider(String url) {
@@ -141,26 +141,26 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 }
 
 class RemotePhotoView extends StatefulWidget {
-  const RemotePhotoView(
-      {Key? key,
-      required this.thumbnailUrl,
-      required this.imageUrl,
-      required this.authToken,
-      required this.isZoomedFunction,
-      required this.isZoomedListener,
-      required this.onSwipeDown,
-      required this.onSwipeUp,
-      this.previewUrl,
-      this.onLoadingCompleted,
-      this.onLoadingStart})
-      : super(key: key);
+  const RemotePhotoView({
+    Key? key,
+    required this.thumbnailUrl,
+    required this.imageUrl,
+    required this.authToken,
+    required this.isZoomedFunction,
+    required this.isZoomedListener,
+    required this.onSwipeDown,
+    required this.onSwipeUp,
+    this.previewUrl,
+    required this.onLoadingCompleted,
+    required this.onLoadingStart,
+  }) : super(key: key);
 
   final String thumbnailUrl;
   final String imageUrl;
   final String authToken;
   final String? previewUrl;
-  final Function? onLoadingCompleted;
-  final Function? onLoadingStart;
+  final Function onLoadingCompleted;
+  final Function onLoadingStart;
 
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;

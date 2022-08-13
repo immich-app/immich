@@ -53,21 +53,23 @@ class TabControllerPage extends ConsumerWidget {
                     items: [
                       BottomNavigationBarItem(
                         label: 'tab_controller_nav_photos'.tr(),
-                        icon: const Icon(Icons.photo),
+                        icon: const Icon(Icons.photo_outlined),
+                        activeIcon: const Icon(Icons.photo),
                       ),
                       BottomNavigationBarItem(
                         label: 'tab_controller_nav_search'.tr(),
-                        icon: const Icon(Icons.search),
+                        icon: const Icon(Icons.search_rounded),
+                        activeIcon: const Icon(Icons.search),
                       ),
                       BottomNavigationBarItem(
                         label: 'tab_controller_nav_sharing'.tr(),
                         icon: const Icon(Icons.group_outlined),
+                        activeIcon: const Icon(Icons.group),
                       ),
                       BottomNavigationBarItem(
                         label: 'tab_controller_nav_library'.tr(),
-                        icon: const Icon(
-                          Icons.photo_album_outlined,
-                        ),
+                        icon: const Icon(Icons.photo_album_outlined),
+                        activeIcon: const Icon(Icons.photo_album_rounded),
                       )
                     ],
                   ),

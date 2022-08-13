@@ -35,6 +35,7 @@ class ImageViewerPage extends HookConsumerWidget {
   }) : super(key: key);
 
   AssetResponseDto? assetDetail;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final downloadAssetStatus =
@@ -71,18 +72,19 @@ class ImageViewerPage extends HookConsumerWidget {
           child: Hero(
             tag: heroTag,
             child: RemotePhotoView(
-                thumbnailUrl: getThumbnailUrl(asset),
-                imageUrl: getImageUrl(asset),
-                previewUrl: threeStageLoading
-                    ? getThumbnailUrl(asset, type: ThumbnailFormat.JPEG)
-                    : null,
-                authToken: authToken,
-                isZoomedFunction: isZoomedFunction,
-                isZoomedListener: isZoomedListener,
-                onSwipeDown: () => AutoRouter.of(context).pop(),
-                onSwipeUp: () => showInfo(),
-                onLoadingCompleted: onLoadingCompleted,
-                onLoadingStart: onLoadingStart),
+              thumbnailUrl: getThumbnailUrl(asset),
+              imageUrl: getImageUrl(asset),
+              previewUrl: threeStageLoading
+                  ? getThumbnailUrl(asset, type: ThumbnailFormat.JPEG)
+                  : null,
+              authToken: authToken,
+              isZoomedFunction: isZoomedFunction,
+              isZoomedListener: isZoomedListener,
+              onSwipeDown: () => AutoRouter.of(context).pop(),
+              onSwipeUp: () => showInfo(),
+              onLoadingCompleted: onLoadingCompleted,
+              onLoadingStart: onLoadingStart,
+            ),
           ),
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
