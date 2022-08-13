@@ -63,7 +63,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		let exifData = null;
 
 		if (assetType !== 'VIDEO') {
-			exifData = await exifr.parse(asset);
+			exifData = await exifr.parse(asset).catch((e) => console.log('error parsing exif', e));
 		}
 
 		const createdAt =
