@@ -22,7 +22,7 @@ class SettingsPage extends HookConsumerWidget {
         title: const Text(
           'Settings',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
