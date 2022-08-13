@@ -12,10 +12,8 @@
     }
 
     try {
-
-
       const user: UserResponseDto = await fetch('/data/user/get-my-user-info').then((r) => r.json());
-      const allUsers: UserResponseDto[] = await fetch<UserResponseDto[]>('/data/user/get-all-users?isAll=false').then((r) => r.json());
+      const allUsers: UserResponseDto[] = await fetch('/data/user/get-all-users?isAll=false').then((r) => r.json());
 
       if (!user.isAdmin) {
         return {
