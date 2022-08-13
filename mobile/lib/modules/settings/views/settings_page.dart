@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting/image_viewer_quality_setting.dart';
 
 class SettingsPage extends HookConsumerWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -31,30 +32,50 @@ class SettingsPage extends HookConsumerWidget {
           ...ListTile.divideTiles(
             context: context,
             tiles: [
-              ListTile(
-                dense: true,
-                title: const Text('Image viewer quality'),
-                subtitle: const Text('Adjust the quality of the image viewer'),
-                trailing: const Icon(
-                  Icons.keyboard_arrow_right_rounded,
-                  size: 24,
-                ),
-                onTap: () {},
-              ),
-              ListTile(
-                dense: true,
-                title: const Text('Theme'),
-                subtitle: const Text('Choose between light and dark theme'),
-                trailing: const Icon(
-                  Icons.keyboard_arrow_right_rounded,
-                  size: 24,
-                ),
-                onTap: () {},
+              const ImageViewerQualitySetting(),
+              const SettingListTile(
+                title: 'Theme',
+                subtitle: 'Choose between light and dark theme',
               ),
             ],
           ).toList(),
         ],
       ),
+    );
+  }
+}
+
+class SettingListTile extends StatelessWidget {
+  const SettingListTile({
+    required this.title,
+    required this.subtitle,
+    Key? key,
+  }) : super(key: key);
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      dense: true,
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(
+          fontSize: 12,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.keyboard_arrow_right_rounded,
+        size: 24,
+      ),
+      onTap: () {},
     );
   }
 }
