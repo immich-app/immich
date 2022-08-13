@@ -47,7 +47,7 @@
 <div class="border bg-white p-4 shadow-sm w-[500px] rounded-md py-8">
 	<div class="flex flex-col place-items-center place-content-center gap-4 px-4">
 		<img class="text-center" src="/immich-logo.svg" height="100" width="100" alt="immich-logo" />
-		<h1 class="text-2xl text-immich-primary font-medium">Chage Password</h1>
+		<h1 class="text-2xl text-immich-primary font-medium">Change Password</h1>
 
 		<p class="text-sm border rounded-md p-4 font-mono text-gray-600">
 			Hi {user.firstName}
