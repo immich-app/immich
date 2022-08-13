@@ -39,12 +39,9 @@
 	export let user: UserResponseDto;
 
 	const onSuccessHandler = async () => {
-		/** Svelte route fetch */
-		const res = await fetch('/auth/logout', { method: 'POST' });
-
-		if (res.status == 200 && res.statusText == 'OK') {
-			goto('/auth/login');
-		}
+		await fetch('auth/logout', { method: 'POST' });
+		
+		goto('/auth/login');
 	};
 </script>
 
