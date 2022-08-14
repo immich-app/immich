@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/home/providers/upload_profile_image.provid
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/utils/immich_app_theme.dart';
 
 class ProfileDrawerHeader extends HookConsumerWidget {
   const ProfileDrawerHeader({
@@ -104,13 +105,19 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     );
 
     return DrawerHeader(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color.fromARGB(255, 216, 219, 238),
-            Color.fromARGB(255, 242, 242, 242),
-            Colors.white,
-          ],
+          colors: ref.watch(appThemeProvider) == ThemeMode.light
+              ? [
+                  const Color.fromARGB(255, 216, 219, 238),
+                  const Color.fromARGB(255, 242, 242, 242),
+                  Colors.white,
+                ]
+              : [
+                  const Color.fromARGB(255, 22, 25, 48),
+                  const Color.fromARGB(255, 13, 13, 13),
+                  const Color.fromARGB(255, 0, 0, 0),
+                ],
           begin: Alignment.centerRight,
           end: Alignment.centerLeft,
         ),
@@ -129,8 +136,8 @@ class ProfileDrawerHeader extends HookConsumerWidget {
                 child: GestureDetector(
                   onTap: _pickUserProfileImage,
                   child: Material(
-                    color: Colors.grey[50],
-                    elevation: 2,
+                    color: Colors.grey[100],
+                    elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0),
                     ),
@@ -157,7 +164,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
           ),
           Text(
             authState.userEmail,
-            style: TextStyle(color: Colors.grey[800], fontSize: 12),
+            style: Theme.of(context).textTheme.labelSmall,
           )
         ],
       ),

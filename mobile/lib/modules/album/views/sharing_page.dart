@@ -144,6 +144,10 @@ class SharingPage extends HookConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.black
+            : Colors.white,
         onPressed: () {
           AutoRouter.of(context).push(CreateAlbumRoute(isSharedAlbum: true));
         },

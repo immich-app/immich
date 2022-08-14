@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 
 Color darkThemePrimaryColor = const Color.fromARGB(255, 173, 203, 250);
 
-ThemeMode immichThemeMode = ThemeMode.dark;
+final appThemeProvider = StateProvider((ref) => ThemeMode.light);
 
 ThemeData immichDarkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   primarySwatch: Colors.indigo,
   primaryColor: darkThemePrimaryColor,
+  scaffoldBackgroundColor: immichDarkBackgroundColor,
   hintColor: Colors.grey[600],
   fontFamily: 'WorkSans',
   snackBarTheme: const SnackBarThemeData(
     contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
   ),
-  scaffoldBackgroundColor: immichDarkBackgroundColor,
   appBarTheme: AppBarTheme(
     titleTextStyle: TextStyle(
       fontFamily: 'WorkSans',
@@ -32,6 +33,10 @@ ThemeData immichDarkTheme = ThemeData(
     type: BottomNavigationBarType.fixed,
     backgroundColor: const Color.fromARGB(255, 35, 36, 37),
     selectedItemColor: darkThemePrimaryColor,
+  ),
+  drawerTheme: DrawerThemeData(
+    backgroundColor: immichDarkBackgroundColor,
+    scrimColor: Colors.white.withOpacity(0.1),
   ),
   textTheme: TextTheme(
     headline1: const TextStyle(
@@ -58,10 +63,10 @@ ThemeData immichLightTheme = ThemeData(
   primarySwatch: Colors.indigo,
   hintColor: Colors.indigo,
   fontFamily: 'WorkSans',
+  scaffoldBackgroundColor: immichBackgroundColor,
   snackBarTheme: const SnackBarThemeData(
     contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
   ),
-  scaffoldBackgroundColor: immichBackgroundColor,
   appBarTheme: const AppBarTheme(
     titleTextStyle: TextStyle(
       fontFamily: 'WorkSans',
@@ -77,6 +82,9 @@ ThemeData immichLightTheme = ThemeData(
     type: BottomNavigationBarType.fixed,
     backgroundColor: immichBackgroundColor,
     selectedItemColor: Colors.indigo,
+  ),
+  drawerTheme: const DrawerThemeData(
+    backgroundColor: immichBackgroundColor,
   ),
   textTheme: const TextTheme(
     headline1: TextStyle(

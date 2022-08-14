@@ -324,14 +324,14 @@ class BackupControllerPage extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 8.0),
               child: Table(
                 border: TableBorder.all(
-                  color: Colors.black12,
+                  color: Theme.of(context).primaryColorLight,
                   width: 1,
                 ),
                 children: [
                   TableRow(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                    ),
+                    decoration: const BoxDecoration(
+                        // color: Colors.grey[100],
+                        ),
                     children: [
                       TableCell(
                         verticalAlignment: TableCellVerticalAlignment.middle,
@@ -355,9 +355,9 @@ class BackupControllerPage extends HookConsumerWidget {
                     ],
                   ),
                   TableRow(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                    ),
+                    decoration: const BoxDecoration(
+                        // color: Colors.grey[200],
+                        ),
                     children: [
                       TableCell(
                         verticalAlignment: TableCellVerticalAlignment.middle,
@@ -384,9 +384,9 @@ class BackupControllerPage extends HookConsumerWidget {
                     ],
                   ),
                   TableRow(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                    ),
+                    decoration: const BoxDecoration(
+                        // color: Colors.grey[100],
+                        ),
                     children: [
                       TableCell(
                         child: Padding(

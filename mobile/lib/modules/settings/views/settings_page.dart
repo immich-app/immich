@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting/image_viewer_quality_setting.dart';
+import 'package:immich_mobile/utils/immich_app_theme.dart';
 
 class SettingsPage extends HookConsumerWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -33,6 +34,14 @@ class SettingsPage extends HookConsumerWidget {
             context: context,
             tiles: [
               const ImageViewerQualitySetting(),
+              SwitchListTile.adaptive(
+                title: const Text('Light Theme'),
+                value: ref.watch(appThemeProvider) == ThemeMode.light,
+                onChanged: (value) => {
+                  ref.watch(appThemeProvider.notifier).state =
+                      value ? ThemeMode.light : ThemeMode.dark,
+                },
+              ),
               const SettingListTile(
                 title: 'Theme',
                 subtitle: 'Choose between light and dark theme',
