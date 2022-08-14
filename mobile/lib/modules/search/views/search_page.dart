@@ -115,7 +115,7 @@ class SearchPage extends HookConsumerWidget {
                     itemBuilder: ((context, index) {
                       var curatedObjectInfo = objects[index];
                       var thumbnailRequestUrl =
-                          '${box.get(serverEndpointKey)}/asset/file?aid=${curatedObjectInfo.deviceAssetId}&did=${curatedObjectInfo.deviceId}&isThumb=true';
+                          '${box.get(serverEndpointKey)}/asset/thumbnail/${curatedObjectInfo.id}';
 
                       return ThumbnailWithInfo(
                         imageUrl: thumbnailRequestUrl,
