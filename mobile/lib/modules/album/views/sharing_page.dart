@@ -61,7 +61,7 @@ class SharingPage extends HookConsumerWidget {
                 sharedAlbums[index].albumName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.headline2,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               onTap: () {
                 AutoRouter.of(context)
@@ -75,9 +75,6 @@ class SharingPage extends HookConsumerWidget {
     }
 
     _buildEmptyListIndication() {
-      var brightness = MediaQuery.of(context).platformBrightness;
-      bool isDarkMode = brightness == Brightness.dark;
-
       return SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.all(8.0),

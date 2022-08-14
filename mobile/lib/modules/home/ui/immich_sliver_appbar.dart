@@ -118,7 +118,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
                       badgeContent: const Icon(
                         Icons.cloud_off_rounded,
                         size: 8,
-                        // color: Colors.white,
+                        color: Colors.indigo,
                       ),
                       child: const Icon(Icons.backup_rounded),
                     ),
