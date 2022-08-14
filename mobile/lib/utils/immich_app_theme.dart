@@ -4,12 +4,13 @@ import 'package:immich_mobile/constants/immich_colors.dart';
 
 Color darkThemePrimaryColor = const Color.fromARGB(255, 173, 203, 250);
 
-ThemeMode immichThemeMode = ThemeMode.light;
+ThemeMode immichThemeMode = ThemeMode.dark;
 
 ThemeData immichDarkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   primarySwatch: Colors.indigo,
+  primaryColor: darkThemePrimaryColor,
   fontFamily: 'WorkSans',
   snackBarTheme: const SnackBarThemeData(
     contentTextStyle: TextStyle(fontFamily: 'WorkSans'),

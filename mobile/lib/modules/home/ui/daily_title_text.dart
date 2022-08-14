@@ -83,10 +83,9 @@ class DailyTitleText extends ConsumerWidget {
           children: [
             Text(
               dateText,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.headline2?.color,
               ),
             ),
             const Spacer(),
