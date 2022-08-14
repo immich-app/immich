@@ -23,7 +23,7 @@ class LibraryPage extends HookConsumerWidget {
     );
 
     Widget _buildAppBar() {
-      return SliverAppBar(
+      return const SliverAppBar(
         centerTitle: true,
         floating: true,
         pinned: false,
@@ -35,7 +35,6 @@ class LibraryPage extends HookConsumerWidget {
             fontFamily: 'SnowburstOne',
             fontWeight: FontWeight.bold,
             fontSize: 22,
-            color: Theme.of(context).primaryColor,
           ),
         ),
       );

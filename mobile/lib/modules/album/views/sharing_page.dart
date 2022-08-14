@@ -151,6 +151,12 @@ class SharingPage extends HookConsumerWidget {
               : _buildEmptyListIndication()
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          AutoRouter.of(context).push(CreateAlbumRoute(isSharedAlbum: true));
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

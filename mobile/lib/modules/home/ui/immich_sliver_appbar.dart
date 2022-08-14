@@ -83,7 +83,6 @@ class ImmichSliverAppBar extends ConsumerWidget {
           fontFamily: 'SnowburstOne',
           fontWeight: FontWeight.bold,
           fontSize: 22,
-          // color: Theme.of(context).primaryColor,
         ),
       ),
       actions: [
