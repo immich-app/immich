@@ -67,7 +67,7 @@ class SplashScreenPage extends HookConsumerWidget {
                   fontFamily: 'SnowburstOne',
                   fontWeight: FontWeight.bold,
                   fontSize: 48,
-                  color: Theme.of(context).textTheme.headline1?.color,
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
             ),

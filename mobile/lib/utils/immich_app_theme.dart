@@ -5,7 +5,7 @@ import 'package:immich_mobile/constants/immich_colors.dart';
 
 Color darkThemePrimaryColor = const Color.fromARGB(255, 173, 203, 250);
 
-final appThemeProvider = StateProvider((ref) => ThemeMode.light);
+final appThemeProvider = StateProvider((ref) => ThemeMode.dark);
 
 ThemeData immichDarkTheme = ThemeData(
   useMaterial3: true,
@@ -55,6 +55,19 @@ ThemeData immichDarkTheme = ThemeData(
       color: darkThemePrimaryColor,
     ),
   ),
+  cardColor: Colors.grey[900],
+  // textButtonTheme: TextButtonThemeData(
+  //   style: TextButton.styleFrom(
+  //     primary: Colors.black87,
+  //     backgroundColor: darkThemePrimaryColor,
+  //   ),
+  // ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      onPrimary: Colors.black87,
+      primary: darkThemePrimaryColor,
+    ),
+  ),
 );
 
 ThemeData immichLightTheme = ThemeData(
@@ -101,6 +114,19 @@ ThemeData immichLightTheme = ThemeData(
       fontSize: 12,
       fontWeight: FontWeight.bold,
       color: Colors.indigo,
+    ),
+  ),
+  // textButtonTheme: TextButtonThemeData(
+  //   style: TextButton.styleFrom(
+  //     primary: Colors.white,
+  //     backgroundColor: Colors.indigo,
+  //   ),
+  // ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      primary: Colors.indigo,
+      onPrimary: Colors.white,
+      // backgroundColor: Colors.indigo,
     ),
   ),
 );

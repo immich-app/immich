@@ -155,7 +155,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
           MaterialApp.router(
             title: 'Immich',
             debugShowCheckedModeBanner: false,
-            themeMode: ref.watch(appThemeProvider),
+            // themeMode: ref.watch(appThemeProvider),
             darkTheme: immichDarkTheme,
             theme: immichLightTheme,
             routeInformationParser: router.defaultRouteParser(),
