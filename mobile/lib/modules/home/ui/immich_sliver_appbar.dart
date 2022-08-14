@@ -30,6 +30,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
       floating: true,
       pinned: false,
       snap: false,
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(5)),
       ),
@@ -111,12 +112,13 @@ class ImmichSliverAppBar extends ConsumerWidget {
                   ? const Icon(Icons.backup_rounded)
                   : Badge(
                       padding: const EdgeInsets.all(4),
-                      elevation: 2,
+                      elevation: 3,
                       position: BadgePosition.bottomEnd(bottom: -4, end: -4),
                       badgeColor: Colors.white,
                       badgeContent: const Icon(
                         Icons.cloud_off_rounded,
                         size: 8,
+                        // color: Colors.white,
                       ),
                       child: const Icon(Icons.backup_rounded),
                     ),

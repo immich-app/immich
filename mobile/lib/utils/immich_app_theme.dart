@@ -4,7 +4,7 @@ import 'package:immich_mobile/constants/immich_colors.dart';
 
 Color darkThemePrimaryColor = const Color.fromARGB(255, 173, 203, 250);
 
-ThemeMode immichThemeMode = ThemeMode.light;
+ThemeMode immichThemeMode = ThemeMode.dark;
 
 ThemeData immichDarkTheme = ThemeData(
   useMaterial3: true,
@@ -23,7 +23,7 @@ ThemeData immichDarkTheme = ThemeData(
       color: darkThemePrimaryColor,
     ),
     backgroundColor: const Color.fromARGB(255, 32, 33, 35),
-    foregroundColor: const Color.fromARGB(255, 189, 193, 197),
+    foregroundColor: darkThemePrimaryColor,
     elevation: 1,
     centerTitle: true,
     systemOverlayStyle: SystemUiOverlayStyle.light,
