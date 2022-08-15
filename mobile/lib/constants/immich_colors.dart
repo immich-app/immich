@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
 
-const immichBackgroundColor = Color(0xFFf6f8fe);
-const immichDarkBackgroundColor = Color.fromARGB(255, 10, 10, 10);
+Color immichBackgroundColor = const Color(0xFFf6f8fe);
+Color immichDarkBackgroundColor = const Color.fromARGB(255, 10, 10, 10);
+Color immichDarkThemePrimaryColor = const Color.fromARGB(255, 173, 203, 250);

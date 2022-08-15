@@ -143,16 +143,6 @@ class SharingPage extends HookConsumerWidget {
               : _buildEmptyListIndication()
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Theme.of(context).brightness == Brightness.dark
-            ? Colors.black
-            : Colors.white,
-        onPressed: () {
-          AutoRouter.of(context).push(CreateAlbumRoute(isSharedAlbum: true));
-        },
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }

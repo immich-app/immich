@@ -8,14 +8,15 @@ class ImageViewerQualitySetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ExpansionTile(
-      title: Text(
+    return ExpansionTile(
+      textColor: Theme.of(context).primaryColor,
+      title: const Text(
         'Image viewer quality',
         style: TextStyle(
           fontWeight: FontWeight.bold,
         ),
       ),
-      subtitle: Text(
+      subtitle: const Text(
         'Adjust the quality of the detail image viewer',
         style: TextStyle(
           fontSize: 13,

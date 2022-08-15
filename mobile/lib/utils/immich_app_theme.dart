@@ -2,16 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/shared/services/app_settings.service.dart';
 
-Color darkThemePrimaryColor = const Color.fromARGB(255, 173, 203, 250);
+final immichThemeProvider = StateProvider<ThemeMode>((ref) {
+  var themeMode = ref
+      .watch(appSettingsServiceProvider)
+      .getSetting(AppSettingsEnum.themeMode);
 
-final appThemeProvider = StateProvider((ref) => ThemeMode.dark);
+  debugPrint("Current themeMode $themeMode");
+
+  if (themeMode == "light") {
+    return ThemeMode.light;
+  } else if (themeMode == "dark") {
+    return ThemeMode.dark;
+  } else {
+    return ThemeMode.system;
+  }
+});
 
 ThemeData immichDarkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   primarySwatch: Colors.indigo,
-  primaryColor: darkThemePrimaryColor,
+  primaryColor: immichDarkThemePrimaryColor,
   scaffoldBackgroundColor: immichDarkBackgroundColor,
   hintColor: Colors.grey[600],
   fontFamily: 'WorkSans',
@@ -21,10 +34,10 @@ ThemeData immichDarkTheme = ThemeData(
   appBarTheme: AppBarTheme(
     titleTextStyle: TextStyle(
       fontFamily: 'WorkSans',
-      color: darkThemePrimaryColor,
+      color: immichDarkThemePrimaryColor,
     ),
     backgroundColor: const Color.fromARGB(255, 32, 33, 35),
-    foregroundColor: darkThemePrimaryColor,
+    foregroundColor: immichDarkThemePrimaryColor,
     elevation: 1,
     centerTitle: true,
     systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -32,7 +45,7 @@ ThemeData immichDarkTheme = ThemeData(
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
     backgroundColor: const Color.fromARGB(255, 35, 36, 37),
-    selectedItemColor: darkThemePrimaryColor,
+    selectedItemColor: immichDarkThemePrimaryColor,
   ),
   drawerTheme: DrawerThemeData(
     backgroundColor: immichDarkBackgroundColor,
@@ -52,20 +65,14 @@ ThemeData immichDarkTheme = ThemeData(
     headline3: TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.bold,
-      color: darkThemePrimaryColor,
+      color: immichDarkThemePrimaryColor,
     ),
   ),
   cardColor: Colors.grey[900],
-  // textButtonTheme: TextButtonThemeData(
-  //   style: TextButton.styleFrom(
-  //     primary: Colors.black87,
-  //     backgroundColor: darkThemePrimaryColor,
-  //   ),
-  // ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
       onPrimary: Colors.black87,
-      primary: darkThemePrimaryColor,
+      primary: immichDarkThemePrimaryColor,
     ),
   ),
 );
@@ -80,8 +87,8 @@ ThemeData immichLightTheme = ThemeData(
   snackBarTheme: const SnackBarThemeData(
     contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
   ),
-  appBarTheme: const AppBarTheme(
-    titleTextStyle: TextStyle(
+  appBarTheme: AppBarTheme(
+    titleTextStyle: const TextStyle(
       fontFamily: 'WorkSans',
       color: Colors.indigo,
     ),
@@ -91,12 +98,12 @@ ThemeData immichLightTheme = ThemeData(
     centerTitle: true,
     systemOverlayStyle: SystemUiOverlayStyle.dark,
   ),
-  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+  bottomNavigationBarTheme: BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
     backgroundColor: immichBackgroundColor,
     selectedItemColor: Colors.indigo,
   ),
-  drawerTheme: const DrawerThemeData(
+  drawerTheme: DrawerThemeData(
     backgroundColor: immichBackgroundColor,
   ),
   textTheme: const TextTheme(
@@ -116,17 +123,10 @@ ThemeData immichLightTheme = ThemeData(
       color: Colors.indigo,
     ),
   ),
-  // textButtonTheme: TextButtonThemeData(
-  //   style: TextButton.styleFrom(
-  //     primary: Colors.white,
-  //     backgroundColor: Colors.indigo,
-  //   ),
-  // ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
       primary: Colors.indigo,
       onPrimary: Colors.white,
-      // backgroundColor: Colors.indigo,
     ),
   ),
 );

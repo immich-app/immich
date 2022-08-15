@@ -58,7 +58,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
                   child: GestureDetector(
                     onTap: () => Scaffold.of(context).openDrawer(),
                     child: Material(
-                      color: Colors.grey[200],
+                      // color: Colors.grey[200],
                       elevation: 1,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50.0),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting/image_viewer_quality_setting.dart';
-import 'package:immich_mobile/utils/immich_app_theme.dart';
+import 'package:immich_mobile/modules/settings/ui/theme_setting/theme_setting.dart';
 
 class SettingsPage extends HookConsumerWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -34,57 +34,11 @@ class SettingsPage extends HookConsumerWidget {
             context: context,
             tiles: [
               const ImageViewerQualitySetting(),
-              SwitchListTile.adaptive(
-                title: const Text('Light Theme'),
-                value: ref.watch(appThemeProvider) == ThemeMode.light,
-                onChanged: (value) => {
-                  ref.watch(appThemeProvider.notifier).state =
-                      value ? ThemeMode.light : ThemeMode.dark,
-                },
-              ),
-              const SettingListTile(
-                title: 'Theme',
-                subtitle: 'Choose between light and dark theme',
-              ),
+              const ThemeSetting(),
             ],
           ).toList(),
         ],
       ),
-    );
-  }
-}
-
-class SettingListTile extends StatelessWidget {
-  const SettingListTile({
-    required this.title,
-    required this.subtitle,
-    Key? key,
-  }) : super(key: key);
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      dense: true,
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(
-          fontSize: 12,
-        ),
-      ),
-      trailing: const Icon(
-        Icons.keyboard_arrow_right_rounded,
-        size: 24,
-      ),
-      onTap: () {},
     );
   }
 }

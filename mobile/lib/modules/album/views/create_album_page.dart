@@ -208,7 +208,9 @@ class CreateAlbumPage extends HookConsumerWidget {
         ),
         title: Text(
           'share_create_album',
-          style: Theme.of(context).textTheme.headline2,
+          style: Theme.of(context).textTheme.headline2?.copyWith(
+                color: Theme.of(context).primaryColor,
+              ),
         ).tr(),
         actions: [
           if (isSharedAlbum)
