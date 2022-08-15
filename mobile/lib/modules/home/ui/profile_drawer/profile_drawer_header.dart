@@ -10,7 +10,6 @@ import 'package:immich_mobile/modules/home/providers/upload_profile_image.provid
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/utils/immich_app_theme.dart';
 
 class ProfileDrawerHeader extends HookConsumerWidget {
   const ProfileDrawerHeader({
@@ -24,6 +23,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
     var dummmy = Random().nextInt(1024);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     _buildUserProfileImage() {
       if (authState.profileImagePath.isEmpty) {
@@ -107,16 +107,16 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     return DrawerHeader(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: ref.watch(appThemeProvider) == ThemeMode.light
+          colors: isDarkMode
               ? [
-                  const Color.fromARGB(255, 216, 219, 238),
-                  const Color.fromARGB(255, 242, 242, 242),
-                  Colors.white,
-                ]
-              : [
                   const Color.fromARGB(255, 22, 25, 48),
                   const Color.fromARGB(255, 13, 13, 13),
                   const Color.fromARGB(255, 0, 0, 0),
+                ]
+              : [
+                  const Color.fromARGB(255, 216, 219, 238),
+                  const Color.fromARGB(255, 242, 242, 242),
+                  Colors.white,
                 ],
           begin: Alignment.centerRight,
           end: Alignment.centerLeft,
