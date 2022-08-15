@@ -43,7 +43,7 @@ class AssetSelectionPage extends HookConsumerWidget {
       return Stack(
         children: [
           DraggableScrollbar.semicircle(
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: Theme.of(context).hintColor,
             controller: scrollController,
             heightScrollThumb: 48.0,
             child: CustomScrollView(

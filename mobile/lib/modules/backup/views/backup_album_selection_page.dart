@@ -18,6 +18,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     useEffect(
       () {
         ref.read(backupProvider.notifier).getBackupInfo();
@@ -267,11 +268,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       content: SingleChildScrollView(
                         child: ListBody(
                           children: [
-                            Text(
+                            const Text(
                               'backup_album_selection_page_assets_scatter',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey[700],
                               ),
                             ).tr(),
                           ],

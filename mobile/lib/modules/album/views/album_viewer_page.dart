@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
@@ -242,7 +241,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           titleFocusNode.unfocus();
         },
         child: DraggableScrollbar.semicircle(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: Theme.of(context).hintColor,
           controller: scrollController,
           heightScrollThumb: 48.0,
           child: CustomScrollView(
@@ -255,7 +254,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                   minHeight: 50,
                   maxHeight: 50,
                   child: Container(
-                    color: immichBackgroundColor,
+                    color: Theme.of(context).scaffoldBackgroundColor,
                     child: _buildControlButton(albumInfo),
                   ),
                 ),

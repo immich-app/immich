@@ -14,6 +14,8 @@ class AlbumActionOutlinedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: OutlinedButton.icon(
@@ -22,19 +24,23 @@ class AlbumActionOutlinedButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
           ),
-          side: const BorderSide(
+          side: BorderSide(
             width: 1,
-            color: Color.fromARGB(255, 215, 215, 215),
+            color: isDarkTheme
+                ? const Color.fromARGB(255, 63, 63, 63)
+                : const Color.fromARGB(255, 206, 206, 206),
           ),
         ),
-        icon: Icon(iconData, size: 15),
+        icon: Icon(
+          iconData,
+          size: 15,
+          color: Theme.of(context).primaryColor,
+        ),
         label: Text(
           labelText,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
         onPressed: onPressed,
       ),
