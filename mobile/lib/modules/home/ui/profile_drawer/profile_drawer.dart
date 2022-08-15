@@ -28,7 +28,10 @@ class ProfileDrawer extends HookConsumerWidget {
         ),
         title: Text(
           "profile_drawer_sign_out",
-          style: Theme.of(context).textTheme.labelLarge,
+          style: Theme.of(context)
+              .textTheme
+              .labelLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
         onTap: () async {
           bool res = await ref.watch(authenticationProvider.notifier).logout();
@@ -56,7 +59,10 @@ class ProfileDrawer extends HookConsumerWidget {
         ),
         title: Text(
           "profile_drawer_settings",
-          style: Theme.of(context).textTheme.labelLarge,
+          style: Theme.of(context)
+              .textTheme
+              .labelLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
         onTap: () {
           AutoRouter.of(context).push(const SettingsRoute());
