@@ -71,7 +71,6 @@ class LibraryPage extends HookConsumerWidget {
               child: const Text(
                 'library_page_new_album',
                 style: TextStyle(
-                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ).tr(),

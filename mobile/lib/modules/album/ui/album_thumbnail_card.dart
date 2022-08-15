@@ -52,7 +52,6 @@ class AlbumThumbnailCard extends StatelessWidget {
                   album.albumName,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
                   ),
                 ),
               ),

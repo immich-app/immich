@@ -164,7 +164,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
           ),
           Text(
             authState.userEmail,
-            style: Theme.of(context).textTheme.labelSmall,
+            style: Theme.of(context).textTheme.labelMedium,
           )
         ],
       ),
