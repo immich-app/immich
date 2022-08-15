@@ -82,7 +82,7 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    ListTile _buildBackupController() {
+    ListTile _buildAutoBackupController() {
       var backUpOption = authenticationState.deviceInfo.isAutoBackup
           ? "backup_controller_page_status_on".tr()
           : "backup_controller_page_status_off".tr();
@@ -114,13 +114,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 ).tr(),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(
-                      width: 1,
-                      color: Color.fromARGB(255, 220, 220, 220),
-                    ),
-                  ),
+                child: ElevatedButton(
                   onPressed: () {
                     if (isAutoBackup) {
                       ref
@@ -134,7 +128,10 @@ class BackupControllerPage extends HookConsumerWidget {
                   },
                   child: Text(
                     backupBtnText,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               )
@@ -454,7 +451,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             const Divider(),
-            _buildBackupController(),
+            _buildAutoBackupController(),
             const Divider(),
             _buildStorageInformation(),
             const Divider(),
