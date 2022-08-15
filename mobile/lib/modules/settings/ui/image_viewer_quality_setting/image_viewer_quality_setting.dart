@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting/three_stage_loading.dart';
 
@@ -11,18 +12,18 @@ class ImageViewerQualitySetting extends StatelessWidget {
     return ExpansionTile(
       textColor: Theme.of(context).primaryColor,
       title: const Text(
-        'Image viewer quality',
+        'theme_setting_image_viewer_quality_title',
         style: TextStyle(
           fontWeight: FontWeight.bold,
         ),
-      ),
+      ).tr(),
       subtitle: const Text(
-        'Adjust the quality of the detail image viewer',
+        'theme_setting_image_viewer_quality_subtitle',
         style: TextStyle(
           fontSize: 13,
         ),
-      ),
-      children: [
+      ).tr(),
+      children: const [
         ThreeStageLoading(),
       ],
     );

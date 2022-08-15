@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,27 +27,27 @@ class ThemeSetting extends HookConsumerWidget {
     return ExpansionTile(
       textColor: Theme.of(context).primaryColor,
       title: const Text(
-        'Theme',
+        'theme_setting_theme_title',
         style: TextStyle(
           fontWeight: FontWeight.bold,
         ),
-      ),
+      ).tr(),
       subtitle: const Text(
-        'Choose the app\'s theme setting',
+        'theme_setting_theme_subtitle',
         style: TextStyle(
           fontSize: 13,
         ),
-      ),
+      ).tr(),
       children: [
         SwitchListTile.adaptive(
           activeColor: Theme.of(context).primaryColor,
           title: const Text(
-            'Automatic (Follow system setting)',
+            'theme_setting_system_theme_switch',
             style: TextStyle(
               fontSize: 12.0,
               fontWeight: FontWeight.bold,
             ),
-          ),
+          ).tr(),
           value: currentTheme.value == ThemeMode.system,
           onChanged: (bool isSystem) {
             var currentSystemBrightness =
@@ -79,12 +80,12 @@ class ThemeSetting extends HookConsumerWidget {
           SwitchListTile.adaptive(
             activeColor: Theme.of(context).primaryColor,
             title: const Text(
-              'Dark Mode',
+              'theme_setting_dark_mode_switch',
               style: TextStyle(
                 fontSize: 12.0,
                 fontWeight: FontWeight.bold,
               ),
-            ),
+            ).tr(),
             value: ref.watch(immichThemeProvider) == ThemeMode.dark,
             onChanged: (bool isDark) {
               if (isDark) {

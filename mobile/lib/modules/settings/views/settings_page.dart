@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting/image_viewer_quality_setting.dart';
@@ -21,12 +22,12 @@ class SettingsPage extends HookConsumerWidget {
         automaticallyImplyLeading: false,
         centerTitle: false,
         title: const Text(
-          'Settings',
+          'setting_pages_app_bar_settings',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
-        ),
+        ).tr(),
       ),
       body: ListView(
         children: [
