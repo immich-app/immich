@@ -150,7 +150,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
 
     void _buildBottomSheet() {
       showModalBottomSheet(
-        backgroundColor: immichBackgroundColor,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         isScrollControlled: false,
         context: context,
         builder: (context) {

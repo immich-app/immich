@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
-
-import '../../../shared/providers/asset.provider.dart';
-import '../providers/home_page_state.provider.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
   const ControlBottomAppBar({Key? key}) : super(key: key);
@@ -19,10 +17,10 @@ class ControlBottomAppBar extends ConsumerWidget {
         height: MediaQuery.of(context).size.height * 0.15,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(15),
-            topRight: Radius.circular(15),
+            topLeft: Radius.circular(8),
+            topRight: Radius.circular(8),
           ),
-          color: Colors.grey[300]?.withOpacity(0.98),
+          color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
         ),
         child: Column(
           children: [
