@@ -18,5 +18,5 @@ const String hiveGithubReleaseInfoBox = "immichGithubReleaseInfoBox"; // Box
 const String githubReleaseInfoKey = "immichGithubReleaseInfoKey"; // Key 1
 
 //App Theme Info
-const String themeInfoBox = "immichThemeInfoBox";
-const String themeInfoKey = "immichThemeInfoKey";
+const String themeInfoBox = "immichThemeInfoBox"; // Box
+const String themeInfoKey = "immichThemeInfoKey"; // Key 1

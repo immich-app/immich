@@ -139,6 +139,14 @@ class _$AppRouter extends RootStackRouter {
           opaque: true,
           barrierDismissible: false);
     },
+    SettingsRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const SettingsPage());
+    },
+    AppearanceRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const AppearancePage());
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -213,7 +221,11 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(AlbumPreviewRoute.name,
             path: '/album-preview-page', guards: [authGuard]),
         RouteConfig(FailedBackupStatusRoute.name,
-            path: '/failed-backup-status-page', guards: [authGuard])
+            path: '/failed-backup-status-page', guards: [authGuard]),
+        RouteConfig(SettingsRoute.name,
+            path: '/settings-page', guards: [authGuard]),
+        RouteConfig(AppearanceRoute.name,
+            path: '/appearance-page', guards: [authGuard])
       ];
 }
 
@@ -550,6 +562,23 @@ class FailedBackupStatusRoute extends PageRouteInfo<void> {
       : super(FailedBackupStatusRoute.name, path: '/failed-backup-status-page');
 
   static const String name = 'FailedBackupStatusRoute';
+}
+
+/// generated route for
+/// [SettingsPage]
+class SettingsRoute extends PageRouteInfo<void> {
+  const SettingsRoute() : super(SettingsRoute.name, path: '/settings-page');
+
+  static const String name = 'SettingsRoute';
+}
+
+/// generated route for
+/// [AppearancePage]
+class AppearanceRoute extends PageRouteInfo<void> {
+  const AppearanceRoute()
+      : super(AppearanceRoute.name, path: '/appearance-page');
+
+  static const String name = 'AppearanceRoute';
 }
 
 /// generated route for

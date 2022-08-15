@@ -13,7 +13,6 @@ import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/providers/theme_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
@@ -122,33 +121,36 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   @override
   Widget build(BuildContext context) {
-    var themeMode = ref.watch(themeModeProvider);
     var router = ref.watch(appRouterProvider);
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
-    return MaterialApp(
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      debugShowCheckedModeBanner: false,
-      home: Stack(
-        children: [
-          MaterialApp.router(
-            title: 'Immich',
+    return ValueListenableBuilder(
+        valueListenable: Hive.box(themeInfoBox).listenable(),
+        builder: (_, box, __) {
+          var themeMode =
+              Hive.box(themeInfoBox).get(themeInfoKey) ?? ThemeMode.system;
+          return MaterialApp(
+            localizationsDelegates: context.localizationDelegates,
+            supportedLocales: context.supportedLocales,
+            locale: context.locale,
             debugShowCheckedModeBanner: false,
-            // themeMode: Hive.box(themeInfoBox).get(themeInfoKey)
-            //     ? ThemeMode.dark
-            //     : ThemeMode.light,
-            theme: lightTheme,
-            darkTheme: darkTheme,
-            routeInformationParser: router.defaultRouteParser(),
-            routerDelegate: router.delegate(
-              navigatorObservers: () => [TabNavigationObserver(ref: ref)],
+            home: Stack(
+              children: [
+                MaterialApp.router(
+                  title: 'Immich',
+                  debugShowCheckedModeBanner: false,
+                  themeMode: themeMode,
+                  theme: lightTheme,
+                  darkTheme: darkTheme,
+                  routeInformationParser: router.defaultRouteParser(),
+                  routerDelegate: router.delegate(
+                    navigatorObservers: () => [TabNavigationObserver(ref: ref)],
+                  ),
+                ),
+                const ImmichLoadingOverlay(),
+                const VersionAnnouncementOverlay(),
+              ],
             ),
-          ),
-          const ImmichLoadingOverlay(),
-          const VersionAnnouncementOverlay(),
-        ],
-      ),
-    );
+          );
+        });
   }
 }

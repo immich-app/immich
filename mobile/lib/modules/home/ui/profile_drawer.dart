@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/providers/upload_profile_image.provider.dart';
+import 'package:immich_mobile/modules/home/views/settings_page.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
@@ -28,7 +29,7 @@ class ProfileDrawer extends HookConsumerWidget {
     String endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     AuthenticationState authState = ref.watch(authenticationProvider);
     ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
-    bool isDark = Hive.box(themeInfoBox).get(themeInfoKey) ?? false;
+
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
     final appInfo = useState({});
@@ -123,8 +124,6 @@ class ProfileDrawer extends HookConsumerWidget {
       [],
     );
 
-    var isSwitched = useState(false);
-    isSwitched.value = isDark;
     return Drawer(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -181,72 +180,28 @@ class ProfileDrawer extends HookConsumerWidget {
                     ),
                     Text(
                       authState.userEmail,
-                      style: TextStyle(fontSize: 12),
+                      style: const TextStyle(fontSize: 12),
                     )
                   ],
                 ),
               ),
               ListTile(
-                //tileColor: Colors.grey[100],
-                leading: const Icon(
-                  Icons.logout_rounded,
-                  //color: Colors.black54,
+                leading: Icon(
+                  Icons.settings,
+                  color: Theme.of(context).primaryColor,
                 ),
                 title: const Text(
-                  "profile_drawer_sign_out",
+                  "settings_page",
                   style: TextStyle(
-                    //color: Colors.black54,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ).tr(),
-                onTap: () async {
-                  bool res =
-                      await ref.watch(authenticationProvider.notifier).logout();
-
-                  if (res) {
-                    ref.watch(backupProvider.notifier).cancelBackup();
-                    ref.watch(assetProvider.notifier).clearAllAsset();
-                    ref.watch(websocketProvider.notifier).disconnect();
-                    // AutoRouter.of(context).popUntilRoot();
-                    AutoRouter.of(context).replace(const LoginRoute());
-                  }
+                onTap: () {
+                  AutoRouter.of(context).push(const SettingsRoute());
                 },
               ),
-              Divider(),
-              Switch(
-                value: isSwitched.value,
-                onChanged: (value) {
-                  isSwitched.value = !isSwitched.value;
-                  Hive.box(themeInfoBox).put(themeInfoKey, isSwitched.value);
-                  print(isSwitched);
-                  print(value);
-                },
-                activeTrackColor: Colors.lightGreenAccent,
-                activeColor: Colors.green,
-              ),
-              // Consumer(
-              //   builder: (BuildContext context,
-              //       T Function<T>(ProviderBase<Object, T>) watch,
-              //       Widget child) {
-              //     final isDark = watch(isDarkModeProvider);
-              // return Switch(
-              //   value: isSwitched,
-              //   onChanged: (value) {
-              //     if (value) {
-              //       context.
-              //     }
-              //     // isSwitched.value = !isSwitched.value;
-              //     // Hive.box(themeInfoBox)
-              //     //     .put(themeInfoKey, isSwitched.value);
-              //     //print(isSwitched);
-              //     print(value);
-              //   },
-              //   activeTrackColor: Colors.lightGreenAccent,
-              //   activeColor: Colors.green,
-              // );
-              //   },
-              // ),
+              const Divider(),
             ],
           ),
           Padding(
@@ -254,7 +209,7 @@ class ProfileDrawer extends HookConsumerWidget {
             child: Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5), // if you need this
+                borderRadius: BorderRadius.circular(5),
                 side: const BorderSide(
                   color: Color.fromARGB(101, 201, 201, 201),
                   width: 1,

@@ -6,6 +6,8 @@ import 'package:immich_mobile/modules/asset_viewer/views/gallery_viewer.dart';
 import 'package:immich_mobile/modules/backup/views/album_preview_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_album_selection_page.dart';
 import 'package:immich_mobile/modules/backup/views/failed_backup_status_page.dart';
+import 'package:immich_mobile/modules/home/views/appearance_page.dart';
+import 'package:immich_mobile/modules/home/views/settings_page.dart';
 import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/home/views/home_page.dart';
@@ -77,6 +79,8 @@ part 'router.gr.dart';
       guards: [AuthGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
+    AutoRoute(page: SettingsPage, guards: [AuthGuard]),
+    AutoRoute(page: AppearancePage, guards: [AuthGuard])
   ],
 )
 class AppRouter extends _$AppRouter {

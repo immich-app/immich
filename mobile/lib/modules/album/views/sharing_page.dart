@@ -61,10 +61,9 @@ class SharingPage extends HookConsumerWidget {
                 sharedAlbums[index].albumName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  //color: Colors.grey.shade700,
                 ),
               ),
               onTap: () {
@@ -86,10 +85,7 @@ class SharingPage extends HookConsumerWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10), // if you need this
-              side: const BorderSide(
-                color: Colors.black12,
-                width: 1,
-              ),
+              side: BorderSide(color: Colors.grey.withOpacity(0.7), width: 1),
             ),
             color: Colors.transparent,
             child: Padding(
