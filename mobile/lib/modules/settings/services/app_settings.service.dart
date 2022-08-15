@@ -75,5 +75,3 @@ class AppSettingsService {
     }
   }
 }
-
-final appSettingsServiceProvider = Provider((ref) => AppSettingsService());

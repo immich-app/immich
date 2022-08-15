@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
-import 'package:immich_mobile/shared/services/app_settings.service.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 final immichThemeProvider = StateProvider<ThemeMode>((ref) {
   var themeMode = ref

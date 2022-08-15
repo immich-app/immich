@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting/three_stage_loading.dart';
-import 'package:immich_mobile/shared/services/app_settings.service.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 
 class ThemeSetting extends HookConsumerWidget {
@@ -54,13 +55,22 @@ class ThemeSetting extends HookConsumerWidget {
             if (isSystem) {
               currentTheme.value = ThemeMode.system;
               ref.watch(immichThemeProvider.notifier).state = ThemeMode.system;
+              ref
+                  .watch(appSettingsServiceProvider)
+                  .setSetting(AppSettingsEnum.themeMode, "system");
             } else {
               if (currentSystemBrightness == Brightness.light) {
                 currentTheme.value = ThemeMode.light;
                 ref.watch(immichThemeProvider.notifier).state = ThemeMode.light;
+                ref
+                    .watch(appSettingsServiceProvider)
+                    .setSetting(AppSettingsEnum.themeMode, "light");
               } else if (currentSystemBrightness == Brightness.dark) {
                 currentTheme.value = ThemeMode.dark;
                 ref.watch(immichThemeProvider.notifier).state = ThemeMode.dark;
+                ref
+                    .watch(appSettingsServiceProvider)
+                    .setSetting(AppSettingsEnum.themeMode, "dark");
               }
             }
           },
@@ -79,8 +89,14 @@ class ThemeSetting extends HookConsumerWidget {
             onChanged: (bool isDark) {
               if (isDark) {
                 ref.watch(immichThemeProvider.notifier).state = ThemeMode.dark;
+                ref
+                    .watch(appSettingsServiceProvider)
+                    .setSetting(AppSettingsEnum.themeMode, "dark");
               } else {
                 ref.watch(immichThemeProvider.notifier).state = ThemeMode.light;
+                ref
+                    .watch(appSettingsServiceProvider)
+                    .setSetting(AppSettingsEnum.themeMode, "light");
               }
             },
           ),

@@ -18,7 +18,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
-import 'package:immich_mobile/shared/services/app_settings.service.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
@@ -34,8 +34,6 @@ void main() async {
   await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
   await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
   await Hive.openBox(hiveGithubReleaseInfoBox);
-
-  // await Hive.deleteBoxFromDisk(userSettingInfoBox);
   await Hive.openBox(userSettingInfoBox);
 
   SystemChrome.setSystemUIOverlayStyle(
