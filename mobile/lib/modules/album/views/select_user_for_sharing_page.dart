@@ -136,9 +136,9 @@ class SelectUserForSharingPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'share_invite',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Theme.of(context).primaryColor),
         ).tr(),
         elevation: 0,
         centerTitle: false,
@@ -150,11 +150,18 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         ),
         actions: [
           TextButton(
+            style: TextButton.styleFrom(
+              primary: Theme.of(context).primaryColor,
+            ),
             onPressed:
                 sharedUsersList.value.isEmpty ? null : _createSharedAlbum,
             child: const Text(
               "share_create_album",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                // color: Theme.of(context).primaryColor,
+              ),
             ).tr(),
           )
         ],

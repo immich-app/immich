@@ -5,7 +5,7 @@ import 'package:immich_mobile/constants/hive_box.dart';
 
 enum AppSettingsEnum {
   threeStageLoading, // true, false,
-  themeMode, // "light","dark"
+  themeMode, // "light","dark","system"
 }
 
 class AppSettingsService {
@@ -61,8 +61,8 @@ class AppSettingsService {
 
     // Default value of themeMode is "light"
     if (settingType == AppSettingsEnum.themeMode) {
-      hiveBox.put(settingKey, "light");
-      return "light";
+      hiveBox.put(settingKey, "system");
+      return "system";
     }
   }
 
@@ -75,5 +75,3 @@ class AppSettingsService {
     }
   }
 }
-
-final appSettingsServiceProvider = Provider((ref) => AppSettingsService());

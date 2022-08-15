@@ -23,6 +23,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
     var dummmy = Random().nextInt(1024);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     _buildUserProfileImage() {
       if (authState.profileImagePath.isEmpty) {
@@ -104,13 +105,19 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     );
 
     return DrawerHeader(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color.fromARGB(255, 216, 219, 238),
-            Color.fromARGB(255, 242, 242, 242),
-            Colors.white,
-          ],
+          colors: isDarkMode
+              ? [
+                  const Color.fromARGB(255, 22, 25, 48),
+                  const Color.fromARGB(255, 13, 13, 13),
+                  const Color.fromARGB(255, 0, 0, 0),
+                ]
+              : [
+                  const Color.fromARGB(255, 216, 219, 238),
+                  const Color.fromARGB(255, 242, 242, 242),
+                  Colors.white,
+                ],
           begin: Alignment.centerRight,
           end: Alignment.centerLeft,
         ),
@@ -129,8 +136,8 @@ class ProfileDrawerHeader extends HookConsumerWidget {
                 child: GestureDetector(
                   onTap: _pickUserProfileImage,
                   child: Material(
-                    color: Colors.grey[50],
-                    elevation: 2,
+                    color: Colors.grey[100],
+                    elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0),
                     ),
@@ -157,7 +164,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
           ),
           Text(
             authState.userEmail,
-            style: TextStyle(color: Colors.grey[800], fontSize: 12),
+            style: Theme.of(context).textTheme.labelMedium,
           )
         ],
       ),

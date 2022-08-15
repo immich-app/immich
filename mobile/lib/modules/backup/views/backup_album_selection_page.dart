@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -16,6 +17,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final availableAlbums = ref.watch(backupProvider).availableAlbums;
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(
       () {
@@ -81,14 +83,16 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               ),
               label: Text(
                 album.name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
-                  color: Colors.white,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black
+                      : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               backgroundColor: Theme.of(context).primaryColor,
-              deleteIconColor: Colors.white,
+              deleteIconColor: isDarkTheme ? Colors.black : Colors.white,
               deleteIcon: const Icon(
                 Icons.cancel_rounded,
                 size: 15,
@@ -119,14 +123,15 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               ),
               label: Text(
                 album.name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
-                  color: Colors.white,
+                  color: isDarkTheme ? Colors.black : immichBackgroundColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               backgroundColor: Colors.red[300],
-              deleteIconColor: Colors.white,
+              deleteIconColor:
+                  isDarkTheme ? Colors.black : immichBackgroundColor,
               deleteIcon: const Icon(
                 Icons.cancel_rounded,
                 size: 15,
@@ -154,11 +159,16 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         physics: const ClampingScrollPhysics(),
         children: [
           Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(
+              vertical: 8.0,
+              horizontal: 16.0,
+            ),
             child: const Text(
               "backup_album_selection_page_selection_info",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
             ).tr(),
           ),
           // Selected Album Chips
@@ -178,9 +188,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             child: Card(
               margin: const EdgeInsets.all(0),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5), // if you need this
-                side: const BorderSide(
-                  color: Color.fromARGB(255, 235, 235, 235),
+                borderRadius: BorderRadius.circular(5),
+                side: BorderSide(
+                  color: isDarkTheme
+                      ? const Color.fromARGB(255, 0, 0, 0)
+                      : const Color.fromARGB(255, 235, 235, 235),
                   width: 1,
                 ),
               ),
@@ -190,12 +202,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                 children: [
                   ListTile(
                     visualDensity: VisualDensity.compact,
-                    title: Text(
+                    title: const Text(
                       "backup_album_selection_page_total_assets",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
-                        color: Colors.grey[700],
                       ),
                     ).tr(),
                     trailing: Text(
@@ -257,11 +268,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       content: SingleChildScrollView(
                         child: ListBody(
                           children: [
-                            Text(
+                            const Text(
                               'backup_album_selection_page_assets_scatter',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey[700],
                               ),
                             ).tr(),
                           ],

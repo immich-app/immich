@@ -24,6 +24,7 @@ class AlbumInfoCard extends HookConsumerWidget {
         ref.watch(backupProvider).selectedBackupAlbums.contains(albumInfo);
     final bool isExcluded =
         ref.watch(backupProvider).excludedBackupAlbums.contains(albumInfo);
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     ColorFilter selectedFilter = ColorFilter.mode(
       Theme.of(context).primaryColor.withAlpha(100),
@@ -39,11 +40,11 @@ class AlbumInfoCard extends HookConsumerWidget {
         return Chip(
           visualDensity: VisualDensity.compact,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-          label: const Text(
+          label: Text(
             "album_info_card_backup_album_included",
             style: TextStyle(
               fontSize: 10,
-              color: Colors.white,
+              color: isDarkTheme ? Colors.black : Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ).tr(),
@@ -53,11 +54,11 @@ class AlbumInfoCard extends HookConsumerWidget {
         return Chip(
           visualDensity: VisualDensity.compact,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-          label: const Text(
+          label: Text(
             "album_info_card_backup_album_excluded",
             style: TextStyle(
               fontSize: 10,
-              color: Colors.white,
+              color: isDarkTheme ? Colors.black : Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ).tr(),
@@ -141,8 +142,10 @@ class AlbumInfoCard extends HookConsumerWidget {
         margin: const EdgeInsets.all(1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12), // if you need this
-          side: const BorderSide(
-            color: Color(0xFFC9C9C9),
+          side: BorderSide(
+            color: isDarkTheme
+                ? const Color.fromARGB(255, 37, 35, 35)
+                : const Color(0xFFC9C9C9),
             width: 1,
           ),
         ),
@@ -219,8 +222,9 @@ class AlbumInfoCard extends HookConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      AutoRouter.of(context)
-                          .push(AlbumPreviewRoute(album: albumInfo));
+                      AutoRouter.of(context).push(
+                        AlbumPreviewRoute(album: albumInfo),
+                      );
                     },
                     icon: Icon(
                       Icons.image_outlined,

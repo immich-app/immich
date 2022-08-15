@@ -26,7 +26,7 @@ class ThumbnailWithInfo extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(right: 8.0),
         child: SizedBox(
-          width: MediaQuery.of(context).size.width / 2,
+          width: MediaQuery.of(context).size.width / 3,
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
@@ -58,7 +58,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 14,
                     ),
                   ),
                 ),

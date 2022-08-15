@@ -30,6 +30,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
       floating: true,
       pinned: false,
       snap: false,
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(5)),
       ),
@@ -57,7 +58,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
                   child: GestureDetector(
                     onTap: () => Scaffold.of(context).openDrawer(),
                     child: Material(
-                      color: Colors.grey[200],
+                      // color: Colors.grey[200],
                       elevation: 1,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50.0),
@@ -77,13 +78,12 @@ class ImmichSliverAppBar extends ConsumerWidget {
           );
         },
       ),
-      title: Text(
+      title: const Text(
         'IMMICH',
         style: TextStyle(
           fontFamily: 'SnowburstOne',
           fontWeight: FontWeight.bold,
           fontSize: 22,
-          color: Theme.of(context).primaryColor,
         ),
       ),
       actions: [
@@ -112,12 +112,13 @@ class ImmichSliverAppBar extends ConsumerWidget {
                   ? const Icon(Icons.backup_rounded)
                   : Badge(
                       padding: const EdgeInsets.all(4),
-                      elevation: 2,
+                      elevation: 3,
                       position: BadgePosition.bottomEnd(bottom: -4, end: -4),
                       badgeColor: Colors.white,
                       badgeContent: const Icon(
                         Icons.cloud_off_rounded,
                         size: 8,
+                        color: Colors.indigo,
                       ),
                       child: const Icon(Icons.backup_rounded),
                     ),

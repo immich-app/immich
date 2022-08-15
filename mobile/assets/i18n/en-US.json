@@ -48,7 +48,7 @@
   "control_bottom_app_bar_delete": "Delete",
   "create_shared_album_page_share": "Share",
   "create_shared_album_page_create": "Create",
-  "create_shared_album_page_share_add_assets": "ADD ASSETS",
+  "create_shared_album_page_share_add_assets": "ADD PHOTOS",
   "create_shared_album_page_share_select_photos": "Select Photos",
   "daily_title_text_date": "E, MMM dd",
   "daily_title_text_date_year": "E, MMM dd, yyyy",
@@ -113,5 +113,14 @@
   "library_page_new_album": "New album",
   "create_album_page_untitled": "Untitled",
   "share_dialog_preparing": "Preparing...",
-  "control_bottom_app_bar_share": "Share"
+  "control_bottom_app_bar_share": "Share",
+  "setting_pages_app_bar_settings": "Settings",
+  "theme_setting_theme_title": "Theme",
+  "theme_setting_theme_subtitle": "Choose the app's theme setting",
+  "theme_setting_system_theme_switch": "Automatic (Follow system setting)",
+  "theme_setting_dark_mode_switch": "Dark mode",
+  "theme_setting_image_viewer_quality_title": "Image viewer quality",
+  "theme_setting_image_viewer_quality_subtitle": "Adjust the quality of the detail image viewer",
+  "theme_setting_three_stage_loading_title": "Enable three-stage loading",
+  "theme_setting_three_stage_loading_subtitle": "The three-stage loading delivers the best quality image in exchange for a slower loading speed"
 }

@@ -18,6 +18,7 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final titleTextEditController =
         useTextEditingController(text: albumInfo.albumName);
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     void onFocusModeChange() {
       if (!titleFocusNode.hasFocus && titleTextEditController.text.isEmpty) {
@@ -65,7 +66,10 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
                 onPressed: () {
                   titleTextEditController.clear();
                 },
-                icon: const Icon(Icons.cancel_rounded),
+                icon: Icon(
+                  Icons.cancel_rounded,
+                  color: Theme.of(context).primaryColor,
+                ),
                 splashRadius: 10,
               )
             : null,
@@ -78,7 +82,9 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
           borderRadius: BorderRadius.circular(10),
         ),
         focusColor: Colors.grey[300],
-        fillColor: Colors.grey[200],
+        fillColor: isDarkTheme
+            ? const Color.fromARGB(255, 32, 33, 35)
+            : Colors.grey[200],
         filled: titleFocusNode.hasFocus,
         hintText: 'share_add_title'.tr(),
       ),

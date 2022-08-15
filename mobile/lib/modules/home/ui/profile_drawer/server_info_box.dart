@@ -38,7 +38,7 @@ class ServerInfoBox extends HookConsumerWidget {
       padding: const EdgeInsets.all(8.0),
       child: Card(
         elevation: 0,
-        color: Colors.grey[100],
+        color: Theme.of(context).scaffoldBackgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5), // if you need this
           side: const BorderSide(
@@ -65,7 +65,10 @@ class ServerInfoBox extends HookConsumerWidget {
                   ),
                 ),
               ),
-              const Divider(),
+              const Divider(
+                color: Color.fromARGB(101, 201, 201, 201),
+                thickness: 1,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -87,7 +90,10 @@ class ServerInfoBox extends HookConsumerWidget {
                   ),
                 ],
               ),
-              const Divider(),
+              const Divider(
+                color: Color.fromARGB(101, 201, 201, 201),
+                thickness: 1,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

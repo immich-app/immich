@@ -82,7 +82,7 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    ListTile _buildBackupController() {
+    ListTile _buildAutoBackupController() {
       var backUpOption = authenticationState.deviceInfo.isAutoBackup
           ? "backup_controller_page_status_on".tr()
           : "backup_controller_page_status_off".tr();
@@ -114,13 +114,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 ).tr(),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(
-                      width: 1,
-                      color: Color.fromARGB(255, 220, 220, 220),
-                    ),
-                  ),
+                child: ElevatedButton(
                   onPressed: () {
                     if (isAutoBackup) {
                       ref
@@ -134,7 +128,10 @@ class BackupControllerPage extends HookConsumerWidget {
                   },
                   child: Text(
                     backupBtnText,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               )
@@ -232,33 +229,24 @@ class BackupControllerPage extends HookConsumerWidget {
               children: [
                 const Text(
                   "backup_controller_page_to_backup",
-                  style: TextStyle(color: Color(0xFF808080), fontSize: 12),
+                  style: TextStyle(fontSize: 12),
                 ).tr(),
                 _buildSelectedAlbumName(),
                 _buildExcludedAlbumName()
               ],
             ),
           ),
-          trailing: OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              enableFeedback: true,
-              side: const BorderSide(
-                width: 1,
-                color: Color.fromARGB(255, 220, 220, 220),
-              ),
-            ),
+          trailing: ElevatedButton(
             onPressed: () {
               AutoRouter.of(context).push(const BackupAlbumSelectionRoute());
             },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 16.0,
+            child: const Text(
+              "backup_controller_page_select",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
               ),
-              child: const Text(
-                "backup_controller_page_select",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ).tr(),
-            ),
+            ).tr(),
           ),
         ),
       );
@@ -324,14 +312,14 @@ class BackupControllerPage extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 8.0),
               child: Table(
                 border: TableBorder.all(
-                  color: Colors.black12,
+                  color: Theme.of(context).primaryColorLight,
                   width: 1,
                 ),
                 children: [
                   TableRow(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                    ),
+                    decoration: const BoxDecoration(
+                        // color: Colors.grey[100],
+                        ),
                     children: [
                       TableCell(
                         verticalAlignment: TableCellVerticalAlignment.middle,
@@ -355,9 +343,9 @@ class BackupControllerPage extends HookConsumerWidget {
                     ],
                   ),
                   TableRow(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                    ),
+                    decoration: const BoxDecoration(
+                        // color: Colors.grey[200],
+                        ),
                     children: [
                       TableCell(
                         verticalAlignment: TableCellVerticalAlignment.middle,
@@ -384,9 +372,9 @@ class BackupControllerPage extends HookConsumerWidget {
                     ],
                   ),
                   TableRow(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                    ),
+                    decoration: const BoxDecoration(
+                        // color: Colors.grey[100],
+                        ),
                     children: [
                       TableCell(
                         child: Padding(
@@ -463,7 +451,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             const Divider(),
-            _buildBackupController(),
+            _buildAutoBackupController(),
             const Divider(),
             _buildStorageInformation(),
             const Divider(),
@@ -479,7 +467,7 @@ class BackupControllerPage extends HookConsumerWidget {
                             style: ElevatedButton.styleFrom(
                               primary: Colors.red[300],
                               onPrimary: Colors.grey[50],
-                              padding: const EdgeInsets.all(14),
+                              // padding: const EdgeInsets.all(14),
                             ),
                             onPressed: () {
                               ref.read(backupProvider.notifier).cancelBackup();
@@ -493,11 +481,6 @@ class BackupControllerPage extends HookConsumerWidget {
                             ).tr(),
                           )
                         : ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              primary: Theme.of(context).primaryColor,
-                              onPrimary: Colors.grey[50],
-                              padding: const EdgeInsets.all(14),
-                            ),
                             onPressed: shouldBackup ? startBackup : null,
                             child: const Text(
                               "backup_controller_page_start_backup",
