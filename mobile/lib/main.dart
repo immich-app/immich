@@ -51,8 +51,11 @@ void main() async {
     Locale('da', 'DK'),
     Locale('de', 'DE'),
     Locale('es', 'ES'),
+    Locale('fi', 'FI'),
     Locale('fr', 'FR'),
     Locale('it', 'IT'),
+    Locale('ja', 'JP'),
+    Locale('pl', 'PL')
   ];
 
   if (kReleaseMode && Platform.isAndroid) {
