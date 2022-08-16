@@ -61,7 +61,9 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(AdminRolesGuard)
   @Post()
-  async createUser(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  async createUser(
+    @Body(new ValidationPipe({ transform: true })) createUserDto: CreateUserDto,
+  ): Promise<UserResponseDto> {
     return await this.userService.createUser(createUserDto);
   }
 
