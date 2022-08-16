@@ -33,7 +33,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             allAssetsInDatabase: const [],
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
-            backgroundBackup: _backgroundService.isBackgroundBackupEnabled(),
+            backgroundBackup: false,
             serverInfo: ServerInfoResponseDto(
               diskAvailable: "0",
               diskAvailableRaw: 0,
@@ -110,11 +110,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     _updateBackupAssetCount();
   }
 
-  void enableBackgroundBackup() {
+  void enableBackgroundBackup() async {
     if (Platform.isAndroid) {
-      _backgroundService.disableBatteryOptimizations();
-      _backgroundService.startService();
       state = state.copyWith(backgroundBackup: true);
+      await _backgroundService.disableBatteryOptimizations();
+      final bool started = await _backgroundService.startService();
+      if (!started) {
+        state = state.copyWith(backgroundBackup: false);
+        // TODO inform user that service failed to be activated
+        await _backgroundService.stopService();
+      }
     }
   }
 
@@ -309,12 +314,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// and then update the UI according to those information
   ///
   Future<void> getBackupInfo() async {
-    await Future.wait([
-      _getBackupAlbumsInfo(),
-      _updateServerInfo(),
-    ]);
+    final bool isEnabled = await _backgroundService.isBackgroundBackupEnabled();
+    state = state.copyWith(backgroundBackup: isEnabled);
+    if (state.backupProgress != BackUpProgressEnum.inBackground) {
+      await Future.wait([
+        _getBackupAlbumsInfo(),
+        _updateServerInfo(),
+      ]);
 
-    await _updateBackupAssetCount();
+      await _updateBackupAssetCount();
+    }
   }
 
   ///
@@ -490,7 +499,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (Platform.isAndroid) {
       final BackUpProgressEnum previous = state.backupProgress;
       state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
-      await _backgroundService.acquireLock();
+      final bool hasLock = await _backgroundService.acquireLock();
+      if (!hasLock) {
+        return;
+      }
       Box<HiveBackupAlbums> box =
           await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
       HiveBackupAlbums? albums = box.get(backupInfoKey);
@@ -542,8 +554,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     ];
     if (Platform.isAndroid &&
         allowedStates.contains(ref.read(appStateProvider.notifier).state)) {
-      await Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).close();
-      await _backgroundService.releaseLock();
+      try {
+        if (Hive.isBoxOpen(hiveBackupInfoBox)) {
+          await Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).close();
+        }
+      } catch (error) {
+        debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");
+      }
+      _backgroundService.releaseLock();
     }
   }
 }

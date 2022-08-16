@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show IsolateNameServer, PluginUtilities;
@@ -17,28 +18,25 @@ import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 final backgroundServiceProvider = Provider(
-  (ref) => BackgroundService(
-    ref.watch(backupServiceProvider),
-  ),
+  (ref) => BackgroundService(),
 );
 
 /// Background backup service
 class BackgroundService {
-  static const String _portName = "immichLock";
-  final BackupService _backupService;
-  BackgroundService(this._backupService);
+  static const String _portNameLock = "immichLock";
+  BackgroundService();
   static const MethodChannel _foregroundChannel =
       MethodChannel('immich/foregroundChannel');
   static const MethodChannel _backgroundChannel =
       MethodChannel('immich/backgroundChannel');
   bool _isForegroundInitialized = false;
   bool _isBackgroundInitialized = false;
-  RandomAccessFile? _lockFile;
   CancellationToken? _cancellationToken;
   bool _canceledBySystem = false;
+  int _wantsLockTime = 0;
+  bool _hasLock = false;
+  SendPort? _waitingIsolate;
   ReceivePort? _rp;
-  Stream<dynamic>? _bs;
-  Future<dynamic>? _lockFuture;
 
   bool get isForegroundInitialized {
     return _isForegroundInitialized;
@@ -58,7 +56,7 @@ class BackgroundService {
 
   /// Ensures that the background service is enqueued if enabled in settings
   Future<bool> resumeServiceIfEnabled() async {
-    return isBackgroundBackupEnabled() &&
+    return await isBackgroundBackupEnabled() &&
         await startService(keepExisting: true);
   }
 
@@ -72,17 +70,20 @@ class BackgroundService {
     if (!Platform.isAndroid) {
       return true;
     }
-    if (!_isForegroundInitialized) {
-      await _initialize();
+    try {
+      if (!_isForegroundInitialized) {
+        await _initialize();
+      }
+      // TODO i18n
+      const String title = "Checking for new assets…";
+      final bool ok = await _foregroundChannel.invokeMethod(
+        'start',
+        [immediate, keepExisting, requireUnmetered, requireCharging, title],
+      );
+      return ok;
+    } catch (error) {
+      return false;
     }
-    final bool ok = await _foregroundChannel.invokeMethod(
-      'start',
-      [immediate, keepExisting, requireUnmetered, requireCharging],
-    );
-    if (ok) {
-      Hive.box(hiveBackgroundInfoBox).put(backgroundBackupEnabledKey, true);
-    }
-    return ok;
   }
 
   /// Cancels the background service (if currently running) and removes it from work queue
@@ -90,21 +91,30 @@ class BackgroundService {
     if (!Platform.isAndroid) {
       return true;
     }
-    if (!_isForegroundInitialized) {
-      await _initialize();
+    try {
+      if (!_isForegroundInitialized) {
+        await _initialize();
+      }
+      final ok = await _foregroundChannel.invokeMethod('stop');
+      return ok;
+    } catch (error) {
+      return false;
     }
-    final ok = await _foregroundChannel.invokeMethod('stop');
-    if (ok) {
-      Hive.box(hiveBackgroundInfoBox).put(backgroundBackupEnabledKey, false);
-    }
-    return ok;
   }
 
   /// Returns `true` if the background service is enabled
-  bool isBackgroundBackupEnabled() {
-    return Platform.isAndroid &&
-        Hive.box(hiveBackgroundInfoBox)
-            .get(backgroundBackupEnabledKey, defaultValue: false);
+  Future<bool> isBackgroundBackupEnabled() async {
+    if (!Platform.isAndroid) {
+      return false;
+    }
+    try {
+      if (!_isForegroundInitialized) {
+        await _initialize();
+      }
+      return await _foregroundChannel.invokeMethod("isEnabled");
+    } catch (error) {
+      return false;
+    }
   }
 
   /// Opens an activity to let the user disable battery optimizations for Immich
@@ -112,16 +122,20 @@ class BackgroundService {
     if (!Platform.isAndroid) {
       return true;
     }
-    if (!_isForegroundInitialized) {
-      await _initialize();
+    try {
+      if (!_isForegroundInitialized) {
+        await _initialize();
+      }
+      // TODO i18n
+      const String message =
+          "Please disable battery optimization for Immich to enable background backup";
+      return await _foregroundChannel.invokeMethod(
+        'disableBatteryOptimizations',
+        message,
+      );
+    } catch (error) {
+      return false;
     }
-    // TODO i18n
-    const String message =
-        "Please disable battery optimization for Immich to enable background backup";
-    return await _foregroundChannel.invokeMethod(
-      'disableBatteryOptimizations',
-      message,
-    );
   }
 
   /// Updates the notification shown by the background service
@@ -132,9 +146,13 @@ class BackgroundService {
     if (!Platform.isAndroid) {
       return true;
     }
-    if (_isBackgroundInitialized) {
-      return await _backgroundChannel
-          .invokeMethod('updateNotification', [title, content]);
+    try {
+      if (_isBackgroundInitialized) {
+        return await _backgroundChannel
+            .invokeMethod('updateNotification', [title, content]);
+      }
+    } catch (error) {
+      debugPrint("[updateNotification] failed to communicate with plugin");
     }
     return Future.value(false);
   }
@@ -147,52 +165,97 @@ class BackgroundService {
     if (!Platform.isAndroid) {
       return true;
     }
-    if (_isBackgroundInitialized) {
-      return await _backgroundChannel
-          .invokeMethod('showError', [title, content]);
+    try {
+      if (_isBackgroundInitialized) {
+        return await _backgroundChannel
+            .invokeMethod('showError', [title, content]);
+      }
+    } catch (error) {
+      debugPrint("[showErrorNotification] failed to communicate with plugin");
     }
     return Future.value(false);
   }
 
   /// await to ensure this thread (foreground or background) has exclusive access
-  Future<void> acquireLock() async {
+  Future<bool> acquireLock() async {
     if (!Platform.isAndroid) {
-      return;
+      return true;
     }
-    ReceivePort rp = ReceivePort(_portName);
+    final int lockTime = Timeline.now;
+    _wantsLockTime = lockTime;
+    final ReceivePort rp = ReceivePort(_portNameLock);
     _rp = rp;
     final SendPort sp = rp.sendPort;
-    final bool ok = IsolateNameServer.registerPortWithName(sp, _portName);
-    final bs = rp.asBroadcastStream();
-    _bs = bs;
-    if (!ok) {
-      SendPort? other = IsolateNameServer.lookupPortByName(_portName);
-      if (other != null) {
-        other.send(sp);
-        _lockFuture = bs.first;
-        bool isFinished = await _lockFuture;
-        _lockFuture = null;
-        assert(isFinished);
+
+    while (!IsolateNameServer.registerPortWithName(sp, _portNameLock)) {
+      try {
+        await _checkLockReleasedWithHeartbeat(lockTime);
+      } catch (error) {
+        return false;
       }
+      if (_wantsLockTime != lockTime) {
+        return false;
+      }
+    }
+    _hasLock = true;
+    rp.listen(_heartbeatListener);
+    return true;
+  }
+
+  Future<void> _checkLockReleasedWithHeartbeat(final int lockTime) async {
+    SendPort? other = IsolateNameServer.lookupPortByName(_portNameLock);
+    if (other != null) {
+      final ReceivePort tempRp = ReceivePort();
+      final SendPort tempSp = tempRp.sendPort;
+      final bs = tempRp.asBroadcastStream();
+      while (_wantsLockTime == lockTime) {
+        other.send(tempSp);
+        final dynamic answer = await bs.first
+            .timeout(const Duration(seconds: 5), onTimeout: () => null);
+        if (_wantsLockTime != lockTime) {
+          break;
+        }
+        if (answer == null) {
+          // other isolate failed to answer, assuming it exited without releasing the lock
+          if (other == IsolateNameServer.lookupPortByName(_portNameLock)) {
+            IsolateNameServer.removePortNameMapping(_portNameLock);
+          }
+          break;
+        } else if (answer == true) {
+          // other isolate released the lock
+          break;
+        } else if (answer == false) {
+          // other isolate is still active
+        }
+        final dynamic isFinished = await bs.first
+            .timeout(const Duration(seconds: 5), onTimeout: () => false);
+        if (isFinished == true) {
+          break;
+        }
+      }
+      tempRp.close();
+    }
+  }
+
+  void _heartbeatListener(dynamic msg) {
+    if (msg is SendPort) {
+      _waitingIsolate = msg;
+      msg.send(false);
     }
   }
 
   /// releases the exclusive access lock
-  Future<void> releaseLock() async {
+  void releaseLock() {
     if (!Platform.isAndroid) {
       return;
     }
-    if (_lockFuture == null) {
-      IsolateNameServer.removePortNameMapping(_portName);
-      final SendPort? sp = await _bs?.first.timeout(
-        const Duration(milliseconds: 100),
-        onTimeout: () => null,
-      ) as SendPort?;
-      sp?.send(true);
-    } else {
-      _lockFuture?.ignore();
+    _wantsLockTime = 0;
+    if (_hasLock) {
+      IsolateNameServer.removePortNameMapping(_portNameLock);
+      _waitingIsolate?.send(true);
+      _waitingIsolate = null;
+      _hasLock = false;
     }
-    _bs = null;
     _rp?.close();
     _rp = null;
   }
@@ -205,17 +268,20 @@ class BackgroundService {
 
   Future<bool> _callHandler(MethodCall call) async {
     switch (call.method) {
-      case "onPhotosChanged":
+      case "onAssetsChanged":
         try {
-          await acquireLock();
-          // await Future.delayed(const Duration(seconds: 30));
-          final bool ok = await _onAssetsChanged();
-          await Hive.close();
-          await releaseLock();
-          return ok;
+          final bool hasAccess = await acquireLock();
+          if (!hasAccess) {
+            debugPrint("[_callHandler] could acquire lock, exiting");
+            return false;
+          }
+          return await _onAssetsChanged();
         } catch (error) {
           debugPrint(error.toString());
           return false;
+        } finally {
+          await Hive.close();
+          releaseLock();
         }
       case "systemStop":
         _canceledBySystem = true;
@@ -228,6 +294,18 @@ class BackgroundService {
   }
 
   Future<bool> _onAssetsChanged() async {
+    await Hive.initFlutter();
+
+    Hive.registerAdapter(HiveSavedLoginInfoAdapter());
+    Hive.registerAdapter(HiveBackupAlbumsAdapter());
+    await Hive.openBox(userInfoBox);
+    await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
+
+    ApiService apiService = ApiService();
+    apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
+    apiService.setAccessToken(Hive.box(userInfoBox).get(accessTokenKey));
+    BackupService backupService = BackupService(apiService);
+
     final Box<HiveBackupAlbums> box =
         await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
     final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
@@ -242,7 +320,7 @@ class BackgroundService {
     }
 
     final List<AssetEntity> toUpload =
-        await _backupService.getAssetsToBackup(backupAlbumInfo);
+        await backupService.getAssetsToBackup(backupAlbumInfo);
 
     if (_canceledBySystem) {
       return false;
@@ -253,16 +331,14 @@ class BackgroundService {
     }
 
     _cancellationToken = CancellationToken();
-    final bool ok = toUpload.length > 10
-        ? true
-        : await _backupService.backupAsset(
-            toUpload,
-            _cancellationToken!,
-            _onAssetUploaded,
-            _onProgress,
-            _onSetCurrentBackupAsset,
-            _onBackupError,
-          );
+    final bool ok = await backupService.backupAsset(
+      toUpload,
+      _cancellationToken!,
+      _onAssetUploaded,
+      _onProgress,
+      _onSetCurrentBackupAsset,
+      _onBackupError,
+    );
     if (ok) {
       await box.put(
         backupInfoKey,
@@ -289,29 +365,15 @@ class BackgroundService {
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
     // TODO i18n
     updateNotification(
-      title: "Photo backup running",
+      title: "Performing backup",
       content: "Uploading ${currentUploadAsset.fileName}",
     );
   }
 }
 
 /// entry point called by Kotlin/Java code; needs to be a top-level function
-void _nativeEntry() async {
+void _nativeEntry() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Hive.initFlutter();
-
-  Hive.registerAdapter(HiveSavedLoginInfoAdapter());
-  Hive.registerAdapter(HiveBackupAlbumsAdapter());
-
-  await Hive.openBox(userInfoBox);
-  await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
-  await Hive.openBox(hiveBackgroundInfoBox);
-
-  ApiService apiService = ApiService();
-  apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
-  apiService.setAccessToken(Hive.box(userInfoBox).get(accessTokenKey));
-  BackupService backupService = BackupService(apiService);
-  BackgroundService backgroundService = BackgroundService(backupService);
+  BackgroundService backgroundService = BackgroundService();
   backgroundService._setupBackgroundCallHandler();
 }

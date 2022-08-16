@@ -169,19 +169,13 @@ class BackupControllerPage extends HookConsumerWidget {
                 color: Color.fromARGB(255, 220, 220, 220),
               ),
             ),
-            onPressed: hasExclusiveAccess
-                ? () {
-                    if (isBackgroundEnabled) {
-                      ref
-                          .read(backupProvider.notifier)
-                          .disableBackgroundBackup();
-                    } else {
-                      ref
-                          .read(backupProvider.notifier)
-                          .enableBackgroundBackup();
-                    }
-                  }
-                : null,
+            onPressed: () {
+              if (isBackgroundEnabled) {
+                ref.read(backupProvider.notifier).disableBackgroundBackup();
+              } else {
+                ref.read(backupProvider.notifier).enableBackgroundBackup();
+              }
+            },
             child: Text(
               isBackgroundEnabled
                   ? "Disable background backup"

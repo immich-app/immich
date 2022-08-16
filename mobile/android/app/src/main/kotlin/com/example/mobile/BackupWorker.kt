@@ -78,7 +78,9 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
             // foreground services are allowed to run indefinitely
             // requires battery optimizations to be disabled (either manually by the user
             // or by the system learning that immich is important to the user)
-            setForegroundAsync(createForegroundInfo())
+            val title = ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                .getString(SHARED_PREF_NOTIFICATION_TITLE, NOTIFICATION_DEFAULT_TITLE)!!
+            setForegroundAsync(createForegroundInfo(title))
         }
         engine = FlutterEngine(ctx)
 
@@ -146,7 +148,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         when (call.method) {
             "initialized" ->
                 backgroundChannel.invokeMethod(
-                    "onPhotosChanged",
+                    "onAssetsChanged",
                     null,
                     object : MethodChannel.Result {
                         override fun notImplemented() {
@@ -161,7 +163,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
                             val success = receivedResult as Boolean
                             stopEngine(if(success) Result.success() else Result.retry())
                             if (!success && inputData.getInt(DATA_KEY_RETRIES, 0) == 0) {
-                                // there was an error (e.g. server not available) a
+                                // there was an error (e.g. server not available)
                                 // replace the task without the content constraints to finish the backup as soon as possible
                                 enqueueMoreWork(applicationContext,
                                     immediate = true,
@@ -224,6 +226,8 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     companion object {
         const val SHARED_PREF_NAME = "immichBackgroundService"
         const val SHARED_PREF_CALLBACK_KEY = "callbackDispatcherHandle"
+        const val SHARED_PREF_SERVICE_ENABLED = "serviceEnabled"
+        const val SHARED_PREF_NOTIFICATION_TITLE = "notificationTitle"
 
         private const val TASK_NAME = "immich/photoListener"
         private const val DATA_KEY_UNMETERED = "unmetered"
@@ -243,12 +247,25 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
          * @param requireCharging if true, task only runs if device is charging
          * @param retries retry count (should be 0 unless an error occured and this is a retry)
          */
-        fun enqueueMoreWork(context: Context,
-                            immediate: Boolean = false,
-                            keepExisting: Boolean = false,
-                            requireUnmeteredNetwork: Boolean = false,
-                            requireCharging: Boolean = false,
-                            retries: Int = 0) {
+        fun startWork(context: Context,
+                        immediate: Boolean = false,
+                        keepExisting: Boolean = false,
+                        requireUnmeteredNetwork: Boolean = false,
+                        requireCharging: Boolean = false) {
+            context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                    .edit().putBoolean(SHARED_PREF_SERVICE_ENABLED, true).apply()
+            enqueueMoreWork(context, immediate, keepExisting, requireUnmeteredNetwork, requireCharging)
+        }
+
+        private fun enqueueMoreWork(context: Context,
+                                    immediate: Boolean = false,
+                                    keepExisting: Boolean = false,
+                                    requireUnmeteredNetwork: Boolean = false,
+                                    requireCharging: Boolean = false,
+                                    retries: Int = 0) {
+            if (!isEnabled(context)) {
+                return
+            }
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(if (requireUnmeteredNetwork) NetworkType.UNMETERED else NetworkType.CONNECTED)
                 .setRequiresBatteryNotLow(true)
@@ -284,6 +301,8 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
          * Stops the currently running worker (if any) and removes it from the work queue
          */
         fun stopWork(context: Context) {
+            context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                    .edit().putBoolean(SHARED_PREF_SERVICE_ENABLED, false).apply()
             WorkManager.getInstance(context).cancelUniqueWork(TASK_NAME)
         }
 
@@ -297,6 +316,14 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
                 return pwrm.isIgnoringBatteryOptimizations(name)
             }
             return true
+        }
+
+        /**
+         * Return true if the user has enabled the background backup service
+         */
+        fun isEnabled(ctx: Context): Boolean {
+            return ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                    .getBoolean(SHARED_PREF_SERVICE_ENABLED, false)
         }
 
         private val flutterLoader = FlutterLoader()

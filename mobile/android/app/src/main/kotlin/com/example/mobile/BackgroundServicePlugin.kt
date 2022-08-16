@@ -43,27 +43,35 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         val ctx = context!!
-        val args = call.arguments<ArrayList<*>>()!!
         when(call.method) {
             "initialize" -> { // needs to be called prior to any other method
+                val args = call.arguments<ArrayList<*>>()!!
                 ctx.getSharedPreferences(BackupWorker.SHARED_PREF_NAME, Context.MODE_PRIVATE)
                     .edit().putLong(BackupWorker.SHARED_PREF_CALLBACK_KEY, args.get(0) as Long).apply()
                 result.success(true)
             }
             "start" -> {
+                val args = call.arguments<ArrayList<*>>()!!
                 val immediate = args.get(0) as Boolean
                 val keepExisting = args.get(1) as Boolean
                 val requireUnmeteredNetwork = args.get(2) as Boolean
                 val requireCharging = args.get(3) as Boolean
-                BackupWorker.enqueueMoreWork(ctx, immediate, keepExisting, requireUnmeteredNetwork, requireCharging)
+                val notificationTitle = args.get(4) as String
+                ctx.getSharedPreferences(BackupWorker.SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                    .edit().putString(BackupWorker.SHARED_PREF_NOTIFICATION_TITLE, notificationTitle).apply()
+                BackupWorker.startWork(ctx, immediate, keepExisting, requireUnmeteredNetwork, requireCharging)
                 result.success(true)
             }
             "stop" -> {
                 BackupWorker.stopWork(ctx)
                 result.success(true)
             }
+            "isEnabled" -> {
+                result.success(BackupWorker.isEnabled(ctx))
+            }
             "disableBatteryOptimizations" -> {
                 if(!BackupWorker.isIgnoringBatteryOptimizations(ctx)) {
+                    val args = call.arguments<ArrayList<*>>()!!
                     val text = args.get(0) as String
                     Toast.makeText(ctx, text, Toast.LENGTH_LONG).show()
                     val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
@@ -73,7 +81,11 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                         ctx.startActivity(intent)
                     } catch(e: Exception) {
                         intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        ctx.startActivity(intent)
+                        try {
+                            ctx.startActivity(intent)
+                        } catch (e2: Exception) {
+                            return result.success(false)
+                        }
                     }
                 }
                 result.success(true)
