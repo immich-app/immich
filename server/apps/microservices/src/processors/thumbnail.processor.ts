@@ -19,6 +19,7 @@ import {
   thumbnailGeneratorQueueName,
   JpegGeneratorProcessor,
 } from '@app/job';
+import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
 
 @Processor(thumbnailGeneratorQueueName)
 export class ThumbnailGeneratorProcessor {
@@ -29,7 +30,7 @@ export class ThumbnailGeneratorProcessor {
     @InjectQueue(thumbnailGeneratorQueueName)
     private thumbnailGeneratorQueue: Queue,
 
-    private wsCommunicateionGateway: CommunicationGateway,
+    private wsCommunicationGateway: CommunicationGateway,
 
     @InjectQueue(metadataExtractionQueueName)
     private metadataExtractionQueue: Queue,
@@ -68,7 +69,9 @@ export class ThumbnailGeneratorProcessor {
             );
             await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
             await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
-            this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
+            this.wsCommunicationGateway.server
+              .to(asset.userId)
+              .emit('on_upload_success', JSON.stringify(mapAsset(asset)));
           }
         });
     }
@@ -99,7 +102,9 @@ export class ThumbnailGeneratorProcessor {
           await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
           await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
 
-          this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
+          this.wsCommunicationGateway.server
+            .to(asset.userId)
+            .emit('on_upload_success', JSON.stringify(mapAsset(asset)));
         })
         .run();
     }
