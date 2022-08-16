@@ -78,9 +78,9 @@ This project is under heavy development, there will be continuous functions, fea
 
 **OS**: Preferred unix-based operating system (Ubuntu, Debian, MacOS...etc). 
 
-**RAM**: At least 2GB, preffered 4GB.
+**RAM**: At least 2GB, preferred 4GB.
 
-**Core**: At least 2 cores, preffered 4 cores.
+**Core**: At least 2 cores, preferred 4 cores.
 
 # Technology Stack
 
