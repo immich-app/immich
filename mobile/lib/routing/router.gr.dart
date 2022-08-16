@@ -46,10 +46,7 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
           routeData: routeData,
           child: GalleryViewerPage(
-              key: args.key,
-              assetList: args.assetList,
-              asset: args.asset,
-              thumbnailRequestUrl: args.thumbnailRequestUrl));
+              key: args.key, assetList: args.assetList, asset: args.asset));
     },
     ImageViewerRoute.name: (routeData) {
       final args = routeData.argsAs<ImageViewerRouteArgs>();
@@ -57,13 +54,14 @@ class _$AppRouter extends RootStackRouter {
           routeData: routeData,
           child: ImageViewerPage(
               key: args.key,
-              imageUrl: args.imageUrl,
               heroTag: args.heroTag,
-              thumbnailUrl: args.thumbnailUrl,
               asset: args.asset,
               authToken: args.authToken,
               isZoomedFunction: args.isZoomedFunction,
-              isZoomedListener: args.isZoomedListener));
+              isZoomedListener: args.isZoomedListener,
+              onLoadingCompleted: args.onLoadingCompleted,
+              onLoadingStart: args.onLoadingStart,
+              threeStageLoading: args.threeStageLoading));
     },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
@@ -139,6 +137,10 @@ class _$AppRouter extends RootStackRouter {
           opaque: true,
           barrierDismissible: false);
     },
+    SettingsRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const SettingsPage());
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -213,7 +215,9 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(AlbumPreviewRoute.name,
             path: '/album-preview-page', guards: [authGuard]),
         RouteConfig(FailedBackupStatusRoute.name,
-            path: '/failed-backup-status-page', guards: [authGuard])
+            path: '/failed-backup-status-page', guards: [authGuard]),
+        RouteConfig(SettingsRoute.name,
+            path: '/settings-page', guards: [authGuard])
       ];
 }
 
@@ -258,25 +262,18 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
   GalleryViewerRoute(
       {Key? key,
       required List<AssetResponseDto> assetList,
-      required AssetResponseDto asset,
-      required String thumbnailRequestUrl})
+      required AssetResponseDto asset})
       : super(GalleryViewerRoute.name,
             path: '/gallery-viewer-page',
             args: GalleryViewerRouteArgs(
-                key: key,
-                assetList: assetList,
-                asset: asset,
-                thumbnailRequestUrl: thumbnailRequestUrl));
+                key: key, assetList: assetList, asset: asset));
 
   static const String name = 'GalleryViewerRoute';
 }
 
 class GalleryViewerRouteArgs {
   const GalleryViewerRouteArgs(
-      {this.key,
-      required this.assetList,
-      required this.asset,
-      required this.thumbnailRequestUrl});
+      {this.key, required this.assetList, required this.asset});
 
   final Key? key;
 
@@ -284,11 +281,9 @@ class GalleryViewerRouteArgs {
 
   final AssetResponseDto asset;
 
-  final String thumbnailRequestUrl;
-
   @override
   String toString() {
-    return 'GalleryViewerRouteArgs{key: $key, assetList: $assetList, asset: $asset, thumbnailRequestUrl: $thumbnailRequestUrl}';
+    return 'GalleryViewerRouteArgs{key: $key, assetList: $assetList, asset: $asset}';
   }
 }
 
@@ -297,24 +292,26 @@ class GalleryViewerRouteArgs {
 class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
   ImageViewerRoute(
       {Key? key,
-      required String imageUrl,
       required String heroTag,
-      required String thumbnailUrl,
       required AssetResponseDto asset,
       required String authToken,
       required void Function() isZoomedFunction,
-      required ValueNotifier<bool> isZoomedListener})
+      required ValueNotifier<bool> isZoomedListener,
+      required void Function() onLoadingCompleted,
+      required void Function() onLoadingStart,
+      required bool threeStageLoading})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
             args: ImageViewerRouteArgs(
                 key: key,
-                imageUrl: imageUrl,
                 heroTag: heroTag,
-                thumbnailUrl: thumbnailUrl,
                 asset: asset,
                 authToken: authToken,
                 isZoomedFunction: isZoomedFunction,
-                isZoomedListener: isZoomedListener));
+                isZoomedListener: isZoomedListener,
+                onLoadingCompleted: onLoadingCompleted,
+                onLoadingStart: onLoadingStart,
+                threeStageLoading: threeStageLoading));
 
   static const String name = 'ImageViewerRoute';
 }
@@ -322,21 +319,18 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
 class ImageViewerRouteArgs {
   const ImageViewerRouteArgs(
       {this.key,
-      required this.imageUrl,
       required this.heroTag,
-      required this.thumbnailUrl,
       required this.asset,
       required this.authToken,
       required this.isZoomedFunction,
-      required this.isZoomedListener});
+      required this.isZoomedListener,
+      required this.onLoadingCompleted,
+      required this.onLoadingStart,
+      required this.threeStageLoading});
 
   final Key? key;
 
-  final String imageUrl;
-
   final String heroTag;
-
-  final String thumbnailUrl;
 
   final AssetResponseDto asset;
 
@@ -346,9 +340,15 @@ class ImageViewerRouteArgs {
 
   final ValueNotifier<bool> isZoomedListener;
 
+  final void Function() onLoadingCompleted;
+
+  final void Function() onLoadingStart;
+
+  final bool threeStageLoading;
+
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, imageUrl: $imageUrl, heroTag: $heroTag, thumbnailUrl: $thumbnailUrl, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener}';
+    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, onLoadingCompleted: $onLoadingCompleted, onLoadingStart: $onLoadingStart, threeStageLoading: $threeStageLoading}';
   }
 }
 
@@ -550,6 +550,14 @@ class FailedBackupStatusRoute extends PageRouteInfo<void> {
       : super(FailedBackupStatusRoute.name, path: '/failed-backup-status-page');
 
   static const String name = 'FailedBackupStatusRoute';
+}
+
+/// generated route for
+/// [SettingsPage]
+class SettingsRoute extends PageRouteInfo<void> {
+  const SettingsRoute() : super(SettingsRoute.name, path: '/settings-page');
+
+  static const String name = 'SettingsRoute';
 }
 
 /// generated route for

@@ -4,7 +4,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -49,7 +48,6 @@ class SplashScreenPage extends HookConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: immichBackgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

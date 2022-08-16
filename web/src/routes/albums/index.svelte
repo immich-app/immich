@@ -9,10 +9,19 @@
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import { AlbumResponseDto, api } from '@api';
 
-	export const load: Load = async () => {
+	export const load: Load = async ({ fetch, session }) => {
+		if (!browser && !session.user) {
+			return {
+				status: 302,
+				redirect: '/auth/login'
+			};
+		}
+
 		try {
-			const { data: user } = await api.userApi.getMyUserInfo();
-			const { data: albums } = await api.albumApi.getAllAlbums();
+			const [user, albums] = await Promise.all([
+				fetch('/data/user/get-my-user-info').then((r) => r.json()),
+				fetch('/data/album/get-all-albums').then((r) => r.json())
+			]);
 
 			return {
 				status: 200,
@@ -37,6 +46,7 @@
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import { browser } from '$app/env';
 
 	export let user: ImmichUser;
 	export let albums: AlbumResponseDto[];
@@ -51,7 +61,7 @@
 
 		// Delete album that has no photos and is named 'Untitled'
 		for (const album of albums) {
-			if (album.albumName === 'Untitled' && album.assets.length === 0) {
+			if (album.albumName === 'Untitled' && album.assetCount === 0) {
 				const isDeleted = await autoDeleteAlbum(album);
 
 				if (isDeleted) {

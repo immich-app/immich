@@ -1,8 +1,9 @@
-import { api } from '@api';
+import { api, serverApi } from '@api';
 import type { RequestHandler } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async () => {
 	api.removeAccessToken();
+	serverApi.removeAccessToken();
 
 	return {
 		headers: {

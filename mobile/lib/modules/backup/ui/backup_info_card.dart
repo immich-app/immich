@@ -35,7 +35,7 @@ class BackupInfoCard extends StatelessWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             subtitle,
-            style: const TextStyle(color: Color(0xFF808080), fontSize: 12),
+            style: const TextStyle(fontSize: 12),
           ),
         ),
         trailing: Column(

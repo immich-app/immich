@@ -13,6 +13,7 @@ part of openapi.api;
 class AlbumResponseDto {
   /// Returns a new [AlbumResponseDto] instance.
   AlbumResponseDto({
+    required this.assetCount,
     required this.id,
     required this.ownerId,
     required this.albumName,
@@ -22,6 +23,8 @@ class AlbumResponseDto {
     this.sharedUsers = const [],
     this.assets = const [],
   });
+
+  int assetCount;
 
   String id;
 
@@ -41,6 +44,7 @@ class AlbumResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
+     other.assetCount == assetCount &&
      other.id == id &&
      other.ownerId == ownerId &&
      other.albumName == albumName &&
@@ -53,6 +57,7 @@ class AlbumResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (assetCount.hashCode) +
     (id.hashCode) +
     (ownerId.hashCode) +
     (albumName.hashCode) +
@@ -63,10 +68,11 @@ class AlbumResponseDto {
     (assets.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets]';
+  String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
+      _json[r'assetCount'] = assetCount;
       _json[r'id'] = id;
       _json[r'ownerId'] = ownerId;
       _json[r'albumName'] = albumName;
@@ -101,6 +107,7 @@ class AlbumResponseDto {
       }());
 
       return AlbumResponseDto(
+        assetCount: mapValueOfType<int>(json, r'assetCount')!,
         id: mapValueOfType<String>(json, r'id')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         albumName: mapValueOfType<String>(json, r'albumName')!,
@@ -158,6 +165,7 @@ class AlbumResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'assetCount',
     'id',
     'ownerId',
     'albumName',

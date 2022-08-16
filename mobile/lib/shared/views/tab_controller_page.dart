@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -36,8 +35,6 @@ class TabControllerPage extends ConsumerWidget {
             bottomNavigationBar: isMultiSelectEnable
                 ? null
                 : BottomNavigationBar(
-                    type: BottomNavigationBarType.fixed,
-                    backgroundColor: immichBackgroundColor,
                     selectedLabelStyle: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -53,21 +50,23 @@ class TabControllerPage extends ConsumerWidget {
                     items: [
                       BottomNavigationBarItem(
                         label: 'tab_controller_nav_photos'.tr(),
-                        icon: const Icon(Icons.photo),
+                        icon: const Icon(Icons.photo_outlined),
+                        activeIcon: const Icon(Icons.photo),
                       ),
                       BottomNavigationBarItem(
                         label: 'tab_controller_nav_search'.tr(),
-                        icon: const Icon(Icons.search),
+                        icon: const Icon(Icons.search_rounded),
+                        activeIcon: const Icon(Icons.search),
                       ),
                       BottomNavigationBarItem(
                         label: 'tab_controller_nav_sharing'.tr(),
                         icon: const Icon(Icons.group_outlined),
+                        activeIcon: const Icon(Icons.group),
                       ),
                       BottomNavigationBarItem(
                         label: 'tab_controller_nav_library'.tr(),
-                        icon: const Icon(
-                          Icons.photo_album_outlined,
-                        ),
+                        icon: const Icon(Icons.photo_album_outlined),
+                        activeIcon: const Icon(Icons.photo_album_rounded),
                       )
                     ],
                   ),

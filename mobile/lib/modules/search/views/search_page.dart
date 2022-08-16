@@ -29,6 +29,8 @@ class SearchPage extends HookConsumerWidget {
     AsyncValue<List<CuratedObjectsResponseDto>> curatedObjects =
         ref.watch(getCuratedObjectProvider);
 
+    double imageSize = MediaQuery.of(context).size.width / 3;
+
     useEffect(
       () {
         searchFocusNode = FocusNode();
@@ -46,15 +48,15 @@ class SearchPage extends HookConsumerWidget {
 
     _buildPlaces() {
       return curatedLocation.when(
-        loading: () => const SizedBox(
-          height: 200,
-          child: Center(child: ImmichLoadingIndicator()),
+        loading: () => SizedBox(
+          height: imageSize,
+          child: const Center(child: ImmichLoadingIndicator()),
         ),
         error: (err, stack) => Text('Error: $err'),
         data: (curatedLocations) {
           return curatedLocations.isNotEmpty
               ? SizedBox(
-                  height: MediaQuery.of(context).size.width / 2,
+                  height: imageSize,
                   child: ListView.builder(
                     padding: const EdgeInsets.only(left: 16),
                     scrollDirection: Axis.horizontal,
@@ -76,7 +78,7 @@ class SearchPage extends HookConsumerWidget {
                   ),
                 )
               : SizedBox(
-                  height: MediaQuery.of(context).size.width / 2,
+                  height: imageSize,
                   child: ListView.builder(
                     padding: const EdgeInsets.only(left: 16),
                     scrollDirection: Axis.horizontal,
@@ -105,7 +107,7 @@ class SearchPage extends HookConsumerWidget {
         data: (objects) {
           return objects.isNotEmpty
               ? SizedBox(
-                  height: MediaQuery.of(context).size.width / 2,
+                  height: imageSize,
                   child: ListView.builder(
                     padding: const EdgeInsets.only(left: 16),
                     scrollDirection: Axis.horizontal,
@@ -113,7 +115,7 @@ class SearchPage extends HookConsumerWidget {
                     itemBuilder: ((context, index) {
                       var curatedObjectInfo = objects[index];
                       var thumbnailRequestUrl =
-                          '${box.get(serverEndpointKey)}/asset/file?aid=${curatedObjectInfo.deviceAssetId}&did=${curatedObjectInfo.deviceId}&isThumb=true';
+                          '${box.get(serverEndpointKey)}/asset/thumbnail/${curatedObjectInfo.id}';
 
                       return ThumbnailWithInfo(
                         imageUrl: thumbnailRequestUrl,
@@ -131,7 +133,8 @@ class SearchPage extends HookConsumerWidget {
                   ),
                 )
               : SizedBox(
-                  height: MediaQuery.of(context).size.width / 2,
+                  // height: imageSize,
+                  width: imageSize,
                   child: ListView.builder(
                     padding: const EdgeInsets.only(left: 16),
                     scrollDirection: Axis.horizontal,
@@ -163,12 +166,13 @@ class SearchPage extends HookConsumerWidget {
         child: Stack(
           children: [
             ListView(
+              shrinkWrap: true,
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: const Text(
                     "search_page_places",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ).tr(),
                 ),
                 _buildPlaces(),
@@ -176,7 +180,7 @@ class SearchPage extends HookConsumerWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: const Text(
                     "search_page_things",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ).tr(),
                 ),
                 _buildThings()

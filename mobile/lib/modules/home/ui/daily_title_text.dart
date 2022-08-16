@@ -86,7 +86,6 @@ class DailyTitleText extends ConsumerWidget {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
               ),
             ),
             const Spacer(),

@@ -9,7 +9,7 @@ import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/home/ui/image_grid.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
-import 'package:immich_mobile/modules/home/ui/profile_drawer.dart';
+import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
 
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
@@ -76,6 +76,7 @@ class HomePage extends HookConsumerWidget {
 
           imageGridGroup.add(
             DailyTitleText(
+              key: Key('${dateGroup.toString()}title'),
               isoDate: dateGroup,
               assetGroup: immichAssetList,
             ),
@@ -116,9 +117,9 @@ class HomePage extends HookConsumerWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 50.0),
+              padding: const EdgeInsets.only(top: 60.0, bottom: 30.0),
               child: DraggableScrollbar.semicircle(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Theme.of(context).hintColor,
                 controller: scrollController,
                 heightScrollThumb: 48.0,
                 child: CustomScrollView(

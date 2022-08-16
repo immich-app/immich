@@ -16,3 +16,6 @@ const String backupInfoKey = "immichBackupAlbumInfoKey"; // Key 1
 // Github Release Info
 const String hiveGithubReleaseInfoBox = "immichGithubReleaseInfoBox"; // Box
 const String githubReleaseInfoKey = "immichGithubReleaseInfoKey"; // Key 1
+
+// User Setting Info
+const String userSettingInfoBox = "immichUserSettingInfoBox";

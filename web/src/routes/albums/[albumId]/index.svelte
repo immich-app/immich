@@ -2,13 +2,22 @@
 	export const prerender = false;
 
 	import type { Load } from '@sveltejs/kit';
-	import { AlbumResponseDto, api } from '@api';
+	import { AlbumResponseDto } from '@api';
 
-	export const load: Load = async ({ params }) => {
+	export const load: Load = async ({ fetch, params, session }) => {
+		if (!browser && !session.user) {
+			return {
+				status: 302,
+				redirect: '/auth/login'
+			};
+		}
+
 		try {
 			const albumId = params['albumId'];
 
-			const { data: albumInfo } = await api.albumApi.getAlbumInfo(albumId);
+			const albumInfo = await fetch(`/data/album/get-album-info?albumId=${albumId}`).then((r) =>
+				r.json()
+			);
 
 			return {
 				status: 200,
@@ -34,6 +43,7 @@
 
 <script lang="ts">
 	import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
+	import { browser } from '$app/env';
 
 	export let album: AlbumResponseDto;
 </script>

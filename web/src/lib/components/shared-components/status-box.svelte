@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { serverEndpoint } from '$lib/constants';
 	import Cloud from 'svelte-material-icons/Cloud.svelte';
 	import Dns from 'svelte-material-icons/Dns.svelte';
 	import LoadingSpinner from './loading-spinner.svelte';
 	import { api, ServerInfoResponseDto } from '@api';
 
-	let endpoint = serverEndpoint;
 	let isServerOk = true;
 	let serverVersion = '';
 	let serverInfo: ServerInfoResponseDto;
@@ -82,11 +80,6 @@
 		<div class="text-xs">
 			<p class="text-sm font-medium text-immich-primary">Server</p>
 
-			<input
-				class="border p-2 rounded-md bg-gray-200 mt-2 text-immich-primary font-medium"
-				value={endpoint}
-				disabled={true}
-			/>
 			<div class="flex justify-items-center justify-between mt-2">
 				<p>Status</p>
 

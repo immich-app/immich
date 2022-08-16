@@ -134,21 +134,14 @@ export class AlbumRepository implements IAlbumRepository {
         .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
         .leftJoinAndSelect('sharedUser.userInfo', 'userInfo')
         .where('album.ownerId = :ownerId', { ownerId: userId });
-      // .orWhere((qb) => {
-      //   const subQuery = qb
-      //     .subQuery()
-      //     .select('userAlbum.albumId')
-      //     .from(UserAlbumEntity, 'userAlbum')
-      //     .where('userAlbum.sharedUserId = :sharedUserId', { sharedUserId: userId })
-      //     .getQuery();
-      //   return `album.id IN ${subQuery}`;
-      // });
     }
+
     // Get information of assets in albums
     query = query
       .leftJoinAndSelect('album.assets', 'assets')
       .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
       .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC');
+
     const albums = await query.getMany();
 
     albums.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());

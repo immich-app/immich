@@ -11,11 +11,15 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
     required this.asset,
     required this.onMoreInfoPressed,
     required this.onDownloadPressed,
+    required this.onSharePressed,
+    this.loading = false
   }) : super(key: key);
 
   final AssetResponseDto asset;
   final Function onMoreInfoPressed;
   final Function onDownloadPressed;
+  final Function onSharePressed;
+  final bool loading;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,6 +39,14 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
         ),
       ),
       actions: [
+        if (loading) Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 15.0),
+            width: iconSize,
+            height: iconSize,
+            child: const CircularProgressIndicator(strokeWidth: 2.0),
+          ),
+        ) ,
         IconButton(
           iconSize: iconSize,
           splashRadius: iconSize,
@@ -52,6 +64,14 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
           icon: asset.isFavorite
               ? const Icon(Icons.favorite_rounded)
               : const Icon(Icons.favorite_border_rounded),
+        ),
+        IconButton(
+          iconSize: iconSize,
+          splashRadius: iconSize,
+          onPressed: () {
+            onSharePressed();
+          },
+          icon: const Icon(Icons.share),
         ),
         IconButton(
           iconSize: iconSize,

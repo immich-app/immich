@@ -11,35 +11,50 @@ import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
   late List<AssetResponseDto> assetList;
   final AssetResponseDto asset;
-  final String thumbnailRequestUrl;
 
   GalleryViewerPage({
     Key? key,
     required this.assetList,
     required this.asset,
-    required this.thumbnailRequestUrl,
   }) : super(key: key);
 
   AssetResponseDto? assetDetail;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final Box<dynamic> box = Hive.box(userInfoBox);
+    final appSettingService = ref.watch(appSettingsServiceProvider);
+    final threeStageLoading = useState(false);
+    final loading = useState(false);
+    final isZoomed = useState<bool>(false);
+    ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
 
     int indexOfAsset = assetList.indexOf(asset);
 
-    @override
-    void initState(int index) {
-      indexOfAsset = index;
-    }
-
     PageController controller =
         PageController(initialPage: assetList.indexOf(asset));
+
+    useEffect(
+      () {
+        threeStageLoading.value = appSettingService
+            .getSetting<bool>(AppSettingsEnum.threeStageLoading);
+        return null;
+      },
+      [],
+    );
+
+    @override
+    initState(int index) {
+      indexOfAsset = index;
+    }
 
     getAssetExif() async {
       assetDetail = await ref
@@ -59,9 +74,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    final isZoomed = useState<bool>(false);
-    ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
-
     //make isZoomed listener call instead
     void isZoomedMethod() {
       if (isZoomedListener.value) {
@@ -74,6 +86,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: TopControlAppBar(
+        loading: loading.value,
         asset: assetList[indexOfAsset],
         onMoreInfoPressed: () {
           showInfo();
@@ -82,6 +95,11 @@ class GalleryViewerPage extends HookConsumerWidget {
           ref
               .watch(imageViewerStateProvider.notifier)
               .downloadAsset(assetList[indexOfAsset], context);
+        },
+        onSharePressed: () {
+          ref
+              .watch(imageViewerStateProvider.notifier)
+              .shareAsset(assetList[indexOfAsset], context);
         },
       ),
       body: SafeArea(
@@ -95,18 +113,19 @@ class GalleryViewerPage extends HookConsumerWidget {
           scrollDirection: Axis.horizontal,
           itemBuilder: (context, index) {
             initState(index);
+
             getAssetExif();
+
             if (assetList[index].type == AssetTypeEnum.IMAGE) {
               return ImageViewerPage(
-                thumbnailUrl:
-                    '${box.get(serverEndpointKey)}/asset/thumbnail/${assetList[index].id}',
-                imageUrl:
-                    '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}&isThumb=false',
                 authToken: 'Bearer ${box.get(accessTokenKey)}',
                 isZoomedFunction: isZoomedMethod,
                 isZoomedListener: isZoomedListener,
+                onLoadingCompleted: () => {},
+                onLoadingStart: () => {},
                 asset: assetList[index],
                 heroTag: assetList[index].id,
+                threeStageLoading: threeStageLoading.value,
               );
             } else {
               return SwipeDetector(

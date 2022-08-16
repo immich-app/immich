@@ -1,20 +1,19 @@
 <script context="module" lang="ts">
 	export const prerender = false;
 
-	import { api } from '@api';
+	import { browser } from '$app/env';
 	import type { Load } from '@sveltejs/kit';
 
-	export const load: Load = async () => {
-		try {
-			await api.userApi.getMyUserInfo();
-			return {
-				status: 302,
-				redirect: '/photos'
-			};
-		} catch (e) {
+	export const load: Load = async ({ session }) => {
+		if (!browser && !session.user) {
 			return {
 				status: 302,
 				redirect: '/auth/login'
+			};
+		} else {
+			return {
+				status: 302,
+				redirect: '/photos'
 			};
 		}
 	};

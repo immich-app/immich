@@ -35,13 +35,7 @@ class SharingSliverAppBar extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(right: 4.0),
-                  child: TextButton.icon(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
-                        Theme.of(context).primaryColor.withAlpha(20),
-                      ),
-                      // foregroundColor: MaterialStateProperty.all(Colors.white),
-                    ),
+                  child: ElevatedButton.icon(
                     onPressed: () {
                       AutoRouter.of(context)
                           .push(CreateAlbumRoute(isSharedAlbum: true));
@@ -52,8 +46,12 @@ class SharingSliverAppBar extends StatelessWidget {
                     ),
                     label: const Text(
                       "sharing_silver_appbar_create_shared_album",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        // color: Theme.of(context).primaryColor,
+                      ),
                     ).tr(),
                   ),
                 ),
@@ -61,13 +59,7 @@ class SharingSliverAppBar extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 4.0),
-                  child: TextButton.icon(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
-                        Theme.of(context).primaryColor.withAlpha(20),
-                      ),
-                      // foregroundColor: MaterialStateProperty.all(Colors.white),
-                    ),
+                  child: ElevatedButton.icon(
                     onPressed: null,
                     icon: const Icon(
                       Icons.swap_horizontal_circle_outlined,
@@ -75,8 +67,11 @@ class SharingSliverAppBar extends StatelessWidget {
                     ),
                     label: const Text(
                       "sharing_silver_appbar_share_partner",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
                     ).tr(),
                   ),
                 ),

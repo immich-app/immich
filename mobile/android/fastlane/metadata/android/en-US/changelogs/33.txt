@@ -1,0 +1,2 @@
+* Added setting screen
+* Implemented dark mode

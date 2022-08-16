@@ -3,8 +3,8 @@
 	import { createEventDispatcher } from 'svelte';
 	import { quintOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
+	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
-	import AlbumAppBar from './album-app-bar.svelte';
 
 	export let album: AlbumResponseDto;
 
@@ -24,7 +24,7 @@
 	transition:fly={{ y: 500, duration: 100, easing: quintOut }}
 	class="absolute top-0 left-0 w-full h-full py-[160px]  bg-immich-bg z-[9999]"
 >
-	<AlbumAppBar on:close-button-click={() => dispatch('close')}>
+	<ControlAppBar on:close-button-click={() => dispatch('close')}>
 		<svelte:fragment slot="leading">
 			<p class="text-lg">Select album cover</p>
 		</svelte:fragment>
@@ -37,7 +37,7 @@
 				><span class="px-2">Done</span></button
 			>
 		</svelte:fragment>
-	</AlbumAppBar>
+	</ControlAppBar>
 
 	<section class="flex flex-wrap gap-14  px-20 overflow-y-auto">
 		<!-- Image grid -->

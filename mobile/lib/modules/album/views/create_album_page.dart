@@ -27,6 +27,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     final isAlbumTitleEmpty = useState(true);
     final selectedAssets =
         ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     _showSelectUserPage() {
       AutoRouter.of(context).push(const SelectUserForSharingRoute());
@@ -37,8 +38,10 @@ class CreateAlbumPage extends HookConsumerWidget {
       isAlbumTitleTextFieldFocus.value = false;
 
       if (albumTitleController.text.isEmpty) {
-        albumTitleController.text = 'Untitled';
-        ref.watch(albumTitleProvider.notifier).setAlbumTitle('Untitled');
+        albumTitleController.text = 'create_album_page_untitled'.tr();
+        ref
+            .watch(albumTitleProvider.notifier)
+            .setAlbumTitle('create_album_page_untitled'.tr());
       }
     }
 
@@ -73,9 +76,12 @@ class CreateAlbumPage extends HookConsumerWidget {
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(top: 200, left: 18),
-            child: const Text(
+            child: Text(
               'create_shared_album_page_share_add_assets',
-              style: TextStyle(fontSize: 12),
+              style: Theme.of(context).textTheme.headline2?.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                  ),
             ).tr(),
           ),
         );
@@ -94,24 +100,28 @@ class CreateAlbumPage extends HookConsumerWidget {
                 alignment: Alignment.centerLeft,
                 padding:
                     const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
-                side: const BorderSide(
-                  color: Color.fromARGB(255, 206, 206, 206),
+                side: BorderSide(
+                  color: isDarkTheme
+                      ? const Color.fromARGB(255, 63, 63, 63)
+                      : const Color.fromARGB(255, 206, 206, 206),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
               onPressed: _onSelectPhotosButtonPressed,
-              icon: const Icon(Icons.add_rounded),
+              icon: Icon(
+                Icons.add_rounded,
+                color: Theme.of(context).primaryColor,
+              ),
               label: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
                   'create_shared_album_page_share_select_photos',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[700],
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ).tr(),
               ),
             ),
@@ -188,6 +198,7 @@ class CreateAlbumPage extends HookConsumerWidget {
       appBar: AppBar(
         elevation: 0,
         centerTitle: false,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         leading: IconButton(
           onPressed: () {
             ref.watch(assetSelectionProvider.notifier).removeAll();
@@ -195,9 +206,11 @@ class CreateAlbumPage extends HookConsumerWidget {
           },
           icon: const Icon(Icons.close_rounded),
         ),
-        title: const Text(
+        title: Text(
           'share_create_album',
-          style: TextStyle(color: Colors.black),
+          style: Theme.of(context).textTheme.headline2?.copyWith(
+                color: Theme.of(context).primaryColor,
+              ),
         ).tr(),
         actions: [
           if (isSharedAlbum)
@@ -207,8 +220,9 @@ class CreateAlbumPage extends HookConsumerWidget {
                   : null,
               child: Text(
                 'create_shared_album_page_share'.tr(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
             ),
@@ -232,9 +246,9 @@ class CreateAlbumPage extends HookConsumerWidget {
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               elevation: 5,
               automaticallyImplyLeading: false,
-              // leading: Container(),
               pinned: true,
               floating: false,
               bottom: PreferredSize(

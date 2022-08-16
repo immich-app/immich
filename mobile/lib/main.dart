@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
@@ -15,8 +18,10 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
+import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'constants/hive_box.dart';
 
 void main() async {
@@ -29,6 +34,7 @@ void main() async {
   await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
   await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
   await Hive.openBox(hiveGithubReleaseInfoBox);
+  await Hive.openBox(userSettingInfoBox);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -45,9 +51,20 @@ void main() async {
     Locale('da', 'DK'),
     Locale('de', 'DE'),
     Locale('es', 'ES'),
+    Locale('fi', 'FI'),
     Locale('fr', 'FR'),
     Locale('it', 'IT'),
+    Locale('ja', 'JP'),
+    Locale('pl', 'PL')
   ];
+
+  if (kReleaseMode && Platform.isAndroid) {
+    try {
+      await FlutterDisplayMode.setHighRefreshRate();
+    } catch (e) {
+      debugPrint("Error setting high refresh rate: $e");
+    }
+  }
 
   runApp(
     EasyLocalization(
@@ -117,7 +134,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   initState() {
     super.initState();
-
     initApp().then((_) => debugPrint("App Init Completed"));
   }
 
@@ -142,23 +158,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
           MaterialApp.router(
             title: 'Immich',
             debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              useMaterial3: true,
-              brightness: Brightness.light,
-              primarySwatch: Colors.indigo,
-              fontFamily: 'WorkSans',
-              snackBarTheme: const SnackBarThemeData(
-                contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
-              ),
-              scaffoldBackgroundColor: immichBackgroundColor,
-              appBarTheme: const AppBarTheme(
-                backgroundColor: immichBackgroundColor,
-                foregroundColor: Colors.indigo,
-                elevation: 1,
-                centerTitle: true,
-                systemOverlayStyle: SystemUiOverlayStyle.dark,
-              ),
-            ),
+            themeMode: ref.watch(immichThemeProvider),
+            darkTheme: immichDarkTheme,
+            theme: immichLightTheme,
             routeInformationParser: router.defaultRouteParser(),
             routerDelegate: router.delegate(
               navigatorObservers: () => [TabNavigationObserver(ref: ref)],

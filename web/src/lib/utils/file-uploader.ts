@@ -1,6 +1,5 @@
 /* @vite-ignore */
 import * as exifr from 'exifr';
-import { serverEndpoint } from '../constants';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
@@ -64,7 +63,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		let exifData = null;
 
 		if (assetType !== 'VIDEO') {
-			exifData = await exifr.parse(asset);
+			exifData = await exifr.parse(asset).catch((e) => console.log('error parsing exif', e));
 		}
 
 		const createdAt =
@@ -168,7 +167,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 		};
 
-		request.open('POST', `${serverEndpoint}/asset/upload`);
+		request.open('POST', `/api/asset/upload`);
 
 		request.send(formData);
 	} catch (e) {

@@ -15,13 +15,21 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## Android
 
+### android build
+
+```sh
+[bundle exec] fastlane android build
+```
+
+Build Android
+
 ### android release
 
 ```sh
 [bundle exec] fastlane android release
 ```
 
-Update AAB to PlayStore
+Build and Release Android
 
 ----
 

@@ -61,11 +61,9 @@ class SharingPage extends HookConsumerWidget {
                 sharedAlbums[index].albumName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               onTap: () {
                 AutoRouter.of(context)
@@ -87,7 +85,7 @@ class SharingPage extends HookConsumerWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10), // if you need this
               side: const BorderSide(
-                color: Colors.black12,
+                color: Colors.grey,
                 width: 1,
               ),
             ),
@@ -97,30 +95,26 @@ class SharingPage extends HookConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 5.0, bottom: 5),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 5.0, bottom: 5),
                     child: Icon(
                       Icons.offline_share_outlined,
                       size: 50,
-                      color: Theme.of(context).primaryColor.withAlpha(200),
+                      // color: Theme.of(context).primaryColor,
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'sharing_page_empty_list',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headline3,
                     ).tr(),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'sharing_page_description',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ).tr(),
                   ),
                 ],
