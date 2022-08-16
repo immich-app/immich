@@ -4,7 +4,7 @@ import { IsNotEmpty, IsEmail } from 'class-validator';
 
 export class CreateUserDto {
   @IsEmail()
-  @Transform(({ value }) => value.toLowerCase())
+  @Transform(({ value }) => value?.toLowerCase())
   @ApiProperty({ example: 'testuser@email.com' })
   email!: string;
 
