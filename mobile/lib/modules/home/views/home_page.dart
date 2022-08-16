@@ -117,7 +117,7 @@ class HomePage extends HookConsumerWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 60.0, bottom: 30.0),
+              padding: const EdgeInsets.only(top: 60.0, bottom: 0.0),
               child: DraggableScrollbar.semicircle(
                 backgroundColor: Theme.of(context).hintColor,
                 controller: scrollController,
