@@ -25,7 +25,7 @@ export class AuthController {
 
   @Post('/login')
   async login(
-    @Body(ValidationPipe) loginCredential: LoginCredentialDto,
+    @Body(new ValidationPipe({ transform: true })) loginCredential: LoginCredentialDto,
     @Res() response: Response,
   ): Promise<LoginResponseDto> {
     const loginResponse = await this.authService.login(loginCredential);
@@ -42,7 +42,9 @@ export class AuthController {
 
   @Post('/admin-sign-up')
   @ApiBadRequestResponse({ description: 'The server already has an admin' })
-  async adminSignUp(@Body(ValidationPipe) signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
+  async adminSignUp(
+    @Body(new ValidationPipe({ transform: true })) signUpCredential: SignUpDto,
+  ): Promise<AdminSignupResponseDto> {
     return await this.authService.adminSignUp(signUpCredential);
   }
 
@@ -61,8 +63,7 @@ export class AuthController {
 
     const status = new LogoutResponseDto(true);
 
-    response.send(status)
+    response.send(status);
     return status;
   }
-
 }
