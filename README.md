@@ -59,7 +59,7 @@
 ### Mobile
 | | | | | |
 | - | - | - | - | - |
-| <img src="design/login-screen.png" width="150" title="Login With Custom URL"> <p align="center"> Login with custom URL </p> | <img src="design/backup-screen.png" width="150" title="Backup Setting Info"> <p align="center"> Backup Settings </p> | <img src="design/selective-backup-screen.png" width="150" title="Backup Setting Info"> <p align="center"> Backup tunning </p> | <img src="design/home-screen.jpeg" width="150" title="Home Screen"> <p align="center"> Home Screen </p> | <img src="design/search-screen.jpeg" width="150" title="Curated Search Info"> <p align="center"> Curated search </p> |
+| <img src="design/login-screen.png" width="150" title="Login With Custom URL"> <p align="center"> Login with custom URL </p> | <img src="design/backup-screen.png" width="150" title="Backup Setting Info"> <p align="center"> Backup Settings </p> | <img src="design/selective-backup-screen.png" width="150" title="Backup Setting Info"> <p align="center"> Backup selection </p> | <img src="design/home-screen.jpeg" width="150" title="Home Screen"> <p align="center"> Home Screen </p> | <img src="design/search-screen.jpeg" width="150" title="Curated Search Info"> <p align="center"> Curated search </p> |
 | <img src="design/shared-albums.png" width="150" title="Shared Albums"> <p align="center"> Shared albums </p>  |  <img src="design/nsc6.png" width="150" title="EXIF Info"> <p align="center"> EXIF info </p>  | <img src="https://media.giphy.com/media/y8ZeaAigGmNvlSoKhU/giphy.gif" width="150" title="Loading ~4000 images/videos"> <p align="center"> Loading ~4000 images/videos </p>  |
 
 ### Web
@@ -179,7 +179,7 @@ Run `docker-compose up` or `docker compose up` (based on your docker's version)
 | - | - |
 
 
-| You can add and manage users from de administration page. | <img src="design/admin-interface.png" width="500" title="Admin User Management"> |
+| You can add and manage users from the administration page. | <img src="design/admin-interface.png" width="500" title="Admin User Management"> |
 | - | - |
 
 ### Step 5 - Access the mobile app
