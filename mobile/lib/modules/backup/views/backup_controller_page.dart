@@ -22,7 +22,6 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
     AuthenticationState authenticationState = ref.watch(authenticationProvider);
-    bool isBackgroundEnabled = backupState.backgroundBackup;
     bool hasExclusiveAccess =
         backupState.backupProgress != BackUpProgressEnum.inBackground;
     bool shouldBackup = backupState.allUniqueAssets.length -
@@ -148,41 +147,75 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     ListTile _buildBackgroundBackupController() {
+      final bool isBackgroundEnabled = backupState.backgroundBackup;
+      final bool isWifiRequired = backupState.backupRequireWifi;
+      final bool isChargingRequired = backupState.backupRequireCharging;
+      final Color activeColor = Theme.of(context).primaryColor;
       return ListTile(
         isThreeLine: true,
         leading: isBackgroundEnabled
             ? Icon(
                 Icons.cloud_sync_rounded,
-                color: Theme.of(context).primaryColor,
+                color: activeColor,
               )
-            : const Icon(Icons.cloud_off_rounded),
-        title: const Text(
-          "Automatic background backup",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            : const Icon(Icons.cloud_sync_rounded),
+        title: Text(
+          isBackgroundEnabled
+              ? "Automatic background backup is on"
+              : "Automatic background backup is off",
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(
-                width: 1,
-                color: Color.fromARGB(255, 220, 220, 220),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!isBackgroundEnabled)
+              const Text(
+                  "Turn on the background service to automatically backup any new assets without needing to open the app"),
+            if (isBackgroundEnabled)
+              SwitchListTile(
+                title: const Text("Only on WiFi"),
+                secondary: Icon(
+                  Icons.wifi,
+                  color: isWifiRequired ? activeColor : null,
+                ),
+                dense: true,
+                activeColor: activeColor,
+                value: isWifiRequired,
+                onChanged: hasExclusiveAccess
+                    ? (isChecked) => ref
+                        .read(backupProvider.notifier)
+                        .configureBackgroundBackup(requireWifi: isChecked)
+                    : null,
+              ),
+            if (isBackgroundEnabled)
+              SwitchListTile(
+                title: const Text("Only while charging"),
+                secondary: Icon(
+                  Icons.charging_station,
+                  color: isChargingRequired ? activeColor : null,
+                ),
+                dense: true,
+                activeColor: activeColor,
+                value: isChargingRequired,
+                onChanged: hasExclusiveAccess
+                    ? (isChecked) => ref
+                        .read(backupProvider.notifier)
+                        .configureBackgroundBackup(requireCharging: isChecked)
+                    : null,
+              ),
+            ElevatedButton(
+              onPressed: () => ref
+                  .read(backupProvider.notifier)
+                  .configureBackgroundBackup(enabled: !isBackgroundEnabled),
+              child: Text(
+                isBackgroundEnabled
+                    ? "Turn off background service"
+                    : "Turn on background service",
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
               ),
             ),
-            onPressed: () {
-              if (isBackgroundEnabled) {
-                ref.read(backupProvider.notifier).disableBackgroundBackup();
-              } else {
-                ref.read(backupProvider.notifier).enableBackgroundBackup();
-              }
-            },
-            child: Text(
-              isBackgroundEnabled
-                  ? "Disable background backup"
-                  : "Enable background backup",
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
+          ],
         ),
       );
     }
@@ -525,10 +558,8 @@ class BackupControllerPage extends HookConsumerWidget {
             ),
             const Divider(),
             _buildAutoBackupController(),
-            Platform.isAndroid ? const Divider() : const SizedBox.shrink(),
-            Platform.isAndroid
-                ? _buildBackgroundBackupController()
-                : const SizedBox.shrink(),
+            if (Platform.isAndroid) const Divider(),
+            if (Platform.isAndroid) _buildBackgroundBackupController(),
             const Divider(),
             _buildStorageInformation(),
             const Divider(),

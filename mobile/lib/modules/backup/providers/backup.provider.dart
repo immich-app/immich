@@ -34,6 +34,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
             backgroundBackup: false,
+            backupRequireWifi: true,
+            backupRequireCharging: false,
             serverInfo: ServerInfoResponseDto(
               diskAvailable: "0",
               diskAvailableRaw: 0,
@@ -110,23 +112,45 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     _updateBackupAssetCount();
   }
 
-  void enableBackgroundBackup() async {
+  void configureBackgroundBackup({
+    bool? enabled,
+    bool? requireWifi,
+    bool? requireCharging,
+  }) async {
     if (Platform.isAndroid) {
-      state = state.copyWith(backgroundBackup: true);
-      await _backgroundService.disableBatteryOptimizations();
-      final bool started = await _backgroundService.startService();
-      if (!started) {
-        state = state.copyWith(backgroundBackup: false);
-        // TODO inform user that service failed to be activated
-        await _backgroundService.stopService();
-      }
-    }
-  }
+      final bool wasEnabled = state.backgroundBackup;
+      final bool wasWifi = state.backupRequireWifi;
+      final bool wasCharing = state.backupRequireCharging;
+      state = state.copyWith(
+        backgroundBackup: enabled,
+        backupRequireWifi: requireWifi,
+        backupRequireCharging: requireCharging,
+      );
 
-  void disableBackgroundBackup() {
-    if (Platform.isAndroid) {
-      _backgroundService.stopService();
-      state = state.copyWith(backgroundBackup: false);
+      if (state.backgroundBackup) {
+        if (!wasEnabled) {
+          await _backgroundService.disableBatteryOptimizations();
+        }
+        final bool success = await _backgroundService.stopService() &&
+            await _backgroundService.startService(
+              requireUnmetered: state.backupRequireWifi,
+              requireCharging: state.backupRequireCharging,
+            );
+        if (!success) {
+          state = state.copyWith(
+            backgroundBackup: wasEnabled,
+            backupRequireWifi: wasWifi,
+            backupRequireCharging: wasCharing,
+          );
+          // TODO inform user
+        }
+      } else {
+        final bool success = await _backgroundService.stopService();
+        if (!success) {
+          state = state.copyWith(backgroundBackup: wasEnabled);
+          // TODO inform user
+        }
+      }
     }
   }
 
