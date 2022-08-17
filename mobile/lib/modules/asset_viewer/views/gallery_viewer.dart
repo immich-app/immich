@@ -105,6 +105,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       body: SafeArea(
         child: PageView.builder(
           controller: controller,
+          allowImplicitScrolling: true,
           pageSnapping: true,
           physics: isZoomed.value
               ? const NeverScrollableScrollPhysics()
