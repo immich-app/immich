@@ -20,7 +20,7 @@ import {
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { assetUploadOption } from '../../config/asset-upload.config';
+// import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -60,7 +60,8 @@ export class AssetController {
   ) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('assetData', assetUploadOption))
+  // @UseInterceptors(FileInterceptor('assetData', assetUploadOption))
+  @UseInterceptors(FileInterceptor('assetData'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Asset Upload Information',

@@ -16,5 +16,7 @@ export const immichAppConfig: ConfigModuleOptions = {
       then: Joi.string().optional().allow(null, ''),
       otherwise: Joi.string().required(),
     }),
+    UPLOAD_LOCATION: Joi.string().optional().allow(null, ''),
+    THUMBNAIL_LOCATION: Joi.string().optional().allow(null, ''),
   }),
 };
