@@ -30,6 +30,10 @@ jobs:
             - 'server/**'
           machine-learning:
             - 'machine-learning/**'
+          web:
+            - 'web/**'
+          nginx:
+            - 'nginx/**'
 
   # This image include both the server and microservices - the two containers can be slitted into separated
   # service with its coressponding entry file.
@@ -42,7 +46,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2.0.0
       - name: Set up Docker Buildx
@@ -72,7 +75,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2.0.0
       - name: Set up Docker Buildx
