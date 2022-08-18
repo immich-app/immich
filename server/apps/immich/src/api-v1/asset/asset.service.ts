@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -25,51 +26,29 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
+import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
 
 const fileInfo = promisify(stat);
 
 @Injectable()
 export class AssetService {
   constructor(
+    @Inject(ASSET_REPOSITORY)
+    private _assetRepository: IAssetRepository,
+
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
 
-  public async updateThumbnailInfo(asset: AssetEntity, thumbnailPath: string): Promise<AssetEntity> {
-    const updatedAsset = await this.assetRepository
-      .createQueryBuilder('assets')
-      .update<AssetEntity>(AssetEntity, { ...asset, resizePath: thumbnailPath })
-      .where('assets.id = :id', { id: asset.id })
-      .returning('*')
-      .updateEntity(true)
-      .execute();
-
-    return updatedAsset.raw[0];
-  }
-
   public async createUserAsset(
     authUser: AuthUserDto,
-    assetInfo: CreateAssetDto,
-    path: string,
+    createAssetDto: CreateAssetDto,
+    originalPath: string,
     mimeType: string,
-  ): Promise<AssetEntity | undefined> {
-    const asset = new AssetEntity();
-    asset.deviceAssetId = assetInfo.deviceAssetId;
-    asset.userId = authUser.id;
-    asset.deviceId = assetInfo.deviceId;
-    asset.type = assetInfo.assetType || AssetType.OTHER;
-    asset.originalPath = path;
-    asset.createdAt = assetInfo.createdAt;
-    asset.modifiedAt = assetInfo.modifiedAt;
-    asset.isFavorite = assetInfo.isFavorite;
-    asset.mimeType = mimeType;
-    asset.duration = assetInfo.duration || null;
+  ): Promise<AssetEntity> {
+    const assetEntity = await this._assetRepository.create(createAssetDto, authUser.id, originalPath, mimeType);
 
-    const createdAsset = await this.assetRepository.save(asset);
-    if (!createdAsset) {
-      throw new Error('Asset not created');
-    }
-    return createdAsset;
+    return assetEntity;
   }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
@@ -505,10 +484,10 @@ export class AssetService {
     return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
   }
 
-  async getAssetCountByMonth(authUser: AuthUserDto) {
+  async getAssetCountByTimeGroup(authUser: AuthUserDto) {
     return await this.assetRepository
       .createQueryBuilder('asset')
-      .select(`COUNT(*) as "count", to_char(date_trunc('month', "createdAt"::timestamptz), 'YYYY_MM') as "date_group"`)
+      .select(`COUNT(*) as "count", to_char(date_trunc('month', "createdAt"::timestamptz), 'YYYY_MM') as "timeGroup"`)
       .where('"userId" = :userId', { userId: authUser.id })
       .groupBy(`date_trunc('month', "createdAt"::timestamptz)`)
       .orderBy(`date_trunc('month', "createdAt"::timestamptz)`, 'DESC')

@@ -141,7 +141,7 @@ export class AssetController {
 
   @Get('/count-by-date')
   async getAssetCountByMonth(@GetAuthUser() authUser: AuthUserDto) {
-    return await this.assetService.getAssetCountByMonth(authUser);
+    return await this.assetService.getAssetCountByTimeGroup(authUser);
   }
   /**
    * Get all AssetEntity belong to the user
