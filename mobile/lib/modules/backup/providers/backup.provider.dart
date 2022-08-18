@@ -116,7 +116,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     bool? enabled,
     bool? requireWifi,
     bool? requireCharging,
+    required void Function(String msg) onError,
   }) async {
+    assert(enabled != null || requireWifi != null || requireCharging != null);
     if (Platform.isAndroid) {
       final bool wasEnabled = state.backgroundBackup;
       final bool wasWifi = state.backupRequireWifi;
@@ -142,13 +144,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             backupRequireWifi: wasWifi,
             backupRequireCharging: wasCharing,
           );
-          // TODO inform user
+          onError("backup_controller_page_background_configure_error");
         }
       } else {
         final bool success = await _backgroundService.stopService();
         if (!success) {
           state = state.copyWith(backgroundBackup: wasEnabled);
-          // TODO inform user
+          onError("backup_controller_page_background_configure_error");
         }
       }
     }
@@ -521,6 +523,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   Future<void> resumeBackup() async {
     if (Platform.isAndroid) {
+      // assumes the background service is currently running
+      // if true, waits until it has stopped to update the app state from HiveDB
+      // before actually resuming backup by calling the internal `_resumeBackup`
       final BackUpProgressEnum previous = state.backupProgress;
       state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
       final bool hasLock = await _backgroundService.acquireLock();

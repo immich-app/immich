@@ -4,11 +4,13 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show IsolateNameServer, PluginUtilities;
 import 'package:cancellation_token_http/http.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/background_service/localization.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
@@ -74,8 +76,8 @@ class BackgroundService {
       if (!_isForegroundInitialized) {
         await _initialize();
       }
-      // TODO i18n
-      const String title = "Checking for new assets…";
+      final String title =
+          "backup_background_service_default_notification".tr();
       final bool ok = await _foregroundChannel.invokeMethod(
         'start',
         [immediate, keepExisting, requireUnmetered, requireCharging, title],
@@ -126,9 +128,8 @@ class BackgroundService {
       if (!_isForegroundInitialized) {
         await _initialize();
       }
-      // TODO i18n
-      const String message =
-          "Please disable battery optimization for Immich to enable background backup";
+      final String message =
+          "backup_background_service_disable_battery_optimizations".tr();
       return await _foregroundChannel.invokeMethod(
         'disableBatteryOptimizations',
         message,
@@ -269,12 +270,14 @@ class BackgroundService {
   Future<bool> _callHandler(MethodCall call) async {
     switch (call.method) {
       case "onAssetsChanged":
+        final Future<bool> translationsLoaded = loadTranslations();
         try {
           final bool hasAccess = await acquireLock();
           if (!hasAccess) {
             debugPrint("[_callHandler] could acquire lock, exiting");
             return false;
           }
+          await translationsLoaded;
           return await _onAssetsChanged();
         } catch (error) {
           debugPrint(error.toString());
@@ -355,18 +358,18 @@ class BackgroundService {
   void _onProgress(int sent, int total) {}
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
-    // TODO i18n
     showErrorNotification(
-      "Failed to upload ${errorAssetInfo.fileName}",
+      "backup_background_service_upload_failure_notification"
+          .tr(args: [errorAssetInfo.fileName]),
       errorAssetInfo.errorMessage,
     );
   }
 
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
-    // TODO i18n
     updateNotification(
-      title: "Performing backup",
-      content: "Uploading ${currentUploadAsset.fileName}",
+      title: "backup_background_service_in_progress_notification".tr(),
+      content: "backup_background_service_current_upload_notification"
+          .tr(args: [currentUploadAsset.fileName]),
     );
   }
 }

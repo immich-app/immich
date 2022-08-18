@@ -146,6 +146,16 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
+    void _showErrorToUser(String msg) {
+      final snackBar = SnackBar(
+        content: Text(
+          msg.tr(),
+        ),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+
     ListTile _buildBackgroundBackupController() {
       final bool isBackgroundEnabled = backupState.backgroundBackup;
       final bool isWifiRequired = backupState.backupRequireWifi;
@@ -161,19 +171,19 @@ class BackupControllerPage extends HookConsumerWidget {
             : const Icon(Icons.cloud_sync_rounded),
         title: Text(
           isBackgroundEnabled
-              ? "Automatic background backup is on"
-              : "Automatic background backup is off",
+              ? "backup_controller_page_background_is_on"
+              : "backup_controller_page_background_is_off",
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-        ),
+        ).tr(),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isBackgroundEnabled)
-              const Text(
-                  "Turn on the background service to automatically backup any new assets without needing to open the app"),
+              const Text("backup_controller_page_background_description").tr(),
             if (isBackgroundEnabled)
               SwitchListTile(
-                title: const Text("Only on WiFi"),
+                title:
+                    const Text("backup_controller_page_background_wifi").tr(),
                 secondary: Icon(
                   Icons.wifi,
                   color: isWifiRequired ? activeColor : null,
@@ -184,12 +194,16 @@ class BackupControllerPage extends HookConsumerWidget {
                 onChanged: hasExclusiveAccess
                     ? (isChecked) => ref
                         .read(backupProvider.notifier)
-                        .configureBackgroundBackup(requireWifi: isChecked)
+                        .configureBackgroundBackup(
+                          requireWifi: isChecked,
+                          onError: _showErrorToUser,
+                        )
                     : null,
               ),
             if (isBackgroundEnabled)
               SwitchListTile(
-                title: const Text("Only while charging"),
+                title: const Text("backup_controller_page_background_charging")
+                    .tr(),
                 secondary: Icon(
                   Icons.charging_station,
                   color: isChargingRequired ? activeColor : null,
@@ -200,20 +214,25 @@ class BackupControllerPage extends HookConsumerWidget {
                 onChanged: hasExclusiveAccess
                     ? (isChecked) => ref
                         .read(backupProvider.notifier)
-                        .configureBackgroundBackup(requireCharging: isChecked)
+                        .configureBackgroundBackup(
+                          requireCharging: isChecked,
+                          onError: _showErrorToUser,
+                        )
                     : null,
               ),
             ElevatedButton(
-              onPressed: () => ref
-                  .read(backupProvider.notifier)
-                  .configureBackgroundBackup(enabled: !isBackgroundEnabled),
+              onPressed: () =>
+                  ref.read(backupProvider.notifier).configureBackgroundBackup(
+                        enabled: !isBackgroundEnabled,
+                        onError: _showErrorToUser,
+                      ),
               child: Text(
                 isBackgroundEnabled
-                    ? "Turn off background service"
-                    : "Turn on background service",
+                    ? "backup_controller_page_background_turn_off"
+                    : "backup_controller_page_background_turn_on",
                 style:
                     const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-              ),
+              ).tr(),
             ),
           ],
         ),
