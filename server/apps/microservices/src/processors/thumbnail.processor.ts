@@ -20,7 +20,7 @@ import {
   thumbnailGeneratorQueueName,
   JpegGeneratorProcessor,
 } from '@app/job';
-import { join as pathJoin } from 'node:path';
+import { join as joinPath } from 'node:path';
 import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
 
 @Processor(thumbnailGeneratorQueueName)
@@ -45,7 +45,7 @@ export class ThumbnailGeneratorProcessor {
     const { asset } = job.data;
 
     const thumbnailDir = this.config.get('THUMBNAIL_LOCATION', 'upload'); // TODO: define default folder by const
-    const resizePath = pathJoin(thumbnailDir, `/${asset.userId}/thumb/${asset.deviceId}/`);
+    const resizePath = joinPath(thumbnailDir, `/${asset.userId}/thumb/${asset.deviceId}/`);
 
     if (!existsSync(resizePath)) {
       mkdirSync(resizePath, { recursive: true });
@@ -53,7 +53,7 @@ export class ThumbnailGeneratorProcessor {
 
     const temp = asset.originalPath.split('/');
     const originalFilename = temp[temp.length - 1].split('.')[0];
-    const jpegThumbnailPath = pathJoin(resizePath, originalFilename + '.jpeg');
+    const jpegThumbnailPath = joinPath(resizePath, originalFilename + '.jpeg');
 
     if (asset.type == AssetType.IMAGE) {
       sharp(asset.originalPath)
