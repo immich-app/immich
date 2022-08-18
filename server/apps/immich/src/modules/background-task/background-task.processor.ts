@@ -30,6 +30,7 @@ export class BackgroundTaskProcessor {
       });
 
       // TODO: what if there is no asset.resizePath. Should fail the Job?
+      // => panoti report: Job not fail
       if (asset.resizePath) {
         fs.unlink(asset.resizePath, (err) => {
           if (err) {
