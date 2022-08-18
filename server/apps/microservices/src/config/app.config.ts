@@ -9,14 +9,14 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_USERNAME: Joi.string().required(),
     DB_PASSWORD: Joi.string().required(),
     DB_DATABASE_NAME: Joi.string().required(),
-    JWT_SECRET: Joi.string().required(),
     ENABLE_MAPBOX: Joi.boolean().required().valid(true, false),
     MAPBOX_KEY: Joi.any().when('ENABLE_MAPBOX', {
       is: false,
       then: Joi.string().optional().allow(null, ''),
       otherwise: Joi.string().required(),
     }),
-    UPLOAD_LOCATION: Joi.string().optional().allow(null, ''),
-    THUMBNAIL_LOCATION: Joi.string().optional().allow(null, ''),
+    UPLOAD_DIR: Joi.string().optional().allow(null, ''),
+    IMAGE_CACHE_DIR: Joi.string().optional().allow(null, ''),
+    VIDEO_CACHE_DIR: Joi.string().optional().allow(null, ''),
   }),
 };

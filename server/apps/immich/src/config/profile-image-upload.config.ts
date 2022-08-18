@@ -2,7 +2,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { Request } from 'express';
 import { APP_UPLOAD_LOCATION } from '../constants/upload_location.constant';
 
@@ -20,8 +20,8 @@ export const profileImageUploadOption: MulterOptions = {
       if (!req.user) {
         return;
       }
-      const basePath = process.env.UPLOAD_LOCATION || APP_UPLOAD_LOCATION; // TODO: use join for making sure correct path
-      const profileImageLocation = `${basePath}/${req.user.id}/profile`;
+      const basePath = process.env.UPLOAD_DIR || APP_UPLOAD_LOCATION;
+      const profileImageLocation = join(basePath, `${req.user.id}/profile`);
 
       if (!existsSync(profileImageLocation)) {
         mkdirSync(profileImageLocation, { recursive: true });

@@ -10,7 +10,6 @@ import { CommunicationGateway } from '../../../immich/src/api-v1/communication/c
 import { APP_UPLOAD_LOCATION } from '../../../immich/src/constants/upload_location.constant';
 import ffmpeg from 'fluent-ffmpeg';
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   WebpGeneratorProcessor,
   generateJPEGThumbnailProcessorName,
@@ -21,14 +20,12 @@ import {
   thumbnailGeneratorQueueName,
   JpegGeneratorProcessor,
 } from '@app/job';
-import { join as joinPath } from 'node:path';
+import { join } from 'node:path';
 import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
 
 @Processor(thumbnailGeneratorQueueName)
 export class ThumbnailGeneratorProcessor {
   constructor(
-    private readonly config: ConfigService,
-
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
@@ -45,8 +42,8 @@ export class ThumbnailGeneratorProcessor {
   async generateJPEGThumbnail(job: Job<JpegGeneratorProcessor>) {
     const { asset } = job.data;
 
-    const thumbnailDir = this.config.get('THUMBNAIL_LOCATION', APP_UPLOAD_LOCATION);
-    const resizePath = joinPath(thumbnailDir, `/${asset.userId}/thumb/${asset.deviceId}/`);
+    const thumbnailDir = process.env.IMAGE_CACHE_DIR || APP_UPLOAD_LOCATION;
+    const resizePath = join(thumbnailDir, `${asset.userId}/thumb/${asset.deviceId}/`);
 
     if (!existsSync(resizePath)) {
       mkdirSync(resizePath, { recursive: true });
@@ -54,7 +51,7 @@ export class ThumbnailGeneratorProcessor {
 
     const temp = asset.originalPath.split('/');
     const originalFilename = temp[temp.length - 1].split('.')[0];
-    const jpegThumbnailPath = joinPath(resizePath, originalFilename + '.jpeg');
+    const jpegThumbnailPath = join(resizePath, originalFilename + '.jpeg');
 
     if (asset.type == AssetType.IMAGE) {
       sharp(asset.originalPath)
