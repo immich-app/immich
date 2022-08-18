@@ -22,6 +22,9 @@ jobs:
       nginx: ${{ steps.filter.outputs.nginx }}
     steps:
     # For pull requests it's not necessary to checkout the code
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     - uses: dorny/paths-filter@v2
       id: filter
       with:
