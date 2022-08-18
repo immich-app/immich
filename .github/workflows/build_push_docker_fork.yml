@@ -12,9 +12,30 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    # Set job outputs to values from filter step
+    outputs:
+      server: ${{ steps.filter.outputs.server }}
+      machine-learning: ${{ steps.filter.outputs.machine-learning }}
+      web: ${{ steps.filter.outputs.web }}
+      nginx: ${{ steps.filter.outputs.nginx }}
+    steps:
+    # For pull requests it's not necessary to checkout the code
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          server:
+            - 'server/**'
+          machine-learning:
+            - 'machine-learning/**'
+
   # This image include both the server and microservices - the two containers can be slitted into separated
   # service with its coressponding entry file.
   build_and_push_server_monorepo_latest:
+    needs: changes
+    if: ${{ needs.changes.outputs.server == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -43,6 +64,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/immich-server:latest
   build_and_push_machine_learning_latest:
+    needs: changes
+    if: ${{ needs.changes.outputs.machine-learning == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -71,6 +94,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/immich-machine-learning:latest
   build_and_push_web_latest:
+    needs: changes
+    if: ${{ needs.changes.outputs.web == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -99,6 +124,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/immich-web:latest
   build_and_push_nginx_latest:
+    needs: changes
+    if: ${{ needs.changes.outputs.nginx == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
