@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -9,6 +10,7 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:openapi/api.dart';
@@ -39,8 +41,141 @@ class BackupService {
     }
   }
 
-  backupAsset(
-    Set<AssetEntity> assetList,
+  /// Returns all assets to backup from the backup info taking into account the
+  /// time of the last successfull backup per album
+  Future<List<AssetEntity>> getAssetsToBackup(
+    HiveBackupAlbums backupAlbumInfo,
+  ) async {
+    final List<AssetEntity> candidates =
+        await _buildUploadCandidates(backupAlbumInfo);
+
+    final List<AssetEntity> toUpload = candidates.isEmpty
+        ? []
+        : await _removeAlreadyUploadedAssets(candidates);
+    return toUpload;
+  }
+
+  Future<List<AssetEntity>> _buildUploadCandidates(
+    HiveBackupAlbums backupAlbums,
+  ) async {
+    final filter = FilterOptionGroup(
+      containsPathModified: true,
+      orders: [const OrderOption(type: OrderOptionType.updateDate)],
+    );
+    final now = DateTime.now();
+    final List<AssetPathEntity?> selectedAlbums =
+        await _loadAlbumsWithTimeFilter(
+      backupAlbums.selectedAlbumIds,
+      backupAlbums.lastSelectedBackupTime,
+      filter,
+      now,
+    );
+    if (selectedAlbums.every((e) => e == null)) {
+      return [];
+    }
+    final int allIdx = selectedAlbums.indexWhere((e) => e != null && e.isAll);
+    if (allIdx != -1) {
+      final List<AssetPathEntity?> excludedAlbums =
+          await _loadAlbumsWithTimeFilter(
+        backupAlbums.excludedAlbumsIds,
+        backupAlbums.lastExcludedBackupTime,
+        filter,
+        now,
+      );
+      final List<AssetEntity> toAdd = await _fetchAssetsAndUpdateLastBackup(
+        selectedAlbums.slice(allIdx, allIdx + 1),
+        backupAlbums.lastSelectedBackupTime.slice(allIdx, allIdx + 1),
+        now,
+      );
+      final List<AssetEntity> toRemove = await _fetchAssetsAndUpdateLastBackup(
+        excludedAlbums,
+        backupAlbums.lastExcludedBackupTime,
+        now,
+      );
+      return toAdd.toSet().difference(toRemove.toSet()).toList();
+    } else {
+      return await _fetchAssetsAndUpdateLastBackup(
+        selectedAlbums,
+        backupAlbums.lastSelectedBackupTime,
+        now,
+      );
+    }
+  }
+
+  Future<List<AssetPathEntity?>> _loadAlbumsWithTimeFilter(
+    List<String> albumIds,
+    List<DateTime> lastBackups,
+    FilterOptionGroup filter,
+    DateTime now,
+  ) async {
+    List<AssetPathEntity?> result = List.filled(albumIds.length, null);
+    for (int i = 0; i < albumIds.length; i++) {
+      try {
+        final AssetPathEntity album =
+            await AssetPathEntity.obtainPathFromProperties(
+          id: albumIds[i],
+          optionGroup: filter.copyWith(
+            updateTimeCond: DateTimeCond(
+              // subtract 2 seconds to prevent missing assets due to rounding issues
+              min: lastBackups[i].subtract(const Duration(seconds: 2)),
+              max: now,
+            ),
+          ),
+          maxDateTimeToNow: false,
+        );
+        result[i] = album;
+      } on StateError {
+        // either there are no assets matching the filter criteria OR the album no longer exists
+      }
+    }
+    return result;
+  }
+
+  Future<List<AssetEntity>> _fetchAssetsAndUpdateLastBackup(
+    List<AssetPathEntity?> albums,
+    List<DateTime> lastBackup,
+    DateTime now,
+  ) async {
+    List<AssetEntity> result = [];
+    for (int i = 0; i < albums.length; i++) {
+      final AssetPathEntity? a = albums[i];
+      if (a != null && a.lastModified?.isBefore(lastBackup[i]) != true) {
+        result.addAll(await a.getAssetListRange(start: 0, end: a.assetCount));
+        lastBackup[i] = now;
+      }
+    }
+    return result;
+  }
+
+  Future<List<AssetEntity>> _removeAlreadyUploadedAssets(
+    List<AssetEntity> candidates,
+  ) async {
+    final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+    if (candidates.length < 10) {
+      final List<CheckDuplicateAssetResponseDto?> duplicateResponse =
+          await Future.wait(
+        candidates.map(
+          (e) => _apiService.assetApi.checkDuplicateAsset(
+            CheckDuplicateAssetDto(deviceAssetId: e.id, deviceId: deviceId),
+          ),
+        ),
+      );
+      return candidates
+          .whereIndexed((i, e) => duplicateResponse[i]?.isExist == false)
+          .toList();
+    } else {
+      final List<String>? allAssetsInDatabase = await getDeviceBackupAsset();
+
+      if (allAssetsInDatabase == null) {
+        return candidates;
+      }
+      final Set<String> inDb = allAssetsInDatabase.toSet();
+      return candidates.whereNot((e) => inDb.contains(e.id)).toList();
+    }
+  }
+
+  Future<bool> backupAsset(
+    Iterable<AssetEntity> assetList,
     http.CancellationToken cancelToken,
     Function(String, String) singleAssetDoneCb,
     Function(int, int) uploadProgressCb,
@@ -50,6 +185,7 @@ class BackupService {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
+    bool anyErrors = false;
 
     for (var entity in assetList) {
       try {
@@ -60,7 +196,8 @@ class BackupService {
         }
 
         if (file != null) {
-          String originalFileName = await entity.titleAsync;
+          String originalFileName =
+              entity.title != null ? entity.title! : await entity.titleAsync;
           String fileNameWithoutPath =
               originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
@@ -134,9 +271,10 @@ class BackupService {
         }
       } on http.CancelledException {
         debugPrint("Backup was cancelled by the user");
-        return;
+        return false;
       } catch (e) {
         debugPrint("ERROR backupAsset: ${e.toString()}");
+        anyErrors = true;
         continue;
       } finally {
         if (Platform.isIOS) {
@@ -144,6 +282,7 @@ class BackupService {
         }
       }
     }
+    return !anyErrors;
   }
 
   String _getAssetType(AssetType assetType) {
