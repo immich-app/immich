@@ -196,8 +196,7 @@ class BackupService {
         }
 
         if (file != null) {
-          String originalFileName =
-              entity.title != null ? entity.title! : await entity.titleAsync;
+          String originalFileName = await entity.titleAsync;
           String fileNameWithoutPath =
               originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);

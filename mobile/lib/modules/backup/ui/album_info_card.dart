@@ -123,7 +123,7 @@ class AlbumInfoCard extends HookConsumerWidget {
             return;
           }
 
-          if (albumInfo.id == 'isAll') {
+          if (albumInfo.id == 'isAll' || albumInfo.name == 'Recents') {
             ImmichToast.show(
               context: context,
               msg: 'Cannot exclude album contains all assets',
