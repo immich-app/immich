@@ -1,11 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { immichAppConfig } from '../../../libs/config/app.config';
 import { UserModule } from './api-v1/user/user.module';
 import { AssetModule } from './api-v1/asset/asset.module';
 import { AuthModule } from './api-v1/auth/auth.module';
 import { ImmichJwtModule } from './modules/immich-jwt/immich-jwt.module';
 import { DeviceInfoModule } from './api-v1/device-info/device-info.module';
 import { ConfigModule } from '@nestjs/config';
-import { immichAppConfig } from './config/app.config';
 import { BullModule } from '@nestjs/bull';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
