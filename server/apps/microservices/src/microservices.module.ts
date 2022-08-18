@@ -25,6 +25,7 @@ import {
     TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
     BullModule.forRootAsync({
       useFactory: async () => ({
+        prefix: 'immich_bull',
         redis: {
           host: process.env.REDIS_HOSTNAME || 'immich_redis',
           port: parseInt(process.env.REDIS_PORT || '6379'),
