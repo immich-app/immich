@@ -60,7 +60,7 @@ export const asyncAssetUploadOptions = async (config: ConfigService): Promise<Mu
 
     storage: diskStorage({
       destination: (req: Request, file: Express.Multer.File, cb: any) => {
-        const basePath = config.get<string>('UPLOAD_LOCATION');
+        const basePath = config.get<string>('UPLOAD_LOCATION', APP_UPLOAD_LOCATION);
         // TODO these are currently not used. Shall we remove them?
         // const fileInfo = req.body as CreateAssetDto;
   
