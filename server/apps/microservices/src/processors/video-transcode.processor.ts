@@ -3,10 +3,12 @@ import { videoConversionQueueName } from '@app/job/constants/queue-name.constant
 import { IMp4ConversionProcessor } from '@app/job/interfaces/video-transcode.interface';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'fs';
+import { join as joinPath } from 'node:path';
 import { Repository } from 'typeorm';
 import { AssetEntity } from '../../../../libs/database/src/entities/asset.entity';
 import { APP_UPLOAD_LOCATION } from '../../../immich/src/constants/upload_location.constant';
@@ -14,6 +16,7 @@ import { APP_UPLOAD_LOCATION } from '../../../immich/src/constants/upload_locati
 @Processor(videoConversionQueueName)
 export class VideoTranscodeProcessor {
   constructor(
+    private readonly config: ConfigService,
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
@@ -23,8 +26,8 @@ export class VideoTranscodeProcessor {
     const { asset } = job.data;
 
     if (asset.mimeType != 'video/mp4') {
-      const basePath = APP_UPLOAD_LOCATION;
-      const encodedVideoPath = `${basePath}/${asset.userId}/encoded-video`;
+      const basePath = this.config.get('UPLOAD_LOCATION', APP_UPLOAD_LOCATION);
+      const encodedVideoPath = joinPath(basePath, `/${asset.userId}/encoded-video`);
 
       if (!existsSync(encodedVideoPath)) {
         mkdirSync(encodedVideoPath, { recursive: true });

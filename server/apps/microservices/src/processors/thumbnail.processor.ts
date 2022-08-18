@@ -7,6 +7,7 @@ import sharp from 'sharp';
 import { existsSync, mkdirSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { CommunicationGateway } from '../../../immich/src/api-v1/communication/communication.gateway';
+import { APP_UPLOAD_LOCATION } from '../../../immich/src/constants/upload_location.constant';
 import ffmpeg from 'fluent-ffmpeg';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -44,7 +45,7 @@ export class ThumbnailGeneratorProcessor {
   async generateJPEGThumbnail(job: Job<JpegGeneratorProcessor>) {
     const { asset } = job.data;
 
-    const thumbnailDir = this.config.get('THUMBNAIL_LOCATION', 'upload'); // TODO: define default folder by const
+    const thumbnailDir = this.config.get('THUMBNAIL_LOCATION', APP_UPLOAD_LOCATION);
     const resizePath = joinPath(thumbnailDir, `/${asset.userId}/thumb/${asset.deviceId}/`);
 
     if (!existsSync(resizePath)) {

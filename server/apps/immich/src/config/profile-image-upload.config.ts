@@ -20,7 +20,7 @@ export const profileImageUploadOption: MulterOptions = {
       if (!req.user) {
         return;
       }
-      const basePath = APP_UPLOAD_LOCATION;
+      const basePath = process.env.UPLOAD_LOCATION || APP_UPLOAD_LOCATION; // TODO: use join for making sure correct path
       const profileImageLocation = `${basePath}/${req.user.id}/profile`;
 
       if (!existsSync(profileImageLocation)) {

@@ -71,7 +71,7 @@ export const asyncAssetUploadOptions = async (config: ConfigService): Promise<Mu
           return;
         }
   
-        const originalUploadFolder = `${basePath}/${req.user.id}/original/${req.body['deviceId']}`;
+        const originalUploadFolder = `${basePath}/${req.user.id}/original/${req.body['deviceId']}`; // TODO: use join for making sure correct path
   
         if (!existsSync(originalUploadFolder)) {
           mkdirSync(originalUploadFolder, { recursive: true });
