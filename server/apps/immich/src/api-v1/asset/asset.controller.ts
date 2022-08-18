@@ -2,7 +2,6 @@ import {
   Controller,
   Post,
   UseInterceptors,
-  UploadedFiles,
   Body,
   UseGuards,
   Get,
@@ -140,6 +139,10 @@ export class AssetController {
     return this.assetService.searchAsset(authUser, searchAssetDto);
   }
 
+  @Get('/count-by-date')
+  async getAssetCountByMonth(@GetAuthUser() authUser: AuthUserDto) {
+    return await this.assetService.getAssetCountByMonth(authUser);
+  }
   /**
    * Get all AssetEntity belong to the user
    */

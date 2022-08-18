@@ -5,6 +5,7 @@ import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { Repository } from 'typeorm';
+import cookieParser from 'cookie-parser';
 
 @WebSocketGateway({ cors: true })
 export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -26,8 +27,17 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
   async handleConnection(client: Socket) {
     try {
       Logger.log(`New websocket connection: ${client.id}`, 'WebsocketConnectionEvent');
+      let accessToken = '';
 
-      const accessToken = client.handshake.headers.authorization?.split(' ')[1];
+      if (client.handshake.headers.cookie != undefined) {
+        accessToken = client.handshake.headers.cookie.split('=')[2];
+      } else if (client.handshake.headers.authorization != undefined) {
+        accessToken = client.handshake.headers.authorization.split(' ')[1];
+      } else {
+        client.emit('error', 'unauthorized');
+        client.disconnect();
+        return;
+      }
 
       const res: JwtValidationResult = accessToken
         ? await this.immichJwtService.validateToken(accessToken)

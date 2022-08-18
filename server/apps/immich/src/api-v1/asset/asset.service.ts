@@ -504,4 +504,14 @@ export class AssetService {
 
     return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
   }
+
+  async getAssetCountByMonth(authUser: AuthUserDto) {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .select(`COUNT(*) as "count", to_char(date_trunc('month', "createdAt"::timestamptz), 'YYYY_MM') as "date_group"`)
+      .where('"userId" = :userId', { userId: authUser.id })
+      .groupBy(`date_trunc('month', "createdAt"::timestamptz)`)
+      .orderBy(`date_trunc('month', "createdAt"::timestamptz)`, 'DESC')
+      .getRawMany();
+  }
 }

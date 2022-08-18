@@ -13,12 +13,12 @@
 		}
 
 		try {
-			const [userInfo, assets] = await Promise.all([
-				fetch('/data/user/get-my-user-info').then((r) => r.json()),
-				fetch('/data/asset/get-all-assets').then((r) => r.json())
+			const [userInfo] = await Promise.all([
+				fetch('/data/user/get-my-user-info').then((r) => r.json())
+				// fetch('/data/asset/get-all-assets').then((r) => r.json())
 			]);
 
-			setAssetInfo(assets);
+			// setAssetInfo(assets);
 
 			return {
 				status: 200,
@@ -45,7 +45,7 @@
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { api, AssetResponseDto, UserResponseDto } from '@api';
+	import { api, AssetResponseDto, serverApi, UserResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
@@ -53,6 +53,8 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import { browser } from '$app/env';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+	import { onMount, onDestroy } from 'svelte';
+	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
 
 	export let user: UserResponseDto;
 
@@ -207,6 +209,18 @@
 			console.log('Error deleteSelectedAssetHandler', e);
 		}
 	};
+
+	onMount(async () => {
+		openWebsocketConnection();
+
+		const { data: assets } = await api.assetApi.getAllAssets();
+
+		setAssetInfo(assets);
+	});
+
+	onDestroy(() => {
+		closeWebsocketConnection();
+	});
 </script>
 
 <svelte:head>
