@@ -33,7 +33,15 @@ export class BackgroundTaskProcessor {
       if (asset.resizePath) {
         fs.unlink(asset.resizePath, (err) => {
           if (err) {
-            console.log('error deleting ', asset.originalPath);
+            console.log('error deleting ', asset.resizePath);
+          }
+        });
+      }
+
+      if (asset.webpPath) {
+        fs.unlink(asset.webpPath, (err) => {
+          if (err) {
+            console.log('error deleting ', asset.webpPath);
           }
         });
       }
