@@ -101,7 +101,7 @@ There are several services that compose Immich:
 
 *Applicable system: Ubuntu, Debian, MacOS*
 
-In the shell, from the directory of your choice, run the following command:
+- In the shell, from the directory of your choice, run the following command:
 
 ```bash
 curl -o- https://raw.githubusercontent.com/immich-app/immich/main/install.sh | bash
@@ -120,73 +120,51 @@ The directory which is used to store the backup file is `./immich-app/immich-dat
 
 ### Step 1 - Download necessary files
 
-Create a directory called `immich-app` and cd into it. Then
+- Create a directory called `immich-app` and cd into it.
 
-Get `docker-compose.yml`
+- Get `docker-compose.yml`
 
 ```bash
 wget https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml
 ```
 
-Get `.env`
+- Get `.env`
 
 ```bash
 wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
 ```
 
-### Step 2 - Populate .env file with customed information
+### Step 2 - Populate .env file with custom information
+
+<a href="https://github.com/immich-app/immich/blob/main/docker/.env.example" target="_blank"><b>See the example <code>.env</code> file</b></a>
 
 * Populate custom database information if necessary.
 * Populate `UPLOAD_LOCATION` as prefered location for storing backup assets.
 * Populate a secret value for `JWT_SECRET`, you can use this command: `openssl rand -base64 128`
 * [Optional] Populate Mapbox value to use reverse geocoding.
 
-**Example**
-
-```bash
-###################################################################################
-# Database
-###################################################################################
-DB_USERNAME=postgres
-DB_PASSWORD=postgres
-DB_DATABASE_NAME=immich
-
-###################################################################################
-# Upload File Config
-###################################################################################
-UPLOAD_LOCATION=<put-the-path-of-the-upload-folder-here>
-
-###################################################################################
-# JWT SECRET
-###################################################################################
-JWT_SECRET=randomstringthatissolongandpowerfulthatnoonecanguess
-
-###################################################################################
-# MAPBOX
-####################################################################################
-# ENABLE_MAPBOX is either true of false -> if true, you have to provide MAPBOX_KEY
-ENABLE_MAPBOX=false
-MAPBOX_KEY=
-```
-
 ### Step 3 - Start the containers
 
-Run `docker-compose up` or `docker compose up` (based on your docker's version)
+- Run `docker-compose up` or `docker compose up` (based on your docker's version)
 
 ### Step 4 - Register admin user
 
-| Navigate to the web at `http://<machine-ip-address>:2283` and follow the prompts to register admin user. | <p align="center"> <img src="design/admin-registration-form.png" width="300" title="Admin Registration"> </p> |
-| - | - |
+- Navigate to the web at `http://<machine-ip-address>:2283` and follow the prompts to register admin user. 
+<p align="center">
+  <img src="design/admin-registration-form.png" width="300" title="Admin Registration">
+</p>
 
-
-| You can add and manage users from the administration page. | <img src="design/admin-interface.png" width="500" title="Admin User Management"> |
-| - | - |
+- You can add and manage users from the administration page. 
+<p align="center">
+ <img src="design/admin-interface.png" width="500" title="Admin User Management">
+</p>
 
 ### Step 5 - Access the mobile app
 
-| Login the mobile app with the server endpoint URL at `http://<machine-ip-address>:2283/api` | <img src="design/login-screen.jpeg" width="250" title="Example login screen"> |
-| - | - |
-
+- Login the mobile app with the server endpoint URL at `http://<machine-ip-address>:2283/api`
+<p align="center">
+  <img src="design/login-screen.jpeg" width="250" title="Example login screen">
+</p> 
 
   <br/>  
 
