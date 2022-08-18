@@ -190,7 +190,7 @@ Run `docker-compose up` or `docker compose up` (based on your docker's version)
 
   <br/>  
 
-# 🤳 Mobile app
+# Mobile app
 
 | F-Droid | Google Play | iOS |
 | - | - | - |
