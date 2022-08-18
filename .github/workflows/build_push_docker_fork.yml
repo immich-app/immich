@@ -4,6 +4,11 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths:
+      - server/**
+      - machine-learning/**
+      - web/**
+      - nginx/**
 
 env:
   # Use docker.io for Docker Hub if empty
