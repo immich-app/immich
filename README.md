@@ -28,7 +28,7 @@
 - [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Mobile App](#-mobile-app)
-- [Developers](#development)
+- [Development](#development)
 - [Support](#support)
 - [Known Issues](#known-issues)
 
