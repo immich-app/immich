@@ -142,5 +142,12 @@
   "asset_list_settings_title": "Photo Grid",
   "asset_list_settings_subtitle": "Photo grid layout settings",
   "theme_setting_asset_list_storage_indicator_title": "Show storage indicator on asset tiles",
-  "theme_setting_asset_list_tiles_per_row_title": "Number of assets per row ({})"
+  "theme_setting_asset_list_tiles_per_row_title": "Number of assets per row ({})",
+  "setting_notifications_title": "Notifications",
+  "setting_notifications_subtitle": "Adjust your notification preferences",
+  "setting_notifications_notify_failures_grace_period": "Notify background backup failures: {}",
+  "setting_notifications_notify_immediately": "immediately",
+  "setting_notifications_notify_minutes": "{} minutes",
+  "setting_notifications_notify_hours": "{} hours",
+  "setting_notifications_notify_never": "never"
 }

@@ -5,6 +5,8 @@ enum AppSettingsEnum<T> {
   threeStageLoading<bool>("threeStageLoading", false),
   themeMode<String>("themeMode", "system"), // "light","dark","system"
   tilesPerRow<int>("tilesPerRow", 4),
+  uploadErrorNotificationGracePeriod<int>(
+      "uploadErrorNotificationGracePeriod", 2),
   storageIndicator<bool>("storageIndicator", true);
 
   const AppSettingsEnum(this.hiveKey, this.defaultValue);
