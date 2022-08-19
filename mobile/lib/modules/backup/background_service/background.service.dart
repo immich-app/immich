@@ -140,8 +140,8 @@ class BackgroundService {
   }
 
   /// Updates the notification shown by the background service
-  Future<bool> updateNotification({
-    String title = "Immich",
+  Future<bool> _updateNotification({
+    required String title,
     String? content,
   }) async {
     if (!Platform.isAndroid) {
@@ -153,28 +153,44 @@ class BackgroundService {
             .invokeMethod('updateNotification', [title, content]);
       }
     } catch (error) {
-      debugPrint("[updateNotification] failed to communicate with plugin");
+      debugPrint("[_updateNotification] failed to communicate with plugin");
     }
     return Future.value(false);
   }
 
   /// Shows a new priority notification
-  Future<bool> showErrorNotification(
-    String title,
-    String content,
-  ) async {
+  Future<bool> _showErrorNotification({
+    required String title,
+    String? content,
+    String? individualTag,
+  }) async {
     if (!Platform.isAndroid) {
       return true;
     }
     try {
       if (_isBackgroundInitialized) {
         return await _backgroundChannel
-            .invokeMethod('showError', [title, content]);
+            .invokeMethod('showError', [title, content, individualTag]);
       }
     } catch (error) {
-      debugPrint("[showErrorNotification] failed to communicate with plugin");
+      debugPrint("[_showErrorNotification] failed to communicate with plugin");
     }
-    return Future.value(false);
+    return false;
+  }
+
+  Future<bool> _clearErrorNotifications() async {
+    if (!Platform.isAndroid) {
+      return true;
+    }
+    try {
+      if (_isBackgroundInitialized) {
+        return await _backgroundChannel.invokeMethod('clearErrorNotifications');
+      }
+    } catch (error) {
+      debugPrint(
+          "[_clearErrorNotifications] failed to communicate with plugin");
+    }
+    return false;
   }
 
   /// await to ensure this thread (foreground or background) has exclusive access
@@ -313,6 +329,7 @@ class BackgroundService {
         await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
     final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
     if (backupAlbumInfo == null) {
+      _clearErrorNotifications();
       return true;
     }
 
@@ -322,14 +339,23 @@ class BackgroundService {
       return false;
     }
 
-    final List<AssetEntity> toUpload =
-        await backupService.getAssetsToBackup(backupAlbumInfo);
+    List<AssetEntity> toUpload;
+    try {
+      toUpload = await backupService.getAssetsToBackup(backupAlbumInfo);
+    } catch (e) {
+      _showErrorNotification(
+        title: "backup_background_service_error_title".tr(),
+        content: "backup_background_service_connection_failed_message".tr(),
+      );
+      return false;
+    }
 
     if (_canceledBySystem) {
       return false;
     }
 
     if (toUpload.isEmpty) {
+      _clearErrorNotifications();
       return true;
     }
 
@@ -343,9 +369,15 @@ class BackgroundService {
       _onBackupError,
     );
     if (ok) {
+      _clearErrorNotifications();
       await box.put(
         backupInfoKey,
         backupAlbumInfo,
+      );
+    } else {
+      _showErrorNotification(
+        title: "backup_background_service_error_title".tr(),
+        content: "backup_background_service_backup_failed_message".tr(),
       );
     }
     return ok;
@@ -358,15 +390,16 @@ class BackgroundService {
   void _onProgress(int sent, int total) {}
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
-    showErrorNotification(
-      "backup_background_service_upload_failure_notification"
+    _showErrorNotification(
+      title: "Upload failed",
+      content: "backup_background_service_upload_failure_notification"
           .tr(args: [errorAssetInfo.fileName]),
-      errorAssetInfo.errorMessage,
+      individualTag: errorAssetInfo.id,
     );
   }
 
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
-    updateNotification(
+    _updateNotification(
       title: "backup_background_service_in_progress_notification".tr(),
       content: "backup_background_service_current_upload_notification"
           .tr(args: [currentUploadAsset.fileName]),
