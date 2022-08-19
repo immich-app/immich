@@ -297,7 +297,15 @@ class BackgroundService {
             return false;
           }
           await translationsLoaded;
-          return await _onAssetsChanged();
+          final bool ok = await _onAssetsChanged();
+          if (ok) {
+            Hive.box(backgroundBackupInfoBox).delete(backupFailedSince);
+          } else if (Hive.box(backgroundBackupInfoBox).get(backupFailedSince) ==
+              null) {
+            Hive.box(backgroundBackupInfoBox)
+                .put(backupFailedSince, DateTime.now());
+          }
+          return ok;
         } catch (error) {
           debugPrint(error.toString());
           return false;
@@ -323,6 +331,7 @@ class BackgroundService {
     await Hive.openBox(userInfoBox);
     await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
     await Hive.openBox(userSettingInfoBox);
+    await Hive.openBox(backgroundBackupInfoBox);
 
     ApiService apiService = ApiService();
     apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
@@ -338,6 +347,7 @@ class BackgroundService {
     }
 
     await PhotoManager.setIgnorePermissionCheck(true);
+    _errorGracePeriodExceeded = _isErrorGracePeriodExceeded();
 
     if (_canceledBySystem) {
       return false;
@@ -346,7 +356,6 @@ class BackgroundService {
     List<AssetEntity> toUpload =
         await backupService.buildUploadCandidates(backupAlbumInfo);
 
-    _errorGracePeriodExceeded = _isErrorGracePeriodExceeded(toUpload);
     try {
       toUpload = await backupService.removeAlreadyUploadedAssets(toUpload);
     } catch (e) {
@@ -413,7 +422,7 @@ class BackgroundService {
     );
   }
 
-  bool _isErrorGracePeriodExceeded(Iterable<AssetEntity> toUpload) {
+  bool _isErrorGracePeriodExceeded() {
     final int value = AppSettingsService()
         .getSetting(AppSettingsEnum.uploadErrorNotificationGracePeriod);
     if (value == 0) {
@@ -421,8 +430,12 @@ class BackgroundService {
     } else if (value == 5) {
       return false;
     }
-    final DateTime oldestAsset = toUpload.map((e) => e.modifiedDateTime).min;
-    final Duration duration = DateTime.now().difference(oldestAsset);
+    final DateTime? failedSince =
+        Hive.box(backgroundBackupInfoBox).get(backupFailedSince);
+    if (failedSince == null) {
+      return false;
+    }
+    final Duration duration = DateTime.now().difference(failedSince);
     if (value == 1) {
       return duration > const Duration(minutes: 30);
     } else if (value == 2) {
