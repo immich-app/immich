@@ -6,6 +6,8 @@ import 'package:immich_mobile/constants/hive_box.dart';
 enum AppSettingsEnum {
   threeStageLoading, // true, false,
   themeMode, // "light","dark","system"
+  tilesPerRow,
+  storageIndicator,
 }
 
 class AppSettingsService {
@@ -64,6 +66,16 @@ class AppSettingsService {
       hiveBox.put(settingKey, "system");
       return "system";
     }
+
+    if (settingType == AppSettingsEnum.tilesPerRow) {
+      hiveBox.put(settingKey, 4);
+      return 4;
+    }
+
+    if (settingType == AppSettingsEnum.storageIndicator) {
+      hiveBox.put(settingKey, true);
+      return true;
+    }
   }
 
   String _settingHiveBoxKeyLookup(AppSettingsEnum settingType) {
@@ -72,6 +84,10 @@ class AppSettingsService {
         return 'threeStageLoading';
       case AppSettingsEnum.themeMode:
         return 'themeMode';
+      case AppSettingsEnum.tilesPerRow:
+        return 'tilesPerRow';
+      case AppSettingsEnum.storageIndicator:
+        return 'storageIndicator';
     }
   }
 }

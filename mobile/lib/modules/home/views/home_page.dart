@@ -10,17 +10,22 @@ import 'package:immich_mobile/modules/home/ui/image_grid.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:openapi/api.dart';
 
+import '../../settings/providers/app_settings.provider.dart';
+
 class HomePage extends HookConsumerWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appSettingService = ref.watch(appSettingsServiceProvider);
+
     ScrollController scrollController = useScrollController();
     var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
     List<Widget> imageGridGroup = [];
@@ -86,6 +91,8 @@ class HomePage extends HookConsumerWidget {
             ImageGrid(
               assetGroup: immichAssetList,
               sortedAssetGroup: sortedAssetList,
+              tilesPerRow: appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
+              showStorageIndicator: appSettingService.getSetting(AppSettingsEnum.storageIndicator),
             ),
           );
 
