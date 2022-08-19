@@ -6,14 +6,13 @@ services:
     entrypoint: ["/bin/sh", "./start-server.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - ${IMAGE_CACHE_LOCATION}:/usr/src/app/cache/image
-      - ${VIDEO_CACHE_LOCATION}:/usr/src/app/cache/video
+      - ${CACHE_LOCATION}:/usr/src/app/cache
     env_file:
       - .env
     environment:
       - NODE_ENV=production
-      - IMAGE_CACHE_DIR=/usr/src/app/cache/image
-      - VIDEO_CACHE_DIR=/usr/src/app/cache/video
+      - IMAGE_CACHE_DIR=/usr/src/app/cache
+      - VIDEO_CACHE_DIR=/usr/src/app/cache
     depends_on:
       - redis
       - database
@@ -24,14 +23,13 @@ services:
     entrypoint: ["/bin/sh", "./start-microservices.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - ${IMAGE_CACHE_LOCATION}:/usr/src/app/cache/image
-      - ${VIDEO_CACHE_LOCATION}:/usr/src/app/cache/video
+      - ${CACHE_LOCATION}:/usr/src/app/cache
     env_file:
       - .env
     environment:
       - NODE_ENV=production
-      - IMAGE_CACHE_DIR=/usr/src/app/cache/image
-      - VIDEO_CACHE_DIR=/usr/src/app/cache/video
+      - IMAGE_CACHE_DIR=/usr/src/app/cache
+      - VIDEO_CACHE_DIR=/usr/src/app/cache
     depends_on:
       - redis
       - database
@@ -42,8 +40,7 @@ services:
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - ${IMAGE_CACHE_LOCATION}:/usr/src/app/cache/image
-      - ${VIDEO_CACHE_LOCATION}:/usr/src/app/cache/video
+      - ${CACHE_LOCATION}:/usr/src/app/cache
     env_file:
       - .env
     environment:

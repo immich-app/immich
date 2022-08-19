@@ -170,21 +170,20 @@ wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.en
 
 ## Advanced configurations
 
-Immich also support store original assets and cache files (thumbnail images, encoded videos) in different locations. But we need make some changes below:
+Immich also support user store their original assets and cache files (thumbnail images, encoded videos) in different locations. But we need make some changes below:
 
 * At **Step 1 - Download necessary files**
 
 Get `docker-compose.advanced.yml` instead.
 
 ```bash
-wget https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.advanced.yml -O docker-compose.yml
+wget -O docker-compose.yml https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.advanced.yml
 ```
 
 * At **Step 2 - Populate .env file with customed information**
 
-  - Uncomment variable `IMAGE_CACHE_LOCATION` and `VIDEO_CACHE_LOCATION`.
-  - Populate `IMAGE_CACHE_LOCATION` as prefered location for storing thumbnail files.
-  - Populate `VIDEO_CACHE_LOCATION` as prefered location for storing encoded videos.
+  - Uncomment variable `CACHE_LOCATION`.
+  - Populate `CACHE_LOCATION` as prefered location for storing thumbnail files, encoded videos.
 
 * Following the rest of steps normally.
 
