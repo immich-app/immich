@@ -14,11 +14,13 @@ import 'package:openapi/api.dart';
 class AlbumViewerThumbnail extends HookConsumerWidget {
   final AssetResponseDto asset;
   final List<AssetResponseDto> assetList;
+  final bool showStorageIndicator;
 
   const AlbumViewerThumbnail({
     Key? key,
     required this.asset,
     required this.assetList,
+    this.showStorageIndicator = true,
   }) : super(key: key);
 
   @override
@@ -166,7 +168,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
       child: Stack(
         children: [
           _buildThumbnailImage(),
-          _buildAssetStoreLocationIcon(),
+          if (showStorageIndicator) _buildAssetStoreLocationIcon(),
           if (asset.type != AssetTypeEnum.IMAGE) _buildVideoLabel(),
           if (isMultiSelectionEnable) _buildAssetSelectionIcon(),
         ],

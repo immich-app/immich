@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 
 enum AppSettingsEnum<T> {
@@ -23,18 +21,14 @@ class AppSettingsService {
   }
 
   T getSetting<T>(AppSettingsEnum<T> settingType) {
-    var settingKey = settingType.hiveKey;
-
-    if (!hiveBox.containsKey(settingKey)) {
-      hiveBox.put(settingType.hiveKey, settingType.defaultValue);
-      return settingType.defaultValue;
+    if (!hiveBox.containsKey(settingType.hiveKey)) {
+      return _setDefault(settingType);
     }
 
-    var result = hiveBox.get(settingKey);
+    var result = hiveBox.get(settingType.hiveKey);
 
     if (result is! T) {
-      hiveBox.put(settingType.hiveKey, settingType.defaultValue);
-      return settingType.defaultValue;
+      return _setDefault(settingType);
     }
 
     return result;
@@ -42,5 +36,10 @@ class AppSettingsService {
 
   setSetting<T>(AppSettingsEnum<T> settingType, T value) {
     hiveBox.put(settingType.hiveKey, value);
+  }
+
+  T _setDefault<T>(AppSettingsEnum<T> settingType) {
+    hiveBox.put(settingType.hiveKey, settingType.defaultValue);
+    return settingType.defaultValue;
   }
 }
