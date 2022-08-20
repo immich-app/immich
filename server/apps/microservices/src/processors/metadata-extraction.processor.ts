@@ -85,9 +85,21 @@ export class MetadataExtractionProcessor {
 
         const res: [] = geoCodeInfo.body['features'];
 
-        const city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
-        const state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
-        const country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+        let city = '';
+        let state = '';
+        let country = '';
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
+          city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
+        }
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
+          state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
+        }
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
+          country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+        }
 
         newExif.city = city || null;
         newExif.state = state || null;
@@ -114,9 +126,21 @@ export class MetadataExtractionProcessor {
 
       const res: [] = geoCodeInfo.body['features'];
 
-      const city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
-      const state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
-      const country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+      let city = '';
+      let state = '';
+      let country = '';
+
+      if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
+        city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
+      }
+
+      if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
+        state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
+      }
+
+      if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
+        country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+      }
 
       await this.exifRepository.update({ id: exif.id }, { city, state, country });
     }
@@ -173,7 +197,7 @@ export class MetadataExtractionProcessor {
         ffmpeg.ffprobe(asset.originalPath, (err, data) => {
           if (err) return reject(err);
           return resolve(data);
-        })
+        }),
       );
       let durationString = asset.duration;
       let createdAt = asset.createdAt;
@@ -183,7 +207,6 @@ export class MetadataExtractionProcessor {
       }
 
       const videoTags = data.format.tags;
-
       if (videoTags) {
         if (videoTags['com.apple.quicktime.creationdate']) {
           createdAt = String(videoTags['com.apple.quicktime.creationdate']);
@@ -218,6 +241,14 @@ export class MetadataExtractionProcessor {
           newExif.latitude = parseFloat(match[0]);
           newExif.longitude = parseFloat(match[1]);
         }
+      } else if (videoTags && videoTags['com.apple.quicktime.location.ISO6709']) {
+        const location = videoTags['com.apple.quicktime.location.ISO6709'] as string;
+        const locationRegex = /([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)\/$/;
+        const match = location.match(locationRegex);
+        if (match?.length === 4) {
+          newExif.latitude = parseFloat(match[1]);
+          newExif.longitude = parseFloat(match[2]);
+        }
       }
 
       // Reverse GeoCoding
@@ -231,9 +262,21 @@ export class MetadataExtractionProcessor {
 
         const res: [] = geoCodeInfo.body['features'];
 
-        const city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
-        const state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
-        const country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+        let city = '';
+        let state = '';
+        let country = '';
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
+          city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
+        }
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
+          state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
+        }
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
+          country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+        }
 
         newExif.city = city || null;
         newExif.state = state || null;
@@ -267,6 +310,7 @@ export class MetadataExtractionProcessor {
       await this.assetRepository.update({ id: asset.id }, { duration: durationString, createdAt: createdAt });
     } catch (err) {
       // do nothing
+      console.log('Error in video metadata extraction', err);
     }
   }
 
