@@ -7,11 +7,15 @@ import 'package:openapi/api.dart';
 class ImageGrid extends ConsumerWidget {
   final List<AssetResponseDto> assetGroup;
   final List<AssetResponseDto> sortedAssetGroup;
+  final int tilesPerRow;
+  final bool showStorageIndicator;
 
   ImageGrid({
     Key? key,
     required this.assetGroup,
     required this.sortedAssetGroup,
+    this.tilesPerRow = 4,
+    this.showStorageIndicator = true,
   }) : super(key: key);
 
   List<AssetResponseDto> imageSortedList = [];
@@ -19,8 +23,8 @@ class ImageGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SliverGrid(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: tilesPerRow,
         crossAxisSpacing: 5.0,
         mainAxisSpacing: 5,
       ),
@@ -34,6 +38,7 @@ class ImageGrid extends ConsumerWidget {
                 ThumbnailImage(
                   asset: assetGroup[index],
                   assetList: sortedAssetGroup,
+                  showStorageIndicator: showStorageIndicator,
                 ),
                 if (assetType != AssetTypeEnum.IMAGE)
                   Positioned(

@@ -135,5 +135,9 @@
   "theme_setting_image_viewer_quality_title": "Image viewer quality",
   "theme_setting_image_viewer_quality_subtitle": "Adjust the quality of the detail image viewer",
   "theme_setting_three_stage_loading_title": "Enable three-stage loading",
-  "theme_setting_three_stage_loading_subtitle": "The three-stage loading delivers the best quality image in exchange for a slower loading speed"
+  "theme_setting_three_stage_loading_subtitle": "Three-stage loading might increase the loading performance but causes significantly higher network load",
+  "asset_list_settings_title": "Photo Grid",
+  "asset_list_settings_subtitle": "Photo grid layout settings",
+  "theme_setting_asset_list_storage_indicator_title": "Show storage indicator on asset tiles",
+  "theme_setting_asset_list_tiles_per_row_title": "Number of assets per row ({})"
 }
