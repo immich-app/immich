@@ -36,6 +36,7 @@ class ThreeStageLoading extends HookConsumerWidget {
     }
 
     return SwitchListTile.adaptive(
+      activeColor: Theme.of(context).primaryColor,
       title: const Text(
         "theme_setting_three_stage_loading_title",
         style: TextStyle(
