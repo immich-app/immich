@@ -11,7 +11,8 @@ const List<Locale> locales = [
   Locale('fr', 'FR'),
   Locale('it', 'IT'),
   Locale('ja', 'JP'),
-  Locale('pl', 'PL')
+  Locale('pl', 'PL'),
+  Locale('pt', 'PR')
 ];
 
 const String translationsPath = 'assets/i18n';
