@@ -48,7 +48,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   : const EdgeInsets.all(0),
               child: AlbumInfoCard(
                 imageData: thumbnailData,
-                albumInfo: availableAlbums[index].albumEntity,
+                albumInfo: availableAlbums[index],
               ),
             );
           }),

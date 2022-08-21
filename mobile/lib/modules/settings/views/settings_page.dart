@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting/image_viewer_quality_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/theme_setting/theme_setting.dart';
 
@@ -36,6 +37,7 @@ class SettingsPage extends HookConsumerWidget {
             tiles: [
               const ImageViewerQualitySetting(),
               const ThemeSetting(),
+              const AssetListSettings()
             ],
           ).toList(),
         ],

@@ -1,5 +1,8 @@
 buildscript {
     ext.kotlin_version = '1.6.10'
+    ext.work_version = '2.7.1'
+    ext.concurrent_version = '1.1.0'
+    ext.guava_version = '31.0.1-android'
     repositories {
         google()
         mavenCentral()

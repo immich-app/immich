@@ -7,6 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
@@ -43,20 +46,6 @@ void main() async {
 
   await EasyLocalization.ensureInitialized();
 
-  var locales = const [
-    // Default locale
-    Locale('en', 'US'),
-    // Additional locales
-    Locale('da', 'DK'),
-    Locale('de', 'DE'),
-    Locale('es', 'ES'),
-    Locale('fi', 'FI'),
-    Locale('fr', 'FR'),
-    Locale('it', 'IT'),
-    Locale('ja', 'JP'),
-    Locale('pl', 'PL')
-  ];
-
   if (kReleaseMode && Platform.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
@@ -68,7 +57,7 @@ void main() async {
   runApp(
     EasyLocalization(
       supportedLocales: locales,
-      path: 'assets/i18n',
+      path: translationsPath,
       useFallbackTranslations: true,
       fallbackLocale: locales.first,
       child: const ProviderScope(child: ImmichApp()),
@@ -95,6 +84,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
 
         if (isAuthenticated) {
+          ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
           ref.watch(backupProvider.notifier).resumeBackup();
           ref.watch(assetProvider.notifier).getAllAsset();
           ref.watch(serverInfoProvider.notifier).getServerVersion();
@@ -134,6 +124,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   initState() {
     super.initState();
     initApp().then((_) => debugPrint("App Init Completed"));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // needs to be delayed so that EasyLocalization is working
+      ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+    });
   }
 
   @override

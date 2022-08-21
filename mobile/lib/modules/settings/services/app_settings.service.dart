@@ -1,11 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 
-enum AppSettingsEnum {
-  threeStageLoading, // true, false,
-  themeMode, // "light","dark","system"
+enum AppSettingsEnum<T> {
+  threeStageLoading<bool>("threeStageLoading", false),
+  themeMode<String>("themeMode", "system"), // "light","dark","system"
+  tilesPerRow<int>("tilesPerRow", 4),
+  storageIndicator<bool>("storageIndicator", true);
+
+  const AppSettingsEnum(this.hiveKey, this.defaultValue);
+
+  final String hiveKey;
+  final T defaultValue;
 }
 
 class AppSettingsService {
@@ -15,63 +20,26 @@ class AppSettingsService {
     hiveBox = Hive.box(userSettingInfoBox);
   }
 
-  T getSetting<T>(AppSettingsEnum settingType) {
-    var settingKey = _settingHiveBoxKeyLookup(settingType);
-
-    if (!hiveBox.containsKey(settingKey)) {
-      T defaultSetting = _setDefaultSetting(settingType);
-      return defaultSetting;
+  T getSetting<T>(AppSettingsEnum<T> settingType) {
+    if (!hiveBox.containsKey(settingType.hiveKey)) {
+      return _setDefault(settingType);
     }
 
-    var result = hiveBox.get(settingKey);
+    var result = hiveBox.get(settingType.hiveKey);
 
-    if (result is T) {
-      return result;
-    } else {
-      debugPrint("Incorrect setting type");
-      throw TypeError();
+    if (result is! T) {
+      return _setDefault(settingType);
     }
+
+    return result;
   }
 
-  setSetting<T>(AppSettingsEnum settingType, T value) {
-    var settingKey = _settingHiveBoxKeyLookup(settingType);
-
-    if (hiveBox.containsKey(settingKey)) {
-      var result = hiveBox.get(settingKey);
-
-      if (result is! T) {
-        debugPrint("Incorrect setting type");
-        throw TypeError();
-      }
-
-      hiveBox.put(settingKey, value);
-    } else {
-      hiveBox.put(settingKey, value);
-    }
+  setSetting<T>(AppSettingsEnum<T> settingType, T value) {
+    hiveBox.put(settingType.hiveKey, value);
   }
 
-  _setDefaultSetting(AppSettingsEnum settingType) {
-    var settingKey = _settingHiveBoxKeyLookup(settingType);
-
-    // Default value of threeStageLoading is false
-    if (settingType == AppSettingsEnum.threeStageLoading) {
-      hiveBox.put(settingKey, false);
-      return false;
-    }
-
-    // Default value of themeMode is "light"
-    if (settingType == AppSettingsEnum.themeMode) {
-      hiveBox.put(settingKey, "system");
-      return "system";
-    }
-  }
-
-  String _settingHiveBoxKeyLookup(AppSettingsEnum settingType) {
-    switch (settingType) {
-      case AppSettingsEnum.threeStageLoading:
-        return 'threeStageLoading';
-      case AppSettingsEnum.themeMode:
-        return 'themeMode';
-    }
+  T _setDefault<T>(AppSettingsEnum<T> settingType) {
+    hiveBox.put(settingType.hiveKey, settingType.defaultValue);
+    return settingType.defaultValue;
   }
 }
