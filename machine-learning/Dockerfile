@@ -26,6 +26,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
+COPY entrypoint.sh ./
 
 RUN mkdir -p /usr/src/app/dist \
   && mkdir -p /usr/src/app/node_modules \
