@@ -190,7 +190,7 @@ export class MetadataExtractionProcessor {
 
   @Process({ name: videoMetadataExtractionProcessorName, concurrency: 2 })
   async extractVideoMetadata(job: Job<IVideoLengthExtractionProcessor>) {
-    const { asset } = job.data;
+    const { asset, fileName } = job.data;
 
     try {
       const data = await new Promise<ffmpeg.FfprobeData>((resolve, reject) =>
@@ -222,6 +222,7 @@ export class MetadataExtractionProcessor {
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.description = '';
+      newExif.imageName = path.parse(fileName).name || null;
       newExif.fileSizeInByte = data.format.size || null;
       newExif.dateTimeOriginal = createdAt ? new Date(createdAt) : null;
       newExif.modifyDate = null;
@@ -238,13 +239,14 @@ export class MetadataExtractionProcessor {
         const match = location.match(locationRegex);
 
         if (match?.length === 3) {
-          newExif.latitude = parseFloat(match[0]);
-          newExif.longitude = parseFloat(match[1]);
+          newExif.latitude = parseFloat(match[1]);
+          newExif.longitude = parseFloat(match[2]);
         }
       } else if (videoTags && videoTags['com.apple.quicktime.location.ISO6709']) {
         const location = videoTags['com.apple.quicktime.location.ISO6709'] as string;
         const locationRegex = /([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)\/$/;
         const match = location.match(locationRegex);
+
         if (match?.length === 4) {
           newExif.latitude = parseFloat(match[1]);
           newExif.longitude = parseFloat(match[2]);
