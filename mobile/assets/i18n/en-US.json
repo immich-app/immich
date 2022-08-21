@@ -21,6 +21,9 @@
   "backup_background_service_upload_failure_notification": "Failed to upload {}",
   "backup_background_service_in_progress_notification": "Backing up your assets…",
   "backup_background_service_current_upload_notification": "Uploading {}",
+  "backup_background_service_error_title": "Backup error",
+  "backup_background_service_connection_failed_message": "Failed to connect to the server. Retrying…",
+  "backup_background_service_backup_failed_message": "Failed to backup assets. Retrying…",
   "backup_controller_page_albums": "Backup Albums",
   "backup_controller_page_backup": "Backup",
   "backup_controller_page_backup_selected": "Selected: ",
@@ -139,5 +142,12 @@
   "asset_list_settings_title": "Photo Grid",
   "asset_list_settings_subtitle": "Photo grid layout settings",
   "theme_setting_asset_list_storage_indicator_title": "Show storage indicator on asset tiles",
-  "theme_setting_asset_list_tiles_per_row_title": "Number of assets per row ({})"
+  "theme_setting_asset_list_tiles_per_row_title": "Number of assets per row ({})",
+  "setting_notifications_title": "Notifications",
+  "setting_notifications_subtitle": "Adjust your notification preferences",
+  "setting_notifications_notify_failures_grace_period": "Notify background backup failures: {}",
+  "setting_notifications_notify_immediately": "immediately",
+  "setting_notifications_notify_minutes": "{} minutes",
+  "setting_notifications_notify_hours": "{} hours",
+  "setting_notifications_notify_never": "never"
 }

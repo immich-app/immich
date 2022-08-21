@@ -41,21 +41,8 @@ class BackupService {
     }
   }
 
-  /// Returns all assets to backup from the backup info taking into account the
-  /// time of the last successfull backup per album
-  Future<List<AssetEntity>> getAssetsToBackup(
-    HiveBackupAlbums backupAlbumInfo,
-  ) async {
-    final List<AssetEntity> candidates =
-        await _buildUploadCandidates(backupAlbumInfo);
-
-    final List<AssetEntity> toUpload = candidates.isEmpty
-        ? []
-        : await _removeAlreadyUploadedAssets(candidates);
-    return toUpload;
-  }
-
-  Future<List<AssetEntity>> _buildUploadCandidates(
+  /// Returns all assets newer than the last successful backup per album
+  Future<List<AssetEntity>> buildUploadCandidates(
     HiveBackupAlbums backupAlbums,
   ) async {
     final filter = FilterOptionGroup(
@@ -147,7 +134,8 @@ class BackupService {
     return result;
   }
 
-  Future<List<AssetEntity>> _removeAlreadyUploadedAssets(
+  /// Returns a new list of assets not yet uploaded
+  Future<List<AssetEntity>> removeAlreadyUploadedAssets(
     List<AssetEntity> candidates,
   ) async {
     final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);

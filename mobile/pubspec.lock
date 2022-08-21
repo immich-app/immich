@@ -322,7 +322,7 @@ packages:
     source: hosted
     version: "0.6.8"
   flutter_cache_manager:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_cache_manager
       url: "https://pub.dartlang.org"
