@@ -52,17 +52,7 @@ export class AssetService {
   }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
-    const rows = await this.assetRepository.find({
-      where: {
-        userId: authUser.id,
-        deviceId: deviceId,
-      },
-      select: ['deviceAssetId'],
-    });
-
-    const res: string[] = [];
-    rows.forEach((v) => res.push(v.deviceAssetId));
-    return res;
+    return this._assetRepository.getByDeviceId(authUser.id, deviceId);
   }
 
   public async getAllAssets(authUser: AuthUserDto): Promise<AssetResponseDto[]> {

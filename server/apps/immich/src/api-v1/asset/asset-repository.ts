@@ -6,6 +6,7 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 
 export interface IAssetRepository {
   create(createAssetDto: CreateAssetDto, ownerId: string, originalPath: string, mimeType: string): Promise<AssetEntity>;
+  getByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getCountByTimeGroup(): any;
 }
 
@@ -50,6 +51,27 @@ export class AssetRepository implements IAssetRepository {
       throw new BadRequestException('Asset not created');
     }
     return createdAsset;
+  }
+
+  /**
+   * Get assets by device's Id on the database
+   * @param userId
+   * @param deviceId
+   *
+   * @returns Promise<string[]> - Array of assetIds belong to the device
+   */
+  async getByDeviceId(userId: string, deviceId: string): Promise<string[]> {
+    const rows = await this.assetRepository.find({
+      where: {
+        userId: userId,
+        deviceId: deviceId,
+      },
+      select: ['deviceAssetId'],
+    });
+    const res: string[] = [];
+    rows.forEach((v) => res.push(v.deviceAssetId));
+
+    return res;
   }
 
   getCountByTimeGroup() {
