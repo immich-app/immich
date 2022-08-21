@@ -6,6 +6,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
+      target: builder
     command: npm run test:e2e
     expose:
       - "3000"
