@@ -9,9 +9,9 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class SharingPage extends HookConsumerWidget {
   const SharingPage({Key? key}) : super(key: key);
@@ -21,6 +21,7 @@ class SharingPage extends HookConsumerWidget {
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl = '${box.get(serverEndpointKey)}/asset/thumbnail';
     final List<AlbumResponseDto> sharedAlbums = ref.watch(sharedAlbumProvider);
+    final CacheService cacheService = ref.watch(cacheServiceProvider);
 
     useEffect(
       () {
@@ -42,21 +43,20 @@ class SharingPage extends HookConsumerWidget {
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: CachedNetworkImage(
-                    width: 60,
-                    height: 60,
-                    memCacheHeight: 200,
-                    fit: BoxFit.cover,
-                    cacheManager: CacheManager(Config(
-                      "SharedAlbumThumbnailCache",
-                    ),),
-                    imageUrl: getAlbumThumbnailUrl(album),
-                    cacheKey: album.albumThumbnailAssetId,
-                    httpHeaders: {
-                      "Authorization": "Bearer ${box.get(accessTokenKey)}"
-                    },
-                    fadeInDuration: const Duration(milliseconds: 200),
-                  ),
+                  width: 60,
+                  height: 60,
+                  memCacheHeight: 200,
+                  fit: BoxFit.cover,
+                  cacheManager:
+                      cacheService.getCache(CacheType.sharedAlbumThumbnail),
+                  imageUrl: getAlbumThumbnailUrl(album),
+                  cacheKey: album.albumThumbnailAssetId,
+                  httpHeaders: {
+                    "Authorization": "Bearer ${box.get(accessTokenKey)}"
+                  },
+                  fadeInDuration: const Duration(milliseconds: 200),
                 ),
+              ),
               title: Text(
                 sharedAlbums[index].albumName,
                 maxLines: 1,
