@@ -138,6 +138,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
                 immediate = true,
                 requireUnmeteredNetwork = inputData.getBoolean(DATA_KEY_UNMETERED, true),
                 requireCharging = inputData.getBoolean(DATA_KEY_CHARGING, false),
+                initialDelayInMs = ONE_MINUTE,
                 retries = inputData.getInt(DATA_KEY_RETRIES, 0) + 1)
         }
         engine?.destroy()
@@ -169,6 +170,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
                                     immediate = true,
                                     requireUnmeteredNetwork = inputData.getBoolean(DATA_KEY_UNMETERED, true),
                                     requireCharging = inputData.getBoolean(DATA_KEY_CHARGING, false),
+                                    initialDelayInMs = ONE_MINUTE,
                                     retries = inputData.getInt(DATA_KEY_RETRIES, 0) + 1)
                             }
                         }
@@ -186,22 +188,27 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
                 val args = call.arguments<ArrayList<*>>()!!
                 val title = args.get(0) as String
                 val content = args.get(1) as String
-                showError(title, content)
+                val individualTag = args.get(2) as String?
+                showError(title, content, individualTag)
             }
+            "clearErrorNotifications" -> clearErrorNotifications()
             else -> r.notImplemented()
         }
     }
 
-    private fun showError(title: String, content: String) {
+    private fun showError(title: String, content: String, individualTag: String?) {
         val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ERROR_ID)
            .setContentTitle(title)
            .setTicker(title)
            .setContentText(content)
            .setSmallIcon(R.mipmap.ic_launcher)
-           .setAutoCancel(true)
+           .setOnlyAlertOnce(true)
            .build()
-        val notificationId = SystemClock.uptimeMillis() as Int
-        notificationManager.notify(notificationId, notification)
+        notificationManager.notify(individualTag, NOTIFICATION_ERROR_ID, notification)
+    }
+
+    private fun clearErrorNotifications() {
+        notificationManager.cancel(NOTIFICATION_ERROR_ID)
     }
 
     private fun createForegroundInfo(title: String = NOTIFICATION_DEFAULT_TITLE, content: String? = null): ForegroundInfo {
@@ -212,14 +219,14 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
            .setSmallIcon(R.mipmap.ic_launcher)
            .setOngoing(true)
            .build()
-       return ForegroundInfo(1, notification)
+       return ForegroundInfo(NOTIFICATION_ID, notification)
    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createChannel() {
         val foreground = NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_ID, NotificationManager.IMPORTANCE_LOW)
         notificationManager.createNotificationChannel(foreground)
-        val error = NotificationChannel(NOTIFICATION_CHANNEL_ERROR_ID, NOTIFICATION_CHANNEL_ERROR_ID, NotificationManager.IMPORTANCE_HIGH)
+        val error = NotificationChannel(NOTIFICATION_CHANNEL_ERROR_ID, NOTIFICATION_CHANNEL_ERROR_ID, NotificationManager.IMPORTANCE_DEFAULT)
         notificationManager.createNotificationChannel(error)
     }
 
@@ -236,6 +243,9 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         private const val NOTIFICATION_CHANNEL_ID = "immich/backgroundService"
         private const val NOTIFICATION_CHANNEL_ERROR_ID = "immich/backgroundServiceError"
         private const val NOTIFICATION_DEFAULT_TITLE = "Immich"
+        private const val NOTIFICATION_ID = 1
+        private const val NOTIFICATION_ERROR_ID = 2 
+        private const val ONE_MINUTE: Long = 60000
 
         /**
          * Enqueues the `BackupWorker` to run when all constraints are met.
@@ -262,6 +272,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
                                     keepExisting: Boolean = false,
                                     requireUnmeteredNetwork: Boolean = false,
                                     requireCharging: Boolean = false,
+                                    initialDelayInMs: Long = 0,
                                     retries: Int = 0) {
             if (!isEnabled(context)) {
                 return
@@ -287,9 +298,10 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
             val photoCheck = OneTimeWorkRequest.Builder(BackupWorker::class.java)
                 .setConstraints(constraints.build())
                 .setInputData(inputData)
+                .setInitialDelay(initialDelayInMs, TimeUnit.MILLISECONDS)
                 .setBackoffCriteria(
                     BackoffPolicy.EXPONENTIAL,
-                    OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
+                    ONE_MINUTE,
                     TimeUnit.MILLISECONDS)
                 .build()
             val policy = if (immediate) ExistingWorkPolicy.REPLACE else (if (keepExisting) ExistingWorkPolicy.KEEP else ExistingWorkPolicy.APPEND_OR_REPLACE)
