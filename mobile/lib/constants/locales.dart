@@ -11,6 +11,7 @@ const List<Locale> locales = [
   Locale('fr', 'FR'),
   Locale('it', 'IT'),
   Locale('ja', 'JP'),
+  Locale('nl', 'NL'),
   Locale('pl', 'PL'),
   Locale('pt', 'PR')
 ];
