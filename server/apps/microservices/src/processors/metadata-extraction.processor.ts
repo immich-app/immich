@@ -60,8 +60,8 @@ export class MetadataExtractionProcessor {
       newExif.make = exifData['Make'] || null;
       newExif.model = exifData['Model'] || null;
       newExif.imageName = path.parse(fileName).name || null;
-      newExif.exifImageHeight = exifData['ExifImageHeight'] || null;
-      newExif.exifImageWidth = exifData['ExifImageWidth'] || null;
+      newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
+      newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
       newExif.fileSizeInByte = fileSize || null;
       newExif.orientation = exifData['Orientation'] || null;
       newExif.dateTimeOriginal = exifData['DateTimeOriginal'] || null;

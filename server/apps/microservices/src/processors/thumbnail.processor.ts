@@ -51,62 +51,47 @@ export class ThumbnailGeneratorProcessor {
     const jpegThumbnailPath = resizePath + originalFilename + '.jpeg';
 
     if (asset.type == AssetType.IMAGE) {
-      sharp(asset.originalPath)
-        .resize(1440, 2560, { fit: 'inside' })
-        .jpeg()
-        .rotate()
-        .toFile(jpegThumbnailPath, async (err) => {
-          if (!err) {
-            await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
+      await sharp(asset.originalPath).resize(1440, 2560, { fit: 'inside' }).jpeg().rotate().toFile(jpegThumbnailPath);
+      await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
 
-            // Update resize path to send to generate webp queue
-            asset.resizePath = jpegThumbnailPath;
+      // Update resize path to send to generate webp queue
+      asset.resizePath = jpegThumbnailPath;
 
-            await this.thumbnailGeneratorQueue.add(
-              generateWEBPThumbnailProcessorName,
-              { asset },
-              { jobId: randomUUID() },
-            );
-            await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
-            await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
-            this.wsCommunicationGateway.server
-              .to(asset.userId)
-              .emit('on_upload_success', JSON.stringify(mapAsset(asset)));
-          }
-        });
+      await this.thumbnailGeneratorQueue.add(generateWEBPThumbnailProcessorName, { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
+      this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
 
     if (asset.type == AssetType.VIDEO) {
-      ffmpeg(asset.originalPath)
-        .outputOptions(['-ss 00:00:00.000', '-frames:v 1'])
-        .output(jpegThumbnailPath)
-        .on('start', () => {
-          Logger.log('Start Generating Video Thumbnail', 'generateJPEGThumbnail');
-        })
-        .on('error', (error) => {
-          Logger.error(`Cannot Generate Video Thumbnail ${error}`, 'generateJPEGThumbnail');
-          // reject();
-        })
-        .on('end', async () => {
-          Logger.log(`Generating Video Thumbnail Success ${asset.id}`, 'generateJPEGThumbnail');
-          await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
+      await new Promise((resolve, reject) => {
+        ffmpeg(asset.originalPath)
+          .outputOptions(['-ss 00:00:00.000', '-frames:v 1'])
+          .output(jpegThumbnailPath)
+          .on('start', () => {
+            Logger.log('Start Generating Video Thumbnail', 'generateJPEGThumbnail');
+          })
+          .on('error', (error) => {
+            Logger.error(`Cannot Generate Video Thumbnail ${error}`, 'generateJPEGThumbnail');
+            reject(error);
+          })
+          .on('end', async () => {
+            Logger.log(`Generating Video Thumbnail Success ${asset.id}`, 'generateJPEGThumbnail');
+            resolve(asset);
+          })
+          .run();
+      });
 
-          // Update resize path to send to generate webp queue
-          asset.resizePath = jpegThumbnailPath;
+      await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
 
-          await this.thumbnailGeneratorQueue.add(
-            generateWEBPThumbnailProcessorName,
-            { asset },
-            { jobId: randomUUID() },
-          );
-          await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
-          await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
+      // Update resize path to send to generate webp queue
+      asset.resizePath = jpegThumbnailPath;
 
-          this.wsCommunicationGateway.server
-            .to(asset.userId)
-            .emit('on_upload_success', JSON.stringify(mapAsset(asset)));
-        })
-        .run();
+      await this.thumbnailGeneratorQueue.add(generateWEBPThumbnailProcessorName, { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
+
+      this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
   }
 
@@ -117,16 +102,10 @@ export class ThumbnailGeneratorProcessor {
     if (!asset.resizePath) {
       return;
     }
+
     const webpPath = asset.resizePath.replace('jpeg', 'webp');
 
-    sharp(asset.resizePath)
-      .resize(250)
-      .webp()
-      .rotate()
-      .toFile(webpPath, (err) => {
-        if (!err) {
-          this.assetRepository.update({ id: asset.id }, { webpPath: webpPath });
-        }
-      });
+    await sharp(asset.resizePath).resize(250).webp().rotate().toFile(webpPath);
+    await this.assetRepository.update({ id: asset.id }, { webpPath: webpPath });
   }
 }
