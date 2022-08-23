@@ -1,13 +1,13 @@
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
-import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
+import { AssetService } from './asset.service';
+import { AssetController } from './asset.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AssetEntity } from '@app/database/entities/asset.entity';
+import { BullModule } from '@nestjs/bull';
 import { BackgroundTaskModule } from '../../modules/background-task/background-task.module';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { CommunicationModule } from '../communication/communication.module';
-import { AssetController } from './asset.controller';
-import { AssetService } from './asset.service';
+import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
 
 @Module({
   imports: [
