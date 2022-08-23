@@ -1,3 +1,4 @@
+import { immichAppConfig } from '@app/common/config';
 import { DatabaseModule } from '@app/database';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
@@ -14,7 +15,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
-import { immichAppConfig } from './config/app.config';
 import { MicroservicesService } from './microservices.service';
 import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';

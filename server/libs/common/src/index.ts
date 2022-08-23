@@ -1,1 +1,2 @@
-export * from './constants/upload_location.constant';
+export * from './config';
+export * from './constants';
