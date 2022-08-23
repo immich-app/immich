@@ -52,25 +52,17 @@ export class AssetService {
   }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
-    return this._assetRepository.getByDeviceId(authUser.id, deviceId);
+    return this._assetRepository.getAllByDeviceId(authUser.id, deviceId);
   }
 
   public async getAllAssets(authUser: AuthUserDto): Promise<AssetResponseDto[]> {
-    const assets = await this.assetRepository.find({
-      where: {
-        userId: authUser.id,
-        resizePath: Not(IsNull()),
-      },
-      relations: ['exifInfo'],
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    const assets = await this._assetRepository.getAllByUserId(authUser.id);
 
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async findAssetOfDevice(deviceId: string, assetId: string): Promise<AssetResponseDto> {
+  // TODO - Refactor this to get asset by its own id
+  private async findAssetOfDevice(deviceId: string, assetId: string): Promise<AssetResponseDto> {
     const rows = await this.assetRepository.query(
       'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."deviceId" = $2',
       [assetId, deviceId],
@@ -86,16 +78,7 @@ export class AssetService {
   }
 
   public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
-    const asset = await this.assetRepository.findOne({
-      where: {
-        id: assetId,
-      },
-      relations: ['exifInfo'],
-    });
-
-    if (!asset) {
-      throw new NotFoundException('Asset not found');
-    }
+    const asset = await this._assetRepository.getById(assetId);
 
     return mapAsset(asset);
   }

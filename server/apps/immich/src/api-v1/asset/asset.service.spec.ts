@@ -52,8 +52,10 @@ describe('AssetService', () => {
   beforeAll(() => {
     assetRepositoryMock = {
       create: jest.fn(),
-      getByDeviceId: jest.fn(),
+      getAllByUserId: jest.fn(),
+      getAllByDeviceId: jest.fn(),
       getCountByTimeGroup: jest.fn(),
+      getById: jest.fn(),
     };
 
     sui = new AssetService(assetRepositoryMock, a);
@@ -76,7 +78,7 @@ describe('AssetService', () => {
   });
 
   it('get assets by device id', async () => {
-    assetRepositoryMock.getByDeviceId.mockImplementation(() => Promise.resolve<string[]>(['4967046344801']));
+    assetRepositoryMock.getAllByDeviceId.mockImplementation(() => Promise.resolve<string[]>(['4967046344801']));
 
     const deviceId = '116766fd-2ef2-52dc-a3ef-149988997291';
     const result = await sui.getUserAssetsByDeviceId(authUser, deviceId);
