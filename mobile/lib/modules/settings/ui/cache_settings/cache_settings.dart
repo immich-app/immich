@@ -36,7 +36,7 @@ class CacheSettings extends HookConsumerWidget {
       ).tr(),
       children: [
         const CacheSettingsSliderPref(
-          setting: AppSettingsEnum.albumThumbnailCacheSize,
+          setting: AppSettingsEnum.thumbnailCacheSize,
           translationKey: "cache_settings_thumbnail_size",
           min: 5000,
           max: 80000,
