@@ -153,13 +153,15 @@
 		videoProgress = '00:00';
 	};
 
-	const handleCanPlay = () => {
-		videoPlayerNode.muted = true;
-		videoPlayerNode.play();
+	const handleCanPlay = (ev: Event) => {
+		const playerNode = ev.target as HTMLVideoElement;
+
+		playerNode.muted = true;
+		playerNode.play();
 
 		isThumbnailVideoPlaying = true;
 		calculateVideoDurationIntervalHandler = setInterval(() => {
-			videoProgress = getVideoDurationInString(Math.round(videoPlayerNode.currentTime));
+			videoProgress = getVideoDurationInString(Math.round(playerNode.currentTime));
 		}, 1000);
 	};
 
@@ -284,7 +286,7 @@
 					on:canplay={handleCanPlay}
 					bind:this={videoPlayerNode}
 				>
-					<source src="{videoUrl}" type="{asset.mimeType}" />
+					<source src="{videoUrl}" type="video/mp4" />
 					<track kind="captions" />
 				</video>
 				{/if}

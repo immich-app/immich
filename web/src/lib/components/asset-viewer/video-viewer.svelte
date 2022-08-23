@@ -62,10 +62,12 @@
 		return assetInfo;
 	};
 
-	const handleCanPlay = () => {
-		videoPlayerNode.muted = true;
-		videoPlayerNode.play();
-		videoPlayerNode.muted = false;
+	const handleCanPlay = (ev: Event) => {
+		const playerNode = ev.target as HTMLVideoElement;
+
+		playerNode.muted = true;
+		playerNode.play();
+		playerNode.muted = false;
 
 		isVideoLoading = false;
 	};
@@ -77,7 +79,7 @@
 >
 	{#if asset}
 		<video controls class="h-full object-contain" on:canplay={handleCanPlay} bind:this={videoPlayerNode}>
-			<source src="{videoUrl}" type="{asset.mimeType}" />
+			<source src="{videoUrl}" type="video/mp4" />
 			<track kind="captions" />
 		</video>
 
