@@ -1,13 +1,12 @@
 let _basePath = '/api';
 
 export function getFileUrl(aid: string, did: string, isThumb?: boolean, isWeb?: boolean) {
-  return param2query(`${_basePath}/asset/file`, { aid, did, isThumb, isWeb });
-}
+  const urlObj = new URL(`${window.location.origin}${_basePath}/asset/file`);
+  
+  urlObj.searchParams.append('aid', aid);
+  urlObj.searchParams.append('did', did);
+  if (isThumb !== undefined && isThumb !== null) urlObj.searchParams.append('isThumb', `${isThumb}`);
+  if (isWeb !== undefined && isWeb !== null) urlObj.searchParams.append('isWeb', `${isWeb}`);
 
-function param2query(url: string, query: any) {
-  let qs = Object.keys(query).map(key => `${key}=${query[key]}`).join('&');
-
-  if (qs) url += '?' + qs;
-
-  return url;
+  return urlObj.href;
 }

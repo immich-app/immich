@@ -56,8 +56,8 @@
 
 		// 	return videoData;
 		// } catch (e) {}
-		let url = getFileUrl(assetInfo.deviceAssetId, assetInfo.deviceId, false, true);
-		videoUrl = window.location.origin + url;
+
+		videoUrl = getFileUrl(assetInfo.deviceAssetId, assetInfo.deviceId, false, true);
 
 		return assetInfo;
 	};

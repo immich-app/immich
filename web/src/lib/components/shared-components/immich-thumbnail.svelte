@@ -18,7 +18,7 @@
 	export let isExisted: boolean = false;
 
 	let imageData: string;
-	let videoData: string;
+	// let videoData: string;
 
 	let mouseOver: boolean = false;
 	$: dispatch('mouseEvent', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
@@ -88,8 +88,8 @@
 
 		// 	return videoData;
 		// } catch (e) {}
-		let url = getFileUrl(asset.deviceAssetId, asset.deviceId, false, true);
-		videoUrl = window.location.origin + url;
+
+		videoUrl = getFileUrl(asset.deviceAssetId, asset.deviceId, false, true);
 	};
 
 	const getVideoDurationInString = (currentTime: number) => {
