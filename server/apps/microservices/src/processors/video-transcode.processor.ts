@@ -24,7 +24,7 @@ export class VideoTranscodeProcessor {
     const { asset } = job.data;
 
     if (asset.mimeType != 'video/mp4') {
-      const basePath = process.env.PROCESSED_VIDEO_DIR || APP_UPLOAD_LOCATION;
+      const basePath = process.env.VIDEO_CACHE_DIR || APP_UPLOAD_LOCATION;
       const encodedVideoPath = join(basePath, `${asset.userId}/encoded-video`);
 
       if (!existsSync(encodedVideoPath)) {

@@ -42,7 +42,7 @@ export class ThumbnailGeneratorProcessor {
   async generateJPEGThumbnail(job: Job<JpegGeneratorProcessor>) {
     const { asset } = job.data;
 
-    const thumbnailDir = process.env.PROCESSED_IMAGE_DIR || APP_UPLOAD_LOCATION;
+    const thumbnailDir = process.env.IMAGE_CACHE_DIR || APP_UPLOAD_LOCATION;
     const resizePath = join(thumbnailDir, `${asset.userId}/thumb/${asset.deviceId}/`);
 
     if (!existsSync(resizePath)) {
