@@ -1,7 +1,4 @@
-import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Job, Queue } from 'bull';
 import { AssetType } from '@app/database/entities/asset.entity';
-import { randomUUID } from 'crypto';
 import {
   IAssetUploadedJob,
   IMetadataExtractionJob,
@@ -17,6 +14,9 @@ import {
   mp4ConversionProcessorName,
   videoMetadataExtractionProcessorName,
 } from '@app/job';
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { Job, Queue } from 'bull';
+import { randomUUID } from 'crypto';
 
 @Processor(assetUploadedQueueName)
 export class AssetUploadedProcessor {
