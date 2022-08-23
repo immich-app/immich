@@ -72,7 +72,7 @@ export class AssetController {
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
   ): Promise<AssetFileUploadResponseDto> {
     try {
-      const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
+      const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype, file.checksum);
       if (!savedAsset) {
         throw new BadRequestException('Asset not created');
       }

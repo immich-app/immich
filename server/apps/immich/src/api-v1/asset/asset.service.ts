@@ -52,6 +52,7 @@ export class AssetService {
     assetInfo: CreateAssetDto,
     path: string,
     mimeType: string,
+    checksum?: string,
   ): Promise<AssetEntity | undefined> {
     const asset = new AssetEntity();
     asset.deviceAssetId = assetInfo.deviceAssetId;
@@ -64,6 +65,7 @@ export class AssetService {
     asset.isFavorite = assetInfo.isFavorite;
     asset.mimeType = mimeType;
     asset.duration = assetInfo.duration || null;
+    asset.checksum = checksum || null;
 
     const createdAsset = await this.assetRepository.save(asset);
     if (!createdAsset) {

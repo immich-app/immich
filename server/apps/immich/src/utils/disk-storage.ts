@@ -8,19 +8,15 @@ import * as path from 'node:path';
 import type { ParsedQs } from 'qs';
 import * as mkdirp from 'mkdirp';
 
-export interface ExtendedFile extends Express.Multer.File {
-  checksum?: string;
-}
+type GetFileNameFn = (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => void;
+type GetDestFn = (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => void;
 
 export interface ExtendedDiskStorageOptions extends DiskStorageOptions {
 }
 
-type GetFileNameFn = (req: Request, file: ExtendedFile, cb: (error: Error | null, filename: string) => void) => void;
-type GetDestFn = (req: Request, file: ExtendedFile, cb: (error: Error | null, destination: string) => void) => void;
-
 function getFilename(
   req: Request,
-  file: ExtendedFile,
+  file: Express.Multer.File,
   cb: (error: Error | null, filename: string) => void
 ) {
   crypto.randomBytes(16, function (err, raw) {
@@ -30,7 +26,7 @@ function getFilename(
 
 function getDestination(
   req: Request,
-  file: ExtendedFile,
+  file: Express.Multer.File,
   cb: (error: Error | null, destination: string) => void
 ) {
   cb(null, os.tmpdir())
@@ -53,7 +49,7 @@ class ExtendedDiskStorage implements StorageEngine {
     }
   }
 
-  public _handleFile(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, file: ExtendedFile, cb: (error?: any, info?: Partial<ExtendedFile> | undefined) => void): void {
+  public _handleFile(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, file: Express.Multer.File, cb: (error?: any, info?: Partial<Express.Multer.File> | undefined) => void): void {
     const that = this;
 
     that._getDestinationFn(req, file, (err, destination) => {
@@ -84,7 +80,7 @@ class ExtendedDiskStorage implements StorageEngine {
     })
   }
 
-  public _removeFile(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, file: ExtendedFile, cb: (error: Error | null) => void): void {
+  public _removeFile(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, file: Express.Multer.File, cb: (error: Error | null) => void): void {
     const path = file.path;
     const refFile = file as any; // make intellisense happy
 
