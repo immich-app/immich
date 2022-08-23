@@ -1,11 +1,13 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseModule } from '@app/database';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
+import { immichAppConfig } from './config/app.config';
 import { MicroservicesService } from './microservices.service';
 import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
@@ -21,6 +23,7 @@ import {
 
 @Module({
   imports: [
+    ConfigModule.forRoot(immichAppConfig),
     DatabaseModule,
     TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
     BullModule.forRootAsync({
