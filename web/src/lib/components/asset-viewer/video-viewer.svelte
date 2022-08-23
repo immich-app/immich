@@ -3,7 +3,7 @@
 
 	import { createEventDispatcher, onMount } from 'svelte';
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-	import { api, AssetResponseDto } from '@api';
+	import { api, AssetResponseDto, getFileUrl } from '@api';
 
 	export let assetId: string;
 
@@ -13,49 +13,62 @@
 
 	let videoPlayerNode: HTMLVideoElement;
 	let isVideoLoading = true;
+	let videoUrl: string;
 
 	onMount(async () => {
 		const { data: assetInfo } = await api.assetApi.getAssetById(assetId);
 
+		await loadVideoData(assetInfo);
+		
 		asset = assetInfo;
-
-		await loadVideoData();
 	});
 
-	const loadVideoData = async () => {
+	const loadVideoData = async (assetInfo: AssetResponseDto) => {
 		isVideoLoading = true;
 
-		try {
-			const { data } = await api.assetApi.serveFile(
-				asset.deviceAssetId,
-				asset.deviceId,
-				false,
-				true,
-				{
-					responseType: 'blob'
-				}
-			);
+		// try {
+		// 	const { data } = await api.assetApi.serveFile(
+		// 		asset.deviceAssetId,
+		// 		asset.deviceId,
+		// 		false,
+		// 		true,
+		// 		{
+		// 			responseType: 'blob'
+		// 		}
+		// 	);
 
-			if (!(data instanceof Blob)) {
-				return;
-			}
+		// 	if (!(data instanceof Blob)) {
+		// 		return;
+		// 	}
 
-			const videoData = URL.createObjectURL(data);
-			videoPlayerNode.src = videoData;
+		// 	const videoData = URL.createObjectURL(data);
+		// 	videoPlayerNode.src = videoData;
 
-			videoPlayerNode.load();
+		// 	videoPlayerNode.load();
 
-			videoPlayerNode.oncanplay = () => {
-				videoPlayerNode.muted = true;
-				videoPlayerNode.play();
-				videoPlayerNode.muted = false;
+		// 	videoPlayerNode.oncanplay = () => {
+		// 		videoPlayerNode.muted = true;
+		// 		videoPlayerNode.play();
+		// 		videoPlayerNode.muted = false;
 
-				isVideoLoading = false;
-			};
+		// 		isVideoLoading = false;
+		// 	};
 
-			return videoData;
-		} catch (e) {}
+		// 	return videoData;
+		// } catch (e) {}
+		let url = getFileUrl(assetInfo.deviceAssetId, assetInfo.deviceId, false, true);
+		videoUrl = window.location.origin + url;
+
+		return assetInfo;
 	};
+
+	const handleCanPlay = () => {
+		videoPlayerNode.muted = true;
+		videoPlayerNode.play();
+		videoPlayerNode.muted = false;
+
+		isVideoLoading = false;
+	}
 </script>
 
 <div
@@ -63,7 +76,8 @@
 	class="flex place-items-center place-content-center h-full select-none"
 >
 	{#if asset}
-		<video controls class="h-full object-contain" bind:this={videoPlayerNode}>
+		<video controls class="h-full object-contain" on:canplay={handleCanPlay} bind:this={videoPlayerNode}>
+			<source src="{videoUrl}" type="{asset.mimeType}" />
 			<track kind="captions" />
 		</video>
 
