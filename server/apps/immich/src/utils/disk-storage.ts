@@ -68,12 +68,15 @@ class ExtendedDiskStorage implements StorageEngine {
         file.stream.pipe(outStream);
         outStream.on('error', cb);
         outStream.on('finish', () => {
+          const sha1Hex = sha1Hash.digest('hex');
+
+          sha1Hash.destroy();
           cb(null, {
             destination: destination,
             filename: filename,
             path: finalPath,
             size: outStream.bytesWritten,
-            checksum: sha1Hash.digest('hex'),
+            checksum: sha1Hex,
           });
         });
       })
