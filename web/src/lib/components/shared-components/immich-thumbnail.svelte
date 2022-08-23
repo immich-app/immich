@@ -161,7 +161,7 @@
 		calculateVideoDurationIntervalHandler = setInterval(() => {
 			videoProgress = getVideoDurationInString(Math.round(videoPlayerNode.currentTime));
 		}, 1000);
-	}
+	};
 
 	$: getThumbnailBorderStyle = () => {
 		if (selected) {

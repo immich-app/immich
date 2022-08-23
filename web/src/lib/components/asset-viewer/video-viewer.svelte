@@ -68,7 +68,7 @@
 		videoPlayerNode.muted = false;
 
 		isVideoLoading = false;
-	}
+	};
 </script>
 
 <div
