@@ -44,7 +44,7 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true })
   mimeType!: string | null;
 
-  @Column({ type: 'varchar', length: 40, nullable: true })
+  @Column({ type: 'char', length: 40, nullable: true })
   checksum?: string | null; // sha1 checksum
 
   @Column({ type: 'varchar', nullable: true })
