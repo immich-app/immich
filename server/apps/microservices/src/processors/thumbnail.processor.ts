@@ -1,15 +1,4 @@
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
-import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
-import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Job, Queue } from 'bull';
-import ffmpeg from 'fluent-ffmpeg';
-import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync } from 'node:fs';
-import sharp from 'sharp';
-import { Repository } from 'typeorm/repository/Repository';
-import { CommunicationGateway } from '../../../immich/src/api-v1/communication/communication.gateway';
 import {
   WebpGeneratorProcessor,
   generateJPEGThumbnailProcessorName,
@@ -20,6 +9,17 @@ import {
   thumbnailGeneratorQueueName,
   JpegGeneratorProcessor,
 } from '@app/job';
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
+import { Job, Queue } from 'bull';
+import ffmpeg from 'fluent-ffmpeg';
+import { randomUUID } from 'node:crypto';
+import { existsSync, mkdirSync } from 'node:fs';
+import sharp from 'sharp';
+import { Repository } from 'typeorm/repository/Repository';
+import { CommunicationGateway } from '../../../immich/src/api-v1/communication/communication.gateway';
 
 @Processor(thumbnailGeneratorQueueName)
 export class ThumbnailGeneratorProcessor {
