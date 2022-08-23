@@ -1,3 +1,4 @@
+import { immichAppConfig } from '@app/common/config';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { immichAppConfig } from '../../../libs/config/app.config';
 import { UserModule } from './api-v1/user/user.module';

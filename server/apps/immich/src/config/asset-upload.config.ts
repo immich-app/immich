@@ -1,11 +1,11 @@
+import { APP_UPLOAD_LOCATION } from '@app/common/constants';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-import { randomUUID } from 'crypto';
-import { Request } from 'express';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
-import { APP_UPLOAD_LOCATION } from '../constants/upload_location.constant';
+import { Request } from 'express';
+import { randomUUID } from 'crypto';
 
 export const assetUploadOption: MulterOptions = {
   fileFilter: (req: Request, file: any, cb: any) => {
