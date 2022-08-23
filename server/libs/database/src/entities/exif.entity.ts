@@ -13,14 +13,9 @@ export class ExifEntity {
   @Column({ type: 'uuid' })
   assetId!: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  make!: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  model!: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  imageName!: string | null;
+  /* General info */
+  @Column({ type: 'text', nullable: true, default: '' })
+  description!: string; // or caption
 
   @Column({ type: 'integer', nullable: true })
   exifImageWidth!: number | null;
@@ -40,21 +35,6 @@ export class ExifEntity {
   @Column({ type: 'timestamptz', nullable: true })
   modifyDate!: Date | null;
 
-  @Column({ type: 'varchar', nullable: true })
-  lensModel!: string | null;
-
-  @Column({ type: 'float8', nullable: true })
-  fNumber!: number | null;
-
-  @Column({ type: 'float8', nullable: true })
-  focalLength!: number | null;
-
-  @Column({ type: 'integer', nullable: true })
-  iso!: number | null;
-
-  @Column({ type: 'float', nullable: true })
-  exposureTime!: number | null;
-
   @Column({ type: 'float', nullable: true })
   latitude!: number | null;
 
@@ -70,9 +50,38 @@ export class ExifEntity {
   @Column({ type: 'varchar', nullable: true })
   country!: string | null;
 
+  /* Image info */
+  @Column({ type: 'varchar', nullable: true })
+  make!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  model!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  imageName!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  lensModel!: string | null;
+
+  @Column({ type: 'float8', nullable: true })
+  fNumber!: number | null;
+
+  @Column({ type: 'float8', nullable: true })
+  focalLength!: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  iso!: number | null;
+
+  @Column({ type: 'float', nullable: true })
+  exposureTime!: number | null;
+
+  /* Video info */
+  @Column({ type: 'float8', nullable: true })
+  fps?: number | null;
+
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
-  asset?: ExifEntity;
+  asset?: AssetEntity;
 
   @Index('exif_text_searchable', { synchronize: false })
   @Column({

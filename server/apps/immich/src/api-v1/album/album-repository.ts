@@ -202,7 +202,14 @@ export class AlbumRepository implements IAlbumRepository {
 
     // TODO: No need to return boolean if using a singe delete query
     if (deleteAssetCount == removeAssetsDto.assetIds.length) {
-      return this.get(album.id) as Promise<AlbumEntity>;
+      const retAlbum = await this.get(album.id) as AlbumEntity;
+
+      if (retAlbum?.assets?.length === 0) { // is empty album
+        await this.albumRepository.update(album.id, { albumThumbnailAssetId: null });
+        retAlbum.albumThumbnailAssetId = null;
+      }
+
+      return retAlbum;
     } else {
       throw new BadRequestException('Some assets were not found in the album');
     }

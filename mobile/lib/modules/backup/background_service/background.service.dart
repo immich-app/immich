@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show IsolateNameServer, PluginUtilities;
 import 'package:cancellation_token_http/http.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -16,6 +17,7 @@ import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dar
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -39,6 +41,7 @@ class BackgroundService {
   bool _hasLock = false;
   SendPort? _waitingIsolate;
   ReceivePort? _rp;
+  bool _errorGracePeriodExceeded = true;
 
   bool get isForegroundInitialized {
     return _isForegroundInitialized;
@@ -140,8 +143,8 @@ class BackgroundService {
   }
 
   /// Updates the notification shown by the background service
-  Future<bool> updateNotification({
-    String title = "Immich",
+  Future<bool> _updateNotification({
+    required String title,
     String? content,
   }) async {
     if (!Platform.isAndroid) {
@@ -153,28 +156,44 @@ class BackgroundService {
             .invokeMethod('updateNotification', [title, content]);
       }
     } catch (error) {
-      debugPrint("[updateNotification] failed to communicate with plugin");
+      debugPrint("[_updateNotification] failed to communicate with plugin");
     }
     return Future.value(false);
   }
 
   /// Shows a new priority notification
-  Future<bool> showErrorNotification(
-    String title,
-    String content,
-  ) async {
+  Future<bool> _showErrorNotification({
+    required String title,
+    String? content,
+    String? individualTag,
+  }) async {
+    if (!Platform.isAndroid) {
+      return true;
+    }
+    try {
+      if (_isBackgroundInitialized && _errorGracePeriodExceeded) {
+        return await _backgroundChannel
+            .invokeMethod('showError', [title, content, individualTag]);
+      }
+    } catch (error) {
+      debugPrint("[_showErrorNotification] failed to communicate with plugin");
+    }
+    return false;
+  }
+
+  Future<bool> _clearErrorNotifications() async {
     if (!Platform.isAndroid) {
       return true;
     }
     try {
       if (_isBackgroundInitialized) {
-        return await _backgroundChannel
-            .invokeMethod('showError', [title, content]);
+        return await _backgroundChannel.invokeMethod('clearErrorNotifications');
       }
     } catch (error) {
-      debugPrint("[showErrorNotification] failed to communicate with plugin");
+      debugPrint(
+          "[_clearErrorNotifications] failed to communicate with plugin");
     }
-    return Future.value(false);
+    return false;
   }
 
   /// await to ensure this thread (foreground or background) has exclusive access
@@ -278,7 +297,15 @@ class BackgroundService {
             return false;
           }
           await translationsLoaded;
-          return await _onAssetsChanged();
+          final bool ok = await _onAssetsChanged();
+          if (ok) {
+            Hive.box(backgroundBackupInfoBox).delete(backupFailedSince);
+          } else if (Hive.box(backgroundBackupInfoBox).get(backupFailedSince) ==
+              null) {
+            Hive.box(backgroundBackupInfoBox)
+                .put(backupFailedSince, DateTime.now());
+          }
+          return ok;
         } catch (error) {
           debugPrint(error.toString());
           return false;
@@ -303,6 +330,8 @@ class BackgroundService {
     Hive.registerAdapter(HiveBackupAlbumsAdapter());
     await Hive.openBox(userInfoBox);
     await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
+    await Hive.openBox(userSettingInfoBox);
+    await Hive.openBox(backgroundBackupInfoBox);
 
     ApiService apiService = ApiService();
     apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
@@ -313,23 +342,36 @@ class BackgroundService {
         await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
     final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
     if (backupAlbumInfo == null) {
+      _clearErrorNotifications();
       return true;
     }
 
     await PhotoManager.setIgnorePermissionCheck(true);
+    _errorGracePeriodExceeded = _isErrorGracePeriodExceeded();
 
     if (_canceledBySystem) {
       return false;
     }
 
-    final List<AssetEntity> toUpload =
-        await backupService.getAssetsToBackup(backupAlbumInfo);
+    List<AssetEntity> toUpload =
+        await backupService.buildUploadCandidates(backupAlbumInfo);
+
+    try {
+      toUpload = await backupService.removeAlreadyUploadedAssets(toUpload);
+    } catch (e) {
+      _showErrorNotification(
+        title: "backup_background_service_error_title".tr(),
+        content: "backup_background_service_connection_failed_message".tr(),
+      );
+      return false;
+    }
 
     if (_canceledBySystem) {
       return false;
     }
 
     if (toUpload.isEmpty) {
+      _clearErrorNotifications();
       return true;
     }
 
@@ -343,9 +385,15 @@ class BackgroundService {
       _onBackupError,
     );
     if (ok) {
+      _clearErrorNotifications();
       await box.put(
         backupInfoKey,
         backupAlbumInfo,
+      );
+    } else {
+      _showErrorNotification(
+        title: "backup_background_service_error_title".tr(),
+        content: "backup_background_service_backup_failed_message".tr(),
       );
     }
     return ok;
@@ -358,19 +406,47 @@ class BackgroundService {
   void _onProgress(int sent, int total) {}
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
-    showErrorNotification(
-      "backup_background_service_upload_failure_notification"
+    _showErrorNotification(
+      title: "Upload failed",
+      content: "backup_background_service_upload_failure_notification"
           .tr(args: [errorAssetInfo.fileName]),
-      errorAssetInfo.errorMessage,
+      individualTag: errorAssetInfo.id,
     );
   }
 
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
-    updateNotification(
+    _updateNotification(
       title: "backup_background_service_in_progress_notification".tr(),
       content: "backup_background_service_current_upload_notification"
           .tr(args: [currentUploadAsset.fileName]),
     );
+  }
+
+  bool _isErrorGracePeriodExceeded() {
+    final int value = AppSettingsService()
+        .getSetting(AppSettingsEnum.uploadErrorNotificationGracePeriod);
+    if (value == 0) {
+      return true;
+    } else if (value == 5) {
+      return false;
+    }
+    final DateTime? failedSince =
+        Hive.box(backgroundBackupInfoBox).get(backupFailedSince);
+    if (failedSince == null) {
+      return false;
+    }
+    final Duration duration = DateTime.now().difference(failedSince);
+    if (value == 1) {
+      return duration > const Duration(minutes: 30);
+    } else if (value == 2) {
+      return duration > const Duration(hours: 2);
+    } else if (value == 3) {
+      return duration > const Duration(hours: 8);
+    } else if (value == 4) {
+      return duration > const Duration(hours: 24);
+    }
+    assert(false, "Invalid value");
+    return true;
   }
 }
 

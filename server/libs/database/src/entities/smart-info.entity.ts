@@ -18,5 +18,5 @@ export class SmartInfoEntity {
 
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
-  asset?: SmartInfoEntity;
+  asset?: AssetEntity;
 }

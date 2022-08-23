@@ -15,8 +15,13 @@ import 'package:openapi/api.dart';
 class ThumbnailImage extends HookConsumerWidget {
   final AssetResponseDto asset;
   final List<AssetResponseDto> assetList;
+  final bool showStorageIndicator;
 
-  const ThumbnailImage({Key? key, required this.asset, required this.assetList})
+  const ThumbnailImage(
+      {Key? key,
+      required this.asset,
+      required this.assetList,
+      this.showStorageIndicator = true})
       : super(key: key);
 
   @override
@@ -123,7 +128,7 @@ class ThumbnailImage extends HookConsumerWidget {
                   child: _buildSelectionIcon(asset),
                 ),
               ),
-            Positioned(
+            if (showStorageIndicator) Positioned(
               right: 10,
               bottom: 5,
               child: Icon(

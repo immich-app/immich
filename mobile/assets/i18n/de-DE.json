@@ -122,5 +122,5 @@
   "theme_setting_image_viewer_quality_title": "Qualität des Bildbetrachters",
   "theme_setting_image_viewer_quality_subtitle": "Einstellen der Qualität des Detailbildbetrachters",
   "theme_setting_three_stage_loading_title": "Dreistufiges Laden aktivieren",
-  "theme_setting_three_stage_loading_subtitle": "Das dreistufige Ladeverfahren liefert die beste Bildqualität, ist dafür aber langsamer beim Laden."
+  "theme_setting_three_stage_loading_subtitle": "Das dreistufige Ladeverfahren kann die Performance beim Laden verbessern, erhöht allerdings den Datenverbrauch deutlich"
 }

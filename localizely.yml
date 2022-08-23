@@ -9,6 +9,8 @@ upload:
       locale_code: de-DE
     - file: mobile/assets/i18n/fr-FR.json
       locale_code: fr-FR
+    - file: mobile/assets/i18n/nl-NL.json
+      locale_code: nl-NL
 download:
   files:
     - file: mobile/assets/i18n/en-US.json
@@ -17,3 +19,5 @@ download:
       locale_code: de-DE
     - file: mobile/assets/i18n/fr-FR.json
       locale_code: fr-FR
+    - file: mobile/assets/i18n/nl-NL.json
+      locale_code: nl-NL
