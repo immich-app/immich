@@ -85,7 +85,6 @@
     "@types/jest": "27.0.2",
     "@types/lodash": "^4.14.178",
     "@types/mapbox__mapbox-sdk": "^0.13.4",
-    "@types/mkdirp": "^1.0.2",
     "@types/multer": "^1.4.7",
     "@types/node": "^16.0.0",
     "@types/passport-jwt": "^3.0.6",

@@ -1,11 +1,11 @@
 import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import * as mkdirp from 'mkdirp';
 import { DiskStorageOptions, StorageEngine } from 'multer';
 import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { PassThrough } from 'node:stream';
 import type { ParsedQs } from 'qs';
 
 type GetFileNameFn = (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => void;
@@ -40,7 +40,7 @@ class ExtendedDiskStorage implements StorageEngine {
     this._getFilenameFn = (opts.filename || getFilename);
 
     if (typeof opts.destination === 'string') {
-      mkdirp.sync(opts.destination);
+      fs.mkdirSync(opts.destination, { recursive: true });
       this._getDestinationFn = ($0, $1, cb) => {
         cb(null, opts.destination as string);
       };
@@ -60,15 +60,18 @@ class ExtendedDiskStorage implements StorageEngine {
 
         const finalPath = path.join(destination, filename);
         const outStream = fs.createWriteStream(finalPath);
-        const sha1Hash = crypto.createHash('sha1');
-
-        file.stream.on('data', (chunk) => {
-          sha1Hash.update(chunk);
+        const passThrough = new PassThrough();
+        const sha1Hash = crypto.createHash('sha1').setEncoding('hex');
+        const deferred$ = new Promise<string>((resolve, reject) => {
+          sha1Hash.once('error', (err) => reject(err));
+          sha1Hash.once('end', () => resolve(sha1Hash.read()));
         });
-        file.stream.pipe(outStream);
+
+        passThrough.pipe(sha1Hash);
+        file.stream.pipe(passThrough).pipe(outStream);
         outStream.on('error', cb);
-        outStream.on('finish', () => {
-          const sha1Hex = sha1Hash.digest('hex');
+        outStream.on('finish', async () => {
+          const sha1Hex = await deferred$; // make sure hash's done
 
           sha1Hash.destroy();
           cb(null, {
