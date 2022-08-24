@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
-import type { PageLoad } from '@sveltejs/kit';
+import type { PageLoad } from './$types';
+import { api } from '@api';
 
 export const load: PageLoad = async () => {
 	const { data } = await api.userApi.getUserCount();
@@ -8,5 +9,5 @@ export const load: PageLoad = async () => {
 		throw redirect(302, '/auth/login');
 	}
 
-	return ;
+	return;
 };
