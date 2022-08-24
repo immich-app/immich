@@ -19,43 +19,12 @@
 		const { data: assetInfo } = await api.assetApi.getAssetById(assetId);
 
 		await loadVideoData(assetInfo);
-		
+
 		asset = assetInfo;
 	});
 
 	const loadVideoData = async (assetInfo: AssetResponseDto) => {
 		isVideoLoading = true;
-
-		// try {
-		// 	const { data } = await api.assetApi.serveFile(
-		// 		asset.deviceAssetId,
-		// 		asset.deviceId,
-		// 		false,
-		// 		true,
-		// 		{
-		// 			responseType: 'blob'
-		// 		}
-		// 	);
-
-		// 	if (!(data instanceof Blob)) {
-		// 		return;
-		// 	}
-
-		// 	const videoData = URL.createObjectURL(data);
-		// 	videoPlayerNode.src = videoData;
-
-		// 	videoPlayerNode.load();
-
-		// 	videoPlayerNode.oncanplay = () => {
-		// 		videoPlayerNode.muted = true;
-		// 		videoPlayerNode.play();
-		// 		videoPlayerNode.muted = false;
-
-		// 		isVideoLoading = false;
-		// 	};
-
-		// 	return videoData;
-		// } catch (e) {}
 
 		videoUrl = getFileUrl(assetInfo.deviceAssetId, assetInfo.deviceId, false, true);
 
@@ -78,8 +47,13 @@
 	class="flex place-items-center place-content-center h-full select-none"
 >
 	{#if asset}
-		<video controls class="h-full object-contain" on:canplay={handleCanPlay} bind:this={videoPlayerNode}>
-			<source src="{videoUrl}" type="video/mp4" />
+		<video
+			controls
+			class="h-full object-contain"
+			on:canplay={handleCanPlay}
+			bind:this={videoPlayerNode}
+		>
+			<source src={videoUrl} type="video/mp4" />
 			<track kind="captions" />
 		</video>
 
