@@ -13,15 +13,13 @@ export const load: PageLoad = async ({ fetch, parent }) => {
 			throw Error('User is not logged in');
 		}
 
-		const [userInfo, assets] = await Promise.all([
-			fetch('/data/user/get-my-user-info').then((r) => r.json() as Promise<UserResponseDto>),
-			fetch('/data/asset/get-all-assets').then((r) => r.json() as Promise<AssetResponseDto[]>)
-		]);
-
+		const assets = await fetch('/data/asset/get-all-assets').then(
+			(r) => r.json() as Promise<AssetResponseDto[]>
+		);
 		setAssetInfo(assets);
 
 		return {
-			user: userInfo
+			user: user
 		};
 	} catch (e) {
 		throw redirect(302, '/auth/login');
