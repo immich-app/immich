@@ -1,16 +1,14 @@
 import { redirect } from '@sveltejs/kit';
 export const prerender = false;
 
-import { browser } from '$app/env';
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = async ({}) => {
-	//!TODO refactor session
-	// if (!browser && !session.user) {
-	// 	throw redirect(302, '/auth/login');
-	// } else {
-	// 	throw redirect(302, '/photos');
-	// }
+export const load: PageLoad = async ({ parent }) => {
+	const { user } = await parent();
 
-	redirect(302, '/photos');
+	if (!user) {
+		throw redirect(302, '/auth/login');
+	} else {
+		throw redirect(302, '/photos');
+	}
 };
