@@ -2,7 +2,12 @@
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import { fly } from 'svelte/transition';
-	import { assetsGroupByDate, flattenAssetGroupByDate, assets } from '$lib/stores/assets';
+	import {
+		assetsGroupByDate,
+		flattenAssetGroupByDate,
+		assets,
+		setAssetInfo
+	} from '$lib/stores/assets';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
@@ -15,6 +20,7 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import type { PageData } from './$types';
+	import { onMount } from 'svelte';
 
 	export let data: PageData;
 
@@ -34,6 +40,10 @@
 	let isShowAssetViewer = false;
 	let currentViewAssetIndex = 0;
 	let selectedAsset: AssetResponseDto;
+
+	onMount(() => {
+		setAssetInfo(data.assets);
+	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
 		const { selectedGroupIndex }: { selectedGroupIndex: number } = event.detail;

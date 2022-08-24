@@ -1,4 +1,5 @@
-import { serverApi } from '@api';
+import { browser } from '$app/env';
+import { api, serverApi } from '@api';
 import * as cookieParser from 'cookie';
 
 import type { LayoutServerLoad } from './$types';
