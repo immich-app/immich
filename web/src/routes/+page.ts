@@ -5,14 +5,13 @@ import { browser } from '$app/env';
 import type { PageLoad } from './$types';
 import { goto } from '$app/navigation';
 
-export const load: PageLoad = async () => {
+export const load: PageLoad = async ({ parent }) => {
+	const { user } = await parent();
+	if (user) {
+		throw redirect(302, '/photos');
+	}
+
 	if (browser) {
-		try {
-			const { data: user } = await api.userApi.getMyUserInfo();
-
-			goto('/photos');
-		} catch (e) {}
-
 		const { data } = await api.userApi.getUserCount();
 
 		return {

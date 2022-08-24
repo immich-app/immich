@@ -4,7 +4,7 @@
 
 	import LoginForm from '$lib/components/forms/login-form.svelte';
 
-	const onLoginSuccess = async () => {
+	const onLoginSuccess = () => {
 		goto('/photos');
 	};
 </script>
