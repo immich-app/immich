@@ -7,10 +7,7 @@
 	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import { onMount } from 'svelte';
 	import { checkAppVersion } from '$lib/utils/check-app-version';
-
-	export let data;
-
-	let { url } = data;
+	import { page } from '$app/stores';
 
 	let shouldShowAnnouncement: boolean;
 	let localVersion: string;
@@ -26,7 +23,7 @@
 </script>
 
 <main>
-	{#key url}
+	{#key $page.url}
 		<div in:fade={{ duration: 100 }}>
 			<slot />
 			<DownloadPanel />

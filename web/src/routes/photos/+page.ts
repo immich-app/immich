@@ -5,8 +5,14 @@ import type { PageLoad } from './$types';
 import { setAssetInfo } from '$lib/stores/assets';
 import { AssetResponseDto, UserResponseDto } from '@api';
 
-export const load: PageLoad = async ({ fetch }) => {
+export const load: PageLoad = async ({ fetch, parent }) => {
 	try {
+		const { user } = await parent();
+
+		if (!user) {
+			throw Error('User is not logged in');
+		}
+
 		const [userInfo, assets] = await Promise.all([
 			fetch('/data/user/get-my-user-info').then((r) => r.json() as Promise<UserResponseDto>),
 			fetch('/data/asset/get-all-assets').then((r) => r.json() as Promise<AssetResponseDto[]>)
@@ -18,7 +24,6 @@ export const load: PageLoad = async ({ fetch }) => {
 			user: userInfo
 		};
 	} catch (e) {
-		console.log('ERROR load photos');
 		throw redirect(302, '/auth/login');
 	}
 };

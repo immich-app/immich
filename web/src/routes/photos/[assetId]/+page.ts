@@ -11,4 +11,6 @@ export const load: PageLoad = async ({}) => {
 	// } else {
 	// 	throw redirect(302, '/photos');
 	// }
+
+	redirect(302, '/photos');
 };

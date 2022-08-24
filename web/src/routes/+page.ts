@@ -9,8 +9,6 @@ export const load: PageLoad = async () => {
 	if (browser) {
 		try {
 			const { data: user } = await api.userApi.getMyUserInfo();
-			console.log('user', user);
-			// throw redirect(302, '/photos');
 
 			goto('/photos');
 		} catch (e) {}
