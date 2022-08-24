@@ -1,5 +1,5 @@
 import { checkAppVersion } from '$lib/utils/check-app-version';
-import { LayoutLoad } from '.svelte-kit/types/src/routes/$types';
+import type { LayoutLoad } from './$types';
 
 export const load: LayoutLoad = async ({ url }) => {
 	return { url };

@@ -1,5 +1,5 @@
-import { redirect } from '@sveltejs/kit';
 export const prerender = false;
+import { redirect } from '@sveltejs/kit';
 import { api } from '@api';
 import { browser } from '$app/env';
 import type { PageLoad } from './$types';

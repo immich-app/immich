@@ -1,4 +1,4 @@
-import type { ExternalFetch, GetSession, Handle } from '@sveltejs/kit';
+import type { ExternalFetch, Handle } from '@sveltejs/kit';
 import * as cookie from 'cookie';
 import { serverApi } from '@api';
 
@@ -20,12 +20,4 @@ export const handle: Handle = async ({ event, resolve }) => {
 		event.locals.user = undefined;
 		return await resolve(event);
 	}
-};
-
-export const getSession: GetSession = async ({ locals }) => {
-	if (!locals.user) return {};
-
-	return {
-		user: locals.user
-	};
 };

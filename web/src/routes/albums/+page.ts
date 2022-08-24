@@ -1,8 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 export const prerender = false;
 
-import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-
 import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 import { ImmichUser } from '$lib/models/immich-user';
 import type { PageLoad } from './$types';
