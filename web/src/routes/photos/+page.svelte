@@ -13,7 +13,6 @@
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
-	import { browser } from '$app/env';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import type { PageData } from './$types';
 

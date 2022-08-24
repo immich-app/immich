@@ -24,11 +24,10 @@
 		// Delete album that has no photos and is named 'Untitled'
 		for (const album of data.albums) {
 			if (album.albumName === 'Untitled' && album.assetCount === 0) {
-				const isDeleted = await autoDeleteAlbum(album);
-
-				if (isDeleted) {
+				setTimeout(async () => {
+					await autoDeleteAlbum(album);
 					data.albums = data.albums.filter((a) => a.id !== album.id);
-				}
+				}, 500);
 			}
 		}
 	});
