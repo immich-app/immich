@@ -1,14 +1,3 @@
-<script context="module" lang="ts">
-	import type { Load } from '@sveltejs/kit';
-	import { checkAppVersion } from '$lib/utils/check-app-version';
-
-	export const load: Load = async ({ url }) => {
-		return {
-			props: { url }
-		};
-	};
-</script>
-
 <script lang="ts">
 	import '../app.css';
 
@@ -17,8 +6,12 @@
 	import AnnouncementBox from '$lib/components/shared-components/announcement-box.svelte';
 	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import { onMount } from 'svelte';
+	import { checkAppVersion } from '$lib/utils/check-app-version';
 
-	export let url: string;
+	export let data;
+
+	let { url } = data;
+
 	let shouldShowAnnouncement: boolean;
 	let localVersion: string;
 	let remoteVersion: string;

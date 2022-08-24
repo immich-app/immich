@@ -1,41 +1,3 @@
-<script context="module" lang="ts">
-	export const prerender = false;
-
-	import type { Load } from '@sveltejs/kit';
-	import { setAssetInfo } from '$lib/stores/assets';
-
-	export const load: Load = async ({ fetch, session }) => {
-		if (!browser && !session.user) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-
-		try {
-			const [userInfo, assets] = await Promise.all([
-				fetch('/data/user/get-my-user-info').then((r) => r.json()),
-				fetch('/data/asset/get-all-assets').then((r) => r.json())
-			]);
-
-			setAssetInfo(assets);
-
-			return {
-				status: 200,
-				props: {
-					user: userInfo
-				}
-			};
-		} catch (e) {
-			console.log('ERROR load photos index');
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-	};
-</script>
-
 <script lang="ts">
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
@@ -45,7 +7,7 @@
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { api, AssetResponseDto, UserResponseDto } from '@api';
+	import { api, AssetResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
@@ -53,8 +15,9 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import { browser } from '$app/env';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+	import type { PageData } from './$types';
 
-	export let user: UserResponseDto;
+	export let data: PageData;
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
@@ -234,7 +197,10 @@
 	{/if}
 
 	{#if !isMultiSelectionMode}
-		<NavigationBar {user} on:uploadClicked={() => openFileUploadDialog(UploadType.GENERAL)} />
+		<NavigationBar
+			user={data.user}
+			on:uploadClicked={() => openFileUploadDialog(UploadType.GENERAL)}
+		/>
 	{/if}
 </section>
 
