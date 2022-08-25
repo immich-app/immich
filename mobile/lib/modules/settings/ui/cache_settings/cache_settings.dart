@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/modules/settings/ui/cache_settings/cache_settings_slider_pref.dart';
 import 'package:immich_mobile/shared/services/cache.service.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 
 class CacheSettings extends HookConsumerWidget {
   const CacheSettings({
@@ -20,31 +21,40 @@ class CacheSettings extends HookConsumerWidget {
     }
 
     Widget cacheStatisticsRow(String name, CacheType type) {
-      final numCacheAssets = useState(0);
+      final cacheSize = useState(0);
+      final cacheAssets = useState(0);
 
       final repo = cacheService.getCacheRepo(type);
 
       repo.open().then((_) {
-        numCacheAssets.value = repo.getNumberOfCachedObjects();
+        cacheSize.value = repo.getCacheSize();
+        cacheAssets.value = repo.getNumberOfCachedObjects();
       });
 
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 40),
-        child: Row(
+        margin: const EdgeInsets.only(left: 20, bottom: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(
-                name,
+            Text(
+              name,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const Text("cache_settings_statistics_assets")
-                .tr(args: ["${numCacheAssets.value}"]),
+            const Text(
+              "cache_settings_statistics_assets",
+              style: TextStyle(color: Colors.grey),
+            ).tr(
+              args: ["${cacheAssets.value}", formatBytes(cacheSize.value)],
+            ),
           ],
         ),
       );
     }
 
     return ExpansionTile(
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
       textColor: Theme.of(context).primaryColor,
       title: const Text(
         'cache_settings_title',
@@ -93,8 +103,8 @@ class CacheSettings extends HookConsumerWidget {
             "cache_settings_statistics_thumbnail".tr(), CacheType.thumbnail),
         cacheStatisticsRow(
             "cache_settings_statistics_album".tr(), CacheType.albumThumbnail),
-        cacheStatisticsRow(
-            "cache_settings_statistics_shared".tr(), CacheType.sharedAlbumThumbnail),
+        cacheStatisticsRow("cache_settings_statistics_shared".tr(),
+            CacheType.sharedAlbumThumbnail),
         cacheStatisticsRow(
             "cache_settings_statistics_full".tr(), CacheType.imageViewerFull),
         ListTile(
@@ -106,15 +116,18 @@ class CacheSettings extends HookConsumerWidget {
             ),
           ).tr(),
         ),
-        TextButton(
-          onPressed: clearCache,
-          child: Text(
-            "cache_settings_clear_cache_button",
-            style: TextStyle(
-              color: Theme.of(context).primaryColor,
-            ),
-          ).tr(),
-        ),
+        Container(
+          alignment: Alignment.center,
+          child: TextButton(
+            onPressed: clearCache,
+            child: Text(
+              "cache_settings_clear_cache_button",
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+              ),
+            ).tr(),
+          ),
+        )
       ],
     );
   }

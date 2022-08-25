@@ -7,9 +7,10 @@ import 'package:hive/hive.dart';
 
 abstract class ImmichCacheRepository extends CacheInfoRepository {
   int getNumberOfCachedObjects();
+  int getCacheSize();
 }
 
-class ImmichCacheInfoRepository extends ImmichCacheRepository  {
+class ImmichCacheInfoRepository extends ImmichCacheRepository {
   final String hiveBoxName;
   final String keyLookupHiveBoxName;
 
@@ -91,7 +92,9 @@ class ImmichCacheInfoRepository extends ImmichCacheRepository  {
 
   @override
   Future<List<CacheObject>> getOldObjects(Duration maxAge) async {
-    return cacheObjectLookupBox.values.map(_deserialize).where((CacheObject element) {
+    return cacheObjectLookupBox.values
+        .map(_deserialize)
+        .where((CacheObject element) {
       DateTime touched =
           element.touched ?? DateTime.fromMicrosecondsSinceEpoch(0);
       return touched.isBefore(DateTime.now().subtract(maxAge));
@@ -142,6 +145,14 @@ class ImmichCacheInfoRepository extends ImmichCacheRepository  {
   @override
   int getNumberOfCachedObjects() {
     return cacheObjectLookupBox.length;
+  }
+
+  @override
+  int getCacheSize() {
+    return cacheObjectLookupBox.values
+        .map(_deserialize)
+        .map((e) => e.length ?? 0)
+        .reduce((value, element) => value + element);
   }
 
   CacheObject _deserialize(Map serData) {
