@@ -1,31 +1,5 @@
-import type { ExternalFetch, GetSession, Handle } from '@sveltejs/kit';
-import * as cookie from 'cookie';
-import { serverApi } from '@api';
+import type { Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
-
-	if (!cookies['immich_is_authenticated']) {
-		return await resolve(event);
-	}
-	const accessToken = cookies['immich_access_token'];
-
-	try {
-		serverApi.setAccessToken(accessToken);
-		const { data } = await serverApi.userApi.getMyUserInfo();
-		event.locals.user = data;
-
-		return await resolve(event);
-	} catch (error) {
-		event.locals.user = undefined;
-		return await resolve(event);
-	}
-};
-
-export const getSession: GetSession = async ({ locals }) => {
-	if (!locals.user) return {};
-
-	return {
-		user: locals.user
-	};
+	return await resolve(event);
 };

@@ -1,47 +1,3 @@
-<script context="module" lang="ts">
-	import type { Load } from '@sveltejs/kit';
-	import { api, UserResponseDto } from '@api';
-	import { browser } from '$app/env';
-
-	export const load: Load = async ({ fetch, session }) => {
-		if (!browser && !session.user) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-
-		try {
-			const user: UserResponseDto = await fetch('/data/user/get-my-user-info').then((r) =>
-				r.json()
-			);
-			const allUsers: UserResponseDto[] = await fetch('/data/user/get-all-users?isAll=false').then(
-				(r) => r.json()
-			);
-
-			if (!user.isAdmin) {
-				return {
-					status: 302,
-					redirect: '/photos'
-				};
-			}
-
-			return {
-				status: 200,
-				props: {
-					user: user,
-					allUsers: allUsers
-				}
-			};
-		} catch (e) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-	};
-</script>
-
 <script lang="ts">
 	import { onMount } from 'svelte';
 
@@ -54,11 +10,12 @@
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
 	import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
+	import type { PageData } from './$types';
+	import { api, UserResponseDto } from '@api';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
-	export let user: UserResponseDto;
-	export let allUsers: UserResponseDto[];
+	export let data: PageData;
 
 	let editUser: UserResponseDto;
 
@@ -75,8 +32,8 @@
 	});
 
 	const onUserCreated = async () => {
-		const { data } = await api.userApi.getAllUsers(false);
-		allUsers = data;
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
 		shouldShowCreateUserForm = false;
 	};
 
@@ -87,14 +44,14 @@
 	};
 
 	const onEditUserSuccess = async () => {
-		const { data } = await api.userApi.getAllUsers(false);
-		allUsers = data;
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
 	};
 
 	const onEditPasswordSuccess = async () => {
-		const { data } = await api.userApi.getAllUsers(false);
-		allUsers = data;
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
 		shouldShowInfoPanel = true;
 	};
@@ -104,7 +61,7 @@
 	<title>Administration - Immich</title>
 </svelte:head>
 
-<NavigationBar {user} />
+<NavigationBar user={data.user} />
 
 {#if shouldShowCreateUserForm}
 	<FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>
@@ -125,7 +82,7 @@
 {#if shouldShowInfoPanel}
 	<FullScreenModal on:clickOutside={() => (shouldShowInfoPanel = false)}>
 		<div class="border bg-white shadow-sm w-[500px] rounded-3xl p-8 text-sm">
-			<h1 class="font-bold text-immich-primary text-lg mb-4">Password reset success</h1>
+			<h1 class="font-medium text-immich-primary text-lg mb-4">Password reset success</h1>
 
 			<p>
 				The user's password has been reset to the default <code
@@ -170,7 +127,7 @@
 			<section class="w-[800px] pt-4">
 				{#if selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
 					<UserManagement
-						{allUsers}
+						allUsers={data.allUsers}
 						on:create-user={() => (shouldShowCreateUserForm = true)}
 						on:edit-user={editUserHandler}
 					/>

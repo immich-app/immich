@@ -1,18 +1,6 @@
-import { Process, Processor } from '@nestjs/bull';
-import { Job } from 'bull';
 import { AssetEntity } from '@app/database/entities/asset.entity';
-import { Repository } from 'typeorm/repository/Repository';
-import { InjectRepository } from '@nestjs/typeorm';
 import { ExifEntity } from '@app/database/entities/exif.entity';
-import exifr from 'exifr';
-import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
-import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
-import { readFile } from 'fs/promises';
-import { Logger } from '@nestjs/common';
-import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
-import ffmpeg from 'fluent-ffmpeg';
-import path from 'path';
 import {
   IExifExtractionProcessor,
   IVideoLengthExtractionProcessor,
@@ -24,6 +12,18 @@ import {
   reverseGeocodingProcessorName,
   IReverseGeocodingProcessor,
 } from '@app/job';
+import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
+import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
+import { Process, Processor } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import axios from 'axios';
+import { Job } from 'bull';
+import exifr from 'exifr';
+import ffmpeg from 'fluent-ffmpeg';
+import { readFile } from 'fs/promises';
+import path from 'path';
+import { Repository } from 'typeorm/repository/Repository';
 
 @Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
