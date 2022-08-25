@@ -41,8 +41,8 @@
 			{/if}
 
 			<slot />
-			<DownloadPanel />
 
+			<DownloadPanel />
 			<UploadPanel />
 
 			{#if shouldShowAnnouncement}
