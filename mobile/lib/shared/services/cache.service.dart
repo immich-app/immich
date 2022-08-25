@@ -1,7 +1,9 @@
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/immich_cache_info_repository.dart';
 
 enum CacheType {
   // Shared cache for asset thumbnails in various modules
@@ -31,7 +33,7 @@ class CacheService {
       getCache(type).emptyCache();
     }
   }
-  
+
   int _getCacheSize(CacheType type) {
     switch (type) {
       case CacheType.thumbnail:
@@ -41,7 +43,8 @@ class CacheService {
         return _settingsService.getSetting(AppSettingsEnum.imageCacheSize);
       case CacheType.sharedAlbumThumbnail:
       case CacheType.albumThumbnail:
-        return _settingsService.getSetting(AppSettingsEnum.albumThumbnailCacheSize);
+        return _settingsService
+            .getSetting(AppSettingsEnum.albumThumbnailCacheSize);
       default:
         return 200;
     }
@@ -52,7 +55,10 @@ class CacheService {
       Config(
         cacheName,
         maxNrOfCacheObjects: size,
-
+        repo: ImmichCacheInfoRepository(
+          "cache_$cacheName",
+          "cacheKeys_$cacheName",
+        ),
       ),
     );
   }
