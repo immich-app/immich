@@ -101,10 +101,7 @@ class HomePage extends HookConsumerWidget {
             lastMonth = currentMonth;
           } catch (e) {
             debugPrint(
-              "[ERROR] Cannot parse $dateGroup - Properly wrong format - Use current time",
-            );
-            debugPrint(
-              "[ERROR] Assets with wrong date format : $immichAssetList",
+              "[ERROR] Cannot parse $dateGroup - Wrong create date format : ${immichAssetList.map((asset) => asset.createdAt).toList()}",
             );
           }
         });
