@@ -1,6 +1,5 @@
 <script>
 	import { page } from '$app/stores';
-	import { values } from 'lodash';
 </script>
 
 <div class="h-screen w-screen  flex place-items-center place-content-center flex-col">
