@@ -82,7 +82,7 @@
 {#if shouldShowInfoPanel}
 	<FullScreenModal on:clickOutside={() => (shouldShowInfoPanel = false)}>
 		<div class="border bg-white shadow-sm w-[500px] rounded-3xl p-8 text-sm">
-			<h1 class="font-bold text-immich-primary text-lg mb-4">Password reset success</h1>
+			<h1 class="font-medium text-immich-primary text-lg mb-4">Password reset success</h1>
 
 			<p>
 				The user's password has been reset to the default <code
