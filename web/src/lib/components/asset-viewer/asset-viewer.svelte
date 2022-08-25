@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import AsserViewerNavBar from './asser-viewer-nav-bar.svelte';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
@@ -9,20 +9,20 @@
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import { api, AssetResponseDto, AssetTypeEnum } from '@api';
-	import { browser } from '$app/env';
-	import _ from 'lodash';
-	const dispatch = createEventDispatcher();
 
 	export let asset: AssetResponseDto;
 
+	const dispatch = createEventDispatcher();
 	let halfLeftHover = false;
 	let halfRightHover = false;
 	let isShowDetail = false;
 
 	onMount(() => {
-		if (browser) {
-			document.addEventListener('keydown', (keyInfo) => handleKeyboardPress(keyInfo.key));
-		}
+		document.addEventListener('keydown', (keyInfo) => handleKeyboardPress(keyInfo.key));
+	});
+
+	onDestroy(() => {
+		document.removeEventListener('keydown', (e) => {});
 	});
 
 	const handleKeyboardPress = (key: string) => {
@@ -48,12 +48,12 @@
 
 	const navigateAssetForward = (e?: Event) => {
 		e?.stopPropagation();
-		_.debounce(() => dispatch('navigate-forward'), 100)();
+		dispatch('navigate-forward');
 	};
 
 	const navigateAssetBackward = (e?: Event) => {
 		e?.stopPropagation();
-		_.debounce(() => dispatch('navigate-backward'), 100)();
+		dispatch('navigate-backward');
 	};
 
 	const showDetailInfoHandler = () => {
