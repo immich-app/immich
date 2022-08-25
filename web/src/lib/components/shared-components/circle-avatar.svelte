@@ -47,7 +47,7 @@
 			title={user.email}
 		/>
 	</button>
-{:catch e}
+{:catch}
 	<button
 		on:click={() => dispatch('click')}
 		style:width={`${size}px`}
