@@ -5,8 +5,7 @@ import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { Repository } from 'typeorm';
-import cookieParser from 'cookie-parser';
-
+import cookieParser from 'cookie';
 @WebSocketGateway({ cors: true })
 export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
@@ -30,7 +29,14 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
       let accessToken = '';
 
       if (client.handshake.headers.cookie != undefined) {
-        accessToken = client.handshake.headers.cookie.split('=')[2];
+        const cookies = cookieParser.parse(client.handshake.headers.cookie);
+        if (cookies.immich_access_token) {
+          accessToken = cookies.immich_access_token;
+        } else {
+          client.emit('error', 'unauthorized');
+          client.disconnect();
+          return;
+        }
       } else if (client.handshake.headers.authorization != undefined) {
         accessToken = client.handshake.headers.authorization.split(' ')[1];
       } else {
