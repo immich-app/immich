@@ -65,37 +65,48 @@ class HomePage extends HookConsumerWidget {
         int? lastMonth;
 
         assetGroupByDateTime.forEach((dateGroup, immichAssetList) {
-          DateTime parseDateGroup = DateTime.parse(dateGroup);
-          int currentMonth = parseDateGroup.month;
+          try {
+            DateTime parseDateGroup = DateTime.parse(dateGroup);
+            int currentMonth = parseDateGroup.month;
 
-          if (lastMonth != null) {
-            if (currentMonth - lastMonth! != 0) {
-              imageGridGroup.add(
-                MonthlyTitleText(
-                  isoDate: dateGroup,
-                ),
-              );
+            if (lastMonth != null) {
+              if (currentMonth - lastMonth! != 0) {
+                imageGridGroup.add(
+                  MonthlyTitleText(
+                    isoDate: dateGroup,
+                  ),
+                );
+              }
             }
+
+            imageGridGroup.add(
+              DailyTitleText(
+                key: Key('${dateGroup.toString()}title'),
+                isoDate: dateGroup,
+                assetGroup: immichAssetList,
+              ),
+            );
+
+            imageGridGroup.add(
+              ImageGrid(
+                assetGroup: immichAssetList,
+                sortedAssetGroup: sortedAssetList,
+                tilesPerRow:
+                    appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
+                showStorageIndicator: appSettingService
+                    .getSetting(AppSettingsEnum.storageIndicator),
+              ),
+            );
+
+            lastMonth = currentMonth;
+          } catch (e) {
+            debugPrint(
+              "[ERROR] Cannot parse $dateGroup - Properly wrong format - Use current time",
+            );
+            debugPrint(
+              "[ERROR] Assets with wrong date format : $immichAssetList",
+            );
           }
-
-          imageGridGroup.add(
-            DailyTitleText(
-              key: Key('${dateGroup.toString()}title'),
-              isoDate: dateGroup,
-              assetGroup: immichAssetList,
-            ),
-          );
-
-          imageGridGroup.add(
-            ImageGrid(
-              assetGroup: immichAssetList,
-              sortedAssetGroup: sortedAssetList,
-              tilesPerRow: appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
-              showStorageIndicator: appSettingService.getSetting(AppSettingsEnum.storageIndicator),
-            ),
-          );
-
-          lastMonth = currentMonth;
         });
       }
 
