@@ -56,6 +56,9 @@ describe('AssetService', () => {
       getAllByDeviceId: jest.fn(),
       getCountByTimeGroup: jest.fn(),
       getById: jest.fn(),
+      getDetectedObjectsByUserId: jest.fn(),
+      getLocationsByUserId: jest.fn(),
+      getSearchPropertiesByUserId: jest.fn(),
     };
 
     sui = new AssetService(assetRepositoryMock, a);

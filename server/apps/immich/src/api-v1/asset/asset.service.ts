@@ -28,6 +28,7 @@ import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/de
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
+import { SearchPropertiesDto } from './dto/search-properties.dto';
 
 const fileInfo = promisify(stat);
 
@@ -347,45 +348,35 @@ export class AssetService {
 
   async getAssetSearchTerm(authUser: AuthUserDto): Promise<string[]> {
     const possibleSearchTerm = new Set<string>();
-    // TODO: should use query builder
-    const rows = await this.assetRepository.query(
-      `
-      SELECT DISTINCT si.tags, si.objects, e.orientation, e."lensModel", e.make, e.model , a.type, e.city, e.state, e.country
-      FROM assets a
-      LEFT JOIN exif e ON a.id = e."assetId"
-      LEFT JOIN smart_info si ON a.id = si."assetId"
-      WHERE a."userId" = $1;
-      `,
-      [authUser.id],
-    );
 
-    rows.forEach((row: { [x: string]: any }) => {
+    const rows = await this._assetRepository.getSearchPropertiesByUserId(authUser.id);
+    rows.forEach((row: SearchPropertiesDto) => {
       // tags
-      row['tags']?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
+      row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
 
       // objects
-      row['objects']?.map((object: string) => possibleSearchTerm.add(object?.toLowerCase()));
+      row.objects?.map((object: string) => possibleSearchTerm.add(object?.toLowerCase()));
 
       // asset's tyoe
-      possibleSearchTerm.add(row['type']?.toLowerCase());
+      possibleSearchTerm.add(row.assetType?.toLowerCase() || '');
 
       // image orientation
-      possibleSearchTerm.add(row['orientation']?.toLowerCase());
+      possibleSearchTerm.add(row.orientation?.toLowerCase() || '');
 
       // Lens model
-      possibleSearchTerm.add(row['lensModel']?.toLowerCase());
+      possibleSearchTerm.add(row.lensModel?.toLowerCase() || '');
 
       // Make and model
-      possibleSearchTerm.add(row['make']?.toLowerCase());
-      possibleSearchTerm.add(row['model']?.toLowerCase());
+      possibleSearchTerm.add(row.make?.toLowerCase() || '');
+      possibleSearchTerm.add(row.model?.toLowerCase() || '');
 
       // Location
-      possibleSearchTerm.add(row['city']?.toLowerCase());
-      possibleSearchTerm.add(row['state']?.toLowerCase());
-      possibleSearchTerm.add(row['country']?.toLowerCase());
+      possibleSearchTerm.add(row.city?.toLowerCase() || '');
+      possibleSearchTerm.add(row.state?.toLowerCase() || '');
+      possibleSearchTerm.add(row.country?.toLowerCase() || '');
     });
 
-    return Array.from(possibleSearchTerm).filter((x) => x != null);
+    return Array.from(possibleSearchTerm).filter((x) => x != null && x != '');
   }
 
   async searchAsset(authUser: AuthUserDto, searchAssetDto: SearchAssetDto): Promise<AssetResponseDto[]> {

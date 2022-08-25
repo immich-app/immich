@@ -1,3 +1,4 @@
+import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -14,6 +15,7 @@ export interface IAssetRepository {
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
+  getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getCountByTimeGroup(): any;
 }
 
@@ -25,6 +27,26 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
+
+  async getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .where('asset.userId = :userId', { userId: userId })
+      .leftJoin('asset.exifInfo', 'ei')
+      .leftJoin('asset.smartInfo', 'si')
+      .select('si.tags', 'tags')
+      .addSelect('si.objects', 'objects')
+      .addSelect('asset.type', 'assetType')
+      .addSelect('ei.orientation', 'orientation')
+      .addSelect('ei."lensModel"', 'lensModel')
+      .addSelect('ei.make', 'make')
+      .addSelect('ei.model', 'model')
+      .addSelect('ei.city', 'city')
+      .addSelect('ei.state', 'state')
+      .addSelect('ei.country', 'country')
+      .distinctOn(['si.tags'])
+      .getRawMany();
+  }
 
   async getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]> {
     return await this.assetRepository.query(
