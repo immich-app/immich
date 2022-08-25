@@ -3,6 +3,7 @@ import { api, serverApi } from '@api';
 import * as cookieParser from 'cookie';
 
 import type { LayoutServerLoad } from './$types';
+
 export const load: LayoutServerLoad = async ({ request }) => {
 	const cookies = cookieParser.parse(request.headers.get('cookie') || '');
 	const accessToken = cookies['immich_access_token'];
@@ -13,11 +14,8 @@ export const load: LayoutServerLoad = async ({ request }) => {
 		};
 	}
 
-	const { data: userInfo } = await serverApi.userApi.getMyUserInfo({
-		headers: {
-			Authorization: `Bearer ${accessToken}`
-		}
-	});
+	serverApi.setAccessToken(accessToken);
+	const { data: userInfo } = await serverApi.userApi.getMyUserInfo();
 
 	return {
 		user: userInfo
