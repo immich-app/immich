@@ -1,3 +1,4 @@
+import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import {
   BadRequestException,
   Inject,
@@ -411,33 +412,12 @@ export class AssetService {
     return searchResults.map((asset) => mapAsset(asset));
   }
 
-  async getCuratedLocation(authUser: AuthUserDto) {
-    return await this.assetRepository.query(
-      `
-        SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
-        FROM assets a
-        LEFT JOIN exif e ON a.id = e."assetId"
-        WHERE a."userId" = $1
-        AND e.city IS NOT NULL
-        AND a.type = 'IMAGE';
-      `,
-      [authUser.id],
-    );
+  async getCuratedLocation(authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
+    return this._assetRepository.getLocationsByUserId(authUser.id);
   }
 
   async getCuratedObject(authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
-    const curatedObjects: CuratedObjectsResponseDto[] = await this.assetRepository.query(
-      `
-        SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
-        FROM assets a
-        LEFT JOIN smart_info si ON a.id = si."assetId"
-        WHERE a."userId" = $1
-        AND si.objects IS NOT NULL
-      `,
-      [authUser.id],
-    );
-
-    return curatedObjects;
+    return this._assetRepository.getDetectedObjectsByUserId(authUser.id);
   }
 
   async checkDuplicatedAsset(

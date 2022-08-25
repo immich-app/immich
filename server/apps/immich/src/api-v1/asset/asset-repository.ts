@@ -1,15 +1,19 @@
+import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { CreateAssetDto } from './dto/create-asset.dto';
+import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 
 export interface IAssetRepository {
   create(createAssetDto: CreateAssetDto, ownerId: string, originalPath: string, mimeType: string): Promise<AssetEntity>;
   getAllByUserId(userId: string): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
+  getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
+  getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getCountByTimeGroup(): any;
 }
 
@@ -21,6 +25,33 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
+
+  async getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]> {
+    return await this.assetRepository.query(
+      `
+        SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
+        FROM assets a
+        LEFT JOIN smart_info si ON a.id = si."assetId"
+        WHERE a."userId" = $1
+        AND si.objects IS NOT NULL
+      `,
+      [userId],
+    );
+  }
+
+  async getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]> {
+    return await this.assetRepository.query(
+      `
+        SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
+        FROM assets a
+        LEFT JOIN exif e ON a.id = e."assetId"
+        WHERE a."userId" = $1
+        AND e.city IS NOT NULL
+        AND a.type = 'IMAGE';
+      `,
+      [userId],
+    );
+  }
 
   /**
    * Get a single asset information by its ID
