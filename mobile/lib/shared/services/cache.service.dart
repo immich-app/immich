@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -21,11 +23,28 @@ final cacheServiceProvider = Provider(
 
 class CacheService {
   final AppSettingsService _settingsService;
+  final _cacheRepositoryInstances = <CacheType, ImmichCacheRepository>{};
 
   CacheService(this._settingsService);
 
   BaseCacheManager getCache(CacheType type) {
-    return _getDefaultCache(type.name, _getCacheSize(type) + 1);
+    return _getDefaultCache(
+      type.name,
+      _getCacheSize(type) + 1,
+      getCacheRepo(type),
+    );
+  }
+
+  ImmichCacheRepository getCacheRepo(CacheType type) {
+    if (!_cacheRepositoryInstances.containsKey(type)) {
+      final repo = ImmichCacheInfoRepository(
+        "cache_${type.name}",
+        "cacheKeys_${type.name}",
+      );
+      _cacheRepositoryInstances[type] = repo;
+    }
+
+    return _cacheRepositoryInstances[type]!;
   }
 
   void emptyAllCaches() {
@@ -50,15 +69,13 @@ class CacheService {
     }
   }
 
-  BaseCacheManager _getDefaultCache(String cacheName, int size) {
+  BaseCacheManager _getDefaultCache(
+      String cacheName, int size, CacheInfoRepository repo) {
     return CacheManager(
       Config(
         cacheName,
         maxNrOfCacheObjects: size,
-        repo: ImmichCacheInfoRepository(
-          "cache_$cacheName",
-          "cacheKeys_$cacheName",
-        ),
+        repo: repo,
       ),
     );
   }

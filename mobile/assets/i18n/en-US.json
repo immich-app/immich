@@ -156,5 +156,11 @@
   "cache_settings_image_cache_size": "Image cache size ({} assets)",
   "cache_settings_album_thumbnails": "Library page thumbnails ({} assets)",
   "cache_settings_clear_cache_button_title": "Clears the app's cache. This will significantly impact the app's performance until the cache has rebuilt.",
-  "cache_settings_clear_cache_button": "Clear cache"
+  "cache_settings_clear_cache_button": "Clear cache",
+  "cache_settings_statistics_title": "Cache usage",
+  "cache_settings_statistics_assets": "{} assets",
+  "cache_settings_statistics_thumbnail": "Thumbnails",
+  "cache_settings_statistics_album": "Library thumbnails",
+  "cache_settings_statistics_shared": "Shared album thumbnails",
+  "cache_settings_statistics_full": "Full images"
 }
