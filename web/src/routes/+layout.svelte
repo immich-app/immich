@@ -8,10 +8,13 @@
 	import { onMount } from 'svelte';
 	import { checkAppVersion } from '$lib/utils/check-app-version';
 	import { page } from '$app/stores';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
 
 	let shouldShowAnnouncement: boolean;
 	let localVersion: string;
 	let remoteVersion: string;
+	let showNavigationLoadingBar = false;
 
 	onMount(async () => {
 		const res = await checkAppVersion();
@@ -20,11 +23,23 @@
 		localVersion = res.localVersion ?? 'unknown';
 		remoteVersion = res.remoteVersion ?? 'unknown';
 	});
+
+	beforeNavigate(() => {
+		showNavigationLoadingBar = true;
+	});
+
+	afterNavigate(() => {
+		showNavigationLoadingBar = false;
+	});
 </script>
 
 <main>
 	{#key $page.url}
 		<div in:fade={{ duration: 100 }}>
+			{#if showNavigationLoadingBar}
+				<NavigationLoadingBar />
+			{/if}
+
 			<slot />
 			<DownloadPanel />
 
