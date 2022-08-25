@@ -1,44 +1,3 @@
-<script context="module" lang="ts">
-	export const prerender = false;
-
-	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-
-	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
-	import { ImmichUser } from '$lib/models/immich-user';
-	import type { Load } from '@sveltejs/kit';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import { AlbumResponseDto, api } from '@api';
-
-	export const load: Load = async ({ fetch, session }) => {
-		if (!browser && !session.user) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-
-		try {
-			const [user, albums] = await Promise.all([
-				fetch('/data/user/get-my-user-info').then((r) => r.json()),
-				fetch('/data/album/get-all-albums').then((r) => r.json())
-			]);
-
-			return {
-				status: 200,
-				props: {
-					user: user,
-					albums: albums
-				}
-			};
-		} catch (e) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-	};
-</script>
-
 <script lang="ts">
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import { goto } from '$app/navigation';
@@ -46,27 +5,29 @@
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-	import { browser } from '$app/env';
+	import type { PageData } from './$types';
+	import { AlbumResponseDto, api } from '@api';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 
-	export let user: ImmichUser;
-	export let albums: AlbumResponseDto[];
+	export let data: PageData;
 
 	let isShowContextMenu = false;
 	let contextMenuPosition = { x: 0, y: 0 };
 	let targetAlbum: AlbumResponseDto;
 
 	onMount(async () => {
-		const { data } = await api.albumApi.getAllAlbums();
-		albums = data;
+		const getAllAlbumsRes = await api.albumApi.getAllAlbums();
+		data.albums = getAllAlbumsRes.data;
 
 		// Delete album that has no photos and is named 'Untitled'
-		for (const album of albums) {
+		for (const album of data.albums) {
 			if (album.albumName === 'Untitled' && album.assetCount === 0) {
-				const isDeleted = await autoDeleteAlbum(album);
-
-				if (isDeleted) {
-					albums = albums.filter((a) => a.id !== album.id);
-				}
+				setTimeout(async () => {
+					await autoDeleteAlbum(album);
+					data.albums = data.albums.filter((a) => a.id !== album.id);
+				}, 500);
 			}
 		}
 	});
@@ -101,7 +62,7 @@
 		) {
 			try {
 				await api.albumApi.deleteAlbum(targetAlbum.id);
-				albums = albums.filter((a) => a.id !== targetAlbum.id);
+				data.albums = data.albums.filter((a) => a.id !== targetAlbum.id);
 			} catch (e) {
 				console.log('Error [userDeleteMenu] ', e);
 			}
@@ -127,7 +88,7 @@
 </svelte:head>
 
 <section>
-	<NavigationBar {user} on:uploadClicked={() => {}} />
+	<NavigationBar user={data.user} on:uploadClicked={() => {}} />
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg ">
@@ -158,7 +119,7 @@
 
 			<!-- Album Card -->
 			<div class="flex flex-wrap gap-8">
-				{#each albums as album}
+				{#each data.albums as album}
 					{#key album.id}
 						<a sveltekit:prefetch href={`albums/${album.id}`}>
 							<AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e, album)} />
@@ -168,7 +129,7 @@
 			</div>
 
 			<!-- Empty Message -->
-			{#if albums.length === 0}
+			{#if data.albums.length === 0}
 				<div
 					class="border p-5 w-[50%] m-auto mt-10 bg-gray-50 rounded-3xl flex flex-col place-content-center place-items-center"
 				>
