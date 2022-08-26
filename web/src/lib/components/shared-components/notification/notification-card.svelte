@@ -51,7 +51,7 @@
 	onMount(() => {
 		setTimeout(() => {
 			notificationController.removeNotificationById(notificationInfo.id);
-		}, 3000);
+		}, notificationInfo.timeout);
 	});
 </script>
 
