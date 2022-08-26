@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import type { ImmichUser } from '$lib/models/immich-user';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
 	import { clickOutside } from '../../utils/click-outside';
-	import { api } from '@api';
+	import { api, UserResponseDto } from '@api';
 
-	export let user: ImmichUser;
+	export let user: UserResponseDto;
+	export let shouldShowUploadButton = true;
 
 	let shouldShowAccountInfo = false;
 	let shouldShowProfileImage = false;
@@ -60,7 +60,7 @@
 			/>
 		</div>
 		<section class="flex gap-4 place-items-center">
-			{#if $page.url.pathname !== '/admin'}
+			{#if $page.url.pathname !== '/admin' && shouldShowUploadButton}
 				<button
 					in:fly={{ x: 50, duration: 250 }}
 					on:click={() => dispatch('uploadClicked')}

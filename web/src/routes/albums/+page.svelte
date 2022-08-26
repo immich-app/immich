@@ -88,7 +88,7 @@
 </svelte:head>
 
 <section>
-	<NavigationBar user={data.user} on:uploadClicked={() => {}} />
+	<NavigationBar user={data.user} shouldShowUploadButton={false} />
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg ">
