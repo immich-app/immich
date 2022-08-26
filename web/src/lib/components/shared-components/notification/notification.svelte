@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import CloseCircleOutline from 'svelte-material-icons/CloseCircleOutline.svelte';
+	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
 
-	import { fly, fade } from 'svelte/transition';
 	import {
 		notificationController,
 		NotificationType
@@ -11,13 +13,37 @@
 	let isOpen = false;
 	let notificationType = NotificationType.Info;
 
+	let infoPrimaryColor = '#4250AF';
+	let errorPrimaryColor = '#E64132';
+	$: icon = notificationType === NotificationType.Error ? CloseCircleOutline : InformationOutline;
+
 	$: backgroundColor = () => {
-		if (notificationType === NotificationType.Success) {
-			return '#dff0d8';
-		} else if (notificationType === NotificationType.Error) {
-			return '#f2dede';
-		} else {
-			return '#f5f5f5';
+		if (notificationType === NotificationType.Info) {
+			return '#E0E2F0';
+		}
+
+		if (notificationType === NotificationType.Error) {
+			return '#FBE8E6';
+		}
+	};
+
+	$: borderStyle = () => {
+		if (notificationType === NotificationType.Info) {
+			return '1px solid #D8DDFF';
+		}
+
+		if (notificationType === NotificationType.Error) {
+			return '1px solid #F0E8E7';
+		}
+	};
+
+	$: primaryColor = () => {
+		if (notificationType === NotificationType.Info) {
+			return infoPrimaryColor;
+		}
+
+		if (notificationType === NotificationType.Error) {
+			return errorPrimaryColor;
 		}
 	};
 
@@ -25,7 +51,7 @@
 		message = msg;
 	});
 
-	const unsubscribeIsShow = notificationController.isOpen.subscribe((openState) => {
+	const unsubscribeIsOpen = notificationController.isOpen.subscribe((openState) => {
 		isOpen = openState;
 	});
 
@@ -35,7 +61,7 @@
 
 	onDestroy(() => {
 		unsubscribeMessage();
-		unsubscribeIsShow();
+		unsubscribeIsOpen();
 		unsubscribeNotificationType();
 	});
 </script>
@@ -44,10 +70,17 @@
 	<div transition:fade={{ duration: 250 }}>
 		<div
 			style:background-color={backgroundColor()}
-			class="absolute inline-block right-5 top-[80px] min-h-[80px] min-w-[200px] max-w-[300px] border border-immich-primary rounded-lg z-[999999] shadow-md p-4"
+			style:border={borderStyle()}
+			class="absolute inline-block right-5 top-[80px] min-h-[80px] w-[300px] rounded-2xl z-[999999] shadow-md p-4"
 		>
-			<h2 class="font-medium">{notificationType.toString()}</h2>
-			<p class="text-sm">{message}</p>
+			<div class="flex gap-2 place-items-center">
+				<svelte:component this={icon} color={primaryColor()} size="20" />
+				<!-- <CloseCircleOutline color={primaryColor()} />
+				<InformationOutline color={primaryColor()} /> -->
+				<h2 style:color={primaryColor()} class="font-medium">{notificationType.toString()}</h2>
+			</div>
+
+			<p class="text-sm pl-[28px] pr-[16px]">{message}</p>
 		</div>
 	</div>
 {/if}

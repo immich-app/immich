@@ -26,10 +26,6 @@
 		notificationController.show({ message: 'info', type: NotificationType.Info });
 	}
 
-	function success() {
-		notificationController.show({ message: 'sucess', type: NotificationType.Success });
-	}
-
 	function error() {
 		notificationController.show({ message: 'error', type: NotificationType.Error });
 	}
@@ -64,7 +60,6 @@
 		/>
 	</a>
 	<button on:click={info}>info</button>
-	<button on:click={success}>success</button>
 	<button on:click={error}>error</button>
 	<!-- Status Box -->
 

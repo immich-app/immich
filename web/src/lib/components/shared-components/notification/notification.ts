@@ -2,12 +2,11 @@ import { writable } from 'svelte/store';
 
 export enum NotificationType {
 	Info = 'Info',
-	Success = 'Success',
 	Error = 'Error'
 }
 
 function createNotificationController() {
-	const isOpen = writable<boolean>(false);
+	const isOpen = writable<boolean>(true);
 	const notificationMessage = writable<string>('message');
 	const notificationType = writable<NotificationType>(NotificationType.Info);
 
@@ -18,7 +17,7 @@ function createNotificationController() {
 		if (isAutoHide) {
 			setTimeout(() => {
 				isOpen.set(false);
-			}, 1500);
+			}, 3000);
 		}
 
 		isOpen.set(true);
