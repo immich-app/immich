@@ -25,16 +25,11 @@
 			await api.userApi.getProfileImage(user.id);
 			shouldShowProfileImage = true;
 		} catch (e) {
-			console.log('User does not have a profile image');
 			shouldShowProfileImage = false;
 		}
 	};
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
-	};
-
-	const navigateToAdmin = () => {
-		goto('/admin');
 	};
 
 	const showAccountInfoPanel = () => {

@@ -27,7 +27,7 @@ export class ImmichNotificationDto {
 	/**
 	 * Timeout in miliseconds
 	 */
-	timeout = 3000;
+	timeout?: number;
 }
 function createNotificationList() {
 	const notificationList = writable<ImmichNotification[]>([]);
@@ -36,7 +36,7 @@ function createNotificationList() {
 		const newNotification = new ImmichNotification();
 		newNotification.message = notificationInfo.message;
 		newNotification.type = notificationInfo.type;
-		newNotification.timeout = notificationInfo.timeout;
+		newNotification.timeout = notificationInfo.timeout || 3000;
 
 		notificationList.update((currentList) => [...currentList, newNotification]);
 	};

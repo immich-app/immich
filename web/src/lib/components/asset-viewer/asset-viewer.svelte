@@ -9,6 +9,10 @@
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import { api, AssetResponseDto, AssetTypeEnum } from '@api';
+	import {
+		notificationController,
+		NotificationType
+	} from '../shared-components/notification/notification';
 
 	export let asset: AssetResponseDto;
 
@@ -115,7 +119,11 @@
 				}, 2000);
 			}
 		} catch (e) {
-			console.log('Error downloading file ', e);
+			console.error('Error downloading file ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error downloading file, check console for more details.'
+			});
 		}
 	};
 </script>

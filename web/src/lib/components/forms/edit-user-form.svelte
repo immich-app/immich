@@ -2,6 +2,10 @@
 	import { api, UserResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
 	import AccountEditOutline from 'svelte-material-icons/AccountEditOutline.svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '../shared-components/notification/notification';
 
 	export let user: UserResponseDto;
 
@@ -29,7 +33,11 @@
 				dispatch('edit-success');
 			}
 		} catch (e) {
-			console.log('Error updating user ', e);
+			console.error('Error updating user ', e);
+			notificationController.show({
+				message: 'Error updating user, check console for more details',
+				type: NotificationType.Error
+			});
 		}
 	};
 
@@ -49,7 +57,11 @@
 				}
 			}
 		} catch (e) {
-			console.log('Error reseting user password', e);
+			console.error('Error reseting user password', e);
+			notificationController.show({
+				message: 'Error reseting user password, check console for more details',
+				type: NotificationType.Error
+			});
 		}
 	};
 </script>
