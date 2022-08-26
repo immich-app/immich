@@ -1,5 +1,4 @@
 <script lang="ts">
-
 	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
@@ -50,8 +49,8 @@
 			isSelected={selectedAction === AppSideBarSelection.ALBUMS}
 		/>
 	</a>
-	<!-- Status Box -->
 
+	<!-- Status Box -->
 	<div class="mb-6 mt-auto">
 		<StatusBox />
 	</div>
