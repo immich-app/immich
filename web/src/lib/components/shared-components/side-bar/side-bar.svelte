@@ -7,7 +7,6 @@
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import SideBarButton from './side-bar-button.svelte';
 	import StatusBox from '../status-box.svelte';
-	import { notificationList, NotificationType } from '../notification/notification';
 
 	let selectedAction: AppSideBarSelection;
 
@@ -20,14 +19,6 @@
 			selectedAction = AppSideBarSelection.SHARING;
 		}
 	});
-
-	function info() {
-		notificationList.show({ message: 'info', type: NotificationType.Info });
-	}
-
-	function error() {
-		notificationList.show({ message: 'error', type: NotificationType.Error });
-	}
 </script>
 
 <section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6">
@@ -58,10 +49,8 @@
 			isSelected={selectedAction === AppSideBarSelection.ALBUMS}
 		/>
 	</a>
-	<button on:click={info}>info</button>
-	<button on:click={error}>error</button>
-	<!-- Status Box -->
 
+	<!-- Status Box -->
 	<div class="mb-6 mt-auto">
 		<StatusBox />
 	</div>
