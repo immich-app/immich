@@ -5,7 +5,7 @@
 
 	import {
 		ImmichNotification,
-		notificationList,
+		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { onMount } from 'svelte';
@@ -50,8 +50,8 @@
 
 	onMount(() => {
 		setTimeout(() => {
-			notificationList.removeNotificationById(notificationInfo.id);
-		}, 2500);
+			notificationController.removeNotificationById(notificationInfo.id);
+		}, 3000);
 	});
 </script>
 
@@ -66,5 +66,5 @@
 		<h2 style:color={primaryColor()} class="font-medium">{notificationInfo.type.toString()}</h2>
 	</div>
 
-	<p class="text-sm pl-[28px] pr-[16px]">{notificationInfo.message} {notificationInfo.id}</p>
+	<p class="text-sm pl-[28px] pr-[16px]">{notificationInfo.message}</p>
 </div>

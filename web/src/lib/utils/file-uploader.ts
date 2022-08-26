@@ -1,10 +1,13 @@
+import {
+	notificationController,
+	NotificationType
+} from './../components/shared-components/notification/notification';
 /* @vite-ignore */
 import * as exifr from 'exifr';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
 import { albumUploadAssetStore } from '$lib/stores/album-upload-asset';
-
 /**
  * Determine if the upload is for album or for the user general backup
  * @variant GENERAL - Upload assets to the server for general backup
@@ -32,6 +35,15 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 
 		fileSelector.onchange = async (e: any) => {
 			const files = Array.from<File>(e.target.files);
+
+			if (files.length > 50) {
+				notificationController.show({
+					message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files`,
+					type: NotificationType.Error
+				});
+
+				return;
+			}
 
 			const acceptedFile = files.filter(
 				(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
