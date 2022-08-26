@@ -12,25 +12,25 @@ export class ImmichNotification {
 }
 
 function createNotificationList() {
-	const { set, update, subscribe } = writable<ImmichNotification[]>([]);
+	const notificationList = writable<ImmichNotification[]>([]);
 
 	const show = ({ message = '', type = NotificationType.Info }) => {
 		const notification = new ImmichNotification();
 		notification.message = message;
 		notification.type = type;
 
-		update((currentList) => [...currentList, notification]);
+		notificationList.update((currentList) => [...currentList, notification]);
 	};
 
 	const removeNotificationById = (id: number) => {
-		update((currentList) => currentList.filter((n) => n.id != id));
+		notificationList.update((currentList) => currentList.filter((n) => n.id != id));
 	};
 
 	return {
 		show,
 		removeNotificationById,
-		subscribe
+		notificationList
 	};
 }
 
-export const notificationList = createNotificationList();
+export const notificationController = createNotificationList();
