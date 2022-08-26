@@ -10,6 +10,10 @@
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '$lib/components/shared-components/notification/notification';
 
 	export let data: PageData;
 
@@ -40,7 +44,11 @@
 
 			goto('/albums/' + newAlbum.id);
 		} catch (e) {
-			console.log('Error [createAlbum] ', e);
+			console.error('Error [createAlbum] ', e);
+			notificationController.show({
+				message: 'Error creating album, check console for more details',
+				type: NotificationType.Error
+			});
 		}
 	};
 
@@ -49,7 +57,7 @@
 			await api.albumApi.deleteAlbum(album.id);
 			return true;
 		} catch (e) {
-			console.log('Error [autoDeleteAlbum] ', e);
+			console.error('Error [autoDeleteAlbum] ', e);
 			return false;
 		}
 	};
@@ -64,7 +72,11 @@
 				await api.albumApi.deleteAlbum(targetAlbum.id);
 				data.albums = data.albums.filter((a) => a.id !== targetAlbum.id);
 			} catch (e) {
-				console.log('Error [userDeleteMenu] ', e);
+				console.error('Error [userDeleteMenu] ', e);
+				notificationController.show({
+					message: 'Error deleting user, check console for more details',
+					type: NotificationType.Error
+				});
 			}
 		}
 
