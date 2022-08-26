@@ -10,6 +10,7 @@
 	import { page } from '$app/stores';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
+	import Notification from '$lib/components/shared-components/notification/notification.svelte';
 
 	let shouldShowAnnouncement: boolean;
 	let localVersion: string;
@@ -44,7 +45,7 @@
 
 			<DownloadPanel />
 			<UploadPanel />
-
+			<Notification />
 			{#if shouldShowAnnouncement}
 				<AnnouncementBox
 					{localVersion}

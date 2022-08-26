@@ -1,5 +1,4 @@
 <script lang="ts">
-
 	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
@@ -8,6 +7,8 @@
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import SideBarButton from './side-bar-button.svelte';
 	import StatusBox from '../status-box.svelte';
+	import { notificationController, NotificationType } from '../notification/notification';
+	import Notification from '../notification/notification.svelte';
 
 	let selectedAction: AppSideBarSelection;
 
@@ -20,6 +21,18 @@
 			selectedAction = AppSideBarSelection.SHARING;
 		}
 	});
+
+	function info() {
+		notificationController.show({ message: 'info', type: NotificationType.Info });
+	}
+
+	function success() {
+		notificationController.show({ message: 'sucess', type: NotificationType.Success });
+	}
+
+	function error() {
+		notificationController.show({ message: 'error', type: NotificationType.Error });
+	}
 </script>
 
 <section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6">
@@ -50,6 +63,9 @@
 			isSelected={selectedAction === AppSideBarSelection.ALBUMS}
 		/>
 	</a>
+	<button on:click={info}>info</button>
+	<button on:click={success}>success</button>
+	<button on:click={error}>error</button>
 	<!-- Status Box -->
 
 	<div class="mb-6 mt-auto">
