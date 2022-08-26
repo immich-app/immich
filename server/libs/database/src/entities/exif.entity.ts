@@ -23,7 +23,7 @@ export class ExifEntity {
   @Column({ type: 'integer', nullable: true })
   exifImageHeight!: number | null;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'bigint', nullable: true })
   fileSizeInByte!: number | null;
 
   @Column({ type: 'varchar', nullable: true })
