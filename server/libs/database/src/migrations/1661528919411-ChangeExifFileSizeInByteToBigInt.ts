@@ -10,5 +10,10 @@ export class ChangeExifFileSizeInByteToBigInt1661528919411 implements MigrationI
     `);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+    ALTER TABLE exif
+    ALTER COLUMN "fileSizeInByte" type integer using "fileSizeInByte"::integer;
+  `);
+  }
 }
