@@ -5,30 +5,32 @@ export enum NotificationType {
 	Error = 'Error'
 }
 
-function createNotificationController() {
-	const isOpen = writable<boolean>(true);
-	const notificationMessage = writable<string>('message');
-	const notificationType = writable<NotificationType>(NotificationType.Info);
+export class ImmichNotification {
+	id = new Date().getTime();
+	type!: NotificationType;
+	message!: string;
+}
 
-	const show = ({ message = '', isAutoHide = true, type = NotificationType.Info }) => {
-		notificationMessage.set(message);
-		notificationType.set(type);
+function createNotificationList() {
+	const { set, update, subscribe } = writable<ImmichNotification[]>([]);
 
-		if (isAutoHide) {
-			setTimeout(() => {
-				isOpen.set(false);
-			}, 3000);
-		}
+	const show = ({ message = '', type = NotificationType.Info }) => {
+		const notification = new ImmichNotification();
+		notification.message = message;
+		notification.type = type;
 
-		isOpen.set(true);
+		update((currentList) => [...currentList, notification]);
+	};
+
+	const removeNotificationById = (id: number) => {
+		update((currentList) => currentList.filter((n) => n.id != id));
 	};
 
 	return {
 		show,
-		isOpen,
-		notificationMessage,
-		notificationType
+		removeNotificationById,
+		subscribe
 	};
 }
 
-export const notificationController = createNotificationController();
+export const notificationList = createNotificationList();

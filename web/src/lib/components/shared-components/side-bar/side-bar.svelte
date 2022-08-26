@@ -7,8 +7,7 @@
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import SideBarButton from './side-bar-button.svelte';
 	import StatusBox from '../status-box.svelte';
-	import { notificationController, NotificationType } from '../notification/notification';
-	import Notification from '../notification/notification.svelte';
+	import { notificationList, NotificationType } from '../notification/notification';
 
 	let selectedAction: AppSideBarSelection;
 
@@ -23,11 +22,11 @@
 	});
 
 	function info() {
-		notificationController.show({ message: 'info', type: NotificationType.Info });
+		notificationList.show({ message: 'info', type: NotificationType.Info });
 	}
 
 	function error() {
-		notificationController.show({ message: 'error', type: NotificationType.Error });
+		notificationList.show({ message: 'error', type: NotificationType.Error });
 	}
 </script>
 
