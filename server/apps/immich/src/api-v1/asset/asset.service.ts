@@ -9,7 +9,7 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
@@ -30,11 +30,10 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import {
-  AssetCountByTimeGroupDto,
   AssetCountByTimeGroupResponseDto,
   mapAssetCountByTimeGroupResponse,
 } from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeGroupDto, TimeGroupEnum } from './dto/get-asset-count-by-time-group.dto';
+import { GetAssetCountByTimeGroupDto } from './dto/get-asset-count-by-time-group.dto';
 
 const fileInfo = promisify(stat);
 
