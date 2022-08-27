@@ -67,6 +67,9 @@ String parameterToString(dynamic value) {
   if (value is ThumbnailFormat) {
     return ThumbnailFormatTypeTransformer().encode(value).toString();
   }
+  if (value is TimeGroupEnum) {
+    return TimeGroupEnumTypeTransformer().encode(value).toString();
+  }
   return value.toString();
 }
 

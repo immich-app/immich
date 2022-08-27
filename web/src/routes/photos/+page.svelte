@@ -20,11 +20,13 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import type { PageData } from './$types';
-	import { onMount } from 'svelte';
+
+	import { onMount, onDestroy } from 'svelte';
 	import {
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
+	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
 
 	export let data: PageData;
 
@@ -193,6 +195,18 @@
 			console.error('Error deleteSelectedAssetHandler', e);
 		}
 	};
+
+	onMount(async () => {
+		openWebsocketConnection();
+
+		const { data: assets } = await api.assetApi.getAllAssets();
+
+		setAssetInfo(assets);
+	});
+
+	onDestroy(() => {
+		closeWebsocketConnection();
+	});
 </script>
 
 <svelte:head>

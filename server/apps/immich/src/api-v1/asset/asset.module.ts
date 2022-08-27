@@ -8,6 +8,7 @@ import { BackgroundTaskModule } from '../../modules/background-task/background-t
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { CommunicationModule } from '../communication/communication.module';
 import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
+import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
 
 @Module({
   imports: [
@@ -24,7 +25,14 @@ import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
     }),
   ],
   controllers: [AssetController],
-  providers: [AssetService, BackgroundTaskService],
+  providers: [
+    AssetService,
+    BackgroundTaskService,
+    {
+      provide: ASSET_REPOSITORY,
+      useClass: AssetRepository,
+    },
+  ],
   exports: [AssetService],
 })
 export class AssetModule {}

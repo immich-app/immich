@@ -79,10 +79,11 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
-*AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/searchTerm | 
+*AssetApi* | [**getAssetCountByTimeGroup**](doc//AssetApi.md#getassetcountbytimegroup) | **GET** /asset/count-by-date | 
+*AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
-*AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/allLocation | 
-*AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/allObjects | 
+*AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
+*AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file | 
@@ -112,6 +113,8 @@ Class | Method | HTTP request | Description
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
+ - [AssetCountByTimeGroupDto](doc//AssetCountByTimeGroupDto.md)
+ - [AssetCountByTimeGroupResponseDto](doc//AssetCountByTimeGroupResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
@@ -129,6 +132,7 @@ Class | Method | HTTP request | Description
  - [DeviceInfoResponseDto](doc//DeviceInfoResponseDto.md)
  - [DeviceTypeEnum](doc//DeviceTypeEnum.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
+ - [GetAssetCountByTimeGroupDto](doc//GetAssetCountByTimeGroupDto.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
@@ -140,6 +144,7 @@ Class | Method | HTTP request | Description
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [ThumbnailFormat](doc//ThumbnailFormat.md)
+ - [TimeGroupEnum](doc//TimeGroupEnum.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)

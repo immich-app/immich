@@ -14,10 +14,11 @@ Method | HTTP request | Description
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
-[**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/searchTerm | 
+[**getAssetCountByTimeGroup**](AssetApi.md#getassetcountbytimegroup) | **GET** /asset/count-by-date | 
+[**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
-[**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/allLocation | 
-[**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/allObjects | 
+[**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
+[**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file | 
@@ -263,6 +264,53 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAssetCountByTimeGroup**
+> AssetCountByTimeGroupResponseDto getAssetCountByTimeGroup(getAssetCountByTimeGroupDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final getAssetCountByTimeGroupDto = GetAssetCountByTimeGroupDto(); // GetAssetCountByTimeGroupDto | 
+
+try {
+    final result = api_instance.getAssetCountByTimeGroup(getAssetCountByTimeGroupDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getAssetCountByTimeGroup: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **getAssetCountByTimeGroupDto** | [**GetAssetCountByTimeGroupDto**](GetAssetCountByTimeGroupDto.md)|  | 
+
+### Return type
+
+[**AssetCountByTimeGroupResponseDto**](AssetCountByTimeGroupResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
