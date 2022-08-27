@@ -1,10 +1,14 @@
 import 'dart:collection';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_cache_manager/src/storage/cache_object.dart';
 import 'package:hive/hive.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
+// Implementation of a CacheInfoRepository based on Hive
 abstract class ImmichCacheRepository extends CacheInfoRepository {
   int getNumberOfCachedObjects();
   int getCacheSize();
@@ -14,6 +18,13 @@ class ImmichCacheInfoRepository extends ImmichCacheRepository {
   final String hiveBoxName;
   final String keyLookupHiveBoxName;
 
+  // To circumvent some of the limitations of a non-relational key-value database,
+  // we use two hive boxes per cache.
+  // [cacheObjectLookupBox] maps ids to cache objects.
+  // [keyLookupHiveBox] maps keys to ids.
+  // The lookup of a cache object by key therefore involves two steps:
+  // id = keyLookupHiveBox[key]
+  // object = cacheObjectLookupBox[id]
   late Box<Map<dynamic, dynamic>> cacheObjectLookupBox;
   late Box<int> keyLookupHiveBox;
 
@@ -120,6 +131,16 @@ class ImmichCacheInfoRepository extends ImmichCacheRepository {
     cacheObjectLookupBox = await Hive.openBox(hiveBoxName);
     keyLookupHiveBox = await Hive.openBox(keyLookupHiveBoxName);
 
+    // The cache might have cleared by the operating system.
+    // This could create inconsistencies between the file system cache and database.
+    // To check whether the cache was cleared, a file within the cache directory
+    // is created for each database. If the file is absent, the cache was cleared and therefore
+    // the database has to be cleared as well.
+    if (!await _checkAndCreateAnchorFile()) {
+      await cacheObjectLookupBox.clear();
+      await keyLookupHiveBox.clear();
+    }
+
     return cacheObjectLookupBox.isOpen;
   }
 
@@ -163,5 +184,18 @@ class ImmichCacheInfoRepository extends ImmichCacheRepository {
     });
 
     return CacheObject.fromMap(converted);
+  }
+
+  Future<bool> _checkAndCreateAnchorFile() async {
+    final tmpDir = await getTemporaryDirectory();
+    final cacheFile = File(p.join(tmpDir.path, "$hiveBoxName.tmp"));
+
+    if (await cacheFile.exists()) {
+      return true;
+    }
+
+    await cacheFile.create();
+
+    return false;
   }
 }
