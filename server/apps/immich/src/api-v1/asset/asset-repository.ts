@@ -3,10 +3,11 @@ import { CuratedLocationsResponseDto } from './response-dto/curated-locations-re
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+import { AssetCountByTimeGroupDto } from './response-dto/asset-count-by-time-group-response.dto';
+import { TimeGroupEnum } from './dto/get-asset-count-by-time-group.dto';
 
 export interface IAssetRepository {
   create(createAssetDto: CreateAssetDto, ownerId: string, originalPath: string, mimeType: string): Promise<AssetEntity>;
@@ -16,7 +17,7 @@ export interface IAssetRepository {
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
-  getCountByTimeGroup(): any;
+  getAssetCountByTimeGroup(userId: string, timeGroup: TimeGroupEnum): Promise<AssetCountByTimeGroupDto[]>;
 }
 
 export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
@@ -27,6 +28,31 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
+  async getAssetCountByTimeGroup(userId: string, timeGroup: TimeGroupEnum) {
+    let result: AssetCountByTimeGroupDto[] = [];
+
+    if (timeGroup === TimeGroupEnum.Month) {
+      result = await this.assetRepository
+        .createQueryBuilder('asset')
+        .select(`COUNT(asset.id)::int`, 'count')
+        .addSelect(`to_char(date_trunc('month', "createdAt"::timestamptz), 'YYYY_MM')`, 'timeGroup')
+        .where('"userId" = :userId', { userId: userId })
+        .groupBy(`date_trunc('month', "createdAt"::timestamptz)`)
+        .orderBy(`date_trunc('month', "createdAt"::timestamptz)`, 'DESC')
+        .getRawMany();
+    } else if (timeGroup === TimeGroupEnum.Day) {
+      result = await this.assetRepository
+        .createQueryBuilder('asset')
+        .select(`COUNT(asset.id)::int`, 'count')
+        .addSelect(`to_char(date_trunc('day', "createdAt"::timestamptz), 'YYYY_MM_DD')`, 'timeGroup')
+        .where('"userId" = :userId', { userId: userId })
+        .groupBy(`date_trunc('day', "createdAt"::timestamptz)`)
+        .orderBy(`date_trunc('day', "createdAt"::timestamptz)`, 'DESC')
+        .getRawMany();
+    }
+
+    return result;
+  }
 
   async getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
     return await this.assetRepository
@@ -157,9 +183,5 @@ export class AssetRepository implements IAssetRepository {
     rows.forEach((v) => res.push(v.deviceAssetId));
 
     return res;
-  }
-
-  getCountByTimeGroup() {
-    throw new Error('Method not implemented.');
   }
 }

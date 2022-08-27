@@ -1,4 +1,4 @@
-import { serverApi } from '@api';
+import { serverApi, TimeGroupEnum } from '@api';
 import * as cookieParser from 'cookie';
 
 import type { LayoutServerLoad } from './$types';
@@ -21,6 +21,9 @@ export const load: LayoutServerLoad = async ({ request }) => {
 			user: userInfo
 		};
 	} catch (e) {
-		console.log('[ERROR] layout.server.ts [LayoutServerLoad]: ', e);
+		console.error('[ERROR] layout.server.ts [LayoutServerLoad]: ', e);
+		return {
+			user: undefined
+		};
 	}
 };

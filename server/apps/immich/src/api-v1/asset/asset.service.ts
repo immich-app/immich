@@ -29,6 +29,12 @@ import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-ass
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
+import {
+  AssetCountByTimeGroupDto,
+  AssetCountByTimeGroupResponseDto,
+  mapAssetCountByTimeGroupResponse,
+} from './response-dto/asset-count-by-time-group-response.dto';
+import { GetAssetCountByTimeGroupDto, TimeGroupEnum } from './dto/get-asset-count-by-time-group.dto';
 
 const fileInfo = promisify(stat);
 
@@ -428,13 +434,15 @@ export class AssetService {
     return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
   }
 
-  async getAssetCountByTimeGroup(authUser: AuthUserDto) {
-    return await this.assetRepository
-      .createQueryBuilder('asset')
-      .select(`COUNT(*) as "count", to_char(date_trunc('month', "createdAt"::timestamptz), 'YYYY_MM') as "timeGroup"`)
-      .where('"userId" = :userId', { userId: authUser.id })
-      .groupBy(`date_trunc('month', "createdAt"::timestamptz)`)
-      .orderBy(`date_trunc('month', "createdAt"::timestamptz)`, 'DESC')
-      .getRawMany();
+  async getAssetCountByTimeGroup(
+    authUser: AuthUserDto,
+    getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto,
+  ): Promise<AssetCountByTimeGroupResponseDto> {
+    const result = await this._assetRepository.getAssetCountByTimeGroup(
+      authUser.id,
+      getAssetCountByTimeGroupDto.timeGroup,
+    );
+
+    return mapAssetCountByTimeGroupResponse(result);
   }
 }
