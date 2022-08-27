@@ -45,18 +45,10 @@
 
 	let isShowAssetViewer = false;
 	let currentViewAssetIndex = 0;
-	let timelineViewPortWidth: number;
-	let estimatedTotalHeight: number;
 	let selectedAsset: AssetResponseDto;
 
 	onMount(() => {
-		estimatedTotalHeight = calculateTimeLineTotalHeight(
-			data.assetCountByTimeGroup,
-			timelineViewPortWidth
-		);
-
-		console.log(estimatedTotalHeight);
-		// setAssetInfo(data.assets);
+		openWebsocketConnection();
 	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
@@ -204,14 +196,6 @@
 		}
 	};
 
-	onMount(async () => {
-		openWebsocketConnection();
-
-		const { data: assets } = await api.assetApi.getAllAssets();
-
-		setAssetInfo(assets);
-	});
-
 	onDestroy(() => {
 		closeWebsocketConnection();
 	});
@@ -253,17 +237,58 @@
 	<SideBar />
 
 	<section class="overflow-y-auto relative immich-scrollbar">
-		<section
-			id="assets-content"
-			class="relative pt-8 pl-4 mb-12 bg-immich-bg"
-			bind:clientWidth={timelineViewPortWidth}
-			style:height={estimatedTotalHeight + 'px'}
-		>
-			<div class="flex flex-wrap gap-1">
-				{#each new Array(data.assetCountByTimeGroup.totalAssets) as data, i}
-					<div class="w-[235px] h-[235px] bg-gray-700 text-green-500">{i}</div>
+		<section id="assets-content" class="relative pt-8 pl-4 mb-12 bg-immich-bg">
+			<section id="image-grid" class="flex flex-wrap gap-14">
+				{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
+					<!-- Asset Group By Date -->
+					<div
+						class="flex flex-col"
+						on:mouseenter={() => (isMouseOverGroup = true)}
+						on:mouseleave={() => (isMouseOverGroup = false)}
+					>
+						<!-- Date group title -->
+						<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
+							{#if (selectedGroupThumbnail === groupIndex && isMouseOverGroup) || selectedGroup.has(groupIndex)}
+								<div
+									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
+									out:fly={{ x: -24, duration: 200 }}
+									class="inline-block px-2 hover:cursor-pointer"
+									on:click={() => selectAssetGroupHandler(groupIndex)}
+								>
+									{#if selectedGroup.has(groupIndex)}
+										<CheckCircle size="24" color="#4250af" />
+									{:else if existingGroup.has(groupIndex)}
+										<CheckCircle size="24" color="#757575" />
+									{:else}
+										<CircleOutline size="24" color="#757575" />
+									{/if}
+								</div>
+							{/if}
+
+							{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
+						</p>
+
+						<!-- Image grid -->
+						<div class="flex flex-wrap gap-[2px]">
+							{#each assetsInDateGroup as asset}
+								{#key asset.id}
+									<ImmichThumbnail
+										{asset}
+										on:mouseEvent={thumbnailMouseEventHandler}
+										on:click={(event) =>
+											isMultiSelectionMode
+												? selectAssetHandler(asset, groupIndex)
+												: viewAssetHandler(event)}
+										on:select={() => selectAssetHandler(asset, groupIndex)}
+										selected={multiSelectedAssets.has(asset)}
+										{groupIndex}
+									/>
+								{/key}
+							{/each}
+						</div>
+					</div>
 				{/each}
-			</div>
+			</section>
 		</section>
 	</section>
 </section>

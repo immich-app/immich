@@ -1,6 +1,6 @@
-import { serverApi } from './../../api/api';
 import type { PageServerLoad } from './$types';
 import { redirect, error } from '@sveltejs/kit';
+import { calculateTimeLineTotalHeight, serverApi, TimeGroupEnum } from '@api';
 
 export const load: PageServerLoad = async ({ parent }) => {
 	try {
@@ -9,11 +9,13 @@ export const load: PageServerLoad = async ({ parent }) => {
 			throw error(400, 'Not logged in');
 		}
 
-		const { data: assets } = await serverApi.assetApi.getAllAssets();
+		const { data: assetCountByTimeGroup } = await serverApi.assetApi.getAssetCountByTimeGroup({
+			timeGroup: TimeGroupEnum.Month
+		});
 
 		return {
 			user,
-			assets
+			assetCountByTimeGroup
 		};
 	} catch (e) {
 		throw redirect(302, '/auth/login');
