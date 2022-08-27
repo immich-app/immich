@@ -22,6 +22,10 @@
 	import type { PageData } from './$types';
 
 	import { onMount, onDestroy } from 'svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '$lib/components/shared-components/notification/notification';
 	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
 
 	export let data: PageData;
@@ -70,7 +74,10 @@
 				pushState(selectedAsset.id);
 			}
 		} catch (e) {
-			console.log('Error navigating asset forward', e);
+			notificationController.show({
+				type: NotificationType.Info,
+				message: 'You have reached the end'
+			});
 		}
 	};
 
@@ -82,7 +89,10 @@
 				pushState(selectedAsset.id);
 			}
 		} catch (e) {
-			console.log('Error navigating asset backward', e);
+			notificationController.show({
+				type: NotificationType.Info,
+				message: 'You have reached the end'
+			});
 		}
 	};
 
@@ -178,7 +188,11 @@
 				clearMultiSelectAssetAssetHandler();
 			}
 		} catch (e) {
-			console.log('Error deleteSelectedAssetHandler', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error deleting assets, check console for more details'
+			});
+			console.error('Error deleteSelectedAssetHandler', e);
 		}
 	};
 

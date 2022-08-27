@@ -22,6 +22,10 @@
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import ThumbnailSelection from './thumbnail-selection.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '../shared-components/notification/notification';
 
 	export let album: AlbumResponseDto;
 
@@ -129,7 +133,11 @@
 				album = data;
 				multiSelectAsset = new Set();
 			} catch (e) {
-				console.log('Error [album-viewer] [removeAssetFromAlbum]', e);
+				console.error('Error [album-viewer] [removeAssetFromAlbum]', e);
+				notificationController.show({
+					type: NotificationType.Error,
+					message: 'Error removing assets from album, check console for more details'
+				});
 			}
 		}
 	};
@@ -179,7 +187,11 @@
 					currentAlbumName = album.albumName;
 				})
 				.catch((e) => {
-					console.log('Error [updateAlbumInfo] ', e);
+					console.error('Error [updateAlbumInfo] ', e);
+					notificationController.show({
+						type: NotificationType.Error,
+						message: "Error updating album's name, check console for more details"
+					});
 				});
 		}
 	}
@@ -193,7 +205,11 @@
 
 			isShowAssetSelection = false;
 		} catch (e) {
-			console.log('Error [createAlbumHandler] ', e);
+			console.error('Error [createAlbumHandler] ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error creating album, check console for more details'
+			});
 		}
 	};
 
@@ -209,7 +225,11 @@
 
 			isShowShareUserSelection = false;
 		} catch (e) {
-			console.log('Error [createAlbumHandler] ', e);
+			console.error('Error [addUserHandler] ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error adding users to album, check console for more details'
+			});
 		}
 	};
 
@@ -227,7 +247,11 @@
 			album = data;
 			isShowShareInfoModal = false;
 		} catch (e) {
-			console.log('Error [sharedUserDeletedHandler] ', e);
+			console.error('Error [sharedUserDeletedHandler] ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error deleting share users, check console for more details'
+			});
 		}
 	};
 
@@ -241,7 +265,11 @@
 				await api.albumApi.deleteAlbum(album.id);
 				goto(backUrl);
 			} catch (e) {
-				console.log('Error [userDeleteMenu] ', e);
+				console.error('Error [userDeleteMenu] ', e);
+				notificationController.show({
+					type: NotificationType.Error,
+					message: 'Error deleting album, check console for more details'
+				});
 			}
 		}
 	};
@@ -262,7 +290,11 @@
 				albumThumbnailAssetId: asset.id
 			});
 		} catch (e) {
-			console.log('Error [setAlbumThumbnailHandler] ', e);
+			console.error('Error [setAlbumThumbnailHandler] ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error setting album thumbnail, check console for more details'
+			});
 		}
 
 		isShowThumbnailSelection = false;

@@ -6,6 +6,10 @@
 	import { goto } from '$app/navigation';
 	import { api } from '@api';
 	import type { PageData } from './$types';
+	import {
+		notificationController,
+		NotificationType
+	} from '$lib/components/shared-components/notification/notification';
 
 	export let data: PageData;
 
@@ -17,6 +21,11 @@
 
 			goto('/albums/' + newAlbum.id);
 		} catch (e) {
+			notificationController.show({
+				message: 'Error creating album, check console for more details',
+				type: NotificationType.Error
+			});
+
 			console.log('Error [createAlbum] ', e);
 		}
 	};
@@ -27,7 +36,7 @@
 </svelte:head>
 
 <section>
-	<NavigationBar user={data.user} on:uploadClicked={() => {}} />
+	<NavigationBar user={data.user} shouldShowUploadButton={false} />
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
