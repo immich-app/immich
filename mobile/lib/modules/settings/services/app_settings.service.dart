@@ -9,8 +9,8 @@ enum AppSettingsEnum<T> {
       "uploadErrorNotificationGracePeriod", 2),
   storageIndicator<bool>("storageIndicator", true),
   thumbnailCacheSize<int>("thumbnailCacheSize", 10000),
-  imageCacheSize<int>("imageCacheSize", 500),
-  albumThumbnailCacheSize<int>("albumThumbnailCacheSize", 300);
+  imageCacheSize<int>("imageCacheSize", 350),
+  albumThumbnailCacheSize<int>("albumThumbnailCacheSize", 200);
 
   const AppSettingsEnum(this.hiveKey, this.defaultValue);
 

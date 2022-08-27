@@ -72,23 +72,23 @@ class CacheSettings extends HookConsumerWidget {
         const CacheSettingsSliderPref(
           setting: AppSettingsEnum.thumbnailCacheSize,
           translationKey: "cache_settings_thumbnail_size",
-          min: 5000,
-          max: 80000,
-          divisions: 15,
+          min: 1000,
+          max: 20000,
+          divisions: 19,
         ),
         const CacheSettingsSliderPref(
           setting: AppSettingsEnum.imageCacheSize,
           translationKey: "cache_settings_image_cache_size",
           min: 0,
-          max: 8000,
-          divisions: 16,
+          max: 1000,
+          divisions: 20,
         ),
         const CacheSettingsSliderPref(
           setting: AppSettingsEnum.albumThumbnailCacheSize,
           translationKey: "cache_settings_album_thumbnails",
-          min: 50,
-          max: 800,
-          divisions: 15,
+          min: 0,
+          max: 1000,
+          divisions: 20,
         ),
         ListTile(
           title: const Text(
