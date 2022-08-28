@@ -15,6 +15,7 @@ import {
   HttpCode,
   BadRequestException,
   UploadedFile,
+  Header,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
@@ -111,6 +112,7 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
+  @Header('Cache-Control', 'max-age=300')
   async getAssetThumbnail(
     @Param('assetId') assetId: string,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,

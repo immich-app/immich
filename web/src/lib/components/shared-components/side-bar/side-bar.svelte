@@ -10,6 +10,8 @@
 
 	let selectedAction: AppSideBarSelection;
 
+	let domCount = 0;
+
 	onMount(async () => {
 		if ($page.routeId == 'albums') {
 			selectedAction = AppSideBarSelection.ALBUMS;
@@ -18,6 +20,10 @@
 		} else if ($page.routeId == 'sharing') {
 			selectedAction = AppSideBarSelection.SHARING;
 		}
+
+		setInterval(() => {
+			domCount = document.getElementsByTagName('*').length;
+		}, 1000);
 	});
 </script>
 
@@ -48,6 +54,7 @@
 			actionType={AppSideBarSelection.ALBUMS}
 			isSelected={selectedAction === AppSideBarSelection.ALBUMS}
 		/>
+		DOM COUNT: {domCount}
 	</a>
 
 	<!-- Status Box -->

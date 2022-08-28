@@ -212,6 +212,7 @@
 		<!-- Thumbnail -->
 		{#if intersecting}
 			<img
+				id={asset.id}
 				style:width={`${thumbnailSize}px`}
 				style:height={`${thumbnailSize}px`}
 				in:fade={{ duration: 250 }}

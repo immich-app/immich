@@ -47,8 +47,11 @@
 	let currentViewAssetIndex = 0;
 	let selectedAsset: AssetResponseDto;
 
-	onMount(() => {
+	onMount(async () => {
 		openWebsocketConnection();
+
+		const res = await api.assetApi.getAllAssets();
+		setAssetInfo(res.data);
 	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
