@@ -6,7 +6,7 @@
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
 	import LoadingSpinner from './loading-spinner.svelte';
-	import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
+	import { api, AssetResponseDto, AssetTypeEnum, getFileUrl, ThumbnailFormat } from '@api';
 
 	const dispatch = createEventDispatcher();
 
@@ -18,7 +18,7 @@
 	export let isExisted: boolean = false;
 
 	let imageData: string;
-	let videoData: string;
+	// let videoData: string;
 
 	let mouseOver: boolean = false;
 	$: dispatch('mouseEvent', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
@@ -28,7 +28,8 @@
 	let isThumbnailVideoPlaying = false;
 	let calculateVideoDurationIntervalHandler: NodeJS.Timer;
 	let videoProgress = '00:00';
-	let videoAbortController: AbortController;
+	// let videoAbortController: AbortController;
+	let videoUrl: string;
 
 	const loadImageData = async () => {
 		const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, {
@@ -42,51 +43,8 @@
 
 	const loadVideoData = async () => {
 		isThumbnailVideoPlaying = false;
-		videoAbortController = new AbortController();
 
-		try {
-			const { data } = await api.assetApi.serveFile(
-				asset.deviceAssetId,
-				asset.deviceId,
-				false,
-				true,
-				{
-					responseType: 'blob',
-					signal: videoAbortController.signal
-				}
-			);
-
-			if (!(data instanceof Blob)) {
-				return;
-			}
-
-			videoData = URL.createObjectURL(data);
-
-			videoPlayerNode.src = videoData;
-
-			videoPlayerNode.load();
-
-			videoPlayerNode.onloadeddata = () => {
-				console.log('first frame load');
-			};
-
-			videoPlayerNode.oncanplaythrough = () => {
-				console.log('can play through');
-			};
-
-			videoPlayerNode.oncanplay = () => {
-				console.log('can play');
-				videoPlayerNode.muted = true;
-				videoPlayerNode.play();
-
-				isThumbnailVideoPlaying = true;
-				calculateVideoDurationIntervalHandler = setInterval(() => {
-					videoProgress = getVideoDurationInString(Math.round(videoPlayerNode.currentTime));
-				}, 1000);
-			};
-
-			return videoData;
-		} catch (e) {}
+		videoUrl = getFileUrl(asset.deviceAssetId, asset.deviceId, false, true);
 	};
 
 	const getVideoDurationInString = (currentTime: number) => {
@@ -136,17 +94,24 @@
 
 	const handleMouseLeaveThumbnail = () => {
 		mouseOver = false;
-
-		// Stop XHR download of video
-		videoAbortController?.abort();
-
-		// Stop video playback
-		URL.revokeObjectURL(videoData);
+		videoUrl = '';
 
 		clearInterval(calculateVideoDurationIntervalHandler);
 
 		isThumbnailVideoPlaying = false;
 		videoProgress = '00:00';
+	};
+
+	const handleCanPlay = (ev: Event) => {
+		const playerNode = ev.target as HTMLVideoElement;
+
+		playerNode.muted = true;
+		playerNode.play();
+
+		isThumbnailVideoPlaying = true;
+		calculateVideoDurationIntervalHandler = setInterval(() => {
+			videoProgress = getVideoDurationInString(Math.round(playerNode.currentTime));
+		}, 1000);
 	};
 
 	$: getThumbnailBorderStyle = () => {
@@ -259,17 +224,21 @@
 
 		{#if mouseOver && asset.type === AssetTypeEnum.Video}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
-				<video
-					muted
-					autoplay
-					preload="none"
-					class="h-full object-cover"
-					width="250px"
-					style:width={`${thumbnailSize}px`}
-					bind:this={videoPlayerNode}
-				>
-					<track kind="captions" />
-				</video>
+				{#if videoUrl}
+					<video
+						muted
+						autoplay
+						preload="none"
+						class="h-full object-cover"
+						width="250px"
+						style:width={`${thumbnailSize}px`}
+						on:canplay={handleCanPlay}
+						bind:this={videoPlayerNode}
+					>
+						<source src={videoUrl} type="video/mp4" />
+						<track kind="captions" />
+					</video>
+				{/if}
 			</div>
 		{/if}
 	</div>

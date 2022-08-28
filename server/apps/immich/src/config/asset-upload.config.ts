@@ -1,9 +1,9 @@
+import { APP_UPLOAD_LOCATION } from '@app/common/constants';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { existsSync, mkdirSync } from 'fs';
 import { extname } from 'path';
 import { Request } from 'express';
-import { APP_UPLOAD_LOCATION } from '../constants/upload_location.constant';
 import { randomUUID } from 'crypto';
 import { diskStorage } from '../utils/disk-storage';
 

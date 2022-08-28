@@ -148,6 +148,44 @@ export interface AlbumResponseDto {
 /**
  * 
  * @export
+ * @interface AssetCountByTimeGroupDto
+ */
+export interface AssetCountByTimeGroupDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetCountByTimeGroupDto
+     */
+    'timeGroup': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByTimeGroupDto
+     */
+    'count': number;
+}
+/**
+ * 
+ * @export
+ * @interface AssetCountByTimeGroupResponseDto
+ */
+export interface AssetCountByTimeGroupResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByTimeGroupResponseDto
+     */
+    'totalAssets': number;
+    /**
+     * 
+     * @type {Array<AssetCountByTimeGroupDto>}
+     * @memberof AssetCountByTimeGroupResponseDto
+     */
+    'groups': Array<AssetCountByTimeGroupDto>;
+}
+/**
+ * 
+ * @export
  * @interface AssetFileUploadResponseDto
  */
 export interface AssetFileUploadResponseDto {
@@ -723,6 +761,19 @@ export interface ExifResponseDto {
 /**
  * 
  * @export
+ * @interface GetAssetCountByTimeGroupDto
+ */
+export interface GetAssetCountByTimeGroupDto {
+    /**
+     * 
+     * @type {TimeGroupEnum}
+     * @memberof GetAssetCountByTimeGroupDto
+     */
+    'timeGroup': TimeGroupEnum;
+}
+/**
+ * 
+ * @export
  * @interface LoginCredentialDto
  */
 export interface LoginCredentialDto {
@@ -994,6 +1045,20 @@ export const ThumbnailFormat = {
 } as const;
 
 export type ThumbnailFormat = typeof ThumbnailFormat[keyof typeof ThumbnailFormat];
+
+
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const TimeGroupEnum = {
+    Day: 'day',
+    Month: 'month'
+} as const;
+
+export type TimeGroupEnum = typeof TimeGroupEnum[keyof typeof TimeGroupEnum];
 
 
 /**
@@ -2074,11 +2139,50 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {GetAssetCountByTimeGroupDto} getAssetCountByTimeGroupDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAssetCountByTimeGroup: async (getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'getAssetCountByTimeGroupDto' is not null or undefined
+            assertParamExists('getAssetCountByTimeGroup', 'getAssetCountByTimeGroupDto', getAssetCountByTimeGroupDto)
+            const localVarPath = `/asset/count-by-date`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(getAssetCountByTimeGroupDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getAssetSearchTerms: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/asset/searchTerm`;
+            const localVarPath = `/asset/search-terms`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2153,7 +2257,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @throws {RequiredError}
          */
         getCuratedLocations: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/asset/allLocation`;
+            const localVarPath = `/asset/curated-locations`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2186,7 +2290,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @throws {RequiredError}
          */
         getCuratedObjects: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/asset/allObjects`;
+            const localVarPath = `/asset/curated-objects`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2458,6 +2562,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {GetAssetCountByTimeGroupDto} getAssetCountByTimeGroupDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAssetCountByTimeGroup(getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetCountByTimeGroupResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetCountByTimeGroup(getAssetCountByTimeGroupDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2597,6 +2711,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getAssetById(assetId: string, options?: any): AxiosPromise<AssetResponseDto> {
             return localVarFp.getAssetById(assetId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {GetAssetCountByTimeGroupDto} getAssetCountByTimeGroupDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAssetCountByTimeGroup(getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto, options?: any): AxiosPromise<AssetCountByTimeGroupResponseDto> {
+            return localVarFp.getAssetCountByTimeGroup(getAssetCountByTimeGroupDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2740,6 +2863,17 @@ export class AssetApi extends BaseAPI {
      */
     public getAssetById(assetId: string, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getAssetById(assetId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {GetAssetCountByTimeGroupDto} getAssetCountByTimeGroupDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public getAssetCountByTimeGroup(getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getAssetCountByTimeGroup(getAssetCountByTimeGroupDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

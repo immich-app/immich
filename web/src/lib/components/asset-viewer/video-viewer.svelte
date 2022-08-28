@@ -3,7 +3,7 @@
 
 	import { createEventDispatcher, onMount } from 'svelte';
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-	import { api, AssetResponseDto } from '@api';
+	import { api, AssetResponseDto, getFileUrl } from '@api';
 
 	export let assetId: string;
 
@@ -13,48 +13,32 @@
 
 	let videoPlayerNode: HTMLVideoElement;
 	let isVideoLoading = true;
+	let videoUrl: string;
 
 	onMount(async () => {
 		const { data: assetInfo } = await api.assetApi.getAssetById(assetId);
 
-		asset = assetInfo;
+		await loadVideoData(assetInfo);
 
-		await loadVideoData();
+		asset = assetInfo;
 	});
 
-	const loadVideoData = async () => {
+	const loadVideoData = async (assetInfo: AssetResponseDto) => {
 		isVideoLoading = true;
 
-		try {
-			const { data } = await api.assetApi.serveFile(
-				asset.deviceAssetId,
-				asset.deviceId,
-				false,
-				true,
-				{
-					responseType: 'blob'
-				}
-			);
+		videoUrl = getFileUrl(assetInfo.deviceAssetId, assetInfo.deviceId, false, true);
 
-			if (!(data instanceof Blob)) {
-				return;
-			}
+		return assetInfo;
+	};
 
-			const videoData = URL.createObjectURL(data);
-			videoPlayerNode.src = videoData;
+	const handleCanPlay = (ev: Event) => {
+		const playerNode = ev.target as HTMLVideoElement;
 
-			videoPlayerNode.load();
+		playerNode.muted = true;
+		playerNode.play();
+		playerNode.muted = false;
 
-			videoPlayerNode.oncanplay = () => {
-				videoPlayerNode.muted = true;
-				videoPlayerNode.play();
-				videoPlayerNode.muted = false;
-
-				isVideoLoading = false;
-			};
-
-			return videoData;
-		} catch (e) {}
+		isVideoLoading = false;
 	};
 </script>
 
@@ -63,7 +47,13 @@
 	class="flex place-items-center place-content-center h-full select-none"
 >
 	{#if asset}
-		<video controls class="h-full object-contain" bind:this={videoPlayerNode}>
+		<video
+			controls
+			class="h-full object-contain"
+			on:canplay={handleCanPlay}
+			bind:this={videoPlayerNode}
+		>
+			<source src={videoUrl} type="video/mp4" />
 			<track kind="captions" />
 		</video>
 
