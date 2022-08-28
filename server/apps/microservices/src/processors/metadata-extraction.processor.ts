@@ -50,10 +50,22 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
-      const exifData = await exifr.parse(asset.originalPath);
+      const exifData = await exifr.parse(asset.originalPath, {
+        tiff: true,
+        ifd0: true as any,
+        ifd1: true,
+        exif: true,
+        gps: true,
+        interop: true,
+        xmp: true,
+        icc: true,
+        iptc: true,
+        jfif: true,
+        ihdr: true,
+      });
 
       if (!exifData) {
-        throw new Error(`can not fetch exif data from file ${asset.originalPath}`);
+        throw new Error(`can not parse exif data from file ${asset.originalPath}`);
       }
 
       const newExif = new ExifEntity();
