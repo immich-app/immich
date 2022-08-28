@@ -12,14 +12,14 @@
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { api, AssetResponseDto, calculateTimeLineTotalHeight } from '@api';
+	import { api, AssetResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-	import type { PageData } from './$types';
+	import type { PageData } from '../../../.svelte-kit/types/src/routes/photos./../../.svelte-kit/types/src/routes/photos/$types';
 
 	import { onMount, onDestroy } from 'svelte';
 	import {
@@ -27,6 +27,7 @@
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
+	import { calculateViewportHeight } from '$lib/utils/viewport-utils';
 
 	export let data: PageData;
 
@@ -45,10 +46,17 @@
 
 	let isShowAssetViewer = false;
 	let currentViewAssetIndex = 0;
+	let timelineViewPortWidth: number;
+	let estimatedTotalHeight: number;
 	let selectedAsset: AssetResponseDto;
 
 	onMount(() => {
-		openWebsocketConnection();
+		estimatedTotalHeight = calculateViewportHeight(
+			data.assetCountByTimeGroup,
+			timelineViewPortWidth
+		);
+
+		// setAssetInfo(data.assets);
 	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
@@ -196,6 +204,14 @@
 		}
 	};
 
+	onMount(async () => {
+		openWebsocketConnection();
+
+		const { data: assets } = await api.assetApi.getAllAssets();
+
+		setAssetInfo(assets);
+	});
+
 	onDestroy(() => {
 		closeWebsocketConnection();
 	});
@@ -232,63 +248,23 @@
 		/>
 	{/if}
 </section>
-
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
 	<SideBar />
 
 	<section class="overflow-y-auto relative immich-scrollbar">
-		<section id="assets-content" class="relative pt-8 pl-4 mb-12 bg-immich-bg">
-			<section id="image-grid" class="flex flex-wrap gap-14">
-				{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
-					<!-- Asset Group By Date -->
-					<div
-						class="flex flex-col"
-						on:mouseenter={() => (isMouseOverGroup = true)}
-						on:mouseleave={() => (isMouseOverGroup = false)}
-					>
-						<!-- Date group title -->
-						<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
-							{#if (selectedGroupThumbnail === groupIndex && isMouseOverGroup) || selectedGroup.has(groupIndex)}
-								<div
-									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
-									out:fly={{ x: -24, duration: 200 }}
-									class="inline-block px-2 hover:cursor-pointer"
-									on:click={() => selectAssetGroupHandler(groupIndex)}
-								>
-									{#if selectedGroup.has(groupIndex)}
-										<CheckCircle size="24" color="#4250af" />
-									{:else if existingGroup.has(groupIndex)}
-										<CheckCircle size="24" color="#757575" />
-									{:else}
-										<CircleOutline size="24" color="#757575" />
-									{/if}
-								</div>
-							{/if}
+		<section
+			id="assets-content"
+			class="relative pt-8 pl-4 mb-12 bg-immich-bg"
+			bind:clientWidth={timelineViewPortWidth}
+			style:height={estimatedTotalHeight + 'px'}
+		>
+			<p>Estimated Height: {estimatedTotalHeight}</p>
 
-							{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
-						</p>
-
-						<!-- Image grid -->
-						<div class="flex flex-wrap gap-[2px]">
-							{#each assetsInDateGroup as asset}
-								{#key asset.id}
-									<ImmichThumbnail
-										{asset}
-										on:mouseEvent={thumbnailMouseEventHandler}
-										on:click={(event) =>
-											isMultiSelectionMode
-												? selectAssetHandler(asset, groupIndex)
-												: viewAssetHandler(event)}
-										on:select={() => selectAssetHandler(asset, groupIndex)}
-										selected={multiSelectedAssets.has(asset)}
-										{groupIndex}
-									/>
-								{/key}
-							{/each}
-						</div>
-					</div>
+			<div class="flex flex-wrap gap-1">
+				{#each new Array(data.assetCountByTimeGroup.totalAssets) as data, i}
+					<div class="w-[235px] h-[235px] bg-gray-700 text-green-500">{i}</div>
 				{/each}
-			</section>
+			</div>
 		</section>
 	</section>
 </section>

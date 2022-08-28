@@ -143,7 +143,7 @@
 	};
 </script>
 
-<IntersectionObserver once={true} let:intersecting>
+<IntersectionObserver once={false} let:intersecting>
 	<div
 		style:width={`${thumbnailSize}px`}
 		style:height={`${thumbnailSize}px`}
