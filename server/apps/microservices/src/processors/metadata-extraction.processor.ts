@@ -121,11 +121,17 @@ export class MetadataExtractionProcessor {
       }
 
       // Enrich metadata
-      if ((newExif.exifImageHeight === null) || (newExif.exifImageWidth === null) || (newExif.orientation === null)) {
+      if (!newExif.exifImageHeight || !newExif.exifImageWidth || !newExif.orientation) {
         const metadata = await sharp(asset.originalPath).metadata();
-        
-        if (newExif.exifImageHeight === null) newExif.exifImageHeight = metadata.height || null;
-        if (newExif.exifImageWidth === null) newExif.exifImageWidth = metadata.width || null;
+
+        if (newExif.exifImageHeight === null) {
+          newExif.exifImageHeight = metadata.height || null;
+        }
+
+        if (newExif.exifImageWidth === null) {
+          newExif.exifImageWidth = metadata.width || null;
+        }
+
         if (newExif.orientation === null) {
           newExif.orientation = metadata.orientation !== undefined ? `${metadata.orientation}` : null;
         }
