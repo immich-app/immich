@@ -7,7 +7,7 @@ declare global {
 
     namespace Multer {
       interface File {
-        checksum?: string;
+        checksum?: Buffer;
       }
     }
   }

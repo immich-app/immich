@@ -61,17 +61,17 @@ class ExtendedDiskStorage implements StorageEngine {
         const finalPath = path.join(destination, filename);
         const outStream = fs.createWriteStream(finalPath);
         const passThrough = new PassThrough();
-        const sha1Hash = crypto.createHash('sha1').setEncoding('hex');
-        const deferred$ = new Promise<string>((resolve, reject) => {
+        const sha1Hash = crypto.createHash('sha1');
+        const deferred = new Promise<Buffer>((resolve, reject) => {
           sha1Hash.once('error', (err) => reject(err));
-          sha1Hash.once('end', () => resolve(sha1Hash.read()));
+          sha1Hash.once('finish', () => resolve(sha1Hash.read()));
         });
 
         passThrough.pipe(sha1Hash);
         file.stream.pipe(passThrough).pipe(outStream);
         outStream.on('error', cb);
         outStream.on('finish', async () => {
-          const sha1Hex = await deferred$; // make sure hash's done
+          const sha1Hex = await deferred; // make sure hash's done
 
           sha1Hash.destroy();
           cb(null, {

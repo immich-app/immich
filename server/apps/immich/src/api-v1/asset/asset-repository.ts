@@ -10,7 +10,7 @@ import { AssetCountByTimeGroupDto } from './response-dto/asset-count-by-time-gro
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-group.dto';
 
 export interface IAssetRepository {
-  create(createAssetDto: CreateAssetDto, ownerId: string, originalPath: string, mimeType: string): Promise<AssetEntity>;
+  create(createAssetDto: CreateAssetDto, ownerId: string, originalPath: string, mimeType: string, checksum?: Buffer): Promise<AssetEntity>;
   getAllByUserId(userId: string): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -143,6 +143,7 @@ export class AssetRepository implements IAssetRepository {
     ownerId: string,
     originalPath: string,
     mimeType: string,
+    checksum?: Buffer,
   ): Promise<AssetEntity> {
     const asset = new AssetEntity();
     asset.deviceAssetId = createAssetDto.deviceAssetId;
@@ -155,6 +156,7 @@ export class AssetRepository implements IAssetRepository {
     asset.isFavorite = createAssetDto.isFavorite;
     asset.mimeType = mimeType;
     asset.duration = createAssetDto.duration || null;
+    asset.checksum = checksum || null;
 
     const createdAsset = await this.assetRepository.save(asset);
 

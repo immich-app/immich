@@ -52,8 +52,9 @@ export class AssetService {
     createAssetDto: CreateAssetDto,
     originalPath: string,
     mimeType: string,
+    checksum?: Buffer,
   ): Promise<AssetEntity> {
-    const assetEntity = await this._assetRepository.create(createAssetDto, authUser.id, originalPath, mimeType);
+    const assetEntity = await this._assetRepository.create(createAssetDto, authUser.id, originalPath, mimeType, checksum);
 
     return assetEntity;
   }
