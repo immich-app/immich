@@ -12,7 +12,7 @@
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { api, AssetResponseDto, calculateTimeLineTotalHeight } from '@api';
+	import { api, AssetResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
@@ -27,6 +27,7 @@
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
+	import { calculateViewportHeight } from '$lib/utils/viewport-utils';
 
 	export let data: PageData;
 
@@ -50,12 +51,11 @@
 	let selectedAsset: AssetResponseDto;
 
 	onMount(() => {
-		estimatedTotalHeight = calculateTimeLineTotalHeight(
+		estimatedTotalHeight = calculateViewportHeight(
 			data.assetCountByTimeGroup,
 			timelineViewPortWidth
 		);
 
-		console.log(estimatedTotalHeight);
 		// setAssetInfo(data.assets);
 	});
 
@@ -248,7 +248,6 @@
 		/>
 	{/if}
 </section>
-
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
 	<SideBar />
 
@@ -259,6 +258,8 @@
 			bind:clientWidth={timelineViewPortWidth}
 			style:height={estimatedTotalHeight + 'px'}
 		>
+			<p>Estimated Height: {estimatedTotalHeight}</p>
+
 			<div class="flex flex-wrap gap-1">
 				{#each new Array(data.assetCountByTimeGroup.totalAssets) as data, i}
 					<div class="w-[235px] h-[235px] bg-gray-700 text-green-500">{i}</div>

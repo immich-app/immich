@@ -12,16 +12,3 @@ export function getFileUrl(aid: string, did: string, isThumb?: boolean, isWeb?: 
 
 	return urlObj.href;
 }
-
-export function calculateTimeLineTotalHeight(
-	assetCount: AssetCountByTimeGroupResponseDto,
-	viewportWidth: number
-) {
-	const targetHeight = 235;
-
-	const unwrappedWidth = (3 / 2) * assetCount.totalAssets * targetHeight * (7 / 10);
-	const rows = Math.ceil(unwrappedWidth / viewportWidth);
-	const height = rows * targetHeight;
-
-	return height;
-}
