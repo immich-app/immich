@@ -1,7 +1,7 @@
+import { APP_UPLOAD_LOCATION } from '@app/common/constants';
 import { Injectable } from '@nestjs/common';
 import { ServerInfoResponseDto } from './response-dto/server-info-response.dto';
 import diskusage from 'diskusage';
-import { APP_UPLOAD_LOCATION } from '../../constants/upload_location.constant';
 
 @Injectable()
 export class ServerInfoService {

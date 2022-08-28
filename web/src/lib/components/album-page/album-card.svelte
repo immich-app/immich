@@ -2,7 +2,7 @@
 	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-	import { fade } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 
 	export let album: AlbumResponseDto;

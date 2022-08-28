@@ -1,5 +1,7 @@
+import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -7,7 +9,7 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
@@ -25,83 +27,49 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
+import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
+import { SearchPropertiesDto } from './dto/search-properties.dto';
+import {
+  AssetCountByTimeGroupResponseDto,
+  mapAssetCountByTimeGroupResponse,
+} from './response-dto/asset-count-by-time-group-response.dto';
+import { GetAssetCountByTimeGroupDto } from './dto/get-asset-count-by-time-group.dto';
 
 const fileInfo = promisify(stat);
 
 @Injectable()
 export class AssetService {
   constructor(
+    @Inject(ASSET_REPOSITORY)
+    private _assetRepository: IAssetRepository,
+
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
 
-  public async updateThumbnailInfo(asset: AssetEntity, thumbnailPath: string): Promise<AssetEntity> {
-    const updatedAsset = await this.assetRepository
-      .createQueryBuilder('assets')
-      .update<AssetEntity>(AssetEntity, { ...asset, resizePath: thumbnailPath })
-      .where('assets.id = :id', { id: asset.id })
-      .returning('*')
-      .updateEntity(true)
-      .execute();
-
-    return updatedAsset.raw[0];
-  }
-
   public async createUserAsset(
     authUser: AuthUserDto,
-    assetInfo: CreateAssetDto,
-    path: string,
+    createAssetDto: CreateAssetDto,
+    originalPath: string,
     mimeType: string,
-  ): Promise<AssetEntity | undefined> {
-    const asset = new AssetEntity();
-    asset.deviceAssetId = assetInfo.deviceAssetId;
-    asset.userId = authUser.id;
-    asset.deviceId = assetInfo.deviceId;
-    asset.type = assetInfo.assetType || AssetType.OTHER;
-    asset.originalPath = path;
-    asset.createdAt = assetInfo.createdAt;
-    asset.modifiedAt = assetInfo.modifiedAt;
-    asset.isFavorite = assetInfo.isFavorite;
-    asset.mimeType = mimeType;
-    asset.duration = assetInfo.duration || null;
+  ): Promise<AssetEntity> {
+    const assetEntity = await this._assetRepository.create(createAssetDto, authUser.id, originalPath, mimeType);
 
-    const createdAsset = await this.assetRepository.save(asset);
-    if (!createdAsset) {
-      throw new Error('Asset not created');
-    }
-    return createdAsset;
+    return assetEntity;
   }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
-    const rows = await this.assetRepository.find({
-      where: {
-        userId: authUser.id,
-        deviceId: deviceId,
-      },
-      select: ['deviceAssetId'],
-    });
-
-    const res: string[] = [];
-    rows.forEach((v) => res.push(v.deviceAssetId));
-    return res;
+    return this._assetRepository.getAllByDeviceId(authUser.id, deviceId);
   }
 
   public async getAllAssets(authUser: AuthUserDto): Promise<AssetResponseDto[]> {
-    const assets = await this.assetRepository.find({
-      where: {
-        userId: authUser.id,
-        resizePath: Not(IsNull()),
-      },
-      relations: ['exifInfo'],
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    const assets = await this._assetRepository.getAllByUserId(authUser.id);
 
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async findAssetOfDevice(deviceId: string, assetId: string): Promise<AssetResponseDto> {
+  // TODO - Refactor this to get asset by its own id
+  private async findAssetOfDevice(deviceId: string, assetId: string): Promise<AssetResponseDto> {
     const rows = await this.assetRepository.query(
       'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."deviceId" = $2',
       [assetId, deviceId],
@@ -117,16 +85,7 @@ export class AssetService {
   }
 
   public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
-    const asset = await this.assetRepository.findOne({
-      where: {
-        id: assetId,
-      },
-      relations: ['exifInfo'],
-    });
-
-    if (!asset) {
-      throw new NotFoundException('Asset not found');
-    }
+    const asset = await this._assetRepository.getById(assetId);
 
     return mapAsset(asset);
   }
@@ -394,45 +353,35 @@ export class AssetService {
 
   async getAssetSearchTerm(authUser: AuthUserDto): Promise<string[]> {
     const possibleSearchTerm = new Set<string>();
-    // TODO: should use query builder
-    const rows = await this.assetRepository.query(
-      `
-      SELECT DISTINCT si.tags, si.objects, e.orientation, e."lensModel", e.make, e.model , a.type, e.city, e.state, e.country
-      FROM assets a
-      LEFT JOIN exif e ON a.id = e."assetId"
-      LEFT JOIN smart_info si ON a.id = si."assetId"
-      WHERE a."userId" = $1;
-      `,
-      [authUser.id],
-    );
 
-    rows.forEach((row: { [x: string]: any }) => {
+    const rows = await this._assetRepository.getSearchPropertiesByUserId(authUser.id);
+    rows.forEach((row: SearchPropertiesDto) => {
       // tags
-      row['tags']?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
+      row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
 
       // objects
-      row['objects']?.map((object: string) => possibleSearchTerm.add(object?.toLowerCase()));
+      row.objects?.map((object: string) => possibleSearchTerm.add(object?.toLowerCase()));
 
       // asset's tyoe
-      possibleSearchTerm.add(row['type']?.toLowerCase());
+      possibleSearchTerm.add(row.assetType?.toLowerCase() || '');
 
       // image orientation
-      possibleSearchTerm.add(row['orientation']?.toLowerCase());
+      possibleSearchTerm.add(row.orientation?.toLowerCase() || '');
 
       // Lens model
-      possibleSearchTerm.add(row['lensModel']?.toLowerCase());
+      possibleSearchTerm.add(row.lensModel?.toLowerCase() || '');
 
       // Make and model
-      possibleSearchTerm.add(row['make']?.toLowerCase());
-      possibleSearchTerm.add(row['model']?.toLowerCase());
+      possibleSearchTerm.add(row.make?.toLowerCase() || '');
+      possibleSearchTerm.add(row.model?.toLowerCase() || '');
 
       // Location
-      possibleSearchTerm.add(row['city']?.toLowerCase());
-      possibleSearchTerm.add(row['state']?.toLowerCase());
-      possibleSearchTerm.add(row['country']?.toLowerCase());
+      possibleSearchTerm.add(row.city?.toLowerCase() || '');
+      possibleSearchTerm.add(row.state?.toLowerCase() || '');
+      possibleSearchTerm.add(row.country?.toLowerCase() || '');
     });
 
-    return Array.from(possibleSearchTerm).filter((x) => x != null);
+    return Array.from(possibleSearchTerm).filter((x) => x != null && x != '');
   }
 
   async searchAsset(authUser: AuthUserDto, searchAssetDto: SearchAssetDto): Promise<AssetResponseDto[]> {
@@ -459,33 +408,12 @@ export class AssetService {
     return searchResults.map((asset) => mapAsset(asset));
   }
 
-  async getCuratedLocation(authUser: AuthUserDto) {
-    return await this.assetRepository.query(
-      `
-        SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
-        FROM assets a
-        LEFT JOIN exif e ON a.id = e."assetId"
-        WHERE a."userId" = $1
-        AND e.city IS NOT NULL
-        AND a.type = 'IMAGE';
-      `,
-      [authUser.id],
-    );
+  async getCuratedLocation(authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
+    return this._assetRepository.getLocationsByUserId(authUser.id);
   }
 
   async getCuratedObject(authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
-    const curatedObjects: CuratedObjectsResponseDto[] = await this.assetRepository.query(
-      `
-        SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
-        FROM assets a
-        LEFT JOIN smart_info si ON a.id = si."assetId"
-        WHERE a."userId" = $1
-        AND si.objects IS NOT NULL
-      `,
-      [authUser.id],
-    );
-
-    return curatedObjects;
+    return this._assetRepository.getDetectedObjectsByUserId(authUser.id);
   }
 
   async checkDuplicatedAsset(
@@ -503,5 +431,17 @@ export class AssetService {
     const isDuplicated = res ? true : false;
 
     return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
+  }
+
+  async getAssetCountByTimeGroup(
+    authUser: AuthUserDto,
+    getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto,
+  ): Promise<AssetCountByTimeGroupResponseDto> {
+    const result = await this._assetRepository.getAssetCountByTimeGroup(
+      authUser.id,
+      getAssetCountByTimeGroupDto.timeGroup,
+    );
+
+    return mapAssetCountByTimeGroupResponse(result);
   }
 }

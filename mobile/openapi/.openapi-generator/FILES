@@ -8,6 +8,8 @@ doc/AdminSignupResponseDto.md
 doc/AlbumApi.md
 doc/AlbumResponseDto.md
 doc/AssetApi.md
+doc/AssetCountByTimeGroupDto.md
+doc/AssetCountByTimeGroupResponseDto.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetResponseDto.md
 doc/AssetTypeEnum.md
@@ -27,6 +29,7 @@ doc/DeviceInfoApi.md
 doc/DeviceInfoResponseDto.md
 doc/DeviceTypeEnum.md
 doc/ExifResponseDto.md
+doc/GetAssetCountByTimeGroupDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -39,6 +42,7 @@ doc/ServerVersionReponseDto.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
 doc/ThumbnailFormat.md
+doc/TimeGroupEnum.md
 doc/UpdateAlbumDto.md
 doc/UpdateDeviceInfoDto.md
 doc/UpdateUserDto.md
@@ -66,6 +70,8 @@ lib/model/add_assets_dto.dart
 lib/model/add_users_dto.dart
 lib/model/admin_signup_response_dto.dart
 lib/model/album_response_dto.dart
+lib/model/asset_count_by_time_group_dto.dart
+lib/model/asset_count_by_time_group_response_dto.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_type_enum.dart
@@ -83,6 +89,7 @@ lib/model/delete_asset_status.dart
 lib/model/device_info_response_dto.dart
 lib/model/device_type_enum.dart
 lib/model/exif_response_dto.dart
+lib/model/get_asset_count_by_time_group_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
@@ -94,6 +101,7 @@ lib/model/server_version_reponse_dto.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
 lib/model/thumbnail_format.dart
+lib/model/time_group_enum.dart
 lib/model/update_album_dto.dart
 lib/model/update_device_info_dto.dart
 lib/model/update_user_dto.dart
