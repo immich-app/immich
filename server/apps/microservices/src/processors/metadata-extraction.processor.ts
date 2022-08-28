@@ -23,6 +23,7 @@ import exifr from 'exifr';
 import ffmpeg from 'fluent-ffmpeg';
 import { readFile } from 'fs/promises';
 import path from 'path';
+import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 
 @Processor(metadataExtractionQueueName)
@@ -117,6 +118,17 @@ export class MetadataExtractionProcessor {
         newExif.city = city || null;
         newExif.state = state || null;
         newExif.country = country || null;
+      }
+
+      // Enrich metadata
+      if ((newExif.exifImageHeight === null) || (newExif.exifImageWidth === null) || (newExif.orientation === null)) {
+        const metadata = await sharp(asset.originalPath).metadata();
+        
+        if (newExif.exifImageHeight === null) newExif.exifImageHeight = metadata.height || null;
+        if (newExif.exifImageWidth === null) newExif.exifImageWidth = metadata.width || null;
+        if (newExif.orientation === null) {
+          newExif.orientation = metadata.orientation !== undefined ? `${metadata.orientation}` : null;
+        }
       }
 
       await this.exifRepository.save(newExif);
