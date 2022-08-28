@@ -23,6 +23,7 @@ import exifr from 'exifr';
 import ffmpeg from 'fluent-ffmpeg';
 import { readFile } from 'fs/promises';
 import path from 'path';
+import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 
 @Processor(metadataExtractionQueueName)
@@ -50,10 +51,22 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
-      const exifData = await exifr.parse(asset.originalPath);
+      const exifData = await exifr.parse(asset.originalPath, {
+        tiff: true,
+        ifd0: true as any,
+        ifd1: true,
+        exif: true,
+        gps: true,
+        interop: true,
+        xmp: true,
+        icc: true,
+        iptc: true,
+        jfif: true,
+        ihdr: true,
+      });
 
       if (!exifData) {
-        throw new Error(`can not fetch exif data from file ${asset.originalPath}`);
+        throw new Error(`can not parse exif data from file ${asset.originalPath}`);
       }
 
       const newExif = new ExifEntity();
@@ -105,6 +118,23 @@ export class MetadataExtractionProcessor {
         newExif.city = city || null;
         newExif.state = state || null;
         newExif.country = country || null;
+      }
+
+      // Enrich metadata
+      if (!newExif.exifImageHeight || !newExif.exifImageWidth || !newExif.orientation) {
+        const metadata = await sharp(asset.originalPath).metadata();
+
+        if (newExif.exifImageHeight === null) {
+          newExif.exifImageHeight = metadata.height || null;
+        }
+
+        if (newExif.exifImageWidth === null) {
+          newExif.exifImageWidth = metadata.width || null;
+        }
+
+        if (newExif.orientation === null) {
+          newExif.orientation = metadata.orientation !== undefined ? `${metadata.orientation}` : null;
+        }
       }
 
       await this.exifRepository.save(newExif);
