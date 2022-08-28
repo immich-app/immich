@@ -50,9 +50,6 @@ export class ExifEntity {
   @Column({ type: 'varchar', nullable: true })
   country!: string | null;
 
-  @Column({ type: 'char', length: 40, nullable: true })
-  pixelChecksum?: string | null; // sha1 checksum
-
   /* Image info */
   @Column({ type: 'varchar', nullable: true })
   make!: string | null;
