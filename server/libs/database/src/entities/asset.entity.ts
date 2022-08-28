@@ -1,4 +1,4 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Column, Entity, Index, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { ExifEntity } from './exif.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 
@@ -45,6 +45,7 @@ export class AssetEntity {
   mimeType!: string | null;
 
   @Column({ type: 'bytea', nullable: true, select: false })
+  @Index({ unique: true, where: `'checksum' IS NOT NULL` }) // avoid null index
   checksum?: Buffer | null; // sha1 checksum
 
   @Column({ type: 'varchar', nullable: true })
