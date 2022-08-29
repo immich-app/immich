@@ -166,7 +166,13 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		};
 
 		// listen for `error` event
-		request.upload.onerror = () => {
+		request.upload.onerror = (ev) => {
+			console.log(ev)
+			notificationController.show({
+				type: NotificationType.Error,
+				message: `Cannot upload file ${asset.name}!`,
+				timeout: 5000
+			});
 			uploadAssetsStore.removeUploadAsset(deviceAssetId);
 		};
 
