@@ -35,7 +35,7 @@ export class AssetRepository implements IAssetRepository {
       result = await this.assetRepository
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
-        .addSelect(`to_char(date_trunc('month', "createdAt"::timestamptz), 'YYYY_MM')`, 'timeGroup')
+        .addSelect(`date_trunc('month', "createdAt"::timestamptz)`, 'timeGroup')
         .where('"userId" = :userId', { userId: userId })
         .groupBy(`date_trunc('month', "createdAt"::timestamptz)`)
         .orderBy(`date_trunc('month', "createdAt"::timestamptz)`, 'DESC')
@@ -44,7 +44,7 @@ export class AssetRepository implements IAssetRepository {
       result = await this.assetRepository
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
-        .addSelect(`to_char(date_trunc('day', "createdAt"::timestamptz), 'YYYY_MM_DD')`, 'timeGroup')
+        .addSelect(`date_trunc('day', "createdAt"::timestamptz)`, 'timeGroup')
         .where('"userId" = :userId', { userId: userId })
         .groupBy(`date_trunc('day', "createdAt"::timestamptz)`)
         .orderBy(`date_trunc('day', "createdAt"::timestamptz)`, 'DESC')

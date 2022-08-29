@@ -27,6 +27,8 @@
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
+	import Scrollbar from '$lib/components/shared-components/scrollbar/scrollbar.svelte';
+	import { calculateViewportHeight } from '$lib/utils/viewport-utils';
 
 	export let data: PageData;
 
@@ -46,12 +48,15 @@
 	let isShowAssetViewer = false;
 	let currentViewAssetIndex = 0;
 	let selectedAsset: AssetResponseDto;
+	let timelineViewportWidth = 0;
+
+	$: viewportHeight = calculateViewportHeight(data.assetCountByTimeGroup, timelineViewportWidth);
 
 	onMount(async () => {
 		openWebsocketConnection();
 
-		const res = await api.assetApi.getAllAssets();
-		setAssetInfo(res.data);
+		// const res = await api.assetApi.getAllAssets();
+		// setAssetInfo(res.data);
 	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
@@ -239,17 +244,21 @@
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
 	<SideBar />
 
-	<section class="overflow-y-auto relative immich-scrollbar">
-		<section id="assets-content" class="relative pt-8 pl-4 mb-12 bg-immich-bg">
-			<section id="image-grid" class="flex flex-wrap gap-14">
+	<section class="overflow-y-auto relative">
+		<Scrollbar {viewportHeight} segmentData={data.assetCountByTimeGroup} />
+		<section
+			id="assets-content"
+			class="relative pt-8 pl-4 mb-12 bg-immich-bg"
+			bind:clientWidth={timelineViewportWidth}
+			style:height={viewportHeight + 'px'}
+		>
+			<!-- <section id="image-grid" class="flex flex-wrap gap-14">
 				{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
-					<!-- Asset Group By Date -->
 					<div
 						class="flex flex-col"
 						on:mouseenter={() => (isMouseOverGroup = true)}
 						on:mouseleave={() => (isMouseOverGroup = false)}
 					>
-						<!-- Date group title -->
 						<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
 							{#if (selectedGroupThumbnail === groupIndex && isMouseOverGroup) || selectedGroup.has(groupIndex)}
 								<div
@@ -271,7 +280,6 @@
 							{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
 						</p>
 
-						<!-- Image grid -->
 						<div class="flex flex-wrap gap-[2px]">
 							{#each assetsInDateGroup as asset}
 								{#key asset.id}
@@ -291,7 +299,7 @@
 						</div>
 					</div>
 				{/each}
-			</section>
+			</section> -->
 		</section>
 	</section>
 </section>

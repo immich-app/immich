@@ -18,7 +18,6 @@
 	export let isExisted: boolean = false;
 
 	let imageData: string;
-	// let videoData: string;
 
 	let mouseOver: boolean = false;
 	$: dispatch('mouseEvent', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
@@ -28,18 +27,7 @@
 	let isThumbnailVideoPlaying = false;
 	let calculateVideoDurationIntervalHandler: NodeJS.Timer;
 	let videoProgress = '00:00';
-	// let videoAbortController: AbortController;
 	let videoUrl: string;
-
-	const loadImageData = async () => {
-		const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, {
-			responseType: 'blob'
-		});
-		if (data instanceof Blob) {
-			imageData = URL.createObjectURL(data);
-			return imageData;
-		}
-	};
 
 	const loadVideoData = async () => {
 		isThumbnailVideoPlaying = false;
@@ -215,10 +203,10 @@
 				id={asset.id}
 				style:width={`${thumbnailSize}px`}
 				style:height={`${thumbnailSize}px`}
-				in:fade={{ duration: 250 }}
+				in:fade={{ duration: 150 }}
 				src={`/api/asset/thumbnail/${asset.id}?format=${format}`}
 				alt={asset.id}
-				class={`object-cover ${getSize()} transition-all duration-100 z-0 ${getThumbnailBorderStyle()}`}
+				class={`object-cover ${getSize()} transition-all z-0 ${getThumbnailBorderStyle()}`}
 				loading="lazy"
 			/>
 		{/if}

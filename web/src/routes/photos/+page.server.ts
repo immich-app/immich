@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 		}
 
 		const { data: assetCountByTimeGroup } = await serverApi.assetApi.getAssetCountByTimeGroup({
-			timeGroup: TimeGroupEnum.Day
+			timeGroup: TimeGroupEnum.Month
 		});
 
 		return {
