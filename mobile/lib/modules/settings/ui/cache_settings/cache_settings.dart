@@ -16,20 +16,28 @@ class CacheSettings extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final CacheService cacheService = ref.watch(cacheServiceProvider);
 
-    void clearCache() {
-      cacheService.emptyAllCaches();
+    final clearCacheState = useState(false);
+
+    Future<void> clearCache() async {
+      await cacheService.emptyAllCaches();
+      clearCacheState.value = true;
     }
 
     Widget cacheStatisticsRow(String name, CacheType type) {
       final cacheSize = useState(0);
       final cacheAssets = useState(0);
 
-      final repo = cacheService.getCacheRepo(type);
+      if (!clearCacheState.value) {
+        final repo = cacheService.getCacheRepo(type);
 
-      repo.open().then((_) {
-        cacheSize.value = repo.getCacheSize();
-        cacheAssets.value = repo.getNumberOfCachedObjects();
-      });
+        repo.open().then((_) {
+          cacheSize.value = repo.getCacheSize();
+          cacheAssets.value = repo.getNumberOfCachedObjects();
+        });
+      } else {
+        cacheSize.value = 0;
+        cacheAssets.value = 0;
+      }
 
       return Container(
         margin: const EdgeInsets.only(left: 20, bottom: 10),

@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:io';
 import 'dart:math';
 
@@ -170,10 +169,14 @@ class ImmichCacheInfoRepository extends ImmichCacheRepository {
 
   @override
   int getCacheSize() {
-    return cacheObjectLookupBox.values
-        .map(_deserialize)
-        .map((e) => e.length ?? 0)
-        .reduce((value, element) => value + element);
+    final cacheElementsWithSize =
+        cacheObjectLookupBox.values.map(_deserialize).map((e) => e.length ?? 0);
+
+    if (cacheElementsWithSize.isEmpty) {
+      return 0;
+    }
+
+    return cacheElementsWithSize.reduce((value, element) => value + element);
   }
 
   CacheObject _deserialize(Map serData) {
