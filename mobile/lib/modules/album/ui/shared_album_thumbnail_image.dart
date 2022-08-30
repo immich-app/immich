@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -15,8 +16,7 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cacheKey = useState(1);
-
+    final cacheService = ref.watch(cacheServiceProvider);
     var box = Hive.box(userInfoBox);
 
     return GestureDetector(
@@ -26,7 +26,8 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
       child: Stack(
         children: [
           CachedNetworkImage(
-            cacheKey: "${asset.id}-${cacheKey.value}",
+            cacheManager: cacheService.getCache(CacheType.thumbnail),
+            cacheKey: asset.id,
             width: 500,
             height: 500,
             memCacheHeight: 500,
