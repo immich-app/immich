@@ -99,9 +99,7 @@ ThemeData immichLightTheme = ThemeData(
   fontFamily: 'WorkSans',
   scaffoldBackgroundColor: immichBackgroundColor,
   snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
-    ),
+    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: const TextStyle(
@@ -126,19 +124,16 @@ ThemeData immichLightTheme = ThemeData(
     headline1: TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.bold,
-      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Colors.indigo,
     ),
     headline2: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
-      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Colors.black87,
     ),
     headline3: TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.bold,
-      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Colors.indigo,
     ),
   ),
