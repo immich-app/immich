@@ -30,11 +30,15 @@ ThemeData immichDarkTheme = ThemeData(
   hintColor: Colors.grey[600],
   fontFamily: 'WorkSans',
   snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+    contentTextStyle: TextStyle(
+      fontFamily: 'WorkSans',
+      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
+    ),
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: TextStyle(
       fontFamily: 'WorkSans',
+      fontFamilyFallback: const ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: immichDarkThemePrimaryColor,
     ),
     backgroundColor: const Color.fromARGB(255, 32, 33, 35),
@@ -56,16 +60,19 @@ ThemeData immichDarkTheme = ThemeData(
     headline1: const TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.bold,
+      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Color.fromARGB(255, 255, 255, 255),
     ),
     headline2: const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
+      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Color.fromARGB(255, 148, 151, 155),
     ),
     headline3: TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.bold,
+      fontFamilyFallback: const ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: immichDarkThemePrimaryColor,
     ),
   ),
@@ -86,11 +93,15 @@ ThemeData immichLightTheme = ThemeData(
   fontFamily: 'WorkSans',
   scaffoldBackgroundColor: immichBackgroundColor,
   snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+    contentTextStyle: TextStyle(
+      fontFamily: 'WorkSans',
+      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
+    ),
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: const TextStyle(
       fontFamily: 'WorkSans',
+      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Colors.indigo,
     ),
     backgroundColor: immichBackgroundColor,
@@ -111,16 +122,19 @@ ThemeData immichLightTheme = ThemeData(
     headline1: TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.bold,
+      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Colors.indigo,
     ),
     headline2: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
+      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Colors.black87,
     ),
     headline3: TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.bold,
+      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Colors.indigo,
     ),
   ),

@@ -73,6 +73,12 @@ flutter:
         - asset: fonts/WorkSans.ttf
         - asset: fonts/WorkSans-Italic.ttf
           style: italic
+    - family: IBMPlexSansKR
+      fonts:
+        - asset: fonts/IBMPlexSansKR.ttf
+    - family: IBMPlexSansJP
+      fonts:
+        - asset: fonts/IBMPlexSansJP.ttf
     - family: SnowburstOne
       fonts:
         - asset: fonts/SnowburstOne.ttf
