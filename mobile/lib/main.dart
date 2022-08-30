@@ -72,8 +72,7 @@ class ImmichApp extends ConsumerStatefulWidget {
   ImmichAppState createState() => ImmichAppState();
 }
 
-class ImmichAppState extends ConsumerState<ImmichApp>
-    with WidgetsBindingObserver {
+class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
@@ -152,8 +151,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
             title: 'Immich',
             debugShowCheckedModeBanner: false,
             themeMode: ref.watch(immichThemeProvider),
-            darkTheme: immichDarkTheme,
-            theme: immichLightTheme,
+            darkTheme: getImmichDarkThemeByLocale(context.locale),
+            theme: getImmichLightThemeByLocale(context.locale),
             routeInformationParser: router.defaultRouteParser(),
             routerDelegate: router.delegate(
               navigatorObservers: () => [TabNavigationObserver(ref: ref)],

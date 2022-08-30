@@ -21,6 +21,17 @@ final immichThemeProvider = StateProvider<ThemeMode>((ref) {
   }
 });
 
+ThemeData getImmichLightThemeByLocale(Locale locale) {
+  final langCode = locale.languageCode;
+  print("langCode $langCode");
+  return _getImmichThemeIncludeCJK("light", langCode);
+}
+
+ThemeData getImmichDarkThemeByLocale(Locale locale) {
+  final langCode = locale.languageCode;
+  return _getImmichThemeIncludeCJK("dark", langCode);
+}
+
 ThemeData immichDarkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
@@ -32,13 +43,11 @@ ThemeData immichDarkTheme = ThemeData(
   snackBarTheme: const SnackBarThemeData(
     contentTextStyle: TextStyle(
       fontFamily: 'WorkSans',
-      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
     ),
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: TextStyle(
       fontFamily: 'WorkSans',
-      fontFamilyFallback: const ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: immichDarkThemePrimaryColor,
     ),
     backgroundColor: const Color.fromARGB(255, 32, 33, 35),
@@ -60,19 +69,16 @@ ThemeData immichDarkTheme = ThemeData(
     headline1: const TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.bold,
-      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Color.fromARGB(255, 255, 255, 255),
     ),
     headline2: const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
-      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Color.fromARGB(255, 148, 151, 155),
     ),
     headline3: TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.bold,
-      fontFamilyFallback: const ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: immichDarkThemePrimaryColor,
     ),
   ),
@@ -95,13 +101,11 @@ ThemeData immichLightTheme = ThemeData(
   snackBarTheme: const SnackBarThemeData(
     contentTextStyle: TextStyle(
       fontFamily: 'WorkSans',
-      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
     ),
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: const TextStyle(
       fontFamily: 'WorkSans',
-      fontFamilyFallback: ['IBMPlexSansKR', 'IBMPlexSansJP'],
       color: Colors.indigo,
     ),
     backgroundColor: immichBackgroundColor,
@@ -145,3 +149,29 @@ ThemeData immichLightTheme = ThemeData(
     ),
   ),
 );
+
+ThemeData _getImmichThemeIncludeCJK(String themeMode, String langCode) {
+  var parentTheme = immichLightTheme;
+  if (themeMode == "dark") {
+    parentTheme = immichDarkTheme;
+  }
+
+  String fontFamily = "WorkSans";
+  if (langCode.toLowerCase() == "ko") {
+    fontFamily = 'IBMPlexSansKR';
+  } else if (langCode.toLowerCase() == "ja") {
+    fontFamily = 'IBMPlexSansJP';
+  } else {
+    return parentTheme;
+  }
+  return parentTheme.copyWith(
+    textTheme: parentTheme.textTheme.apply(fontFamily: fontFamily),
+    primaryTextTheme: parentTheme.primaryTextTheme.apply(fontFamily: fontFamily),
+    snackBarTheme: parentTheme.snackBarTheme.copyWith(
+      contentTextStyle: parentTheme.snackBarTheme.contentTextStyle?.copyWith(fontFamily: fontFamily),
+    ),
+    appBarTheme: parentTheme.appBarTheme.copyWith(
+      titleTextStyle: parentTheme.appBarTheme.titleTextStyle?.copyWith(fontFamily: fontFamily),
+    ),
+  );
+}
