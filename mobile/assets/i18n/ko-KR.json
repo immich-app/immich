@@ -17,7 +17,6 @@
   "backup_album_selection_page_total_assets": "총 미디어파일 수",
   "backup_all": "모두",
   "backup_background_service_default_notification": "새 미디어파일 확인중...",
-  "backup_background_service_disable_battery_optimizations": "백그라운드 백업을 활성화하려면 Immich에 대한 배터리최적화를 비활성화 해야합니다.",
   "backup_background_service_upload_failure_notification": "{} 업로드 실패",
   "backup_background_service_in_progress_notification": "미디어파일 백업 중...",
   "backup_background_service_current_upload_notification": "{} 업로드 중",
