@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { browser } from '$app/env';
 	import { AssetCountByTimeGroupResponseDto } from '@api';
 
 	import { onMount } from 'svelte';
 	import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
+
+	export let scrollTop = 0;
 	export let viewportHeight = 0;
 	export let segmentData: AssetCountByTimeGroupResponseDto;
 
@@ -13,7 +14,11 @@
 	let isHover = false;
 	let hoveredDate: Date;
 	let currentMouseYLocation: number = 0;
+	let scrollbarPosition = 0;
 
+	$: {
+		scrollbarPosition = (scrollTop / viewportHeight) * scrollbarHeight;
+	}
 	const getSegmentHeight = (groupCount: number) => {
 		if (segmentData.groups.length > 0) {
 			const percentage = (groupCount * 100) / segmentData.totalAssets;
@@ -53,12 +58,8 @@
 	id="immich-scubbable-scrollbar"
 	class="fixed right-0 w-[60px] h-full bg-immich-bg z-[9999] hover:cursor-row-resize"
 	bind:clientHeight={scrollbarHeight}
-	on:mouseenter={(e) => {
-		isHover = true;
-	}}
-	on:mouseleave={(e) => {
-		isHover = false;
-	}}
+	on:mouseenter={() => (isHover = true)}
+	on:mouseleave={() => (isHover = false)}
 >
 	{#if isHover}
 		<div
@@ -70,6 +71,13 @@
 		</div>
 	{/if}
 
+	<!-- Scroll Position Indicator Line -->
+	<div
+		class="absolute right-0 w-10 h-[2px] bg-immich-primary"
+		style:top={scrollbarPosition + 'px'}
+	/>
+
+	<!-- Time Segment -->
 	{#each segmentScrollbarLayout as segment, index (segment.timeGroup)}
 		{@const groupDate = new Date(segment.timeGroup)}
 
@@ -87,7 +95,7 @@
 				>
 					{groupDate.getFullYear()}
 				</div>
-			{:else if segment.height > 3}
+			{:else if segment.height > 5}
 				<div
 					aria-label={segment.timeGroup + ' ' + segment.count}
 					class="absolute right-0 rounded-full h-[4px] w-[4px] mr-3 bg-gray-300 block"
@@ -95,8 +103,6 @@
 			{/if}
 		</div>
 	{/each}
-
-	<!-- on hovered show info box with day and month at mouse location -->
 </div>
 
 <style>

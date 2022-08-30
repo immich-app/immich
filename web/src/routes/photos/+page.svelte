@@ -49,14 +49,27 @@
 	let currentViewAssetIndex = 0;
 	let selectedAsset: AssetResponseDto;
 	let timelineViewportWidth = 0;
-
+	let timelineViewportScrollY = 0;
+	let timelineElement: HTMLElement;
 	$: viewportHeight = calculateViewportHeight(data.assetCountByTimeGroup, timelineViewportWidth);
 
 	onMount(async () => {
 		openWebsocketConnection();
 
-		// const res = await api.assetApi.getAllAssets();
-		// setAssetInfo(res.data);
+		const res = await api.assetApi.getAllAssets();
+		setAssetInfo(res.data);
+
+		if (timelineElement) {
+			timelineElement.addEventListener('scroll', () => {
+				timelineViewportScrollY = timelineElement.scrollTop;
+			});
+		}
+	});
+
+	onDestroy(() => {
+		closeWebsocketConnection();
+
+		timelineElement?.removeEventListener('scroll', () => {});
 	});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
@@ -203,10 +216,6 @@
 			console.error('Error deleteSelectedAssetHandler', e);
 		}
 	};
-
-	onDestroy(() => {
-		closeWebsocketConnection();
-	});
 </script>
 
 <svelte:head>
@@ -244,15 +253,18 @@
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
 	<SideBar />
 
-	<section class="overflow-y-auto relative">
-		<Scrollbar {viewportHeight} segmentData={data.assetCountByTimeGroup} />
+	<section id="assets-content" class="overflow-y-auto relative" bind:this={timelineElement}>
+		<Scrollbar
+			{viewportHeight}
+			segmentData={data.assetCountByTimeGroup}
+			scrollTop={timelineViewportScrollY}
+		/>
 		<section
-			id="assets-content"
 			class="relative pt-8 pl-4 mb-12 bg-immich-bg"
 			bind:clientWidth={timelineViewportWidth}
 			style:height={viewportHeight + 'px'}
 		>
-			<!-- <section id="image-grid" class="flex flex-wrap gap-14">
+			<section id="image-grid" class="flex flex-wrap gap-14">
 				{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
 					<div
 						class="flex flex-col"
@@ -299,7 +311,7 @@
 						</div>
 					</div>
 				{/each}
-			</section> -->
+			</section>
 		</section>
 	</section>
 </section>
