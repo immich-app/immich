@@ -73,7 +73,7 @@ export class AssetController {
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
   ): Promise<AssetFileUploadResponseDto> {
     try {
-      const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype, file.checksum);
+      const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
       if (!savedAsset) {
         await this.backgroundTaskService.deleteFileOnDisk([{
           originalPath: file.path

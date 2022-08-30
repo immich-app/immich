@@ -45,7 +45,7 @@ export class AssetEntity {
   mimeType!: string | null;
 
   @Column({ type: 'bytea', nullable: true, select: false })
-  @Index({ unique: true, where: `'checksum' IS NOT NULL` }) // avoid null index
+  @Index({ where: `'checksum' IS NOT NULL` }) // avoid null index
   checksum?: Buffer | null; // sha1 checksum
 
   @Column({ type: 'varchar', nullable: true })
