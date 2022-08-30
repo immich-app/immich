@@ -138,7 +138,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               requireUnmetered: state.backupRequireWifi,
               requireCharging: state.backupRequireCharging,
             );
-        if (!success) {
+        if (success) {
+          await Hive.box(backgroundBackupInfoBox)
+              .put(backupRequireWifi, state.backupRequireWifi);
+          await Hive.box(backgroundBackupInfoBox)
+              .put(backupRequireCharging, state.backupRequireCharging);
+        } else {
           state = state.copyWith(
             backgroundBackup: wasEnabled,
             backupRequireWifi: wasWifi,
@@ -549,10 +554,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           albums.lastExcludedBackupTime,
         );
       }
+      final Box backgroundBox = await Hive.openBox(backgroundBackupInfoBox);
       state = state.copyWith(
         backupProgress: previous,
         selectedBackupAlbums: selectedAlbums,
         excludedBackupAlbums: excludedAlbums,
+        backupRequireWifi: backgroundBox.get(backupRequireWifi),
+        backupRequireCharging: backgroundBox.get(backupRequireCharging),
       );
     }
     return _resumeBackup();
@@ -586,6 +594,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       try {
         if (Hive.isBoxOpen(hiveBackupInfoBox)) {
           await Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).close();
+        }
+      } catch (error) {
+        debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");
+      }
+      try {
+        if (Hive.isBoxOpen(backgroundBackupInfoBox)) {
+          await Hive.box(backgroundBackupInfoBox).close();
         }
       } catch (error) {
         debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");

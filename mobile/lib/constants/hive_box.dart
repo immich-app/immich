@@ -23,3 +23,5 @@ const String userSettingInfoBox = "immichUserSettingInfoBox";
 // Background backup Info
 const String backgroundBackupInfoBox = "immichBackgroundBackupInfoBox"; // Box
 const String backupFailedSince = "immichBackupFailedSince"; // Key 1
+const String backupRequireWifi = "immichBackupRequireWifi"; // Key 2
+const String backupRequireCharging = "immichBackupRequireCharging"; // Key 3
