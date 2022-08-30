@@ -156,6 +156,36 @@ class BackupControllerPage extends HookConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
 
+    void _showBatteryOptimizationInfoToUser() {
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text(
+              'backup_controller_page_background_battery_info_title',
+            ).tr(),
+            content: SingleChildScrollView(
+              child: const Text(
+                'backup_controller_page_background_battery_info_message',
+              ).tr(),
+            ),
+            actions: [
+              TextButton(
+                child: Text(
+                  'backup_controller_page_background_battery_info_ok',
+                  style: TextStyle(color: Theme.of(context).primaryColor),
+                ).tr(),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     ListTile _buildBackgroundBackupController() {
       final bool isBackgroundEnabled = backupState.backgroundBackup;
       final bool isWifiRequired = backupState.backupRequireWifi;
@@ -197,6 +227,7 @@ class BackupControllerPage extends HookConsumerWidget {
                         .configureBackgroundBackup(
                           requireWifi: isChecked,
                           onError: _showErrorToUser,
+                          onBatteryInfo: _showBatteryOptimizationInfoToUser,
                         )
                     : null,
               ),
@@ -217,6 +248,7 @@ class BackupControllerPage extends HookConsumerWidget {
                         .configureBackgroundBackup(
                           requireCharging: isChecked,
                           onError: _showErrorToUser,
+                          onBatteryInfo: _showBatteryOptimizationInfoToUser,
                         )
                     : null,
               ),
@@ -225,6 +257,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   ref.read(backupProvider.notifier).configureBackgroundBackup(
                         enabled: !isBackgroundEnabled,
                         onError: _showErrorToUser,
+                        onBatteryInfo: _showBatteryOptimizationInfoToUser,
                       ),
               child: Text(
                 isBackgroundEnabled

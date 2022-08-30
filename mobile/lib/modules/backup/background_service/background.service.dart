@@ -122,8 +122,8 @@ class BackgroundService {
     }
   }
 
-  /// Opens an activity to let the user disable battery optimizations for Immich
-  Future<bool> disableBatteryOptimizations() async {
+  /// Returns `true` if battery optimizations are disabled
+  Future<bool> isIgnoringBatteryOptimizations() async {
     if (!Platform.isAndroid) {
       return true;
     }
@@ -131,12 +131,8 @@ class BackgroundService {
       if (!_isForegroundInitialized) {
         await _initialize();
       }
-      final String message =
-          "backup_background_service_disable_battery_optimizations".tr();
-      return await _foregroundChannel.invokeMethod(
-        'disableBatteryOptimizations',
-        message,
-      );
+      return await _foregroundChannel
+          .invokeMethod('isIgnoringBatteryOptimizations');
     } catch (error) {
       return false;
     }
