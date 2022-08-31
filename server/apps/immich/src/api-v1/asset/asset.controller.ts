@@ -75,6 +75,9 @@ export class AssetController {
     try {
       const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
       if (!savedAsset) {
+        await this.backgroundTaskService.deleteFileOnDisk([{
+          originalPath: file.path
+        } as any]); // simulate asset to make use of delete queue (or use fs.unlink instead)
         throw new BadRequestException('Asset not created');
       }
 
@@ -87,6 +90,9 @@ export class AssetController {
       return new AssetFileUploadResponseDto(savedAsset.id);
     } catch (e) {
       Logger.error(`Error uploading file ${e}`);
+      await this.backgroundTaskService.deleteFileOnDisk([{
+        originalPath: file.path
+      } as any]); // simulate asset to make use of delete queue (or use fs.unlink instead)
       throw new BadRequestException(`Error uploading file`, `${e}`);
     }
   }
