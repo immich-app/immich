@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'node:crypto';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
@@ -54,8 +54,19 @@ export class AssetService {
     originalPath: string,
     mimeType: string,
   ): Promise<AssetEntity> {
+    let assetEntity: AssetEntity;
     const checksum = await this.calculateChecksum(originalPath);
-    const assetEntity = await this._assetRepository.create(createAssetDto, authUser.id, originalPath, mimeType, checksum);
+
+    try {
+      assetEntity = await this._assetRepository.create(createAssetDto, authUser.id, originalPath, mimeType, checksum);
+    } catch (err) {
+      if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
+        assetEntity = await this._assetRepository.getAssetByChecksum(authUser.id, checksum);
+        return assetEntity;
+      }
+
+      throw err;
+    }
 
     return assetEntity;
   }

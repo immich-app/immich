@@ -15,7 +15,6 @@ import {
   HttpCode,
   BadRequestException,
   UploadedFile,
-  ConflictException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
@@ -46,7 +45,6 @@ import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/de
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { AssetCountByTimeGroupResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
 import { GetAssetCountByTimeGroupDto } from './dto/get-asset-count-by-time-group.dto';
-import { QueryFailedError } from 'typeorm';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -95,11 +93,6 @@ export class AssetController {
       await this.backgroundTaskService.deleteFileOnDisk([{
         originalPath: file.path
       } as any]); // simulate asset to make use of delete queue (or use fs.unlink instead)
-
-      if (e instanceof QueryFailedError && (e as any).code === '23505') { // unique_violation
-        throw new ConflictException(`Duplicate asset`, `${e}`);
-      }
-
       throw new BadRequestException(`Error uploading file`, `${e}`);
     }
   }
