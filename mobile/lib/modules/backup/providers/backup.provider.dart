@@ -117,6 +117,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     bool? requireWifi,
     bool? requireCharging,
     required void Function(String msg) onError,
+    required void Function() onBatteryInfo,
   }) async {
     assert(enabled != null || requireWifi != null || requireCharging != null);
     if (Platform.isAndroid) {
@@ -131,7 +132,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       if (state.backgroundBackup) {
         if (!wasEnabled) {
-          await _backgroundService.disableBatteryOptimizations();
+          if (!await _backgroundService.isIgnoringBatteryOptimizations()) {
+            onBatteryInfo();
+          }
         }
         final bool success = await _backgroundService.stopService() &&
             await _backgroundService.startService(
