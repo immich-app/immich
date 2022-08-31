@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { api } from '@api';
+	import { api, UserResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
-	import type { ImmichUser } from '../../models/immich-user';
 
-	export let user: ImmichUser;
+	export let user: UserResponseDto;
 	let error: string;
 	let success: string;
 

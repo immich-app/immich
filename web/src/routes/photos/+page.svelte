@@ -6,7 +6,7 @@
 		assetsGroupByDate,
 		flattenAssetGroupByDate,
 		assets,
-		setAssetInfo
+		assetStore
 	} from '$lib/stores/assets';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
@@ -28,7 +28,10 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
 	import Scrollbar from '$lib/components/shared-components/scrollbar/scrollbar.svelte';
-	import { calculateViewportHeight } from '$lib/utils/viewport-utils';
+	import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
+	import { AssetStoreState } from '$lib/models/asset-store-state';
+	import { segmentParsers } from 'exifr';
+	import { browser } from '$app/env';
 
 	export let data: PageData;
 
@@ -48,26 +51,35 @@
 	let isShowAssetViewer = false;
 	let currentViewAssetIndex = 0;
 	let selectedAsset: AssetResponseDto;
-	let timelineViewportWidth = 0;
+	let viewportWidth = 0;
+	let viewportHeight = 0;
 	let timelineViewportScrollY = 0;
 	let timelineElement: HTMLElement;
-	$: viewportHeight = calculateViewportHeight(data.assetCountByTimeGroup, timelineViewportWidth);
+
+	// An estimation of the total height of the timeline.
+	$: totalTimelineHeight = calculateViewportHeightByNumberOfAsset(
+		data.assetCountByTimeGroup.totalAssets,
+		viewportWidth
+	);
+
+	let assetStoreState: AssetStoreState[] = [];
+	let domSegmentHeight: number[] = [];
+	$: {
+		if (browser) {
+			console.log('recalculate dom', domSegmentHeight);
+		}
+	}
+
+	let unsubscribeAssetStore = assetStore.assets.subscribe((e) => {
+		assetStoreState = e;
+	});
 
 	onMount(async () => {
 		openWebsocketConnection();
 
-		if (data.assetCountByTimeGroup.groups.length > 0) {
-			const timeGroup = data.assetCountByTimeGroup.groups[0].timeGroup;
+		getInitialLoadLayout();
 
-			const payload: GetAssetByTimeBucketDto = {
-				timeBucket: [timeGroup]
-			};
-
-			const { data: assets } = await api.assetApi.getAssetByTimeBucket(payload);
-
-			setAssetInfo(assets);
-		}
-
+		// Listen to scroll event on the timeline
 		if (timelineElement) {
 			timelineElement.addEventListener('scroll', () => {
 				timelineViewportScrollY = timelineElement.scrollTop;
@@ -77,9 +89,28 @@
 
 	onDestroy(() => {
 		closeWebsocketConnection();
+		unsubscribeAssetStore();
 
 		timelineElement?.removeEventListener('scroll', () => {});
 	});
+
+	const getInitialLoadLayout = () => {
+		assetStore.calculateSegmentViewport(viewportWidth, data.assetCountByTimeGroup);
+
+		// Get assets to fill the view port.
+		let totalSegmentHeight = 0;
+		const timeBuckets = [];
+
+		for (const [index, assetSegment] of assetStoreState.entries()) {
+			totalSegmentHeight += assetSegment.segmentHeight;
+			timeBuckets.push(assetSegment.segmentDate);
+
+			if (totalSegmentHeight >= viewportHeight || index === assetStoreState.length - 1) {
+				assetStore.getAssetsAndUpdateSegmentHeight(timeBuckets);
+				break;
+			}
+		}
+	};
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
 		const { selectedGroupIndex }: { selectedGroupIndex: number } = event.detail;
@@ -264,16 +295,17 @@
 
 	<section id="assets-content" class="overflow-y-auto relative" bind:this={timelineElement}>
 		<Scrollbar
-			{viewportHeight}
+			{totalTimelineHeight}
 			segmentData={data.assetCountByTimeGroup}
 			scrollTop={timelineViewportScrollY}
 		/>
 		<section
 			class="relative pt-8 pl-4 mb-12 bg-immich-bg"
-			bind:clientWidth={timelineViewportWidth}
-			style:height={viewportHeight + 'px'}
+			bind:clientWidth={viewportWidth}
+			bind:clientHeight={viewportHeight}
+			style:height={totalTimelineHeight + 'px'}
 		>
-			<section id="image-grid" class="flex flex-wrap gap-14">
+			<!-- <section id="image-grid" class="flex flex-wrap gap-14">
 				{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
 					<div
 						class="flex flex-col"
@@ -315,6 +347,22 @@
 										selected={multiSelectedAssets.has(asset)}
 										{groupIndex}
 									/>
+								{/key}
+							{/each}
+						</div>
+					</div>
+				{/each}
+			</section> -->
+
+			<section>
+				{#each assetStoreState as segment, i (i)}
+					<div class="border border-red-500" style:height={segment.segmentHeight + 'px'}>
+						<p>Calculated Height : {segment.segmentHeight}</p>
+						<p>DOM Height: {domSegmentHeight[i]}</p>
+						<div class="flex flex-wrap gap-[2px]" bind:clientHeight={domSegmentHeight[i]}>
+							{#each segment.assets as assetInfo}
+								{#key assetInfo.id}
+									<ImmichThumbnail asset={assetInfo} on:mouseEvent={thumbnailMouseEventHandler} />
 								{/key}
 							{/each}
 						</div>

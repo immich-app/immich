@@ -5,7 +5,7 @@
 	import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
 
 	export let scrollTop = 0;
-	export let viewportHeight = 0;
+	export let totalTimelineHeight = 0;
 	export let segmentData: AssetCountByTimeGroupResponseDto;
 
 	let scrollbarHeight: number;
@@ -17,7 +17,7 @@
 	let scrollbarPosition = 0;
 
 	$: {
-		scrollbarPosition = (scrollTop / viewportHeight) * scrollbarHeight;
+		scrollbarPosition = (scrollTop / totalTimelineHeight) * scrollbarHeight;
 	}
 
 	onMount(() => {
