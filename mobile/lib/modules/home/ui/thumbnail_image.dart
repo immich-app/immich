@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -16,18 +17,18 @@ class ThumbnailImage extends HookConsumerWidget {
   final AssetResponseDto asset;
   final List<AssetResponseDto> assetList;
   final bool showStorageIndicator;
+  final BaseCacheManager? cacheManager;
 
-  const ThumbnailImage(
-      {Key? key,
-      required this.asset,
-      required this.assetList,
-      this.showStorageIndicator = true})
-      : super(key: key);
+  const ThumbnailImage({
+    Key? key,
+    required this.asset,
+    required this.assetList,
+    this.cacheManager,
+    this.showStorageIndicator = true,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cacheKey = useState(1);
-
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl = getThumbnailUrl(asset);
     var selectedAsset = ref.watch(homePageStateProvider).selectedItems;
@@ -94,7 +95,8 @@ class ThumbnailImage extends HookConsumerWidget {
                     : const Border(),
               ),
               child: CachedNetworkImage(
-                cacheKey: "${asset.id}-${cacheKey.value}",
+                cacheKey: asset.id,
+                cacheManager: cacheManager,
                 width: 300,
                 height: 300,
                 memCacheHeight: asset.type == AssetTypeEnum.IMAGE ? 250 : 400,
@@ -128,17 +130,18 @@ class ThumbnailImage extends HookConsumerWidget {
                   child: _buildSelectionIcon(asset),
                 ),
               ),
-            if (showStorageIndicator) Positioned(
-              right: 10,
-              bottom: 5,
-              child: Icon(
-                (deviceId != asset.deviceId)
-                    ? Icons.cloud_done_outlined
-                    : Icons.photo_library_rounded,
-                color: Colors.white,
-                size: 18,
-              ),
-            )
+            if (showStorageIndicator)
+              Positioned(
+                right: 10,
+                bottom: 5,
+                child: Icon(
+                  (deviceId != asset.deviceId)
+                      ? Icons.cloud_done_outlined
+                      : Icons.photo_library_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              )
           ],
         ),
       ),

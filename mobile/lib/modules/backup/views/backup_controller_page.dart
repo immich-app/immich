@@ -14,6 +14,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
   const BackupControllerPage({Key? key}) : super(key: key);
@@ -156,6 +157,46 @@ class BackupControllerPage extends HookConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
 
+    void _showBatteryOptimizationInfoToUser() {
+      final buttonTextColor = Theme.of(context).primaryColor;
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text(
+              'backup_controller_page_background_battery_info_title',
+            ).tr(),
+            content: SingleChildScrollView(
+              child: const Text(
+                'backup_controller_page_background_battery_info_message',
+              ).tr(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => launchUrl(
+                    Uri.parse('https://dontkillmyapp.com'),
+                    mode: LaunchMode.externalApplication),
+                child: Text(
+                  "backup_controller_page_background_battery_info_link",
+                  style: TextStyle(color: buttonTextColor),
+                ).tr(),
+              ),
+              TextButton(
+                child: Text(
+                  'backup_controller_page_background_battery_info_ok',
+                  style: TextStyle(color: buttonTextColor),
+                ).tr(),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     ListTile _buildBackgroundBackupController() {
       final bool isBackgroundEnabled = backupState.backgroundBackup;
       final bool isWifiRequired = backupState.backupRequireWifi;
@@ -197,6 +238,7 @@ class BackupControllerPage extends HookConsumerWidget {
                         .configureBackgroundBackup(
                           requireWifi: isChecked,
                           onError: _showErrorToUser,
+                          onBatteryInfo: _showBatteryOptimizationInfoToUser,
                         )
                     : null,
               ),
@@ -217,6 +259,7 @@ class BackupControllerPage extends HookConsumerWidget {
                         .configureBackgroundBackup(
                           requireCharging: isChecked,
                           onError: _showErrorToUser,
+                          onBatteryInfo: _showBatteryOptimizationInfoToUser,
                         )
                     : null,
               ),
@@ -225,6 +268,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   ref.read(backupProvider.notifier).configureBackgroundBackup(
                         enabled: !isBackgroundEnabled,
                         onError: _showErrorToUser,
+                        onBatteryInfo: _showBatteryOptimizationInfoToUser,
                       ),
               child: Text(
                 isBackgroundEnabled
