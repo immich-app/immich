@@ -17,11 +17,11 @@ export class GenerateChecksumProcessor {
 
   @Process()
   async generateChecksum() {
-    let hashNext = true;
+    let hasNext = true;
     let pageSize = 200;
     let offset = 0;
 
-    while (hashNext) {
+    while (hasNext) {
       const assets = await this.assetRepository.find({
         where: {
           checksum: IsNull()
@@ -31,7 +31,7 @@ export class GenerateChecksumProcessor {
       });
 
       if (!assets?.length) {
-        hashNext = false; // avoid using break
+        hasNext = false; // avoid using break
       } else {
         for (const asset of assets) {
           try {
@@ -41,7 +41,11 @@ export class GenerateChecksumProcessor {
           }
         }
 
-        offset += pageSize;
+        if (assets.length < pageSize) {
+          hasNext = false;
+        } else {
+          offset += pageSize;
+        }
       }
     }
   }
