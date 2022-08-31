@@ -88,7 +88,7 @@ export class AssetController {
       );
 
       return new AssetFileUploadResponseDto(savedAsset.id);
-    } catch (e: any) {
+    } catch (e) {
       Logger.error(`Error uploading file ${e}`);
       await this.backgroundTaskService.deleteFileOnDisk([{
         originalPath: file.path
