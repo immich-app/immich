@@ -19,6 +19,12 @@
 	$: {
 		scrollbarPosition = (scrollTop / viewportHeight) * scrollbarHeight;
 	}
+
+	onMount(() => {
+		scrollbarHeightLeft = scrollbarHeight;
+		segmentScrollbarLayout = getLayoutDistance();
+	});
+
 	const getSegmentHeight = (groupCount: number) => {
 		if (segmentData.groups.length > 0) {
 			const percentage = (groupCount * 100) / segmentData.totalAssets;
@@ -42,11 +48,6 @@
 
 		return result;
 	};
-
-	onMount(() => {
-		scrollbarHeightLeft = scrollbarHeight;
-		segmentScrollbarLayout = getLayoutDistance();
-	});
 
 	const handleMouseMove = (e: MouseEvent, currentDate: Date) => {
 		currentMouseYLocation = e.clientY - 71 - 30;
@@ -87,7 +88,6 @@
 			aria-label={segment.timeGroup + ' ' + segment.count}
 			on:mousemove={(e) => handleMouseMove(e, groupDate)}
 		>
-			<!-- {groupDate.toLocaleString('default', { month: 'short' })} -->
 			{#if new Date(segmentScrollbarLayout[index - 1]?.timeGroup).getFullYear() !== groupDate.getFullYear()}
 				<div
 					aria-label={segment.timeGroup + ' ' + segment.count}

@@ -56,6 +56,7 @@
 	onMount(async () => {
 		openWebsocketConnection();
 
+		console.log(data.assetCountByTimeGroup);
 		const res = await api.assetApi.getAllAssets();
 		setAssetInfo(res.data);
 
