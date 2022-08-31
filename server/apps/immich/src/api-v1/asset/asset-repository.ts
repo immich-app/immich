@@ -46,6 +46,7 @@ export class AssetRepository implements IAssetRepository {
         buckets: [...getAssetByTimeBucketDto.timeBucket],
       })
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .orderBy('asset.createdAt', 'DESC')
       .getMany();
   }
 

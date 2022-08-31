@@ -14,7 +14,7 @@ Method | HTTP request | Description
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
-[**getAssetByTimeBucket**](AssetApi.md#getassetbytimebucket) | **GET** /asset/time-bucket | 
+[**getAssetByTimeBucket**](AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
 [**getAssetCountByTimeGroup**](AssetApi.md#getassetcountbytimegroup) | **GET** /asset/count-by-date | 
 [**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 

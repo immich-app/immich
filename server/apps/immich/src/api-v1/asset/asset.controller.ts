@@ -170,11 +170,12 @@ export class AssetController {
     return await this.assetService.getAllAssets(authUser);
   }
 
-  @Get('/time-bucket')
+  @Post('/time-bucket')
   async getAssetByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
+    @Body() getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
   ): Promise<AssetResponseDto[]> {
+    console.log(getAssetByTimeBucketDto);
     return await this.assetService.getAssetByTimeBucket(authUser, getAssetByTimeBucketDto);
   }
   /**

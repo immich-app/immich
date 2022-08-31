@@ -79,7 +79,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
-*AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **GET** /asset/time-bucket | 
+*AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
 *AssetApi* | [**getAssetCountByTimeGroup**](doc//AssetApi.md#getassetcountbytimegroup) | **GET** /asset/count-by-date | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 

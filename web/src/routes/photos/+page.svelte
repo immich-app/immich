@@ -12,7 +12,7 @@
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { api, AssetResponseDto } from '@api';
+	import { api, AssetResponseDto, GetAssetByTimeBucketDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
@@ -56,9 +56,17 @@
 	onMount(async () => {
 		openWebsocketConnection();
 
-		console.log(data.assetCountByTimeGroup);
-		const res = await api.assetApi.getAllAssets();
-		setAssetInfo(res.data);
+		if (data.assetCountByTimeGroup.groups.length > 0) {
+			const timeGroup = data.assetCountByTimeGroup.groups[0].timeGroup;
+
+			const payload: GetAssetByTimeBucketDto = {
+				timeBucket: [timeGroup]
+			};
+
+			const { data: assets } = await api.assetApi.getAssetByTimeBucket(payload);
+
+			setAssetInfo(assets);
+		}
 
 		if (timelineElement) {
 			timelineElement.addEventListener('scroll', () => {

@@ -298,7 +298,7 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/time-bucket' operation and returns the [Response].
+  /// Performs an HTTP 'POST /asset/time-bucket' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [GetAssetByTimeBucketDto] getAssetByTimeBucketDto (required):
@@ -318,7 +318,7 @@ class AssetApi {
 
     return apiClient.invokeAPI(
       path,
-      'GET',
+      'POST',
       queryParams,
       postBody,
       headerParams,
