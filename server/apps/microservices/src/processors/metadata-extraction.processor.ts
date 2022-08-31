@@ -1,18 +1,6 @@
-import { Process, Processor } from '@nestjs/bull';
-import { Job } from 'bull';
 import { AssetEntity } from '@app/database/entities/asset.entity';
-import { Repository } from 'typeorm/repository/Repository';
-import { InjectRepository } from '@nestjs/typeorm';
 import { ExifEntity } from '@app/database/entities/exif.entity';
-import exifr from 'exifr';
-import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
-import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
-import { readFile } from 'fs/promises';
-import { Logger } from '@nestjs/common';
-import axios from 'axios';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
-import ffmpeg from 'fluent-ffmpeg';
-import path from 'path';
 import {
   IExifExtractionProcessor,
   IVideoLengthExtractionProcessor,
@@ -24,6 +12,19 @@ import {
   reverseGeocodingProcessorName,
   IReverseGeocodingProcessor,
 } from '@app/job';
+import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
+import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
+import { Process, Processor } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import axios from 'axios';
+import { Job } from 'bull';
+import exifr from 'exifr';
+import ffmpeg from 'fluent-ffmpeg';
+import { readFile } from 'fs/promises';
+import path from 'path';
+import sharp from 'sharp';
+import { Repository } from 'typeorm/repository/Repository';
 
 @Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
@@ -50,18 +51,31 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
+      const exifData = await exifr.parse(asset.originalPath, {
+        tiff: true,
+        ifd0: true as any,
+        ifd1: true,
+        exif: true,
+        gps: true,
+        interop: true,
+        xmp: true,
+        icc: true,
+        iptc: true,
+        jfif: true,
+        ihdr: true,
+      });
 
-      const fileBuffer = await readFile(asset.originalPath);
-
-      const exifData = await exifr.parse(fileBuffer);
+      if (!exifData) {
+        throw new Error(`can not parse exif data from file ${asset.originalPath}`);
+      }
 
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.make = exifData['Make'] || null;
       newExif.model = exifData['Model'] || null;
       newExif.imageName = path.parse(fileName).name || null;
-      newExif.exifImageHeight = exifData['ExifImageHeight'] || null;
-      newExif.exifImageWidth = exifData['ExifImageWidth'] || null;
+      newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
+      newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
       newExif.fileSizeInByte = fileSize || null;
       newExif.orientation = exifData['Orientation'] || null;
       newExif.dateTimeOriginal = exifData['DateTimeOriginal'] || null;
@@ -85,13 +99,42 @@ export class MetadataExtractionProcessor {
 
         const res: [] = geoCodeInfo.body['features'];
 
-        const city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
-        const state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
-        const country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+        let city = '';
+        let state = '';
+        let country = '';
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
+          city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
+        }
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
+          state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
+        }
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
+          country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+        }
 
         newExif.city = city || null;
         newExif.state = state || null;
         newExif.country = country || null;
+      }
+
+      // Enrich metadata
+      if (!newExif.exifImageHeight || !newExif.exifImageWidth || !newExif.orientation) {
+        const metadata = await sharp(asset.originalPath).metadata();
+
+        if (newExif.exifImageHeight === null) {
+          newExif.exifImageHeight = metadata.height || null;
+        }
+
+        if (newExif.exifImageWidth === null) {
+          newExif.exifImageWidth = metadata.width || null;
+        }
+
+        if (newExif.orientation === null) {
+          newExif.orientation = metadata.orientation !== undefined ? `${metadata.orientation}` : null;
+        }
       }
 
       await this.exifRepository.save(newExif);
@@ -114,9 +157,21 @@ export class MetadataExtractionProcessor {
 
       const res: [] = geoCodeInfo.body['features'];
 
-      const city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
-      const state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
-      const country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+      let city = '';
+      let state = '';
+      let country = '';
+
+      if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
+        city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
+      }
+
+      if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
+        state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
+      }
+
+      if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
+        country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+      }
 
       await this.exifRepository.update({ id: exif.id }, { city, state, country });
     }
@@ -166,33 +221,130 @@ export class MetadataExtractionProcessor {
 
   @Process({ name: videoMetadataExtractionProcessorName, concurrency: 2 })
   async extractVideoMetadata(job: Job<IVideoLengthExtractionProcessor>) {
-    const { asset } = job.data;
+    const { asset, fileName } = job.data;
 
-    ffmpeg.ffprobe(asset.originalPath, async (err, data) => {
-      if (!err) {
-        let durationString = asset.duration;
-        let createdAt = asset.createdAt;
+    try {
+      const data = await new Promise<ffmpeg.FfprobeData>((resolve, reject) =>
+        ffmpeg.ffprobe(asset.originalPath, (err, data) => {
+          if (err) return reject(err);
+          return resolve(data);
+        }),
+      );
+      let durationString = asset.duration;
+      let createdAt = asset.createdAt;
 
-        if (data.format.duration) {
-          durationString = this.extractDuration(data.format.duration);
-        }
+      if (data.format.duration) {
+        durationString = this.extractDuration(data.format.duration);
+      }
 
-        const videoTags = data.format.tags;
-        if (videoTags) {
-          if (videoTags['com.apple.quicktime.creationdate']) {
-            createdAt = String(videoTags['com.apple.quicktime.creationdate']);
-          } else if (videoTags['creation_time']) {
-            createdAt = String(videoTags['creation_time']);
-          } else {
-            createdAt = asset.createdAt;
-          }
+      const videoTags = data.format.tags;
+      if (videoTags) {
+        if (videoTags['com.apple.quicktime.creationdate']) {
+          createdAt = String(videoTags['com.apple.quicktime.creationdate']);
+        } else if (videoTags['creation_time']) {
+          createdAt = String(videoTags['creation_time']);
         } else {
           createdAt = asset.createdAt;
         }
-
-        await this.assetRepository.update({ id: asset.id }, { duration: durationString, createdAt: createdAt });
+      } else {
+        createdAt = asset.createdAt;
       }
-    });
+
+      const newExif = new ExifEntity();
+      newExif.assetId = asset.id;
+      newExif.description = '';
+      newExif.imageName = path.parse(fileName).name || null;
+      newExif.fileSizeInByte = data.format.size || null;
+      newExif.dateTimeOriginal = createdAt ? new Date(createdAt) : null;
+      newExif.modifyDate = null;
+      newExif.latitude = null;
+      newExif.longitude = null;
+      newExif.city = null;
+      newExif.state = null;
+      newExif.country = null;
+      newExif.fps = null;
+
+      if (videoTags && videoTags['location']) {
+        const location = videoTags['location'] as string;
+        const locationRegex = /([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)\/$/;
+        const match = location.match(locationRegex);
+
+        if (match?.length === 3) {
+          newExif.latitude = parseFloat(match[1]);
+          newExif.longitude = parseFloat(match[2]);
+        }
+      } else if (videoTags && videoTags['com.apple.quicktime.location.ISO6709']) {
+        const location = videoTags['com.apple.quicktime.location.ISO6709'] as string;
+        const locationRegex = /([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)\/$/;
+        const match = location.match(locationRegex);
+
+        if (match?.length === 4) {
+          newExif.latitude = parseFloat(match[1]);
+          newExif.longitude = parseFloat(match[2]);
+        }
+      }
+
+      // Reverse GeoCoding
+      if (this.geocodingClient && newExif.longitude && newExif.latitude) {
+        const geoCodeInfo: MapiResponse = await this.geocodingClient
+          .reverseGeocode({
+            query: [newExif.longitude, newExif.latitude],
+            types: ['country', 'region', 'place'],
+          })
+          .send();
+
+        const res: [] = geoCodeInfo.body['features'];
+
+        let city = '';
+        let state = '';
+        let country = '';
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
+          city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
+        }
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
+          state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
+        }
+
+        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
+          country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+        }
+
+        newExif.city = city || null;
+        newExif.state = state || null;
+        newExif.country = country || null;
+      }
+
+      for (const stream of data.streams) {
+        if (stream.codec_type === 'video') {
+          newExif.exifImageWidth = stream.width || null;
+          newExif.exifImageHeight = stream.height || null;
+
+          if (typeof stream.rotation === 'string') {
+            newExif.orientation = stream.rotation;
+          } else if (typeof stream.rotation === 'number') {
+            newExif.orientation = `${stream.rotation}`;
+          } else {
+            newExif.orientation = null;
+          }
+
+          if (stream.r_frame_rate) {
+            let fpsParts = stream.r_frame_rate.split('/');
+
+            if (fpsParts.length === 2) {
+              newExif.fps = Math.round(parseInt(fpsParts[0]) / parseInt(fpsParts[1]));
+            }
+          }
+        }
+      }
+
+      await this.exifRepository.save(newExif);
+      await this.assetRepository.update({ id: asset.id }, { duration: durationString, createdAt: createdAt });
+    } catch (err) {
+      // do nothing
+      console.log('Error in video metadata extraction', err);
+    }
   }
 
   private extractDuration(duration: number) {
@@ -202,8 +354,6 @@ export class MetadataExtractionProcessor {
     const minutes = Math.floor((videoDurationInSecond - hours * 3600) / 60);
     const seconds = videoDurationInSecond - hours * 3600 - minutes * 60;
 
-    return `${hours}:${minutes < 10 ? '0' + minutes.toString() : minutes}:${
-      seconds < 10 ? '0' + seconds.toString() : seconds
-    }.000000`;
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.000000`;
   }
 }

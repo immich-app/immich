@@ -13,7 +13,10 @@ import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart
 import 'package:immich_mobile/modules/album/ui/album_viewer_appbar.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_editable_title.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_thumbnail.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
@@ -186,20 +189,28 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget _buildImageGrid(AlbumResponseDto albumInfo) {
+      final appSettingService = ref.watch(appSettingsServiceProvider);
+      final bool showStorageIndicator =
+          appSettingService.getSetting(AppSettingsEnum.storageIndicator);
+      final cacheService = ref.watch(cacheServiceProvider);
+
       if (albumInfo.assets.isNotEmpty) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 10.0),
           sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount:
+                  appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
               crossAxisSpacing: 5.0,
               mainAxisSpacing: 5,
             ),
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 return AlbumViewerThumbnail(
+                  cacheManager: cacheService.getCache(CacheType.thumbnail),
                   asset: albumInfo.assets[index],
                   assetList: albumInfo.assets,
+                  showStorageIndicator: showStorageIndicator,
                 );
               },
               childCount: albumInfo.assetCount,

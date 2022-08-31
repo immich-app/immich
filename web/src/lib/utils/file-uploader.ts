@@ -1,10 +1,13 @@
+import {
+	notificationController,
+	NotificationType
+} from './../components/shared-components/notification/notification';
 /* @vite-ignore */
 import * as exifr from 'exifr';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
 import { albumUploadAssetStore } from '$lib/stores/album-upload-asset';
-
 /**
  * Determine if the upload is for album or for the user general backup
  * @variant GENERAL - Upload assets to the server for general backup
@@ -28,10 +31,21 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 
 		fileSelector.type = 'file';
 		fileSelector.multiple = true;
-		fileSelector.accept = 'image/*,video/*,.heic,.heif';
+		fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng';
 
 		fileSelector.onchange = async (e: any) => {
 			const files = Array.from<File>(e.target.files);
+
+			if (files.length > 50) {
+				notificationController.show({
+					type: NotificationType.Error,
+					message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files. 
+          Please use the CLI tool if you need to upload more than 50 files.`,
+					timeout: 5000
+				});
+
+				return;
+			}
 
 			const acceptedFile = files.filter(
 				(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
@@ -49,7 +63,7 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 
 		fileSelector.click();
 	} catch (e) {
-		console.log('Error seelcting file', e);
+		console.log('Error selecting file', e);
 	}
 };
 
@@ -131,7 +145,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 			uploadAssetsStore.addNewUploadAsset(newUploadAsset);
 		};
 
-		request.upload.onload = (e) => {
+		request.upload.onload = (event) => {
 			setTimeout(() => {
 				uploadAssetsStore.removeUploadAsset(deviceAssetId);
 			}, 1000);
@@ -140,11 +154,15 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		request.onreadystatechange = () => {
 			try {
 				if (request.readyState === 4 && uploadType === UploadType.ALBUM) {
-					const res: AssetFileUploadResponseDto = JSON.parse(request.response);
+					const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
 
 					albumUploadAssetStore.asset.update((assets) => {
-						return [...assets, res.id];
+						return [...assets, res?.id || ''];
 					});
+
+					if (request.status !== 201) {
+						handleUploadError(asset, res);
+					}
 				}
 			} catch (e) {
 				console.error('ERROR parsing data JSON in upload onreadystatechange');
@@ -152,7 +170,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		};
 
 		// listen for `error` event
-		request.upload.onerror = () => {
+		request.upload.onerror = (event) => {
 			uploadAssetsStore.removeUploadAsset(deviceAssetId);
 		};
 
@@ -173,4 +191,14 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 	} catch (e) {
 		console.log('error uploading file ', e);
 	}
+}
+
+function handleUploadError(asset: File, respBody?: any) {
+	let extraMsg = respBody ? ' ' + respBody.message : '';
+
+	notificationController.show({
+		type: NotificationType.Error,
+		message: `Cannot upload file ${asset.name}!${extraMsg}`,
+		timeout: 5000
+	});
 }

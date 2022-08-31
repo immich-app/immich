@@ -10,10 +10,13 @@ import 'package:immich_mobile/modules/home/ui/image_grid.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:openapi/api.dart';
 
 class HomePage extends HookConsumerWidget {
@@ -21,6 +24,9 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appSettingService = ref.watch(appSettingsServiceProvider);
+    final cacheService = ref.watch(cacheServiceProvider);
+
     ScrollController scrollController = useScrollController();
     var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
     List<Widget> imageGridGroup = [];
@@ -61,35 +67,46 @@ class HomePage extends HookConsumerWidget {
         int? lastMonth;
 
         assetGroupByDateTime.forEach((dateGroup, immichAssetList) {
-          DateTime parseDateGroup = DateTime.parse(dateGroup);
-          int currentMonth = parseDateGroup.month;
+          try {
+            DateTime parseDateGroup = DateTime.parse(dateGroup);
+            int currentMonth = parseDateGroup.month;
 
-          if (lastMonth != null) {
-            if (currentMonth - lastMonth! != 0) {
-              imageGridGroup.add(
-                MonthlyTitleText(
-                  isoDate: dateGroup,
-                ),
-              );
+            if (lastMonth != null) {
+              if (currentMonth - lastMonth! != 0) {
+                imageGridGroup.add(
+                  MonthlyTitleText(
+                    isoDate: dateGroup,
+                  ),
+                );
+              }
             }
+
+            imageGridGroup.add(
+              DailyTitleText(
+                key: Key('${dateGroup.toString()}title'),
+                isoDate: dateGroup,
+                assetGroup: immichAssetList,
+              ),
+            );
+
+            imageGridGroup.add(
+              ImageGrid(
+                cacheManager: cacheService.getCache(CacheType.thumbnail),
+                assetGroup: immichAssetList,
+                sortedAssetGroup: sortedAssetList,
+                tilesPerRow:
+                    appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
+                showStorageIndicator: appSettingService
+                    .getSetting(AppSettingsEnum.storageIndicator),
+              ),
+            );
+
+            lastMonth = currentMonth;
+          } catch (e) {
+            debugPrint(
+              "[ERROR] Cannot parse $dateGroup - Wrong create date format : ${immichAssetList.map((asset) => asset.createdAt).toList()}",
+            );
           }
-
-          imageGridGroup.add(
-            DailyTitleText(
-              key: Key('${dateGroup.toString()}title'),
-              isoDate: dateGroup,
-              assetGroup: immichAssetList,
-            ),
-          );
-
-          imageGridGroup.add(
-            ImageGrid(
-              assetGroup: immichAssetList,
-              sortedAssetGroup: sortedAssetList,
-            ),
-          );
-
-          lastMonth = currentMonth;
         });
       }
 

@@ -1,7 +1,4 @@
-import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Job, Queue } from 'bull';
 import { AssetType } from '@app/database/entities/asset.entity';
-import { randomUUID } from 'crypto';
 import {
   IAssetUploadedJob,
   IMetadataExtractionJob,
@@ -17,6 +14,9 @@ import {
   mp4ConversionProcessorName,
   videoMetadataExtractionProcessorName,
 } from '@app/job';
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { Job, Queue } from 'bull';
+import { randomUUID } from 'crypto';
 
 @Processor(assetUploadedQueueName)
 export class AssetUploadedProcessor {
@@ -64,7 +64,11 @@ export class AssetUploadedProcessor {
 
     // Extract video duration if uploaded from the web & CLI
     if (asset.type == AssetType.VIDEO) {
-      await this.metadataExtractionQueue.add(videoMetadataExtractionProcessorName, { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add(
+        videoMetadataExtractionProcessorName,
+        { asset, fileName, fileSize },
+        { jobId: randomUUID() }
+      );
     }
   }
 }

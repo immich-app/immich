@@ -6,6 +6,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
+      target: builder
     command: npm run start:dev immich
     volumes:
       - ../server:/usr/src/app
@@ -24,6 +25,7 @@ services:
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
+      target: builder
     command: npm run start:dev
     volumes:
       - ../machine-learning:/usr/src/app
@@ -41,6 +43,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
+      target: builder
     command: npm run start:dev microservices
     volumes:
       - ../server:/usr/src/app

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-
 	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
@@ -24,7 +22,7 @@
 </script>
 
 <section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6">
-	<a sveltekit:prefetch href={$page.routeId != 'photos' ? `/photos` : null}>
+	<a sveltekit:prefetch sveltekit:noscroll href={$page.routeId !== 'photos' ? `/photos` : null}>
 		<SideBarButton
 			title="Photos"
 			logo={ImageOutline}
@@ -32,7 +30,7 @@
 			isSelected={selectedAction === AppSideBarSelection.PHOTOS}
 		/></a
 	>
-	<a sveltekit:prefetch href={$page.routeId != 'sharing' ? `/sharing` : null}>
+	<a sveltekit:prefetch href={$page.routeId !== 'sharing' ? `/sharing` : null}>
 		<SideBarButton
 			title="Sharing"
 			logo={AccountMultipleOutline}
@@ -43,7 +41,7 @@
 	<div class="text-xs ml-5 my-4">
 		<p>LIBRARY</p>
 	</div>
-	<a sveltekit:prefetch href={$page.routeId != 'albums' ? `/albums` : null}>
+	<a sveltekit:prefetch href={$page.routeId !== 'albums' ? `/albums` : null}>
 		<SideBarButton
 			title="Albums"
 			logo={ImageAlbum}
@@ -51,8 +49,8 @@
 			isSelected={selectedAction === AppSideBarSelection.ALBUMS}
 		/>
 	</a>
-	<!-- Status Box -->
 
+	<!-- Status Box -->
 	<div class="mb-6 mt-auto">
 		<StatusBox />
 	</div>

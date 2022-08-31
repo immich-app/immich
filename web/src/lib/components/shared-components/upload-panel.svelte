@@ -6,7 +6,6 @@
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
 	import type { UploadAsset } from '$lib/models/upload-asset';
 	import { getAssetsInfo } from '$lib/stores/assets';
-	import { session } from '$app/stores';
 	let showDetail = true;
 
 	let uploadLength = 0;

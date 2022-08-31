@@ -23,6 +23,16 @@ export interface IVideoLengthExtractionProcessor {
    * The Asset entity that was saved in the database
    */
   asset: AssetEntity;
+
+  /**
+   * Original file name
+   */
+  fileName: string;
+
+  /**
+   * File size in byte
+   */
+  fileSize: number;
 }
 
 export interface IReverseGeocodingProcessor {

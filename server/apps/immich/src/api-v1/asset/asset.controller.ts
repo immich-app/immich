@@ -2,7 +2,6 @@ import {
   Controller,
   Post,
   UseInterceptors,
-  UploadedFiles,
   Body,
   UseGuards,
   Get,
@@ -44,6 +43,8 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
+import { AssetCountByTimeGroupResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
+import { GetAssetCountByTimeGroupDto } from './dto/get-asset-count-by-time-group.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -74,6 +75,9 @@ export class AssetController {
     try {
       const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
       if (!savedAsset) {
+        await this.backgroundTaskService.deleteFileOnDisk([{
+          originalPath: file.path
+        } as any]); // simulate asset to make use of delete queue (or use fs.unlink instead)
         throw new BadRequestException('Asset not created');
       }
 
@@ -86,6 +90,9 @@ export class AssetController {
       return new AssetFileUploadResponseDto(savedAsset.id);
     } catch (e) {
       Logger.error(`Error uploading file ${e}`);
+      await this.backgroundTaskService.deleteFileOnDisk([{
+        originalPath: file.path
+      } as any]); // simulate asset to make use of delete queue (or use fs.unlink instead)
       throw new BadRequestException(`Error uploading file`, `${e}`);
     }
   }
@@ -117,17 +124,17 @@ export class AssetController {
     return this.assetService.getAssetThumbnail(assetId, query);
   }
 
-  @Get('/allObjects')
+  @Get('/curated-objects')
   async getCuratedObjects(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
     return this.assetService.getCuratedObject(authUser);
   }
 
-  @Get('/allLocation')
+  @Get('/curated-locations')
   async getCuratedLocations(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
     return this.assetService.getCuratedLocation(authUser);
   }
 
-  @Get('/searchTerm')
+  @Get('/search-terms')
   async getAssetSearchTerms(@GetAuthUser() authUser: AuthUserDto): Promise<string[]> {
     return this.assetService.getAssetSearchTerm(authUser);
   }
@@ -138,6 +145,14 @@ export class AssetController {
     @Body(ValidationPipe) searchAssetDto: SearchAssetDto,
   ): Promise<AssetResponseDto[]> {
     return this.assetService.searchAsset(authUser, searchAssetDto);
+  }
+
+  @Get('/count-by-date')
+  async getAssetCountByTimeGroup(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto,
+  ): Promise<AssetCountByTimeGroupResponseDto> {
+    return this.assetService.getAssetCountByTimeGroup(authUser, getAssetCountByTimeGroupDto);
   }
 
   /**
