@@ -59,6 +59,7 @@ describe('AssetService', () => {
       getDetectedObjectsByUserId: jest.fn(),
       getLocationsByUserId: jest.fn(),
       getSearchPropertiesByUserId: jest.fn(),
+      getAssetByChecksum: jest.fn(),
     };
 
     sui = new AssetService(assetRepositoryMock, a);
