@@ -29,6 +29,7 @@ doc/DeviceInfoApi.md
 doc/DeviceInfoResponseDto.md
 doc/DeviceTypeEnum.md
 doc/ExifResponseDto.md
+doc/GetAssetByTimeBucketDto.md
 doc/GetAssetCountByTimeGroupDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
@@ -89,6 +90,7 @@ lib/model/delete_asset_status.dart
 lib/model/device_info_response_dto.dart
 lib/model/device_type_enum.dart
 lib/model/exif_response_dto.dart
+lib/model/get_asset_by_time_bucket_dto.dart
 lib/model/get_asset_count_by_time_group_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
@@ -109,3 +111,4 @@ lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 pubspec.yaml
+test/get_asset_by_time_bucket_dto_test.dart

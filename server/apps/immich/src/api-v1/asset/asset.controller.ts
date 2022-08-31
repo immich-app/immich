@@ -46,6 +46,7 @@ import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/de
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { AssetCountByTimeGroupResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
 import { GetAssetCountByTimeGroupDto } from './dto/get-asset-count-by-time-group.dto';
+import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -76,9 +77,11 @@ export class AssetController {
     try {
       const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
       if (!savedAsset) {
-        await this.backgroundTaskService.deleteFileOnDisk([{
-          originalPath: file.path
-        } as any]); // simulate asset to make use of delete queue (or use fs.unlink instead)
+        await this.backgroundTaskService.deleteFileOnDisk([
+          {
+            originalPath: file.path,
+          } as any,
+        ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
         throw new BadRequestException('Asset not created');
       }
 
@@ -91,9 +94,11 @@ export class AssetController {
       return new AssetFileUploadResponseDto(savedAsset.id);
     } catch (e) {
       Logger.error(`Error uploading file ${e}`);
-      await this.backgroundTaskService.deleteFileOnDisk([{
-        originalPath: file.path
-      } as any]); // simulate asset to make use of delete queue (or use fs.unlink instead)
+      await this.backgroundTaskService.deleteFileOnDisk([
+        {
+          originalPath: file.path,
+        } as any,
+      ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
       throw new BadRequestException(`Error uploading file`, `${e}`);
     }
   }
@@ -165,6 +170,13 @@ export class AssetController {
     return await this.assetService.getAllAssets(authUser);
   }
 
+  @Get('/time-bucket')
+  async getAssetByTimeBucket(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
+  ): Promise<AssetResponseDto[]> {
+    return await this.assetService.getAssetByTimeBucket(authUser, getAssetByTimeBucketDto);
+  }
   /**
    * Get all asset of a device that are in the database, ID only.
    */

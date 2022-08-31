@@ -79,6 +79,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
+*AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **GET** /asset/time-bucket | 
 *AssetApi* | [**getAssetCountByTimeGroup**](doc//AssetApi.md#getassetcountbytimegroup) | **GET** /asset/count-by-date | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
@@ -132,6 +133,7 @@ Class | Method | HTTP request | Description
  - [DeviceInfoResponseDto](doc//DeviceInfoResponseDto.md)
  - [DeviceTypeEnum](doc//DeviceTypeEnum.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
+ - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeGroupDto](doc//GetAssetCountByTimeGroupDto.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)

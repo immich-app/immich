@@ -14,6 +14,7 @@ Method | HTTP request | Description
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
+[**getAssetByTimeBucket**](AssetApi.md#getassetbytimebucket) | **GET** /asset/time-bucket | 
 [**getAssetCountByTimeGroup**](AssetApi.md#getassetcountbytimegroup) | **GET** /asset/count-by-date | 
 [**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
@@ -264,6 +265,53 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAssetByTimeBucket**
+> List<AssetResponseDto> getAssetByTimeBucket(getAssetByTimeBucketDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final getAssetByTimeBucketDto = GetAssetByTimeBucketDto(); // GetAssetByTimeBucketDto | 
+
+try {
+    final result = api_instance.getAssetByTimeBucket(getAssetByTimeBucketDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getAssetByTimeBucket: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **getAssetByTimeBucketDto** | [**GetAssetByTimeBucketDto**](GetAssetByTimeBucketDto.md)|  | 
+
+### Return type
+
+[**List<AssetResponseDto>**](AssetResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

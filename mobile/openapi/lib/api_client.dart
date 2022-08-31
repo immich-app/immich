@@ -238,6 +238,8 @@ class ApiClient {
           return DeviceTypeEnumTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
+        case 'GetAssetByTimeBucketDto':
+          return GetAssetByTimeBucketDto.fromJson(value);
         case 'GetAssetCountByTimeGroupDto':
           return GetAssetCountByTimeGroupDto.fromJson(value);
         case 'LoginCredentialDto':
