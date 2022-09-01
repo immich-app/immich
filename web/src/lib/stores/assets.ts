@@ -38,10 +38,12 @@ export const setAssetInfo = (data: AssetResponseDto[]) => {
 function createAssetStore() {
 	const assets = writable<AssetStoreState[]>([]);
 
-	function calculateSegmentViewport(
+	const calculateSegmentViewport = async (
 		viewportWidth: number,
 		assetCountByTimeGroup: AssetCountByTimeGroupResponseDto
-	) {
+	) => {
+		const result: AssetStoreState[] = [];
+
 		for (const segment of assetCountByTimeGroup.groups) {
 			const unwrappedWidth = (3 / 2) * segment.count * 235 * (7 / 10);
 			const rows = Math.ceil(unwrappedWidth / viewportWidth);
@@ -54,14 +56,15 @@ function createAssetStore() {
 			assetStoreState.segmentHeight = height;
 			assetStoreState.segmentDate = segment.timeGroup;
 
-			assets.update((assets) => {
-				assets = [...assets, assetStoreState];
-				return assets;
-			});
+			result.push(assetStoreState);
 		}
-	}
 
-	async function getAssetsAndUpdateSegmentHeight(timeBuckets: string[]) {
+		assets.set(result);
+
+		return result;
+	};
+
+	const getAssetsByTimeBuckets = async (timeBuckets: string[]) => {
 		for (const timeBucket of timeBuckets) {
 			const { data: assetResponseDto } = await api.assetApi.getAssetByTimeBucket({
 				timeBucket: [timeBucket]
@@ -75,12 +78,24 @@ function createAssetStore() {
 				return assets;
 			});
 		}
-		// calculateSegmentViewport(window.innerWidth, data);
-	}
+
+		return assets;
+	};
+
+	const updateSegmentHeight = (segmentDate: string, height: number) => {
+		assets.update((assets) => {
+			const assetStoreState = assets.find((a) => a.segmentDate === segmentDate);
+			if (assetStoreState) {
+				assetStoreState.segmentHeight = height;
+			}
+			return assets;
+		});
+	};
 	return {
 		assets,
 		calculateSegmentViewport,
-		getAssetsAndUpdateSegmentHeight
+		getAssetsByTimeBuckets,
+		updateSegmentHeight
 	};
 }
 

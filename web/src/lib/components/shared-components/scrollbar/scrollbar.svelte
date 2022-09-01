@@ -1,13 +1,16 @@
 <script lang="ts">
+	import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
+
 	import { AssetCountByTimeGroupResponseDto } from '@api';
 
 	import { onMount } from 'svelte';
 	import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
 
 	export let scrollTop = 0;
-	export let totalTimelineHeight = 0;
+	export let viewportWidth = 0;
 	export let segmentData: AssetCountByTimeGroupResponseDto;
 
+	let timelineHeight = 0;
 	let scrollbarHeight: number;
 	let scrollbarHeightLeft: number;
 	let segmentScrollbarLayout: SegmentScrollbarLayout[] = [];
@@ -17,7 +20,8 @@
 	let scrollbarPosition = 0;
 
 	$: {
-		scrollbarPosition = (scrollTop / totalTimelineHeight) * scrollbarHeight;
+		timelineHeight = calculateViewportHeightByNumberOfAsset(segmentData.totalAssets, viewportWidth);
+		scrollbarPosition = (scrollTop / timelineHeight) * scrollbarHeight;
 	}
 
 	onMount(() => {
@@ -51,7 +55,8 @@
 
 	const handleMouseMove = (e: MouseEvent, currentDate: Date) => {
 		currentMouseYLocation = e.clientY - 71 - 30;
-		hoveredDate = currentDate;
+
+		hoveredDate = new Date(currentDate.toISOString().slice(0, -1));
 	};
 </script>
 

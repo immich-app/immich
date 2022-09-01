@@ -12,7 +12,7 @@
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { api, AssetResponseDto, GetAssetByTimeBucketDto } from '@api';
+	import { api, AssetResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
@@ -21,7 +21,7 @@
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import type { PageData } from './$types';
 
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, afterUpdate, beforeUpdate } from 'svelte';
 	import {
 		notificationController,
 		NotificationType
@@ -30,8 +30,6 @@
 	import Scrollbar from '$lib/components/shared-components/scrollbar/scrollbar.svelte';
 	import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
 	import { AssetStoreState } from '$lib/models/asset-store-state';
-	import { segmentParsers } from 'exifr';
-	import { browser } from '$app/env';
 
 	export let data: PageData;
 
@@ -53,22 +51,17 @@
 	let selectedAsset: AssetResponseDto;
 	let viewportWidth = 0;
 	let viewportHeight = 0;
-	let timelineViewportScrollY = 0;
+	let timelineScrollY = 0;
 	let timelineElement: HTMLElement;
 
 	// An estimation of the total height of the timeline.
-	$: totalTimelineHeight = calculateViewportHeightByNumberOfAsset(
+	let timelineHeight = calculateViewportHeightByNumberOfAsset(
 		data.assetCountByTimeGroup.totalAssets,
 		viewportWidth
 	);
 
 	let assetStoreState: AssetStoreState[] = [];
-	let domSegmentHeight: number[] = [];
-	$: {
-		if (browser) {
-			console.log('recalculate dom', domSegmentHeight);
-		}
-	}
+	let DOMSegmentHeight: number[] = [];
 
 	let unsubscribeAssetStore = assetStore.assets.subscribe((e) => {
 		assetStoreState = e;
@@ -77,14 +70,13 @@
 	onMount(async () => {
 		openWebsocketConnection();
 
-		getInitialLoadLayout();
+		timelineElement.addEventListener('scroll', () => {
+			timelineScrollY = timelineElement.scrollTop;
+		});
 
-		// Listen to scroll event on the timeline
-		if (timelineElement) {
-			timelineElement.addEventListener('scroll', () => {
-				timelineViewportScrollY = timelineElement.scrollTop;
-			});
-		}
+		console.time('getInitialLoadLayout');
+		getInitialLoadLayout();
+		console.timeEnd('getInitialLoadLayout');
 	});
 
 	onDestroy(() => {
@@ -94,8 +86,8 @@
 		timelineElement?.removeEventListener('scroll', () => {});
 	});
 
-	const getInitialLoadLayout = () => {
-		assetStore.calculateSegmentViewport(viewportWidth, data.assetCountByTimeGroup);
+	const getInitialLoadLayout = async () => {
+		await assetStore.calculateSegmentViewport(viewportWidth, data.assetCountByTimeGroup);
 
 		// Get assets to fill the view port.
 		let totalSegmentHeight = 0;
@@ -106,10 +98,23 @@
 			timeBuckets.push(assetSegment.segmentDate);
 
 			if (totalSegmentHeight >= viewportHeight || index === assetStoreState.length - 1) {
-				assetStore.getAssetsAndUpdateSegmentHeight(timeBuckets);
 				break;
 			}
 		}
+
+		await assetStore.getAssetsByTimeBuckets(timeBuckets);
+
+		// Update actual DOM height of each segment.
+		let updatedTimelineHeight = 0;
+		for (const [index, assetSegment] of assetStoreState.entries()) {
+			const segmentDOMElement = document.getElementById(assetSegment.segmentDate);
+			DOMSegmentHeight[index] = segmentDOMElement?.clientHeight || assetSegment.segmentHeight;
+
+			assetStore.updateSegmentHeight(assetSegment.segmentDate, DOMSegmentHeight[index]);
+			updatedTimelineHeight += DOMSegmentHeight[index];
+		}
+
+		timelineHeight = updatedTimelineHeight;
 	};
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
@@ -293,82 +298,32 @@
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
 	<SideBar />
 
-	<section id="assets-content" class="overflow-y-auto relative" bind:this={timelineElement}>
+	<section
+		id="assets-content"
+		class="overflow-y-auto relative"
+		bind:this={timelineElement}
+		bind:clientWidth={viewportWidth}
+		bind:clientHeight={viewportHeight}
+	>
 		<Scrollbar
-			{totalTimelineHeight}
+			{viewportWidth}
 			segmentData={data.assetCountByTimeGroup}
-			scrollTop={timelineViewportScrollY}
+			scrollTop={timelineScrollY}
 		/>
 		<section
-			class="relative pt-8 pl-4 mb-12 bg-immich-bg"
-			bind:clientWidth={viewportWidth}
-			bind:clientHeight={viewportHeight}
-			style:height={totalTimelineHeight + 'px'}
+			id="immich-timeline"
+			class="pt-8 pl-4 mb-12 bg-immich-bg"
+			style:height={timelineHeight + 'px'}
 		>
-			<!-- <section id="image-grid" class="flex flex-wrap gap-14">
-				{#each $assetsGroupByDate as assetsInDateGroup, groupIndex}
-					<div
-						class="flex flex-col"
-						on:mouseenter={() => (isMouseOverGroup = true)}
-						on:mouseleave={() => (isMouseOverGroup = false)}
-					>
-						<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
-							{#if (selectedGroupThumbnail === groupIndex && isMouseOverGroup) || selectedGroup.has(groupIndex)}
-								<div
-									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
-									out:fly={{ x: -24, duration: 200 }}
-									class="inline-block px-2 hover:cursor-pointer"
-									on:click={() => selectAssetGroupHandler(groupIndex)}
-								>
-									{#if selectedGroup.has(groupIndex)}
-										<CheckCircle size="24" color="#4250af" />
-									{:else if existingGroup.has(groupIndex)}
-										<CheckCircle size="24" color="#757575" />
-									{:else}
-										<CircleOutline size="24" color="#757575" />
-									{/if}
-								</div>
-							{/if}
-
-							{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
-						</p>
-
-						<div class="flex flex-wrap gap-[2px]">
-							{#each assetsInDateGroup as asset}
-								{#key asset.id}
-									<ImmichThumbnail
-										{asset}
-										on:mouseEvent={thumbnailMouseEventHandler}
-										on:click={(event) =>
-											isMultiSelectionMode
-												? selectAssetHandler(asset, groupIndex)
-												: viewAssetHandler(event)}
-										on:select={() => selectAssetHandler(asset, groupIndex)}
-										selected={multiSelectedAssets.has(asset)}
-										{groupIndex}
-									/>
-								{/key}
-							{/each}
-						</div>
+			{#each assetStoreState as segment, i (i)}
+				<div class="border border-red-500" style:height={segment.segmentHeight + 'px'}>
+					<div id={segment.segmentDate} class="flex flex-wrap gap-[2px]">
+						{#each segment.assets as assetInfo (assetInfo.id)}
+							<ImmichThumbnail asset={assetInfo} on:mouseEvent={thumbnailMouseEventHandler} />
+						{/each}
 					</div>
-				{/each}
-			</section> -->
-
-			<section>
-				{#each assetStoreState as segment, i (i)}
-					<div class="border border-red-500" style:height={segment.segmentHeight + 'px'}>
-						<p>Calculated Height : {segment.segmentHeight}</p>
-						<p>DOM Height: {domSegmentHeight[i]}</p>
-						<div class="flex flex-wrap gap-[2px]" bind:clientHeight={domSegmentHeight[i]}>
-							{#each segment.assets as assetInfo}
-								{#key assetInfo.id}
-									<ImmichThumbnail asset={assetInfo} on:mouseEvent={thumbnailMouseEventHandler} />
-								{/key}
-							{/each}
-						</div>
-					</div>
-				{/each}
-			</section>
+				</div>
+			{/each}
 		</section>
 	</section>
 </section>
@@ -382,3 +337,9 @@
 		on:close={closeViewer}
 	/>
 {/if}
+
+<style>
+	#immich-timeline {
+		contain: layout;
+	}
+</style>
