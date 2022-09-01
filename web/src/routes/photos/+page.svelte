@@ -20,7 +20,7 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import type { PageData } from './$types';
-
+	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import { onMount, onDestroy, afterUpdate, beforeUpdate } from 'svelte';
 	import {
 		notificationController,
@@ -74,9 +74,7 @@
 			timelineScrollY = timelineElement.scrollTop;
 		});
 
-		console.time('getInitialLoadLayout');
 		getInitialLoadLayout();
-		console.timeEnd('getInitialLoadLayout');
 	});
 
 	onDestroy(() => {
@@ -261,6 +259,32 @@
 			console.error('Error deleteSelectedAssetHandler', e);
 		}
 	};
+
+	const handleLoadSegmentAsset = async (event: CustomEvent) => {
+		const segmentElement = event.detail as HTMLElement;
+
+		if (segmentElement.firstChild) {
+			const targetElement = segmentElement.childNodes[0] as HTMLElement;
+
+			if (targetElement.id && targetElement.id != assetStoreState[0].segmentDate) {
+				await assetStore.getAssetsByTimeBuckets([targetElement.id]);
+
+				// Update actual DOM height of each segment.
+				let updatedTimelineHeight = 0;
+				for (const [index, assetSegment] of assetStoreState.entries()) {
+					const segmentDOMElement = document.getElementById(assetSegment.segmentDate);
+					DOMSegmentHeight[index] = segmentDOMElement?.clientHeight || assetSegment.segmentHeight;
+
+					assetStore.updateSegmentHeight(assetSegment.segmentDate, DOMSegmentHeight[index]);
+					updatedTimelineHeight += DOMSegmentHeight[index];
+				}
+
+				timelineHeight = updatedTimelineHeight;
+			}
+		}
+	};
+
+	let observerElement: HTMLElement | null = null;
 </script>
 
 <svelte:head>
@@ -316,12 +340,15 @@
 			style:height={timelineHeight + 'px'}
 		>
 			{#each assetStoreState as segment, i (i)}
-				<div class="border border-red-500" style:height={segment.segmentHeight + 'px'}>
-					<div id={segment.segmentDate} class="flex flex-wrap gap-[2px]">
-						{#each segment.assets as assetInfo (assetInfo.id)}
-							<ImmichThumbnail asset={assetInfo} on:mouseEvent={thumbnailMouseEventHandler} />
-						{/each}
-					</div>
+				<div style:height={segment.segmentHeight + 'px'}>
+					<IntersectionObserver once={false} bottom={500} on:intersected={handleLoadSegmentAsset}>
+						<div id={segment.segmentDate} class="flex flex-wrap gap-[2px]">
+							{segment.segmentDate}
+							{#each segment.assets as assetInfo (assetInfo.id)}
+								<ImmichThumbnail asset={assetInfo} on:mouseEvent={thumbnailMouseEventHandler} />
+							{/each}
+						</div>
+					</IntersectionObserver>
 				</div>
 			{/each}
 		</section>
