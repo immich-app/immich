@@ -28,7 +28,6 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
 	import Scrollbar from '$lib/components/shared-components/scrollbar/scrollbar.svelte';
-	import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
 	import { AssetStoreState } from '$lib/models/asset-store-state';
 
 	export let data: PageData;
@@ -53,18 +52,16 @@
 	let viewportHeight = 0;
 	let timelineScrollY = 0;
 	let timelineElement: HTMLElement;
-
-	// An estimation of the total height of the timeline.
-	let timelineHeight = calculateViewportHeightByNumberOfAsset(
-		data.assetCountByTimeGroup.totalAssets,
-		viewportWidth
-	);
-
+	let timelineHeight = 0;
 	let assetStoreState: AssetStoreState[] = [];
 	let DOMSegmentHeight: number[] = [];
 
 	let unsubscribeAssetStore = assetStore.assets.subscribe((e) => {
 		assetStoreState = e;
+	});
+
+	let subscribeTimelineHeight = assetStore.calculatedTimelineHeight.subscribe((e) => {
+		timelineHeight = e;
 	});
 
 	onMount(async () => {
@@ -75,13 +72,13 @@
 		});
 
 		getInitialLoadLayout();
-	});
 
-	onDestroy(() => {
-		closeWebsocketConnection();
-		unsubscribeAssetStore();
-
-		timelineElement?.removeEventListener('scroll', () => {});
+		return () => {
+			closeWebsocketConnection();
+			unsubscribeAssetStore();
+			subscribeTimelineHeight();
+			timelineElement?.removeEventListener('scroll', () => {});
+		};
 	});
 
 	const getInitialLoadLayout = async () => {
@@ -103,16 +100,35 @@
 		await assetStore.getAssetsByTimeBuckets(timeBuckets);
 
 		// Update actual DOM height of each segment.
-		let updatedTimelineHeight = 0;
 		for (const [index, assetSegment] of assetStoreState.entries()) {
-			const segmentDOMElement = document.getElementById(assetSegment.segmentDate);
-			DOMSegmentHeight[index] = segmentDOMElement?.clientHeight || assetSegment.segmentHeight;
-
-			assetStore.updateSegmentHeight(assetSegment.segmentDate, DOMSegmentHeight[index]);
-			updatedTimelineHeight += DOMSegmentHeight[index];
+			if (timeBuckets.includes(assetSegment.segmentDate)) {
+				const segmentDOMElement = document.getElementById(assetSegment.segmentDate);
+				DOMSegmentHeight[index] = segmentDOMElement?.clientHeight || assetSegment.segmentHeight;
+				assetStore.updateSegmentHeight(assetSegment.segmentDate, DOMSegmentHeight[index]);
+			}
 		}
+	};
 
-		timelineHeight = updatedTimelineHeight;
+	const handleLoadSegmentAsset = async (event: CustomEvent) => {
+		const segmentElement = event.detail as HTMLElement;
+
+		if (segmentElement.firstChild) {
+			const targetElement = segmentElement.childNodes[0] as HTMLElement;
+
+			if (targetElement.id && targetElement.id != assetStoreState[0].segmentDate) {
+				await assetStore.getAssetsByTimeBuckets([targetElement.id]);
+
+				// Update actual DOM height of each segment.
+				for (const [index, assetSegment] of assetStoreState.entries()) {
+					if (assetSegment.segmentDate == targetElement.id) {
+						const segmentDOMElement = document.getElementById(assetSegment.segmentDate);
+						DOMSegmentHeight[index] = segmentDOMElement?.clientHeight || assetSegment.segmentHeight;
+
+						assetStore.updateSegmentHeight(assetSegment.segmentDate, DOMSegmentHeight[index]);
+					}
+				}
+			}
+		}
 	};
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
@@ -187,21 +203,23 @@
 		multiSelectedAssets = temp;
 
 		// Check if all assets are selected in a group to toggle the group selection's icon
-		if (!selectedGroup.has(groupIndex)) {
-			const assetsInGroup = $assetsGroupByDate[groupIndex];
-			let selectedAssetsInGroupCount = 0;
+		// if (!selectedGroup.has(groupIndex)) {
+		// 	const assetsInGroup = $assetsGroupByDate[groupIndex];
+		// 	let selectedAssetsInGroupCount = 0;
 
-			assetsInGroup.forEach((asset) => {
-				if (multiSelectedAssets.has(asset)) {
-					selectedAssetsInGroupCount++;
-				}
-			});
+		// 	assetsInGroup.forEach((asset) => {
+		// 		if (multiSelectedAssets.has(asset)) {
+		// 			selectedAssetsInGroupCount++;
+		// 		}
+		// 	});
 
-			// if all assets are selected in a group, add the group to selected group
-			if (selectedAssetsInGroupCount == assetsInGroup.length) {
-				selectedGroup = selectedGroup.add(groupIndex);
-			}
-		}
+		// 	// if all assets are selected in a group, add the group to selected group
+		// 	if (selectedAssetsInGroupCount == assetsInGroup.length) {
+		// 		selectedGroup = selectedGroup.add(groupIndex);
+		// 	}
+		// }
+
+		console.log(multiSelectedAssets);
 	};
 
 	const clearMultiSelectAssetAssetHandler = () => {
@@ -260,30 +278,6 @@
 		}
 	};
 
-	const handleLoadSegmentAsset = async (event: CustomEvent) => {
-		const segmentElement = event.detail as HTMLElement;
-
-		if (segmentElement.firstChild) {
-			const targetElement = segmentElement.childNodes[0] as HTMLElement;
-
-			if (targetElement.id && targetElement.id != assetStoreState[0].segmentDate) {
-				await assetStore.getAssetsByTimeBuckets([targetElement.id]);
-
-				// Update actual DOM height of each segment.
-				let updatedTimelineHeight = 0;
-				for (const [index, assetSegment] of assetStoreState.entries()) {
-					const segmentDOMElement = document.getElementById(assetSegment.segmentDate);
-					DOMSegmentHeight[index] = segmentDOMElement?.clientHeight || assetSegment.segmentHeight;
-
-					assetStore.updateSegmentHeight(assetSegment.segmentDate, DOMSegmentHeight[index]);
-					updatedTimelineHeight += DOMSegmentHeight[index];
-				}
-
-				timelineHeight = updatedTimelineHeight;
-			}
-		}
-	};
-
 	let observerElement: HTMLElement | null = null;
 </script>
 
@@ -331,9 +325,11 @@
 	>
 		<Scrollbar
 			{viewportWidth}
+			scrollbarHeight={viewportHeight}
 			segmentData={data.assetCountByTimeGroup}
 			scrollTop={timelineScrollY}
 		/>
+
 		<section
 			id="immich-timeline"
 			class="pt-8 pl-4 mb-12 bg-immich-bg"
@@ -342,10 +338,53 @@
 			{#each assetStoreState as segment, i (i)}
 				<div style:height={segment.segmentHeight + 'px'}>
 					<IntersectionObserver once={false} bottom={500} on:intersected={handleLoadSegmentAsset}>
-						<div id={segment.segmentDate} class="flex flex-wrap gap-[2px]">
-							{segment.segmentDate}
-							{#each segment.assets as assetInfo (assetInfo.id)}
-								<ImmichThumbnail asset={assetInfo} on:mouseEvent={thumbnailMouseEventHandler} />
+						<div id={segment.segmentDate} class="flex flex-wrap gap-14 pb-14">
+							{#each segment.assetsGroupByDate as assetsInDateGroup, groupIndex}
+								<!-- Asset Group By Date -->
+								<div
+									class="flex flex-col"
+									on:mouseenter={() => (isMouseOverGroup = true)}
+									on:mouseleave={() => (isMouseOverGroup = false)}
+								>
+									<!-- Date group title -->
+									<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
+										{#if (selectedGroupThumbnail === groupIndex && isMouseOverGroup) || selectedGroup.has(groupIndex)}
+											<div
+												in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
+												out:fly={{ x: -24, duration: 200 }}
+												class="inline-block px-2 hover:cursor-pointer"
+												on:click={() => selectAssetGroupHandler(groupIndex)}
+											>
+												{#if selectedGroup.has(groupIndex)}
+													<CheckCircle size="24" color="#4250af" />
+												{:else if existingGroup.has(groupIndex)}
+													<CheckCircle size="24" color="#757575" />
+												{:else}
+													<CircleOutline size="24" color="#757575" />
+												{/if}
+											</div>
+										{/if}
+
+										{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
+									</p>
+
+									<!-- Image grid -->
+									<div class="flex flex-wrap gap-[2px]">
+										{#each assetsInDateGroup as asset (asset.id)}
+											<ImmichThumbnail
+												{asset}
+												on:mouseEvent={thumbnailMouseEventHandler}
+												on:click={(event) =>
+													isMultiSelectionMode
+														? selectAssetHandler(asset, groupIndex)
+														: viewAssetHandler(event)}
+												on:select={() => selectAssetHandler(asset, groupIndex)}
+												selected={multiSelectedAssets.has(asset)}
+												{groupIndex}
+											/>
+										{/each}
+									</div>
+								</div>
 							{/each}
 						</div>
 					</IntersectionObserver>

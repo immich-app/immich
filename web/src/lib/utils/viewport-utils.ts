@@ -9,6 +9,5 @@ export function calculateViewportHeightByNumberOfAsset(assetCount: number, viewp
 	const unwrappedWidth = (3 / 2) * assetCount * thumbnailHeight * (7 / 10);
 	const rows = Math.ceil(unwrappedWidth / viewportWidth);
 	const height = rows * thumbnailHeight;
-
 	return height;
 }

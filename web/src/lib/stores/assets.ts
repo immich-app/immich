@@ -38,6 +38,12 @@ export const setAssetInfo = (data: AssetResponseDto[]) => {
 function createAssetStore() {
 	const assets = writable<AssetStoreState[]>([]);
 
+	const calculatedTimelineHeight = derived(assets, ($assets) => {
+		return $assets.reduce((acc, cur) => {
+			return acc + cur.segmentHeight;
+		}, 0);
+	});
+
 	const calculateSegmentViewport = async (
 		viewportWidth: number,
 		assetCountByTimeGroup: AssetCountByTimeGroupResponseDto
@@ -48,11 +54,9 @@ function createAssetStore() {
 			const unwrappedWidth = (3 / 2) * segment.count * 235 * (7 / 10);
 			const rows = Math.ceil(unwrappedWidth / viewportWidth);
 			const height = rows * 235;
-
 			const assetStoreState = new AssetStoreState();
 
 			assetStoreState.assets = [];
-			assetStoreState.assetsGroupByDate = [];
 			assetStoreState.segmentHeight = height;
 			assetStoreState.segmentDate = segment.timeGroup;
 
@@ -91,11 +95,13 @@ function createAssetStore() {
 			return assets;
 		});
 	};
+
 	return {
 		assets,
 		calculateSegmentViewport,
 		getAssetsByTimeBuckets,
-		updateSegmentHeight
+		updateSegmentHeight,
+		calculatedTimelineHeight
 	};
 }
 

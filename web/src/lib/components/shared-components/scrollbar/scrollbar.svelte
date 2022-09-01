@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { AssetStoreState } from '$lib/models/asset-store-state';
+	import { assetStore } from '$lib/stores/assets';
+
 	import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
 
 	import { AssetCountByTimeGroupResponseDto } from '@api';
@@ -9,30 +12,60 @@
 	export let scrollTop = 0;
 	export let viewportWidth = 0;
 	export let segmentData: AssetCountByTimeGroupResponseDto;
+	export let scrollbarHeight = 0;
 
 	let timelineHeight = 0;
-	let scrollbarHeight: number;
-	let scrollbarHeightLeft: number;
 	let segmentScrollbarLayout: SegmentScrollbarLayout[] = [];
 	let isHover = false;
 	let hoveredDate: Date;
 	let currentMouseYLocation: number = 0;
 	let scrollbarPosition = 0;
 
+	let assetStoreState: AssetStoreState[] = [];
+
+	let unsubscribeAssetStore = assetStore.assets.subscribe((e) => {
+		assetStoreState = e;
+	});
+
+	let subscribeTimelineHeight = assetStore.calculatedTimelineHeight.subscribe((e) => {
+		timelineHeight = e;
+	});
+
 	$: {
-		timelineHeight = calculateViewportHeightByNumberOfAsset(segmentData.totalAssets, viewportWidth);
 		scrollbarPosition = (scrollTop / timelineHeight) * scrollbarHeight;
 	}
 
+	$: {
+		let result: SegmentScrollbarLayout[] = [];
+		for (const [i, segment] of assetStoreState.entries()) {
+			let segmentLayout = new SegmentScrollbarLayout();
+
+			segmentLayout.count = segmentData.groups[i].count;
+			segmentLayout.height =
+				segment.assets.length == 0
+					? getSegmentHeight(segmentData.groups[i].count)
+					: Math.round((segment.segmentHeight / timelineHeight) * scrollbarHeight);
+			segmentLayout.timeGroup = segment.segmentDate;
+
+			result.push(segmentLayout);
+		}
+
+		segmentScrollbarLayout = result;
+	}
+
 	onMount(() => {
-		scrollbarHeightLeft = scrollbarHeight;
 		segmentScrollbarLayout = getLayoutDistance();
+
+		return () => {
+			unsubscribeAssetStore();
+			subscribeTimelineHeight();
+		};
 	});
 
 	const getSegmentHeight = (groupCount: number) => {
 		if (segmentData.groups.length > 0) {
 			const percentage = (groupCount * 100) / segmentData.totalAssets;
-			return Math.round((percentage * scrollbarHeightLeft) / 100);
+			return Math.round((percentage * scrollbarHeight) / 100);
 		} else {
 			return 0;
 		}
@@ -63,7 +96,6 @@
 <div
 	id="immich-scubbable-scrollbar"
 	class="fixed right-0 w-[60px] h-full bg-immich-bg z-[9999] hover:cursor-row-resize"
-	bind:clientHeight={scrollbarHeight}
 	on:mouseenter={() => (isHover = true)}
 	on:mouseleave={() => (isHover = false)}
 >
@@ -100,7 +132,7 @@
 				>
 					{groupDate.getFullYear()}
 				</div>
-			{:else if segment.height > 5}
+			{:else if segment.count > 5}
 				<div
 					aria-label={segment.timeGroup + ' ' + segment.count}
 					class="absolute right-0 rounded-full h-[4px] w-[4px] mr-3 bg-gray-300 block"
