@@ -6,8 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { AssetCountByTimeGroupDto } from './response-dto/asset-count-by-time-group-response.dto';
-import { TimeGroupEnum } from './dto/get-asset-count-by-time-group.dto';
+import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
+import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 
 export interface IAssetRepository {
@@ -24,7 +24,7 @@ export interface IAssetRepository {
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
-  getAssetCountByTimeGroup(userId: string, timeGroup: TimeGroupEnum): Promise<AssetCountByTimeGroupDto[]>;
+  getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucketResponseDto[]>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
 }
 
@@ -50,10 +50,10 @@ export class AssetRepository implements IAssetRepository {
       .getMany();
   }
 
-  async getAssetCountByTimeGroup(userId: string, timeGroup: TimeGroupEnum) {
-    let result: AssetCountByTimeGroupDto[] = [];
+  async getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum) {
+    let result: AssetCountByTimeBucketResponseDto[] = [];
 
-    if (timeGroup === TimeGroupEnum.Month) {
+    if (timeBucket === TimeGroupEnum.Month) {
       result = await this.assetRepository
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
@@ -62,7 +62,7 @@ export class AssetRepository implements IAssetRepository {
         .groupBy(`date_trunc('month', "createdAt"::timestamptz)`)
         .orderBy(`date_trunc('month', "createdAt"::timestamptz)`, 'DESC')
         .getRawMany();
-    } else if (timeGroup === TimeGroupEnum.Day) {
+    } else if (timeBucket === TimeGroupEnum.Day) {
       result = await this.assetRepository
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')

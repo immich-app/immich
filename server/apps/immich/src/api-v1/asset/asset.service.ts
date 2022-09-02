@@ -31,9 +31,9 @@ import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import {
   AssetCountByTimeGroupResponseDto,
-  mapAssetCountByTimeGroupResponse,
+  mapAssetCountByTimeBucket,
 } from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeGroupDto } from './dto/get-asset-count-by-time-group.dto';
+import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 
 const fileInfo = promisify(stat);
@@ -450,16 +450,16 @@ export class AssetService {
     return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
   }
 
-  async getAssetCountByTimeGroup(
+  async getAssetCountByTimeBucket(
     authUser: AuthUserDto,
-    getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto,
+    getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto,
   ): Promise<AssetCountByTimeGroupResponseDto> {
-    const result = await this._assetRepository.getAssetCountByTimeGroup(
+    const result = await this._assetRepository.getAssetCountByTimeBucket(
       authUser.id,
-      getAssetCountByTimeGroupDto.timeGroup,
+      getAssetCountByTimeBucketDto.timeGroup,
     );
 
-    return mapAssetCountByTimeGroupResponse(result);
+    return mapAssetCountByTimeBucket(result);
   }
 
   private calculateChecksum(filePath: string): Promise<Buffer> {

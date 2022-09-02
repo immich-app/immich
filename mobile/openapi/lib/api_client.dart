@@ -200,8 +200,8 @@ class ApiClient {
           return AdminSignupResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
-        case 'AssetCountByTimeGroupDto':
-          return AssetCountByTimeGroupDto.fromJson(value);
+        case 'AssetCountByTimeBucketResponseDto':
+          return AssetCountByTimeBucketResponseDto.fromJson(value);
         case 'AssetCountByTimeGroupResponseDto':
           return AssetCountByTimeGroupResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
@@ -240,8 +240,8 @@ class ApiClient {
           return ExifResponseDto.fromJson(value);
         case 'GetAssetByTimeBucketDto':
           return GetAssetByTimeBucketDto.fromJson(value);
-        case 'GetAssetCountByTimeGroupDto':
-          return GetAssetCountByTimeGroupDto.fromJson(value);
+        case 'GetAssetCountByTimeBucketDto':
+          return GetAssetCountByTimeBucketDto.fromJson(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':

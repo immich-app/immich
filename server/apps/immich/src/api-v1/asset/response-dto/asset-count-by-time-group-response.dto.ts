@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class AssetCountByTimeGroupDto {
+export class AssetCountByTimeBucketResponseDto {
   @ApiProperty({ type: 'string' })
   timeGroup!: string;
 
@@ -9,15 +9,17 @@ export class AssetCountByTimeGroupDto {
 }
 
 export class AssetCountByTimeGroupResponseDto {
-  groups!: AssetCountByTimeGroupDto[];
+  buckets!: AssetCountByTimeBucketResponseDto[];
 
   @ApiProperty({ type: 'integer' })
-  totalAssets!: number;
+  count!: number;
 }
 
-export function mapAssetCountByTimeGroupResponse(result: AssetCountByTimeGroupDto[]): AssetCountByTimeGroupResponseDto {
+export function mapAssetCountByTimeBucket(
+  result: AssetCountByTimeBucketResponseDto[],
+): AssetCountByTimeGroupResponseDto {
   return {
-    groups: result,
-    totalAssets: result.map((group) => group.count).reduce((a, b) => a + b, 0),
+    buckets: result,
+    count: result.map((group) => group.count).reduce((a, b) => a + b, 0),
   };
 }

@@ -45,7 +45,7 @@ import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-res
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { AssetCountByTimeGroupResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeGroupDto } from './dto/get-asset-count-by-time-group.dto';
+import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 
 @UseGuards(JwtAuthGuard)
@@ -154,12 +154,12 @@ export class AssetController {
     return this.assetService.searchAsset(authUser, searchAssetDto);
   }
 
-  @Get('/count-by-date')
-  async getAssetCountByTimeGroup(
+  @Get('/count-by-time-bucket')
+  async getAssetCountByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto,
+    @Body(ValidationPipe) getAssetCountByTimeGroupDto: GetAssetCountByTimeBucketDto,
   ): Promise<AssetCountByTimeGroupResponseDto> {
-    return this.assetService.getAssetCountByTimeGroup(authUser, getAssetCountByTimeGroupDto);
+    return this.assetService.getAssetCountByTimeBucket(authUser, getAssetCountByTimeGroupDto);
   }
 
   /**

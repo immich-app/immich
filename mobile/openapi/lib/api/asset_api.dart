@@ -348,16 +348,16 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/count-by-date' operation and returns the [Response].
+  /// Performs an HTTP 'GET /asset/count-by-time-bucket' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [GetAssetCountByTimeGroupDto] getAssetCountByTimeGroupDto (required):
-  Future<Response> getAssetCountByTimeGroupWithHttpInfo(GetAssetCountByTimeGroupDto getAssetCountByTimeGroupDto,) async {
+  /// * [GetAssetCountByTimeBucketDto] getAssetCountByTimeBucketDto (required):
+  Future<Response> getAssetCountByTimeBucketWithHttpInfo(GetAssetCountByTimeBucketDto getAssetCountByTimeBucketDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/count-by-date';
+    final path = r'/asset/count-by-time-bucket';
 
     // ignore: prefer_final_locals
-    Object? postBody = getAssetCountByTimeGroupDto;
+    Object? postBody = getAssetCountByTimeBucketDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -379,9 +379,9 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [GetAssetCountByTimeGroupDto] getAssetCountByTimeGroupDto (required):
-  Future<AssetCountByTimeGroupResponseDto?> getAssetCountByTimeGroup(GetAssetCountByTimeGroupDto getAssetCountByTimeGroupDto,) async {
-    final response = await getAssetCountByTimeGroupWithHttpInfo(getAssetCountByTimeGroupDto,);
+  /// * [GetAssetCountByTimeBucketDto] getAssetCountByTimeBucketDto (required):
+  Future<AssetCountByTimeGroupResponseDto?> getAssetCountByTimeBucket(GetAssetCountByTimeBucketDto getAssetCountByTimeBucketDto,) async {
+    final response = await getAssetCountByTimeBucketWithHttpInfo(getAssetCountByTimeBucketDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

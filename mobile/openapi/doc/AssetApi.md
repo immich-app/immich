@@ -15,7 +15,7 @@ Method | HTTP request | Description
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 [**getAssetByTimeBucket**](AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
-[**getAssetCountByTimeGroup**](AssetApi.md#getassetcountbytimegroup) | **GET** /asset/count-by-date | 
+[**getAssetCountByTimeBucket**](AssetApi.md#getassetcountbytimebucket) | **GET** /asset/count-by-time-bucket | 
 [**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
@@ -316,8 +316,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getAssetCountByTimeGroup**
-> AssetCountByTimeGroupResponseDto getAssetCountByTimeGroup(getAssetCountByTimeGroupDto)
+# **getAssetCountByTimeBucket**
+> AssetCountByTimeGroupResponseDto getAssetCountByTimeBucket(getAssetCountByTimeBucketDto)
 
 
 
@@ -332,13 +332,13 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final getAssetCountByTimeGroupDto = GetAssetCountByTimeGroupDto(); // GetAssetCountByTimeGroupDto | 
+final getAssetCountByTimeBucketDto = GetAssetCountByTimeBucketDto(); // GetAssetCountByTimeBucketDto | 
 
 try {
-    final result = api_instance.getAssetCountByTimeGroup(getAssetCountByTimeGroupDto);
+    final result = api_instance.getAssetCountByTimeBucket(getAssetCountByTimeBucketDto);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->getAssetCountByTimeGroup: $e\n');
+    print('Exception when calling AssetApi->getAssetCountByTimeBucket: $e\n');
 }
 ```
 
@@ -346,7 +346,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **getAssetCountByTimeGroupDto** | [**GetAssetCountByTimeGroupDto**](GetAssetCountByTimeGroupDto.md)|  | 
+ **getAssetCountByTimeBucketDto** | [**GetAssetCountByTimeBucketDto**](GetAssetCountByTimeBucketDto.md)|  | 
 
 ### Return type
 

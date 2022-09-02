@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 			throw error(400, 'Not logged in');
 		}
 
-		const { data: assetCountByTimeGroup } = await serverApi.assetApi.getAssetCountByTimeGroup({
+		const { data: assetCountByTimeGroup } = await serverApi.assetApi.getAssetCountByTimeBucket({
 			timeGroup: TimeGroupEnum.Month
 		});
 
