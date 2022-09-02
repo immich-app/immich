@@ -2,7 +2,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { quintOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
-	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
+	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets.store';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 	import moment from 'moment';

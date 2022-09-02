@@ -5,7 +5,7 @@
 	import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
 	import type { UploadAsset } from '$lib/models/upload-asset';
-	// import { getAssetsInfo } from '$lib/stores/assets';
+	// import { getAssetsInfo } fro$lib/stores/assets.storeets';
 	let showDetail = true;
 
 	let uploadLength = 0;

@@ -5,6 +5,7 @@
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import { onMount } from 'svelte';
 	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
+	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
 
 	export let data: PageData;
 
@@ -30,4 +31,5 @@
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
 	<SideBar />
+	<AssetGrid />
 </section>
