@@ -44,7 +44,7 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
-import { AssetCountByTimeGroupResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
+import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 
@@ -158,7 +158,7 @@ export class AssetController {
   async getAssetCountByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) getAssetCountByTimeGroupDto: GetAssetCountByTimeBucketDto,
-  ): Promise<AssetCountByTimeGroupResponseDto> {
+  ): Promise<AssetCountByTimeBucketResponseDto> {
     return this.assetService.getAssetCountByTimeBucket(authUser, getAssetCountByTimeGroupDto);
   }
 

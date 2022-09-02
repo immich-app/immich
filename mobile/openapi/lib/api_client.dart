@@ -200,10 +200,10 @@ class ApiClient {
           return AdminSignupResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
+        case 'AssetCountByTimeBucket':
+          return AssetCountByTimeBucket.fromJson(value);
         case 'AssetCountByTimeBucketResponseDto':
           return AssetCountByTimeBucketResponseDto.fromJson(value);
-        case 'AssetCountByTimeGroupResponseDto':
-          return AssetCountByTimeGroupResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetResponseDto':

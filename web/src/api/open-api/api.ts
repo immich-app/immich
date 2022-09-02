@@ -148,40 +148,40 @@ export interface AlbumResponseDto {
 /**
  * 
  * @export
- * @interface AssetCountByTimeBucketResponseDto
+ * @interface AssetCountByTimeBucket
  */
-export interface AssetCountByTimeBucketResponseDto {
+export interface AssetCountByTimeBucket {
     /**
      * 
      * @type {string}
-     * @memberof AssetCountByTimeBucketResponseDto
+     * @memberof AssetCountByTimeBucket
      */
-    'timeGroup': string;
+    'timeBucket': string;
     /**
      * 
      * @type {number}
-     * @memberof AssetCountByTimeBucketResponseDto
+     * @memberof AssetCountByTimeBucket
      */
     'count': number;
 }
 /**
  * 
  * @export
- * @interface AssetCountByTimeGroupResponseDto
+ * @interface AssetCountByTimeBucketResponseDto
  */
-export interface AssetCountByTimeGroupResponseDto {
+export interface AssetCountByTimeBucketResponseDto {
     /**
      * 
      * @type {number}
-     * @memberof AssetCountByTimeGroupResponseDto
+     * @memberof AssetCountByTimeBucketResponseDto
      */
-    'count': number;
+    'totalCount': number;
     /**
      * 
-     * @type {Array<AssetCountByTimeBucketResponseDto>}
-     * @memberof AssetCountByTimeGroupResponseDto
+     * @type {Array<AssetCountByTimeBucket>}
+     * @memberof AssetCountByTimeBucketResponseDto
      */
-    'buckets': Array<AssetCountByTimeBucketResponseDto>;
+    'buckets': Array<AssetCountByTimeBucket>;
 }
 /**
  * 
@@ -2628,7 +2628,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAssetCountByTimeBucket(getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetCountByTimeGroupResponseDto>> {
+        async getAssetCountByTimeBucket(getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetCountByTimeBucketResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetCountByTimeBucket(getAssetCountByTimeBucketDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -2789,7 +2789,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetCountByTimeBucket(getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto, options?: any): AxiosPromise<AssetCountByTimeGroupResponseDto> {
+        getAssetCountByTimeBucket(getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto, options?: any): AxiosPromise<AssetCountByTimeBucketResponseDto> {
             return localVarFp.getAssetCountByTimeBucket(getAssetCountByTimeBucketDto, options).then((request) => request(axios, basePath));
         },
         /**

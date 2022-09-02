@@ -30,7 +30,7 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import {
-  AssetCountByTimeGroupResponseDto,
+  AssetCountByTimeBucketResponseDto,
   mapAssetCountByTimeBucket,
 } from './response-dto/asset-count-by-time-group-response.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
@@ -453,7 +453,7 @@ export class AssetService {
   async getAssetCountByTimeBucket(
     authUser: AuthUserDto,
     getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto,
-  ): Promise<AssetCountByTimeGroupResponseDto> {
+  ): Promise<AssetCountByTimeBucketResponseDto> {
     const result = await this._assetRepository.getAssetCountByTimeBucket(
       authUser.id,
       getAssetCountByTimeBucketDto.timeGroup,

@@ -1,10 +1,17 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
 
 	let viewportHeight = 0;
 	let viewportWidth = 0;
 	let assetGridElement: HTMLElement;
-	let dummy = Array.from({ length: 1000 }, (_, i) => i);
+	let assetCountByTimebucket = $page.data.assetCountByTimebucket;
+
+	onMount(() => {
+		console.log('mounted', assetCountByTimebucket);
+	});
 
 	function intersectedHandler(event: CustomEvent) {
 		const el = event.detail as HTMLElement;
