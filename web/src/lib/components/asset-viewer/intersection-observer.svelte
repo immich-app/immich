@@ -8,6 +8,7 @@
 	export let left = 0;
 	export let right = 0;
 	export let root: HTMLElement | null = null;
+
 	let intersecting = false;
 	let container: any;
 	const dispatch = createEventDispatcher();

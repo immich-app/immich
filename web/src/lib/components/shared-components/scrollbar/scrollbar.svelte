@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { AssetStoreState } from '$lib/models/asset-store-state';
-	import { assetStore } from '$lib/stores/assets';
 
 	import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
 
@@ -21,69 +20,50 @@
 	let currentMouseYLocation: number = 0;
 	let scrollbarPosition = 0;
 
-	let assetStoreState: AssetStoreState[] = [];
-
-	let unsubscribeAssetStore = assetStore.assets.subscribe((e) => {
-		assetStoreState = e;
-	});
-
-	let subscribeTimelineHeight = assetStore.calculatedTimelineHeight.subscribe((e) => {
-		timelineHeight = e;
-	});
-
 	$: {
 		scrollbarPosition = (scrollTop / timelineHeight) * scrollbarHeight;
 	}
 
 	$: {
-		let result: SegmentScrollbarLayout[] = [];
-		for (const [i, segment] of assetStoreState.entries()) {
-			let segmentLayout = new SegmentScrollbarLayout();
-
-			segmentLayout.count = segmentData.groups[i].count;
-			segmentLayout.height =
-				segment.assets.length == 0
-					? getSegmentHeight(segmentData.groups[i].count)
-					: Math.round((segment.segmentHeight / timelineHeight) * scrollbarHeight);
-			segmentLayout.timeGroup = segment.segmentDate;
-
-			result.push(segmentLayout);
-		}
-
-		segmentScrollbarLayout = result;
+		// let result: SegmentScrollbarLayout[] = [];
+		// for (const [i, segment] of assetStoreState.entries()) {
+		// 	let segmentLayout = new SegmentScrollbarLayout();
+		// 	segmentLayout.count = segmentData.groups[i].count;
+		// 	segmentLayout.height =
+		// 		segment.assets.length == 0
+		// 			? getSegmentHeight(segmentData.groups[i].count)
+		// 			: Math.round((segment.segmentHeight / timelineHeight) * scrollbarHeight);
+		// 	segmentLayout.timeGroup = segment.segmentDate;
+		// 	result.push(segmentLayout);
+		// }
+		// segmentScrollbarLayout = result;
 	}
 
 	onMount(() => {
-		segmentScrollbarLayout = getLayoutDistance();
+		// segmentScrollbarLayout = getLayoutDistance();
 
-		return () => {
-			unsubscribeAssetStore();
-			subscribeTimelineHeight();
-		};
+		return () => {};
 	});
 
 	const getSegmentHeight = (groupCount: number) => {
-		if (segmentData.groups.length > 0) {
-			const percentage = (groupCount * 100) / segmentData.totalAssets;
-			return Math.round((percentage * scrollbarHeight) / 100);
-		} else {
-			return 0;
-		}
+		// if (segmentData.groups.length > 0) {
+		// 	const percentage = (groupCount * 100) / segmentData.totalAssets;
+		// 	return Math.round((percentage * scrollbarHeight) / 100);
+		// } else {
+		// 	return 0;
+		// }
 	};
 
 	const getLayoutDistance = () => {
-		let result: SegmentScrollbarLayout[] = [];
-		for (const segment of segmentData.groups) {
-			let segmentLayout = new SegmentScrollbarLayout();
-
-			segmentLayout.count = segment.count;
-			segmentLayout.height = getSegmentHeight(segment.count);
-			segmentLayout.timeGroup = segment.timeGroup;
-
-			result.push(segmentLayout);
-		}
-
-		return result;
+		// let result: SegmentScrollbarLayout[] = [];
+		// for (const segment of segmentData.groups) {
+		// 	let segmentLayout = new SegmentScrollbarLayout();
+		// 	segmentLayout.count = segment.count;
+		// 	segmentLayout.height = getSegmentHeight(segment.count);
+		// 	segmentLayout.timeGroup = segment.timeGroup;
+		// 	result.push(segmentLayout);
+		// }
+		// return result;
 	};
 
 	const handleMouseMove = (e: MouseEvent, currentDate: Date) => {
