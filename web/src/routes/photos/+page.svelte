@@ -1,11 +1,13 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
-	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
+
+	import type { PageData } from './$types';
+
+	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
 	import { onMount } from 'svelte';
 	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
-	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
 
 	export let data: PageData;
 

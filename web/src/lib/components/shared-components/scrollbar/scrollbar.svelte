@@ -1,16 +1,11 @@
 <script lang="ts">
-	import { AssetStoreState } from '$lib/models/asset-store-state';
-
 	import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
-
-	import { AssetCountByTimeGroupResponseDto } from '@api';
 
 	import { onMount } from 'svelte';
 	import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
 
 	export let scrollTop = 0;
 	export let viewportWidth = 0;
-	export let segmentData: AssetCountByTimeGroupResponseDto;
 	export let scrollbarHeight = 0;
 
 	let timelineHeight = 0;
