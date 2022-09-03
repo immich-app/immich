@@ -2,6 +2,7 @@ import { AssetGridState } from '$lib/models/asset-grid-state';
 import { api, AssetResponseDto } from '@api';
 import { writable } from 'svelte/store';
 import { assetGridState } from './assets.store';
+import _ from 'lodash-es';
 
 // Asset Viewer
 export const viewingAssetStoreState = writable<AssetResponseDto>();
@@ -11,11 +12,21 @@ export const isViewingAssetStoreState = writable<boolean>(false);
 export const isMultiSelectStoreState = writable<boolean>(false);
 
 function createAssetInteractionStore() {
-	let assetGridStoreState = new AssetGridState();
+	let assetSortedByDate: AssetResponseDto[] = [];
+	let _assetGridState = new AssetGridState();
+	let _viewingAssetStoreState: AssetResponseDto;
+	let savedAssetLength = 0;
+
+	// Subscriber
 	assetGridState.subscribe((state) => {
-		assetGridStoreState = state;
+		_assetGridState = state;
 	});
 
+	viewingAssetStoreState.subscribe((asset) => {
+		_viewingAssetStoreState = asset;
+	});
+
+	// Methods
 	const setViewingAsset = async (asset: AssetResponseDto) => {
 		const { data } = await api.assetApi.getAssetById(asset.id);
 		viewingAssetStoreState.set(data);
@@ -30,10 +41,27 @@ function createAssetInteractionStore() {
 		isMultiSelectStoreState.set(isMultiSelect);
 	};
 
+	const navigateAsset = (direction: 'next' | 'previous') => {
+		// Flatten and sort the asset by date if there are new assets
+		if (assetSortedByDate.length === 0 || savedAssetLength !== _assetGridState.assets.length) {
+			assetSortedByDate = _.sortBy(_assetGridState.assets, (a) => a.createdAt);
+			savedAssetLength = _assetGridState.assets.length;
+		}
+
+		// Find the index of the current asset
+		const currentIndex = assetSortedByDate.findIndex((a) => a.id === _viewingAssetStoreState.id);
+
+		// Get the next or previous asset
+		const nextIndex = direction === 'previous' ? currentIndex + 1 : currentIndex - 1;
+		const nextAsset = assetSortedByDate[nextIndex];
+		setViewingAsset(nextAsset);
+	};
+
 	return {
 		setViewingAsset,
 		setIsViewingAsset,
-		setIsMultiSelect
+		setIsMultiSelect,
+		navigateAsset
 	};
 }
 

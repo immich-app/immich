@@ -51,12 +51,12 @@
 		}
 	}
 
-	const navigateAssetBackwardHandler = () => {
-		// assetStore.navigateAssetBackward();
+	const navigateToPreviousAsset = () => {
+		assetInteractionStore.navigateAsset('previous');
 	};
 
-	const navigateAssetForwardHandler = () => {
-		// assetStore.navigateAssetForward();
+	const navigateToNextAsset = () => {
+		assetInteractionStore.navigateAsset('next');
 	};
 </script>
 
@@ -102,8 +102,8 @@
 	{#if $isViewingAssetStoreState}
 		<AssetViewer
 			asset={$viewingAssetStoreState}
-			on:navigate-backward={navigateAssetBackwardHandler}
-			on:navigate-forward={navigateAssetForwardHandler}
+			on:navigate-previous={navigateToPreviousAsset}
+			on:navigate-next={navigateToNextAsset}
 			on:close={() => {
 				assetInteractionStore.setIsViewingAsset(false);
 			}}

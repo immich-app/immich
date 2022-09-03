@@ -52,12 +52,12 @@
 
 	const navigateAssetForward = (e?: Event) => {
 		e?.stopPropagation();
-		dispatch('navigate-forward');
+		dispatch('navigate-next');
 	};
 
 	const navigateAssetBackward = (e?: Event) => {
 		e?.stopPropagation();
-		dispatch('navigate-backward');
+		dispatch('navigate-previous');
 	};
 
 	const showDetailInfoHandler = () => {
