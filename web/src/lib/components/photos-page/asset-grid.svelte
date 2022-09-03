@@ -74,9 +74,9 @@
 					on:intersected={intersectedHandler}
 					on:hidden={() => {
 						// If bucket is hidden and in loading state, cancel the request
-						if ($loadingBucketState[bucket.bucketDate]) {
-							assetStore.cancelBucketRequest(bucket.cancelToken);
-						}
+						// if ($loadingBucketState[bucket.bucketDate]) {
+						// 	assetStore.cancelBucketRequest(bucket.cancelToken);
+						// }
 					}}
 					let:intersecting
 					top={750}
