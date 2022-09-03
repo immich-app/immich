@@ -5,9 +5,10 @@ export class AssetBucket {
 	 * The DOM height of the bucket in pixel
 	 * This value is first estimated by the number of asset and later is corrected as the user scroll
 	 */
-	bucketHeight: number = 0;
-	bucketDate: string = '';
-	assets: AssetResponseDto[] = [];
+	bucketHeight!: number;
+	bucketDate!: string;
+	assets!: AssetResponseDto[];
+	cancelToken!: AbortController;
 }
 
 export class AssetGridState {

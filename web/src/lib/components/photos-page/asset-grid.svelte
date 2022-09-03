@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
-	import { assetGridState, assetStore } from '$lib/stores/assets.store';
+	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
 	import { AssetCountByTimeBucketResponseDto } from '@api';
 	import AssetDateGroup from './asset-date-group.svelte';
 	import Portal from '../shared-components/portal/portal.svelte';
@@ -13,6 +13,7 @@
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
+	import { filter } from 'lodash';
 
 	let viewportHeight = 0;
 	let viewportWidth = 0;
@@ -61,7 +62,7 @@
 
 <section
 	id="asset-grid"
-	class="overflow-y-auto"
+	class="overflow-y-auto pl-4"
 	bind:clientHeight={viewportHeight}
 	bind:clientWidth={viewportWidth}
 	bind:this={assetGridElement}
@@ -71,6 +72,12 @@
 			{#each $assetGridState.buckets as bucket, bucketIndex (bucketIndex)}
 				<IntersectionObserver
 					on:intersected={intersectedHandler}
+					on:hidden={() => {
+						// If bucket is hidden and in loading state, cancel the request
+						if ($loadingBucketState[bucket.bucketDate]) {
+							assetStore.cancelBucketRequest(bucket.cancelToken);
+						}
+					}}
 					let:intersecting
 					top={750}
 					bottom={750}

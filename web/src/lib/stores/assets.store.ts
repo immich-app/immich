@@ -10,13 +10,18 @@ import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-util
  * The state that holds information about the asset grid
  */
 export const assetGridState = writable<AssetGridState>(new AssetGridState());
+export const loadingBucketState = writable<{ [key: string]: boolean }>({});
 
 function createAssetStore() {
-	let currentState = new AssetGridState();
+	let _assetGridState = new AssetGridState();
 	assetGridState.subscribe((state) => {
-		currentState = state;
+		_assetGridState = state;
 	});
 
+	let _loadingBucketState: { [key: string]: boolean } = {};
+	loadingBucketState.subscribe((state) => {
+		_loadingBucketState = state;
+	});
 	/**
 	 * Set intial state
 	 * @param viewportHeight
@@ -35,7 +40,8 @@ function createAssetStore() {
 			buckets: data.buckets.map((d) => ({
 				bucketDate: d.timeBucket,
 				bucketHeight: calculateViewportHeightByNumberOfAsset(d.count, viewportWidth),
-				assets: []
+				assets: [],
+				cancelToken: new AbortController()
 			})),
 			assets: []
 		});
@@ -47,12 +53,24 @@ function createAssetStore() {
 	 */
 	const getAssetsByBucket = async (bucket: string) => {
 		try {
-			const currentBucketData = currentState.buckets.find((b) => b.bucketDate === bucket);
+			const currentBucketData = _assetGridState.buckets.find((b) => b.bucketDate === bucket);
 			if (currentBucketData?.assets && currentBucketData.assets.length > 0) {
 				return;
 			}
-			const { data: assets } = await api.assetApi.getAssetByTimeBucket({
-				timeBucket: [bucket]
+
+			loadingBucketState.set({
+				..._loadingBucketState,
+				[bucket]: true
+			});
+			const { data: assets } = await api.assetApi.getAssetByTimeBucket(
+				{
+					timeBucket: [bucket]
+				},
+				{ signal: currentBucketData?.cancelToken.signal }
+			);
+			loadingBucketState.set({
+				..._loadingBucketState,
+				[bucket]: false
 			});
 
 			// Update assetGridState with assets by time bucket
@@ -76,10 +94,16 @@ function createAssetStore() {
 			return state;
 		});
 	};
+
+	const cancelBucketRequest = (token: AbortController) => {
+		token.abort();
+	};
+
 	return {
 		setInitialState,
 		getAssetsByBucket,
-		updateBucketHeight
+		updateBucketHeight,
+		cancelBucketRequest
 	};
 }
 
