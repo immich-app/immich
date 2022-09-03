@@ -6,6 +6,7 @@
 	import { assetGridState, assetStore } from '$lib/stores/assets.store';
 	import { AssetCountByTimeBucketResponseDto } from '@api';
 	import { assets } from '$app/paths';
+	import AssetDateGroup from './asset-date-group.svelte';
 
 	let viewportHeight = 0;
 	let viewportWidth = 0;
@@ -41,8 +42,6 @@
 >
 	{#if assetGridElement}
 		<section id="virtual-timeline" style:height={$assetGridState.timelineHeight + 'px'}>
-			<!-- Assets Group By Monthly Time Bucket  -->
-
 			{#each $assetGridState.buckets as bucket, bucketIndex (bucketIndex)}
 				<IntersectionObserver
 					on:intersected={intersectedHandler}
@@ -53,12 +52,12 @@
 				>
 					<div
 						id={'bucket_' + bucket.bucketDate}
-						class="border border-red-500 p-[50px]"
+						class="border border-red-500"
 						style:height={bucket.bucketHeight + 'px'}
 					>
 						{#if intersecting}
-							<!-- Date Grid Goes Here -->
-							{bucket.bucketDate}
+							<!-- Assets Group By Monthly Time Bucket Date Grid Goes Here -->
+							<AssetDateGroup assets={bucket.assets} bucketDate={bucket.bucketDate} />
 						{/if}
 					</div>
 				</IntersectionObserver>

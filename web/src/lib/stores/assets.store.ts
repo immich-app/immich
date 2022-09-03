@@ -37,8 +37,7 @@ function createAssetStore() {
 				bucketHeight: calculateViewportHeightByNumberOfAsset(d.count, viewportWidth),
 				assets: []
 			})),
-			assets: [],
-			assetsGroupByDate: []
+			assets: []
 		});
 	};
 
@@ -62,11 +61,6 @@ function createAssetStore() {
 				const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
 				state.buckets[bucketIndex].assets = assets;
 				state.assets = lodash.flatMap(state.buckets, (b) => b.assets);
-				state.assetsGroupByDate = lodash
-					.chain(state.assets)
-					.groupBy((a) => moment(a.createdAt).format('ddd, MMM DD YYYY'))
-					.sortBy((group) => state.assets.indexOf(group[0]))
-					.value();
 
 				return state;
 			});
@@ -76,9 +70,17 @@ function createAssetStore() {
 		}
 	};
 
+	const updateBucketHeight = (bucket: string, height: number) => {
+		assetGridState.update((state) => {
+			const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
+			state.buckets[bucketIndex].bucketHeight = height;
+			return state;
+		});
+	};
 	return {
 		setInitialState,
-		getAssetsByBucket
+		getAssetsByBucket,
+		updateBucketHeight
 	};
 }
 

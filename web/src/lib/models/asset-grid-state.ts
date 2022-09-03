@@ -1,6 +1,4 @@
 import { AssetResponseDto } from '@api';
-import lodash from 'lodash-es';
-import moment from 'moment';
 
 export class AssetBucket {
 	/**
@@ -38,9 +36,4 @@ export class AssetGridState {
 	 * Total assets that have been loaded
 	 */
 	assets: AssetResponseDto[] = [];
-
-	/**
-	 * Group assets by date
-	 */
-	assetsGroupByDate: AssetResponseDto[][] = [];
 }
