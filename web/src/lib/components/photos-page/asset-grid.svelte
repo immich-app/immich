@@ -9,10 +9,10 @@
 	import Portal from '../shared-components/portal/portal.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
 	import {
-		assetGridStore,
+		assetInteractionStore,
 		isViewingAssetStoreState,
 		viewingAssetStoreState
-	} from '$lib/stores/asset-grid.store';
+	} from '$lib/stores/asset-interaction.store';
 
 	let viewportHeight = 0;
 	let viewportWidth = 0;
@@ -98,7 +98,7 @@
 			on:navigate-backward={navigateAssetBackwardHandler}
 			on:navigate-forward={navigateAssetForwardHandler}
 			on:close={() => {
-				assetGridStore.setIsViewingAsset(false);
+				assetInteractionStore.setIsViewingAsset(false);
 			}}
 		/>
 	{/if}

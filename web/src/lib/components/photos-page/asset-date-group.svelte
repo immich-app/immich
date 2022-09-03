@@ -16,10 +16,10 @@
 	import Portal from '../shared-components/portal/portal.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import {
-		assetGridStore,
+		assetInteractionStore,
 		isMultiSelectStoreState,
 		isViewingAssetStoreState
-	} from '$lib/stores/asset-grid.store';
+	} from '$lib/stores/asset-interaction.store';
 
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
@@ -46,7 +46,7 @@
 		if ($isMultiSelectStoreState) {
 			// Add items to selected assets in multi selection mode
 		} else {
-			assetGridStore.setViewingAsset(asset);
+			assetInteractionStore.setViewingAsset(asset);
 		}
 	};
 </script>
