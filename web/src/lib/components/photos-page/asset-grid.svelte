@@ -5,8 +5,14 @@
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
 	import { assetGridState, assetStore } from '$lib/stores/assets.store';
 	import { AssetCountByTimeBucketResponseDto } from '@api';
-	import { assets } from '$app/paths';
 	import AssetDateGroup from './asset-date-group.svelte';
+	import Portal from '../shared-components/portal/portal.svelte';
+	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
+	import {
+		assetGridStore,
+		isViewingAssetStoreState,
+		viewingAssetStoreState
+	} from '$lib/stores/asset-grid.store';
 
 	let viewportHeight = 0;
 	let viewportWidth = 0;
@@ -15,7 +21,23 @@
 
 	onMount(() => {
 		assetStore.setInitialState(viewportHeight, viewportWidth, assetCountByTimebucket);
-		assetStore.getAssetsByBucket('2022-08-01T00:00:00.000Z');
+
+		// Get asset bucket if bucket height is smaller than viewport height
+		let bucketsToFetchInitially: string[] = [];
+		let initialBucketsHeight = 0;
+		$assetGridState.buckets.every((bucket) => {
+			if (initialBucketsHeight < viewportHeight) {
+				initialBucketsHeight += bucket.bucketHeight;
+				bucketsToFetchInitially.push(bucket.bucketDate);
+				return true;
+			} else {
+				return false;
+			}
+		});
+
+		bucketsToFetchInitially.forEach((bucketDate) => {
+			assetStore.getAssetsByBucket(bucketDate);
+		});
 	});
 
 	function intersectedHandler(event: CustomEvent) {
@@ -28,8 +50,12 @@
 		}
 	}
 
-	const fetchData = () => {
-		assetStore.getAssetsByBucket('2022-08-01T00:00:00.000Z');
+	const navigateAssetBackwardHandler = () => {
+		// assetStore.navigateAssetBackward();
+	};
+
+	const navigateAssetForwardHandler = () => {
+		// assetStore.navigateAssetForward();
 	};
 </script>
 
@@ -46,18 +72,17 @@
 				<IntersectionObserver
 					on:intersected={intersectedHandler}
 					let:intersecting
-					top={500}
-					bottom={500}
+					top={750}
+					bottom={750}
 					root={assetGridElement}
 				>
-					<div
-						id={'bucket_' + bucket.bucketDate}
-						class="border border-red-500"
-						style:height={bucket.bucketHeight + 'px'}
-					>
+					<div id={'bucket_' + bucket.bucketDate} style:height={bucket.bucketHeight + 'px'}>
 						{#if intersecting}
-							<!-- Assets Group By Monthly Time Bucket Date Grid Goes Here -->
-							<AssetDateGroup assets={bucket.assets} bucketDate={bucket.bucketDate} />
+							<AssetDateGroup
+								assets={bucket.assets}
+								bucketDate={bucket.bucketDate}
+								bucketHeight={bucket.bucketHeight}
+							/>
 						{/if}
 					</div>
 				</IntersectionObserver>
@@ -65,6 +90,19 @@
 		</section>
 	{/if}
 </section>
+
+<Portal target="body">
+	{#if $isViewingAssetStoreState}
+		<AssetViewer
+			asset={$viewingAssetStoreState}
+			on:navigate-backward={navigateAssetBackwardHandler}
+			on:navigate-forward={navigateAssetForwardHandler}
+			on:close={() => {
+				assetGridStore.setIsViewingAsset(false);
+			}}
+		/>
+	{/if}
+</Portal>
 
 <style>
 	#asset-grid {

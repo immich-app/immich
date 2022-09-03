@@ -49,7 +49,6 @@ function createAssetStore() {
 		try {
 			const currentBucketData = currentState.buckets.find((b) => b.bucketDate === bucket);
 			if (currentBucketData?.assets && currentBucketData.assets.length > 0) {
-				console.log('already fetch');
 				return;
 			}
 			const { data: assets } = await api.assetApi.getAssetByTimeBucket({

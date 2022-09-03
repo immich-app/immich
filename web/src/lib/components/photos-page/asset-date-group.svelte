@@ -1,13 +1,31 @@
 <script lang="ts">
 	import { assetStore } from '$lib/stores/assets.store';
-
-	import { AssetResponseDto } from '@api';
+	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
+	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
+	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
+	import { fly } from 'svelte/transition';
+	import { api, AssetResponseDto } from '@api';
 	import lodash from 'lodash-es';
 	import moment from 'moment';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '../shared-components/notification/notification';
+	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
+	import Portal from '../shared-components/portal/portal.svelte';
+	import { createEventDispatcher } from 'svelte';
+	import {
+		assetGridStore,
+		isMultiSelectStoreState,
+		isViewingAssetStoreState
+	} from '$lib/stores/asset-grid.store';
 
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
+	export let bucketHeight: number;
+
+	const dispatch = createEventDispatcher();
 
 	let isMouseOverGroup = false;
 	let actualBucketHeight: number;
@@ -19,16 +37,23 @@
 		.value();
 
 	$: {
-		// Update bucket height
-		if (actualBucketHeight != 0) {
+		if (actualBucketHeight && actualBucketHeight != 0 && actualBucketHeight != bucketHeight) {
 			assetStore.updateBucketHeight(bucketDate, actualBucketHeight);
 		}
 	}
+
+	const handleAssetClicked = (asset: AssetResponseDto) => {
+		if ($isMultiSelectStoreState) {
+			// Add items to selected assets in multi selection mode
+		} else {
+			assetGridStore.setViewingAsset(asset);
+		}
+	};
 </script>
 
 <section
 	id="asset-group-by-date"
-	class="flex flex-wrap gap-14"
+	class="flex flex-wrap gap-5 mt-5"
 	bind:clientHeight={actualBucketHeight}
 >
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex}
@@ -41,33 +66,37 @@
 			<!-- Date group title -->
 			<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
 				<!-- {#if (selectedGroupThumbnail === groupIndex && isMouseOverGroup) || selectedGroup.has(groupIndex)}
-								<div
-									in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
-									out:fly={{ x: -24, duration: 200 }}
-									class="inline-block px-2 hover:cursor-pointer"
-									on:click={() => selectAssetGroupHandler(groupIndex)}
-								>
-									{#if selectedGroup.has(groupIndex)}
-										<CheckCircle size="24" color="#4250af" />
-									{:else if existingGroup.has(groupIndex)}
-										<CheckCircle size="24" color="#757575" />
-									{:else}
-										<CircleOutline size="24" color="#757575" />
-									{/if}
-								</div>
-							{/if} -->
+					<div
+						in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
+						out:fly={{ x: -24, duration: 200 }}
+						class="inline-block px-2 hover:cursor-pointer"
+						on:click={() => selectAssetGroupHandler(groupIndex)}
+					>
+						{#if selectedGroup.has(groupIndex)}
+							<CheckCircle size="24" color="#4250af" />
+						{:else if existingGroup.has(groupIndex)}
+							<CheckCircle size="24" color="#757575" />
+						{:else}
+							<CircleOutline size="24" color="#757575" />
+						{/if}
+					</div>
+				{/if} -->
 
 				{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
 			</p>
 
 			<!-- Image grid -->
 			<div class="flex flex-wrap gap-[2px]">
-				{#each assetsInDateGroup as asset}
-					{#key asset.id}
-						<ImmichThumbnail {asset} {groupIndex} />
-					{/key}
+				{#each assetsInDateGroup as asset (asset.id)}
+					<ImmichThumbnail {asset} {groupIndex} on:click={() => handleAssetClicked(asset)} />
 				{/each}
 			</div>
 		</div>
 	{/each}
 </section>
+
+<style>
+	#asset-group-by-date {
+		contain: layout;
+	}
+</style>

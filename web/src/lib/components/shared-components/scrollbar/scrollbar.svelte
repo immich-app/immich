@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
-
 	import { onMount } from 'svelte';
 	import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
 

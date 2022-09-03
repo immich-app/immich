@@ -45,7 +45,7 @@ export class AssetRepository implements IAssetRepository {
       .andWhere(`date_trunc('month', "createdAt"::timestamptz) IN (:...buckets)`, {
         buckets: [...getAssetByTimeBucketDto.timeBucket],
       })
-      // .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .andWhere('asset.resizePath is not NULL')
       .orderBy('asset.createdAt', 'DESC')
       .getMany();
   }
