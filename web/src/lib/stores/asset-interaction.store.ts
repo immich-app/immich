@@ -1,7 +1,7 @@
 import { AssetGridState } from '$lib/models/asset-grid-state';
 import { api, AssetResponseDto } from '@api';
 import { writable } from 'svelte/store';
-import { assetGridState } from './assets.store';
+import { assetGridState, assetStore } from './assets.store';
 import _ from 'lodash-es';
 
 // Asset Viewer
@@ -41,7 +41,7 @@ function createAssetInteractionStore() {
 		isMultiSelectStoreState.set(isMultiSelect);
 	};
 
-	const navigateAsset = (direction: 'next' | 'previous') => {
+	const navigateAsset = async (direction: 'next' | 'previous') => {
 		// Flatten and sort the asset by date if there are new assets
 		if (assetSortedByDate.length === 0 || savedAssetLength !== _assetGridState.assets.length) {
 			assetSortedByDate = _.sortBy(_assetGridState.assets, (a) => a.createdAt);
@@ -53,6 +53,24 @@ function createAssetInteractionStore() {
 
 		// Get the next or previous asset
 		const nextIndex = direction === 'previous' ? currentIndex + 1 : currentIndex - 1;
+
+		if (nextIndex == -1) {
+			let nextBucket = '';
+			// Find next bucket that doesn't have all assets loaded
+
+			for (const bucket of _assetGridState.buckets) {
+				if (bucket.assets.length === 0) {
+					nextBucket = bucket.bucketDate;
+					break;
+				}
+			}
+
+			await assetStore.getAssetsByBucket(nextBucket);
+			navigateAsset(direction);
+
+			return;
+		}
+
 		const nextAsset = assetSortedByDate[nextIndex];
 		setViewingAsset(nextAsset);
 	};

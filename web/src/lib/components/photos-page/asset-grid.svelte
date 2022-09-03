@@ -13,7 +13,6 @@
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
-	import { filter } from 'lodash';
 
 	let viewportHeight = 0;
 	let viewportWidth = 0;

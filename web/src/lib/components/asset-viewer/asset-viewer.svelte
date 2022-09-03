@@ -66,7 +66,6 @@
 
 	const downloadFile = async () => {
 		try {
-			console.log(asset.exifInfo);
 			const imageName = asset.exifInfo?.imageName ? asset.exifInfo?.imageName : asset.id;
 			const imageExtension = asset.originalPath.split('.')[1];
 			const imageFileName = imageName + '.' + imageExtension;

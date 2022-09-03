@@ -16,7 +16,6 @@
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected: boolean = false;
 	export let isExisted: boolean = false;
-
 	let imageData: string;
 
 	let mouseOver: boolean = false;
