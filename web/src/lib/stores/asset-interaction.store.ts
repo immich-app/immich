@@ -54,6 +54,7 @@ function createAssetInteractionStore() {
 		// Get the next or previous asset
 		const nextIndex = direction === 'previous' ? currentIndex + 1 : currentIndex - 1;
 
+		// Run out of asset, this might be because there is no asset in the next bucket.
 		if (nextIndex == -1) {
 			let nextBucket = '';
 			// Find next bucket that doesn't have all assets loaded
@@ -65,9 +66,10 @@ function createAssetInteractionStore() {
 				}
 			}
 
-			await assetStore.getAssetsByBucket(nextBucket);
-			navigateAsset(direction);
-
+			if (nextBucket !== '') {
+				await assetStore.getAssetsByBucket(nextBucket);
+				navigateAsset(direction);
+			}
 			return;
 		}
 
