@@ -64,8 +64,23 @@ display_message_box()
     echo
 }
 
+update_repo()
+{
+    # Enable community repository if not already enabled
+    if ! grep -qE '^http.*\/community' /etc/apk/repositories
+    then
+        echo "Adding Alpine community repository..."
+        echo "http://dl-cdn.alpinelinux.org/alpine/v${alpine_ver}/community" >> /etc/apk/repositories
+    fi
+
+    # Update packages list and install NodeJS
+    echo "Updating packages list..."
+    apk update
+}
+
 
 # main()
 display_message_box "Immich v$immich_ver installation script for Alpine $alpine_ver"
 parse_args "$@"
+update_repo
 display_message_box "Immich is now accessible from 0.0.0.0:80!"
