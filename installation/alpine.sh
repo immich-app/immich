@@ -31,6 +31,41 @@ parse_args()
     fi
 }
 
+# $1: message to print
+display_message_box()
+{
+    # Calculate message and box width
+    message_length=$(echo -n "$1" | wc -c)
+    width=$((message_length + 4))
+
+    # Leave if message is empty
+    if [ -z "$message_length" ]
+    then
+        return 1
+    fi
+
+    echo
+
+    # Print top box row
+    for i in $(seq ${width})
+    do
+        echo -n "#"
+    done
+    echo
+
+    # Print message with borders
+    echo -n "# "; echo -n "$1" ; echo " #"
+
+    # Print bottom box row
+    for i in $(seq ${width})
+    do
+        echo -n "#"
+    done
+    echo
+}
+
 
 # main()
+display_message_box "Immich v$immich_ver installation script for Alpine $alpine_ver"
 parse_args "$@"
+display_message_box "Immich is now accessible from 0.0.0.0:80!"
