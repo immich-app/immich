@@ -72,6 +72,14 @@ export class AlbumController {
     return this.albumService.getAlbumInfo(authUser, albumId);
   }
 
+  @Get('/byAsset/:assetId')
+  async getAlbumsByAsset(
+      @GetAuthUser() authUser: AuthUserDto,
+      @Param('assetId', new ParseUUIDPipe({ version: '4' })) assetId: string,
+  ) {
+    return this.albumService.getAlbumsByAssetId(authUser, assetId);
+  }
+
   @Delete('/:albumId/assets')
   async removeAssetFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,

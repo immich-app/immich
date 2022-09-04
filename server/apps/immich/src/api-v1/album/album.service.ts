@@ -53,6 +53,12 @@ export class AlbumService {
     return albums.map((album) => mapAlbumExcludeAssetInfo(album));
   }
 
+  async getAlbumsByAssetId(authUser: AuthUserDto, assetId: string): Promise<AlbumResponseDto[]> {
+    const albums = await this._albumRepository.getListByAssetId(authUser.id, assetId);
+    return albums.map(mapAlbumExcludeAssetInfo);
+
+  }
+
   async getAlbumInfo(authUser: AuthUserDto, albumId: string): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     return mapAlbum(album);
