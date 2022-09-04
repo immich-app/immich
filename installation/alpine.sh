@@ -273,15 +273,19 @@ setup_machine_learning()
     cp ${tmp_dir}/immich-${immich_ver}/machine-learning/package*.json .
 
     echo "Installing build stage dependencies..."
+    # gcompat is needed to get ld-linux-x86-64.so
+    # apk add gcc g++ make cmake python3 py3-pip ffmpeg nodejs-current npm gcompat
     apk add gcc g++ make cmake python3 py3-pip ffmpeg nodejs-current npm
 
     echo "Installing..."
+    unset NODE_ENV
     npm ci
     npm rebuild @tensorflow/tfjs-node --build-from-source
 
     echo "Building package..."
     cp -r ${tmp_dir}/immich-${immich_ver}/machine-learning/* .
     npm run build
+    export NODE_ENV=production
 
     # Production stage
     echo "Cleaning up build dependencies..."
@@ -454,6 +458,6 @@ setup_database
 setup_server
 setup_web
 setup_proxy
-setup_machine_learning
+#setup_machine_learning
 remove_install_files
 display_message_box "Immich is now accessible from 0.0.0.0:80!"
