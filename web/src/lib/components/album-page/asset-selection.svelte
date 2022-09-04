@@ -199,7 +199,7 @@
 			>
 		</svelte:fragment>
 	</ControlAppBar>
-	<section class="border border-red-500 pt-[100px] pl-[70px] grid h-screen bg-immich-bg">
+	<section class="pt-[100px] pl-[70px] grid h-screen bg-immich-bg">
 		<AssetGrid />
 	</section>
 </section>
