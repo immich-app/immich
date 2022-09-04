@@ -14,19 +14,31 @@ dev=0
 # $@: args from cli
 parse_args()
 {
-    if [ "$1" == "--dev" ]
+    if [ "$1" == "--install" ]
     then
         # Instead of downloading code from a release,
         # the source code is provided.
-        dev=1
-    elif [ "$1" == "-h" ]
-    then
-        echo "Dockerless installation script."
-        echo "usage: $0 [--dev|-h]"
-        echo
-        echo "  -h      Show this help message"
-        echo "  --dev   Run in dev mode"
-        echo
+        if [ "$2" == "--dev" ]
+        then
+            dev=1
+        elif [ "$2" == "-h" ]
+        then
+            echo "Dockerless installation script." 
+            echo "usage: $0 --install [--dev|-h]"        
+            echo                                           
+            echo "  -h              Show this help message"
+            echo "  --dev           Run in dev mode"
+            echo  
+            exit 0
+        fi
+    else
+        echo "Dockerless installation script."         
+        echo "usage: $0 [--install] [--dev|-h]"
+        echo                                           
+        echo "  --install       Install Immich"
+        echo "  -h              Show this help message"
+        echo "  --dev           Run in dev mode"
+        echo                                         
         exit 0
     fi
 }
