@@ -98,10 +98,26 @@ get_source_code()
     fi
 }
 
+# Redis server
+setup_redis()
+{
+    display_message_box "Redis"
+
+    echo "Installing..."
+    apk add redis
+    echo "Starting on boot..."
+    rc-update add redis
+    echo "Starting..."
+    /etc/init.d/redis start
+
+    echo "Writing host address..."
+    echo -e "127.0.0.1\timmich_redis" >> /etc/hosts
+}
 
 # main()
 display_message_box "Immich v$immich_ver installation script for Alpine $alpine_ver"
 parse_args "$@"
 update_repo
 get_source_code
+setup_redis
 display_message_box "Immich is now accessible from 0.0.0.0:80!"
