@@ -1443,48 +1443,12 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} assetId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAlbumsByAsset: async (assetId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('getAlbumsByAsset', 'assetId', assetId)
-            const localVarPath = `/album/byAsset/{assetId}`
-                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {boolean} [shared] 
+         * @param {string} [assetId] Only returns albums that contain the asset.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAlbums: async (shared?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAlbums: async (shared?: boolean, assetId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/album`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1503,6 +1467,10 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
 
             if (shared !== undefined) {
                 localVarQueryParameter['shared'] = shared;
+            }
+
+            if (assetId !== undefined) {
+                localVarQueryParameter['assetId'] = assetId;
             }
 
 
@@ -1707,22 +1675,13 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} assetId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getAlbumsByAsset(assetId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AlbumResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAlbumsByAsset(assetId, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {boolean} [shared] 
+         * @param {string} [assetId] Only returns albums that contain the asset.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAlbums(shared?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AlbumResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAlbums(shared, options);
+        async getAllAlbums(shared?: boolean, assetId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AlbumResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAlbums(shared, assetId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -1817,21 +1776,13 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} assetId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAlbumsByAsset(assetId: string, options?: any): AxiosPromise<Array<AlbumResponseDto>> {
-            return localVarFp.getAlbumsByAsset(assetId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @param {boolean} [shared] 
+         * @param {string} [assetId] Only returns albums that contain the asset.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAlbums(shared?: boolean, options?: any): AxiosPromise<Array<AlbumResponseDto>> {
-            return localVarFp.getAllAlbums(shared, options).then((request) => request(axios, basePath));
+        getAllAlbums(shared?: boolean, assetId?: string, options?: any): AxiosPromise<Array<AlbumResponseDto>> {
+            return localVarFp.getAllAlbums(shared, assetId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1932,24 +1883,14 @@ export class AlbumApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} assetId 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AlbumApi
-     */
-    public getAlbumsByAsset(assetId: string, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).getAlbumsByAsset(assetId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @param {boolean} [shared] 
+     * @param {string} [assetId] Only returns albums that contain the asset.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public getAllAlbums(shared?: boolean, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).getAllAlbums(shared, options).then((request) => request(this.axios, this.basePath));
+    public getAllAlbums(shared?: boolean, assetId?: string, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).getAllAlbums(shared, assetId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
