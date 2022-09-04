@@ -94,7 +94,6 @@
 		});
 
 		// if all assets are selected in a group, add the group to selected group
-		console.log(selectedAssetsInGroupCount, assetsInDateGroup.length);
 		if (selectedAssetsInGroupCount == assetsInDateGroup.length) {
 			assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
 		} else {

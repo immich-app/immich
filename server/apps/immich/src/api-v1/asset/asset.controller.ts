@@ -154,7 +154,7 @@ export class AssetController {
     return this.assetService.searchAsset(authUser, searchAssetDto);
   }
 
-  @Get('/count-by-time-bucket')
+  @Post('/count-by-time-bucket')
   async getAssetCountByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) getAssetCountByTimeGroupDto: GetAssetCountByTimeBucketDto,

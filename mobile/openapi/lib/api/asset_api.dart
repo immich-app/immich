@@ -348,7 +348,7 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/count-by-time-bucket' operation and returns the [Response].
+  /// Performs an HTTP 'POST /asset/count-by-time-bucket' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [GetAssetCountByTimeBucketDto] getAssetCountByTimeBucketDto (required):
@@ -368,7 +368,7 @@ class AssetApi {
 
     return apiClient.invokeAPI(
       path,
-      'GET',
+      'POST',
       queryParams,
       postBody,
       headerParams,

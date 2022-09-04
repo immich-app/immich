@@ -4,7 +4,7 @@
 
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
 	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
-	import { AssetCountByTimeBucketResponseDto } from '@api';
+	import { api, AssetCountByTimeBucketResponseDto, TimeGroupEnum } from '@api';
 	import AssetDateGroup from './asset-date-group.svelte';
 	import Portal from '../shared-components/portal/portal.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -17,9 +17,12 @@
 	let viewportHeight = 0;
 	let viewportWidth = 0;
 	let assetGridElement: HTMLElement;
-	let assetCountByTimebucket: AssetCountByTimeBucketResponseDto = $page.data.assetCountByTimebucket;
 
-	onMount(() => {
+	onMount(async () => {
+		const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
+			timeGroup: TimeGroupEnum.Month
+		});
+
 		assetStore.setInitialState(viewportHeight, viewportWidth, assetCountByTimebucket);
 
 		// Get asset bucket if bucket height is smaller than viewport height
