@@ -265,6 +265,15 @@ setup_machine_learning()
 {
     display_message_box "Machine learning"
 
+    echo "Check if CPU supports AVX2 instructions..."
+    if ! grep -q avx2 /proc/cpuinfo
+    then
+        echo "Your CPU doesn't support AVX2 instructions!"
+        echo "Please check README at https://github.com/immich-app/immich"
+        echo "Ignoring ML..."
+        return
+    fi
+
     echo "Creating installation directory..."
     mkdir /usr/src/machine-learning
     cd /usr/src/machine-learning || exit
