@@ -78,9 +78,30 @@ update_repo()
     apk update
 }
 
+get_source_code()
+{
+    # If not in dev mode
+    if [ "$dev" -eq 0 ]
+    then
+        # Download and extract repo release
+        echo "Downloading and extracting Immich v$immich_ver..."
+        wget https://github.com/immich-app/immich/archive/refs/tags/v${immich_ver}.tar.gz -O ${tmp_dir}/immich-${immich_ver}.tar.gz || exit
+        tar -xzf ${tmp_dir}/immich-${immich_ver}.tar.gz --directory ${tmp_dir}
+    else
+        # Dev source code must be in temp directory
+        echo "Getting source code from local directory..."
+        if [ ! -d "$tmp_dir/immich-$immich_ver" ]
+        then
+            echo "You need to put $immich_ver development code in $tmp_dir/immich-$immich_ver/".
+            exit 1
+        fi
+    fi
+}
+
 
 # main()
 display_message_box "Immich v$immich_ver installation script for Alpine $alpine_ver"
 parse_args "$@"
 update_repo
+get_source_code
 display_message_box "Immich is now accessible from 0.0.0.0:80!"
