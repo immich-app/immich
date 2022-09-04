@@ -47,10 +47,6 @@ function createAssetStore() {
 		});
 	};
 
-	/**
-	 * Get all assets belong to a time bucket
-	 * @param bucket time bucket in String format
-	 */
 	const getAssetsByBucket = async (bucket: string) => {
 		try {
 			const currentBucketData = _assetGridState.buckets.find((b) => b.bucketDate === bucket);
@@ -87,6 +83,29 @@ function createAssetStore() {
 		}
 	};
 
+	const removeAsset = (assetId: string) => {
+		assetGridState.update((state) => {
+			const bucketIndex = state.buckets.findIndex((b) => b.assets.some((a) => a.id === assetId));
+			const assetIndex = state.buckets[bucketIndex].assets.findIndex((a) => a.id === assetId);
+			state.buckets[bucketIndex].assets.splice(assetIndex, 1);
+
+			if (state.buckets[bucketIndex].assets.length === 0) {
+				_removeBucket(state.buckets[bucketIndex].bucketDate);
+			}
+			state.assets = lodash.flatMap(state.buckets, (b) => b.assets);
+			return state;
+		});
+	};
+
+	const _removeBucket = (bucketDate: string) => {
+		assetGridState.update((state) => {
+			const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucketDate);
+			state.buckets.splice(bucketIndex, 1);
+			state.assets = lodash.flatMap(state.buckets, (b) => b.assets);
+			return state;
+		});
+	};
+
 	const updateBucketHeight = (bucket: string, height: number) => {
 		assetGridState.update((state) => {
 			const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
@@ -102,6 +121,7 @@ function createAssetStore() {
 	return {
 		setInitialState,
 		getAssetsByBucket,
+		removeAsset,
 		updateBucketHeight,
 		cancelBucketRequest
 	};

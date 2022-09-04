@@ -17,6 +17,12 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import { api } from '@api';
+	import {
+		notificationController,
+		NotificationType
+	} from '$lib/components/shared-components/notification/notification';
+	import { assetStore } from '$lib/stores/assets.store';
 
 	export let data: PageData;
 
@@ -28,7 +34,33 @@
 		};
 	});
 
-	const deleteSelectedAssetHandler = () => {};
+	const deleteSelectedAssetHandler = async () => {
+		try {
+			if (
+				window.confirm(
+					`Caution! Are you sure you want to delete ${$selectedAssets.size} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!`
+				)
+			) {
+				const { data: deletedAssets } = await api.assetApi.deleteAsset({
+					ids: Array.from($selectedAssets).map((a) => a.id)
+				});
+
+				for (const asset of deletedAssets) {
+					if (asset.status == 'SUCCESS') {
+						assetStore.removeAsset(asset.id);
+					}
+				}
+
+				assetInteractionStore.clearMultiselect();
+			}
+		} catch (e) {
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error deleting assets, check console for more details'
+			});
+			console.error('Error deleteSelectedAssetHandler', e);
+		}
+	};
 </script>
 
 <svelte:head>
