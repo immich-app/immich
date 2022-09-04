@@ -260,6 +260,66 @@ setup_web()
     cd ~ || return
 }
 
+# Immich machine learning
+setup_machine_learning()
+{
+    display_message_box "Machine learning"
+
+    echo "Creating installation directory..."
+    mkdir /usr/src/machine-learning
+    cd /usr/src/machine-learning || exit
+
+    # Build stage
+    cp ${tmp_dir}/immich-${immich_ver}/machine-learning/package*.json .
+
+    echo "Installing build stage dependencies..."
+    apk add gcc g++ make cmake python3 py3-pip ffmpeg nodejs-current npm
+
+    echo "Installing..."
+    npm ci
+    npm rebuild @tensorflow/tfjs-node --build-from-source
+
+    echo "Building package..."
+    cp -r ${tmp_dir}/immich-${immich_ver}/machine-learning/* .
+    npm run build
+
+    # Production stage
+    echo "Cleaning up build dependencies..."
+    apk del gcc g++ make cmake python3 py3-pip
+
+    # Clean now useless files
+    echo "Removing files used for build stage..."
+    rm -rf "$(ls | grep -v 'node_modules\|dist\|package*.json\|entrypoint.sh\|immich-*')"
+
+    echo "Removing extra packages..."
+    npm prune --production
+
+    # Where data will be stored.
+    # Follow symlink created during server installation
+    ln -s ../server/upload ./upload
+
+    chmod u+x ./entrypoint.sh
+
+    # Write service file
+    echo "Writing service file..."
+    mv ./immich-machine-learning /etc/init.d/immich-machine-learning
+    chmod +x /etc/init.d/immich-machine-learning
+
+    # Enable service
+    echo "Starting on boot..."
+    rc-update add immich-machine-learning
+
+    # Start
+    echo "Starting..."
+    /etc/init.d/immich-machine-learning start
+
+    # Write machine-learning server address to local hosts file
+    echo "Writing host address..."
+    echo -e "127.0.0.1\timmich-machine-learning" >> /etc/hosts
+
+    cd ~ || return
+}
+
 # PostgreSQL
 setup_database()
 {
@@ -384,4 +444,5 @@ setup_database
 setup_server
 setup_web
 setup_proxy
+setup_machine_learning
 display_message_box "Immich is now accessible from 0.0.0.0:80!"

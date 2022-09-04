@@ -1,0 +1,21 @@
+#!/sbin/openrc-run
+
+: ${data_path:="/usr/src/machine-learning"}
+
+name="Immich machine-learning"
+directory="$data_path"
+command=/bin/ash
+command_args="-c $data_path/entrypoint.sh"
+
+command_background=yes
+pidfile="/run/immich-machine-learning.pid"
+
+output_log=/var/log/immich-machine-learning.log
+error_log=/var/log/immich-machine-learning_err.log
+
+required_dirs="$data_path"
+required_files="$data_path/entrypoint.sh"
+
+depend() {
+        need postgresql
+}
