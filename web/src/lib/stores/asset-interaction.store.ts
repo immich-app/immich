@@ -1,6 +1,6 @@
 import { AssetGridState } from '$lib/models/asset-grid-state';
 import { api, AssetResponseDto } from '@api';
-import { writable } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 import { assetGridState, assetStore } from './assets.store';
 import _ from 'lodash-es';
 
@@ -9,13 +9,21 @@ export const viewingAssetStoreState = writable<AssetResponseDto>();
 export const isViewingAssetStoreState = writable<boolean>(false);
 
 // Multi-Selection mode
-export const isMultiSelectStoreState = writable<boolean>(false);
+export const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
+export const selectedGroup = writable<Set<string>>(new Set());
+export const isMultiSelectStoreState = derived(
+	selectedAssets,
+	($selectedAssets) => $selectedAssets.size > 0
+);
 
 function createAssetInteractionStore() {
-	let assetSortedByDate: AssetResponseDto[] = [];
 	let _assetGridState = new AssetGridState();
 	let _viewingAssetStoreState: AssetResponseDto;
+	let _selectedAssets: Set<AssetResponseDto>;
+	let _selectedGroup: Set<string>;
+
 	let savedAssetLength = 0;
+	let assetSortedByDate: AssetResponseDto[] = [];
 
 	// Subscriber
 	assetGridState.subscribe((state) => {
@@ -26,7 +34,19 @@ function createAssetInteractionStore() {
 		_viewingAssetStoreState = asset;
 	});
 
+	selectedAssets.subscribe((assets) => {
+		_selectedAssets = assets;
+	});
+
+	selectedGroup.subscribe((group) => {
+		_selectedGroup = group;
+	});
+
 	// Methods
+
+	/**
+	 * Asset Viewer
+	 */
 	const setViewingAsset = async (asset: AssetResponseDto) => {
 		const { data } = await api.assetApi.getAssetById(asset.id);
 		viewingAssetStoreState.set(data);
@@ -35,10 +55,6 @@ function createAssetInteractionStore() {
 
 	const setIsViewingAsset = (isViewing: boolean) => {
 		isViewingAssetStoreState.set(isViewing);
-	};
-
-	const setIsMultiSelect = (isMultiSelect: boolean) => {
-		isMultiSelectStoreState.set(isMultiSelect);
 	};
 
 	const navigateAsset = async (direction: 'next' | 'previous') => {
@@ -77,11 +93,36 @@ function createAssetInteractionStore() {
 		setViewingAsset(nextAsset);
 	};
 
+	/**
+	 * Multiselect
+	 */
+	const addAssetToMultiselectGroup = (asset: AssetResponseDto) => {
+		_selectedAssets.add(asset);
+		selectedAssets.set(_selectedAssets);
+	};
+
+	const removeAssetFromMultiselectGroup = (asset: AssetResponseDto) => {
+		_selectedAssets.delete(asset);
+		selectedAssets.set(_selectedAssets);
+	};
+
+	const addGroupToMultiselectGroup = (group: string) => {
+		_selectedGroup.add(group);
+		selectedGroup.set(_selectedGroup);
+	};
+
+	const removeGroupFromMultiselectGroup = (group: string) => {
+		_selectedGroup.delete(group);
+		selectedGroup.set(_selectedGroup);
+	};
 	return {
 		setViewingAsset,
 		setIsViewingAsset,
-		setIsMultiSelect,
-		navigateAsset
+		navigateAsset,
+		addAssetToMultiselectGroup,
+		removeAssetFromMultiselectGroup,
+		addGroupToMultiselectGroup,
+		removeGroupFromMultiselectGroup
 	};
 }
 

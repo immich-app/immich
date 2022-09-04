@@ -19,7 +19,7 @@
 	let imageData: string;
 
 	let mouseOver: boolean = false;
-	$: dispatch('mouseEvent', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
+	$: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
 	let mouseOverIcon: boolean = false;
 	let videoPlayerNode: HTMLVideoElement;

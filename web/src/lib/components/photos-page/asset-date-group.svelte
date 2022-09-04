@@ -17,10 +17,13 @@
 	import { createEventDispatcher } from 'svelte';
 	import {
 		assetInteractionStore,
+		isViewingAssetStoreState,
 		isMultiSelectStoreState,
-		isViewingAssetStoreState
+		selectedAssets,
+		selectedGroup
 	} from '$lib/stores/asset-interaction.store';
-
+	import { flip } from 'svelte/animate';
+	import { quintOut } from 'svelte/easing';
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
 	export let bucketHeight: number;
@@ -29,7 +32,7 @@
 
 	let isMouseOverGroup = false;
 	let actualBucketHeight: number;
-
+	let hoveredDateGroup: string = '';
 	$: assetsGroupByDate = lodash
 		.chain(assets)
 		.groupBy((a) => moment(a.createdAt).format('ddd, MMM DD YYYY'))
@@ -42,12 +45,66 @@
 		}
 	}
 
-	const handleAssetClicked = (asset: AssetResponseDto) => {
+	const assetClickHandler = (
+		asset: AssetResponseDto,
+		assetsInDateGroup: AssetResponseDto[],
+		dateGroupTitle: string
+	) => {
 		if ($isMultiSelectStoreState) {
-			// Add items to selected assets in multi selection mode
+			assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle);
 		} else {
 			assetInteractionStore.setViewingAsset(asset);
 		}
+	};
+
+	const selectAssetGroupHandler = (
+		selectAssetGroupHandler: AssetResponseDto[],
+		dateGroupTitle: string
+	) => {
+		if ($selectedGroup.has(dateGroupTitle)) {
+			assetInteractionStore.removeGroupFromMultiselectGroup(dateGroupTitle);
+			selectAssetGroupHandler.forEach((asset) => {
+				assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+			});
+		} else {
+			assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
+			selectAssetGroupHandler.forEach((asset) => {
+				assetInteractionStore.addAssetToMultiselectGroup(asset);
+			});
+		}
+	};
+
+	const assetSelectHandler = (
+		asset: AssetResponseDto,
+		assetsInDateGroup: AssetResponseDto[],
+		dateGroupTitle: string
+	) => {
+		if ($selectedAssets.has(asset)) {
+			assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+		} else {
+			assetInteractionStore.addAssetToMultiselectGroup(asset);
+		}
+
+		// Check if all assets are selected in a group to toggle the group selection's icon
+		let selectedAssetsInGroupCount = 0;
+		assetsInDateGroup.forEach((asset) => {
+			if ($selectedAssets.has(asset)) {
+				selectedAssetsInGroupCount++;
+			}
+		});
+
+		// if all assets are selected in a group, add the group to selected group
+		console.log(selectedAssetsInGroupCount, assetsInDateGroup.length);
+		if (selectedAssetsInGroupCount == assetsInDateGroup.length) {
+			assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
+		} else {
+			assetInteractionStore.removeGroupFromMultiselectGroup(dateGroupTitle);
+		}
+	};
+
+	const assetMouseEventHandler = (dateGroupTitle: string) => {
+		// Show multi select icon on hover on date group
+		hoveredDateGroup = dateGroupTitle;
 	};
 </script>
 
@@ -56,7 +113,8 @@
 	class="flex flex-wrap gap-5 mt-5"
 	bind:clientHeight={actualBucketHeight}
 >
-	{#each assetsGroupByDate as assetsInDateGroup, groupIndex}
+	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
+		{@const dateGroupTitle = moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
 		<!-- Asset Group By Date -->
 		<div
 			class="flex flex-col"
@@ -65,30 +123,36 @@
 		>
 			<!-- Date group title -->
 			<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
-				<!-- {#if (selectedGroupThumbnail === groupIndex && isMouseOverGroup) || selectedGroup.has(groupIndex)}
+				{#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
 					<div
-						in:fly={{ x: -24, duration: 200, opacity: 0.5 }}
-						out:fly={{ x: -24, duration: 200 }}
+						transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
 						class="inline-block px-2 hover:cursor-pointer"
-						on:click={() => selectAssetGroupHandler(groupIndex)}
+						on:click={() => selectAssetGroupHandler(assetsInDateGroup, dateGroupTitle)}
 					>
-						{#if selectedGroup.has(groupIndex)}
+						{#if $selectedGroup.has(dateGroupTitle)}
 							<CheckCircle size="24" color="#4250af" />
-						{:else if existingGroup.has(groupIndex)}
-							<CheckCircle size="24" color="#757575" />
 						{:else}
 							<CircleOutline size="24" color="#757575" />
 						{/if}
 					</div>
-				{/if} -->
+				{/if}
 
-				{moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
+				<span>
+					{dateGroupTitle}
+				</span>
 			</p>
 
 			<!-- Image grid -->
 			<div class="flex flex-wrap gap-[2px]">
 				{#each assetsInDateGroup as asset (asset.id)}
-					<ImmichThumbnail {asset} {groupIndex} on:click={() => handleAssetClicked(asset)} />
+					<ImmichThumbnail
+						{asset}
+						{groupIndex}
+						on:click={() => assetClickHandler(asset, assetsInDateGroup, dateGroupTitle)}
+						on:select={() => assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle)}
+						on:mouse-event={() => assetMouseEventHandler(dateGroupTitle)}
+						selected={$selectedAssets.has(asset)}
+					/>
 				{/each}
 			</div>
 		</div>
