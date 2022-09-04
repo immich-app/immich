@@ -9,6 +9,7 @@ export const viewingAssetStoreState = writable<AssetResponseDto>();
 export const isViewingAssetStoreState = writable<boolean>(false);
 
 // Multi-Selection mode
+export const assetsInAlbumStoreState = writable<AssetResponseDto[]>([]);
 export const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
 export const selectedGroup = writable<Set<string>>(new Set());
 export const isMultiSelectStoreState = derived(
@@ -21,7 +22,7 @@ function createAssetInteractionStore() {
 	let _viewingAssetStoreState: AssetResponseDto;
 	let _selectedAssets: Set<AssetResponseDto>;
 	let _selectedGroup: Set<string>;
-
+	let _assetsInAblums: AssetResponseDto[];
 	let savedAssetLength = 0;
 	let assetSortedByDate: AssetResponseDto[] = [];
 
@@ -40,6 +41,10 @@ function createAssetInteractionStore() {
 
 	selectedGroup.subscribe((group) => {
 		_selectedGroup = group;
+	});
+
+	assetsInAlbumStoreState.subscribe((assets) => {
+		_assetsInAblums = assets;
 	});
 
 	// Methods
@@ -97,6 +102,11 @@ function createAssetInteractionStore() {
 	 * Multiselect
 	 */
 	const addAssetToMultiselectGroup = (asset: AssetResponseDto) => {
+		// Not select if in album alreaady
+		if (_assetsInAblums.find((a) => a.id === asset.id)) {
+			return;
+		}
+
 		_selectedAssets.add(asset);
 		selectedAssets.set(_selectedAssets);
 	};
@@ -119,8 +129,11 @@ function createAssetInteractionStore() {
 	const clearMultiselect = () => {
 		_selectedAssets.clear();
 		_selectedGroup.clear();
+		_assetsInAblums = [];
+
 		selectedAssets.set(_selectedAssets);
 		selectedGroup.set(_selectedGroup);
+		assetsInAlbumStoreState.set(_assetsInAblums);
 	};
 	return {
 		setViewingAsset,

@@ -208,10 +208,12 @@
 	}
 
 	const createAlbumHandler = async (event: CustomEvent) => {
-		const { assets }: { assets: string[] } = event.detail;
+		const { assets }: { assets: AssetResponseDto[] } = event.detail;
 
 		try {
-			const { data } = await api.albumApi.addAssetsToAlbum(album.id, { assetIds: assets });
+			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
+				assetIds: assets.map((a) => a.id)
+			});
 			album = data;
 
 			isShowAssetSelection = false;

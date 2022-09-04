@@ -10,6 +10,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import {
 		assetInteractionStore,
+		assetsInAlbumStoreState,
 		isMultiSelectStoreState,
 		selectedAssets,
 		selectedGroup
@@ -141,6 +142,7 @@
 						on:select={() => assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle)}
 						on:mouse-event={() => assetMouseEventHandler(dateGroupTitle)}
 						selected={$selectedAssets.has(asset)}
+						disabled={$assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
 					/>
 				{/each}
 			</div>

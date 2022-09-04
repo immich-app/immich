@@ -15,7 +15,7 @@
 	export let thumbnailSize: number | undefined = undefined;
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected: boolean = false;
-	export let isExisted: boolean = false;
+	export let disabled: boolean = false;
 	let imageData: string;
 
 	let mouseOver: boolean = false;
@@ -104,7 +104,7 @@
 	$: getThumbnailBorderStyle = () => {
 		if (selected) {
 			return 'border-[20px] border-immich-primary/20';
-		} else if (isExisted) {
+		} else if (disabled) {
 			return 'border-[20px] border-gray-300';
 		} else {
 			return '';
@@ -112,21 +112,23 @@
 	};
 
 	$: getOverlaySelectorIconStyle = () => {
-		if (selected || isExisted) {
+		if (selected || disabled) {
 			return '';
 		} else {
 			return 'bg-gradient-to-b from-gray-800/50';
 		}
 	};
 	const thumbnailClickedHandler = () => {
-		if (!isExisted) {
+		if (!disabled) {
 			dispatch('click', { asset });
 		}
 	};
 
 	const onIconClickedHandler = (e: MouseEvent) => {
 		e.stopPropagation();
-		dispatch('select', { asset });
+		if (!disabled) {
+			dispatch('select', { asset });
+		}
 	};
 </script>
 
@@ -135,13 +137,13 @@
 		style:width={`${thumbnailSize}px`}
 		style:height={`${thumbnailSize}px`}
 		class={`bg-gray-100 relative  ${getSize()} ${
-			isExisted ? 'cursor-not-allowed' : 'hover:cursor-pointer'
+			disabled ? 'cursor-not-allowed' : 'hover:cursor-pointer'
 		}`}
 		on:mouseenter={handleMouseOverThumbnail}
 		on:mouseleave={handleMouseLeaveThumbnail}
 		on:click={thumbnailClickedHandler}
 	>
-		{#if mouseOver || selected || isExisted}
+		{#if mouseOver || selected || disabled}
 			<div
 				in:fade={{ duration: 200 }}
 				class={`w-full ${getOverlaySelectorIconStyle()} via-white/0 to-white/0 absolute p-2  z-10`}
@@ -154,7 +156,7 @@
 				>
 					{#if selected}
 						<CheckCircle size="24" color="#4250af" />
-					{:else if isExisted}
+					{:else if disabled}
 						<CheckCircle size="24" color="#252525" />
 					{:else}
 						<CheckCircle size="24" color={mouseOverIcon ? 'white' : '#d8dadb'} />
