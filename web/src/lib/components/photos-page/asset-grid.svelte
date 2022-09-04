@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
 
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
-	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
-	import { api, AssetCountByTimeBucketResponseDto, TimeGroupEnum } from '@api';
+	import { assetGridState, assetStore } from '$lib/stores/assets.store';
+	import { api, TimeGroupEnum } from '@api';
 	import AssetDateGroup from './asset-date-group.svelte';
 	import Portal from '../shared-components/portal/portal.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';

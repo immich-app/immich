@@ -2,28 +2,18 @@
 	import { assetStore } from '$lib/stores/assets.store';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
-	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import { fly } from 'svelte/transition';
-	import { api, AssetResponseDto } from '@api';
+	import { AssetResponseDto } from '@api';
 	import lodash from 'lodash-es';
 	import moment from 'moment';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
-	import {
-		notificationController,
-		NotificationType
-	} from '../shared-components/notification/notification';
-	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
-	import Portal from '../shared-components/portal/portal.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import {
 		assetInteractionStore,
-		isViewingAssetStoreState,
 		isMultiSelectStoreState,
 		selectedAssets,
 		selectedGroup
 	} from '$lib/stores/asset-interaction.store';
-	import { flip } from 'svelte/animate';
-	import { quintOut } from 'svelte/easing';
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
 	export let bucketHeight: number;
