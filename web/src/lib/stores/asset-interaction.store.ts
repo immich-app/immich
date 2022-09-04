@@ -115,6 +115,13 @@ function createAssetInteractionStore() {
 		_selectedGroup.delete(group);
 		selectedGroup.set(_selectedGroup);
 	};
+
+	const clearMultiselect = () => {
+		_selectedAssets.clear();
+		_selectedGroup.clear();
+		selectedAssets.set(_selectedAssets);
+		selectedGroup.set(_selectedGroup);
+	};
 	return {
 		setViewingAsset,
 		setIsViewingAsset,
@@ -122,7 +129,8 @@ function createAssetInteractionStore() {
 		addAssetToMultiselectGroup,
 		removeAssetFromMultiselectGroup,
 		addGroupToMultiselectGroup,
-		removeGroupFromMultiselectGroup
+		removeGroupFromMultiselectGroup,
+		clearMultiselect
 	};
 }
 
