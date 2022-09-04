@@ -6,18 +6,26 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { AssetCountByTimeGroupDto } from './response-dto/asset-count-by-time-group-response.dto';
-import { TimeGroupEnum } from './dto/get-asset-count-by-time-group.dto';
+import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
+import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
+import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 
 export interface IAssetRepository {
-  create(createAssetDto: CreateAssetDto, ownerId: string, originalPath: string, mimeType: string, checksum?: Buffer): Promise<AssetEntity>;
+  create(
+    createAssetDto: CreateAssetDto,
+    ownerId: string,
+    originalPath: string,
+    mimeType: string,
+    checksum?: Buffer,
+  ): Promise<AssetEntity>;
   getAllByUserId(userId: string): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
-  getAssetCountByTimeGroup(userId: string, timeGroup: TimeGroupEnum): Promise<AssetCountByTimeGroupDto[]>;
+  getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
+  getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
 }
 
 export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
@@ -28,23 +36,37 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
-  async getAssetCountByTimeGroup(userId: string, timeGroup: TimeGroupEnum) {
-    let result: AssetCountByTimeGroupDto[] = [];
 
-    if (timeGroup === TimeGroupEnum.Month) {
+  async getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]> {
+    // Get asset entity from a list of time buckets
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .where('asset.userId = :userId', { userId: userId })
+      .andWhere(`date_trunc('month', "createdAt"::timestamptz) IN (:...buckets)`, {
+        buckets: [...getAssetByTimeBucketDto.timeBucket],
+      })
+      .andWhere('asset.resizePath is not NULL')
+      .orderBy('asset.createdAt', 'DESC')
+      .getMany();
+  }
+
+  async getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum) {
+    let result: AssetCountByTimeBucket[] = [];
+
+    if (timeBucket === TimeGroupEnum.Month) {
       result = await this.assetRepository
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
-        .addSelect(`to_char(date_trunc('month', "createdAt"::timestamptz), 'YYYY_MM')`, 'timeGroup')
+        .addSelect(`date_trunc('month', "createdAt"::timestamptz)`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
         .groupBy(`date_trunc('month', "createdAt"::timestamptz)`)
         .orderBy(`date_trunc('month', "createdAt"::timestamptz)`, 'DESC')
         .getRawMany();
-    } else if (timeGroup === TimeGroupEnum.Day) {
+    } else if (timeBucket === TimeGroupEnum.Day) {
       result = await this.assetRepository
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
-        .addSelect(`to_char(date_trunc('day', "createdAt"::timestamptz), 'YYYY_MM_DD')`, 'timeGroup')
+        .addSelect(`date_trunc('day', "createdAt"::timestamptz)`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
         .groupBy(`date_trunc('day', "createdAt"::timestamptz)`)
         .orderBy(`date_trunc('day', "createdAt"::timestamptz)`, 'DESC')

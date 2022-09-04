@@ -52,12 +52,12 @@
 
 	const navigateAssetForward = (e?: Event) => {
 		e?.stopPropagation();
-		dispatch('navigate-forward');
+		dispatch('navigate-next');
 	};
 
 	const navigateAssetBackward = (e?: Event) => {
 		e?.stopPropagation();
-		dispatch('navigate-backward');
+		dispatch('navigate-previous');
 	};
 
 	const showDetailInfoHandler = () => {
@@ -66,7 +66,6 @@
 
 	const downloadFile = async () => {
 		try {
-			console.log(asset.exifInfo);
 			const imageName = asset.exifInfo?.imageName ? asset.exifInfo?.imageName : asset.id;
 			const imageExtension = asset.originalPath.split('.')[1];
 			const imageFileName = imageName + '.' + imageExtension;
@@ -130,7 +129,7 @@
 
 <section
 	id="immich-asset-viewer"
-	class="fixed h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4  "
+	class="fixed h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4"
 >
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
 		<AsserViewerNavBar
@@ -207,6 +206,10 @@
 </section>
 
 <style>
+	#immich-asset-viewer {
+		contain: layout;
+	}
+
 	.navigation-button-hover {
 		background-color: rgb(107 114 128 / var(--tw-bg-opacity));
 		color: rgb(55 65 81 / var(--tw-text-opacity));

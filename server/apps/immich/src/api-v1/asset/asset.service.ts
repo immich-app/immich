@@ -23,7 +23,6 @@ import fs from 'fs/promises';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { AssetResponseDto, mapAsset } from './response-dto/asset-response.dto';
-import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -31,10 +30,11 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import {
-  AssetCountByTimeGroupResponseDto,
-  mapAssetCountByTimeGroupResponse,
+  AssetCountByTimeBucketResponseDto,
+  mapAssetCountByTimeBucket,
 } from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeGroupDto } from './dto/get-asset-count-by-time-group.dto';
+import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
+import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 
 const fileInfo = promisify(stat);
 
@@ -55,7 +55,13 @@ export class AssetService {
     mimeType: string,
   ): Promise<AssetEntity> {
     const checksum = await this.calculateChecksum(originalPath);
-    const assetEntity = await this._assetRepository.create(createAssetDto, authUser.id, originalPath, mimeType, checksum);
+    const assetEntity = await this._assetRepository.create(
+      createAssetDto,
+      authUser.id,
+      originalPath,
+      mimeType,
+      checksum,
+    );
 
     return assetEntity;
   }
@@ -66,6 +72,15 @@ export class AssetService {
 
   public async getAllAssets(authUser: AuthUserDto): Promise<AssetResponseDto[]> {
     const assets = await this._assetRepository.getAllByUserId(authUser.id);
+
+    return assets.map((asset) => mapAsset(asset));
+  }
+
+  public async getAssetByTimeBucket(
+    authUser: AuthUserDto,
+    getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
+  ): Promise<AssetResponseDto[]> {
+    const assets = await this._assetRepository.getAssetByTimeBucket(authUser.id, getAssetByTimeBucketDto);
 
     return assets.map((asset) => mapAsset(asset));
   }
@@ -435,16 +450,16 @@ export class AssetService {
     return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
   }
 
-  async getAssetCountByTimeGroup(
+  async getAssetCountByTimeBucket(
     authUser: AuthUserDto,
-    getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto,
-  ): Promise<AssetCountByTimeGroupResponseDto> {
-    const result = await this._assetRepository.getAssetCountByTimeGroup(
+    getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto,
+  ): Promise<AssetCountByTimeBucketResponseDto> {
+    const result = await this._assetRepository.getAssetCountByTimeBucket(
       authUser.id,
-      getAssetCountByTimeGroupDto.timeGroup,
+      getAssetCountByTimeBucketDto.timeGroup,
     );
 
-    return mapAssetCountByTimeGroupResponse(result);
+    return mapAssetCountByTimeBucket(result);
   }
 
   private calculateChecksum(filePath: string): Promise<Buffer> {

@@ -298,16 +298,16 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/count-by-date' operation and returns the [Response].
+  /// Performs an HTTP 'POST /asset/time-bucket' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [GetAssetCountByTimeGroupDto] getAssetCountByTimeGroupDto (required):
-  Future<Response> getAssetCountByTimeGroupWithHttpInfo(GetAssetCountByTimeGroupDto getAssetCountByTimeGroupDto,) async {
+  /// * [GetAssetByTimeBucketDto] getAssetByTimeBucketDto (required):
+  Future<Response> getAssetByTimeBucketWithHttpInfo(GetAssetByTimeBucketDto getAssetByTimeBucketDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/count-by-date';
+    final path = r'/asset/time-bucket';
 
     // ignore: prefer_final_locals
-    Object? postBody = getAssetCountByTimeGroupDto;
+    Object? postBody = getAssetByTimeBucketDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -318,7 +318,7 @@ class AssetApi {
 
     return apiClient.invokeAPI(
       path,
-      'GET',
+      'POST',
       queryParams,
       postBody,
       headerParams,
@@ -329,9 +329,9 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [GetAssetCountByTimeGroupDto] getAssetCountByTimeGroupDto (required):
-  Future<AssetCountByTimeGroupResponseDto?> getAssetCountByTimeGroup(GetAssetCountByTimeGroupDto getAssetCountByTimeGroupDto,) async {
-    final response = await getAssetCountByTimeGroupWithHttpInfo(getAssetCountByTimeGroupDto,);
+  /// * [GetAssetByTimeBucketDto] getAssetByTimeBucketDto (required):
+  Future<List<AssetResponseDto>?> getAssetByTimeBucket(GetAssetByTimeBucketDto getAssetByTimeBucketDto,) async {
+    final response = await getAssetByTimeBucketWithHttpInfo(getAssetByTimeBucketDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -339,7 +339,57 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetCountByTimeGroupResponseDto',) as AssetCountByTimeGroupResponseDto;
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
+        .cast<AssetResponseDto>()
+        .toList();
+
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'POST /asset/count-by-time-bucket' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [GetAssetCountByTimeBucketDto] getAssetCountByTimeBucketDto (required):
+  Future<Response> getAssetCountByTimeBucketWithHttpInfo(GetAssetCountByTimeBucketDto getAssetCountByTimeBucketDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/count-by-time-bucket';
+
+    // ignore: prefer_final_locals
+    Object? postBody = getAssetCountByTimeBucketDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [GetAssetCountByTimeBucketDto] getAssetCountByTimeBucketDto (required):
+  Future<AssetCountByTimeBucketResponseDto?> getAssetCountByTimeBucket(GetAssetCountByTimeBucketDto getAssetCountByTimeBucketDto,) async {
+    final response = await getAssetCountByTimeBucketWithHttpInfo(getAssetCountByTimeBucketDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetCountByTimeBucketResponseDto',) as AssetCountByTimeBucketResponseDto;
     
     }
     return null;

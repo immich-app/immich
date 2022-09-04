@@ -35,24 +35,24 @@
 </script>
 
 <main>
-	{#key $page.url}
-		<div in:fade={{ duration: 100 }}>
-			{#if showNavigationLoadingBar}
-				<NavigationLoadingBar />
-			{/if}
+	<!-- {#key $page.url} -->
+	<div in:fade={{ duration: 100 }}>
+		{#if showNavigationLoadingBar}
+			<NavigationLoadingBar />
+		{/if}
 
-			<slot />
+		<slot />
 
-			<DownloadPanel />
-			<UploadPanel />
-			<NotificationList />
-			{#if shouldShowAnnouncement}
-				<AnnouncementBox
-					{localVersion}
-					{remoteVersion}
-					on:close={() => (shouldShowAnnouncement = false)}
-				/>
-			{/if}
-		</div>
-	{/key}
+		<DownloadPanel />
+		<UploadPanel />
+		<NotificationList />
+		{#if shouldShowAnnouncement}
+			<AnnouncementBox
+				{localVersion}
+				{remoteVersion}
+				on:close={() => (shouldShowAnnouncement = false)}
+			/>
+		{/if}
+	</div>
+	<!-- {/key} -->
 </main>

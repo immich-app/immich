@@ -79,7 +79,8 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
-*AssetApi* | [**getAssetCountByTimeGroup**](doc//AssetApi.md#getassetcountbytimegroup) | **GET** /asset/count-by-date | 
+*AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
+*AssetApi* | [**getAssetCountByTimeBucket**](doc//AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
@@ -113,8 +114,8 @@ Class | Method | HTTP request | Description
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
- - [AssetCountByTimeGroupDto](doc//AssetCountByTimeGroupDto.md)
- - [AssetCountByTimeGroupResponseDto](doc//AssetCountByTimeGroupResponseDto.md)
+ - [AssetCountByTimeBucket](doc//AssetCountByTimeBucket.md)
+ - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
@@ -132,7 +133,8 @@ Class | Method | HTTP request | Description
  - [DeviceInfoResponseDto](doc//DeviceInfoResponseDto.md)
  - [DeviceTypeEnum](doc//DeviceTypeEnum.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
- - [GetAssetCountByTimeGroupDto](doc//GetAssetCountByTimeGroupDto.md)
+ - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
+ - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)

@@ -10,42 +10,42 @@
 
 part of openapi.api;
 
-class AssetCountByTimeGroupResponseDto {
-  /// Returns a new [AssetCountByTimeGroupResponseDto] instance.
-  AssetCountByTimeGroupResponseDto({
+class AssetCountByTimeBucket {
+  /// Returns a new [AssetCountByTimeBucket] instance.
+  AssetCountByTimeBucket({
+    required this.timeBucket,
     required this.count,
-    this.buckets = const [],
   });
+
+  String timeBucket;
 
   int count;
 
-  List<AssetCountByTimeBucketResponseDto> buckets;
-
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetCountByTimeGroupResponseDto &&
-     other.count == count &&
-     other.buckets == buckets;
+  bool operator ==(Object other) => identical(this, other) || other is AssetCountByTimeBucket &&
+     other.timeBucket == timeBucket &&
+     other.count == count;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (count.hashCode) +
-    (buckets.hashCode);
+    (timeBucket.hashCode) +
+    (count.hashCode);
 
   @override
-  String toString() => 'AssetCountByTimeGroupResponseDto[count=$count, buckets=$buckets]';
+  String toString() => 'AssetCountByTimeBucket[timeBucket=$timeBucket, count=$count]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
+      _json[r'timeBucket'] = timeBucket;
       _json[r'count'] = count;
-      _json[r'buckets'] = buckets;
     return _json;
   }
 
-  /// Returns a new [AssetCountByTimeGroupResponseDto] instance and imports its values from
+  /// Returns a new [AssetCountByTimeBucket] instance and imports its values from
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
-  static AssetCountByTimeGroupResponseDto? fromJson(dynamic value) {
+  static AssetCountByTimeBucket? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -54,25 +54,25 @@ class AssetCountByTimeGroupResponseDto {
       // Note 2: this code is stripped in release mode!
       assert(() {
         requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "AssetCountByTimeGroupResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "AssetCountByTimeGroupResponseDto[$key]" has a null value in JSON.');
+          assert(json.containsKey(key), 'Required key "AssetCountByTimeBucket[$key]" is missing from JSON.');
+          assert(json[key] != null, 'Required key "AssetCountByTimeBucket[$key]" has a null value in JSON.');
         });
         return true;
       }());
 
-      return AssetCountByTimeGroupResponseDto(
+      return AssetCountByTimeBucket(
+        timeBucket: mapValueOfType<String>(json, r'timeBucket')!,
         count: mapValueOfType<int>(json, r'count')!,
-        buckets: AssetCountByTimeBucketResponseDto.listFromJson(json[r'buckets'])!,
       );
     }
     return null;
   }
 
-  static List<AssetCountByTimeGroupResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetCountByTimeGroupResponseDto>[];
+  static List<AssetCountByTimeBucket>? listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AssetCountByTimeBucket>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
-        final value = AssetCountByTimeGroupResponseDto.fromJson(row);
+        final value = AssetCountByTimeBucket.fromJson(row);
         if (value != null) {
           result.add(value);
         }
@@ -81,12 +81,12 @@ class AssetCountByTimeGroupResponseDto {
     return result.toList(growable: growable);
   }
 
-  static Map<String, AssetCountByTimeGroupResponseDto> mapFromJson(dynamic json) {
-    final map = <String, AssetCountByTimeGroupResponseDto>{};
+  static Map<String, AssetCountByTimeBucket> mapFromJson(dynamic json) {
+    final map = <String, AssetCountByTimeBucket>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = AssetCountByTimeGroupResponseDto.fromJson(entry.value);
+        final value = AssetCountByTimeBucket.fromJson(entry.value);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -95,13 +95,13 @@ class AssetCountByTimeGroupResponseDto {
     return map;
   }
 
-  // maps a json object with a list of AssetCountByTimeGroupResponseDto-objects as value to a dart map
-  static Map<String, List<AssetCountByTimeGroupResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetCountByTimeGroupResponseDto>>{};
+  // maps a json object with a list of AssetCountByTimeBucket-objects as value to a dart map
+  static Map<String, List<AssetCountByTimeBucket>> mapListFromJson(dynamic json, {bool growable = false,}) {
+    final map = <String, List<AssetCountByTimeBucket>>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = AssetCountByTimeGroupResponseDto.listFromJson(entry.value, growable: growable,);
+        final value = AssetCountByTimeBucket.listFromJson(entry.value, growable: growable,);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -112,8 +112,8 @@ class AssetCountByTimeGroupResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'timeBucket',
     'count',
-    'buckets',
   };
 }
 

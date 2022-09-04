@@ -200,10 +200,10 @@ class ApiClient {
           return AdminSignupResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
-        case 'AssetCountByTimeGroupDto':
-          return AssetCountByTimeGroupDto.fromJson(value);
-        case 'AssetCountByTimeGroupResponseDto':
-          return AssetCountByTimeGroupResponseDto.fromJson(value);
+        case 'AssetCountByTimeBucket':
+          return AssetCountByTimeBucket.fromJson(value);
+        case 'AssetCountByTimeBucketResponseDto':
+          return AssetCountByTimeBucketResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetResponseDto':
@@ -238,8 +238,10 @@ class ApiClient {
           return DeviceTypeEnumTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
-        case 'GetAssetCountByTimeGroupDto':
-          return GetAssetCountByTimeGroupDto.fromJson(value);
+        case 'GetAssetByTimeBucketDto':
+          return GetAssetByTimeBucketDto.fromJson(value);
+        case 'GetAssetCountByTimeBucketDto':
+          return GetAssetCountByTimeBucketDto.fromJson(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':
