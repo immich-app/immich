@@ -433,6 +433,16 @@ setup_proxy()
     cd ~ || return
 }
 
+remove_install_files()
+{
+    # Clean installation files (if not in debug)
+    if [ "$dev" -eq 0 ]
+    then
+        echo "Removing installation files..."
+        rm -rf ${tmp_dir}/*immich*
+    fi
+}
+
 
 # main()
 display_message_box "Immich v$immich_ver installation script for Alpine $alpine_ver"
@@ -445,4 +455,5 @@ setup_server
 setup_web
 setup_proxy
 setup_machine_learning
+remove_install_files
 display_message_box "Immich is now accessible from 0.0.0.0:80!"
