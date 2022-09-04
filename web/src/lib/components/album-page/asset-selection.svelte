@@ -2,10 +2,6 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { quintOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
-	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
-	import moment from 'moment';
-	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import { AssetResponseDto } from '@api';
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
 	import { albumUploadAssetStore } from '$lib/stores/album-upload-asset';

@@ -77,7 +77,10 @@ function createAssetStore() {
 
 				return state;
 			});
-		} catch (e) {
+		} catch (e: any) {
+			if (e.name === 'CanceledError') {
+				return;
+			}
 			console.error('Failed to get asset for bucket ', bucket);
 			console.error(e);
 		}
@@ -114,8 +117,14 @@ function createAssetStore() {
 		});
 	};
 
-	const cancelBucketRequest = (token: AbortController) => {
+	const cancelBucketRequest = async (token: AbortController, bucketDate: string) => {
 		token.abort();
+		// set new abort controller for bucket
+		assetGridState.update((state) => {
+			const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucketDate);
+			state.buckets[bucketIndex].cancelToken = new AbortController();
+			return state;
+		});
 	};
 
 	return {

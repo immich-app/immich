@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
-	import { assetGridState, assetStore } from '$lib/stores/assets.store';
+	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
 	import { api, TimeGroupEnum } from '@api';
 	import AssetDateGroup from './asset-date-group.svelte';
 	import Portal from '../shared-components/portal/portal.svelte';
@@ -73,18 +73,22 @@
 			{#each $assetGridState.buckets as bucket, bucketIndex (bucketIndex)}
 				<IntersectionObserver
 					on:intersected={intersectedHandler}
-					on:hidden={() => {
+					on:hidden={async () => {
 						// If bucket is hidden and in loading state, cancel the request
-						// if ($loadingBucketState[bucket.bucketDate]) {
-						// 	assetStore.cancelBucketRequest(bucket.cancelToken);
-						// }
+						if ($loadingBucketState[bucket.bucketDate]) {
+							await assetStore.cancelBucketRequest(bucket.cancelToken, bucket.bucketDate);
+						}
 					}}
 					let:intersecting
 					top={750}
 					bottom={750}
 					root={assetGridElement}
 				>
-					<div id={'bucket_' + bucket.bucketDate} style:height={bucket.bucketHeight + 'px'}>
+					<div
+						class="border border-red-500"
+						id={'bucket_' + bucket.bucketDate}
+						style:height={bucket.bucketHeight + 'px'}
+					>
 						{#if intersecting}
 							<AssetDateGroup
 								assets={bucket.assets}
