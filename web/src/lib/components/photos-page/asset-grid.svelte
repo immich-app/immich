@@ -84,11 +84,7 @@
 					bottom={750}
 					root={assetGridElement}
 				>
-					<div
-						class="border border-red-500"
-						id={'bucket_' + bucket.bucketDate}
-						style:height={bucket.bucketHeight + 'px'}
-					>
+					<div id={'bucket_' + bucket.bucketDate} style:height={bucket.bucketHeight + 'px'}>
 						{#if intersecting}
 							<AssetDateGroup
 								assets={bucket.assets}
