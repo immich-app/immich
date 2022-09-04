@@ -275,7 +275,7 @@ import 'package:openapi/api.dart';
 
 final api_instance = AlbumApi();
 final shared = true; // bool | 
-final assetId = assetId_example; // String | Only returns albums that contain the asset.
+final assetId = assetId_example; // String | Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
 
 try {
     final result = api_instance.getAllAlbums(shared, assetId);
@@ -290,7 +290,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **shared** | **bool**|  | [optional] 
- **assetId** | **String**| Only returns albums that contain the asset. | [optional] 
+ **assetId** | **String**| Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums | [optional] 
 
 ### Return type
 

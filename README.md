@@ -36,20 +36,22 @@
 
 > ⚠️ WARNING: **NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS**. This project is under heavy development, there will be continuous functions, features and api changes.
 
-|  | Mobile | Web |
-| - | - | - | 
-| ☁️ Upload and view videos and photos | Yes | Yes 
-| 🔄 Auto backup when the app is opened | Yes | N/A
-| ☑️ Selective album(s) for backup | Yes | N/A
-| ⬇️ Download photos and videos to local device | Yes | Yes
-| 👪 Multi-user support | Yes | Yes
-| 🖼️ Album | Yes | Yes
-| 🤝 Shared Albums | Yes | Yes
-| 🚀 Quick navigation with draggable scrollbar | Yes | Yes
-| 🗃️ Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes | Yes
-| 🧭 Metadata view (EXIF, map) | Yes | Yes
-| 🔎 Search by metadata, objects and image tags | Yes | No
-| ⚙️ Administrative functions (user management) | N/A | Yes
+| Mobile | Web |
+| - | - | 
+| Upload and view videos and photos | Yes | Yes 
+| Auto backup when the app is opened | Yes | N/A
+| Selective album(s) for backup | Yes | N/A
+| Download photos and videos to local device | Yes | Yes
+| Multi-user support | Yes | Yes
+| Album | Yes | Yes
+| Shared Albums | Yes | Yes
+| Quick navigation with draggable scrollbar | Yes | Yes
+| Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes | Yes
+| Metadata view (EXIF, map) | Yes | Yes
+| Search by metadata, objects and image tags | Yes | No
+| Administrative functions (user management) | N/A | Yes
+| Background backup | Android | N/A
+| Virtual scroll | N/A | Yes
 
 
   <br/>  

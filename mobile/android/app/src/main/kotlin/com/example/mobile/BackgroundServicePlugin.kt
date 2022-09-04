@@ -69,26 +69,8 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "isEnabled" -> {
                 result.success(BackupWorker.isEnabled(ctx))
             }
-            "disableBatteryOptimizations" -> {
-                if(!BackupWorker.isIgnoringBatteryOptimizations(ctx)) {
-                    val args = call.arguments<ArrayList<*>>()!!
-                    val text = args.get(0) as String
-                    Toast.makeText(ctx, text, Toast.LENGTH_LONG).show()
-                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    intent.setData(Uri.parse("package:" + ctx.getPackageName()))
-                    try {
-                        ctx.startActivity(intent)
-                    } catch(e: Exception) {
-                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        try {
-                            ctx.startActivity(intent)
-                        } catch (e2: Exception) {
-                            return result.success(false)
-                        }
-                    }
-                }
-                result.success(true)
+            "isIgnoringBatteryOptimizations" -> {
+                result.success(BackupWorker.isIgnoringBatteryOptimizations(ctx))
             }
             else -> result.notImplemented()
         }

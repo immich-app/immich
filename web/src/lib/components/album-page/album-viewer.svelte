@@ -26,11 +26,22 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import { browser } from '$app/env';
 
 	export let album: AlbumResponseDto;
 
 	let isShowAssetViewer = false;
+
 	let isShowAssetSelection = false;
+	$: {
+		if (browser) {
+			if (isShowAssetSelection) {
+				document.body.style.overflow = 'hidden';
+			} else {
+				document.body.style.overflow = 'auto';
+			}
+		}
+	}
 	let isShowShareUserSelection = false;
 	let isEditingTitle = false;
 	let isCreatingSharedAlbum = false;
@@ -197,10 +208,12 @@
 	}
 
 	const createAlbumHandler = async (event: CustomEvent) => {
-		const { assets }: { assets: string[] } = event.detail;
+		const { assets }: { assets: AssetResponseDto[] } = event.detail;
 
 		try {
-			const { data } = await api.albumApi.addAssetsToAlbum(album.id, { assetIds: assets });
+			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
+				assetIds: assets.map((a) => a.id)
+			});
 			album = data;
 
 			isShowAssetSelection = false;
@@ -456,8 +469,8 @@
 {#if isShowAssetViewer}
 	<AssetViewer
 		asset={selectedAsset}
-		on:navigate-backward={navigateAssetBackward}
-		on:navigate-forward={navigateAssetForward}
+		on:navigate-previous={navigateAssetBackward}
+		on:navigate-next={navigateAssetForward}
 		on:close={closeViewer}
 	/>
 {/if}

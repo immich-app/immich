@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:photo_view/photo_view.dart';
 
 enum _RemoteImageStatus { empty, thumbnail, preview, full }
@@ -63,11 +64,13 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     widget.onLoadingCompleted();
   }
 
-  CachedNetworkImageProvider _authorizedImageProvider(String url) {
+  CachedNetworkImageProvider _authorizedImageProvider(
+      String url, String cacheKey, BaseCacheManager? cacheManager) {
     return CachedNetworkImageProvider(
       url,
       headers: {"Authorization": widget.authToken},
-      cacheKey: url,
+      cacheKey: cacheKey,
+      cacheManager: cacheManager,
     );
   }
 
@@ -101,8 +104,11 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   void _loadImages() {
-    CachedNetworkImageProvider thumbnailProvider =
-        _authorizedImageProvider(widget.thumbnailUrl);
+    CachedNetworkImageProvider thumbnailProvider = _authorizedImageProvider(
+      widget.thumbnailUrl,
+      widget.cacheKey,
+      widget.thumbnailCacheManager,
+    );
     _imageProvider = thumbnailProvider;
 
     thumbnailProvider.resolve(const ImageConfiguration()).addListener(
@@ -115,8 +121,11 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     );
 
     if (widget.previewUrl != null) {
-      CachedNetworkImageProvider previewProvider =
-          _authorizedImageProvider(widget.previewUrl!);
+      CachedNetworkImageProvider previewProvider = _authorizedImageProvider(
+        widget.previewUrl!,
+        "${widget.cacheKey}_previewStage",
+        widget.previewCacheManager,
+      );
       previewProvider.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((ImageInfo imageInfo, _) {
           _performStateTransition(_RemoteImageStatus.preview, previewProvider);
@@ -124,8 +133,11 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       );
     }
 
-    CachedNetworkImageProvider fullProvider =
-        _authorizedImageProvider(widget.imageUrl);
+    CachedNetworkImageProvider fullProvider = _authorizedImageProvider(
+      widget.imageUrl,
+      "${widget.cacheKey}_fullStage",
+      widget.fullCacheManager,
+    );
     fullProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
         _performStateTransition(_RemoteImageStatus.full, fullProvider);
@@ -153,6 +165,10 @@ class RemotePhotoView extends StatefulWidget {
     this.previewUrl,
     required this.onLoadingCompleted,
     required this.onLoadingStart,
+    this.thumbnailCacheManager,
+    this.previewCacheManager,
+    this.fullCacheManager,
+    required this.cacheKey,
   }) : super(key: key);
 
   final String thumbnailUrl;
@@ -161,6 +177,10 @@ class RemotePhotoView extends StatefulWidget {
   final String? previewUrl;
   final Function onLoadingCompleted;
   final Function onLoadingStart;
+  final BaseCacheManager? thumbnailCacheManager;
+  final BaseCacheManager? previewCacheManager;
+  final BaseCacheManager? fullCacheManager;
+  final String cacheKey;
 
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;

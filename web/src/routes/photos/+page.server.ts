@@ -1,4 +1,3 @@
-import { serverApi } from './../../api/api';
 import type { PageServerLoad } from './$types';
 import { redirect, error } from '@sveltejs/kit';
 
@@ -9,11 +8,8 @@ export const load: PageServerLoad = async ({ parent }) => {
 			throw error(400, 'Not logged in');
 		}
 
-		const { data: assets } = await serverApi.assetApi.getAllAssets();
-
 		return {
-			user,
-			assets
+			user
 		};
 	} catch (e) {
 		throw redirect(302, '/auth/login');

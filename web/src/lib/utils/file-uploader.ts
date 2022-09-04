@@ -63,7 +63,7 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 
 		fileSelector.click();
 	} catch (e) {
-		console.log('Error seelcting file', e);
+		console.log('Error selecting file', e);
 	}
 };
 
@@ -145,7 +145,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 			uploadAssetsStore.addNewUploadAsset(newUploadAsset);
 		};
 
-		request.upload.onload = (e) => {
+		request.upload.onload = (event) => {
 			setTimeout(() => {
 				uploadAssetsStore.removeUploadAsset(deviceAssetId);
 			}, 1000);
@@ -154,11 +154,15 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		request.onreadystatechange = () => {
 			try {
 				if (request.readyState === 4 && uploadType === UploadType.ALBUM) {
-					const res: AssetFileUploadResponseDto = JSON.parse(request.response);
+					const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
 
 					albumUploadAssetStore.asset.update((assets) => {
-						return [...assets, res.id];
+						return [...assets, res?.id || ''];
 					});
+
+					if (request.status !== 201) {
+						handleUploadError(asset, res);
+					}
 				}
 			} catch (e) {
 				console.error('ERROR parsing data JSON in upload onreadystatechange');
@@ -166,7 +170,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		};
 
 		// listen for `error` event
-		request.upload.onerror = () => {
+		request.upload.onerror = (event) => {
 			uploadAssetsStore.removeUploadAsset(deviceAssetId);
 		};
 
@@ -187,4 +191,14 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 	} catch (e) {
 		console.log('error uploading file ', e);
 	}
+}
+
+function handleUploadError(asset: File, respBody?: any) {
+	let extraMsg = respBody ? ' ' + respBody.message : '';
+
+	notificationController.show({
+		type: NotificationType.Error,
+		message: `Cannot upload file ${asset.name}!${extraMsg}`,
+		timeout: 5000
+	});
 }

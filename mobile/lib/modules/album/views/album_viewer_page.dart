@@ -16,6 +16,7 @@ import 'package:immich_mobile/modules/album/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
@@ -191,6 +192,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       final appSettingService = ref.watch(appSettingsServiceProvider);
       final bool showStorageIndicator =
           appSettingService.getSetting(AppSettingsEnum.storageIndicator);
+      final cacheService = ref.watch(cacheServiceProvider);
 
       if (albumInfo.assets.isNotEmpty) {
         return SliverPadding(
@@ -205,6 +207,7 @@ class AlbumViewerPage extends HookConsumerWidget {
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 return AlbumViewerThumbnail(
+                  cacheManager: cacheService.getCache(CacheType.thumbnail),
                   asset: albumInfo.assets[index],
                   assetList: albumInfo.assets,
                   showStorageIndicator: showStorageIndicator,

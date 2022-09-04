@@ -7,7 +7,10 @@ enum AppSettingsEnum<T> {
   tilesPerRow<int>("tilesPerRow", 4),
   uploadErrorNotificationGracePeriod<int>(
       "uploadErrorNotificationGracePeriod", 2),
-  storageIndicator<bool>("storageIndicator", true);
+  storageIndicator<bool>("storageIndicator", true),
+  thumbnailCacheSize<int>("thumbnailCacheSize", 10000),
+  imageCacheSize<int>("imageCacheSize", 350),
+  albumThumbnailCacheSize<int>("albumThumbnailCacheSize", 200);
 
   const AppSettingsEnum(this.hiveKey, this.defaultValue);
 

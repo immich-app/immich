@@ -18,7 +18,6 @@
 	</div>
 	<div class="text-white flex gap-2">
 		<CircleIconButton logo={CloudDownloadOutline} on:click={() => dispatch('download')} />
-		<!-- <CircleIconButton logo={DotsVertical} on:click={() => console.log('Options')} /> -->
 		<CircleIconButton logo={InformationOutline} on:click={() => dispatch('showDetail')} />
 	</div>
 </div>
