@@ -206,6 +206,60 @@ setup_server()
     cd ~ || return
 }
 
+# Immich web
+setup_web()
+{
+    display_message_box "Web"
+
+    echo "Creating installation directory..."
+    mkdir -p /usr/src/web
+    cd /usr/src/web || exit
+
+    # New user without homedir
+    echo "Creating 'node' user..."
+    adduser -DH node
+
+    echo "Installing build stage dependencies..."
+    apk add --no-cache setpriv nodejs-current npm
+
+    # Import package and package-lock.json
+    cp ${tmp_dir}/immich-${immich_ver}/web/package*.json .
+    chown -R node:node .
+
+    echo "Installing..."
+    # Unset env var for compilation, crash if not removed
+    unset NODE_ENV
+    npm ci
+    export NODE_ENV=production
+
+    # Import anything else
+    cp -r ${tmp_dir}/immich-${immich_ver}/web/* .
+    chown -R node:node .
+
+    # Edit app directory, from /usr/src/app -> /usr/src/web
+    sed -i "s/usr\/src\/app/usr\/src\/web/" entrypoint.sh
+    chmod u+x ./entrypoint.sh
+
+    # Write service file
+    echo "Writing service file..."
+    mv ./immich-web /etc/init.d/immich-web
+    chmod +x /etc/init.d/immich-web
+
+    # Enable service
+    echo "Starting on boot..."
+    rc-update add immich-web
+
+    # Start
+    echo "Starting..."
+    /etc/init.d/immich-web start
+
+    # Write web service address to local hosts file
+    echo "Writing host address..."
+    echo -e "127.0.0.1\timmich-web" >> /etc/hosts
+
+    cd ~ || return
+}
+
 # PostgreSQL
 setup_database()
 {
@@ -296,4 +350,5 @@ get_source_code
 setup_redis
 setup_database
 setup_server
+setup_web
 display_message_box "Immich is now accessible from 0.0.0.0:80!"
