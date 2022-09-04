@@ -98,6 +98,114 @@ get_source_code()
     fi
 }
 
+# Immich server
+setup_server()
+{
+    display_message_box "Server & microservices"
+
+    echo "Creating installation directory..."
+    mkdir -p /usr/src/server
+    cd /usr/src/server || exit
+
+    # Build stage
+    echo "Installing build stage dependencies..."
+    apk add --no-cache build-base python3 libheif vips-dev ffmpeg nodejs-current npm
+
+    # Import package and package-lock.json
+    echo "Installing..."
+    cp ${tmp_dir}/immich-${immich_ver}/server/package*.json .
+    npm ci
+
+    # Import anything else
+    echo "Building package..."
+    cp -r ${tmp_dir}/immich-${immich_ver}/server/* .
+    npm run build
+
+    # Production stage
+    # Clean up installed packages used for build stage
+    echo "Cleaning up build dependencies and add production deps..."
+    apk del build-base python3 vips-dev
+    apk add --no-cache vips
+
+    # Clean now useless files
+    echo "Removing files used for build stage..."
+    rm -rf "$(ls | grep -v 'node_modules\|dist\|package*.json\|start*.sh\|immich-*')"
+
+    echo "Removing extra packages..."
+    npm prune --production
+
+    # Then, environment variables are written for node execution
+    echo "Getting some variables..."
+
+    echo "export NODE_ENV=production" >> /etc/profile.d/node.sh
+
+    # Get JWT secret.
+    # If empty, it generates a random one.
+    read -p "JWT Secret [empty for randomly generated]: " jwt_secret
+    if [ -z "$jwt_secret" ]
+    then
+        jwt_secret=$(head -c 32 /dev/urandom | sha256sum | cut -d ' ' -f 1)
+        echo "Generated JWT secret: $jwt_secret"
+        echo
+    fi
+    echo "export JWT_SECRET=$jwt_secret" >> /etc/profile.d/node.sh
+
+    # If user wants to use Mapbox
+    read -p "Enable Mapbox [y/N]: " enable_mapbox
+    if [ "$enable_mapbox" == "y" ]
+    then
+        enable_mapbox=true
+    else
+        enable_mapbox=false
+    fi
+    echo "export ENABLE_MAPBOX=$enable_mapbox" >> /etc/profile.d/node.sh
+
+    # If wants to use Mapbox, get the key
+    if [ "$enable_mapbox" == "true" ]
+    then
+        read -p "Mapbox key: " mapbox_key
+    fi
+    echo "export MAPBOX_KEY=$mapbox_key" >> /etc/profile.d/node.sh
+
+    # Load new variables
+    echo "Loading new variables...."
+    source /etc/profile
+
+    # Where to store data
+    while [ ! -d "$upload_path" ]
+    do
+        read -p "Full path where medias will be stored: " upload_path
+    done
+    ln -s "$upload_path" ./upload
+
+    # Startup scripts
+    chmod u+x ./start-server.sh ./start-microservices.sh
+
+    # Write service file
+    echo "Writing services files..."
+    mv ./immich-server ./immich-microservices /etc/init.d/
+    chmod +x /etc/init.d/immich-server /etc/init.d/immich-microservices
+
+    # Enable service to start on boot
+    echo "Starting server on boot..."
+    rc-update add immich-server
+    echo "Starting microservices on boot..."
+    rc-update add immich-microservices
+
+    # Start
+    echo "Starting server..."
+    /etc/init.d/immich-server start
+    echo "Starting microservices..."
+    /etc/init.d/immich-microservices start
+
+    # Write server address to local hosts file
+    echo "Writing hosts addresses..."
+    echo -e "127.0.0.1\timmich-server" >> /etc/hosts
+    echo -e "127.0.0.1\timmich-microservices" >> /etc/hosts
+
+    cd ~ || return
+}
+
 # PostgreSQL
 setup_database()
 {
@@ -187,4 +295,5 @@ update_repo
 get_source_code
 setup_redis
 setup_database
+setup_server
 display_message_box "Immich is now accessible from 0.0.0.0:80!"

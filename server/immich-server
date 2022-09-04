@@ -1,0 +1,22 @@
+#!/sbin/openrc-run
+
+: ${data_path:="/usr/src/server"}
+
+name="Immich server"
+directory="$data_path"
+command=/bin/ash
+command_args="-c $data_path/start-server.sh"
+
+command_background=yes
+pidfile="/run/immich-server.pid"
+
+output_log=/var/log/immich-server.log
+error_log=/var/log/immich-server_err.log
+
+required_dirs="$data_path"
+required_files="$data_path/start-server.sh"
+
+depend() {
+        need postgresql
+        need redis
+}

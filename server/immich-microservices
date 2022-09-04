@@ -1,0 +1,22 @@
+#!/sbin/openrc-run
+
+: ${data_path:="/usr/src/server"}
+
+name="Immich microservices"
+directory="$data_path"
+command=/bin/ash
+command_args="-c $data_path/start-microservices.sh"
+
+command_background=yes
+pidfile="/run/immich-micoservices.pid"
+
+output_log=/var/log/immich-microservices.log
+error_log=/var/log/immich-microservices_err.log
+
+required_dirs="$data_path"
+required_files="$data_path/start-microservices.sh"
+
+depend() {
+        need postgresql
+        need redis
+}
