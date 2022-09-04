@@ -5,7 +5,7 @@
 	import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
 	import type { UploadAsset } from '$lib/models/upload-asset';
-	import { getAssetsInfo } from '$lib/stores/assets';
+	// import { getAssetsInfo } fro$lib/stores/assets.storeets';
 	let showDetail = true;
 
 	let uploadLength = 0;
@@ -83,7 +83,9 @@
 	<div
 		in:fade={{ duration: 250 }}
 		out:fade={{ duration: 250, delay: 1000 }}
-		on:outroend={() => getAssetsInfo()}
+		on:outroend={() => {
+			// getAssetsInfo()
+		}}
 		class="absolute right-6 bottom-6 z-[10000]"
 	>
 		{#if showDetail}

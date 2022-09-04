@@ -5,7 +5,8 @@ export enum TimeGroupEnum {
   Day = 'day',
   Month = 'month',
 }
-export class GetAssetCountByTimeGroupDto {
+
+export class GetAssetCountByTimeBucketDto {
   @IsNotEmpty()
   @ApiProperty({
     type: String,

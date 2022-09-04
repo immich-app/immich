@@ -15,31 +15,18 @@
 	export let thumbnailSize: number | undefined = undefined;
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected: boolean = false;
-	export let isExisted: boolean = false;
-
+	export let disabled: boolean = false;
 	let imageData: string;
-	// let videoData: string;
 
 	let mouseOver: boolean = false;
-	$: dispatch('mouseEvent', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
+	$: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
 	let mouseOverIcon: boolean = false;
 	let videoPlayerNode: HTMLVideoElement;
 	let isThumbnailVideoPlaying = false;
 	let calculateVideoDurationIntervalHandler: NodeJS.Timer;
 	let videoProgress = '00:00';
-	// let videoAbortController: AbortController;
 	let videoUrl: string;
-
-	const loadImageData = async () => {
-		const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, {
-			responseType: 'blob'
-		});
-		if (data instanceof Blob) {
-			imageData = URL.createObjectURL(data);
-			return imageData;
-		}
-	};
 
 	const loadVideoData = async () => {
 		isThumbnailVideoPlaying = false;
@@ -117,7 +104,7 @@
 	$: getThumbnailBorderStyle = () => {
 		if (selected) {
 			return 'border-[20px] border-immich-primary/20';
-		} else if (isExisted) {
+		} else if (disabled) {
 			return 'border-[20px] border-gray-300';
 		} else {
 			return '';
@@ -125,36 +112,38 @@
 	};
 
 	$: getOverlaySelectorIconStyle = () => {
-		if (selected || isExisted) {
+		if (selected || disabled) {
 			return '';
 		} else {
 			return 'bg-gradient-to-b from-gray-800/50';
 		}
 	};
 	const thumbnailClickedHandler = () => {
-		if (!isExisted) {
+		if (!disabled) {
 			dispatch('click', { asset });
 		}
 	};
 
 	const onIconClickedHandler = (e: MouseEvent) => {
 		e.stopPropagation();
-		dispatch('select', { asset });
+		if (!disabled) {
+			dispatch('select', { asset });
+		}
 	};
 </script>
 
-<IntersectionObserver once={true} let:intersecting>
+<IntersectionObserver once={false} let:intersecting>
 	<div
 		style:width={`${thumbnailSize}px`}
 		style:height={`${thumbnailSize}px`}
 		class={`bg-gray-100 relative  ${getSize()} ${
-			isExisted ? 'cursor-not-allowed' : 'hover:cursor-pointer'
+			disabled ? 'cursor-not-allowed' : 'hover:cursor-pointer'
 		}`}
 		on:mouseenter={handleMouseOverThumbnail}
 		on:mouseleave={handleMouseLeaveThumbnail}
 		on:click={thumbnailClickedHandler}
 	>
-		{#if mouseOver || selected || isExisted}
+		{#if mouseOver || selected || disabled}
 			<div
 				in:fade={{ duration: 200 }}
 				class={`w-full ${getOverlaySelectorIconStyle()} via-white/0 to-white/0 absolute p-2  z-10`}
@@ -167,7 +156,7 @@
 				>
 					{#if selected}
 						<CheckCircle size="24" color="#4250af" />
-					{:else if isExisted}
+					{:else if disabled}
 						<CheckCircle size="24" color="#252525" />
 					{:else}
 						<CheckCircle size="24" color={mouseOverIcon ? 'white' : '#d8dadb'} />
@@ -212,12 +201,13 @@
 		<!-- Thumbnail -->
 		{#if intersecting}
 			<img
+				id={asset.id}
 				style:width={`${thumbnailSize}px`}
 				style:height={`${thumbnailSize}px`}
-				in:fade={{ duration: 250 }}
+				in:fade={{ duration: 150 }}
 				src={`/api/asset/thumbnail/${asset.id}?format=${format}`}
 				alt={asset.id}
-				class={`object-cover ${getSize()} transition-all duration-100 z-0 ${getThumbnailBorderStyle()}`}
+				class={`object-cover ${getSize()} transition-all z-0 ${getThumbnailBorderStyle()}`}
 				loading="lazy"
 			/>
 		{/if}

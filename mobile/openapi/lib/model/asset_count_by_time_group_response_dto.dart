@@ -13,32 +13,32 @@ part of openapi.api;
 class AssetCountByTimeGroupResponseDto {
   /// Returns a new [AssetCountByTimeGroupResponseDto] instance.
   AssetCountByTimeGroupResponseDto({
-    required this.totalAssets,
-    this.groups = const [],
+    required this.count,
+    this.buckets = const [],
   });
 
-  int totalAssets;
+  int count;
 
-  List<AssetCountByTimeGroupDto> groups;
+  List<AssetCountByTimeBucketResponseDto> buckets;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetCountByTimeGroupResponseDto &&
-     other.totalAssets == totalAssets &&
-     other.groups == groups;
+     other.count == count &&
+     other.buckets == buckets;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (totalAssets.hashCode) +
-    (groups.hashCode);
+    (count.hashCode) +
+    (buckets.hashCode);
 
   @override
-  String toString() => 'AssetCountByTimeGroupResponseDto[totalAssets=$totalAssets, groups=$groups]';
+  String toString() => 'AssetCountByTimeGroupResponseDto[count=$count, buckets=$buckets]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
-      _json[r'totalAssets'] = totalAssets;
-      _json[r'groups'] = groups;
+      _json[r'count'] = count;
+      _json[r'buckets'] = buckets;
     return _json;
   }
 
@@ -61,8 +61,8 @@ class AssetCountByTimeGroupResponseDto {
       }());
 
       return AssetCountByTimeGroupResponseDto(
-        totalAssets: mapValueOfType<int>(json, r'totalAssets')!,
-        groups: AssetCountByTimeGroupDto.listFromJson(json[r'groups'])!,
+        count: mapValueOfType<int>(json, r'count')!,
+        buckets: AssetCountByTimeBucketResponseDto.listFromJson(json[r'buckets'])!,
       );
     }
     return null;
@@ -112,8 +112,8 @@ class AssetCountByTimeGroupResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'totalAssets',
-    'groups',
+    'count',
+    'buckets',
   };
 }
 

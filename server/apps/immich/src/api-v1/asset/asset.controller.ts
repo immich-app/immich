@@ -15,6 +15,7 @@ import {
   HttpCode,
   BadRequestException,
   UploadedFile,
+  Header,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
@@ -43,8 +44,9 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
-import { AssetCountByTimeGroupResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeGroupDto } from './dto/get-asset-count-by-time-group.dto';
+import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
+import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
+import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -75,9 +77,11 @@ export class AssetController {
     try {
       const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
       if (!savedAsset) {
-        await this.backgroundTaskService.deleteFileOnDisk([{
-          originalPath: file.path
-        } as any]); // simulate asset to make use of delete queue (or use fs.unlink instead)
+        await this.backgroundTaskService.deleteFileOnDisk([
+          {
+            originalPath: file.path,
+          } as any,
+        ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
         throw new BadRequestException('Asset not created');
       }
 
@@ -90,9 +94,11 @@ export class AssetController {
       return new AssetFileUploadResponseDto(savedAsset.id);
     } catch (e) {
       Logger.error(`Error uploading file ${e}`);
-      await this.backgroundTaskService.deleteFileOnDisk([{
-        originalPath: file.path
-      } as any]); // simulate asset to make use of delete queue (or use fs.unlink instead)
+      await this.backgroundTaskService.deleteFileOnDisk([
+        {
+          originalPath: file.path,
+        } as any,
+      ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
       throw new BadRequestException(`Error uploading file`, `${e}`);
     }
   }
@@ -117,6 +123,7 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
+  @Header('Cache-Control', 'max-age=300')
   async getAssetThumbnail(
     @Param('assetId') assetId: string,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
@@ -147,12 +154,12 @@ export class AssetController {
     return this.assetService.searchAsset(authUser, searchAssetDto);
   }
 
-  @Get('/count-by-date')
-  async getAssetCountByTimeGroup(
+  @Post('/count-by-time-bucket')
+  async getAssetCountByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) getAssetCountByTimeGroupDto: GetAssetCountByTimeGroupDto,
-  ): Promise<AssetCountByTimeGroupResponseDto> {
-    return this.assetService.getAssetCountByTimeGroup(authUser, getAssetCountByTimeGroupDto);
+    @Body(ValidationPipe) getAssetCountByTimeGroupDto: GetAssetCountByTimeBucketDto,
+  ): Promise<AssetCountByTimeBucketResponseDto> {
+    return this.assetService.getAssetCountByTimeBucket(authUser, getAssetCountByTimeGroupDto);
   }
 
   /**
@@ -163,6 +170,13 @@ export class AssetController {
     return await this.assetService.getAllAssets(authUser);
   }
 
+  @Post('/time-bucket')
+  async getAssetByTimeBucket(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
+  ): Promise<AssetResponseDto[]> {
+    return await this.assetService.getAssetByTimeBucket(authUser, getAssetByTimeBucketDto);
+  }
   /**
    * Get all asset of a device that are in the database, ID only.
    */
