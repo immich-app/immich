@@ -13,6 +13,8 @@ RUN npm ci
 
 COPY --chown=node:node . .
 
+RUN npm run build
+
 EXPOSE 3000
 
 FROM base AS dev
