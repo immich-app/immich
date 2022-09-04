@@ -155,7 +155,16 @@ export class AlbumRepository implements IAlbumRepository {
 
     const albums = await query
         .where('album.ownerId = :ownerId', { ownerId: userId })
-        .where('assets.assetId = :assetId', { assetId: assetId })
+        .andWhere((qb) => {
+          // shared with userId
+          const subQuery = qb
+              .subQuery()
+              .select('assetAlbum.albumId')
+              .from(AssetAlbumEntity, 'assetAlbum')
+              .where('assetAlbum.assetId = :assetId', {assetId: assetId})
+              .getQuery();
+          return `album.id IN ${subQuery}`;
+        })
         .leftJoinAndSelect('album.assets', 'assets')
         .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
         .leftJoinAndSelect('album.sharedUsers', 'sharedUser')

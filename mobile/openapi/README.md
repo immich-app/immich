@@ -70,6 +70,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
 *AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /album/{albumId} | 
 *AlbumApi* | [**getAlbumInfo**](doc//AlbumApi.md#getalbuminfo) | **GET** /album/{albumId} | 
+*AlbumApi* | [**getAlbumsByAsset**](doc//AlbumApi.md#getalbumsbyasset) | **GET** /album/byAsset/{assetId} | 
 *AlbumApi* | [**getAllAlbums**](doc//AlbumApi.md#getallalbums) | **GET** /album | 
 *AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{albumId}/assets | 
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{albumId}/user/{userId} | 

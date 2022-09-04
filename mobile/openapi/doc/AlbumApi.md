@@ -14,6 +14,7 @@ Method | HTTP request | Description
 [**createAlbum**](AlbumApi.md#createalbum) | **POST** /album | 
 [**deleteAlbum**](AlbumApi.md#deletealbum) | **DELETE** /album/{albumId} | 
 [**getAlbumInfo**](AlbumApi.md#getalbuminfo) | **GET** /album/{albumId} | 
+[**getAlbumsByAsset**](AlbumApi.md#getalbumsbyasset) | **GET** /album/byAsset/{assetId} | 
 [**getAllAlbums**](AlbumApi.md#getallalbums) | **GET** /album | 
 [**removeAssetFromAlbum**](AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{albumId}/assets | 
 [**removeUserFromAlbum**](AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{albumId}/user/{userId} | 
@@ -246,6 +247,53 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AlbumResponseDto**](AlbumResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAlbumsByAsset**
+> List<AlbumResponseDto> getAlbumsByAsset(assetId)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AlbumApi();
+final assetId = assetId_example; // String | 
+
+try {
+    final result = api_instance.getAlbumsByAsset(assetId);
+    print(result);
+} catch (e) {
+    print('Exception when calling AlbumApi->getAlbumsByAsset: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assetId** | **String**|  | 
+
+### Return type
+
+[**List<AlbumResponseDto>**](AlbumResponseDto.md)
 
 ### Authorization
 
