@@ -340,6 +340,38 @@ setup_redis()
     echo -e "127.0.0.1\timmich_redis" >> /etc/hosts
 }
 
+# Nginx
+setup_proxy()
+{
+    display_message_box "Proxy"
+
+    echo "Installing..."
+    apk add nginx
+    echo "Starting on boot..."
+    rc-update add nginx
+
+    cd /etc/nginx/http.d || exit
+
+    # Disable all existing sites
+    echo "Disabling existing sites..."
+    for file in $(ls)
+    do
+        mv "$file" "$file.disable"
+    done
+
+    # Add new config
+    echo "Adding new config..."
+    cp ${tmp_dir}/immich-${immich_ver}/nginx/nginx.conf /etc/nginx/http.d/
+
+    # Start service to apply the new config
+    echo "Starting..."
+    /etc/init.d/nginx start
+
+    echo "Writing host address..."
+    echo -e "127.0.0.1\timmich_proxy" >> /etc/hosts
+
+    cd ~ || return
+}
 
 
 # main()
@@ -351,4 +383,5 @@ setup_redis
 setup_database
 setup_server
 setup_web
+setup_proxy
 display_message_box "Immich is now accessible from 0.0.0.0:80!"
