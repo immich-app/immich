@@ -8,18 +8,26 @@
 	import DetailPanel from './detail-panel.svelte';
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
-	import { api, AssetResponseDto, AssetTypeEnum } from '@api';
+	import { api, AssetResponseDto, AssetTypeEnum, AlbumResponseDto } from '@api';
 	import {
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
 
 	export let asset: AssetResponseDto;
+	$: {
+		appearsInAlbums = [];
+
+		api.albumApi.getAllAlbums(undefined, asset.id).then(result => {
+			appearsInAlbums = result.data;
+		});
+	}
 
 	const dispatch = createEventDispatcher();
 	let halfLeftHover = false;
 	let halfRightHover = false;
 	let isShowDetail = false;
+	let appearsInAlbums: AlbumResponseDto[] = [];
 
 	onMount(() => {
 		document.addEventListener('keydown', (keyInfo) => handleKeyboardPress(keyInfo.key));
@@ -200,7 +208,7 @@
 			class="bg-immich-bg w-[360px] row-span-full transition-all "
 			translate="yes"
 		>
-			<DetailPanel {asset} on:close={() => (isShowDetail = false)} />
+			<DetailPanel {asset} albums={appearsInAlbums} on:close={() => (isShowDetail = false)} />
 		</div>
 	{/if}
 </section>

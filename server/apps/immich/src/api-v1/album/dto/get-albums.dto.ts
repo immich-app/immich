@@ -18,4 +18,11 @@ export class GetAlbumsDto {
    * undefined: shared and owned albums
    */
   shared?: boolean;
+
+  /**
+   * Only returns albums that contain the asset
+   * Ignores the shared parameter
+   * undefined: get all albums
+   */
+  assetId?: string;
 }
