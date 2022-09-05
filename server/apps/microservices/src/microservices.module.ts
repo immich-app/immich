@@ -14,7 +14,6 @@ import {
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
 import { MicroservicesService } from './microservices.service';
@@ -77,19 +76,6 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
         removeOnFail: false,
       },
     }),
-    ClientsModule.register([
-      {
-        name: 'MACHINE_LEARNING_SERVICE',
-        transport: Transport.REDIS,
-        options: {
-          host: process.env.REDIS_HOSTNAME || 'immich_redis',
-          port: parseInt(process.env.REDIS_PORT || '6379'),
-          db: process.env.REDIS_DBINDEX || '0',
-          password: process.env.REDIS_PASSWORD || undefined,
-          path: process.env.REDIS_SOCKET || undefined,
-        }
-      },
-    ]),
     CommunicationModule,
   ],
   controllers: [],
