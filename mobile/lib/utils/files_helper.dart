@@ -38,6 +38,9 @@ class FileHelper {
       case 'webp':
         return {"type": "image", "subType": "webp"};
 
+      case '3gp':
+        return {"type": "video", "subType": "3gpp"};
+
       default:
         return {"type": "unsupport", "subType": "unsupport"};
     }
