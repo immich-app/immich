@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'node:crypto';
-import { QueryFailedError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
