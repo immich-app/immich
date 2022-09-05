@@ -165,7 +165,7 @@ export class AssetService {
     }
   }
 
-  public async getAssetThumbnail(assetId: string, query: GetAssetThumbnailDto) {
+  public async getAssetThumbnail(assetId: string, query: GetAssetThumbnailDto, res: Res) {
     let fileReadStream: ReadStream;
 
     const asset = await this.assetRepository.findOne({ where: { id: assetId } });
@@ -196,8 +196,10 @@ export class AssetService {
         }
       }
 
+      res.header('Cache-Control', 'max-age=300');
       return new StreamableFile(fileReadStream);
     } catch (e) {
+      res.header('Cache-Control', 'none');
       Logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
       throw new InternalServerErrorException(
         e,

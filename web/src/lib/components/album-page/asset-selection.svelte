@@ -99,6 +99,6 @@
 		</svelte:fragment>
 	</ControlAppBar>
 	<section class="pt-[100px] pl-[70px] grid h-screen bg-immich-bg">
-		<AssetGrid />
+		<AssetGrid isAlbumSelectionMode={true} />
 	</section>
 </section>

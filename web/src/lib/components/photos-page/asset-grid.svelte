@@ -16,6 +16,7 @@
 	let viewportHeight = 0;
 	let viewportWidth = 0;
 	let assetGridElement: HTMLElement;
+	export let isAlbumSelectionMode = false;
 
 	onMount(async () => {
 		const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
@@ -87,6 +88,7 @@
 					<div id={'bucket_' + bucket.bucketDate} style:height={bucket.bucketHeight + 'px'}>
 						{#if intersecting}
 							<AssetDateGroup
+								{isAlbumSelectionMode}
 								assets={bucket.assets}
 								bucketDate={bucket.bucketDate}
 								bucketHeight={bucket.bucketHeight}
