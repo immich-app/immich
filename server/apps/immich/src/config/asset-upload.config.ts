@@ -29,8 +29,7 @@ export const assetUploadOption: MulterOptions = {
         return;
       }
 
-      // const originalUploadFolder = `${basePath}/${req.user.id}/original/${req.body['deviceId']}`;
-      const originalUploadFolder = join(basePath, req.user.id, 'original');
+      const originalUploadFolder = join(basePath, req.user.id, 'original', req.body['deviceId']);
 
       if (!existsSync(originalUploadFolder)) {
         mkdirSync(originalUploadFolder, { recursive: true });
