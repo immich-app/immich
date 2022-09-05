@@ -209,7 +209,6 @@
 
 	const createAlbumHandler = async (event: CustomEvent) => {
 		const { assets }: { assets: AssetResponseDto[] } = event.detail;
-
 		try {
 			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
 				assetIds: assets.map((a) => a.id)
@@ -222,6 +221,22 @@
 			notificationController.show({
 				type: NotificationType.Error,
 				message: 'Error creating album, check console for more details'
+			});
+		}
+	};
+
+	const assetUploadedToAlbumHandler = async (event: CustomEvent) => {
+		const { assetIds }: { assetIds: string[] } = event.detail;
+		try {
+			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
+				assetIds: assetIds
+			});
+			album = data;
+		} catch (e) {
+			console.error('Error [assetUploadedToAlbumHandler] ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error adding asset to album, check console for more details'
 			});
 		}
 	};
@@ -480,6 +495,7 @@
 		assetsInAlbum={album.assets}
 		on:go-back={() => (isShowAssetSelection = false)}
 		on:create-album={createAlbumHandler}
+		on:asset-uploaded={assetUploadedToAlbumHandler}
 	/>
 {/if}
 
