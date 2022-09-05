@@ -54,27 +54,30 @@ export class AssetService {
     originalPath: string,
     mimeType: string,
   ): Promise<AssetEntity> {
-    let assetEntity: AssetEntity;
     const checksum = await this.calculateChecksum(originalPath);
-    
+
     try {
-      assetEntity = await this._assetRepository.create(
+      const assetEntity = await this._assetRepository.create(
         createAssetDto,
         authUser.id,
         originalPath,
         mimeType,
         checksum,
       );
+
+      return assetEntity;
     } catch (err) {
       if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
-        assetEntity = await this._assetRepository.getAssetByChecksum(authUser.id, checksum);
+        const [assetEntity, _] = await Promise.all([
+          this._assetRepository.getAssetByChecksum(authUser.id, checksum),
+          fs.unlink(originalPath)
+        ]);
+
         return assetEntity;
       }
 
       throw err;
     }
-
-    return assetEntity;
   }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
