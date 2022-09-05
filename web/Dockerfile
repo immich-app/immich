@@ -24,6 +24,3 @@ CMD ["npm", "run", "dev"]
 
 FROM base as prod
 ENV NODE_ENV=production
-
-
-# Issue build command in entrypoint.sh to capture user .env file instead of the builder .env file.
