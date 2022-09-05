@@ -3,7 +3,7 @@ import { ExifEntity } from './exif.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 
 @Entity('assets')
-@Unique(['deviceAssetId', 'userId', 'deviceId'])
+@Unique('UQ_userid_checksum', ['userId', 'checksum'])
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

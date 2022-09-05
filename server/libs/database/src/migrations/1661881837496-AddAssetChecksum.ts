@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddAssetChecksum1661881837496 implements MigrationInterface {
   name = 'AddAssetChecksum1661881837496'

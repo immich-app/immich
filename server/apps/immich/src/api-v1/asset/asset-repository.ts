@@ -26,6 +26,7 @@ export interface IAssetRepository {
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
+  getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
 }
 
 export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
@@ -207,5 +208,21 @@ export class AssetRepository implements IAssetRepository {
     rows.forEach((v) => res.push(v.deviceAssetId));
 
     return res;
+  }
+
+  /**
+   * Get asset by checksum on the database
+   * @param userId 
+   * @param checksum 
+   * 
+   */
+  getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity> {
+    return this.assetRepository.findOneOrFail({
+      where: {
+        userId,
+        checksum
+      },
+      relations: ['exifInfo'],
+    });
   }
 }

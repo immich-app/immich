@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'node:crypto';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
@@ -55,15 +55,29 @@ export class AssetService {
     mimeType: string,
   ): Promise<AssetEntity> {
     const checksum = await this.calculateChecksum(originalPath);
-    const assetEntity = await this._assetRepository.create(
-      createAssetDto,
-      authUser.id,
-      originalPath,
-      mimeType,
-      checksum,
-    );
 
-    return assetEntity;
+    try {
+      const assetEntity = await this._assetRepository.create(
+        createAssetDto,
+        authUser.id,
+        originalPath,
+        mimeType,
+        checksum,
+      );
+
+      return assetEntity;
+    } catch (err) {
+      if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
+        const [assetEntity, _] = await Promise.all([
+          this._assetRepository.getAssetByChecksum(authUser.id, checksum),
+          fs.unlink(originalPath)
+        ]);
+
+        return assetEntity;
+      }
+
+      throw err;
+    }
   }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {

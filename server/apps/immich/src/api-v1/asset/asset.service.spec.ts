@@ -60,6 +60,7 @@ describe('AssetService', () => {
       getLocationsByUserId: jest.fn(),
       getSearchPropertiesByUserId: jest.fn(),
       getAssetByTimeBucket: jest.fn(),
+      getAssetByChecksum: jest.fn(),
     };
 
     sui = new AssetService(assetRepositoryMock, a);

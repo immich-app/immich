@@ -12,6 +12,8 @@ export class MicroservicesService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.generateChecksumQueue.add({}, { jobId: randomUUID() },);
+    await this.generateChecksumQueue.add({}, {
+      jobId: randomUUID(), delay: 10000 // wait for migration
+    });
   }
 }

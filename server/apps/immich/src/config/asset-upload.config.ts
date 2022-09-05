@@ -3,7 +3,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { Request } from 'express';
 import { randomUUID } from 'crypto';
 
@@ -29,7 +29,7 @@ export const assetUploadOption: MulterOptions = {
         return;
       }
 
-      const originalUploadFolder = `${basePath}/${req.user.id}/original/${req.body['deviceId']}`;
+      const originalUploadFolder = join(basePath, req.user.id, 'original', req.body['deviceId']);
 
       if (!existsSync(originalUploadFolder)) {
         mkdirSync(originalUploadFolder, { recursive: true });
