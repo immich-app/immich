@@ -1,5 +1,5 @@
 import { ConfigModuleOptions } from '@nestjs/config';
-import Joi from 'joi';
+import * as Joi from 'joi';
 
 export const immichAppConfig: ConfigModuleOptions = {
   envFilePath: '.env',
