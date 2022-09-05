@@ -1,10 +1,13 @@
 import { Process, Processor } from '@nestjs/bull';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as tf from '@tensorflow/tfjs-node';
 import { Job } from 'bull';
 import * as fs from 'fs';
+import { Repository } from 'typeorm';
 import { imageClassificationQueueName } from '../constants/queue-name.constant';
+import { SmartInfoEntity } from '../entities/smart-info.entity';
 import { ImageClassificationJob } from '../interfaces';
 
 @Injectable()
@@ -14,6 +17,11 @@ export class ImageClassificationProcessor implements OnModuleInit {
   private readonly MOBILENET_ALPHA = 1.0;
 
   private mobileNetModel: mobilenet.MobileNet;
+
+  constructor(
+    @InjectRepository(SmartInfoEntity)
+    private smartInfoRepository: Repository<SmartInfoEntity>,
+  ) {}
 
   async onModuleInit() {
     Logger.log(
@@ -28,7 +36,8 @@ export class ImageClassificationProcessor implements OnModuleInit {
 
   @Process()
   async classifyImage(job: Job<ImageClassificationJob>) {
-    const { thumbnailPath } = job.data;
+    const asset = job.data;
+    const thumbnailPath = asset.resizePath;
 
     try {
       const isExist = fs.existsSync(thumbnailPath);
@@ -45,10 +54,19 @@ export class ImageClassificationProcessor implements OnModuleInit {
         }
 
         tf.dispose(decodedImage);
-        return tags;
+        // return tags;
+
+        // add smart info for asset
+        const smartInfo = new SmartInfoEntity();
+        smartInfo.assetId = asset.id;
+        smartInfo.tags = tags;
+
+        await this.smartInfoRepository.upsert(smartInfo, {
+          conflictPaths: ['assetId'],
+        });
       }
     } catch (e) {
-      console.log('Error reading file ', e);
+      console.log('Failed to trigger image classification pipe line ', e);
     }
   }
 }

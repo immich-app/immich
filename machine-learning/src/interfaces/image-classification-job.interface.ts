@@ -1,6 +1,11 @@
 export interface ImageClassificationJob {
   /**
-   * The thumbnail file path of asset
+   * Asset ID
    */
-  thumbnailPath: string;
+  id: string;
+
+  /**
+   * The resized image file path of asset
+   */
+   resizePath: string;
 }

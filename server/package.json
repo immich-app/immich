@@ -35,6 +35,7 @@
     "@nestjs/core": "^8.4.7",
     "@nestjs/jwt": "^8.0.1",
     "@nestjs/mapped-types": "*",
+    "@nestjs/microservices": "^8.4.7",
     "@nestjs/passport": "^8.2.2",
     "@nestjs/platform-express": "^8.4.7",
     "@nestjs/platform-fastify": "^8.4.7",

@@ -5,12 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { databaseConfig, immichAppConfig } from './config';
 import { imageClassificationQueueName, objectDetectionQueueName } from './constants/queue-name.constant';
+import { SmartInfoEntity } from './entities/smart-info.entity';
 import { ImageClassificationProcessor } from './processors/image-classification.processor';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
     TypeOrmModule.forRoot(databaseConfig),
+    TypeOrmModule.forFeature([SmartInfoEntity]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',

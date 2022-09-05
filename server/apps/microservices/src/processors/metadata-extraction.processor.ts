@@ -37,8 +37,8 @@ export class MetadataExtractionProcessor {
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
-    @InjectRepository(SmartInfoEntity)
-    private smartInfoRepository: Repository<SmartInfoEntity>,
+    // @InjectRepository(SmartInfoEntity)
+    // private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {
     if (process.env.ENABLE_MAPBOX == 'true' && process.env.MAPBOX_KEY) {
       this.geocodingClient = mapboxGeocoding({
@@ -177,47 +177,47 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: imageTaggingProcessorName, concurrency: 2 })
-  async tagImage(job: Job) {
-    const { asset }: { asset: AssetEntity } = job.data;
+  // @Process({ name: imageTaggingProcessorName, concurrency: 2 })
+  // async tagImage(job: Job) {
+  //   const { asset }: { asset: AssetEntity } = job.data;
 
-    const res = await axios.post('http://immich-machine-learning:3003/image-classifier/tag-image', {
-      thumbnailPath: asset.resizePath,
-    });
+  //   const res = await axios.post('http://immich-machine-learning:3003/image-classifier/tag-image', {
+  //     thumbnailPath: asset.resizePath,
+  //   });
 
-    if (res.status == 201 && res.data.length > 0) {
-      const smartInfo = new SmartInfoEntity();
-      smartInfo.assetId = asset.id;
-      smartInfo.tags = [...res.data];
+  //   if (res.status == 201 && res.data.length > 0) {
+  //     const smartInfo = new SmartInfoEntity();
+  //     smartInfo.assetId = asset.id;
+  //     smartInfo.tags = [...res.data];
 
-      await this.smartInfoRepository.upsert(smartInfo, {
-        conflictPaths: ['assetId'],
-      });
-    }
-  }
+  //     await this.smartInfoRepository.upsert(smartInfo, {
+  //       conflictPaths: ['assetId'],
+  //     });
+  //   }
+  // }
 
-  @Process({ name: objectDetectionProcessorName, concurrency: 2 })
-  async detectObject(job: Job) {
-    try {
-      const { asset }: { asset: AssetEntity } = job.data;
+  // @Process({ name: objectDetectionProcessorName, concurrency: 2 })
+  // async detectObject(job: Job) {
+  //   try {
+  //     const { asset }: { asset: AssetEntity } = job.data;
 
-      const res = await axios.post('http://immich-machine-learning:3003/object-detection/detect-object', {
-        thumbnailPath: asset.resizePath,
-      });
+  //     const res = await axios.post('http://immich-machine-learning:3003/object-detection/detect-object', {
+  //       thumbnailPath: asset.resizePath,
+  //     });
 
-      if (res.status == 201 && res.data.length > 0) {
-        const smartInfo = new SmartInfoEntity();
-        smartInfo.assetId = asset.id;
-        smartInfo.objects = [...res.data];
+  //     if (res.status == 201 && res.data.length > 0) {
+  //       const smartInfo = new SmartInfoEntity();
+  //       smartInfo.assetId = asset.id;
+  //       smartInfo.objects = [...res.data];
 
-        await this.smartInfoRepository.upsert(smartInfo, {
-          conflictPaths: ['assetId'],
-        });
-      }
-    } catch (error) {
-      Logger.error(`Failed to trigger object detection pipe line ${String(error)}`);
-    }
-  }
+  //       await this.smartInfoRepository.upsert(smartInfo, {
+  //         conflictPaths: ['assetId'],
+  //       });
+  //     }
+  //   } catch (error) {
+  //     Logger.error(`Failed to trigger object detection pipe line ${String(error)}`);
+  //   }
+  // }
 
   @Process({ name: videoMetadataExtractionProcessorName, concurrency: 2 })
   async extractVideoMetadata(job: Job<IVideoLengthExtractionProcessor>) {
