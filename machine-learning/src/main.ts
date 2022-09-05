@@ -3,22 +3,6 @@ import { NestFactory } from '@nestjs/core';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 
-interface Closable {
-  close(): Promise<void>;
-}
-
-const closables: Closable[] = [];
-const gracefullHandler = async () => {
-  console.log('Shutting down...');
-  for (const closable of closables) {
-    await closable.close();
-  }
-  process.exit(1);
-};
-
-process.on('SIGINT', gracefullHandler);
-process.on('SIGTERM', gracefullHandler);
-
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
     transport: Transport.REDIS,
@@ -31,7 +15,6 @@ async function bootstrap() {
     },
   });
 
-  closables.push(app);
   await app.listen();
 
   if (process.env.NODE_ENV == 'development') {
