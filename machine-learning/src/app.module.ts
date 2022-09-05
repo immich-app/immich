@@ -7,6 +7,7 @@ import { databaseConfig, immichAppConfig } from './config';
 import { imageClassificationQueueName, objectDetectionQueueName } from './constants/queue-name.constant';
 import { SmartInfoEntity } from './entities/smart-info.entity';
 import { ImageClassificationProcessor } from './processors/image-classification.processor';
+import { ObjectDetectionProcessor } from './processors/object-detection.processor';
 
 @Module({
   imports: [
@@ -43,6 +44,6 @@ import { ImageClassificationProcessor } from './processors/image-classification.
     }),
   ],
   controllers: [AppController],
-  providers: [ImageClassificationProcessor],
+  providers: [ImageClassificationProcessor, ObjectDetectionProcessor],
 })
 export class AppModule {}
