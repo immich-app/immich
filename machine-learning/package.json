@@ -40,6 +40,7 @@
     "bull": "^4.8.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
+    "joi": "^17.6.0",
     "pg": "^8.7.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
