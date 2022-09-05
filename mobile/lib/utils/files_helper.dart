@@ -17,6 +17,9 @@ class FileHelper {
       case 'png':
         return {"type": "image", "subType": "png"};
 
+      case 'tif':
+        return {"type": "image", "subType": "tiff"};
+
       case 'mov':
         return {"type": "video", "subType": "quicktime"};
 
