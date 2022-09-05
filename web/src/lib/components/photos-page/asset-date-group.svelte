@@ -18,8 +18,7 @@
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
 	export let bucketHeight: number;
-
-	const dispatch = createEventDispatcher();
+	export let isAlbumSelectionMode = false;
 
 	let isMouseOverGroup = false;
 	let actualBucketHeight: number;
@@ -41,6 +40,11 @@
 		assetsInDateGroup: AssetResponseDto[],
 		dateGroupTitle: string
 	) => {
+		if (isAlbumSelectionMode) {
+			assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle);
+			return;
+		}
+
 		if ($isMultiSelectStoreState) {
 			assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle);
 		} else {

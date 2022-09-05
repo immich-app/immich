@@ -39,20 +39,23 @@
 	$: {
 		if (uploadAssets.length == uploadAssetsCount) {
 			// Filter assets that are already in the album
-			const assetsToAdd = uploadAssets.filter(
+			const assetIds = uploadAssets.filter(
 				(asset) => !!asset && !assetsInAlbum.some((a) => a.id === asset)
 			);
 
 			// Add the just uploaded assets to the album
-			if (assetsToAdd.length) {
-				dispatch('create-album', {
-					assets: assetsToAdd
+			if (assetIds.length) {
+				dispatch('asset-uploaded', {
+					assetIds
 				});
 			}
 
 			// Clean up states.
 			albumUploadAssetStore.asset.set([]);
 			albumUploadAssetStore.count.set(9999);
+
+			assetInteractionStore.clearMultiselect();
+			dispatch('go-back');
 		}
 	}
 
@@ -99,6 +102,6 @@
 		</svelte:fragment>
 	</ControlAppBar>
 	<section class="pt-[100px] pl-[70px] grid h-screen bg-immich-bg">
-		<AssetGrid />
+		<AssetGrid isAlbumSelectionMode={true} />
 	</section>
 </section>

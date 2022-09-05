@@ -123,12 +123,12 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
-  @Header('Cache-Control', 'max-age=300')
   async getAssetThumbnail(
+    @Response({ passthrough: true }) res: Res,
     @Param('assetId') assetId: string,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ): Promise<any> {
-    return this.assetService.getAssetThumbnail(assetId, query);
+    return this.assetService.getAssetThumbnail(assetId, query, res);
   }
 
   @Get('/curated-objects')
