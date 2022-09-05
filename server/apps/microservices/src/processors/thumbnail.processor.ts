@@ -92,9 +92,7 @@ export class ThumbnailGeneratorProcessor {
       asset.resizePath = jpegThumbnailPath;
 
       await this.thumbnailGeneratorQueue.add(generateWEBPThumbnailProcessorName, { asset }, { jobId: randomUUID() });
-      await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
-      await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
-
+      await firstValueFrom(this.mlClient.emit('asset.created', { resizePath: asset.resizePath }));
       this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
   }
