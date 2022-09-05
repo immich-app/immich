@@ -53,6 +53,9 @@
 			// Clean up states.
 			albumUploadAssetStore.asset.set([]);
 			albumUploadAssetStore.count.set(9999);
+
+			assetInteractionStore.clearMultiselect();
+			dispatch('go-back');
 		}
 	}
 
