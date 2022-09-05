@@ -17,6 +17,9 @@ class FileHelper {
       case 'png':
         return {"type": "image", "subType": "png"};
 
+      case 'tif':
+        return {"type": "image", "subType": "tiff"};
+
       case 'mov':
         return {"type": "video", "subType": "quicktime"};
 
@@ -37,6 +40,9 @@ class FileHelper {
 
       case 'webp':
         return {"type": "image", "subType": "webp"};
+
+      case '3gp':
+        return {"type": "video", "subType": "3gpp"};
 
       default:
         return {"type": "unsupport", "subType": "unsupport"};
