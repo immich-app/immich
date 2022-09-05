@@ -197,7 +197,6 @@
 			</div>
 		{/if}
 	</div>
-
 </section>
 
 <div class={`${asset.exifInfo?.latitude ? 'visible' : 'hidden'}`}>
@@ -214,9 +213,10 @@
 				<div class="flex gap-4 py-2 hover:cursor-pointer" on:click={() => dispatch('click', album)}>
 					<div>
 						<img
+							alt={album.albumName}
 							class="w-[50px] h-[50px] object-cover rounded"
 							src={`/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=JPEG`}
-						>
+						/>
 					</div>
 
 					<div class="mt-auto mb-auto">
