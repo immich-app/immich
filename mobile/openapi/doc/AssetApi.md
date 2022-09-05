@@ -14,10 +14,12 @@ Method | HTTP request | Description
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
-[**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/searchTerm | 
+[**getAssetByTimeBucket**](AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
+[**getAssetCountByTimeBucket**](AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
+[**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
-[**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/allLocation | 
-[**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/allObjects | 
+[**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
+[**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file | 
@@ -263,6 +265,100 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAssetByTimeBucket**
+> List<AssetResponseDto> getAssetByTimeBucket(getAssetByTimeBucketDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final getAssetByTimeBucketDto = GetAssetByTimeBucketDto(); // GetAssetByTimeBucketDto | 
+
+try {
+    final result = api_instance.getAssetByTimeBucket(getAssetByTimeBucketDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getAssetByTimeBucket: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **getAssetByTimeBucketDto** | [**GetAssetByTimeBucketDto**](GetAssetByTimeBucketDto.md)|  | 
+
+### Return type
+
+[**List<AssetResponseDto>**](AssetResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAssetCountByTimeBucket**
+> AssetCountByTimeBucketResponseDto getAssetCountByTimeBucket(getAssetCountByTimeBucketDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final getAssetCountByTimeBucketDto = GetAssetCountByTimeBucketDto(); // GetAssetCountByTimeBucketDto | 
+
+try {
+    final result = api_instance.getAssetCountByTimeBucket(getAssetCountByTimeBucketDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getAssetCountByTimeBucket: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **getAssetCountByTimeBucketDto** | [**GetAssetCountByTimeBucketDto**](GetAssetCountByTimeBucketDto.md)|  | 
+
+### Return type
+
+[**AssetCountByTimeBucketResponseDto**](AssetCountByTimeBucketResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

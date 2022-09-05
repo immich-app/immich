@@ -8,10 +8,4 @@ declare namespace App {
 	}
 
 	// interface Platform {}
-
-	interface Session {
-		user?: import('@api').UserResponseDto;
-	}
-
-	// interface Stuff {}
 }

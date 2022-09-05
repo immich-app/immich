@@ -6,6 +6,7 @@ import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
 import {
   assetUploadedQueueName,
+  generateChecksumQueueName,
   metadataExtractionQueueName,
   thumbnailGeneratorQueueName,
   videoConversionQueueName,
@@ -17,6 +18,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
 import { MicroservicesService } from './microservices.service';
 import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
+import { GenerateChecksumProcessor } from './processors/generate-checksum.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
@@ -45,25 +47,29 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
         removeOnComplete: true,
         removeOnFail: false,
       },
-    }),
-    BullModule.registerQueue({
+    }, {
       name: assetUploadedQueueName,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
         removeOnFail: false,
       },
-    }),
-    BullModule.registerQueue({
+    }, {
       name: metadataExtractionQueueName,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
         removeOnFail: false,
       },
-    }),
-    BullModule.registerQueue({
+    }, {
       name: videoConversionQueueName,
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }, {
+      name: generateChecksumQueueName,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
@@ -79,6 +85,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     ThumbnailGeneratorProcessor,
     MetadataExtractionProcessor,
     VideoTranscodeProcessor,
+    GenerateChecksumProcessor,
   ],
   exports: [],
 })

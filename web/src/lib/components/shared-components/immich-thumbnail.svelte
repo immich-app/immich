@@ -6,7 +6,7 @@
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
 	import LoadingSpinner from './loading-spinner.svelte';
-	import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
+	import { api, AssetResponseDto, AssetTypeEnum, getFileUrl, ThumbnailFormat } from '@api';
 
 	const dispatch = createEventDispatcher();
 
@@ -15,78 +15,23 @@
 	export let thumbnailSize: number | undefined = undefined;
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected: boolean = false;
-	export let isExisted: boolean = false;
-
+	export let disabled: boolean = false;
 	let imageData: string;
-	let videoData: string;
 
 	let mouseOver: boolean = false;
-	$: dispatch('mouseEvent', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
+	$: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
 	let mouseOverIcon: boolean = false;
 	let videoPlayerNode: HTMLVideoElement;
 	let isThumbnailVideoPlaying = false;
 	let calculateVideoDurationIntervalHandler: NodeJS.Timer;
 	let videoProgress = '00:00';
-	let videoAbortController: AbortController;
-
-	const loadImageData = async () => {
-		const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, {
-			responseType: 'blob'
-		});
-		if (data instanceof Blob) {
-			imageData = URL.createObjectURL(data);
-			return imageData;
-		}
-	};
+	let videoUrl: string;
 
 	const loadVideoData = async () => {
 		isThumbnailVideoPlaying = false;
-		videoAbortController = new AbortController();
 
-		try {
-			const { data } = await api.assetApi.serveFile(
-				asset.deviceAssetId,
-				asset.deviceId,
-				false,
-				true,
-				{
-					responseType: 'blob',
-					signal: videoAbortController.signal
-				}
-			);
-
-			if (!(data instanceof Blob)) {
-				return;
-			}
-
-			videoData = URL.createObjectURL(data);
-
-			videoPlayerNode.src = videoData;
-
-			videoPlayerNode.load();
-
-			videoPlayerNode.onloadeddata = () => {
-				console.log('first frame load');
-			};
-
-			videoPlayerNode.oncanplaythrough = () => {
-				console.log('can play through');
-			};
-
-			videoPlayerNode.oncanplay = () => {
-				console.log('can play');
-				videoPlayerNode.muted = true;
-				videoPlayerNode.play();
-
-				isThumbnailVideoPlaying = true;
-				calculateVideoDurationIntervalHandler = setInterval(() => {
-					videoProgress = getVideoDurationInString(Math.round(videoPlayerNode.currentTime));
-				}, 1000);
-			};
-
-			return videoData;
-		} catch (e) {}
+		videoUrl = getFileUrl(asset.deviceAssetId, asset.deviceId, false, true);
 	};
 
 	const getVideoDurationInString = (currentTime: number) => {
@@ -136,12 +81,7 @@
 
 	const handleMouseLeaveThumbnail = () => {
 		mouseOver = false;
-
-		// Stop XHR download of video
-		videoAbortController?.abort();
-
-		// Stop video playback
-		URL.revokeObjectURL(videoData);
+		videoUrl = '';
 
 		clearInterval(calculateVideoDurationIntervalHandler);
 
@@ -149,10 +89,22 @@
 		videoProgress = '00:00';
 	};
 
+	const handleCanPlay = (ev: Event) => {
+		const playerNode = ev.target as HTMLVideoElement;
+
+		playerNode.muted = true;
+		playerNode.play();
+
+		isThumbnailVideoPlaying = true;
+		calculateVideoDurationIntervalHandler = setInterval(() => {
+			videoProgress = getVideoDurationInString(Math.round(playerNode.currentTime));
+		}, 1000);
+	};
+
 	$: getThumbnailBorderStyle = () => {
 		if (selected) {
 			return 'border-[20px] border-immich-primary/20';
-		} else if (isExisted) {
+		} else if (disabled) {
 			return 'border-[20px] border-gray-300';
 		} else {
 			return '';
@@ -160,36 +112,38 @@
 	};
 
 	$: getOverlaySelectorIconStyle = () => {
-		if (selected || isExisted) {
+		if (selected || disabled) {
 			return '';
 		} else {
 			return 'bg-gradient-to-b from-gray-800/50';
 		}
 	};
 	const thumbnailClickedHandler = () => {
-		if (!isExisted) {
+		if (!disabled) {
 			dispatch('click', { asset });
 		}
 	};
 
 	const onIconClickedHandler = (e: MouseEvent) => {
 		e.stopPropagation();
-		dispatch('select', { asset });
+		if (!disabled) {
+			dispatch('select', { asset });
+		}
 	};
 </script>
 
-<IntersectionObserver once={true} let:intersecting>
+<IntersectionObserver once={false} let:intersecting>
 	<div
 		style:width={`${thumbnailSize}px`}
 		style:height={`${thumbnailSize}px`}
 		class={`bg-gray-100 relative  ${getSize()} ${
-			isExisted ? 'cursor-not-allowed' : 'hover:cursor-pointer'
+			disabled ? 'cursor-not-allowed' : 'hover:cursor-pointer'
 		}`}
 		on:mouseenter={handleMouseOverThumbnail}
 		on:mouseleave={handleMouseLeaveThumbnail}
 		on:click={thumbnailClickedHandler}
 	>
-		{#if mouseOver || selected || isExisted}
+		{#if mouseOver || selected || disabled}
 			<div
 				in:fade={{ duration: 200 }}
 				class={`w-full ${getOverlaySelectorIconStyle()} via-white/0 to-white/0 absolute p-2  z-10`}
@@ -202,7 +156,7 @@
 				>
 					{#if selected}
 						<CheckCircle size="24" color="#4250af" />
-					{:else if isExisted}
+					{:else if disabled}
 						<CheckCircle size="24" color="#252525" />
 					{:else}
 						<CheckCircle size="24" color={mouseOverIcon ? 'white' : '#d8dadb'} />
@@ -247,29 +201,34 @@
 		<!-- Thumbnail -->
 		{#if intersecting}
 			<img
+				id={asset.id}
 				style:width={`${thumbnailSize}px`}
 				style:height={`${thumbnailSize}px`}
-				in:fade={{ duration: 250 }}
+				in:fade={{ duration: 150 }}
 				src={`/api/asset/thumbnail/${asset.id}?format=${format}`}
 				alt={asset.id}
-				class={`object-cover ${getSize()} transition-all duration-100 z-0 ${getThumbnailBorderStyle()}`}
+				class={`object-cover ${getSize()} transition-all z-0 ${getThumbnailBorderStyle()}`}
 				loading="lazy"
 			/>
 		{/if}
 
 		{#if mouseOver && asset.type === AssetTypeEnum.Video}
 			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
-				<video
-					muted
-					autoplay
-					preload="none"
-					class="h-full object-cover"
-					width="250px"
-					style:width={`${thumbnailSize}px`}
-					bind:this={videoPlayerNode}
-				>
-					<track kind="captions" />
-				</video>
+				{#if videoUrl}
+					<video
+						muted
+						autoplay
+						preload="none"
+						class="h-full object-cover"
+						width="250px"
+						style:width={`${thumbnailSize}px`}
+						on:canplay={handleCanPlay}
+						bind:this={videoPlayerNode}
+					>
+						<source src={videoUrl} type="video/mp4" />
+						<track kind="captions" />
+					</video>
+				{/if}
 			</div>
 		{/if}
 	</div>

@@ -17,7 +17,6 @@
   "backup_album_selection_page_total_assets": "Totaal unieke items",
   "backup_all": "Alle",
   "backup_background_service_default_notification": "Controleren op nieuw items…",
-  "backup_background_service_disable_battery_optimizations": "Schakel batterij optimalisatie uit voor Immich om achtergrond backup in te schakelen",
   "backup_background_service_upload_failure_notification": "Fout bij upload {}",
   "backup_background_service_in_progress_notification": "Backuppen van items…",
   "backup_background_service_current_upload_notification": "Uploaden {}",

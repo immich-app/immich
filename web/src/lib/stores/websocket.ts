@@ -1,5 +1,4 @@
 import { Socket, io } from 'socket.io-client';
-import { writable } from 'svelte/store';
 
 let websocket: Socket;
 

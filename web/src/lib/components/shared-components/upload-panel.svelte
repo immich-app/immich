@@ -5,8 +5,9 @@
 	import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
 	import type { UploadAsset } from '$lib/models/upload-asset';
-	import { getAssetsInfo } from '$lib/stores/assets';
-	import { session } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { assetStore } from '$lib/stores/assets.store';
+	import { notificationController, NotificationType } from './notification/notification';
 	let showDetail = true;
 
 	let uploadLength = 0;
@@ -84,7 +85,12 @@
 	<div
 		in:fade={{ duration: 250 }}
 		out:fade={{ duration: 250, delay: 1000 }}
-		on:outroend={() => getAssetsInfo()}
+		on:outroend={() => {
+			notificationController.show({
+				message: 'Upload success, refresh the page to see new upload assets',
+				type: NotificationType.Info
+			});
+		}}
 		class="absolute right-6 bottom-6 z-[10000]"
 	>
 		{#if showDetail}

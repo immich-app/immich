@@ -34,7 +34,7 @@
 			const { data: serverInfoRes } = await api.serverInfoApi.getServerInfo();
 			serverInfo = serverInfoRes;
 		} catch (e) {
-			console.log('Error [StatusBox] [pingServerInterval]');
+			console.log('Error [StatusBox] [pingServerInterval]', e);
 			isServerOk = false;
 		}
 	}, 10000);

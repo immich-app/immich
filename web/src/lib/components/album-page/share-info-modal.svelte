@@ -7,6 +7,10 @@
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '../shared-components/notification/notification';
 
 	export let album: AlbumResponseDto;
 
@@ -24,6 +28,10 @@
 			currentUser = data;
 		} catch (e) {
 			console.error('Error [share-info-modal] [getAllUsers]', e);
+			notificationController.show({
+				message: 'Error getting user info, check console for more details',
+				type: NotificationType.Error
+			});
 		}
 	});
 
@@ -48,6 +56,10 @@
 				dispatch('user-deleted', { userId });
 			} catch (e) {
 				console.error('Error [share-info-modal] [removeUser]', e);
+				notificationController.show({
+					message: 'Error removing user, check console for more details',
+					type: NotificationType.Error
+				});
 			}
 		}
 	};

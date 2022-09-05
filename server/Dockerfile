@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
 
-RUN apk add --update-cache build-base python3 libheif vips-dev
+RUN apk add --update-cache build-base python3 libheif vips-dev ffmpeg
 RUN npm ci
 
 COPY . .
@@ -22,7 +22,7 @@ COPY package.json package-lock.json ./
 COPY start-server.sh start-microservices.sh ./
 
 RUN mkdir -p /usr/src/app/dist \
-    && apk add --no-cache libheif vips ffmpeg
+  && apk add --no-cache libheif vips ffmpeg
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
