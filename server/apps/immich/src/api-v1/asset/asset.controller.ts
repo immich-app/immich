@@ -109,7 +109,7 @@ export class AssetController {
       }
 
       Logger.error(`Error uploading file ${err}`);
-      throw new BadRequestException(`Error uploading file`, `${e}`);
+      throw new BadRequestException(`Error uploading file`, `${err}`);
     }
   }
 
