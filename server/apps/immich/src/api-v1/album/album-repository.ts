@@ -22,6 +22,7 @@ export interface IAlbumRepository {
   removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<AlbumEntity>;
   addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AlbumEntity>;
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
+  getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]>;
 }
 
 export const ALBUM_REPOSITORY = 'ALBUM_REPOSITORY';
@@ -145,6 +146,31 @@ export class AlbumRepository implements IAlbumRepository {
     const albums = await query.getMany();
 
     albums.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
+
+    return albums;
+  }
+
+  async getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]> {
+    let query = this.albumRepository.createQueryBuilder('album');
+
+    const albums = await query
+        .where('album.ownerId = :ownerId', { ownerId: userId })
+        .andWhere((qb) => {
+          // shared with userId
+          const subQuery = qb
+              .subQuery()
+              .select('assetAlbum.albumId')
+              .from(AssetAlbumEntity, 'assetAlbum')
+              .where('assetAlbum.assetId = :assetId', {assetId: assetId})
+              .getQuery();
+          return `album.id IN ${subQuery}`;
+        })
+        .leftJoinAndSelect('album.assets', 'assets')
+        .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
+        .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
+        .leftJoinAndSelect('sharedUser.userInfo', 'userInfo')
+        .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC')
+        .getMany();
 
     return albums;
   }
