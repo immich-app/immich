@@ -36,8 +36,8 @@
 
 > ⚠️ WARNING: **NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS**. This project is under heavy development, there will be continuous functions, features and api changes.
 
-| Mobile | Web |
-| - | - | 
+| Features | Mobile | Web |
+| - | - | - | 
 | Upload and view videos and photos | Yes | Yes 
 | Auto backup when the app is opened | Yes | N/A
 | Selective album(s) for backup | Yes | N/A
