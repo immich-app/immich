@@ -11,6 +11,7 @@ import {
   thumbnailGeneratorQueueName,
   videoConversionQueueName,
 } from '@app/job/constants/queue-name.constant';
+import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -22,10 +23,12 @@ import { GenerateChecksumProcessor } from './processors/generate-checksum.proces
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
+import { WebhookService } from './services/webhook.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
+    HttpModule,
     DatabaseModule,
     TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
     BullModule.forRootAsync({
@@ -81,6 +84,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
   controllers: [],
   providers: [
     MicroservicesService,
+    WebhookService,
     AssetUploadedProcessor,
     ThumbnailGeneratorProcessor,
     MetadataExtractionProcessor,

@@ -10,18 +10,17 @@ import {
   JpegGeneratorProcessor,
 } from '@app/job';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Inject, Logger } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
 import { Job, Queue } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync } from 'node:fs';
-import { firstValueFrom } from 'rxjs';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { CommunicationGateway } from '../../../immich/src/api-v1/communication/communication.gateway';
+import { WebhookService } from '../services/webhook.service';
 
 @Processor(thumbnailGeneratorQueueName)
 export class ThumbnailGeneratorProcessor {
@@ -37,8 +36,7 @@ export class ThumbnailGeneratorProcessor {
     @InjectQueue(metadataExtractionQueueName)
     private metadataExtractionQueue: Queue,
 
-    @Inject('MACHINE_LEARNING_SERVICE')
-    private mlClient: ClientProxy,
+    private webhook: WebhookService
   ) {}
 
   @Process({ name: generateJPEGThumbnailProcessorName, concurrency: 3 })
@@ -63,7 +61,7 @@ export class ThumbnailGeneratorProcessor {
       asset.resizePath = jpegThumbnailPath;
 
       await this.thumbnailGeneratorQueue.add(generateWEBPThumbnailProcessorName, { asset }, { jobId: randomUUID() });
-      await firstValueFrom(this.mlClient.emit('asset.created', { resizePath: asset.resizePath }));
+      await this.webhook.createAssetCreationEvent(asset);
       this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
 
@@ -92,7 +90,7 @@ export class ThumbnailGeneratorProcessor {
       asset.resizePath = jpegThumbnailPath;
 
       await this.thumbnailGeneratorQueue.add(generateWEBPThumbnailProcessorName, { asset }, { jobId: randomUUID() });
-      await firstValueFrom(this.mlClient.emit('asset.created', { resizePath: asset.resizePath }));
+      await this.webhook.createAssetCreationEvent(asset);
       this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
   }
