@@ -29,7 +29,4 @@ COPY --from=builder /usr/src/app/dist ./dist
 
 RUN npm prune --production
 
-ENV IMAGE_CACHE_DIR=/usr/src/app/cache
-ENV VIDEO_CACHE_DIR=/usr/src/app/cache
-
 EXPOSE 3001
