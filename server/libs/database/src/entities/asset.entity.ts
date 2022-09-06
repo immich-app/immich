@@ -32,10 +32,10 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true, default: '' })
   encodedVideoPath!: string;
 
-  @Column()
+  @Column({ type: 'timestamptz' })
   createdAt!: string;
 
-  @Column()
+  @Column({ type: 'timestamptz' })
   modifiedAt!: string;
 
   @Column({ type: 'boolean', default: false })

@@ -43,7 +43,7 @@ export class AssetRepository implements IAssetRepository {
     return await this.assetRepository
       .createQueryBuilder('asset')
       .where('asset.userId = :userId', { userId: userId })
-      .andWhere(`date_trunc('month', "createdAt"::timestamptz) IN (:...buckets)`, {
+      .andWhere(`date_trunc('month', "createdAt") IN (:...buckets)`, {
         buckets: [...getAssetByTimeBucketDto.timeBucket],
       })
       .andWhere('asset.resizePath is not NULL')
@@ -58,19 +58,19 @@ export class AssetRepository implements IAssetRepository {
       result = await this.assetRepository
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
-        .addSelect(`date_trunc('month', "createdAt"::timestamptz)`, 'timeBucket')
+        .addSelect(`date_trunc('month', "createdAt")`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
-        .groupBy(`date_trunc('month', "createdAt"::timestamptz)`)
-        .orderBy(`date_trunc('month', "createdAt"::timestamptz)`, 'DESC')
+        .groupBy(`date_trunc('month', "createdAt")`)
+        .orderBy(`date_trunc('month', "createdAt")`, 'DESC')
         .getRawMany();
     } else if (timeBucket === TimeGroupEnum.Day) {
       result = await this.assetRepository
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
-        .addSelect(`date_trunc('day', "createdAt"::timestamptz)`, 'timeBucket')
+        .addSelect(`date_trunc('day', "createdAt")`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
-        .groupBy(`date_trunc('day', "createdAt"::timestamptz)`)
-        .orderBy(`date_trunc('day', "createdAt"::timestamptz)`, 'DESC')
+        .groupBy(`date_trunc('day', "createdAt")`)
+        .orderBy(`date_trunc('day', "createdAt")`, 'DESC')
         .getRawMany();
     }
 
@@ -212,15 +212,15 @@ export class AssetRepository implements IAssetRepository {
 
   /**
    * Get asset by checksum on the database
-   * @param userId 
-   * @param checksum 
-   * 
+   * @param userId
+   * @param checksum
+   *
    */
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity> {
     return this.assetRepository.findOneOrFail({
       where: {
         userId,
-        checksum
+        checksum,
       },
       relations: ['exifInfo'],
     });
