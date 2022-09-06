@@ -47,6 +47,7 @@ import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
+import { QueryFailedError } from 'typeorm';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -74,8 +75,11 @@ export class AssetController {
     @UploadedFile() file: Express.Multer.File,
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
   ): Promise<AssetFileUploadResponseDto> {
+    const checksum = await this.assetService.calculateChecksum(file.path);
+
     try {
-      const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype);
+      const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype, checksum);
+
       if (!savedAsset) {
         await this.backgroundTaskService.deleteFileOnDisk([
           {
@@ -92,14 +96,20 @@ export class AssetController {
       );
 
       return new AssetFileUploadResponseDto(savedAsset.id);
-    } catch (e) {
-      Logger.error(`Error uploading file ${e}`);
+    } catch (err) {
       await this.backgroundTaskService.deleteFileOnDisk([
         {
           originalPath: file.path,
         } as any,
       ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
-      throw new BadRequestException(`Error uploading file`, `${e}`);
+
+      if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
+        const existedAsset = await this.assetService.getAssetByChecksum(authUser.id, checksum)
+        return new AssetFileUploadResponseDto(existedAsset.id);
+      }
+
+      Logger.error(`Error uploading file ${err}`);
+      throw new BadRequestException(`Error uploading file`, `${err}`);
     }
   }
 
