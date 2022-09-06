@@ -108,13 +108,21 @@ class CacheSettings extends HookConsumerWidget {
           ).tr(),
         ),
         cacheStatisticsRow(
-            "cache_settings_statistics_thumbnail".tr(), CacheType.thumbnail),
+          "cache_settings_statistics_thumbnail".tr(),
+          CacheType.thumbnail,
+        ),
         cacheStatisticsRow(
-            "cache_settings_statistics_album".tr(), CacheType.albumThumbnail),
-        cacheStatisticsRow("cache_settings_statistics_shared".tr(),
-            CacheType.sharedAlbumThumbnail),
+          "cache_settings_statistics_album".tr(),
+          CacheType.albumThumbnail,
+        ),
         cacheStatisticsRow(
-            "cache_settings_statistics_full".tr(), CacheType.imageViewerFull),
+          "cache_settings_statistics_shared".tr(),
+          CacheType.sharedAlbumThumbnail,
+        ),
+        cacheStatisticsRow(
+          "cache_settings_statistics_full".tr(),
+          CacheType.imageViewerFull,
+        ),
         ListTile(
           title: const Text(
             "cache_settings_clear_cache_button_title",
@@ -126,12 +134,13 @@ class CacheSettings extends HookConsumerWidget {
         ),
         Container(
           alignment: Alignment.center,
-          child: TextButton(
+          child: ElevatedButton(
             onPressed: clearCache,
-            child: Text(
+            child: const Text(
               "cache_settings_clear_cache_button",
               style: TextStyle(
-                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
               ),
             ).tr(),
           ),

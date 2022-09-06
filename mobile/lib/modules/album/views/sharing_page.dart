@@ -95,12 +95,12 @@ class SharingPage extends HookConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 5.0, bottom: 5),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 5.0, bottom: 5),
                     child: Icon(
                       Icons.offline_share_outlined,
                       size: 50,
-                      // color: Theme.of(context).primaryColor,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                   Padding(
