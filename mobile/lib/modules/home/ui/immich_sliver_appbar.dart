@@ -42,9 +42,10 @@ class ImmichSliverAppBar extends ConsumerWidget {
                 top: 5,
                 child: IconButton(
                   splashRadius: 25,
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.face_outlined,
                     size: 30,
+                    color: Theme.of(context).primaryColor,
                   ),
                   onPressed: () {
                     Scaffold.of(context).openDrawer();
@@ -109,7 +110,10 @@ class ImmichSliverAppBar extends ConsumerWidget {
               splashRadius: 25,
               iconSize: 30,
               icon: isEnableAutoBackup
-                  ? const Icon(Icons.backup_rounded)
+                  ? Icon(
+                      Icons.backup_rounded,
+                      color: Theme.of(context).primaryColor,
+                    )
                   : Badge(
                       padding: const EdgeInsets.all(4),
                       elevation: 3,
@@ -120,7 +124,10 @@ class ImmichSliverAppBar extends ConsumerWidget {
                         size: 8,
                         color: Colors.indigo,
                       ),
-                      child: const Icon(Icons.backup_rounded),
+                      child: Icon(
+                        Icons.backup_rounded,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
               onPressed: () async {
                 var onPop = await AutoRouter.of(context)
