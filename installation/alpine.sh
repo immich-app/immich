@@ -180,7 +180,7 @@ setup_server()
 
     # Clean now useless files
     echo "Removing files used for build stage..."
-    rm -rf "$(ls | grep -v 'node_modules\|dist\|package*.json\|start*.sh\|immich-*')"
+    rm -rf "$(ls | grep -v 'node_modules\|dist\|package*.json\|start*.sh')"
 
     echo "Removing extra packages..."
     npm prune --production
@@ -234,7 +234,8 @@ setup_server()
 
     # Write service file
     echo "Writing services files..."
-    mv ./immich-server ./immich-microservices /etc/init.d/
+    cp ${tmp_dir}/immich-${immich_ver}/installation/services/openrc/immich-server /etc/init.d/
+    cp ${tmp_dir}/immich-${immich_ver}/installation/services/openrc/immich-microservices /etc/init.d/
     chmod +x /etc/init.d/immich-server /etc/init.d/immich-microservices
 
     # Enable service to start on boot
@@ -302,7 +303,7 @@ setup_web()
 
     # Write service file
     echo "Writing service file..."
-    mv ./immich-web /etc/init.d/immich-web
+    cp ${tmp_dir}/immich-${immich_ver}/installation/services/openrc/immich-web /etc/init.d/
     chmod +x /etc/init.d/immich-web
 
     # Enable service
@@ -371,7 +372,7 @@ setup_machine_learning()
 
     # Clean now useless files
     echo "Removing files used for build stage..."
-    rm -rf "$(ls | grep -v 'node_modules\|dist\|package*.json\|entrypoint.sh\|immich-*')"
+    rm -rf "$(ls | grep -v 'node_modules\|dist\|package*.json\|entrypoint.sh')"
 
     echo "Removing extra packages..."
     npm prune --production
@@ -384,7 +385,7 @@ setup_machine_learning()
 
     # Write service file
     echo "Writing service file..."
-    mv ./immich-machine-learning /etc/init.d/immich-machine-learning
+    cp ${tmp_dir}/immich-${immich_ver}/installation/services/openrc/immich-machine-learning /etc/init.d/
     chmod +x /etc/init.d/immich-machine-learning
 
     # Enable service
