@@ -169,7 +169,7 @@ export class AssetRepository implements IAssetRepository {
     checksum?: Buffer,
   ): Promise<AssetEntity> {
     const asset = new AssetEntity();
-    asset.deviceAssetId = createAssetDto.deviceAssetId;
+    asset.deviceAssetId = createAssetDto.deviceAssetId || ''; // [DEPREDICATED] remove deviceAssetId col
     asset.userId = ownerId;
     asset.deviceId = createAssetDto.deviceId;
     asset.type = createAssetDto.assetType || AssetType.OTHER;

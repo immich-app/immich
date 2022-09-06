@@ -8,6 +8,7 @@ export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  // [DEPREDICATED] remove deviceAssetId col
   @Column()
   deviceAssetId!: string;
 
