@@ -1,98 +1,28 @@
 <script lang="ts">
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
-	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import type { PageData } from './$types';
-	import { AlbumResponseDto, api } from '@api';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-	import {
-		notificationController,
-		NotificationType
-	} from '$lib/components/shared-components/notification/notification';
+	import { useAlbum } from './albums-bloc';
 
 	export let data: PageData;
 
-	let isShowContextMenu = false;
-	let contextMenuPosition = { x: 0, y: 0 };
-	let targetAlbum: AlbumResponseDto;
+	const {
+		albums,
+		isShowContextMenu,
+		contextMenuPosition,
+		createAlbum,
+		deleteSelectedContextAlbum,
+		loadAlbums,
+		showAlbumContextMenu
+	} = useAlbum({ albums: data.albums });
 
-	onMount(async () => {
-		const getAllAlbumsRes = await api.albumApi.getAllAlbums();
-		data.albums = getAllAlbumsRes.data;
-
-		// Delete album that has no photos and is named 'Untitled'
-		for (const album of data.albums) {
-			if (album.albumName === 'Untitled' && album.assetCount === 0) {
-				setTimeout(async () => {
-					await autoDeleteAlbum(album);
-					data.albums = data.albums.filter((a) => a.id !== album.id);
-				}, 500);
-			}
-		}
-	});
-
-	const createAlbum = async () => {
-		try {
-			const { data: newAlbum } = await api.albumApi.createAlbum({
-				albumName: 'Untitled'
-			});
-
-			goto('/albums/' + newAlbum.id);
-		} catch (e) {
-			console.error('Error [createAlbum] ', e);
-			notificationController.show({
-				message: 'Error creating album, check console for more details',
-				type: NotificationType.Error
-			});
-		}
-	};
-
-	const autoDeleteAlbum = async (album: AlbumResponseDto) => {
-		try {
-			await api.albumApi.deleteAlbum(album.id);
-			return true;
-		} catch (e) {
-			console.error('Error [autoDeleteAlbum] ', e);
-			return false;
-		}
-	};
-
-	const userDeleteMenu = async () => {
-		if (
-			window.confirm(
-				`Are you sure you want to delete album ${targetAlbum.albumName}? If the album is shared, other users will not be able to access it.`
-			)
-		) {
-			try {
-				await api.albumApi.deleteAlbum(targetAlbum.id);
-				data.albums = data.albums.filter((a) => a.id !== targetAlbum.id);
-			} catch (e) {
-				console.error('Error [userDeleteMenu] ', e);
-				notificationController.show({
-					message: 'Error deleting user, check console for more details',
-					type: NotificationType.Error
-				});
-			}
-		}
-
-		isShowContextMenu = false;
-	};
-
-	const showAlbumContextMenu = (event: CustomEvent, album: AlbumResponseDto) => {
-		targetAlbum = album;
-
-		contextMenuPosition = {
-			x: event.detail.x,
-			y: event.detail.y
-		};
-
-		isShowContextMenu = !isShowContextMenu;
-	};
+	onMount(loadAlbums);
 </script>
 
 <svelte:head>
@@ -131,7 +61,7 @@
 
 			<!-- Album Card -->
 			<div class="flex flex-wrap gap-8">
-				{#each data.albums as album}
+				{#each $albums as album}
 					{#key album.id}
 						<a sveltekit:prefetch href={`albums/${album.id}`}>
 							<AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e, album)} />
@@ -141,7 +71,7 @@
 			</div>
 
 			<!-- Empty Message -->
-			{#if data.albums.length === 0}
+			{#if $albums.length === 0}
 				<div
 					class="border p-5 w-[50%] m-auto mt-10 bg-gray-50 rounded-3xl flex flex-col place-content-center place-items-center"
 				>
@@ -156,9 +86,9 @@
 	</section>
 
 	<!-- Context Menu -->
-	{#if isShowContextMenu}
-		<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowContextMenu = false)}>
-			<MenuOption on:click={userDeleteMenu}>
+	{#if $isShowContextMenu}
+		<ContextMenu {...$contextMenuPosition} on:clickoutside={() => ($isShowContextMenu = false)}>
+			<MenuOption on:click={deleteSelectedContextAlbum}>
 				<span class="flex place-items-center place-content-center gap-2">
 					<DeleteOutline size="18" />
 					<p>Delete album</p>
