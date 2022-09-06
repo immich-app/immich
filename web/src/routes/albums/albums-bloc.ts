@@ -15,18 +15,25 @@ export const useAlbums = (props: AlbumsProps) => {
 	const contextMenuTargetAlbum = writable<AlbumResponseDto | undefined>();
 
 	async function loadAlbums(): Promise<void> {
-		const { data } = await api.albumApi.getAllAlbums();
-		albums.set(data);
+		try {
+			const { data } = await api.albumApi.getAllAlbums();
+			albums.set(data);
 
-		// Delete album that has no photos and is named 'Untitled'
-		for (const album of data) {
-			if (album.albumName === 'Untitled' && album.assetCount === 0) {
-				setTimeout(async () => {
-					await deleteAlbum(album);
-					const _albums = get(albums);
-					albums.set(_albums.filter((a) => a.id !== album.id));
-				}, 500);
+			// Delete album that has no photos and is named 'Untitled'
+			for (const album of data) {
+				if (album.albumName === 'Untitled' && album.assetCount === 0) {
+					setTimeout(async () => {
+						await deleteAlbum(album);
+						const _albums = get(albums);
+						albums.set(_albums.filter((a) => a.id !== album.id));
+					}, 500);
+				}
 			}
+		} catch {
+			notificationController.show({
+				message: 'Error loading albums',
+				type: NotificationType.Error
+			});
 		}
 	}
 
@@ -37,10 +44,9 @@ export const useAlbums = (props: AlbumsProps) => {
 			});
 
 			return newAlbum;
-		} catch (e) {
-			console.error('Error [createAlbum] ', e);
+		} catch {
 			notificationController.show({
-				message: 'Error creating album, check console for more details',
+				message: 'Error creating album',
 				type: NotificationType.Error
 			});
 		}
@@ -49,8 +55,8 @@ export const useAlbums = (props: AlbumsProps) => {
 	async function deleteAlbum(album: AlbumResponseDto): Promise<void> {
 		try {
 			await api.albumApi.deleteAlbum(album.id);
-		} catch (e) {
-			console.error('Error [deleteAlbum] ', e);
+		} catch {
+			// Do nothing?
 		}
 	}
 
@@ -82,10 +88,9 @@ export const useAlbums = (props: AlbumsProps) => {
 				await api.albumApi.deleteAlbum(albumToDelete.id);
 				const _albums = get(albums);
 				albums.set(_albums.filter((a) => a.id !== albumToDelete.id));
-			} catch (e) {
-				console.error('Error [userDeleteMenu] ', e);
+			} catch {
 				notificationController.show({
-					message: 'Error deleting user, check console for more details',
+					message: 'Error deleting album',
 					type: NotificationType.Error
 				});
 			}
