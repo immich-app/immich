@@ -172,4 +172,14 @@ describe('Albums BLoC', () => {
 
 		expect(apiMock.albumApi.deleteAlbum).not.toHaveBeenCalled();
 	});
+
+	it('closes album context menu, deselecting album', () => {
+		const albumToDelete = get(sut.albums)[2]; // delete third album
+		sut.showAlbumContextMenu({ x: 100, y: 150 }, albumToDelete);
+
+		expect(get(sut.isShowContextMenu)).toBe(true);
+
+		sut.closeAlbumContextMenu();
+		expect(get(sut.isShowContextMenu)).toBe(false);
+	});
 });

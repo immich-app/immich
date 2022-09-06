@@ -4,15 +4,15 @@ import {
 } from '$lib/components/shared-components/notification/notification';
 import { AlbumResponseDto, api } from '@api';
 import { OnShowContextMenuDetail } from '$lib/components/album-page/album-card.svelte';
-import { writable, get } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 
 type AlbumsProps = { albums: AlbumResponseDto[] };
 
 export const useAlbums = (props: AlbumsProps) => {
 	const albums = writable([...props.albums]);
-	const isShowContextMenu = writable(false);
 	const contextMenuPosition = writable<OnShowContextMenuDetail>({ x: 0, y: 0 });
 	const contextMenuTargetAlbum = writable<AlbumResponseDto | undefined>();
+	const isShowContextMenu = derived(contextMenuTargetAlbum, ($selectedAlbum) => !!$selectedAlbum);
 
 	async function loadAlbums(): Promise<void> {
 		try {
@@ -70,8 +70,10 @@ export const useAlbums = (props: AlbumsProps) => {
 			x: contextMenuDetail.x,
 			y: contextMenuDetail.y
 		});
-		const _isShowContextMenu = get(isShowContextMenu);
-		isShowContextMenu.set(!_isShowContextMenu);
+	}
+
+	function closeAlbumContextMenu() {
+		contextMenuTargetAlbum.set(undefined);
 	}
 
 	async function deleteSelectedContextAlbum(): Promise<void> {
@@ -96,7 +98,7 @@ export const useAlbums = (props: AlbumsProps) => {
 			}
 		}
 
-		isShowContextMenu.set(false);
+		closeAlbumContextMenu();
 	}
 
 	return {
@@ -106,6 +108,7 @@ export const useAlbums = (props: AlbumsProps) => {
 		loadAlbums,
 		createAlbum,
 		showAlbumContextMenu,
+		closeAlbumContextMenu,
 		deleteSelectedContextAlbum
 	};
 };

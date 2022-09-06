@@ -20,7 +20,8 @@
 		createAlbum,
 		deleteSelectedContextAlbum,
 		loadAlbums,
-		showAlbumContextMenu
+		showAlbumContextMenu,
+		closeAlbumContextMenu
 	} = useAlbums({ albums: data.albums });
 
 	onMount(loadAlbums);
@@ -98,7 +99,7 @@
 
 	<!-- Context Menu -->
 	{#if $isShowContextMenu}
-		<ContextMenu {...$contextMenuPosition} on:clickoutside={() => ($isShowContextMenu = false)}>
+		<ContextMenu {...$contextMenuPosition} on:clickoutside={closeAlbumContextMenu}>
 			<MenuOption on:click={deleteSelectedContextAlbum}>
 				<span class="flex place-items-center place-content-center gap-2">
 					<DeleteOutline size="18" />
