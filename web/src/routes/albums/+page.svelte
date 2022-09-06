@@ -1,5 +1,6 @@
 <script lang="ts">
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
+	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -8,7 +9,7 @@
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-	import { useAlbum } from './albums-bloc';
+	import { useAlbums } from './albums-bloc';
 
 	export let data: PageData;
 
@@ -20,9 +21,16 @@
 		deleteSelectedContextAlbum,
 		loadAlbums,
 		showAlbumContextMenu
-	} = useAlbum({ albums: data.albums });
+	} = useAlbums({ albums: data.albums });
 
 	onMount(loadAlbums);
+
+	const handleCreateAlbum = async () => {
+		const newAlbum = await createAlbum();
+		if (newAlbum) {
+			goto('/albums/' + newAlbum.id);
+		}
+	};
 </script>
 
 <svelte:head>
@@ -46,7 +54,7 @@
 				</div>
 
 				<div>
-					<button on:click={createAlbum} class="immich-text-button text-sm">
+					<button on:click={handleCreateAlbum} class="immich-text-button text-sm">
 						<span>
 							<PlusBoxOutline size="18" />
 						</span>
@@ -64,7 +72,10 @@
 				{#each $albums as album}
 					{#key album.id}
 						<a sveltekit:prefetch href={`albums/${album.id}`}>
-							<AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e, album)} />
+							<AlbumCard
+								{album}
+								on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
+							/>
 						</a>
 					{/key}
 				{/each}

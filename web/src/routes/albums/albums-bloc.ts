@@ -1,4 +1,3 @@
-import { goto } from '$app/navigation';
 import {
 	notificationController,
 	NotificationType
@@ -9,7 +8,7 @@ import { writable, get } from 'svelte/store';
 
 type AlbumsProps = { albums: AlbumResponseDto[] };
 
-export const useAlbum = (props: AlbumsProps) => {
+export const useAlbums = (props: AlbumsProps) => {
 	const albums = writable([...props.albums]);
 	const isShowContextMenu = writable(false);
 	const contextMenuPosition = writable<OnShowContextMenuDetail>({ x: 0, y: 0 });
@@ -31,13 +30,13 @@ export const useAlbum = (props: AlbumsProps) => {
 		}
 	}
 
-	async function createAlbum(): Promise<void> {
+	async function createAlbum(): Promise<AlbumResponseDto | undefined> {
 		try {
 			const { data: newAlbum } = await api.albumApi.createAlbum({
 				albumName: 'Untitled'
 			});
 
-			goto('/albums/' + newAlbum.id);
+			return newAlbum;
 		} catch (e) {
 			console.error('Error [createAlbum] ', e);
 			notificationController.show({
@@ -56,14 +55,14 @@ export const useAlbum = (props: AlbumsProps) => {
 	}
 
 	async function showAlbumContextMenu(
-		event: CustomEvent<OnShowContextMenuDetail>,
+		contextMenuDetail: OnShowContextMenuDetail,
 		album: AlbumResponseDto
 	): Promise<void> {
 		contextMenuTargetAlbum.set(album);
 
 		contextMenuPosition.set({
-			x: event.detail.x,
-			y: event.detail.y
+			x: contextMenuDetail.x,
+			y: contextMenuDetail.y
 		});
 		const _isShowContextMenu = get(isShowContextMenu);
 		isShowContextMenu.set(!_isShowContextMenu);
