@@ -97,6 +97,8 @@ There are several services that compose Immich:
 
 # Installation
 
+NOTE: When using a reverse proxy in front of Immich (such as NGINX), the reverse proxy might require extra configuration to allow large files to be uploaded (such as client_max_body_size in the case of NGINX).
+
 ## Testing One-step installation (not recommended for production)
 
 > ⚠️ *This installation method is for evaluating Immich before futher customization to meet the users' needs.*
