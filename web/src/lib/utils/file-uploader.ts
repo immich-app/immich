@@ -56,8 +56,8 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 				albumUploadAssetStore.count.set(acceptedFile.length);
 			}
 
-			for (const asset of acceptedFile) {
-				await fileUploader(asset, uploadType);
+			for (let idx = 0; idx < acceptedFile.length; idx++) {
+				await fileUploader(idx.toString(), acceptedFile[idx], uploadType);
 			}
 		};
 
@@ -67,7 +67,7 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 	}
 };
 
-async function fileUploader(asset: File, uploadType: UploadType) {
+async function fileUploader(fileIndex: string, asset: File, uploadType: UploadType) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
 	const fileExtension = temp[temp.length - 1];
@@ -85,10 +85,10 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 				? new Date(exifData.DateTimeOriginal).toISOString()
 				: new Date(asset.lastModified).toISOString();
 
-		const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
+		// const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
 
-		// Create and add Unique ID of asset on the device
-		formData.append('deviceAssetId', deviceAssetId);
+		// // Create and add Unique ID of asset on the device
+		// formData.append('deviceAssetId', deviceAssetId);
 
 		// Get device id - for web -> use WEB
 		formData.append('deviceId', 'WEB');
@@ -116,27 +116,27 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 
 		// Check if asset upload on server before performing upload
 
-		const { data, status } = await api.assetApi.checkDuplicateAsset({
-			deviceAssetId: String(deviceAssetId),
-			deviceId: 'WEB'
-		});
+		// const { data, status } = await api.assetApi.checkDuplicateAsset({
+		// 	deviceAssetId: String(deviceAssetId),
+		// 	deviceId: 'WEB'
+		// });
 
-		if (status === 200) {
-			if (data.isExist) {
-				if (uploadType === UploadType.ALBUM && data.id) {
-					albumUploadAssetStore.asset.update((a) => {
-						return [...a, data.id!];
-					});
-				}
-				return;
-			}
-		}
+		// if (status === 200) {
+		// 	if (data.isExist) {
+		// 		if (uploadType === UploadType.ALBUM && data.id) {
+		// 			albumUploadAssetStore.asset.update((a) => {
+		// 				return [...a, data.id!];
+		// 			});
+		// 		}
+		// 		return;
+		// 	}
+		// }
 
 		const request = new XMLHttpRequest();
 
 		request.upload.onloadstart = () => {
 			const newUploadAsset: UploadAsset = {
-				id: deviceAssetId,
+				id: fileIndex,
 				file: asset,
 				progress: 0,
 				fileExtension: fileExtension
@@ -147,18 +147,20 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 
 		request.upload.onload = (event) => {
 			setTimeout(() => {
-				uploadAssetsStore.removeUploadAsset(deviceAssetId);
+				uploadAssetsStore.removeUploadAsset(fileIndex);
 			}, 1000);
 		};
 
 		request.onreadystatechange = () => {
 			try {
-				if (request.readyState === 4 && uploadType === UploadType.ALBUM) {
+				if (request.readyState === 4) {
 					const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
 
-					albumUploadAssetStore.asset.update((assets) => {
-						return [...assets, res?.id || ''];
-					});
+					if (uploadType === UploadType.ALBUM) {
+						albumUploadAssetStore.asset.update((assets) => {
+							return [...assets, res?.id || ''];
+						});
+					}
 
 					if (request.status !== 201) {
 						handleUploadError(asset, res);
@@ -171,18 +173,18 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 
 		// listen for `error` event
 		request.upload.onerror = (event) => {
-			uploadAssetsStore.removeUploadAsset(deviceAssetId);
+			uploadAssetsStore.removeUploadAsset(fileIndex);
 		};
 
 		// listen for `abort` event
 		request.upload.onabort = () => {
-			uploadAssetsStore.removeUploadAsset(deviceAssetId);
+			uploadAssetsStore.removeUploadAsset(fileIndex);
 		};
 
 		// listen for `progress` event
 		request.upload.onprogress = (event) => {
 			const percentComplete = Math.floor((event.loaded / event.total) * 100);
-			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
+			uploadAssetsStore.updateProgress(fileIndex, percentComplete);
 		};
 
 		request.open('POST', `/api/asset/upload`);
