@@ -97,7 +97,7 @@ class ImmichCacheInfoRepository extends ImmichCacheRepository {
 
       return aTouched.compareTo(bTouched);
     });
-    return values.skip(capacity).toList();
+    return values.skip(capacity).take(10).toList();
   }
 
   @override
