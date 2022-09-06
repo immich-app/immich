@@ -11,7 +11,14 @@ tmp_dir=/tmp
 # [0|1]
 dev=0
 
-# $@: args from cli
+# Parse arguments given to the script from the CLI.
+# Show help message, run installation and run install in dev mode.
+#
+# params:
+# - $@: args from cli
+#
+# return: 
+# - exit 0 if shows help message
 parse_args()
 {
     if [ "$1" == "--install" ]
@@ -43,7 +50,17 @@ parse_args()
     fi
 }
 
-# $1: message to print
+# Shows a message in a box, which looks like:
+#
+# ###########
+# # Message #
+# ###########
+#
+# params:
+# - $1: message to print
+#
+# return:
+# - '1' if message is empty 
 display_message_box()
 {
     # Calculate message and box width
@@ -76,6 +93,11 @@ display_message_box()
     echo
 }
 
+# Add Alpine community repo and update packages list.
+#
+# params: nothing
+#
+# return: nothing
 update_repo()
 {
     # Enable community repository if not already enabled
@@ -90,6 +112,14 @@ update_repo()
     apk update
 }
 
+# Fetch source code needed for the project's building.
+# If the script runs in dev mode, the source code must be
+# in $tmp_dir diretory. Else, the code is downloaded from GitHub.
+#
+# params: nothing
+#
+# return: 
+# - exit 1 if dev mode but no source code in tmp path
 get_source_code()
 {
     # If not in dev mode
@@ -111,6 +141,15 @@ get_source_code()
 }
 
 # Immich server
+# Install Immich server and microservices.
+# It asks for informations, builds and installs projet, 
+# create a service file and add the machine in hosts list.
+#
+# params: nothing
+#
+# return:
+# - exit if cannot cd in the project directory
+# - return if cannot cd ~
 setup_server()
 {
     display_message_box "Server & microservices"
@@ -219,6 +258,15 @@ setup_server()
 }
 
 # Immich web
+# Install Immich web server.
+# It installs dependencies, builds and installs projet, 
+# create a service file and add the machine in hosts list.
+#
+# params: nothing
+#
+# return:
+# - exit if cannot cd in the project directory
+# - return if cannot cd ~
 setup_web()
 {
     display_message_box "Web"
@@ -272,7 +320,18 @@ setup_web()
     cd ~ || return
 }
 
-# Immich machine learning
+# Disabled, Alpine doesn't support TensorFlow.
+# Error is "__memcpy_chk: symbol not found" at runtime.
+#
+# Install Immich machine learning.
+# It checks for CPU compatibility, builds and installs the project.
+#
+# params: nothing
+#
+# return:
+# - if CPU doesn't support AVX2 instructions
+# - exit if cannot cd in project's directory
+# - return if cannot cd in homedir
 setup_machine_learning()
 {
     display_message_box "Machine learning"
@@ -294,8 +353,6 @@ setup_machine_learning()
     cp ${tmp_dir}/immich-${immich_ver}/machine-learning/package*.json .
 
     echo "Installing build stage dependencies..."
-    # gcompat is needed to get ld-linux-x86-64.so
-    # apk add gcc g++ make cmake python3 py3-pip ffmpeg nodejs-current npm gcompat
     apk add gcc g++ make cmake python3 py3-pip ffmpeg nodejs-current npm
 
     echo "Installing..."
@@ -346,6 +403,12 @@ setup_machine_learning()
 }
 
 # PostgreSQL
+# Installs and initialize PostgreSQL DB.
+# Rmote database not supported.
+#
+# params: nothing
+#
+# return: nothing
 setup_database()
 {
     display_message_box "Database"
@@ -409,7 +472,11 @@ CREATE DATABASE $db_name;
     echo "export DB_DATABASE_NAME='$db_name'" >> /etc/profile.d/node.sh
 }
 
-# Redis server
+# Install Redis
+#
+# params: nothing
+#
+# return: nothing
 setup_redis()
 {
     display_message_box "Redis"
@@ -425,7 +492,14 @@ setup_redis()
     echo -e "127.0.0.1\timmich_redis" >> /etc/hosts
 }
 
-# Nginx
+# It installs Nginx, disable the default
+# webpage and add the custom config.
+#
+# params: nothing
+#
+# return:
+# - exit if cannot cd in project's directory
+# - return if cannot go back to homedir
 setup_proxy()
 {
     display_message_box "Proxy"
@@ -458,6 +532,13 @@ setup_proxy()
     cd ~ || return
 }
 
+# Remove installation files (mainly source code)
+# downloaded from the script.
+# If in dev mode, the code isn't erased.
+#
+# params: nothing
+#
+# return: nothing
 remove_install_files()
 {
     # Clean installation files (if not in debug)
