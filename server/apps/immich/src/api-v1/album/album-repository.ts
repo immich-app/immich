@@ -10,6 +10,7 @@ import { CreateAlbumDto } from './dto/create-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
+import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
 
 export interface IAlbumRepository {
@@ -23,6 +24,7 @@ export interface IAlbumRepository {
   addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AlbumEntity>;
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
   getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]>;
+  getCountByUserId(userId: string): Promise<AlbumCountResponseDto>;
 }
 
 export const ALBUM_REPOSITORY = 'ALBUM_REPOSITORY';
@@ -41,6 +43,18 @@ export class AlbumRepository implements IAlbumRepository {
 
     private dataSource: DataSource,
   ) {}
+
+  async getCountByUserId(userId: string): Promise<AlbumCountResponseDto> {
+    const ownedAlbums = await this.albumRepository.find({ where: { ownerId: userId }, relations: ['sharedUsers'] });
+
+    const sharedAlbums = await this.userAlbumRepository.count({
+      where: { sharedUserId: userId },
+    });
+
+    const sharingAlbums = ownedAlbums.map((album) => album.sharedUsers?.length || 0).reduce((a, b) => a + b, 0);
+
+    return new AlbumCountResponseDto(ownedAlbums.length, sharedAlbums, sharingAlbums);
+  }
 
   async create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity> {
     return this.dataSource.transaction(async (transactionalEntityManager) => {
@@ -154,23 +168,23 @@ export class AlbumRepository implements IAlbumRepository {
     let query = this.albumRepository.createQueryBuilder('album');
 
     const albums = await query
-        .where('album.ownerId = :ownerId', { ownerId: userId })
-        .andWhere((qb) => {
-          // shared with userId
-          const subQuery = qb
-              .subQuery()
-              .select('assetAlbum.albumId')
-              .from(AssetAlbumEntity, 'assetAlbum')
-              .where('assetAlbum.assetId = :assetId', {assetId: assetId})
-              .getQuery();
-          return `album.id IN ${subQuery}`;
-        })
-        .leftJoinAndSelect('album.assets', 'assets')
-        .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
-        .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
-        .leftJoinAndSelect('sharedUser.userInfo', 'userInfo')
-        .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC')
-        .getMany();
+      .where('album.ownerId = :ownerId', { ownerId: userId })
+      .andWhere((qb) => {
+        // shared with userId
+        const subQuery = qb
+          .subQuery()
+          .select('assetAlbum.albumId')
+          .from(AssetAlbumEntity, 'assetAlbum')
+          .where('assetAlbum.assetId = :assetId', { assetId: assetId })
+          .getQuery();
+        return `album.id IN ${subQuery}`;
+      })
+      .leftJoinAndSelect('album.assets', 'assets')
+      .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
+      .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
+      .leftJoinAndSelect('sharedUser.userInfo', 'userInfo')
+      .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC')
+      .getMany();
 
     return albums;
   }
@@ -228,9 +242,10 @@ export class AlbumRepository implements IAlbumRepository {
 
     // TODO: No need to return boolean if using a singe delete query
     if (deleteAssetCount == removeAssetsDto.assetIds.length) {
-      const retAlbum = await this.get(album.id) as AlbumEntity;
+      const retAlbum = (await this.get(album.id)) as AlbumEntity;
 
-      if (retAlbum?.assets?.length === 0) { // is empty album
+      if (retAlbum?.assets?.length === 0) {
+        // is empty album
         await this.albumRepository.update(album.id, { albumThumbnailAssetId: null });
         retAlbum.albumThumbnailAssetId = null;
       }

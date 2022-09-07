@@ -9,6 +9,7 @@ import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
 import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from './response-dto/album-response.dto';
 import { ALBUM_REPOSITORY, IAlbumRepository } from './album-repository';
+import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 
 @Injectable()
 export class AlbumService {
@@ -117,5 +118,9 @@ export class AlbumService {
 
     const updatedAlbum = await this._albumRepository.updateAlbum(album, updateAlbumDto);
     return mapAlbum(updatedAlbum);
+  }
+
+  async getAlbumCountByUserId(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
+    return this._albumRepository.getCountByUserId(authUser.id);
   }
 }

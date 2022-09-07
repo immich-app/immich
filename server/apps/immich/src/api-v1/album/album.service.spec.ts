@@ -116,7 +116,8 @@ describe('Album service', () => {
       removeAssets: jest.fn(),
       removeUser: jest.fn(),
       updateAlbum: jest.fn(),
-      getListByAssetId: jest.fn()
+      getListByAssetId: jest.fn(),
+      getCountByUserId: jest.fn(),
     };
     sut = new AlbumService(albumRepositoryMock);
   });

@@ -26,14 +26,6 @@
 
 	export let data: PageData;
 
-	onMount(async () => {
-		openWebsocketConnection();
-
-		return () => {
-			closeWebsocketConnection();
-		};
-	});
-
 	const deleteSelectedAssetHandler = async () => {
 		try {
 			if (

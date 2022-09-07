@@ -48,6 +48,7 @@ import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { QueryFailedError } from 'typeorm';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -78,7 +79,13 @@ export class AssetController {
     const checksum = await this.assetService.calculateChecksum(file.path);
 
     try {
-      const savedAsset = await this.assetService.createUserAsset(authUser, assetInfo, file.path, file.mimetype, checksum);
+      const savedAsset = await this.assetService.createUserAsset(
+        authUser,
+        assetInfo,
+        file.path,
+        file.mimetype,
+        checksum,
+      );
 
       if (!savedAsset) {
         await this.backgroundTaskService.deleteFileOnDisk([
@@ -104,7 +111,7 @@ export class AssetController {
       ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
 
       if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
-        const existedAsset = await this.assetService.getAssetByChecksum(authUser.id, checksum)
+        const existedAsset = await this.assetService.getAssetByChecksum(authUser.id, checksum);
         return new AssetFileUploadResponseDto(existedAsset.id);
       }
 
@@ -172,6 +179,10 @@ export class AssetController {
     return this.assetService.getAssetCountByTimeBucket(authUser, getAssetCountByTimeGroupDto);
   }
 
+  @Get('/count-by-user-id')
+  async getAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
+    return this.assetService.getAssetCountByUserId(authUser);
+  }
   /**
    * Get all AssetEntity belong to the user
    */
