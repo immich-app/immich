@@ -2,7 +2,7 @@
 
 # All-in-one installation without Docker
 
-immich_ver=1.26.0_36-dev
+immich_ver=1.27.0_37-dev
 alpine_ver=3.14
 
 tmp_dir=/tmp
