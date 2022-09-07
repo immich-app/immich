@@ -22,11 +22,13 @@ depend()
         need redis
 }
 
+# Load env variables
 start_pre()
 {
         source /etc/profile
 }
 
+# Find children process and kill them
 stop_pre()
 {
 	if pgrep -P "$(cat $pidfile)" &> /dev/null
