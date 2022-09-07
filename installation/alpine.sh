@@ -103,7 +103,6 @@ display_message_box()
 check_os()
 {
 	os_ver_file=/etc/alpine-release
-	needed_os_ver="3.14"
 
 	if [ ! -e "$os_ver_file" ]
 	then
@@ -111,7 +110,7 @@ check_os()
 		exit 1
 	fi
 
-	if ! grep -qE "^$needed_os_ver" "$os_ver_file"
+	if ! grep -qE "^$alpine_ver" "$os_ver_file"
 	then
 		echo "Alpine $(cat $os_ver_file) not supported: need Alpine $needed_os_ver."
 		exit 2
