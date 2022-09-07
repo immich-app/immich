@@ -347,6 +347,9 @@ export class AssetService {
   public async deleteAssetById(authUser: AuthUserDto, assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
     const result: DeleteAssetResponseDto[] = [];
 
+    // Pray the mitigator
+    await this._assetRepository.mitigateThumbsDeletion(assetIds.ids);
+
     const target = assetIds.ids;
     for (const assetId of target) {
       const res = await this.assetRepository.delete({

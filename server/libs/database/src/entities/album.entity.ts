@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn} from 'typeorm';
 import { AssetAlbumEntity } from './asset-album.entity';
 import { UserAlbumEntity } from './user-album.entity';
+import {AssetEntity} from "@app/database/entities/asset.entity";
 
 @Entity('albums')
 export class AlbumEntity {
@@ -24,4 +25,8 @@ export class AlbumEntity {
 
   @OneToMany(() => AssetAlbumEntity, (assetAlbumEntity) => assetAlbumEntity.albumInfo)
   assets?: AssetAlbumEntity[];
+
+  @OneToOne(() => AssetEntity)
+  @JoinColumn({ name: 'albumThumbnailAssetId', referencedColumnName: 'id' })
+  thumbnailAssetInfo?: AssetEntity;
 }

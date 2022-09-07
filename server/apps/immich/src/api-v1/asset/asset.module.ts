@@ -9,12 +9,13 @@ import { BackgroundTaskService } from '../../modules/background-task/background-
 import { CommunicationModule } from '../communication/communication.module';
 import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
 import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
+import {AlbumEntity} from "@app/database/entities/album.entity";
 
 @Module({
   imports: [
     CommunicationModule,
     BackgroundTaskModule,
-    TypeOrmModule.forFeature([AssetEntity]),
+    TypeOrmModule.forFeature([AssetEntity, AlbumEntity]),
     BullModule.registerQueue({
       name: assetUploadedQueueName,
       defaultJobOptions: {

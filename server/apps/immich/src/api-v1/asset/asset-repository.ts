@@ -1,7 +1,7 @@
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -9,6 +9,7 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
+import {AlbumEntity} from "@app/database/entities/album.entity";
 
 export interface IAssetRepository {
   create(
@@ -24,6 +25,7 @@ export interface IAssetRepository {
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
+  mitigateThumbsDeletion(assetIds: string[]): Promise<AlbumEntity[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
@@ -36,6 +38,9 @@ export class AssetRepository implements IAssetRepository {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+
+    @InjectRepository(AlbumEntity)
+    private albumRepository: Repository<AlbumEntity>,
   ) {}
 
   async getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]> {
@@ -208,6 +213,34 @@ export class AssetRepository implements IAssetRepository {
     rows.forEach((v) => res.push(v.deviceAssetId));
 
     return res;
+  }
+
+  async mitigateThumbsDeletion(assetIds: string[]): Promise<AlbumEntity[]> {
+    const query = this.albumRepository
+        .createQueryBuilder('album')
+        .where('album.albumThumbnailAssetId IN(:...assetIds)', {assetIds: assetIds});
+
+    const albums = await query.getMany();
+
+    for (const album of albums) {
+      const alternativeAssetQuery = this.assetRepository
+          .createQueryBuilder('asset')
+          .innerJoinAndSelect('asset.albums', 'albums')
+          .where('albums.albumId = :albumId', {albumId: album.id})
+          .andWhere('asset.id NOT IN(:...assetIds)', {assetIds: assetIds});
+
+      const alternativeAsset = await alternativeAssetQuery.getOne();
+
+      if(alternativeAsset) {
+        // Change the default thumbnail to a random image inside the album
+        this.albumRepository.update(album.id, { albumThumbnailAssetId:  alternativeAsset.id });
+      } else {
+        // Or set to null, probably the album is now empty
+        this.albumRepository.update(album.id, { albumThumbnailAssetId: null });
+      }
+    }
+
+    return albums;
   }
 
   /**

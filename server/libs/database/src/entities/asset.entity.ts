@@ -1,6 +1,7 @@
-import { Column, Entity, Index, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {Column, Entity, Index, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique} from 'typeorm';
 import { ExifEntity } from './exif.entity';
 import { SmartInfoEntity } from './smart-info.entity';
+import {AssetAlbumEntity} from "@app/database/entities/asset-album.entity";
 
 @Entity('assets')
 @Unique('UQ_userid_checksum', ['userId', 'checksum'])
@@ -56,6 +57,9 @@ export class AssetEntity {
 
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;
+
+  @OneToMany(() => AssetAlbumEntity, (assetAlbumEntity) => assetAlbumEntity.assetInfo)
+  albums?: AssetAlbumEntity[]
 }
 
 export enum AssetType {
