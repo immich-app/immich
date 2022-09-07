@@ -21,7 +21,7 @@ export const checkAppVersion = async (): Promise<CheckAppVersionReponse> => {
 
 		if (!appVersion) {
 			return {
-				shouldShowAnnouncement: true,
+				shouldShowAnnouncement: false,
 				remoteVersion: latestRelease.tag_name,
 				localVersion: 'empty'
 			};
