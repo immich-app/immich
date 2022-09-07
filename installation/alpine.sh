@@ -93,6 +93,31 @@ display_message_box()
     echo
 }
 
+# Check OS and version are supported.
+#
+# params: nothing
+#
+# return:
+# - exit 1 if OS isn't supported
+# - exit 2 OS version isn't supported
+check_os()
+{
+	os_ver_file=/etc/alpine-release
+	needed_os_ver="3.14"
+
+	if [ ! -e "$os_ver_file" ]
+	then
+		echo "OS not supported! Please run it on Alpine Linux."
+		exit 1
+	fi
+
+	if ! grep -qE "^$needed_os_ver" "$os_ver_file"
+	then
+		echo "Alpine $(cat $os_ver_file) not supported: need Alpine $needed_os_ver."
+		exit 2
+	fi
+}
+
 # Add Alpine community repo and update packages list.
 #
 # params: nothing
@@ -554,6 +579,7 @@ remove_install_files()
 # main()
 display_message_box "Immich v$immich_ver installation script for Alpine $alpine_ver"
 parse_args "$@"
+check_os
 update_repo
 get_source_code
 setup_redis
