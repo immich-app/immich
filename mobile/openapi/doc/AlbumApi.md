@@ -13,6 +13,7 @@ Method | HTTP request | Description
 [**addUsersToAlbum**](AlbumApi.md#adduserstoalbum) | **PUT** /album/{albumId}/users | 
 [**createAlbum**](AlbumApi.md#createalbum) | **POST** /album | 
 [**deleteAlbum**](AlbumApi.md#deletealbum) | **DELETE** /album/{albumId} | 
+[**getAlbumCountByUserId**](AlbumApi.md#getalbumcountbyuserid) | **GET** /album/count-by-user-id | 
 [**getAlbumInfo**](AlbumApi.md#getalbuminfo) | **GET** /album/{albumId} | 
 [**getAllAlbums**](AlbumApi.md#getallalbums) | **GET** /album | 
 [**removeAssetFromAlbum**](AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{albumId}/assets | 
@@ -208,6 +209,49 @@ void (empty response body)
 
  - **Content-Type**: Not defined
  - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAlbumCountByUserId**
+> AlbumCountResponseDto getAlbumCountByUserId()
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AlbumApi();
+
+try {
+    final result = api_instance.getAlbumCountByUserId();
+    print(result);
+} catch (e) {
+    print('Exception when calling AlbumApi->getAlbumCountByUserId: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**AlbumCountResponseDto**](AlbumCountResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

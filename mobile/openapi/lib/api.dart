@@ -37,6 +37,7 @@ part 'api/user_api.dart';
 part 'model/add_assets_dto.dart';
 part 'model/add_users_dto.dart';
 part 'model/admin_signup_response_dto.dart';
+part 'model/album_count_response_dto.dart';
 part 'model/album_response_dto.dart';
 part 'model/asset_count_by_time_bucket.dart';
 part 'model/asset_count_by_time_bucket_response_dto.dart';
