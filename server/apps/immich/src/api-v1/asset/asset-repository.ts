@@ -25,6 +25,7 @@ export interface IAssetRepository {
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
+  getAssetCountByUserId(userId: string): Promise<number>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
 }
@@ -37,6 +38,15 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
+
+  async getAssetCountByUserId(userId: string): Promise<number> {
+    // Get asset count by AssetType
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .select(`COUNT(asset.id)::int`, 'count')
+      .where('"userId" = :userId', { userId: userId })
+      .getCount();
+  }
 
   async getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]> {
     // Get asset entity from a list of time buckets

@@ -479,4 +479,8 @@ export class AssetService {
     fileReadStream.pipe(sha1Hash);
     return deferred;
   }
+
+  getAssetCountByUserId(authUser: AuthUserDto): Promise<number> {
+    return this._assetRepository.getAssetCountByUserId(authUser.id);
+  }
 }
