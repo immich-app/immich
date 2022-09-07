@@ -123,11 +123,7 @@
 					<p>{moment(asset.exifInfo.dateTimeOriginal).format('MMM DD, YYYY')}</p>
 					<div class="flex gap-2 text-sm">
 						<p>
-							{moment(
-								asset.exifInfo.dateTimeOriginal
-									.toString()
-									.slice(0, asset.exifInfo.dateTimeOriginal.toString().length - 1)
-							).format('ddd, hh:mm A')}
+							{moment(asset.exifInfo.dateTimeOriginal).format('ddd, hh:mm A')}
 						</p>
 						<p>GMT{moment(asset.exifInfo.dateTimeOriginal).format('Z')}</p>
 					</div>
