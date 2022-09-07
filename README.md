@@ -146,7 +146,7 @@ wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.en
 * Populate `UPLOAD_LOCATION` as prefered location for storing backup assets.
 * Populate a secret value for `JWT_SECRET`, you can use this command: `openssl rand -base64 128`
 * [Optional] Populate Mapbox value to use reverse geocoding.
-* [Optional] Populate `TZ` as your timezone, default is `Etc/UTC`.
+* [Optional] Populate `TZ` as your timezone, default is `Etc/UTC`. You can use `curl -s http://geoip.ubuntu.com/lookup | grep -oP '(?<=<TimeZone>)(.*)(?=</TimeZone>)'` or `curl -s http://ip-api.com/json/ | grep -oP '(?<=timezone":")(.*?)(?=")'` to fetch your current timezone.
 
 ### Step 3 - Start the containers
 
