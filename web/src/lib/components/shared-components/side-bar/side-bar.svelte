@@ -7,9 +7,12 @@
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import SideBarButton from './side-bar-button.svelte';
 	import StatusBox from '../status-box.svelte';
+	import { AlbumCountResponseDto, api, AssetCountByUserIdResponseDto } from '@api';
 
 	let selectedAction: AppSideBarSelection;
 
+	let assetCount: AssetCountByUserIdResponseDto;
+	let albumCount: AlbumCountResponseDto;
 	onMount(async () => {
 		if ($page.routeId == 'albums') {
 			selectedAction = AppSideBarSelection.ALBUMS;
@@ -18,6 +21,12 @@
 		} else if ($page.routeId == 'sharing') {
 			selectedAction = AppSideBarSelection.SHARING;
 		}
+
+		// const { data: assetCountRes } = await api.assetApi.getAssetCountByUserId();
+		// const { data: albumCountRes } = await api.albumApi.getAlbumCountByUserId();
+
+		// assetCount = assetCountRes;
+		// albumCount = albumCountRes;
 	});
 </script>
 
@@ -28,8 +37,8 @@
 			logo={ImageOutline}
 			actionType={AppSideBarSelection.PHOTOS}
 			isSelected={selectedAction === AppSideBarSelection.PHOTOS}
-		/></a
-	>
+		/>
+	</a>
 	<a sveltekit:prefetch href={$page.routeId !== 'sharing' ? `/sharing` : null}>
 		<SideBarButton
 			title="Sharing"
