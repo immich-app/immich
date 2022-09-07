@@ -41,6 +41,7 @@ part 'model/album_count_response_dto.dart';
 part 'model/album_response_dto.dart';
 part 'model/asset_count_by_time_bucket.dart';
 part 'model/asset_count_by_time_bucket_response_dto.dart';
+part 'model/asset_count_by_user_id_response_dto.dart';
 part 'model/asset_file_upload_response_dto.dart';
 part 'model/asset_response_dto.dart';
 part 'model/asset_type_enum.dart';

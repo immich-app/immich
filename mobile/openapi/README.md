@@ -119,6 +119,7 @@ Class | Method | HTTP request | Description
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AssetCountByTimeBucket](doc//AssetCountByTimeBucket.md)
  - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
+ - [AssetCountByUserIdResponseDto](doc//AssetCountByUserIdResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)

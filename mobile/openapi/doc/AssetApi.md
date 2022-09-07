@@ -365,7 +365,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetCountByUserId**
-> num getAssetCountByUserId()
+> AssetCountByUserIdResponseDto getAssetCountByUserId()
 
 
 
@@ -394,7 +394,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-**num**
+[**AssetCountByUserIdResponseDto**](AssetCountByUserIdResponseDto.md)
 
 ### Authorization
 

@@ -206,6 +206,8 @@ class ApiClient {
           return AssetCountByTimeBucket.fromJson(value);
         case 'AssetCountByTimeBucketResponseDto':
           return AssetCountByTimeBucketResponseDto.fromJson(value);
+        case 'AssetCountByUserIdResponseDto':
+          return AssetCountByUserIdResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetResponseDto':

@@ -211,6 +211,25 @@ export interface AssetCountByTimeBucketResponseDto {
 /**
  * 
  * @export
+ * @interface AssetCountByUserIdResponseDto
+ */
+export interface AssetCountByUserIdResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByUserIdResponseDto
+     */
+    'photos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByUserIdResponseDto
+     */
+    'videos': number;
+}
+/**
+ * 
+ * @export
  * @interface AssetFileUploadResponseDto
  */
 export interface AssetFileUploadResponseDto {
@@ -2763,7 +2782,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAssetCountByUserId(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
+        async getAssetCountByUserId(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetCountByUserIdResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetCountByUserId(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -2932,7 +2951,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetCountByUserId(options?: any): AxiosPromise<number> {
+        getAssetCountByUserId(options?: any): AxiosPromise<AssetCountByUserIdResponseDto> {
             return localVarFp.getAssetCountByUserId(options).then((request) => request(axios, basePath));
         },
         /**

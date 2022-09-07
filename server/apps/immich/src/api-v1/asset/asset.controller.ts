@@ -48,6 +48,7 @@ import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { QueryFailedError } from 'typeorm';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -179,7 +180,7 @@ export class AssetController {
   }
 
   @Get('/count-by-user-id')
-  async getAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<number> {
+  async getAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this.assetService.getAssetCountByUserId(authUser);
   }
   /**
