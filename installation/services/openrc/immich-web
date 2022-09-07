@@ -16,7 +16,8 @@ error_log=/var/log/immich-web_err.log
 required_dirs="$data_path"
 required_files="$data_path/entrypoint.sh"
 
-depend() {
+depend() 
+{
         need net
 }
 

@@ -16,7 +16,8 @@ error_log=/var/log/immich-server_err.log
 required_dirs="$data_path"
 required_files="$data_path/start-server.sh"
 
-depend() {
+depend() 
+{
         need postgresql
         need redis
 }
