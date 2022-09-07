@@ -167,7 +167,7 @@ get_source_code()
 
 # Immich server
 # Install Immich server and microservices.
-# It asks for informations, builds and installs projet, 
+# It asks for informations, builds and installs project, 
 # create a service file and add the machine in hosts list.
 #
 # params: nothing
@@ -285,7 +285,7 @@ setup_server()
 
 # Immich web
 # Install Immich web server.
-# It installs dependencies, builds and installs projet, 
+# It installs dependencies, builds and installs project, 
 # create a service file and add the machine in hosts list.
 #
 # params: nothing
