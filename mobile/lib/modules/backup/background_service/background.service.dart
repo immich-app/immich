@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show IsolateNameServer, PluginUtilities;
 import 'package:cancellation_token_http/http.dart';
-import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -33,7 +32,6 @@ class BackgroundService {
       MethodChannel('immich/foregroundChannel');
   static const MethodChannel _backgroundChannel =
       MethodChannel('immich/backgroundChannel');
-  bool _isForegroundInitialized = false;
   bool _isBackgroundInitialized = false;
   CancellationToken? _cancellationToken;
   bool _canceledBySystem = false;
@@ -43,32 +41,34 @@ class BackgroundService {
   ReceivePort? _rp;
   bool _errorGracePeriodExceeded = true;
 
-  bool get isForegroundInitialized {
-    return _isForegroundInitialized;
-  }
-
   bool get isBackgroundInitialized {
     return _isBackgroundInitialized;
   }
 
-  Future<bool> _initialize() async {
-    final callback = PluginUtilities.getCallbackHandle(_nativeEntry)!;
-    var result = await _foregroundChannel
-        .invokeMethod('initialize', [callback.toRawHandle()]);
-    _isForegroundInitialized = true;
-    return result;
-  }
-
   /// Ensures that the background service is enqueued if enabled in settings
   Future<bool> resumeServiceIfEnabled() async {
-    return await isBackgroundBackupEnabled() &&
-        await startService(keepExisting: true);
+    return await isBackgroundBackupEnabled() && await enableService();
   }
 
   /// Enqueues the background service
-  Future<bool> startService({
-    bool immediate = false,
-    bool keepExisting = false,
+  Future<bool> enableService({bool immediate = false}) async {
+    if (!Platform.isAndroid) {
+      return true;
+    }
+    try {
+      final callback = PluginUtilities.getCallbackHandle(_nativeEntry)!;
+      final String title =
+          "backup_background_service_default_notification".tr();
+      final bool ok = await _foregroundChannel
+          .invokeMethod('enable', [callback.toRawHandle(), title, immediate]);
+      return ok;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /// Configures the background service
+  Future<bool> configureService({
     bool requireUnmetered = true,
     bool requireCharging = false,
   }) async {
@@ -76,14 +76,9 @@ class BackgroundService {
       return true;
     }
     try {
-      if (!_isForegroundInitialized) {
-        await _initialize();
-      }
-      final String title =
-          "backup_background_service_default_notification".tr();
       final bool ok = await _foregroundChannel.invokeMethod(
-        'start',
-        [immediate, keepExisting, requireUnmetered, requireCharging, title],
+        'configure',
+        [requireUnmetered, requireCharging],
       );
       return ok;
     } catch (error) {
@@ -92,15 +87,12 @@ class BackgroundService {
   }
 
   /// Cancels the background service (if currently running) and removes it from work queue
-  Future<bool> stopService() async {
+  Future<bool> disableService() async {
     if (!Platform.isAndroid) {
       return true;
     }
     try {
-      if (!_isForegroundInitialized) {
-        await _initialize();
-      }
-      final ok = await _foregroundChannel.invokeMethod('stop');
+      final ok = await _foregroundChannel.invokeMethod('disable');
       return ok;
     } catch (error) {
       return false;
@@ -113,9 +105,6 @@ class BackgroundService {
       return false;
     }
     try {
-      if (!_isForegroundInitialized) {
-        await _initialize();
-      }
       return await _foregroundChannel.invokeMethod("isEnabled");
     } catch (error) {
       return false;
@@ -128,9 +117,6 @@ class BackgroundService {
       return true;
     }
     try {
-      if (!_isForegroundInitialized) {
-        await _initialize();
-      }
       return await _foregroundChannel
           .invokeMethod('isIgnoringBatteryOptimizations');
     } catch (error) {
@@ -289,18 +275,11 @@ class BackgroundService {
         try {
           final bool hasAccess = await acquireLock();
           if (!hasAccess) {
-            debugPrint("[_callHandler] could acquire lock, exiting");
+            debugPrint("[_callHandler] could not acquire lock, exiting");
             return false;
           }
           await translationsLoaded;
           final bool ok = await _onAssetsChanged();
-          if (ok) {
-            Hive.box(backgroundBackupInfoBox).delete(backupFailedSince);
-          } else if (Hive.box(backgroundBackupInfoBox).get(backupFailedSince) ==
-              null) {
-            Hive.box(backgroundBackupInfoBox)
-                .put(backupFailedSince, DateTime.now());
-          }
           return ok;
         } catch (error) {
           debugPrint(error.toString());
@@ -343,6 +322,29 @@ class BackgroundService {
     }
 
     await PhotoManager.setIgnorePermissionCheck(true);
+
+    do {
+      final bool backupOk = await _runBackup(backupService, backupAlbumInfo);
+      if (backupOk) {
+        await Hive.box(backgroundBackupInfoBox).delete(backupFailedSince);
+        await box.put(
+          backupInfoKey,
+          backupAlbumInfo,
+        );
+      } else if (Hive.box(backgroundBackupInfoBox).get(backupFailedSince) ==
+          null) {
+        Hive.box(backgroundBackupInfoBox)
+            .put(backupFailedSince, DateTime.now());
+        return false;
+      }
+      // check for new assets added while performing backup
+    } while (true ==
+        await _backgroundChannel.invokeMethod<bool>("hasContentChanged"));
+    return true;
+  }
+
+  Future<bool> _runBackup(
+      BackupService backupService, HiveBackupAlbums backupAlbumInfo) async {
     _errorGracePeriodExceeded = _isErrorGracePeriodExceeded();
 
     if (_canceledBySystem) {
@@ -382,10 +384,6 @@ class BackgroundService {
     );
     if (ok) {
       _clearErrorNotifications();
-      await box.put(
-        backupInfoKey,
-        backupAlbumInfo,
-      );
     } else {
       _showErrorNotification(
         title: "backup_background_service_error_title".tr(),
