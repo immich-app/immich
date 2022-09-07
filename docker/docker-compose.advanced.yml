@@ -11,6 +11,8 @@ services:
       - .env
     environment:
       - NODE_ENV=production
+      - IMAGE_CACHE_DIR=./cache
+      - VIDEO_CACHE_DIR=./cache
     depends_on:
       - redis
       - database
@@ -26,6 +28,8 @@ services:
       - .env
     environment:
       - NODE_ENV=production
+      - IMAGE_CACHE_DIR=./cache
+      - VIDEO_CACHE_DIR=./cache
     depends_on:
       - redis
       - database
