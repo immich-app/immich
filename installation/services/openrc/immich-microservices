@@ -18,7 +18,7 @@ required_files="$data_path/start-microservices.sh"
 
 depend() 
 {
-        need postgresql
+#        need postgresql
         need redis
 }
 

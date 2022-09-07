@@ -429,28 +429,28 @@ setup_machine_learning()
 
 # PostgreSQL
 # Installs and initialize PostgreSQL DB.
-# Rmote database not supported.
 #
 # params: nothing
 #
-# return: nothing
+# return: 
+# - exit 1 if cannot connect to the external DB
 setup_database()
 {
     display_message_box "Database"
 
     # Inputs
     while [[ ! "$install_db" = [1-2] ]]; do
-        read -p "Do you want to install database locally (1) or connect to an existing one (2 - not implemented): " install_db
+        read -p "Do you want to install database locally (1) or connect to an existing one (2): " install_db
     done
     read -p "Database username: " username
     read -p "Database's user password: " -s password
     echo
     read -p "Database's name: " db_name
-    echo
 
     # Install DB or connect to an existing one
     if [ "$install_db" -eq "1" ]
     then
+	# Contains temp SQL queries, see below
         psql_filename=immich.sql
 
         # postgresql-contrib used next to create the extension
@@ -481,13 +481,27 @@ CREATE DATABASE $db_name;
     else
         # Ask for DB server address, then write it to hosts file
         read -p "Database address: " db_addr
+        
+	# Binary 'pq_isready' used below to test connection
+	apk add postgresql-client
+
+	# Test connection and exit if it fails
+	echo "Testing connection to the database..."
+	if ! pg_isready -q --host="$db_addr" --dbname="$db_name" --username="$username"
+	then
+		echo "Cannot connect to the database!"
+		echo "Please verify that:"
+		echo "- remote PostgreSQL server is listening on external connections"
+		echo "- database has been created"
+		echo "- user can read and edit the database"
+		echo "- there are no blocking firewall rules"	
+		echo "- credentials are right"
+
+		exit 1
+	fi
+
         echo "Writing host address..."
         echo -e "$db_addr\timmich_postgres" >> /etc/hosts
-
-        # ...
-        # Need to execute SQL request remotely
-        # Do we connect to a privilegied account (to set password and create database),
-        # or do we connect to a standard user with already configured DB and rights?
     fi
 
     # Write persisting environment variables

@@ -16,10 +16,10 @@ error_log=/var/log/immich-machine-learning_err.log
 required_dirs="$data_path"
 required_files="$data_path/entrypoint.sh"
 
-depend() 
-{
-        need postgresql
-}
+#depend() 
+#{
+#        need postgresql
+#}
 
 # Load env variables
 start_pre()
