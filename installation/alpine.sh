@@ -492,7 +492,7 @@ CREATE DATABASE $db_name;
 
     # Write persisting environment variables
     echo "Setting some environment variables..."
-    echo "export DB_USERNAME='$usernamei'" >> /etc/profile.d/node.sh
+    echo "export DB_USERNAME='$username'" >> /etc/profile.d/node.sh
     echo "export DB_PASSWORD='$password'" >> /etc/profile.d/node.sh
     echo "export DB_DATABASE_NAME='$db_name'" >> /etc/profile.d/node.sh
 }
