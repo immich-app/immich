@@ -2,7 +2,7 @@
 
 # All-in-one installation without Docker
 
-immich_ver=1.27.0_37-dev
+immich_ver=1.28.0_38-dev
 alpine_ver=3.14
 
 tmp_dir=/tmp
@@ -315,6 +315,10 @@ setup_web()
     # Unset env var for compilation, crash if not removed
     unset NODE_ENV
     npm ci
+    chown -R node:node .
+
+    echo "Building package..."
+    npm run build
     export NODE_ENV=production
 
     # Import anything else
