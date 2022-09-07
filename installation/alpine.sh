@@ -112,7 +112,7 @@ check_os()
 
 	if ! grep -qE "^$alpine_ver" "$os_ver_file"
 	then
-		echo "Alpine $(cat $os_ver_file) not supported: need Alpine $needed_os_ver."
+		echo "Alpine $(cat $os_ver_file) not supported: need Alpine $alpine_ver."
 		exit 2
 	fi
 }
