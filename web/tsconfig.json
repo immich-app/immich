@@ -27,6 +27,9 @@
       ],
       "@api": [
         "./src/api"
+      ],
+      "@test-data": [
+        "./src/test-data"
       ]
     }
   }

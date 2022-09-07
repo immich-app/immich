@@ -1,3 +1,16 @@
+<script lang="ts" context="module">
+	type OnShowContextMenu = {
+		showalbumcontextmenu: OnShowContextMenuDetail;
+	};
+
+	type OnClick = {
+		click: OnClickDetail;
+	};
+
+	export type OnShowContextMenuDetail = { x: number; y: number };
+	export type OnClickDetail = AlbumResponseDto;
+</script>
+
 <script lang="ts">
 	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
@@ -8,7 +21,8 @@
 	export let album: AlbumResponseDto;
 
 	let imageData: string = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
-	const dispatch = createEventDispatcher();
+	const dispatchClick = createEventDispatcher<OnClick>();
+	const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
 
 	const loadHighQualityThumbnail = async (thubmnailId: string | null) => {
 		if (thubmnailId == null) {
@@ -25,7 +39,7 @@
 	};
 
 	const showAlbumContextMenu = (e: MouseEvent) => {
-		dispatch('showalbumcontextmenu', {
+		dispatchShowContextMenu('showalbumcontextmenu', {
 			x: e.clientX,
 			y: e.clientY
 		});
@@ -38,7 +52,7 @@
 
 <div
 	class="h-[339px] w-[275px] hover:cursor-pointer mt-4 relative"
-	on:click={() => dispatch('click', album)}
+	on:click={() => dispatchClick('click', album)}
 >
 	<div
 		id={`icon-${album.id}`}
