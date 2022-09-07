@@ -10,6 +10,7 @@ import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import {AlbumEntity} from "@app/database/entities/album.entity";
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 
 export interface IAssetRepository {
   create(
@@ -27,6 +28,7 @@ export interface IAssetRepository {
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   mitigateThumbsDeletion(assetIds: string[]): Promise<AlbumEntity[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
+  getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
 }
@@ -42,6 +44,28 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AlbumEntity)
     private albumRepository: Repository<AlbumEntity>,
   ) {}
+
+  async getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {
+    // Get asset count by AssetType
+    const res = await this.assetRepository
+      .createQueryBuilder('asset')
+      .select(`COUNT(asset.id)`, 'count')
+      .addSelect(`asset.type`, 'type')
+      .where('"userId" = :userId', { userId: userId })
+      .groupBy('asset.type')
+      .getRawMany();
+
+    const assetCountByUserId = new AssetCountByUserIdResponseDto(0, 0);
+    res.map((item) => {
+      if (item.type === 'IMAGE') {
+        assetCountByUserId.photos = item.count;
+      } else if (item.type === 'VIDEO') {
+        assetCountByUserId.videos = item.count;
+      }
+    });
+
+    return assetCountByUserId;
+  }
 
   async getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]> {
     // Get asset entity from a list of time buckets
