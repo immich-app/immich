@@ -11,7 +11,6 @@ import { GetAlbumsDto } from './dto/get-albums.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
-import { AlbumResponseDto } from './response-dto/album-response.dto';
 
 export interface IAlbumRepository {
   create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
@@ -165,7 +164,7 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   async getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]> {
-    let query = this.albumRepository.createQueryBuilder('album');
+    const query = this.albumRepository.createQueryBuilder('album');
 
     const albums = await query
       .where('album.ownerId = :ownerId', { ownerId: userId })
@@ -190,7 +189,7 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   async get(albumId: string): Promise<AlbumEntity | undefined> {
-    let query = this.albumRepository.createQueryBuilder('album');
+    const query = this.albumRepository.createQueryBuilder('album');
 
     const album = await query
       .where('album.id = :albumId', { albumId })

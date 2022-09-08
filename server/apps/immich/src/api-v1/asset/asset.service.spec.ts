@@ -1,9 +1,8 @@
-import { AssetRepository, IAssetRepository } from './asset-repository';
+import { IAssetRepository } from './asset-repository';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetService } from './asset.service';
 import { Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
-import { CreateAssetDto } from './dto/create-asset.dto';
+import { AssetEntity } from '@app/database/entities/asset.entity';
 
 describe('AssetService', () => {
   let sui: AssetService;
@@ -15,39 +14,39 @@ describe('AssetService', () => {
     email: 'auth@test.com',
   });
 
-  const _getCreateAssetDto = (): CreateAssetDto => {
-    const createAssetDto = new CreateAssetDto();
-    createAssetDto.deviceAssetId = 'deviceAssetId';
-    createAssetDto.deviceId = 'deviceId';
-    createAssetDto.assetType = AssetType.OTHER;
-    createAssetDto.createdAt = '2022-06-19T23:41:36.910Z';
-    createAssetDto.modifiedAt = '2022-06-19T23:41:36.910Z';
-    createAssetDto.isFavorite = false;
-    createAssetDto.duration = '0:00:00.000000';
+  // const _getCreateAssetDto = (): CreateAssetDto => {
+  //   const createAssetDto = new CreateAssetDto();
+  //   createAssetDto.deviceAssetId = 'deviceAssetId';
+  //   createAssetDto.deviceId = 'deviceId';
+  //   createAssetDto.assetType = AssetType.OTHER;
+  //   createAssetDto.createdAt = '2022-06-19T23:41:36.910Z';
+  //   createAssetDto.modifiedAt = '2022-06-19T23:41:36.910Z';
+  //   createAssetDto.isFavorite = false;
+  //   createAssetDto.duration = '0:00:00.000000';
 
-    return createAssetDto;
-  };
-  const _getAsset = () => {
-    const assetEntity = new AssetEntity();
+  //   return createAssetDto;
+  // };
+  // const _getAsset = () => {
+  //   const assetEntity = new AssetEntity();
 
-    assetEntity.id = 'e8edabfd-7d8a-45d0-9d61-7c7ca60f2c67';
-    assetEntity.userId = '3ea54709-e168-42b7-90b0-a0dfe8a7ecbd';
-    assetEntity.deviceAssetId = '4967046344801';
-    assetEntity.deviceId = '116766fd-2ef2-52dc-a3ef-149988997291';
-    assetEntity.type = AssetType.VIDEO;
-    assetEntity.originalPath =
-      'upload/3ea54709-e168-42b7-90b0-a0dfe8a7ecbd/original/116766fd-2ef2-52dc-a3ef-149988997291/51c97f95-244f-462d-bdf0-e1dc19913516.jpg';
-    assetEntity.resizePath = '';
-    assetEntity.createdAt = '2022-06-19T23:41:36.910Z';
-    assetEntity.modifiedAt = '2022-06-19T23:41:36.910Z';
-    assetEntity.isFavorite = false;
-    assetEntity.mimeType = 'image/jpeg';
-    assetEntity.webpPath = '';
-    assetEntity.encodedVideoPath = '';
-    assetEntity.duration = '0:00:00.000000';
+  //   assetEntity.id = 'e8edabfd-7d8a-45d0-9d61-7c7ca60f2c67';
+  //   assetEntity.userId = '3ea54709-e168-42b7-90b0-a0dfe8a7ecbd';
+  //   assetEntity.deviceAssetId = '4967046344801';
+  //   assetEntity.deviceId = '116766fd-2ef2-52dc-a3ef-149988997291';
+  //   assetEntity.type = AssetType.VIDEO;
+  //   assetEntity.originalPath =
+  //     'upload/3ea54709-e168-42b7-90b0-a0dfe8a7ecbd/original/116766fd-2ef2-52dc-a3ef-149988997291/51c97f95-244f-462d-bdf0-e1dc19913516.jpg';
+  //   assetEntity.resizePath = '';
+  //   assetEntity.createdAt = '2022-06-19T23:41:36.910Z';
+  //   assetEntity.modifiedAt = '2022-06-19T23:41:36.910Z';
+  //   assetEntity.isFavorite = false;
+  //   assetEntity.mimeType = 'image/jpeg';
+  //   assetEntity.webpPath = '';
+  //   assetEntity.encodedVideoPath = '';
+  //   assetEntity.duration = '0:00:00.000000';
 
-    return assetEntity;
-  };
+  //   return assetEntity;
+  // };
 
   beforeAll(() => {
     assetRepositoryMock = {
