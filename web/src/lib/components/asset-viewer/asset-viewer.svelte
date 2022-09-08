@@ -18,7 +18,7 @@
 	$: {
 		appearsInAlbums = [];
 
-		api.albumApi.getAllAlbums(undefined, asset.id).then(result => {
+		api.albumApi.getAllAlbums(undefined, asset.id).then((result) => {
 			appearsInAlbums = result.data;
 		});
 	}
