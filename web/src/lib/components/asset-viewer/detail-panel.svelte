@@ -28,12 +28,12 @@
 				await drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
 			}
 
+			// remove timezone when user not config PUBLIC_TZ var. Etc/UTC is used in default.
 			if (asset.exifInfo?.dateTimeOriginal && !env.PUBLIC_TZ) {
 				const dateTimeOriginal = asset.exifInfo.dateTimeOriginal;
 
 				asset.exifInfo.dateTimeOriginal = dateTimeOriginal
 					.slice(0, dateTimeOriginal.length - 1);
-				console.log('time: ', env.PUBLIC_TZ, dateTimeOriginal, asset.exifInfo.dateTimeOriginal);
 			}
 		}
 	});
