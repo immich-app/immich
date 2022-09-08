@@ -3,6 +3,7 @@ version: "3.8"
 services:
   immich-server:
     image: altran1502/immich-server:release
+    container_name: immich-server
     entrypoint: ["/bin/sh", "./start-server.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -17,6 +18,7 @@ services:
 
   immich-microservices:
     image: altran1502/immich-server:release
+    container_name: immich-microservices
     entrypoint: ["/bin/sh", "./start-microservices.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -31,6 +33,7 @@ services:
 
   immich-machine-learning:
     image: altran1502/immich-machine-learning:release
+    container_name: immich-machine-learning
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -44,6 +47,7 @@ services:
 
   immich-web:
     image: altran1502/immich-web:release
+    container_name: immich-web
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
       - .env
