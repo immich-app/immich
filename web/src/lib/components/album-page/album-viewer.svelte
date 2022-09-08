@@ -11,7 +11,6 @@
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import AssetSelection from './asset-selection.svelte';
-	import _ from 'lodash-es';
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import ShareInfoModal from './share-info-modal.svelte';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
@@ -53,8 +52,7 @@
 	let currentViewAssetIndex = 0;
 
 	let viewWidth: number;
-	let thumbnailSize: number = 300;
-	let border = '';
+	let thumbnailSize = 300;
 	let backUrl = '/albums';
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;

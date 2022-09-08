@@ -1,4 +1,4 @@
-import { serverApi, TimeGroupEnum } from '@api';
+import { serverApi } from '@api';
 import * as cookieParser from 'cookie';
 
 import type { LayoutServerLoad } from './$types';

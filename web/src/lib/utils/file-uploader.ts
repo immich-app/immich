@@ -27,14 +27,18 @@ export enum UploadType {
 
 export const openFileUploadDialog = (uploadType: UploadType) => {
 	try {
-		let fileSelector = document.createElement('input');
+		const fileSelector = document.createElement('input');
 
 		fileSelector.type = 'file';
 		fileSelector.multiple = true;
 		fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng,.3gp';
 
-		fileSelector.onchange = async (e: any) => {
-			const files = Array.from<File>(e.target.files);
+		fileSelector.onchange = async (e: Event) => {
+			const target = e.target as HTMLInputElement;
+			if (!target.files) {
+				return;
+			}
+			const files = Array.from<File>(target.files);
 
 			if (files.length > 50) {
 				notificationController.show({
@@ -67,6 +71,7 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 	}
 };
 
+//TODO: should probably use the @api SDK
 async function fileUploader(asset: File, uploadType: UploadType) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
@@ -123,9 +128,10 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 
 		if (status === 200) {
 			if (data.isExist) {
-				if (uploadType === UploadType.ALBUM && data.id) {
+				const dataId = data.id;
+				if (uploadType === UploadType.ALBUM && dataId) {
 					albumUploadAssetStore.asset.update((a) => {
-						return [...a, data.id!];
+						return [...a, dataId];
 					});
 				}
 				return;
@@ -145,7 +151,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 			uploadAssetsStore.addNewUploadAsset(newUploadAsset);
 		};
 
-		request.upload.onload = (event) => {
+		request.upload.onload = () => {
 			setTimeout(() => {
 				uploadAssetsStore.removeUploadAsset(deviceAssetId);
 			}, 1000);
@@ -170,7 +176,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		};
 
 		// listen for `error` event
-		request.upload.onerror = (event) => {
+		request.upload.onerror = () => {
 			uploadAssetsStore.removeUploadAsset(deviceAssetId);
 		};
 
@@ -192,9 +198,10 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		console.log('error uploading file ', e);
 	}
 }
-
+// TODO: This should have a proper type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleUploadError(asset: File, respBody?: any) {
-	let extraMsg = respBody ? ' ' + respBody.message : '';
+	const extraMsg = respBody ? ' ' + respBody.message : '';
 
 	notificationController.show({
 		type: NotificationType.Error,

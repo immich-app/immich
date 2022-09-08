@@ -15,12 +15,11 @@
 	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-	import { fly } from 'svelte/transition';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 
 	export let album: AlbumResponseDto;
 
-	let imageData: string = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
+	let imageData = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
 	const dispatchClick = createEventDispatcher<OnClick>();
 	const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
 
@@ -29,7 +28,7 @@
 			return;
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Jpeg, {
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Jpeg, {
 			responseType: 'blob'
 		});
 

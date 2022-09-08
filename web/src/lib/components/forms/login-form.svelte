@@ -4,8 +4,8 @@
 	import { createEventDispatcher } from 'svelte';
 
 	let error: string;
-	let email: string = '';
-	let password: string = '';
+	let email = '';
+	let password = '';
 
 	const dispatch = createEventDispatcher();
 
