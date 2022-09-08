@@ -6,6 +6,9 @@ node_modules
 .env
 .env.*
 !.env.example
+src/api/open-api
+*.md
+*.json
 
 # Ignore files for PNPM, NPM and YARN
 pnpm-lock.yaml

@@ -3,14 +3,14 @@
 	import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
 
 	export let scrollTop = 0;
-	export let viewportWidth = 0;
+	// export let viewportWidth = 0;
 	export let scrollbarHeight = 0;
 
 	let timelineHeight = 0;
 	let segmentScrollbarLayout: SegmentScrollbarLayout[] = [];
 	let isHover = false;
 	let hoveredDate: Date;
-	let currentMouseYLocation: number = 0;
+	let currentMouseYLocation = 0;
 	let scrollbarPosition = 0;
 
 	$: {
@@ -34,30 +34,28 @@
 
 	onMount(() => {
 		// segmentScrollbarLayout = getLayoutDistance();
-
-		return () => {};
 	});
 
-	const getSegmentHeight = (groupCount: number) => {
-		// if (segmentData.groups.length > 0) {
-		// 	const percentage = (groupCount * 100) / segmentData.totalAssets;
-		// 	return Math.round((percentage * scrollbarHeight) / 100);
-		// } else {
-		// 	return 0;
-		// }
-	};
+	// const getSegmentHeight = (groupCount: number) => {
+	// if (segmentData.groups.length > 0) {
+	// 	const percentage = (groupCount * 100) / segmentData.totalAssets;
+	// 	return Math.round((percentage * scrollbarHeight) / 100);
+	// } else {
+	// 	return 0;
+	// }
+	// };
 
-	const getLayoutDistance = () => {
-		// let result: SegmentScrollbarLayout[] = [];
-		// for (const segment of segmentData.groups) {
-		// 	let segmentLayout = new SegmentScrollbarLayout();
-		// 	segmentLayout.count = segment.count;
-		// 	segmentLayout.height = getSegmentHeight(segment.count);
-		// 	segmentLayout.timeGroup = segment.timeGroup;
-		// 	result.push(segmentLayout);
-		// }
-		// return result;
-	};
+	// const getLayoutDistance = () => {
+	// let result: SegmentScrollbarLayout[] = [];
+	// for (const segment of segmentData.groups) {
+	// 	let segmentLayout = new SegmentScrollbarLayout();
+	// 	segmentLayout.count = segment.count;
+	// 	segmentLayout.height = getSegmentHeight(segment.count);
+	// 	segmentLayout.timeGroup = segment.timeGroup;
+	// 	result.push(segmentLayout);
+	// }
+	// return result;
+	// };
 
 	const handleMouseMove = (e: MouseEvent, currentDate: Date) => {
 		currentMouseYLocation = e.clientY - 71 - 30;

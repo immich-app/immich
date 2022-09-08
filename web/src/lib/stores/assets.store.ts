@@ -1,9 +1,6 @@
-import { TimeGroupEnum } from './../../api/open-api/api';
-import { writable, derived, readable } from 'svelte/store';
+import { writable } from 'svelte/store';
 import lodash from 'lodash-es';
-import _ from 'lodash';
-import moment from 'moment';
-import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto } from '@api';
+import { api, AssetCountByTimeBucketResponseDto } from '@api';
 import { AssetGridState } from '$lib/models/asset-grid-state';
 import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
 
@@ -24,7 +21,7 @@ function createAssetStore() {
 		_loadingBucketState = state;
 	});
 	/**
-	 * Set intial state
+	 * Set initial state
 	 * @param viewportHeight
 	 * @param viewportWidth
 	 * @param data
@@ -78,6 +75,7 @@ function createAssetStore() {
 
 				return state;
 			});
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (e: any) {
 			if (e.name === 'CanceledError') {
 				return;

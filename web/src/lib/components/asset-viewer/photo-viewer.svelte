@@ -33,7 +33,9 @@
 
 			const assetData = URL.createObjectURL(data);
 			return assetData;
-		} catch (e) {}
+		} catch {
+			// Do nothing
+		}
 	};
 </script>
 

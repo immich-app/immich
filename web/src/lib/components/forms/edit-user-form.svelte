@@ -14,7 +14,6 @@
 
 	const dispatch = createEventDispatcher();
 
-	// eslint-disable-next-line no-undef
 	const editUser = async (event: SubmitEvent) => {
 		try {
 			const formElement = event.target as HTMLFormElement;
@@ -25,8 +24,8 @@
 
 			const { status } = await api.userApi.updateUser({
 				id: user.id,
-				firstName: firstName!.toString(),
-				lastName: lastName!.toString()
+				firstName: firstName?.toString(),
+				lastName: lastName?.toString()
 			});
 
 			if (status == 200) {

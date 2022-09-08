@@ -6,7 +6,7 @@
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
 	import LoadingSpinner from './loading-spinner.svelte';
-	import { api, AssetResponseDto, AssetTypeEnum, getFileUrl, ThumbnailFormat } from '@api';
+	import { AssetResponseDto, AssetTypeEnum, getFileUrl, ThumbnailFormat } from '@api';
 
 	const dispatch = createEventDispatcher();
 
@@ -14,14 +14,14 @@
 	export let groupIndex = 0;
 	export let thumbnailSize: number | undefined = undefined;
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
-	export let selected: boolean = false;
-	export let disabled: boolean = false;
+	export let selected = false;
+	export let disabled = false;
 	let imageData: string;
 
-	let mouseOver: boolean = false;
+	let mouseOver = false;
 	$: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
-	let mouseOverIcon: boolean = false;
+	let mouseOverIcon = false;
 	let videoPlayerNode: HTMLVideoElement;
 	let isThumbnailVideoPlaying = false;
 	let calculateVideoDurationIntervalHandler: NodeJS.Timer;
