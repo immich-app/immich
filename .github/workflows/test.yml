@@ -18,8 +18,8 @@ jobs:
       - name: Run Immich Server 2E2 Test
         run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --abort-on-container-exit --exit-code-from immich-server-test
 
-  unit-tests:
-    name: Run unit test suites
+  server-unit-tests:
+    name: Run server unit test suites and checks
     runs-on: ubuntu-latest
 
     steps:
@@ -27,4 +27,4 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run tests
-        run: cd server && npm install && npm run test
+        run: cd server && npm ci && npm run check:all

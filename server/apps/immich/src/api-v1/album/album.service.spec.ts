@@ -4,7 +4,6 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity } from '@app/database/entities/album.entity';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
-import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 
 describe('Album service', () => {
   let sut: AlbumService;
