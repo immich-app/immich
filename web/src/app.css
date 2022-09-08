@@ -6,86 +6,86 @@
 @tailwind utilities;
 
 :root {
-    font-family: 'Work Sans', sans-serif;
-    /* --immich-icon-button-hover-color: #d3d3d3; */
+	font-family: 'Work Sans', sans-serif;
+	/* --immich-icon-button-hover-color: #d3d3d3; */
 }
 
 html {
-    height: 100%;
-    width: 100%;
+	height: 100%;
+	width: 100%;
 }
 
 html::-webkit-scrollbar {
-    width: 8px;
+	width: 8px;
 }
 
 /* Track */
 html::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 16px;
+	background: #f1f1f1;
+	border-radius: 16px;
 }
 
 /* Handle */
 html::-webkit-scrollbar-thumb {
-    background: rgba(85, 86, 87, 0.408);
-    border-radius: 16px;
+	background: rgba(85, 86, 87, 0.408);
+	border-radius: 16px;
 }
 
 /* Handle on hover */
 html::-webkit-scrollbar-thumb:hover {
-    background: #4250afad;
-    border-radius: 16px;
+	background: #4250afad;
+	border-radius: 16px;
 }
 
 body {
-    /* min-height: 100vh; */
-    margin: 0;
-    background-color: #f6f8fe;
-    color: #5f6368;
+	/* min-height: 100vh; */
+	margin: 0;
+	background-color: #f6f8fe;
+	color: #5f6368;
 }
 
 input:focus-visible {
-    outline-offset: 0px !important;
-    outline: none !important;
+	outline-offset: 0px !important;
+	outline: none !important;
 }
 
 @layer utilities {
-    .immich-form-input {
-        @apply bg-slate-100 p-2 rounded-md focus:border-immich-primary text-sm ;
-    }
+	.immich-form-input {
+		@apply bg-slate-100 p-2 rounded-md focus:border-immich-primary text-sm;
+	}
 
-    .immich-form-label {
-        @apply font-medium text-sm text-gray-500;
-    }
+	.immich-form-label {
+		@apply font-medium text-sm text-gray-500;
+	}
 
-    .immich-btn-primary {
-        @apply bg-immich-primary text-gray-100 border rounded-xl py-2 px-4 transition-all duration-150 hover:bg-immich-primary hover:shadow-lg text-sm font-medium;
-    }
+	.immich-btn-primary {
+		@apply bg-immich-primary text-gray-100 border rounded-xl py-2 px-4 transition-all duration-150 hover:bg-immich-primary hover:shadow-lg text-sm font-medium;
+	}
 
-    .immich-text-button {
-        @apply flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5 p-2 rounded-lg font-medium;
-    }
+	.immich-text-button {
+		@apply flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5 p-2 rounded-lg font-medium;
+	}
 
-    /* width */
-    .immich-scrollbar::-webkit-scrollbar {
-        width: 8px;
-    }
+	/* width */
+	.immich-scrollbar::-webkit-scrollbar {
+		width: 8px;
+	}
 
-    /* Track */
-    .immich-scrollbar::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 16px;
-    }
+	/* Track */
+	.immich-scrollbar::-webkit-scrollbar-track {
+		background: #f1f1f1;
+		border-radius: 16px;
+	}
 
-    /* Handle */
-    .immich-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(85, 86, 87, 0.408);
-        border-radius: 16px;
-    }
+	/* Handle */
+	.immich-scrollbar::-webkit-scrollbar-thumb {
+		background: rgba(85, 86, 87, 0.408);
+		border-radius: 16px;
+	}
 
-    /* Handle on hover */
-    .immich-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #4250afad;
-        border-radius: 16px;
-    }
+	/* Handle on hover */
+	.immich-scrollbar::-webkit-scrollbar-thumb:hover {
+		background: #4250afad;
+		border-radius: 16px;
+	}
 }

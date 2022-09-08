@@ -1,5 +1,7 @@
 <script lang="ts">
 	export let title: string;
+	// TODO: why `any` here? There should be a expected type for this
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	export let logo: any;
 	export let actionType: AdminSideBarSelection | AppSideBarSelection;
 	export let isSelected: boolean;

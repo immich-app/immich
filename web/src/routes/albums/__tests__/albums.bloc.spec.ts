@@ -1,5 +1,5 @@
 import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { useAlbums } from '../albums-bloc';
+import { useAlbums } from '../albums.bloc';
 import { api, CreateAlbumDto } from '@api';
 import {
 	notificationController,

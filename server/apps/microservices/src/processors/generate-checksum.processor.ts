@@ -18,7 +18,7 @@ export class GenerateChecksumProcessor {
   @Process()
   async generateChecksum() {
     let hasNext = true;
-    let pageSize = 200;
+    const pageSize = 200;
 
     while (hasNext) {
       const assets = await this.assetRepository.find({

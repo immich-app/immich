@@ -15,12 +15,11 @@
 	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-	import { fly } from 'svelte/transition';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 
 	export let album: AlbumResponseDto;
 
-	let imageData: string = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
+	let imageData = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
 	const dispatchClick = createEventDispatcher<OnClick>();
 	const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
 
@@ -29,7 +28,7 @@
 			return;
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId!, ThumbnailFormat.Jpeg, {
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Jpeg, {
 			responseType: 'blob'
 		});
 
@@ -53,11 +52,13 @@
 <div
 	class="h-[339px] w-[275px] hover:cursor-pointer mt-4 relative"
 	on:click={() => dispatchClick('click', album)}
+	data-testid="album-card"
 >
 	<div
 		id={`icon-${album.id}`}
 		class="absolute top-2 right-2"
 		on:click|stopPropagation|preventDefault={showAlbumContextMenu}
+		data-testid="context-button-parent"
 	>
 		<CircleIconButton
 			logo={DotsVertical}
@@ -72,15 +73,16 @@
 			src={imageData}
 			alt={album.id}
 			class={`object-cover h-full w-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
+			data-testid="album-image"
 		/>
 	</div>
 
 	<div class="mt-4">
-		<p class="text-sm font-medium text-gray-800">
+		<p class="text-sm font-medium text-gray-800" data-testid="album-name">
 			{album.albumName}
 		</p>
 
-		<span class="text-xs flex gap-2">
+		<span class="text-xs flex gap-2" data-testid="album-details">
 			<p>{album.assetCount} items</p>
 
 			{#if album.shared}

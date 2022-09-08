@@ -1,15 +1,13 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import { api, AssetResponseDto, getFileUrl } from '@api';
 
 	export let assetId: string;
 
 	let asset: AssetResponseDto;
-
-	const dispatch = createEventDispatcher();
 
 	let videoPlayerNode: HTMLVideoElement;
 	let isVideoLoading = true;

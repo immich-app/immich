@@ -21,7 +21,7 @@
 	let segmentScrollbarLayout: SegmentScrollbarLayout[] = [];
 	let isHover = false;
 	let hoveredDate: Date;
-	let currentMouseYLocation: number = 0;
+	let currentMouseYLocation = 0;
 	let scrollbarPosition = 0;
 
 	$: {
@@ -29,7 +29,9 @@
 	}
 
 	onMount(() => {
-		segmentScrollbarLayout = getLayoutDistance();
+		// segmentScrollbarLayout = getLayoutDistance();
+
+		return () => {};
 	});
 
 	const getSegmentHeight = (groupCount: number) => {

@@ -21,7 +21,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final BackUpState backupState = ref.watch(backupProvider);
-    bool isEnableAutoBackup =
+    bool isEnableAutoBackup = backupState.backgroundBackup ||
         ref.watch(authenticationProvider).deviceInfo.isAutoBackup;
     final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
 

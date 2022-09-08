@@ -11,7 +11,6 @@ import {
   ParseUUIDPipe,
   Put,
   Query,
-  Header,
 } from '@nestjs/common';
 import { ParseMeUUIDPipe } from '../validation/parse-me-uuid-pipe';
 import { AlbumService } from './album.service';

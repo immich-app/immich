@@ -8,13 +8,13 @@
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
 	import SideBarButton from './side-bar-button.svelte';
 	import StatusBox from '../status-box.svelte';
-	import { AlbumCountResponseDto, api, AssetCountByUserIdResponseDto } from '@api';
+	import { api } from '@api';
 	import { fade } from 'svelte/transition';
 	import LoadingSpinner from '../loading-spinner.svelte';
 
 	let selectedAction: AppSideBarSelection;
 
-	let showAssetCount: boolean = false;
+	let showAssetCount = false;
 	let showSharingCount = false;
 	let showAlbumsCount = false;
 
