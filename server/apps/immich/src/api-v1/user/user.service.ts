@@ -78,7 +78,19 @@ export class UserService {
     }
   }
 
-  async updateUser(updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+  async updateUser(authUser: AuthUserDto, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+    const requestor = await this.userRepository.get(authUser.id);
+
+    if (!requestor) {
+      throw new NotFoundException('Requestor not found');
+    }
+
+    if (!requestor.isAdmin) {
+      if (requestor.id !== updateUserDto.id) {
+        throw new BadRequestException('Unauthorized');
+      }
+    }
+
     const user = await this.userRepository.get(updateUserDto.id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -88,8 +100,8 @@ export class UserService {
 
       return mapUser(updatedUser);
     } catch (e) {
-      Logger.error(e, 'Create new user');
-      throw new InternalServerErrorException('Failed to register new user');
+      Logger.error(e, 'Failed to update user info');
+      throw new InternalServerErrorException('Failed to update user info');
     }
   }
 
