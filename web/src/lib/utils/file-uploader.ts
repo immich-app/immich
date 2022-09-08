@@ -67,7 +67,7 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 	}
 };
 
-async function fileUploader(fileIndex: string, asset: File, uploadType: UploadType) {
+async function fileUploader(fileId: string, asset: File, uploadType: UploadType) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
 	const fileExtension = temp[temp.length - 1];
@@ -136,7 +136,7 @@ async function fileUploader(fileIndex: string, asset: File, uploadType: UploadTy
 
 		request.upload.onloadstart = () => {
 			const newUploadAsset: UploadAsset = {
-				id: fileIndex,
+				id: fileId,
 				file: asset,
 				progress: 0,
 				fileExtension: fileExtension
@@ -147,7 +147,7 @@ async function fileUploader(fileIndex: string, asset: File, uploadType: UploadTy
 
 		request.upload.onload = (event) => {
 			setTimeout(() => {
-				uploadAssetsStore.removeUploadAsset(fileIndex);
+				uploadAssetsStore.removeUploadAsset(fileId);
 			}, 1000);
 		};
 
@@ -173,18 +173,18 @@ async function fileUploader(fileIndex: string, asset: File, uploadType: UploadTy
 
 		// listen for `error` event
 		request.upload.onerror = (event) => {
-			uploadAssetsStore.removeUploadAsset(fileIndex);
+			uploadAssetsStore.removeUploadAsset(fileId);
 		};
 
 		// listen for `abort` event
 		request.upload.onabort = () => {
-			uploadAssetsStore.removeUploadAsset(fileIndex);
+			uploadAssetsStore.removeUploadAsset(fileId);
 		};
 
 		// listen for `progress` event
 		request.upload.onprogress = (event) => {
 			const percentComplete = Math.floor((event.loaded / event.total) * 100);
-			uploadAssetsStore.updateProgress(fileIndex, percentComplete);
+			uploadAssetsStore.updateProgress(fileId, percentComplete);
 		};
 
 		request.open('POST', `/api/asset/upload`);
