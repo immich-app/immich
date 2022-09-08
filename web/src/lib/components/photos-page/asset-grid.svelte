@@ -3,7 +3,12 @@
 
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
 	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
-	import { api, TimeGroupEnum } from '@api';
+	import {
+		api,
+		AssetCountByTimeBucketResponseDto,
+		GetAssetCountByTimeBucketDto,
+		TimeGroupEnum
+	} from '@api';
 	import AssetDateGroup from './asset-date-group.svelte';
 	import Portal from '../shared-components/portal/portal.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -12,16 +17,21 @@
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
+	import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
+
+	export let isAlbumSelectionMode = false;
 
 	let viewportHeight = 0;
 	let viewportWidth = 0;
 	let assetGridElement: HTMLElement;
-	export let isAlbumSelectionMode = false;
+	let virtualTimelineElement: HTMLElement;
+	let bucketInfo: AssetCountByTimeBucketResponseDto;
 
 	onMount(async () => {
 		const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
 			timeGroup: TimeGroupEnum.Month
 		});
+		bucketInfo = assetCountByTimebucket;
 
 		assetStore.setInitialState(viewportHeight, viewportWidth, assetCountByTimebucket);
 
@@ -60,7 +70,25 @@
 	const navigateToNextAsset = () => {
 		assetInteractionStore.navigateAsset('next');
 	};
+
+	let lastScrollPosition = 0;
+	let animationTick = false;
+
+	const handleTimelineScroll = (e: UIEvent) => {
+		lastScrollPosition = assetGridElement?.scrollTop;
+		if (!animationTick) {
+			window.requestAnimationFrame(() => {
+				animationTick = false;
+			});
+
+			animationTick = true;
+		}
+	};
 </script>
+
+{#if bucketInfo && viewportHeight}
+	<Scrollbar {bucketInfo} scrollbarHeight={viewportHeight} scrollTop={lastScrollPosition} />
+{/if}
 
 <section
 	id="asset-grid"
@@ -68,9 +96,14 @@
 	bind:clientHeight={viewportHeight}
 	bind:clientWidth={viewportWidth}
 	bind:this={assetGridElement}
+	on:scroll={handleTimelineScroll}
 >
 	{#if assetGridElement}
-		<section id="virtual-timeline" style:height={$assetGridState.timelineHeight + 'px'}>
+		<section
+			id="virtual-timeline"
+			style:height={$assetGridState.timelineHeight + 'px'}
+			bind:this={virtualTimelineElement}
+		>
 			{#each $assetGridState.buckets as bucket, bucketIndex (bucketIndex)}
 				<IntersectionObserver
 					on:intersected={intersectedHandler}

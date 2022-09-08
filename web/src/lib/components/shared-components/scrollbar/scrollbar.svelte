@@ -1,12 +1,23 @@
 <script lang="ts">
+	import { assetGridState } from '$lib/stores/assets.store';
+	import {
+		api,
+		AssetCountByTimeBucketResponseDto,
+		GetAssetCountByTimeBucketDto,
+		TimeGroupEnum
+	} from '@api';
+
 	import { onMount } from 'svelte';
 	import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
 
 	export let scrollTop = 0;
-	export let viewportWidth = 0;
+	export let bucketInfo: AssetCountByTimeBucketResponseDto;
 	export let scrollbarHeight = 0;
+	export let timelineHeight = 0;
 
-	let timelineHeight = 0;
+	$: timelineHeight = $assetGridState.timelineHeight;
+	$: viewportWidth = $assetGridState.viewportWidth;
+
 	let segmentScrollbarLayout: SegmentScrollbarLayout[] = [];
 	let isHover = false;
 	let hoveredDate: Date;
@@ -17,46 +28,29 @@
 		scrollbarPosition = (scrollTop / timelineHeight) * scrollbarHeight;
 	}
 
-	$: {
-		// let result: SegmentScrollbarLayout[] = [];
-		// for (const [i, segment] of assetStoreState.entries()) {
-		// 	let segmentLayout = new SegmentScrollbarLayout();
-		// 	segmentLayout.count = segmentData.groups[i].count;
-		// 	segmentLayout.height =
-		// 		segment.assets.length == 0
-		// 			? getSegmentHeight(segmentData.groups[i].count)
-		// 			: Math.round((segment.segmentHeight / timelineHeight) * scrollbarHeight);
-		// 	segmentLayout.timeGroup = segment.segmentDate;
-		// 	result.push(segmentLayout);
-		// }
-		// segmentScrollbarLayout = result;
-	}
-
 	onMount(() => {
-		// segmentScrollbarLayout = getLayoutDistance();
-
-		return () => {};
+		segmentScrollbarLayout = getLayoutDistance();
 	});
 
 	const getSegmentHeight = (groupCount: number) => {
-		// if (segmentData.groups.length > 0) {
-		// 	const percentage = (groupCount * 100) / segmentData.totalAssets;
-		// 	return Math.round((percentage * scrollbarHeight) / 100);
-		// } else {
-		// 	return 0;
-		// }
+		if (bucketInfo.buckets.length > 0) {
+			const percentage = (groupCount * 100) / bucketInfo.totalCount;
+			return Math.round((percentage * scrollbarHeight) / 100);
+		} else {
+			return 0;
+		}
 	};
 
 	const getLayoutDistance = () => {
-		// let result: SegmentScrollbarLayout[] = [];
-		// for (const segment of segmentData.groups) {
-		// 	let segmentLayout = new SegmentScrollbarLayout();
-		// 	segmentLayout.count = segment.count;
-		// 	segmentLayout.height = getSegmentHeight(segment.count);
-		// 	segmentLayout.timeGroup = segment.timeGroup;
-		// 	result.push(segmentLayout);
-		// }
-		// return result;
+		let result: SegmentScrollbarLayout[] = [];
+		for (const bucket of bucketInfo.buckets) {
+			let segmentLayout = new SegmentScrollbarLayout();
+			segmentLayout.count = bucket.count;
+			segmentLayout.height = getSegmentHeight(bucket.count);
+			segmentLayout.timeGroup = bucket.timeBucket;
+			result.push(segmentLayout);
+		}
+		return result;
 	};
 
 	const handleMouseMove = (e: MouseEvent, currentDate: Date) => {
@@ -68,9 +62,10 @@
 
 <div
 	id="immich-scubbable-scrollbar"
-	class="fixed right-0 w-[60px] h-full bg-immich-bg z-[9999] hover:cursor-row-resize"
+	class="fixed right-0 w-[60px] h-full bg-immich-bg z-10 hover:cursor-row-resize select-none"
 	on:mouseenter={() => (isHover = true)}
 	on:mouseleave={() => (isHover = false)}
+	style:height={scrollbarHeight + 'px'}
 >
 	{#if isHover}
 		<div
@@ -99,12 +94,14 @@
 			on:mousemove={(e) => handleMouseMove(e, groupDate)}
 		>
 			{#if new Date(segmentScrollbarLayout[index - 1]?.timeGroup).getFullYear() !== groupDate.getFullYear()}
-				<div
-					aria-label={segment.timeGroup + ' ' + segment.count}
-					class="absolute right-0 pr-3 z-10 text-xs font-medium"
-				>
-					{groupDate.getFullYear()}
-				</div>
+				{#if segment.count > 5}
+					<div
+						aria-label={segment.timeGroup + ' ' + segment.count}
+						class="absolute right-0 pr-3 z-10 text-xs font-medium"
+					>
+						{groupDate.getFullYear()}
+					</div>
+				{/if}
 			{:else if segment.count > 5}
 				<div
 					aria-label={segment.timeGroup + ' ' + segment.count}
