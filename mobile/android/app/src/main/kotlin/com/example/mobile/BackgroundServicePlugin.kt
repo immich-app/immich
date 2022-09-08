@@ -1,11 +1,6 @@
 package app.alextran.immich
 
 import android.content.Context
-import android.net.Uri
-import android.content.Intent
-import android.provider.Settings
-import android.util.Log
-import android.widget.Toast
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -44,30 +39,30 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         val ctx = context!!
         when(call.method) {
-            "initialize" -> { // needs to be called prior to any other method
+            "enable" -> {
                 val args = call.arguments<ArrayList<*>>()!!
                 ctx.getSharedPreferences(BackupWorker.SHARED_PREF_NAME, Context.MODE_PRIVATE)
-                    .edit().putLong(BackupWorker.SHARED_PREF_CALLBACK_KEY, args.get(0) as Long).apply()
+                    .edit()
+                    .putLong(BackupWorker.SHARED_PREF_CALLBACK_KEY, args.get(0) as Long)
+                    .putString(BackupWorker.SHARED_PREF_NOTIFICATION_TITLE, args.get(1) as String)
+                    .apply()
+                ContentObserverWorker.enable(ctx, immediate = args.get(2) as Boolean)
                 result.success(true)
             }
-            "start" -> {
+            "configure" -> {
                 val args = call.arguments<ArrayList<*>>()!!
-                val immediate = args.get(0) as Boolean
-                val keepExisting = args.get(1) as Boolean
-                val requireUnmeteredNetwork = args.get(2) as Boolean
-                val requireCharging = args.get(3) as Boolean
-                val notificationTitle = args.get(4) as String
-                ctx.getSharedPreferences(BackupWorker.SHARED_PREF_NAME, Context.MODE_PRIVATE)
-                    .edit().putString(BackupWorker.SHARED_PREF_NOTIFICATION_TITLE, notificationTitle).apply()
-                BackupWorker.startWork(ctx, immediate, keepExisting, requireUnmeteredNetwork, requireCharging)
-                result.success(true)
+                val requireUnmeteredNetwork = args.get(0) as Boolean
+                val requireCharging = args.get(1) as Boolean
+                ContentObserverWorker.configureWork(ctx, requireUnmeteredNetwork, requireCharging)
+                result.success(true)   
             }
-            "stop" -> {
+            "disable" -> {
+                ContentObserverWorker.disable(ctx)
                 BackupWorker.stopWork(ctx)
                 result.success(true)
             }
             "isEnabled" -> {
-                result.success(BackupWorker.isEnabled(ctx))
+                result.success(ContentObserverWorker.isEnabled(ctx))
             }
             "isIgnoringBatteryOptimizations" -> {
                 result.success(BackupWorker.isIgnoringBatteryOptimizations(ctx))
