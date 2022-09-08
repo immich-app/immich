@@ -10,6 +10,8 @@ tmp_dir=/tmp
 # see parse_args()
 # [0|1]
 dev=0
+install=0
+uninstall=0
 
 # Parse arguments given to the script from the CLI.
 # Show help message, run installation and run install in dev mode.
@@ -21,16 +23,12 @@ dev=0
 # - exit 0 if shows help message
 parse_args()
 {
+    echo "Immich installation script." 
+
     if [ "$1" == "--install" ]
     then
-        # Instead of downloading code from a release,
-        # the source code is provided.
-        if [ "$2" == "--dev" ]
+	if [ "$2" == "-h" ]
         then
-            dev=1
-        elif [ "$2" == "-h" ]
-        then
-            echo "Dockerless installation script." 
             echo "usage: $0 --install [--dev|-h]"        
             echo                                           
             echo "  -h              Show this help message"
@@ -38,13 +36,31 @@ parse_args()
             echo  
             exit 0
         fi
+
+        # Instead of downloading code from a release,
+        # the source code is provided.
+        if [ "$2" == "--dev" ]
+        then
+            dev=1
+	fi
+    elif [ "$1" == "--uninstall" ]
+    then
+        if [ "$2" == "-h" ]
+        then
+            echo "usage: $0 --uninstall [-h]"        
+            echo                                           
+            echo "  -h              Show this help message"
+            echo  
+            exit 0
+        fi
+	uninstall=1
     else
-        echo "Dockerless installation script."         
-        echo "usage: $0 [--install] [--dev|-h]"
+        echo "usage: $0 [--install [--dev]] [--uninstall] [-h]"
         echo                                           
         echo "  --install       Install Immich"
-        echo "  -h              Show this help message"
         echo "  --dev           Run in dev mode"
+        echo "  --uninstall     Remove Immich (without medias nor database)"
+        echo "  -h              Show this help message"
         echo                                         
         exit 0
     fi
@@ -115,6 +131,60 @@ check_os()
 		echo "Alpine $(cat $os_ver_file) not supported: need Alpine $alpine_ver."
 		exit 2
 	fi
+}
+
+# Run all installation steps.
+#
+# params: nothing
+#
+# return: nothing
+install()
+{
+	echo "Starting installation process..."
+	update_repo
+	get_source_code
+	setup_redis
+	setup_database
+	setup_server
+	setup_web
+	setup_proxy
+	#setup_machine_learning
+	remove_install_files
+	
+	display_message_box "Immich is now accessible from 0.0.0.0:80!"
+}
+
+# Uninstall Immich components,
+# without database nor medias.
+#
+# params: nothing
+#
+# return: nothing
+uninstall()
+{
+	echo "Starting uninstallation process..."
+	echo "NB: all medias and database will be kept."
+	
+	# Stop services
+	/etc/init.d/immich-server stop
+	/etc/init.d/immich-microservices stop
+	/etc/init.d/immich-web stop
+	#/etc/init.d/immich-machine-learning stop
+
+	# Remove services
+	rm -f /etc/init.d/immich-*
+
+	# Clean proxy
+	rm -f /etc/nginx/http.d/nginx.conf
+	/etc/init.d/nginx restart
+
+	# Remove Immich
+	rm -rf /usr/src/server
+	rm -rf /usr/src/microservices
+	rm -rf /usr/src/web
+	#rm -rf /usr/src/machine-learning
+
+	display_message_box "Immich successfully uninstalled!"
 }
 
 # Add Alpine community repo and update packages list.
@@ -597,13 +667,5 @@ remove_install_files()
 display_message_box "Immich v$immich_ver installation script for Alpine $alpine_ver"
 parse_args "$@"
 check_os
-update_repo
-get_source_code
-setup_redis
-setup_database
-setup_server
-setup_web
-setup_proxy
-#setup_machine_learning
-remove_install_files
-display_message_box "Immich is now accessible from 0.0.0.0:80!"
+[ "$install" -eq 1 ] && install
+[ "$uninstall" -eq 1 ] && uninstall
