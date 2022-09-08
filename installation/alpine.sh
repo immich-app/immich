@@ -195,6 +195,9 @@ upgrade()
 	update_repo
 	get_source_code
 	
+	# Load env variables
+	source /etc/profile
+
 	# Store variables in a tmp file, which will autocomplete
 	# inputs at installation
 	echo "$JWT_SECRET" > "$tmp_dir/immich-server-vars"
@@ -211,7 +214,9 @@ upgrade()
 	setup_proxy
 	#setup_machine_learning
 	
+	# Remove installation files and copied variables
 	remove_install_files
+	rm -f "$tmp_dir/immich-server-vars"
 
 	display_message_box "Immich upgraded, see 0.0.0.0:80!"
 }
@@ -252,10 +257,16 @@ uninstall()
 	rm -rf /usr/src/web
 	#rm -rf /usr/src/machine-learning
 
+	# Remove hosts
+	sed -i "/immich[-_]/d" /etc/hosts
+
 	# Remove environment variables
 	rm -f /etc/profile.d/node.sh
 	source /etc/profile
 	unset JWT_SECRET ENABLE_MAPBOX MAPBOX_KEY
+
+	# Delete node user
+	deluser node
 
 	display_message_box "Immich successfully uninstalled!"
 }
@@ -293,7 +304,7 @@ get_source_code()
     if [ "$dev" -eq 0 ]
     then
         # Download and extract repo release
-        echo "Downloading and extracting Immich v$immich_ver..."
+        echo "Downloading and extracting to Immich v$immich_ver..."
         wget https://github.com/immich-app/immich/archive/refs/tags/v${immich_ver}.tar.gz -O ${tmp_dir}/immich-${immich_ver}.tar.gz || exit
         tar -xzf ${tmp_dir}/immich-${immich_ver}.tar.gz --directory ${tmp_dir}
     else
@@ -325,6 +336,14 @@ setup_server()
     mkdir -p /usr/src/server
     cd /usr/src/server || exit
 
+    # New user with a homedir
+    echo "Creating 'node' user..."
+    adduser -Dh /usr/src node
+
+    # Create log directory
+    mkdir -p /var/log/immich
+    chown -R node:node /var/log/immich
+
     # Build stage
     echo "Installing build stage dependencies..."
     apk add --no-cache build-base python3 libheif vips-dev ffmpeg nodejs-current npm
@@ -332,13 +351,15 @@ setup_server()
     # Import package and package-lock.json
     echo "Installing..."
     cp ${tmp_dir}/immich-${immich_ver}/server/package*.json .
+    chown -R node:node .
     unset NODE_ENV
-    npm ci
+    su node -c "npm ci"
 
     # Import anything else
     echo "Building package..."
     cp -r ${tmp_dir}/immich-${immich_ver}/server/* .
-    npm run build
+    chown -R node:node .
+    su node -c "npm run build"
 
     # Production stage
     # Clean up installed packages used for build stage
@@ -351,7 +372,7 @@ setup_server()
     rm -rf "$(ls | grep -v 'node_modules\|dist\|package*.json\|start*.sh')"
 
     echo "Removing extra packages..."
-    npm prune --production
+    su node -c "npm prune --production"
 
     # Then, environment variables are written for node execution
     echo "Getting some variables..."
@@ -371,7 +392,7 @@ setup_server()
 
     # If user wants to use Mapbox
     read -p "Enable Mapbox [y/N]: " enable_mapbox
-    if [ "$enable_mapbox" == "y" ]
+    if [ "$enable_mapbox" == "y" ] || [ "$enable_mapbox" == "true" ]
     then
         enable_mapbox=true
     else
@@ -386,19 +407,20 @@ setup_server()
     fi
     echo "export MAPBOX_KEY=$mapbox_key" >> /etc/profile.d/node.sh
 
-    # Load new variables
-    echo "Loading new variables...."
-    source /etc/profile
-
     # Where to store data
     while [ ! -d "$upload_path" ]
     do
         read -p "Full path where medias will be stored: " upload_path
     done
     ln -s "$upload_path" ./upload
-    echo "export UPLOAD_LOCATION=$UPLOAD_LOCATION" >> /etc/profile.d/node.sh
+    chown -R node:node ./upload
+    echo "export UPLOAD_LOCATION=$upload_path" >> /etc/profile.d/node.sh
 
-    # Startup scripts
+    # Load new variables
+    echo "Loading new variables...."
+    source /etc/profile
+
+    # Scripts permissions
     chmod u+x ./start-server.sh ./start-microservices.sh
 
     # Write service file
@@ -449,6 +471,10 @@ setup_web()
     echo "Creating 'node' user..."
     adduser -Dh /usr/src node
 
+    # Create log directory
+    mkdir -p /var/log/immich
+    chown -R node:node /var/log/immich
+
     echo "Installing build stage dependencies..."
     apk add --no-cache setpriv nodejs-current npm
 
@@ -459,15 +485,15 @@ setup_web()
     echo "Installing..."
     # Unset env var for compilation, crash if not removed
     unset NODE_ENV
-    npm ci
-
-    echo "Building package..."
-    npm run build
-    export NODE_ENV=production
+    su node -c "npm ci"
 
     # Import anything else
     cp -r ${tmp_dir}/immich-${immich_ver}/web/* .
     chown -R node:node .
+
+    echo "Building package..."
+    su node -c "npm run build"
+    export NODE_ENV=production
 
     # Edit app directory, from /usr/src/app -> /usr/src/web
     sed -i "s/usr\/src\/app/usr\/src\/web/" entrypoint.sh
@@ -522,6 +548,14 @@ setup_machine_learning()
     mkdir /usr/src/machine-learning
     cd /usr/src/machine-learning || exit
 
+    # New user with a homedir
+    echo "Creating 'node' user..."
+    adduser -Dh /usr/src node
+
+    # Create log directory
+    mkdir -p /var/log/immich
+    chown -R node:node /var/log/immich
+
     # Build stage
     cp ${tmp_dir}/immich-${immich_ver}/machine-learning/package*.json .
 
@@ -530,12 +564,13 @@ setup_machine_learning()
 
     echo "Installing..."
     unset NODE_ENV
-    npm ci
-    npm rebuild @tensorflow/tfjs-node --build-from-source
+    su node -c "npm ci"
+    su node -c "npm rebuild @tensorflow/tfjs-node --build-from-source"
 
     echo "Building package..."
     cp -r ${tmp_dir}/immich-${immich_ver}/machine-learning/* .
-    npm run build
+    chown -R node:node .
+    su node -c "npm run build"
     export NODE_ENV=production
 
     # Production stage
@@ -547,11 +582,11 @@ setup_machine_learning()
     rm -rf "$(ls | grep -v 'node_modules\|dist\|package*.json\|entrypoint.sh')"
 
     echo "Removing extra packages..."
-    npm prune --production
+    su node -c "npm prune --production"
 
     # Where data will be stored.
     # Follow symlink created during server installation
-    ln -s ../server/upload ./upload
+    su node -c "ln -s ../server/upload ./upload"
 
     chmod u+x ./entrypoint.sh
 
@@ -673,7 +708,7 @@ setup_redis()
     echo "Starting on boot..."
     rc-update add redis
     echo "Starting..."
-    /etc/init.d/redis start
+    /etc/init.d/redis restart
 
     echo "Writing host address..."
     echo -e "127.0.0.1\timmich_redis" >> /etc/hosts
@@ -711,7 +746,7 @@ setup_proxy()
 
     # Start service to apply the new config
     echo "Starting..."
-    /etc/init.d/nginx start
+    /etc/init.d/nginx restart
 
     echo "Writing host address..."
     echo -e "127.0.0.1\timmich_proxy" >> /etc/hosts

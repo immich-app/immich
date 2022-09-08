@@ -8,10 +8,11 @@ command=/bin/ash
 command_args="-c $data_path/entrypoint.sh"
 
 command_background=yes
+command_user="node:node"
 pidfile="/run/immich-machine-learning.pid"
 
-output_log=/var/log/immich-machine-learning.log
-error_log=/var/log/immich-machine-learning_err.log
+output_log="/var/log/immich/machine-learning.log"
+error_log="/var/log/immich/machine-learning.err.log"
 
 required_dirs="$data_path"
 required_files="$data_path/entrypoint.sh"

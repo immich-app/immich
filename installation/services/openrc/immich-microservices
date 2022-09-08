@@ -8,10 +8,11 @@ command=/bin/ash
 command_args="-c $data_path/start-microservices.sh"
 
 command_background=yes
+command_user="node:node"
 pidfile="/run/immich-micoservices.pid"
 
-output_log=/var/log/immich-microservices.log
-error_log=/var/log/immich-microservices_err.log
+output_log="/var/log/immich/microservices.log"
+error_log="/var/log/immich/microservices.err.log"
 
 required_dirs="$data_path"
 required_files="$data_path/start-microservices.sh"
