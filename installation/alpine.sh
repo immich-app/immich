@@ -11,6 +11,7 @@ tmp_dir=/tmp
 # [0|1]
 dev=0
 install=0
+upgrade=0
 uninstall=0
 
 # Parse arguments given to the script from the CLI.
@@ -43,11 +44,35 @@ parse_args()
         then
             dev=1
 	fi
+
+	install=1
+    elif [ "$1" == "--upgrade" ]
+    then
+        if [ "$2" == "-h" ]
+        then
+            echo "usage: $0 --upgrade [--dev|-h]"        
+            echo "NB: medias and database are untouched."                                          
+            echo                                           
+            echo "  -h              Show this help message"
+            echo "  --dev           Run in dev mode"
+            echo  
+            exit 0
+        fi
+
+        # Instead of downloading code from a release,
+        # the source code is provided.
+        if [ "$2" == "--dev" ]
+        then
+            dev=1
+	fi
+
+	upgrade=1
     elif [ "$1" == "--uninstall" ]
     then
         if [ "$2" == "-h" ]
         then
             echo "usage: $0 --uninstall [-h]"        
+            echo "NB: medias and database are untouched."                                          
             echo                                           
             echo "  -h              Show this help message"
             echo  
@@ -55,9 +80,10 @@ parse_args()
         fi
 	uninstall=1
     else
-        echo "usage: $0 [--install [--dev]] [--uninstall] [-h]"
+        echo "usage: $0 [--install|--upgrade [--dev]] [--uninstall] [-h]"
         echo                                           
         echo "  --install       Install Immich"
+        echo "  --upgrade	Upgrade Immich"
         echo "  --dev           Run in dev mode"
         echo "  --uninstall     Remove Immich (without medias nor database)"
         echo "  -h              Show this help message"
@@ -154,6 +180,42 @@ install()
 	display_message_box "Immich is now accessible from 0.0.0.0:80!"
 }
 
+# Save environment variables used for server setup,
+# uninstall current Immich and install the new one.
+#
+# params: nothing
+#
+# return: nothing
+upgrade()
+{
+	echo "Starting upgrade process..."
+	echo "NB: all medias and database will be kept."
+
+	# Download the new release
+	update_repo
+	get_source_code
+	
+	# Store variables in a tmp file, which will autocomplete
+	# inputs at installation
+	echo "$JWT_SECRET" > "$tmp_dir/immich-server-vars"
+	echo "$ENABLE_MAPBOX" >> "$tmp_dir/immich-server-vars"
+	[ "$ENABLE_MAPBOX" == "true" ] && echo "$MAPBOX_KEY" >> "$tmp_dir/immich-server-vars"
+	echo "$UPLOAD_LOCATION" >> "$tmp_dir/immich-server-vars"
+
+	# Uninstall current version
+	uninstall
+
+	echo "Rebuilding Immich components..."
+	setup_server < "$tmp_dir/immich-server-vars"
+	setup_web
+	setup_proxy
+	#setup_machine_learning
+	
+	remove_install_files
+
+	display_message_box "Immich upgraded, see 0.0.0.0:80!"
+}
+
 # Uninstall Immich components,
 # without database nor medias.
 #
@@ -171,6 +233,12 @@ uninstall()
 	/etc/init.d/immich-web stop
 	#/etc/init.d/immich-machine-learning stop
 
+	# Disable services from boot
+	rc-update del immich-server
+	rc-update del immich-microservices
+	rc-update del immich-web
+	#rc-update del immich-machine-learning
+
 	# Remove services
 	rm -f /etc/init.d/immich-*
 
@@ -183,6 +251,11 @@ uninstall()
 	rm -rf /usr/src/microservices
 	rm -rf /usr/src/web
 	#rm -rf /usr/src/machine-learning
+
+	# Remove environment variables
+	rm -f /etc/profile.d/node.sh
+	source /etc/profile
+	unset JWT_SECRET ENABLE_MAPBOX MAPBOX_KEY
 
 	display_message_box "Immich successfully uninstalled!"
 }
@@ -259,6 +332,7 @@ setup_server()
     # Import package and package-lock.json
     echo "Installing..."
     cp ${tmp_dir}/immich-${immich_ver}/server/package*.json .
+    unset NODE_ENV
     npm ci
 
     # Import anything else
@@ -322,6 +396,7 @@ setup_server()
         read -p "Full path where medias will be stored: " upload_path
     done
     ln -s "$upload_path" ./upload
+    echo "export UPLOAD_LOCATION=$UPLOAD_LOCATION" >> /etc/profile.d/node.sh
 
     # Startup scripts
     chmod u+x ./start-server.sh ./start-microservices.sh
@@ -370,9 +445,9 @@ setup_web()
     mkdir -p /usr/src/web
     cd /usr/src/web || exit
 
-    # New user without homedir
+    # New user with a homedir
     echo "Creating 'node' user..."
-    adduser -DH node
+    adduser -Dh /usr/src node
 
     echo "Installing build stage dependencies..."
     apk add --no-cache setpriv nodejs-current npm
@@ -385,7 +460,6 @@ setup_web()
     # Unset env var for compilation, crash if not removed
     unset NODE_ENV
     npm ci
-    chown -R node:node .
 
     echo "Building package..."
     npm run build
@@ -669,3 +743,4 @@ parse_args "$@"
 check_os
 [ "$install" -eq 1 ] && install
 [ "$uninstall" -eq 1 ] && uninstall
+[ "$upgrade" -eq 1 ] && upgrade
