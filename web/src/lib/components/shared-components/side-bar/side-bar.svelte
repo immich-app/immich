@@ -66,12 +66,12 @@
 			on:mouseenter={() => (showAssetCount = true)}
 			on:mouseleave={() => (showAssetCount = false)}
 		>
-			<InformationOutline size={18} color="#4250af" />
+			<InformationOutline size={18} color="#989a9f" />
 			{#if showAssetCount}
 				<div
 					transition:fade={{ duration: 200 }}
 					id="asset-count-info-detail"
-					class="w-32 rounded-lg px-4 py-2 shadow-lg bg-white absolute -right-[135px] top-0 z-[9999] flex place-items-center place-content-center"
+					class="w-32 rounded-lg p-4 shadow-lg bg-white absolute -right-[135px] top-0 z-[9999] flex place-items-center place-content-center"
 				>
 					{#await getAssetCount()}
 						<LoadingSpinner />
@@ -99,12 +99,12 @@
 			on:mouseenter={() => (showSharingCount = true)}
 			on:mouseleave={() => (showSharingCount = false)}
 		>
-			<InformationOutline size={18} color="#4250af" />
+			<InformationOutline size={18} color="#989a9f" />
 			{#if showSharingCount}
 				<div
 					transition:fade={{ duration: 200 }}
 					id="asset-count-info-detail"
-					class="w-32 rounded-lg px-4 py-2 shadow-lg bg-white absolute -right-[135px] top-0 z-[9999] flex place-items-center place-content-center"
+					class="w-24 rounded-lg p-4 shadow-lg bg-white absolute -right-[105px] top-0 z-[9999] flex place-items-center place-content-center"
 				>
 					{#await getAlbumCount()}
 						<LoadingSpinner />
@@ -134,12 +134,12 @@
 			on:mouseenter={() => (showAlbumsCount = true)}
 			on:mouseleave={() => (showAlbumsCount = false)}
 		>
-			<InformationOutline size={18} color="#4250af" />
+			<InformationOutline size={18} color="#989a9f" />
 			{#if showAlbumsCount}
 				<div
 					transition:fade={{ duration: 200 }}
 					id="asset-count-info-detail"
-					class="w-32 rounded-lg px-4 py-2 shadow-lg bg-white absolute -right-[135px] top-0 z-[9999] flex place-items-center place-content-center"
+					class="w-24 rounded-lg p-4 shadow-lg bg-white absolute -right-[105px] top-0 z-[9999] flex place-items-center place-content-center"
 				>
 					{#await getAlbumCount()}
 						<LoadingSpinner />
