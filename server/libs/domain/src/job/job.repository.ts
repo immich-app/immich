@@ -54,6 +54,10 @@ export type JobItem =
   | { name: JobName.DETECT_OBJECTS; data: IAssetJob }
   | { name: JobName.CLASSIFY_IMAGE; data: IAssetJob }
 
+  // Recognize Faces
+  | { name: JobName.QUEUE_RECOGNIZE_FACES; data: IBaseJob }
+  | { name: JobName.RECOGNIZE_FACES; data: IAssetJob }
+
   // Clip Embedding
   | { name: JobName.QUEUE_ENCODE_CLIP; data: IBaseJob }
   | { name: JobName.ENCODE_CLIP; data: IAssetJob }

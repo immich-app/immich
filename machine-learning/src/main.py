@@ -26,6 +26,29 @@ def _get_model(model, task=None):
 
 server = Flask(__name__)
 
+from face_processor import FaceProcessor
+from .face_processor import FaceProcessor
+
+server = Flask(__name__)
+
+
+classifier = pipeline(
+    task="image-classification",
+    model="microsoft/resnet-50"
+)
+
+detector = pipeline(
+    task="object-detection",
+    model="hustvl/yolos-tiny"
+)
+
+face_processor = FaceProcessor()
+
+# Environment resolver
+is_dev = os.getenv('NODE_ENV') == 'development'
+server_port = os.getenv('MACHINE_LEARNING_PORT') or 3003
+
+
 @server.route("/ping")
 def ping():
     return "pong"
@@ -53,6 +76,11 @@ def clip_encode_text():
     model = _get_model(clip_text_model)
     text = request.json['text']
     return model.encode(text).tolist(), 200
+
+@server.route("/facial-recognition/recognize-persons", methods=['POST'])
+def facial_recognition():
+    assetPath = request.json['thumbnailPath']
+    return face_processor.process_image(assetPath), 201
 
 def run_engine(engine, path):
     result = []

@@ -67,6 +67,16 @@ export class ObjectTaggingProcessor {
   async onClassifyImage(job: Job<IAssetJob>) {
     await this.smartInfoService.handleClassifyImage(job.data);
   }
+
+  @Process({ name: JobName.QUEUE_RECOGNIZE_FACES, concurrency: 1 })
+  async onQueueRecognizeFaces(job: Job<IBaseJob>) {
+    await this.smartInfoService.handleQueueRecognizeFaces(job.data);
+  }
+
+  @Process({ name: JobName.RECOGNIZE_FACES, concurrency: 1 })
+  async onRecognizeFaces(job: Job<IAssetJob>) {
+    await this.smartInfoService.handleRecognizeFaces(job.data);
+  }
 }
 
 @Processor(QueueName.CLIP_ENCODING)

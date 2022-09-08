@@ -79,6 +79,7 @@ export class MediaService {
       await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { asset } });
       await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { asset } });
       await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
+      await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });
 
       this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
     } catch (error: any) {

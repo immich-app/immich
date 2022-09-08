@@ -8,6 +8,8 @@ RUN python -m venv /opt/venv
 RUN /opt/venv/bin/pip install --pre torch  -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
 RUN /opt/venv/bin/pip install transformers tqdm numpy scikit-learn scipy nltk sentencepiece flask Pillow gunicorn
 RUN /opt/venv/bin/pip install --no-deps sentence-transformers
+# Facial Recognition Stuff
+RUN /opt/venv/bin/pip install insightface onnxruntime
 
 FROM python:3.10-slim
 
@@ -23,5 +25,5 @@ ENV TRANSFORMERS_CACHE=/cache \
 WORKDIR /usr/src/app
 
 COPY . .
-
+ENV PYTHONPATH=`pwd`
 CMD ["gunicorn", "src.main:server"]

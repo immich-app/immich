@@ -3,6 +3,7 @@ export enum QueueName {
   METADATA_EXTRACTION = 'metadata-extraction-queue',
   VIDEO_CONVERSION = 'video-conversion-queue',
   OBJECT_TAGGING = 'object-tagging-queue',
+  RECOGNIZE_FACES = 'recognize-faces-queue',
   CLIP_ENCODING = 'clip-encoding-queue',
   BACKGROUND_TASK = 'background-task-queue',
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration-queue',
@@ -47,6 +48,10 @@ export enum JobName {
   QUEUE_OBJECT_TAGGING = 'queue-object-tagging',
   DETECT_OBJECTS = 'detect-objects',
   CLASSIFY_IMAGE = 'classify-image',
+
+  // facial recognition
+  QUEUE_RECOGNIZE_FACES = 'queue-recognize-faces',
+  RECOGNIZE_FACES = 'recognize-faces',
 
   // cleanup
   DELETE_FILES = 'delete-files',

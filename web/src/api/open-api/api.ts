@@ -337,6 +337,12 @@ export interface AllJobStatusResponseDto {
      * @memberof AllJobStatusResponseDto
      */
     'search-queue': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'recognize-faces-queue': JobStatusDto;
 }
 /**
  * 
@@ -1308,6 +1314,7 @@ export const JobName = {
     MetadataExtractionQueue: 'metadata-extraction-queue',
     VideoConversionQueue: 'video-conversion-queue',
     ObjectTaggingQueue: 'object-tagging-queue',
+    RecognizeFacesQueue: 'recognize-faces-queue',
     ClipEncodingQueue: 'clip-encoding-queue',
     BackgroundTaskQueue: 'background-task-queue',
     StorageTemplateMigrationQueue: 'storage-template-migration-queue',

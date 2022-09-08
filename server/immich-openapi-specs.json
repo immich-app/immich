@@ -4183,6 +4183,9 @@
           },
           "search-queue": {
             "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "recognize-faces-queue": {
+            "$ref": "#/components/schemas/JobStatusDto"
           }
         },
         "required": [
@@ -4193,7 +4196,8 @@
           "clip-encoding-queue",
           "storage-template-migration-queue",
           "background-task-queue",
-          "search-queue"
+          "search-queue",
+          "recognize-faces-queue"
         ]
       },
       "JobName": {
@@ -4203,6 +4207,7 @@
           "metadata-extraction-queue",
           "video-conversion-queue",
           "object-tagging-queue",
+          "recognize-faces-queue",
           "clip-encoding-queue",
           "background-task-queue",
           "storage-template-migration-queue",

@@ -21,4 +21,8 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   encodeText(input: string): Promise<number[]> {
     return client.post<number[]>('/sentence-transformer/encode-text', { text: input }).then((res) => res.data);
   }
+
+  recognizeFaces(input: MachineLearningInput): Promise<string[]> {
+    return client.post<string[]>('/facial-recognition/recognize-persons', input).then((res) => res.data);
+  }
 }

@@ -592,6 +592,7 @@ export const sharedLinkStub = {
             objects: ['a', 'b', 'c'],
             asset: null as any,
             clipEmbedding: [0.12, 0.13, 0.14],
+            faces: [],
           },
           webpPath: '',
           encodedVideoPath: '',
