@@ -7,6 +7,7 @@
 	import moment from 'moment';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { browser } from '$app/env';
+	import { env } from '$env/dynamic/public';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
 
 	// Map Property
@@ -25,6 +26,14 @@
 		if (browser) {
 			if (asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null) {
 				await drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
+			}
+
+			if (asset.exifInfo?.dateTimeOriginal && !env.PUBLIC_TZ) {
+				const dateTimeOriginal = asset.exifInfo.dateTimeOriginal;
+
+				asset.exifInfo.dateTimeOriginal = dateTimeOriginal
+					.slice(0, dateTimeOriginal.length - 1);
+				console.log('time: ', env.PUBLIC_TZ, dateTimeOriginal, asset.exifInfo.dateTimeOriginal);
 			}
 		}
 	});
