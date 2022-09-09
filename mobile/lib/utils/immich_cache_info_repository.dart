@@ -13,6 +13,21 @@ abstract class ImmichCacheRepository extends CacheInfoRepository {
   int getCacheSize();
 }
 
+class ImmichCacheObjectProvider extends CacheObjectProvider implements ImmichCacheRepository {
+
+  ImmichCacheObjectProvider({super.databaseName});
+
+  @override
+  int getCacheSize() {
+    return 0;
+  }
+
+  @override
+  int getNumberOfCachedObjects() {
+    return 0;
+  }
+}
+
 class ImmichCacheInfoRepository extends ImmichCacheRepository {
   final String hiveBoxName;
   final String keyLookupHiveBoxName;

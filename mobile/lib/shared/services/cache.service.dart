@@ -34,10 +34,7 @@ class CacheService {
 
   ImmichCacheRepository getCacheRepo(CacheType type) {
     if (!_cacheRepositoryInstances.containsKey(type)) {
-      final repo = ImmichCacheInfoRepository(
-        "cache_${type.name}",
-        "cacheKeys_${type.name}",
-      );
+      final repo = ImmichCacheObjectProvider(databaseName: type.name);
       _cacheRepositoryInstances[type] = repo;
     }
 
