@@ -17,6 +17,12 @@ async function bootstrap() {
     app.enableCors();
   }
 
+  const globalPrefix = process.env.IMMICH_SERVER_PREFIX || "";
+
+  if (globalPrefix && globalPrefix !== '') {
+    app.setGlobalPrefix(globalPrefix);
+  }
+
   app.useWebSocketAdapter(new RedisIoAdapter(app));
 
   const config = new DocumentBuilder()
@@ -31,7 +37,7 @@ async function bootstrap() {
       description: 'Enter JWT token',
       in: 'header',
     })
-    .addServer('/api')
+    .addServer(globalPrefix)
     .build();
 
   const apiDocumentOptions: SwaggerDocumentOptions = {

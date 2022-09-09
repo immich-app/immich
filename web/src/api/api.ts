@@ -8,14 +8,18 @@ import {
 	UserApi
 } from './open-api';
 
+import {
+	getAPIServerUrl
+} from './utils';
+
 class ImmichApi {
 	public userApi: UserApi;
 	public albumApi: AlbumApi;
 	public assetApi: AssetApi;
 	public authenticationApi: AuthenticationApi;
 	public deviceInfoApi: DeviceInfoApi;
+	private config = new Configuration();
 	public serverInfoApi: ServerInfoApi;
-	private config = new Configuration({ basePath: '/api' });
 
 	constructor() {
 		this.userApi = new UserApi(this.config);
@@ -41,4 +45,4 @@ class ImmichApi {
 
 export const api = new ImmichApi();
 export const serverApi = new ImmichApi();
-serverApi.setBaseUrl('http://immich-server:3001');
+serverApi.setBaseUrl(getAPIServerUrl());
