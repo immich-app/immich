@@ -26,7 +26,6 @@
 	export let scrollTop = 0;
 	export let bucketInfo: AssetCountByTimeBucketResponseDto;
 	export let scrollbarHeight = 0;
-	export let timelineHeight = 0;
 
 	$: timelineHeight = $assetGridState.timelineHeight;
 	$: viewportWidth = $assetGridState.viewportWidth;
@@ -49,17 +48,22 @@
 	}
 
 	$: {
-		// Update layout distance based on AssetGridState
-		// console.log($assetGridState.timelineHeight);
+		console.log($assetGridState.timelineHeight);
+		// $assetGridState.buckets.forEach((bucketInfo, index) => {
+		// 	const timelinePercentage = bucketInfo.bucketHeight / timelineHeight;
+		// 	if (segmentScrollbarLayout[index]) {
+		// 		segmentScrollbarLayout[index].height = Math.round(timelinePercentage * scrollbarHeight);
+		// 	}
+		// });
 	}
+
 	onMount(() => {
 		segmentScrollbarLayout = getLayoutDistance();
 	});
 
 	const getSegmentHeight = (groupCount: number) => {
 		if (bucketInfo.buckets.length > 0) {
-			const percentage = (groupCount * 100) / bucketInfo.totalCount;
-			return Math.round((percentage * scrollbarHeight) / 100);
+			return Math.round((groupCount / bucketInfo.totalCount) * scrollbarHeight);
 		} else {
 			return 0;
 		}
@@ -112,7 +116,9 @@
 
 <div
 	id="immich-scrubbable-scrollbar"
-	class="fixed right-0 w-[60px] h-full bg-immich-bg z-10 hover:cursor-row-resize select-none"
+	class="fixed right-0 bg-immich-bg z-10 hover:cursor-row-resize select-none"
+	style:width={isDragging ? '100vw' : '60px'}
+	style:background-color={isDragging ? 'transparent' : 'transparent'}
 	on:mouseenter={() => (isHover = true)}
 	on:mouseleave={() => {
 		isHover = false;
@@ -151,7 +157,7 @@
 			on:mousemove={(e) => handleMouseMove(e, groupDate)}
 		>
 			{#if new Date(segmentScrollbarLayout[index - 1]?.timeGroup).getFullYear() !== groupDate.getFullYear()}
-				{#if segment.count > 5}
+				{#if segment.count > 4}
 					<div
 						aria-label={segment.timeGroup + ' ' + segment.count}
 						class="absolute right-0 pr-3 z-10 text-xs font-medium"

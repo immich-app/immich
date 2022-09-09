@@ -162,5 +162,6 @@
 <style>
 	#asset-grid {
 		contain: layout;
+		scrollbar-width: none;
 	}
 </style>
