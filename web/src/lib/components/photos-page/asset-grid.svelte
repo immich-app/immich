@@ -71,7 +71,7 @@
 	let lastScrollPosition = 0;
 	let animationTick = false;
 
-	const handleTimelineScroll = (e: UIEvent) => {
+	const handleTimelineScroll = () => {
 		if (!animationTick) {
 			window.requestAnimationFrame(() => {
 				lastScrollPosition = assetGridElement?.scrollTop;
