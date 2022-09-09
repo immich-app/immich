@@ -111,6 +111,8 @@ function createAssetStore() {
 	const updateBucketHeight = (bucket: string, height: number) => {
 		assetGridState.update((state) => {
 			const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
+			// Update timeline height based on the new bucket height
+			state.timelineHeight += height - state.buckets[bucketIndex].bucketHeight;
 			state.buckets[bucketIndex].bucketHeight = height;
 			return state;
 		});

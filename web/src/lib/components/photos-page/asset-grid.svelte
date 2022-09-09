@@ -76,7 +76,6 @@
 		if (!animationTick) {
 			window.requestAnimationFrame(() => {
 				lastScrollPosition = assetGridElement?.scrollTop;
-
 				animationTick = false;
 			});
 
@@ -105,7 +104,7 @@
 
 <section
 	id="asset-grid"
-	class="overflow-y-auto pl-4"
+	class="overflow-y-auto pl-4 scrollbar-hidden"
 	bind:clientHeight={viewportHeight}
 	bind:clientWidth={viewportWidth}
 	bind:this={assetGridElement}

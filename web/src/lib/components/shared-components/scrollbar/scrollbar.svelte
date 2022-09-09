@@ -30,6 +30,7 @@
 
 	$: timelineHeight = $assetGridState.timelineHeight;
 	$: viewportWidth = $assetGridState.viewportWidth;
+	$: timelineScrolltop = (scrollbarPosition / scrollbarHeight) * timelineHeight;
 
 	let segmentScrollbarLayout: SegmentScrollbarLayout[] = [];
 	let isHover = false;
@@ -37,15 +38,20 @@
 	let hoveredDate: Date;
 	let currentMouseYLocation = 0;
 	let scrollbarPosition = 0;
-	$: timelineScrolltop = (scrollbarPosition / scrollbarHeight) * timelineHeight;
+	let animationTick = false;
 
 	const offset = 71;
 	const dispatchClick = createEventDispatcher<OnScrollbarClick>();
 	const dispatchDrag = createEventDispatcher<OnScrollbarDrag>();
+
 	$: {
 		scrollbarPosition = (scrollTop / timelineHeight) * scrollbarHeight;
 	}
 
+	$: {
+		// Update layout distance based on AssetGridState
+		// console.log($assetGridState.timelineHeight);
+	}
 	onMount(() => {
 		segmentScrollbarLayout = getLayoutDistance();
 	});
@@ -88,7 +94,6 @@
 		dispatchClick('onscrollbarclick', { scrollTo: timelineScrolltop });
 	};
 
-	let animationTick = false;
 	const handleMouseDrag = (e: MouseEvent) => {
 		if (isDragging) {
 			if (!animationTick) {
@@ -109,7 +114,10 @@
 	id="immich-scrubbable-scrollbar"
 	class="fixed right-0 w-[60px] h-full bg-immich-bg z-10 hover:cursor-row-resize select-none"
 	on:mouseenter={() => (isHover = true)}
-	on:mouseleave={() => (isHover = false)}
+	on:mouseleave={() => {
+		isHover = false;
+		isDragging = false;
+	}}
 	on:mouseup={handleMouseUp}
 	on:mousemove={handleMouseDrag}
 	on:mousedown={handleMouseDown}
