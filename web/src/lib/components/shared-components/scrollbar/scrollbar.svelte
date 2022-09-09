@@ -24,7 +24,7 @@
 	import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
 
 	export let scrollTop = 0;
-	// export let bucketInfo: AssetCountByTimeBucketResponseDto;
+	export let bucketInfo: AssetCountByTimeBucketResponseDto;
 	export let scrollbarHeight = 0;
 
 	$: timelineHeight = $assetGridState.timelineHeight;
@@ -47,18 +47,26 @@
 		scrollbarPosition = (scrollTop / timelineHeight) * scrollbarHeight;
 	}
 
-	$: {
+	onMount(() => {
 		let result: SegmentScrollbarLayout[] = [];
-
-		for (const bucket of $assetGridState.buckets) {
+		for (const bucket of bucketInfo.buckets) {
 			let segmentLayout = new SegmentScrollbarLayout();
-			segmentLayout.count = bucket.assets.length;
-			segmentLayout.height = (bucket.bucketHeight / timelineHeight) * scrollbarHeight;
-			segmentLayout.timeGroup = bucket.bucketDate;
+			segmentLayout.count = bucket.count;
+			segmentLayout.height = getSegmentHeight(bucket.count);
+			segmentLayout.timeGroup = bucket.timeBucket;
 			result.push(segmentLayout);
 		}
 		segmentScrollbarLayout = result;
-	}
+	});
+
+	const getSegmentHeight = (groupCount: number) => {
+		if (bucketInfo.buckets.length > 0) {
+			const percentage = (groupCount * 100) / bucketInfo.totalCount;
+			return Math.round((percentage * scrollbarHeight) / 100);
+		} else {
+			return 0;
+		}
+	};
 
 	const handleMouseMove = (e: MouseEvent, currentDate: Date) => {
 		currentMouseYLocation = e.clientY - offset - 30;
@@ -130,7 +138,7 @@
 		{@const groupDate = new Date(segment.timeGroup)}
 
 		<div
-			class="relative "
+			class="relative"
 			style:height={segment.height + 'px'}
 			aria-label={segment.timeGroup + ' ' + segment.count}
 			on:mousemove={(e) => handleMouseMove(e, groupDate)}
@@ -144,7 +152,7 @@
 						{groupDate.getFullYear()}
 					</div>
 				{/if}
-			{:else if segment.height > 5}
+			{:else if segment.height > 10}
 				<div
 					aria-label={segment.timeGroup + ' ' + segment.count}
 					class="absolute right-0 rounded-full h-[4px] w-[4px] mr-3 bg-gray-300 block"
