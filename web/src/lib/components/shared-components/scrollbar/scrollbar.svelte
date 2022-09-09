@@ -24,7 +24,7 @@
 	import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
 
 	export let scrollTop = 0;
-	export let bucketInfo: AssetCountByTimeBucketResponseDto;
+	// export let bucketInfo: AssetCountByTimeBucketResponseDto;
 	export let scrollbarHeight = 0;
 
 	$: timelineHeight = $assetGridState.timelineHeight;
@@ -48,38 +48,17 @@
 	}
 
 	$: {
-		console.log($assetGridState.timelineHeight);
-		// $assetGridState.buckets.forEach((bucketInfo, index) => {
-		// 	const timelinePercentage = bucketInfo.bucketHeight / timelineHeight;
-		// 	if (segmentScrollbarLayout[index]) {
-		// 		segmentScrollbarLayout[index].height = Math.round(timelinePercentage * scrollbarHeight);
-		// 	}
-		// });
-	}
-
-	onMount(() => {
-		segmentScrollbarLayout = getLayoutDistance();
-	});
-
-	const getSegmentHeight = (groupCount: number) => {
-		if (bucketInfo.buckets.length > 0) {
-			return Math.round((groupCount / bucketInfo.totalCount) * scrollbarHeight);
-		} else {
-			return 0;
-		}
-	};
-
-	const getLayoutDistance = () => {
 		let result: SegmentScrollbarLayout[] = [];
-		for (const bucket of bucketInfo.buckets) {
+
+		for (const bucket of $assetGridState.buckets) {
 			let segmentLayout = new SegmentScrollbarLayout();
-			segmentLayout.count = bucket.count;
-			segmentLayout.height = getSegmentHeight(bucket.count);
-			segmentLayout.timeGroup = bucket.timeBucket;
+			segmentLayout.count = bucket.assets.length;
+			segmentLayout.height = (bucket.bucketHeight / timelineHeight) * scrollbarHeight;
+			segmentLayout.timeGroup = bucket.bucketDate;
 			result.push(segmentLayout);
 		}
-		return result;
-	};
+		segmentScrollbarLayout = result;
+	}
 
 	const handleMouseMove = (e: MouseEvent, currentDate: Date) => {
 		currentMouseYLocation = e.clientY - offset - 30;
@@ -157,7 +136,7 @@
 			on:mousemove={(e) => handleMouseMove(e, groupDate)}
 		>
 			{#if new Date(segmentScrollbarLayout[index - 1]?.timeGroup).getFullYear() !== groupDate.getFullYear()}
-				{#if segment.count > 4}
+				{#if segment.height > 5}
 					<div
 						aria-label={segment.timeGroup + ' ' + segment.count}
 						class="absolute right-0 pr-3 z-10 text-xs font-medium"
@@ -165,7 +144,7 @@
 						{groupDate.getFullYear()}
 					</div>
 				{/if}
-			{:else if segment.count > 5}
+			{:else if segment.height > 5}
 				<div
 					aria-label={segment.timeGroup + ' ' + segment.count}
 					class="absolute right-0 rounded-full h-[4px] w-[4px] mr-3 bg-gray-300 block"

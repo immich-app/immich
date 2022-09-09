@@ -110,7 +110,7 @@
 						<LoadingSpinner />
 					{:then data}
 						<div>
-							<p>{data.shared + data.sharing} albums</p>
+							<p>{data.shared + data.sharing} Albums</p>
 						</div>
 					{/await}
 				</div>
@@ -145,7 +145,7 @@
 						<LoadingSpinner />
 					{:then data}
 						<div>
-							<p>{data.owned} albums</p>
+							<p>{data.owned} Albums</p>
 						</div>
 					{/await}
 				</div>
