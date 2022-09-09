@@ -34,7 +34,7 @@ function createAssetStore() {
 		assetGridState.set({
 			viewportHeight,
 			viewportWidth,
-			timelineHeight: calculateViewportHeightByNumberOfAsset(data.totalCount, viewportWidth),
+			timelineHeight: 0,
 			buckets: data.buckets.map((d) => ({
 				bucketDate: d.timeBucket,
 				bucketHeight: calculateViewportHeightByNumberOfAsset(d.count, viewportWidth),
@@ -42,6 +42,12 @@ function createAssetStore() {
 				cancelToken: new AbortController()
 			})),
 			assets: []
+		});
+
+		// Update timeline height based on calculated bucket height
+		assetGridState.update((state) => {
+			state.timelineHeight = lodash.sumBy(state.buckets, (d) => d.bucketHeight);
+			return state;
 		});
 	};
 
@@ -108,10 +114,19 @@ function createAssetStore() {
 		});
 	};
 
-	const updateBucketHeight = (bucket: string, height: number) => {
+	const updateBucketHeight = (bucket: string, actualBucketHeight: number) => {
 		assetGridState.update((state) => {
 			const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
-			state.buckets[bucketIndex].bucketHeight = height;
+			// Update timeline height based on the new bucket height
+			const estimateBucketHeight = state.buckets[bucketIndex].bucketHeight;
+
+			if (actualBucketHeight >= estimateBucketHeight) {
+				state.timelineHeight += actualBucketHeight - estimateBucketHeight;
+			} else {
+				state.timelineHeight -= estimateBucketHeight - actualBucketHeight;
+			}
+
+			state.buckets[bucketIndex].bucketHeight = actualBucketHeight;
 			return state;
 		});
 	};

@@ -26,12 +26,16 @@
 		NotificationType
 	} from '../shared-components/notification/notification';
 	import { browser } from '$app/env';
+	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
 
 	export let album: AlbumResponseDto;
+	const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
 
 	let isShowAssetViewer = false;
 
 	let isShowAssetSelection = false;
+
+	$: $isAlbumAssetSelectionOpen = isShowAssetSelection;
 	$: {
 		if (browser) {
 			if (isShowAssetSelection) {

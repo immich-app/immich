@@ -3,7 +3,7 @@
 
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
 	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
-	import { api, TimeGroupEnum } from '@api';
+	import { api, AssetCountByTimeBucketResponseDto, TimeGroupEnum } from '@api';
 	import AssetDateGroup from './asset-date-group.svelte';
 	import Portal from '../shared-components/portal/portal.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -12,16 +12,23 @@
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
+	import Scrollbar, {
+		OnScrollbarClickDetail,
+		OnScrollbarDragDetail
+	} from '../shared-components/scrollbar/scrollbar.svelte';
+
+	export let isAlbumSelectionMode = false;
 
 	let viewportHeight = 0;
 	let viewportWidth = 0;
 	let assetGridElement: HTMLElement;
-	export let isAlbumSelectionMode = false;
+	let bucketInfo: AssetCountByTimeBucketResponseDto;
 
 	onMount(async () => {
 		const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
 			timeGroup: TimeGroupEnum.Month
 		});
+		bucketInfo = assetCountByTimebucket;
 
 		assetStore.setInitialState(viewportHeight, viewportWidth, assetCountByTimebucket);
 
@@ -60,14 +67,46 @@
 	const navigateToNextAsset = () => {
 		assetInteractionStore.navigateAsset('next');
 	};
+
+	let lastScrollPosition = 0;
+	let animationTick = false;
+
+	const handleTimelineScroll = () => {
+		if (!animationTick) {
+			window.requestAnimationFrame(() => {
+				lastScrollPosition = assetGridElement?.scrollTop;
+				animationTick = false;
+			});
+
+			animationTick = true;
+		}
+	};
+
+	const handleScrollbarClick = (e: OnScrollbarClickDetail) => {
+		assetGridElement.scrollTop = e.scrollTo;
+	};
+
+	const handleScrollbarDrag = (e: OnScrollbarDragDetail) => {
+		assetGridElement.scrollTop = e.scrollTo;
+	};
 </script>
+
+{#if bucketInfo && viewportHeight && $assetGridState.timelineHeight > viewportHeight}
+	<Scrollbar
+		scrollbarHeight={viewportHeight}
+		scrollTop={lastScrollPosition}
+		on:onscrollbarclick={(e) => handleScrollbarClick(e.detail)}
+		on:onscrollbardrag={(e) => handleScrollbarDrag(e.detail)}
+	/>
+{/if}
 
 <section
 	id="asset-grid"
-	class="overflow-y-auto pl-4"
+	class="overflow-y-auto pl-4 scrollbar-hidden"
 	bind:clientHeight={viewportHeight}
 	bind:clientWidth={viewportWidth}
 	bind:this={assetGridElement}
+	on:scroll={handleTimelineScroll}
 >
 	{#if assetGridElement}
 		<section id="virtual-timeline" style:height={$assetGridState.timelineHeight + 'px'}>
@@ -117,5 +156,6 @@
 <style>
 	#asset-grid {
 		contain: layout;
+		scrollbar-width: none;
 	}
 </style>
