@@ -1,4 +1,3 @@
-import { env } from '$env/dynamic/public';
 
 export function getFileUrl(aid: string, did: string, isThumb?: boolean, isWeb?: boolean) {
 	const urlObj = new URL(`${getAPIServerUrl()}/asset/file`);
