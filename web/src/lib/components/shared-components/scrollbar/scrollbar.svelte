@@ -17,14 +17,14 @@
 </script>
 
 <script lang="ts">
-	import { assetGridState } from '$lib/stores/assets.store';
-	import { AssetCountByTimeBucketResponseDto } from '@api';
+	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
 
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { assetGridState } from '$lib/stores/assets.store';
+
+	import { createEventDispatcher } from 'svelte';
 	import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
 
 	export let scrollTop = 0;
-	export let bucketInfo: AssetCountByTimeBucketResponseDto;
 	export let scrollbarHeight = 0;
 
 	$: timelineHeight = $assetGridState.timelineHeight;
@@ -39,34 +39,25 @@
 	let scrollbarPosition = 0;
 	let animationTick = false;
 
-	const offset = 71;
+	const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
+	$: offset = $isAlbumAssetSelectionOpen ? 100 : 71;
 	const dispatchClick = createEventDispatcher<OnScrollbarClick>();
 	const dispatchDrag = createEventDispatcher<OnScrollbarDrag>();
-
 	$: {
 		scrollbarPosition = (scrollTop / timelineHeight) * scrollbarHeight;
 	}
 
-	onMount(() => {
+	$: {
 		let result: SegmentScrollbarLayout[] = [];
-		for (const bucket of bucketInfo.buckets) {
+		for (const bucket of $assetGridState.buckets) {
 			let segmentLayout = new SegmentScrollbarLayout();
-			segmentLayout.count = bucket.count;
-			segmentLayout.height = getSegmentHeight(bucket.count);
-			segmentLayout.timeGroup = bucket.timeBucket;
+			segmentLayout.count = bucket.assets.length;
+			segmentLayout.height = (bucket.bucketHeight / timelineHeight) * scrollbarHeight;
+			segmentLayout.timeGroup = bucket.bucketDate;
 			result.push(segmentLayout);
 		}
 		segmentScrollbarLayout = result;
-	});
-
-	const getSegmentHeight = (groupCount: number) => {
-		if (bucketInfo.buckets.length > 0) {
-			const percentage = (groupCount * 100) / bucketInfo.totalCount;
-			return Math.round((percentage * scrollbarHeight) / 100);
-		} else {
-			return 0;
-		}
-	};
+	}
 
 	const handleMouseMove = (e: MouseEvent, currentDate: Date) => {
 		currentMouseYLocation = e.clientY - offset - 30;
@@ -138,21 +129,22 @@
 		{@const groupDate = new Date(segment.timeGroup)}
 
 		<div
+			id="time-segment"
 			class="relative"
 			style:height={segment.height + 'px'}
 			aria-label={segment.timeGroup + ' ' + segment.count}
 			on:mousemove={(e) => handleMouseMove(e, groupDate)}
 		>
 			{#if new Date(segmentScrollbarLayout[index - 1]?.timeGroup).getFullYear() !== groupDate.getFullYear()}
-				{#if segment.height > 5}
+				{#if segment.height > 8}
 					<div
 						aria-label={segment.timeGroup + ' ' + segment.count}
-						class="absolute right-0 pr-3 z-10 text-xs font-medium"
+						class="absolute right-0 pr-5 z-10 text-xs font-medium"
 					>
 						{groupDate.getFullYear()}
 					</div>
 				{/if}
-			{:else if segment.height > 10}
+			{:else if segment.height > 5}
 				<div
 					aria-label={segment.timeGroup + ' ' + segment.count}
 					class="absolute right-0 rounded-full h-[4px] w-[4px] mr-3 bg-gray-300 block"
@@ -163,7 +155,8 @@
 </div>
 
 <style>
-	#immich-scrubbable-scrollbar {
+	#immich-scrubbable-scrollbar,
+	#time-segment {
 		contain: layout;
 	}
 </style>

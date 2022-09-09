@@ -94,7 +94,6 @@
 
 {#if bucketInfo && viewportHeight}
 	<Scrollbar
-		{bucketInfo}
 		scrollbarHeight={viewportHeight}
 		scrollTop={lastScrollPosition}
 		on:onscrollbarclick={(e) => handleScrollbarClick(e.detail)}
