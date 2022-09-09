@@ -3,12 +3,7 @@
 
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
 	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
-	import {
-		api,
-		AssetCountByTimeBucketResponseDto,
-		GetAssetCountByTimeBucketDto,
-		TimeGroupEnum
-	} from '@api';
+	import { api, AssetCountByTimeBucketResponseDto, TimeGroupEnum } from '@api';
 	import AssetDateGroup from './asset-date-group.svelte';
 	import Portal from '../shared-components/portal/portal.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -17,7 +12,10 @@
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
-	import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
+	import Scrollbar, {
+		OnScrollbarClickDetail,
+		OnScrollbarDragDetail
+	} from '../shared-components/scrollbar/scrollbar.svelte';
 
 	export let isAlbumSelectionMode = false;
 
@@ -75,19 +73,34 @@
 	let animationTick = false;
 
 	const handleTimelineScroll = (e: UIEvent) => {
-		lastScrollPosition = assetGridElement?.scrollTop;
 		if (!animationTick) {
 			window.requestAnimationFrame(() => {
+				lastScrollPosition = assetGridElement?.scrollTop;
+
 				animationTick = false;
 			});
 
 			animationTick = true;
 		}
 	};
+
+	const handleScrollbarClick = (e: OnScrollbarClickDetail) => {
+		assetGridElement.scrollTop = e.scrollTo;
+	};
+
+	const handleScrollbarDrag = (e: OnScrollbarDragDetail) => {
+		assetGridElement.scrollTop = e.scrollTo;
+	};
 </script>
 
 {#if bucketInfo && viewportHeight}
-	<Scrollbar {bucketInfo} scrollbarHeight={viewportHeight} scrollTop={lastScrollPosition} />
+	<Scrollbar
+		{bucketInfo}
+		scrollbarHeight={viewportHeight}
+		scrollTop={lastScrollPosition}
+		on:onscrollbarclick={(e) => handleScrollbarClick(e.detail)}
+		on:onscrollbardrag={(e) => handleScrollbarDrag(e.detail)}
+	/>
 {/if}
 
 <section
