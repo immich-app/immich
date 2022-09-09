@@ -9,11 +9,13 @@ type SystemConfig = {
 
 const configDefaults: SystemConfig = {
   ffmpeg: {
+    [ConfigKey.FFMPEG_CONTAINER]: 'mp4',
     [ConfigKey.FFMPEG_CRF]: '23',
     [ConfigKey.FFMPEG_PRESET]: 'ultrafast',
     [ConfigKey.FFMPEG_TARGET_VIDEO_CODEC]: 'libx264',
     [ConfigKey.FFMPEG_TARGET_AUDIO_CODEC]: 'mp3',
-    [ConfigKey.FFMEG_TARGET_SCALING]: '1280:-2',
+    [ConfigKey.FFMPEG_TARGET_AUDIO_QUALITY]: '6',
+    [ConfigKey.FFMPEG_TARGET_SCALING]: '1280:-2',
   },
 };
 

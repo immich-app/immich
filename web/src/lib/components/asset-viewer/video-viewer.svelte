@@ -51,7 +51,7 @@
 			on:canplay={handleCanPlay}
 			bind:this={videoPlayerNode}
 		>
-			<source src={videoUrl} type="video/mp4" />
+			<source src={videoUrl}/>
 			<track kind="captions" />
 		</video>
 

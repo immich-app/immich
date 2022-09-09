@@ -36,6 +36,7 @@ import {
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { extname } from 'node:path';
 
 const fileInfo = promisify(stat);
 
@@ -286,9 +287,9 @@ export class AssetService {
 
         await fs.access(videoPath, constants.R_OK | constants.W_OK);
 
-        if (query.isWeb && asset.mimeType == 'video/quicktime') {
+        if (query.isWeb) {
           videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
-          mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
+          mimeType = asset.encodedVideoPath == '' ? asset.mimeType : `video/${extname(asset.encodedVideoPath!)}`;
         }
 
         const { size } = await fileInfo(videoPath);
