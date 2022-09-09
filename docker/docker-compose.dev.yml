@@ -102,8 +102,7 @@ services:
       context: ../nginx
       dockerfile: Dockerfile
     ports:
-      - 2283:80
-      - 2284:443
+      - 2283:8080
     logging:
       driver: none
     depends_on:
