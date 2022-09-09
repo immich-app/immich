@@ -22,7 +22,6 @@
 	let viewportHeight = 0;
 	let viewportWidth = 0;
 	let assetGridElement: HTMLElement;
-	let virtualTimelineElement: HTMLElement;
 	let bucketInfo: AssetCountByTimeBucketResponseDto;
 
 	onMount(async () => {
@@ -92,7 +91,7 @@
 	};
 </script>
 
-{#if bucketInfo && viewportHeight}
+{#if bucketInfo && viewportHeight && $assetGridState.timelineHeight > viewportHeight}
 	<Scrollbar
 		scrollbarHeight={viewportHeight}
 		scrollTop={lastScrollPosition}
@@ -110,11 +109,7 @@
 	on:scroll={handleTimelineScroll}
 >
 	{#if assetGridElement}
-		<section
-			id="virtual-timeline"
-			style:height={$assetGridState.timelineHeight + 'px'}
-			bind:this={virtualTimelineElement}
-		>
+		<section id="virtual-timeline" style:height={$assetGridState.timelineHeight + 'px'}>
 			{#each $assetGridState.buckets as bucket, bucketIndex (bucketIndex)}
 				<IntersectionObserver
 					on:intersected={intersectedHandler}
