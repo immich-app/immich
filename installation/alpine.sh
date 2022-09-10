@@ -205,19 +205,20 @@ upgrade()
 	echo "$ENABLE_MAPBOX" >> "$tmp_dir/immich-server-vars"
 	[ "$ENABLE_MAPBOX" == "true" ] && echo "$MAPBOX_KEY" >> "$tmp_dir/immich-server-vars"
 	echo "$UPLOAD_LOCATION" >> "$tmp_dir/immich-server-vars"
+	echo "$PUBLIC_LOGIN_PAGE_MESSAGE" >> "$tmp_dir/immich-web-vars"
 
 	# Uninstall current version
 	uninstall
 
 	echo "Rebuilding Immich components..."
 	setup_server < "$tmp_dir/immich-server-vars"
-	setup_web
+	setup_web < "$tmp_dir/immich-web-vars"
 	setup_proxy
 	#setup_machine_learning
 	
 	# Remove installation files and copied variables
 	remove_install_files
-	rm -f "$tmp_dir/immich-server-vars"
+	rm -f "$tmp_dir/immich-*-vars"
 
 	display_message_box "Immich upgraded, see 0.0.0.0:80!"
 }
@@ -482,6 +483,10 @@ setup_web()
     # Import package and package-lock.json
     cp ${tmp_dir}/immich-${immich_ver}/web/package*.json .
     chown -R node:node .
+
+    # Ask for login page custom message
+    read -p "Custom login page message (must be HTML formatted) [empty]: " login_page_message
+    echo "export PUBLIC_LOGIN_PAGE_MESSAGE=\"$login_page_message\"" >> /etc/profile.d/node.sh
 
     echo "Installing..."
     # Unset env var for compilation, crash if not removed
