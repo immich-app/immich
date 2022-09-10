@@ -48,7 +48,7 @@ export class GenerateChecksumProcessor {
             if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
               Logger.error(`${asset.originalPath} duplicated`);
             } else {
-              Logger.error(`Generate checksum ${err}`);
+              Logger.error(`checksum generation ${err}`);
             }
           }
         }
@@ -59,6 +59,8 @@ export class GenerateChecksumProcessor {
         }
       }
     }
+
+    Logger.log(`checksum generation done!`);
   }
 
   private async generateAssetChecksum(asset: AssetEntity) {
