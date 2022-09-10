@@ -18,6 +18,7 @@
 	let showSharingCount = false;
 	let showAlbumsCount = false;
 
+	// let domCount = 0;
 	onMount(async () => {
 		if ($page.routeId == 'albums') {
 			selectedAction = AppSideBarSelection.ALBUMS;
@@ -26,6 +27,10 @@
 		} else if ($page.routeId == 'sharing') {
 			selectedAction = AppSideBarSelection.SHARING;
 		}
+
+		// setInterval(() => {
+		// 	domCount = document.getElementsByTagName('*').length;
+		// }, 500);
 	});
 
 	const getAssetCount = async () => {
@@ -48,6 +53,7 @@
 </script>
 
 <section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6">
+	<!-- {domCount} -->
 	<a
 		sveltekit:prefetch
 		sveltekit:noscroll
@@ -110,7 +116,7 @@
 						<LoadingSpinner />
 					{:then data}
 						<div>
-							<p>{data.shared + data.sharing} albums</p>
+							<p>{data.shared + data.sharing} Albums</p>
 						</div>
 					{/await}
 				</div>
@@ -145,7 +151,7 @@
 						<LoadingSpinner />
 					{:then data}
 						<div>
-							<p>{data.owned} albums</p>
+							<p>{data.owned} Albums</p>
 						</div>
 					{/await}
 				</div>

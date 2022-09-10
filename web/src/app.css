@@ -88,4 +88,11 @@ input:focus-visible {
 		background: #4250afad;
 		border-radius: 16px;
 	}
+
+	/* Hidden scrollbar */
+	/* width */
+	.scrollbar-hidden::-webkit-scrollbar {
+		display: none;
+		scrollbar-width: none;
+	}
 }
