@@ -8,7 +8,7 @@ export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  // [DEPREDICATED] remove deviceAssetId col
+  // For mobile only, this is asset id get from flutter_photo_manager
   @Column()
   deviceAssetId!: string;
 
