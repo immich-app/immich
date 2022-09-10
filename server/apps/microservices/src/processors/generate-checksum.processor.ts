@@ -17,7 +17,7 @@ export class GenerateChecksumProcessor {
 
   @Process()
   async generateChecksum() {
-    const pageSize = 10;
+    const pageSize = 200;
     let hasNext = true;
     let lastErrAssetId: string | undefined = undefined;
 
