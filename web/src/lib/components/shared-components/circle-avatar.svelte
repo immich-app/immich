@@ -5,7 +5,7 @@
 	export let user: UserResponseDto;
 
 	// Avatar Size In Pixel
-	export let size: number = 48;
+	export let size = 48;
 
 	const dispatch = createEventDispatcher();
 

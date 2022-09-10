@@ -1,13 +1,10 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { Controller, Get } from '@nestjs/common';
 import { ServerInfoService } from './server-info.service';
 import { serverVersion } from '../../constants/server_version.constant';
 import { ApiTags } from '@nestjs/swagger';
 import { ServerPingResponse } from './response-dto/server-ping-response.dto';
 import { ServerVersionReponseDto } from './response-dto/server-version-response.dto';
 import { ServerInfoResponseDto } from './response-dto/server-info-response.dto';
-import { DataSource } from 'typeorm';
 
 @ApiTags('Server Info')
 @Controller('server-info')

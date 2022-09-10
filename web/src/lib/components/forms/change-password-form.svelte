@@ -6,8 +6,8 @@
 	let error: string;
 	let success: string;
 
-	let password: string = '';
-	let confirmPassowrd: string = '';
+	let password = '';
+	let confirmPassowrd = '';
 
 	let changeChagePassword = false;
 

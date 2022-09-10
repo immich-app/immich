@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsOptional } from 'class-validator';
 
 export enum GetAssetThumbnailFormatEnum {
   JPEG = 'JPEG',

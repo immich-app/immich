@@ -22,7 +22,7 @@
 
 	onDestroy(() => {
 		if (browser) {
-			window.onscroll = function () {};
+			window.onscroll = null;
 		}
 	});
 </script>

@@ -1,5 +1,4 @@
-import { AssetCountByTimeGroupResponseDto } from '@api';
-let _basePath = '/api';
+const _basePath = '/api';
 
 export function getFileUrl(aid: string, did: string, isThumb?: boolean, isWeb?: boolean) {
 	const urlObj = new URL(`${window.location.origin}${_basePath}/asset/file`);

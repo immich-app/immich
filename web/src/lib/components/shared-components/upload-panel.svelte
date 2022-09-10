@@ -5,8 +5,6 @@
 	import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
 	import type { UploadAsset } from '$lib/models/upload-asset';
-	import { goto } from '$app/navigation';
-	import { assetStore } from '$lib/stores/assets.store';
 	import { notificationController, NotificationType } from './notification/notification';
 	let showDetail = true;
 
@@ -22,9 +20,13 @@
 				const blob = new Blob([arrayBufferView], { type: 'image/jpeg' });
 				const urlCreator = window.URL || window.webkitURL;
 				const imageUrl = urlCreator.createObjectURL(blob);
+				// TODO: There is probably a cleaner way of doing this
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				const img: any = document.getElementById(`${a.id}`);
 				img.src = imageUrl;
-			} catch (e) {}
+			} catch {
+				// Do nothing?
+			}
 		}
 	};
 

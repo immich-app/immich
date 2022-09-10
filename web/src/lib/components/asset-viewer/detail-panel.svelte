@@ -9,10 +9,14 @@
 	import { browser } from '$app/env';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
 
+	type Leaflet = typeof import('leaflet');
+	type LeafletMap = import('leaflet').Map;
+	type LeafletMarker = import('leaflet').Marker;
+
 	// Map Property
-	let map: any;
-	let leaflet: any;
-	let marker: any;
+	let map: LeafletMap;
+	let leaflet: Leaflet;
+	let marker: LeafletMarker;
 
 	export let asset: AssetResponseDto;
 	$: if (asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null) {
@@ -31,7 +35,6 @@
 
 	async function drawMap(lat: number, lon: number) {
 		if (!leaflet) {
-			// @ts-ignore
 			leaflet = await import('leaflet');
 		}
 

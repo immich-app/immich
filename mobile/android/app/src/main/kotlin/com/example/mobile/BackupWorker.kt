@@ -8,17 +8,12 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
-import android.provider.MediaStore
-import android.provider.BaseColumns
-import android.provider.MediaStore.MediaColumns
-import android.provider.MediaStore.Images.Media
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.concurrent.futures.ResolvableFuture
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
-import androidx.work.Data
 import androidx.work.ForegroundInfo
 import androidx.work.ListenableWorker
 import androidx.work.NetworkType
@@ -26,6 +21,7 @@ import androidx.work.WorkerParameters
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import androidx.work.WorkInfo
 import com.google.common.util.concurrent.ListenableFuture
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -41,14 +37,7 @@ import java.util.concurrent.TimeUnit
  * Starts the Dart runtime/engine and calls `_nativeEntry` function in
  * `background.service.dart` to run the actual backup logic.
  * Called by Android WorkManager when all constraints for the work are met,
- * i.e. a new photo/video is created on the device AND battery is not low.
- * Optionally, unmetered network (wifi) and charging can be required.
- * As this work is not triggered periodically, but on content change, the
- * worker enqueues itself again with the same settings.
- * In case the worker is stopped by the system (e.g. constraints like wifi
- * are no longer met, or the system needs memory resources for more other
- * more important work), the worker is replaced without the constraint on
- * changed contents to run again as soon as deemed possible by the system.
+ * i.e. battery is not low and optionally Wifi and charging are active.
  */
 class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ctx, params), MethodChannel.MethodCallHandler {
 
@@ -57,14 +46,13 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     private lateinit var backgroundChannel: MethodChannel
     private val notificationManager = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private val isIgnoringBatteryOptimizations = isIgnoringBatteryOptimizations(applicationContext)
+    private var timeBackupStarted: Long = 0L
 
     override fun startWork(): ListenableFuture<ListenableWorker.Result> {
 
+        Log.d(TAG, "startWork")
+
         val ctx = applicationContext
-        // enqueue itself once again to continue to listen on added photos/videos
-        enqueueMoreWork(ctx,
-                        requireUnmeteredNetwork = inputData.getBoolean(DATA_KEY_UNMETERED, true),
-                        requireCharging = inputData.getBoolean(DATA_KEY_CHARGING, false))
 
         if (!flutterLoader.initialized()) {
             flutterLoader.startInitialization(ctx)
@@ -73,14 +61,16 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
             // Create a Notification channel if necessary
             createChannel()
         }
+        val title = ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+            .getString(SHARED_PREF_NOTIFICATION_TITLE, NOTIFICATION_DEFAULT_TITLE)!!
         if (isIgnoringBatteryOptimizations) {
             // normal background services can only up to 10 minutes
             // foreground services are allowed to run indefinitely
             // requires battery optimizations to be disabled (either manually by the user
             // or by the system learning that immich is important to the user)
-            val title = ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
-                .getString(SHARED_PREF_NOTIFICATION_TITLE, NOTIFICATION_DEFAULT_TITLE)!!
             setForegroundAsync(createForegroundInfo(title))
+        } else {
+            showBackgroundInfo(title)
         }
         engine = FlutterEngine(ctx)
 
@@ -115,6 +105,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     }
 
     override fun onStopped() {
+        Log.d(TAG, "onStopped")
         // called when the system has to stop this worker because constraints are
         // no longer met or the system needs resources for more important tasks
         Handler(Looper.getMainLooper()).postAtFrontOfQueue {
@@ -130,24 +121,18 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
 
     private fun stopEngine(result: Result?) {
         if (result != null) {
+            Log.d(TAG, "stopEngine result=${result}")
             resolvableFuture.set(result)
-        } else if (engine != null && inputData.getInt(DATA_KEY_RETRIES, 0) == 0) {
-            // stopped by system and this is the first time (content change constraints active)
-            // replace the task without the content constraints to finish the backup as soon as possible
-            enqueueMoreWork(applicationContext,
-                immediate = true,
-                requireUnmeteredNetwork = inputData.getBoolean(DATA_KEY_UNMETERED, true),
-                requireCharging = inputData.getBoolean(DATA_KEY_CHARGING, false),
-                initialDelayInMs = ONE_MINUTE,
-                retries = inputData.getInt(DATA_KEY_RETRIES, 0) + 1)
         }
         engine?.destroy()
         engine = null
+        clearBackgroundNotification()
     }
 
     override fun onMethodCall(call: MethodCall, r: MethodChannel.Result) {
         when (call.method) {
-            "initialized" ->
+            "initialized" -> {
+                timeBackupStarted = SystemClock.uptimeMillis()
                 backgroundChannel.invokeMethod(
                     "onAssetsChanged",
                     null,
@@ -163,25 +148,18 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
                         override fun success(receivedResult: Any?) {
                             val success = receivedResult as Boolean
                             stopEngine(if(success) Result.success() else Result.retry())
-                            if (!success && inputData.getInt(DATA_KEY_RETRIES, 0) == 0) {
-                                // there was an error (e.g. server not available)
-                                // replace the task without the content constraints to finish the backup as soon as possible
-                                enqueueMoreWork(applicationContext,
-                                    immediate = true,
-                                    requireUnmeteredNetwork = inputData.getBoolean(DATA_KEY_UNMETERED, true),
-                                    requireCharging = inputData.getBoolean(DATA_KEY_CHARGING, false),
-                                    initialDelayInMs = ONE_MINUTE,
-                                    retries = inputData.getInt(DATA_KEY_RETRIES, 0) + 1)
-                            }
                         }
                     }
                 )
+            }
             "updateNotification" -> {
                 val args = call.arguments<ArrayList<*>>()!!
                 val title = args.get(0) as String
                 val content = args.get(1) as String
                 if (isIgnoringBatteryOptimizations) {
                     setForegroundAsync(createForegroundInfo(title, content))
+                } else {
+                    showBackgroundInfo(title, content)
                 }
             }
             "showError" -> {
@@ -192,6 +170,14 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
                 showError(title, content, individualTag)
             }
             "clearErrorNotifications" -> clearErrorNotifications()
+            "hasContentChanged" -> {
+                val lastChange = applicationContext
+                    .getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                    .getLong(SHARED_PREF_LAST_CHANGE, timeBackupStarted)
+                val hasContentChanged = lastChange > timeBackupStarted;
+                timeBackupStarted = SystemClock.uptimeMillis()
+                r.success(hasContentChanged)
+            }
             else -> r.notImplemented()
         }
     }
@@ -209,6 +195,22 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
 
     private fun clearErrorNotifications() {
         notificationManager.cancel(NOTIFICATION_ERROR_ID)
+    }
+
+    private fun showBackgroundInfo(title: String = NOTIFICATION_DEFAULT_TITLE, content: String? = null) {
+        val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+           .setContentTitle(title)
+           .setTicker(title)
+           .setContentText(content)
+           .setSmallIcon(R.mipmap.ic_launcher)
+           .setOnlyAlertOnce(true)
+           .setOngoing(true)
+           .build()
+        notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+
+    private fun clearBackgroundNotification() {
+        notificationManager.cancel(NOTIFICATION_ID)
     }
 
     private fun createForegroundInfo(title: String = NOTIFICATION_DEFAULT_TITLE, content: String? = null): ForegroundInfo {
@@ -233,89 +235,61 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     companion object {
         const val SHARED_PREF_NAME = "immichBackgroundService"
         const val SHARED_PREF_CALLBACK_KEY = "callbackDispatcherHandle"
-        const val SHARED_PREF_SERVICE_ENABLED = "serviceEnabled"
         const val SHARED_PREF_NOTIFICATION_TITLE = "notificationTitle"
+        const val SHARED_PREF_LAST_CHANGE = "lastChange"
 
-        private const val TASK_NAME = "immich/photoListener"
-        private const val DATA_KEY_UNMETERED = "unmetered"
-        private const val DATA_KEY_CHARGING = "charging"
-        private const val DATA_KEY_RETRIES = "retries"
+        private const val TASK_NAME_BACKUP = "immich/BackupWorker"
         private const val NOTIFICATION_CHANNEL_ID = "immich/backgroundService"
         private const val NOTIFICATION_CHANNEL_ERROR_ID = "immich/backgroundServiceError"
         private const val NOTIFICATION_DEFAULT_TITLE = "Immich"
         private const val NOTIFICATION_ID = 1
         private const val NOTIFICATION_ERROR_ID = 2 
-        private const val ONE_MINUTE: Long = 60000
+        private const val ONE_MINUTE = 60000L
 
         /**
-         * Enqueues the `BackupWorker` to run when all constraints are met.
-         * 
-         * @param context Android Context
-         * @param immediate whether to enqueue(replace) the worker without the content change constraint
-         * @param keepExisting if true, use `ExistingWorkPolicy.KEEP`, else `ExistingWorkPolicy.APPEND_OR_REPLACE`
-         * @param requireUnmeteredNetwork if true, task only runs if connected to wifi
-         * @param requireCharging if true, task only runs if device is charging
-         * @param retries retry count (should be 0 unless an error occured and this is a retry)
+         * Enqueues the BackupWorker to run once the constraints are met
          */
-        fun startWork(context: Context,
-                        immediate: Boolean = false,
-                        keepExisting: Boolean = false,
-                        requireUnmeteredNetwork: Boolean = false,
-                        requireCharging: Boolean = false) {
-            context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
-                    .edit().putBoolean(SHARED_PREF_SERVICE_ENABLED, true).apply()
-            enqueueMoreWork(context, immediate, keepExisting, requireUnmeteredNetwork, requireCharging)
+        fun enqueueBackupWorker(context: Context,
+                                requireWifi: Boolean = false,
+                                requireCharging: Boolean = false,
+                                delayMilliseconds: Long = 0L) {
+            val workRequest = buildWorkRequest(requireWifi, requireCharging, delayMilliseconds)
+            WorkManager.getInstance(context).enqueueUniqueWork(TASK_NAME_BACKUP, ExistingWorkPolicy.KEEP, workRequest)
+            Log.d(TAG, "enqueueBackupWorker: BackupWorker enqueued")
         }
 
-        private fun enqueueMoreWork(context: Context,
-                                    immediate: Boolean = false,
-                                    keepExisting: Boolean = false,
-                                    requireUnmeteredNetwork: Boolean = false,
-                                    requireCharging: Boolean = false,
-                                    initialDelayInMs: Long = 0,
-                                    retries: Int = 0) {
-            if (!isEnabled(context)) {
-                return
+        /**
+         * Updates the constraints of an already enqueued BackupWorker
+         */
+        fun updateBackupWorker(context: Context,
+                               requireWifi: Boolean = false,
+                               requireCharging: Boolean = false) {
+            try {
+                val wm = WorkManager.getInstance(context)
+                val workInfoFuture = wm.getWorkInfosForUniqueWork(TASK_NAME_BACKUP)
+                val workInfoList = workInfoFuture.get(1000, TimeUnit.MILLISECONDS)
+                if (workInfoList != null) {
+                    for (workInfo in workInfoList) {
+                        if (workInfo.getState() == WorkInfo.State.ENQUEUED) {
+                            val workRequest = buildWorkRequest(requireWifi, requireCharging)
+                            wm.enqueueUniqueWork(TASK_NAME_BACKUP, ExistingWorkPolicy.REPLACE, workRequest)
+                            Log.d(TAG, "updateBackupWorker updated BackupWorker constraints")
+                            return
+                        }
+                    }
+                }
+                Log.d(TAG, "updateBackupWorker: BackupWorker not enqueued")
+            } catch (e: Exception) {
+                Log.d(TAG, "updateBackupWorker failed: ${e}")
             }
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(if (requireUnmeteredNetwork) NetworkType.UNMETERED else NetworkType.CONNECTED)
-                .setRequiresBatteryNotLow(true)
-                .setRequiresCharging(requireCharging);
-            if (!immediate) {
-                constraints
-                .addContentUriTrigger(MediaStore.Images.Media.INTERNAL_CONTENT_URI, true)
-                .addContentUriTrigger(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true)
-                .addContentUriTrigger(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true)
-                .addContentUriTrigger(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true)
-            }
-
-            val inputData = Data.Builder()
-                .putBoolean(DATA_KEY_CHARGING, requireCharging)
-                .putBoolean(DATA_KEY_UNMETERED, requireUnmeteredNetwork)
-                .putInt(DATA_KEY_RETRIES, retries)
-                .build()
-                
-            val photoCheck = OneTimeWorkRequest.Builder(BackupWorker::class.java)
-                .setConstraints(constraints.build())
-                .setInputData(inputData)
-                .setInitialDelay(initialDelayInMs, TimeUnit.MILLISECONDS)
-                .setBackoffCriteria(
-                    BackoffPolicy.EXPONENTIAL,
-                    ONE_MINUTE,
-                    TimeUnit.MILLISECONDS)
-                .build()
-            val policy = if (immediate) ExistingWorkPolicy.REPLACE else (if (keepExisting) ExistingWorkPolicy.KEEP else ExistingWorkPolicy.APPEND_OR_REPLACE)
-            val op = WorkManager.getInstance(context).enqueueUniqueWork(TASK_NAME, policy, photoCheck)
-            val result = op.getResult().get()
         }
 
         /**
          * Stops the currently running worker (if any) and removes it from the work queue
          */
         fun stopWork(context: Context) {
-            context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
-                    .edit().putBoolean(SHARED_PREF_SERVICE_ENABLED, false).apply()
-            WorkManager.getInstance(context).cancelUniqueWork(TASK_NAME)
+            WorkManager.getInstance(context).cancelUniqueWork(TASK_NAME_BACKUP)
+            Log.d(TAG, "stopWork: BackupWorker cancelled")
         }
 
         /**
@@ -330,12 +304,21 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
             return true
         }
 
-        /**
-         * Return true if the user has enabled the background backup service
-         */
-        fun isEnabled(ctx: Context): Boolean {
-            return ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
-                    .getBoolean(SHARED_PREF_SERVICE_ENABLED, false)
+        private fun buildWorkRequest(requireWifi: Boolean = false,
+                                     requireCharging: Boolean = false,
+                                     delayMilliseconds: Long = 0L): OneTimeWorkRequest {
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(if (requireWifi) NetworkType.UNMETERED else NetworkType.CONNECTED)
+                .setRequiresBatteryNotLow(true)
+                .setRequiresCharging(requireCharging)
+                .build();
+            
+            val work = OneTimeWorkRequest.Builder(BackupWorker::class.java)
+                .setConstraints(constraints)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, ONE_MINUTE, TimeUnit.MILLISECONDS)
+                .setInitialDelay(delayMilliseconds, TimeUnit.MILLISECONDS)
+                .build()
+            return work
         }
 
         private val flutterLoader = FlutterLoader()

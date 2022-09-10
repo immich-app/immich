@@ -6,15 +6,13 @@
 
 	/**
 	 * x coordiante of the context menu.
-	 * @type {number}
 	 */
-	export let x: number = 0;
+	export let x = 0;
 
 	/**
 	 * x coordiante of the context menu.
-	 * @type {number}
 	 */
-	export let y: number = 0;
+	export let y = 0;
 
 	const dispatch = createEventDispatcher();
 

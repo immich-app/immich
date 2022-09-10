@@ -131,13 +131,15 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
 
       if (state.backgroundBackup) {
+        bool success = true;
         if (!wasEnabled) {
           if (!await _backgroundService.isIgnoringBatteryOptimizations()) {
             onBatteryInfo();
           }
+          success &= await _backgroundService.enableService(immediate: true);
         }
-        final bool success = await _backgroundService.stopService() &&
-            await _backgroundService.startService(
+        success &= success &&
+            await _backgroundService.configureService(
               requireUnmetered: state.backupRequireWifi,
               requireCharging: state.backupRequireCharging,
             );
@@ -155,7 +157,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           onError("backup_controller_page_background_configure_error");
         }
       } else {
-        final bool success = await _backgroundService.stopService();
+        final bool success = await _backgroundService.disableService();
         if (!success) {
           state = state.copyWith(backgroundBackup: wasEnabled);
           onError("backup_controller_page_background_configure_error");

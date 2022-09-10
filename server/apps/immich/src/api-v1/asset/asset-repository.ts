@@ -9,6 +9,7 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 
 export interface IAssetRepository {
   create(
@@ -25,6 +26,7 @@ export interface IAssetRepository {
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
+  getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
 }
@@ -37,6 +39,28 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
+
+  async getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {
+    // Get asset count by AssetType
+    const res = await this.assetRepository
+      .createQueryBuilder('asset')
+      .select(`COUNT(asset.id)`, 'count')
+      .addSelect(`asset.type`, 'type')
+      .where('"userId" = :userId', { userId: userId })
+      .groupBy('asset.type')
+      .getRawMany();
+
+    const assetCountByUserId = new AssetCountByUserIdResponseDto(0, 0);
+    res.map((item) => {
+      if (item.type === 'IMAGE') {
+        assetCountByUserId.photos = item.count;
+      } else if (item.type === 'VIDEO') {
+        assetCountByUserId.videos = item.count;
+      }
+    });
+
+    return assetCountByUserId;
+  }
 
   async getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]> {
     // Get asset entity from a list of time buckets

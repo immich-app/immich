@@ -27,6 +27,7 @@
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Installation](#installation)
+- [Update](#update)
 - [Mobile App](#-mobile-app)
 - [Development](#development)
 - [Support](#support)
@@ -96,6 +97,8 @@ There are several services that compose Immich:
   <br/>  
 
 # Installation
+
+NOTE: When using a reverse proxy in front of Immich (such as NGINX), the reverse proxy might require extra configuration to allow large files to be uploaded (such as client_max_body_size in the case of NGINX).
 
 ## Testing One-step installation (not recommended for production)
 
@@ -169,6 +172,14 @@ wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.en
 </p> 
 
   <br/>  
+
+## Update
+
+If you have installed, you can update the application by navigate to the directory that contains the `docker-compose.yml` file and run the following command:
+
+```bash
+docker-compose pull && docker-compose up -d
+```
 
 # Mobile app
 

@@ -35,6 +35,7 @@ import {
 } from './response-dto/asset-count-by-time-group-response.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -478,5 +479,9 @@ export class AssetService {
 
     fileReadStream.pipe(sha1Hash);
     return deferred;
+  }
+
+  getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
+    return this._assetRepository.getAssetCountByUserId(authUser.id);
   }
 }

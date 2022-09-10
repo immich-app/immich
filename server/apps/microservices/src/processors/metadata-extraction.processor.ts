@@ -21,7 +21,6 @@ import axios from 'axios';
 import { Job } from 'bull';
 import exifr from 'exifr';
 import ffmpeg from 'fluent-ffmpeg';
-import { readFile } from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
@@ -330,7 +329,7 @@ export class MetadataExtractionProcessor {
           }
 
           if (stream.r_frame_rate) {
-            let fpsParts = stream.r_frame_rate.split('/');
+            const fpsParts = stream.r_frame_rate.split('/');
 
             if (fpsParts.length === 2) {
               newExif.fps = Math.round(parseInt(fpsParts[0]) / parseInt(fpsParts[1]));

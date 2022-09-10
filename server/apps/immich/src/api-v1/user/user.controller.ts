@@ -12,7 +12,6 @@ import {
   UploadedFile,
   Response,
   Request,
-  StreamableFile,
   ParseBoolPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
