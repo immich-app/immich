@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { AppModule } from './app.module';
+import { serverVersion } from './constants/server_version.constant';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 
 async function bootstrap() {
@@ -52,11 +53,17 @@ async function bootstrap() {
       // Generate API Documentation only in development mode
       const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
       writeFileSync(outputPath, JSON.stringify(apiDocument), { encoding: 'utf8' });
-      Logger.log('Running Immich Server in DEVELOPMENT environment', 'ImmichServer');
+      Logger.log(
+        `Running Immich Server in DEVELOPMENT environment - version ${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`,
+        'ImmichServer',
+      );
     }
 
     if (process.env.NODE_ENV == 'production') {
-      Logger.log('Running Immich Server in PRODUCTION environment', 'ImmichServer');
+      Logger.log(
+        `Running Immich Server in PRODUCTION environment - version ${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`,
+        'ImmichServer',
+      );
     }
   });
 }
