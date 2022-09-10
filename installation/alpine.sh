@@ -199,7 +199,8 @@ upgrade()
 	source /etc/profile
 
 	# Store variables in a tmp file, which will autocomplete
-	# inputs at installation
+	# inputs at installation.
+	# Server
 	echo "$JWT_SECRET" > "$tmp_dir/immich-server-vars"
 	echo "$ENABLE_MAPBOX" >> "$tmp_dir/immich-server-vars"
 	[ "$ENABLE_MAPBOX" == "true" ] && echo "$MAPBOX_KEY" >> "$tmp_dir/immich-server-vars"
@@ -263,7 +264,7 @@ uninstall()
 	# Remove environment variables
 	rm -f /etc/profile.d/node.sh
 	source /etc/profile
-	unset JWT_SECRET ENABLE_MAPBOX MAPBOX_KEY
+	unset JWT_SECRET ENABLE_MAPBOX MAPBOX_KEY REDIS_PORT REDIS_DBINDEX REDIS_PASSWORD REDIS_SOCKET DB_USERNAME DB_PASSWORD DB_DATABASE_NAME
 
 	# Delete node user
 	deluser node
@@ -703,15 +704,52 @@ setup_redis()
 {
     display_message_box "Redis"
 
-    echo "Installing..."
-    apk add redis
-    echo "Starting on boot..."
-    rc-update add redis
-    echo "Starting..."
-    /etc/init.d/redis restart
+    # Inputs
+    while [[ ! "$install_redis" = [1-2] ]]; do
+        read -p "Do you want to install Redis locally (1) or connect to an existing one (2): " install_redis
+    done
 
-    echo "Writing host address..."
-    echo -e "127.0.0.1\timmich_redis" >> /etc/hosts
+    # Install Redis or connect to an existing one
+    if [ "$install_redis" -eq "1" ]
+    then
+	echo "Installing..."
+	apk add redis
+	echo "Starting on boot..."
+	rc-update add redis
+	echo "Starting..."
+	/etc/init.d/redis restart
+
+        # Write Redis server address to local hosts file
+        echo "Writing host address..."
+        echo -e "127.0.0.1\timmich_redis" >> /etc/hosts
+    else
+        # Ask for many Redis data
+        read -p "Redis address: " redis_addr
+        read -p "Redis port [6379]: " redis_port
+        read -p "Redis database index [0]: " redis_dbindex
+        read -p "Redis password [none]: " redis_password
+        read -p "Redis socket [none]: " redis_socket
+	
+	# Set default values for non edited variables
+	if [ -z "$redis_port" ]
+	then
+	    redis_port=6379
+	fi
+	if [ -z "$redis_dbindex" ]
+	then
+	    redis_dbindex=0
+	fi
+	
+	echo "Writing host address..."
+        echo -e "$redis_addr\timmich_redis" >> /etc/hosts
+
+	# Write persisting environment variables
+	echo "Setting some environment variables..."
+	echo "export REDIS_PORT='$redis_port'" >> /etc/profile.d/node.sh
+	echo "export REDIS_DBINDEX='$redis_dbindex'" >> /etc/profile.d/node.sh
+	[ "$redis_password" ] && echo "export REDIS_PASSWORD='$redis_password'" >> /etc/profile.d/node.sh
+	[ "$redis_socket" ] && echo "export REDIS_SOCKET='$redis_socket'" >> /etc/profile.d/node.sh
+    fi
 }
 
 # It installs Nginx, disable the default
@@ -735,7 +773,7 @@ setup_proxy()
 
     # Disable all existing sites
     echo "Disabling existing sites..."
-    for file in $(ls)
+    for file in $(ls --hide=*.disable)
     do
         mv "$file" "$file.disable"
     done

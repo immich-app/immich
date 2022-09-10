@@ -17,11 +17,11 @@ error_log="/var/log/immich/microservices.err.log"
 required_dirs="$data_path"
 required_files="$data_path/start-microservices.sh"
 
-depend() 
-{
+#depend() 
+#{
 #        need postgresql
-        need redis
-}
+#        need redis
+#}
 
 # Load env variables
 start_pre()
