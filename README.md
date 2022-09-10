@@ -27,6 +27,7 @@
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Installation](#installation)
+- [Update](#update)
 - [Mobile App](#-mobile-app)
 - [Development](#development)
 - [Support](#support)
@@ -171,6 +172,14 @@ wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.en
 </p> 
 
   <br/>  
+
+## Update
+
+If you have installed, you can update the application by navigate to the directory that contains the `docker-compose.yml` file and run the following command:
+
+```bash
+docker-compose pull && docker-compose up -d
+```
 
 # Mobile app
 
