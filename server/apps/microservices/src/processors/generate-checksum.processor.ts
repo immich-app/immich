@@ -13,7 +13,7 @@ export class GenerateChecksumProcessor {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-  ) { }
+  ) {}
 
   @Process()
   async generateChecksum() {
