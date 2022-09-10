@@ -307,6 +307,7 @@ class BackgroundService {
     await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
     await Hive.openBox(userSettingInfoBox);
     await Hive.openBox(backgroundBackupInfoBox);
+    await Hive.openBox(backupAssetInfoBox);
 
     ApiService apiService = ApiService();
     apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
