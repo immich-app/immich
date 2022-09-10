@@ -261,11 +261,13 @@ uninstall()
 
 	# Remove hosts
 	sed -i "/immich[-_]/d" /etc/hosts
+	sed -i "/$DB_HOSTNAME/d" /etc/hosts
+	sed -i "/$REDIS_HOSTNAME/d" /etc/hosts
 
 	# Remove environment variables
 	rm -f /etc/profile.d/node.sh
 	source /etc/profile
-	unset JWT_SECRET ENABLE_MAPBOX MAPBOX_KEY REDIS_PORT REDIS_DBINDEX REDIS_PASSWORD REDIS_SOCKET DB_USERNAME DB_PASSWORD DB_DATABASE_NAME DB_PORT
+	unset JWT_SECRET ENABLE_MAPBOX MAPBOX_KEY REDIS_HOSTNAME REDIS_PORT REDIS_DBINDEX REDIS_PASSWORD REDIS_SOCKET DB_USERNAME DB_PASSWORD DB_DATABASE_NAME DB_PORT DB_HOSTNAME
 
 	# Delete node user
 	deluser node
@@ -627,14 +629,36 @@ setup_database()
 {
     display_message_box "Database"
 
-    # Inputs
-    while [[ ! "$install_db" = [1-2] ]]; do
+    # Get some inputs
+    while [[ ! "$install_db" = [1-2] ]]
+    do
         read -p "Do you want to install database locally (1) or connect to an existing one (2): " install_db
     done
     read -p "Database username: " username
     read -p "Database's user password: " -s password
     echo
-    read -p "Database's name: " db_name
+    read -p "Database's name [immich]: " db_name
+    read -p "Database's hostname [immich_postgres]: " db_hostname
+    [ "$install_db" -ne 1 ] && read -p "Database address [127.0.0.1]: " db_addr
+    [ "$install_db" -ne 1 ] && read -p "Database port [5432]: " db_port
+
+    # Set default values
+    if [ -z "$db_name" ]
+    then
+        db_name=immich
+    fi
+    if [ -z "$db_hostname" ]
+    then
+        db_hostname=immich_postgres
+    fi
+    if [ -z "$db_addr" ]
+    then
+        db_addr=127.0.0.1
+    fi
+    if [ -z "$db_port" ]
+    then
+        db_port=5432
+    fi
 
     # Install DB or connect to an existing one
     if [ "$install_db" -eq "1" ]
@@ -664,20 +688,7 @@ CREATE DATABASE $db_name;
         su - postgres -c "psql -f ${tmp_dir}/${psql_filename}"
         rm -f ${tmp_dir}/${psql_filename}
 
-        # Write DB server address to local hosts file
-        echo "Writing host address..."
-        echo -e "127.0.0.1\timmich_postgres" >> /etc/hosts
     else
-        # Ask for DB server address, then write it to hosts file
-        read -p "Database address: " db_addr
-        read -p "Database port [5432]: " db_port
-        
-	# Set default values
-	if [ -z "$db_port" ]
-	then
-	    db_port=5432
-	fi
-
 	# Binary 'pq_isready' used below to test connection
 	apk add postgresql-client
 
@@ -695,13 +706,15 @@ CREATE DATABASE $db_name;
 
 		exit 1
 	fi
-
-        echo "Writing host address..."
-        echo -e "$db_addr\timmich_postgres" >> /etc/hosts
     fi
 
+    # Write DB server address to local hosts file
+    echo "Writing host address..."
+    echo -e "$db_addr\t$db_hostname" >> /etc/hosts
+    
     # Write persisting environment variables
     echo "Setting some environment variables..."
+    echo "export DB_HOSTNAME='$db_hostname'" >> /etc/profile.d/node.sh
     echo "export DB_USERNAME='$username'" >> /etc/profile.d/node.sh
     echo "export DB_PASSWORD='$password'" >> /etc/profile.d/node.sh
     echo "export DB_DATABASE_NAME='$db_name'" >> /etc/profile.d/node.sh
@@ -717,10 +730,35 @@ setup_redis()
 {
     display_message_box "Redis"
 
-    # Inputs
-    while [[ ! "$install_redis" = [1-2] ]]; do
+    # Get some inputs
+    while [[ ! "$install_redis" = [1-2] ]]
+    do
         read -p "Do you want to install Redis locally (1) or connect to an existing one (2): " install_redis
     done
+    read -p "Redis hostname [immich_redis]: " redis_hostname
+    [ "$install_redis" -ne 1 ] && read -p "Redis address [127.0.0.1]: " redis_addr
+    [ "$install_redis" -ne 1 ] && read -p "Redis port [6379]: " redis_port
+    [ "$install_redis" -ne 1 ] && read -p "Redis database index [0]: " redis_dbindex
+    [ "$install_redis" -ne 1 ] && read -p "Redis password [none]: " redis_password
+    read -p "Redis socket [none]: " redis_socket
+
+    # Set default values
+    if [ -z "$redis_hostname" ]
+    then
+        redis_hostname=immich_redis
+    fi
+    if [ -z "$redis_addr" ]
+    then
+        redis_addr=immich_redis
+    fi
+    if [ -z "$redis_port" ]
+    then
+        redis_port=6379
+    fi
+    if [ -z "$redis_dbindex" ]
+    then
+        redis_dbindex=0
+    fi
 
     # Install Redis or connect to an existing one
     if [ "$install_redis" -eq "1" ]
@@ -731,38 +769,18 @@ setup_redis()
 	rc-update add redis
 	echo "Starting..."
 	/etc/init.d/redis restart
-
-        # Write Redis server address to local hosts file
-        echo "Writing host address..."
-        echo -e "127.0.0.1\timmich_redis" >> /etc/hosts
-    else
-        # Ask for many Redis data
-        read -p "Redis address: " redis_addr
-        read -p "Redis port [6379]: " redis_port
-        read -p "Redis database index [0]: " redis_dbindex
-        read -p "Redis password [none]: " redis_password
-        read -p "Redis socket [none]: " redis_socket
-	
-	# Set default values for non edited variables
-	if [ -z "$redis_port" ]
-	then
-	    redis_port=6379
-	fi
-	if [ -z "$redis_dbindex" ]
-	then
-	    redis_dbindex=0
-	fi
-	
-	echo "Writing host address..."
-        echo -e "$redis_addr\timmich_redis" >> /etc/hosts
-
-	# Write persisting environment variables
-	echo "Setting some environment variables..."
-	echo "export REDIS_PORT='$redis_port'" >> /etc/profile.d/node.sh
-	echo "export REDIS_DBINDEX='$redis_dbindex'" >> /etc/profile.d/node.sh
-	[ "$redis_password" ] && echo "export REDIS_PASSWORD='$redis_password'" >> /etc/profile.d/node.sh
-	[ "$redis_socket" ] && echo "export REDIS_SOCKET='$redis_socket'" >> /etc/profile.d/node.sh
     fi
+	
+    echo "Writing host address..."
+    echo -e "$redis_addr\t$redis_hostname" >> /etc/hosts
+    
+    # Write persisting environment variables
+    echo "Setting some environment variables..."
+    echo "export REDIS_HOSTNAME='$redis_hostname'" >> /etc/profile.d/node.sh
+    echo "export REDIS_PORT='$redis_port'" >> /etc/profile.d/node.sh
+    echo "export REDIS_DBINDEX='$redis_dbindex'" >> /etc/profile.d/node.sh
+    [ "$redis_password" ] && echo "export REDIS_PASSWORD='$redis_password'" >> /etc/profile.d/node.sh
+    [ "$redis_socket" ] && echo "export REDIS_SOCKET='$redis_socket'" >> /etc/profile.d/node.sh
 }
 
 # It installs Nginx, disable the default
