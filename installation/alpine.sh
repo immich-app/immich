@@ -264,7 +264,7 @@ uninstall()
 	# Remove environment variables
 	rm -f /etc/profile.d/node.sh
 	source /etc/profile
-	unset JWT_SECRET ENABLE_MAPBOX MAPBOX_KEY REDIS_PORT REDIS_DBINDEX REDIS_PASSWORD REDIS_SOCKET DB_USERNAME DB_PASSWORD DB_DATABASE_NAME
+	unset JWT_SECRET ENABLE_MAPBOX MAPBOX_KEY REDIS_PORT REDIS_DBINDEX REDIS_PASSWORD REDIS_SOCKET DB_USERNAME DB_PASSWORD DB_DATABASE_NAME DB_PORT
 
 	# Delete node user
 	deluser node
@@ -665,13 +665,20 @@ CREATE DATABASE $db_name;
     else
         # Ask for DB server address, then write it to hosts file
         read -p "Database address: " db_addr
+        read -p "Database port [5432]: " db_port
         
+	# Set default values
+	if [ -z "$db_port" ]
+	then
+	    db_port=5432
+	fi
+
 	# Binary 'pq_isready' used below to test connection
 	apk add postgresql-client
 
 	# Test connection and exit if it fails
 	echo "Testing connection to the database..."
-	if ! pg_isready -q --host="$db_addr" --dbname="$db_name" --username="$username"
+	if ! pg_isready -q --host="$db_addr" --port="$db_port" --dbname="$db_name" --username="$username"
 	then
 		echo "Cannot connect to the database!"
 		echo "Please verify that:"
@@ -693,6 +700,7 @@ CREATE DATABASE $db_name;
     echo "export DB_USERNAME='$username'" >> /etc/profile.d/node.sh
     echo "export DB_PASSWORD='$password'" >> /etc/profile.d/node.sh
     echo "export DB_DATABASE_NAME='$db_name'" >> /etc/profile.d/node.sh
+    echo "export DB_PORT='$db_port'" >> /etc/profile.d/node.sh
 }
 
 # Install Redis
