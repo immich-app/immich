@@ -158,11 +158,16 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   @override
-  void dispose() {
+  void dispose() async {
     super.dispose();
-    thumbnailProvider.evict();
-    fullProvider.evict();
-    previewProvider.evict();
+    await thumbnailProvider.evict();
+    await fullProvider.evict();
+
+    if (widget.previewUrl != null) {
+      await previewProvider.evict();
+    }
+
+    _imageProvider.evict();
   }
 }
 
