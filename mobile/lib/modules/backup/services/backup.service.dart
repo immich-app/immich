@@ -9,6 +9,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_backup_asset.model.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -139,13 +140,20 @@ class BackupService {
     List<AssetEntity> candidates,
   ) async {
     final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+    final Box<HiveBackupAsset> assetBox =
+        Hive.box<HiveBackupAsset>(backupAssetInfoBox);
     if (candidates.length < 10) {
       final List<CheckDuplicateAssetResponseDto?> duplicateResponse =
           await Future.wait(
         candidates.map(
-          (e) => _apiService.assetApi.checkDuplicateAsset(
-            CheckDuplicateAssetDto(deviceAssetId: e.id, deviceId: deviceId),
-          ),
+          (e) {
+            final HiveBackupAsset? uploadedAsset = assetBox.get(e.id);
+            return uploadedAsset == null ? _apiService.assetApi.checkDuplicateAsset(
+              CheckDuplicateAssetDto(deviceAssetId: e.id, deviceId: deviceId),
+            ) : _apiService.assetApi.getAssetById(uploadedAsset.assetId).then((asset) =>
+              CheckDuplicateAssetResponseDto(isExist: asset != null, id: asset?.id),
+            );
+          }
         ),
       );
       return candidates
@@ -158,7 +166,7 @@ class BackupService {
         return candidates;
       }
       final Set<String> inDb = allAssetsInDatabase.toSet();
-      return candidates.whereNot((e) => inDb.contains(e.id)).toList();
+      return candidates.whereNot((e) => inDb.contains(e.id) || assetBox.containsKey(e.id)).toList();
     }
   }
 
@@ -172,10 +180,20 @@ class BackupService {
   ) async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+    Box<HiveBackupAsset> assetBox = Hive.box<HiveBackupAsset>(backupAssetInfoBox);
     File? file;
     bool anyErrors = false;
 
     for (var entity in assetList) {
+      if (assetBox.containsKey(entity.id)) {
+        singleAssetDoneCb(entity.id, deviceId);
+        // TODO: ???
+        // if (Platform.isIOS) {
+        //   file?.deleteSync();
+        // }
+        continue;
+      }
+
       try {
         if (entity.type == AssetType.video) {
           file = await entity.originFile;
@@ -232,15 +250,15 @@ class BackupService {
           );
 
           var response = await req.send(cancellationToken: cancelToken);
+          var data = await response.stream.bytesToString();
+          var bodyRes = jsonDecode(data);
 
           if (response.statusCode == 201) {
+            await assetBox.put(entity.id, HiveBackupAsset(assetId: bodyRes['id']));
             singleAssetDoneCb(entity.id, deviceId);
           } else {
-            var data = await response.stream.bytesToString();
-            var error = jsonDecode(data);
-
             debugPrint(
-              "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
+              "Error(${bodyRes['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${bodyRes['error']}",
             );
 
             errorCb(
@@ -250,7 +268,7 @@ class BackupService {
                 createdAt: entity.createDateTime,
                 fileName: originalFileName,
                 fileType: _getAssetType(entity.type),
-                errorMessage: error['error'],
+                errorMessage: bodyRes['error'],
               ),
             );
             continue;

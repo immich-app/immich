@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_backup_asset.model.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -316,10 +317,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     // Find asset that were backup from selected albums
+    var assetBox = Hive.box<HiveBackupAsset>(backupAssetInfoBox);
     Set<String> selectedAlbumsBackupAssets =
         Set.from(allUniqueAssets.map((e) => e.id));
     selectedAlbumsBackupAssets
-        .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
+        .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId) && !assetBox.containsKey(assetId));
 
     if (allUniqueAssets.isEmpty) {
       debugPrint("No Asset On Device");

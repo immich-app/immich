@@ -1,35 +1,32 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'hive_backup_assets.model.dart';
+part of 'hive_backup_asset.model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class HiveBackupAssetsAdapter extends TypeAdapter<HiveBackupAssets> {
+class HiveBackupAssetAdapter extends TypeAdapter<HiveBackupAsset> {
   @override
   final int typeId = 2;
 
   @override
-  HiveBackupAssets read(BinaryReader reader) {
+  HiveBackupAsset read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return HiveBackupAssets(
+    return HiveBackupAsset(
       assetId: fields[0] as String,
-      deviceAssetId: fields[1] as String,
     );
   }
 
   @override
-  void write(BinaryWriter writer, HiveBackupAssets obj) {
+  void write(BinaryWriter writer, HiveBackupAsset obj) {
     writer
-      ..writeByte(2)
-      ..writeByte(0)
-      ..write(obj.assetId)
       ..writeByte(1)
-      ..write(obj.deviceAssetId);
+      ..writeByte(0)
+      ..write(obj.assetId);
   }
 
   @override
@@ -38,7 +35,7 @@ class HiveBackupAssetsAdapter extends TypeAdapter<HiveBackupAssets> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is HiveBackupAssetsAdapter &&
+      other is HiveBackupAssetAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

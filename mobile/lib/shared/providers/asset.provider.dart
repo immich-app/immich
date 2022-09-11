@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/models/hive_backup_asset.model.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:collection/collection.dart';
@@ -33,6 +36,8 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
     var deviceInfo = await _deviceInfoService.getDeviceInfo();
     var deviceId = deviceInfo["deviceId"];
     var deleteIdList = <String>[];
+    final Box<HiveBackupAsset> assetBox =
+        Hive.box<HiveBackupAsset>(backupAssetInfoBox);
     // Delete asset from device
     for (var asset in deleteAssets) {
       // Delete asset on device if present
@@ -41,6 +46,7 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
 
         if (localAsset != null) {
           deleteIdList.add(localAsset.id);
+          await assetBox.delete(localAsset.id);
         }
       }
     }

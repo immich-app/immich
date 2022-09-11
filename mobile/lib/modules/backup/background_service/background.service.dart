@@ -14,6 +14,7 @@ import 'package:immich_mobile/modules/backup/background_service/localization.dar
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_backup_asset.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -303,11 +304,12 @@ class BackgroundService {
 
     Hive.registerAdapter(HiveSavedLoginInfoAdapter());
     Hive.registerAdapter(HiveBackupAlbumsAdapter());
+    Hive.registerAdapter(HiveBackupAssetAdapter());
     await Hive.openBox(userInfoBox);
     await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
     await Hive.openBox(userSettingInfoBox);
     await Hive.openBox(backgroundBackupInfoBox);
-    await Hive.openBox(backupAssetInfoBox);
+    await Hive.openBox<HiveBackupAsset>(backupAssetInfoBox);
 
     ApiService apiService = ApiService();
     apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
