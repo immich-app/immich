@@ -6,7 +6,7 @@ import {
 import * as exifr from 'exifr';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
-import { api, AssetFileUploadResponseDto } from '@api';
+import { AssetFileUploadResponseDto } from '@api';
 import { albumUploadAssetStore } from '$lib/stores/album-upload-asset';
 /**
  * Determine if the upload is for album or for the user general backup
@@ -90,10 +90,10 @@ async function fileUploader(fileId: string, asset: File, uploadType: UploadType)
 				? new Date(exifData.DateTimeOriginal).toISOString()
 				: new Date(asset.lastModified).toISOString();
 
-		// const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
+		const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
 
-		// // Create and add Unique ID of asset on the device
-		// formData.append('deviceAssetId', deviceAssetId);
+		// Create and add Unique ID of asset on the device
+		formData.append('deviceAssetId', deviceAssetId);
 
 		// Get device id - for web -> use WEB
 		formData.append('deviceId', 'WEB');
@@ -118,25 +118,6 @@ async function fileUploader(fileId: string, asset: File, uploadType: UploadType)
 
 		// Get asset binary data.
 		formData.append('assetData', asset);
-
-		// Check if asset upload on server before performing upload
-
-		// const { data, status } = await api.assetApi.checkDuplicateAsset({
-		// 	deviceAssetId: String(deviceAssetId),
-		// 	deviceId: 'WEB'
-		// });
-
-		// if (status === 200) {
-		// 	if (data.isExist) {
-		// 		const dataId = data.id;
-		// 		if (uploadType === UploadType.ALBUM && dataId) {
-		// 			albumUploadAssetStore.asset.update((a) => {
-		// 				return [...a, dataId];
-		// 			});
-		// 		}
-		// 		return;
-		// 	}
-		// }
 
 		const request = new XMLHttpRequest();
 

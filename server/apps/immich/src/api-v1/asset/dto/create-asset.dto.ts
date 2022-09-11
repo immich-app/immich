@@ -3,8 +3,8 @@ import { AssetType } from '@app/database/entities/asset.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAssetDto {
-  @IsOptional()
-  deviceAssetId?: string;
+  @IsNotEmpty()
+  deviceAssetId!: string;
 
   @IsNotEmpty()
   deviceId!: string;
