@@ -60,8 +60,8 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 				albumUploadAssetStore.count.set(acceptedFile.length);
 			}
 
-			for (let idx = 0; idx < acceptedFile.length; idx++) {
-				await fileUploader(idx.toString(), acceptedFile[idx], uploadType);
+			for (const asset of acceptedFile) {
+				await fileUploader(asset, uploadType);
 			}
 		};
 
@@ -72,7 +72,7 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 };
 
 //TODO: should probably use the @api SDK
-async function fileUploader(fileId: string, asset: File, uploadType: UploadType) {
+async function fileUploader(asset: File, uploadType: UploadType) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
 	const fileExtension = temp[temp.length - 1];
@@ -123,7 +123,7 @@ async function fileUploader(fileId: string, asset: File, uploadType: UploadType)
 
 		request.upload.onloadstart = () => {
 			const newUploadAsset: UploadAsset = {
-				id: fileId,
+				id: deviceAssetId,
 				file: asset,
 				progress: 0,
 				fileExtension: fileExtension
@@ -134,7 +134,7 @@ async function fileUploader(fileId: string, asset: File, uploadType: UploadType)
 
 		request.upload.onload = () => {
 			setTimeout(() => {
-				uploadAssetsStore.removeUploadAsset(fileId);
+				uploadAssetsStore.removeUploadAsset(deviceAssetId);
 			}, 1000);
 		};
 
@@ -160,18 +160,18 @@ async function fileUploader(fileId: string, asset: File, uploadType: UploadType)
 
 		// listen for `error` event
 		request.upload.onerror = () => {
-			uploadAssetsStore.removeUploadAsset(fileId);
+			uploadAssetsStore.removeUploadAsset(deviceAssetId);
 		};
 
 		// listen for `abort` event
 		request.upload.onabort = () => {
-			uploadAssetsStore.removeUploadAsset(fileId);
+			uploadAssetsStore.removeUploadAsset(deviceAssetId);
 		};
 
 		// listen for `progress` event
 		request.upload.onprogress = (event) => {
 			const percentComplete = Math.floor((event.loaded / event.total) * 100);
-			uploadAssetsStore.updateProgress(fileId, percentComplete);
+			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 		};
 
 		request.open('POST', `/api/asset/upload`);
