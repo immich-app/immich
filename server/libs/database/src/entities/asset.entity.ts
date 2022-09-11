@@ -8,7 +8,8 @@ export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  // For mobile only, this is asset id get from flutter_photo_manager
+  // for mobile, this is asset id get from flutter_photo_manager
+  // for web + cli, deviceAssetId = 'web-' + file.name + file.lastModified
   @Column()
   deviceAssetId!: string;
 
