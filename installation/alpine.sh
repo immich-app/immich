@@ -32,8 +32,8 @@ parse_args()
         then
             echo "usage: $0 --install [--dev|-h]"        
             echo                                           
-            echo "  -h              Show this help message"
-            echo "  --dev           Run in dev mode"
+            echo "  -h		Show this help message"
+            echo "  --dev	Run in dev mode"
             echo  
             exit 0
         fi
@@ -53,8 +53,8 @@ parse_args()
             echo "usage: $0 --upgrade [--dev|-h]"        
             echo "NB: medias and database are untouched."                                          
             echo                                           
-            echo "  -h              Show this help message"
-            echo "  --dev           Run in dev mode"
+            echo "  -h		Show this help message"
+            echo "  --dev	Run in dev mode"
             echo  
             exit 0
         fi
@@ -74,7 +74,7 @@ parse_args()
             echo "usage: $0 --uninstall [-h]"        
             echo "NB: medias and database are untouched."                                          
             echo                                           
-            echo "  -h              Show this help message"
+            echo "  -h		Show this help message"
             echo  
             exit 0
         fi
@@ -82,11 +82,11 @@ parse_args()
     else
         echo "usage: $0 [--install|--upgrade [--dev]] [--uninstall] [-h]"
         echo                                           
-        echo "  --install       Install Immich"
+        echo "  --install	Install Immich"
         echo "  --upgrade	Upgrade Immich"
-        echo "  --dev           Run in dev mode"
-        echo "  --uninstall     Remove Immich (without medias nor database)"
-        echo "  -h              Show this help message"
+        echo "  --dev		Run in dev mode"
+        echo "  --uninstall	Remove Immich (without medias nor database)"
+        echo "  -h		Show this help message"
         echo                                         
         exit 0
     fi
