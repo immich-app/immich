@@ -40,11 +40,11 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 			}
 			const files = Array.from<File>(target.files);
 
-			if (files.length > 50) {
+			if (files.length > 500) {
 				notificationController.show({
 					type: NotificationType.Error,
-					message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files. 
-          Please use the CLI tool if you need to upload more than 50 files.`,
+					message: `Cannot upload more than 500 files at a time - you are uploading ${files.length} files. 
+          Please use the CLI tool if you need to upload more than 500 files.`,
 					timeout: 5000
 				});
 
@@ -60,9 +60,19 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 				albumUploadAssetStore.count.set(acceptedFile.length);
 			}
 
-			for (const asset of acceptedFile) {
-				await fileUploader(asset, uploadType);
-			}
+			await mergeMap(acceptedFile.map((asset) => {
+				const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
+				const fileExtension = getFileExt(asset);
+				const newUploadAsset: UploadAsset = {
+					id: deviceAssetId,
+					file: asset,
+					progress: 0,
+					fileExtension: fileExtension
+				};
+	
+				uploadAssetsStore.addNewUploadAsset(newUploadAsset);
+				return () => fileUploader(deviceAssetId, asset, uploadType);
+			}));
 		};
 
 		fileSelector.click();
@@ -72,10 +82,9 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 };
 
 //TODO: should probably use the @api SDK
-async function fileUploader(asset: File, uploadType: UploadType) {
+async function fileUploader(deviceAssetId: string, asset: File, uploadType: UploadType) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
-	const temp = asset.name.split('.');
-	const fileExtension = temp[temp.length - 1];
+	const fileExtension = getFileExt(asset);
 	const formData = new FormData();
 
 	try {
@@ -90,7 +99,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 				? new Date(exifData.DateTimeOriginal).toISOString()
 				: new Date(asset.lastModified).toISOString();
 
-		const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
+		// const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
 
 		// Create and add Unique ID of asset on the device
 		formData.append('deviceAssetId', deviceAssetId);
@@ -121,16 +130,16 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 
 		const request = new XMLHttpRequest();
 
-		request.upload.onloadstart = () => {
-			const newUploadAsset: UploadAsset = {
-				id: deviceAssetId,
-				file: asset,
-				progress: 0,
-				fileExtension: fileExtension
-			};
+		// request.upload.onloadstart = () => {
+		// 	const newUploadAsset: UploadAsset = {
+		// 		id: deviceAssetId,
+		// 		file: asset,
+		// 		progress: 0,
+		// 		fileExtension: fileExtension
+		// 	};
 
-			uploadAssetsStore.addNewUploadAsset(newUploadAsset);
-		};
+		// 	uploadAssetsStore.addNewUploadAsset(newUploadAsset);
+		// };
 
 		request.upload.onload = () => {
 			setTimeout(() => {
@@ -138,25 +147,30 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 			}, 1000);
 		};
 
-		request.onreadystatechange = () => {
-			try {
-				if (request.readyState === 4) {
-					const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
+		const deferred = new Promise((resolve, reject) => {
+			request.onreadystatechange = () => {
+				try {
+					if (request.readyState === 4) {
+						const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
 
-					if (uploadType === UploadType.ALBUM) {
-						albumUploadAssetStore.asset.update((assets) => {
-							return [...assets, res?.id || ''];
-						});
-					}
+						if (uploadType === UploadType.ALBUM) {
+							albumUploadAssetStore.asset.update((assets) => {
+								return [...assets, res?.id || ''];
+							});
+						}
 
-					if (request.status !== 201) {
-						handleUploadError(asset, res);
+						if (request.status !== 201) {
+							handleUploadError(asset, res);
+						}
+
+						resolve(res);
 					}
+				} catch (e) {
+					console.error('ERROR parsing data JSON in upload onreadystatechange');
+					resolve(undefined);
 				}
-			} catch (e) {
-				console.error('ERROR parsing data JSON in upload onreadystatechange');
-			}
-		};
+			};
+		});
 
 		// listen for `error` event
 		request.upload.onerror = () => {
@@ -177,6 +191,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		request.open('POST', `/api/asset/upload`);
 
 		request.send(formData);
+		await deferred;
 	} catch (e) {
 		console.log('error uploading file ', e);
 	}
@@ -191,4 +206,24 @@ function handleUploadError(asset: File, respBody?: any) {
 		message: `Cannot upload file ${asset.name}!${extraMsg}`,
 		timeout: 5000
 	});
+}
+
+async function mergeMap<T>(source: (() => Promise<T>)[], concurrent = 2) {
+	let results: T[] = [];
+
+	while (source.length) {
+		concurrent = concurrent > source.length ? source.length : concurrent;
+
+		const selectedFns = source.splice(0, concurrent);
+		const selectedResults = await Promise.all(selectedFns.map((fn) => fn()));
+
+		results.push(...selectedResults);
+	}
+
+	return results;
+}
+
+function getFileExt(asset: File) {
+	const temp = asset.name.split('.');
+	return temp[temp.length - 1]
 }
