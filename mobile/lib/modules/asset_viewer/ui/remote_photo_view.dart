@@ -12,6 +12,9 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   bool _zoomedIn = false;
 
   static const int swipeThreshold = 100;
+  late CachedNetworkImageProvider fullProvider;
+  late CachedNetworkImageProvider previewProvider;
+  late CachedNetworkImageProvider thumbnailProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +68,10 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   CachedNetworkImageProvider _authorizedImageProvider(
-      String url, String cacheKey, BaseCacheManager? cacheManager) {
+    String url,
+    String cacheKey,
+    BaseCacheManager? cacheManager,
+  ) {
     return CachedNetworkImageProvider(
       url,
       headers: {"Authorization": widget.authToken},
@@ -104,7 +110,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   void _loadImages() {
-    CachedNetworkImageProvider thumbnailProvider = _authorizedImageProvider(
+    thumbnailProvider = _authorizedImageProvider(
       widget.thumbnailUrl,
       widget.cacheKey,
       widget.thumbnailCacheManager,
@@ -121,7 +127,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     );
 
     if (widget.previewUrl != null) {
-      CachedNetworkImageProvider previewProvider = _authorizedImageProvider(
+      previewProvider = _authorizedImageProvider(
         widget.previewUrl!,
         "${widget.cacheKey}_previewStage",
         widget.previewCacheManager,
@@ -133,7 +139,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       );
     }
 
-    CachedNetworkImageProvider fullProvider = _authorizedImageProvider(
+    fullProvider = _authorizedImageProvider(
       widget.imageUrl,
       "${widget.cacheKey}_fullStage",
       widget.fullCacheManager,
@@ -149,6 +155,19 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   void initState() {
     _loadImages();
     super.initState();
+  }
+
+  @override
+  void dispose() async {
+    super.dispose();
+    await thumbnailProvider.evict();
+    await fullProvider.evict();
+
+    if (widget.previewUrl != null) {
+      await previewProvider.evict();
+    }
+
+    _imageProvider.evict();
   }
 }
 
