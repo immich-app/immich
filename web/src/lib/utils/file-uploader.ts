@@ -40,11 +40,11 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 			}
 			const files = Array.from<File>(target.files);
 
-			if (files.length > 500) {
+			if (files.length > 200) {
 				notificationController.show({
 					type: NotificationType.Error,
-					message: `Cannot upload more than 500 files at a time - you are uploading ${files.length} files. 
-          Please use the CLI tool if you need to upload more than 500 files.`,
+					message: `Cannot upload more than 200 files at a time - you are uploading ${files.length} files. 
+          Please use the CLI tool if you need to upload more than 200 files.`,
 					timeout: 5000
 				});
 
