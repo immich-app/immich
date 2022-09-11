@@ -60,19 +60,21 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 				albumUploadAssetStore.count.set(acceptedFile.length);
 			}
 
-			await mergeMap(acceptedFile.map((asset) => {
-				const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
-				const fileExtension = getFileExt(asset);
-				const newUploadAsset: UploadAsset = {
-					id: deviceAssetId,
-					file: asset,
-					progress: 0,
-					fileExtension: fileExtension
-				};
-	
-				uploadAssetsStore.addNewUploadAsset(newUploadAsset);
-				return () => fileUploader(deviceAssetId, asset, uploadType);
-			}));
+			await mergeMap(
+				acceptedFile.map((asset) => {
+					const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
+					const fileExtension = getFileExt(asset);
+					const newUploadAsset: UploadAsset = {
+						id: deviceAssetId,
+						file: asset,
+						progress: 0,
+						fileExtension: fileExtension
+					};
+
+					uploadAssetsStore.addNewUploadAsset(newUploadAsset);
+					return () => fileUploader(deviceAssetId, asset, uploadType);
+				})
+			);
 		};
 
 		fileSelector.click();
@@ -147,7 +149,7 @@ async function fileUploader(deviceAssetId: string, asset: File, uploadType: Uplo
 			}, 1000);
 		};
 
-		const deferred = new Promise((resolve, reject) => {
+		const deferred = new Promise((resolve) => {
 			request.onreadystatechange = () => {
 				try {
 					if (request.readyState === 4) {
@@ -209,7 +211,7 @@ function handleUploadError(asset: File, respBody?: any) {
 }
 
 async function mergeMap<T>(source: (() => Promise<T>)[], concurrent = 2) {
-	let results: T[] = [];
+	const results: T[] = [];
 
 	while (source.length) {
 		concurrent = concurrent > source.length ? source.length : concurrent;
@@ -225,5 +227,5 @@ async function mergeMap<T>(source: (() => Promise<T>)[], concurrent = 2) {
 
 function getFileExt(asset: File) {
 	const temp = asset.name.split('.');
-	return temp[temp.length - 1]
+	return temp[temp.length - 1];
 }
