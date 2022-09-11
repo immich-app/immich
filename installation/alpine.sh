@@ -210,11 +210,19 @@ upgrade()
 	# Uninstall current version
 	uninstall
 
+	# Reinstall Immich components by filling with old values
 	echo "Rebuilding Immich components..."
 	setup_server < "$tmp_dir/immich-server-vars"
 	setup_web < "$tmp_dir/immich-web-vars"
-	setup_proxy
 	#setup_machine_learning
+
+	# Reconfigure external softwares if they have been installed locally
+	if grep -q nginx /etc/apk/world
+        then
+	    echo "1" | setup_proxy
+        else
+            echo "Warning: proxy configuration may have changed. Please check https://github.com/immich-app/immich/blob/v$immich_ver/nginx/nginx.conf"
+        fi
 	
 	# Remove installation files and copied variables
 	remove_install_files
@@ -749,7 +757,7 @@ setup_redis()
     fi
     if [ -z "$redis_addr" ]
     then
-        redis_addr=immich_redis
+        redis_addr=127.0.0.1
     fi
     if [ -z "$redis_port" ]
     then
@@ -783,8 +791,9 @@ setup_redis()
     [ "$redis_socket" ] && echo "export REDIS_SOCKET='$redis_socket'" >> /etc/profile.d/node.sh
 }
 
-# It installs Nginx, disable the default
-# webpage and add the custom config.
+# Install Nginx, disable the default
+# webpage and add the custom config, or
+# simply use an external proxy.
 #
 # params: nothing
 #
@@ -795,30 +804,50 @@ setup_proxy()
 {
     display_message_box "Proxy"
 
-    echo "Installing..."
-    apk add nginx
-    echo "Starting on boot..."
-    rc-update add nginx
-
-    cd /etc/nginx/http.d || exit
-
-    # Disable all existing sites
-    echo "Disabling existing sites..."
-    for file in $(ls --hide=*.disable)
+    # Get some inputs
+    while [[ ! "$install_proxy" = [1-2] ]]
     do
-        mv "$file" "$file.disable"
+        read -p "Do you want to install Nginx locally (1) or use an existing one (2): " install_proxy
     done
+    [ "$install_proxy" -ne 1 ] && read -p "Nginx address [127.0.0.1]: " proxy_addr
+    
+    # Set default values
+    if [ -z "$proxy_addr" ]
+    then
+        proxy_addr=127.0.0.1
+    fi
 
-    # Add new config
-    echo "Adding new config..."
-    cp ${tmp_dir}/immich-${immich_ver}/nginx/nginx.conf /etc/nginx/http.d/
+    # Install Nginx or use an existing one
+    if [ "$install_proxy" -eq "1" ]
+    then
+	echo "Installing..."
+	apk add nginx
+	echo "Starting on boot..."
+	rc-update add nginx
 
-    # Start service to apply the new config
-    echo "Starting..."
-    /etc/init.d/nginx restart
+	cd /etc/nginx/http.d || exit
 
+        # Disable all existing sites
+	echo "Disabling existing sites..."
+	for file in $(ls --hide=*.disable)
+	do
+	    mv "$file" "$file.disable"
+	done
+
+	# Add new config
+	echo "Adding new config..."
+	cp ${tmp_dir}/immich-${immich_ver}/nginx/nginx.conf /etc/nginx/http.d/
+
+	# Start service to apply the new config
+	echo "Starting..."
+	/etc/init.d/nginx restart
+    else
+        echo "Please check https://github.com/immich-app/immich/blob/v$immich_ver/nginx/nginx.conf for recommended Nginx config."
+    fi
+
+    # Write host address
     echo "Writing host address..."
-    echo -e "127.0.0.1\timmich_proxy" >> /etc/hosts
+    echo -e "$proxy_addr\timmich_proxy" >> /etc/hosts
 
     cd ~ || return
 }
