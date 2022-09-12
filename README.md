@@ -27,6 +27,7 @@
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Installation](#installation)
+- [Update](#update)
 - [Mobile App](#-mobile-app)
 - [Development](#development)
 - [Support](#support)
@@ -146,6 +147,7 @@ wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.en
 * Populate `UPLOAD_LOCATION` as prefered location for storing backup assets.
 * Populate a secret value for `JWT_SECRET`, you can use this command: `openssl rand -base64 128`
 * [Optional] Populate Mapbox value to use reverse geocoding.
+* [Optional] Populate `TZ` as your timezone, default is `Etc/UTC`.
 
 ### Step 3 - Start the containers
 
@@ -171,6 +173,14 @@ wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.en
 </p> 
 
   <br/>  
+
+## Update
+
+If you have installed, you can update the application by navigate to the directory that contains the `docker-compose.yml` file and run the following command:
+
+```bash
+docker-compose pull && docker-compose up -d
+```
 
 # Mobile app
 

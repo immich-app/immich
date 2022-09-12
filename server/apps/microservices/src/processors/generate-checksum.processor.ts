@@ -5,7 +5,7 @@ import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
-import { IsNull, Repository } from 'typeorm';
+import { FindOptionsWhere, IsNull, MoreThan, QueryFailedError, Repository } from 'typeorm';
 
 // TODO: just temporary task to generate previous uploaded assets.
 @Processor(generateChecksumQueueName)
@@ -17,15 +17,23 @@ export class GenerateChecksumProcessor {
 
   @Process()
   async generateChecksum() {
-    let hasNext = true;
     const pageSize = 200;
+    let hasNext = true;
+    let lastErrAssetId: string | undefined = undefined;
 
     while (hasNext) {
+      const whereStat: FindOptionsWhere<AssetEntity> = {
+        checksum: IsNull(),
+      };
+
+      if (lastErrAssetId) {
+        whereStat.id = MoreThan(lastErrAssetId);
+      }
+
       const assets = await this.assetRepository.find({
-        where: {
-          checksum: IsNull()
-        },
+        where: whereStat,
         take: pageSize,
+        order: { id: 'ASC' }
       });
 
       if (!assets?.length) {
@@ -35,15 +43,24 @@ export class GenerateChecksumProcessor {
           try {
             await this.generateAssetChecksum(asset);
           } catch (err: any) {
-            Logger.error(`Error generate checksum ${err}`);
+            lastErrAssetId = asset.id;
+
+            if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
+              Logger.error(`${asset.originalPath} duplicated`);
+            } else {
+              Logger.error(`checksum generation ${err}`);
+            }
           }
         }
 
+        // break when reach to the last page
         if (assets.length < pageSize) {
           hasNext = false;
         }
       }
     }
+
+    Logger.log(`checksum generation done!`);
   }
 
   private async generateAssetChecksum(asset: AssetEntity) {

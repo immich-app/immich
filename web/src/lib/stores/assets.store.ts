@@ -1,9 +1,6 @@
-import { TimeGroupEnum } from './../../api/open-api/api';
-import { writable, derived, readable } from 'svelte/store';
+import { writable } from 'svelte/store';
 import lodash from 'lodash-es';
-import _ from 'lodash';
-import moment from 'moment';
-import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto } from '@api';
+import { api, AssetCountByTimeBucketResponseDto } from '@api';
 import { AssetGridState } from '$lib/models/asset-grid-state';
 import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
 
@@ -24,7 +21,7 @@ function createAssetStore() {
 		_loadingBucketState = state;
 	});
 	/**
-	 * Set intial state
+	 * Set initial state
 	 * @param viewportHeight
 	 * @param viewportWidth
 	 * @param data
@@ -37,7 +34,7 @@ function createAssetStore() {
 		assetGridState.set({
 			viewportHeight,
 			viewportWidth,
-			timelineHeight: calculateViewportHeightByNumberOfAsset(data.totalCount, viewportWidth),
+			timelineHeight: 0,
 			buckets: data.buckets.map((d) => ({
 				bucketDate: d.timeBucket,
 				bucketHeight: calculateViewportHeightByNumberOfAsset(d.count, viewportWidth),
@@ -45,6 +42,12 @@ function createAssetStore() {
 				cancelToken: new AbortController()
 			})),
 			assets: []
+		});
+
+		// Update timeline height based on calculated bucket height
+		assetGridState.update((state) => {
+			state.timelineHeight = lodash.sumBy(state.buckets, (d) => d.bucketHeight);
+			return state;
 		});
 	};
 
@@ -78,6 +81,7 @@ function createAssetStore() {
 
 				return state;
 			});
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (e: any) {
 			if (e.name === 'CanceledError') {
 				return;
@@ -110,10 +114,19 @@ function createAssetStore() {
 		});
 	};
 
-	const updateBucketHeight = (bucket: string, height: number) => {
+	const updateBucketHeight = (bucket: string, actualBucketHeight: number) => {
 		assetGridState.update((state) => {
 			const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
-			state.buckets[bucketIndex].bucketHeight = height;
+			// Update timeline height based on the new bucket height
+			const estimateBucketHeight = state.buckets[bucketIndex].bucketHeight;
+
+			if (actualBucketHeight >= estimateBucketHeight) {
+				state.timelineHeight += actualBucketHeight - estimateBucketHeight;
+			} else {
+				state.timelineHeight -= estimateBucketHeight - actualBucketHeight;
+			}
+
+			state.buckets[bucketIndex].bucketHeight = actualBucketHeight;
 			return state;
 		});
 	};

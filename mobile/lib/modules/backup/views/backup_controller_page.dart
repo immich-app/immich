@@ -173,19 +173,19 @@ class BackupControllerPage extends HookConsumerWidget {
               ).tr(),
             ),
             actions: [
-              TextButton(
+              OutlinedButton(
                 onPressed: () => launchUrl(
-                    Uri.parse('https://dontkillmyapp.com'),
-                    mode: LaunchMode.externalApplication),
-                child: Text(
+                  Uri.parse('https://dontkillmyapp.com'),
+                  mode: LaunchMode.externalApplication,
+                ),
+                child: const Text(
                   "backup_controller_page_background_battery_info_link",
-                  style: TextStyle(color: buttonTextColor),
                 ).tr(),
               ),
-              TextButton(
-                child: Text(
+              ElevatedButton(
+                child: const Text(
                   'backup_controller_page_background_battery_info_ok',
-                  style: TextStyle(color: buttonTextColor),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                 ).tr(),
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -636,8 +636,8 @@ class BackupControllerPage extends HookConsumerWidget {
                     backupState.backupProgress == BackUpProgressEnum.inProgress
                         ? ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              primary: Colors.red[300],
-                              onPrimary: Colors.grey[50],
+                              foregroundColor: Colors.grey[50],
+                              backgroundColor: Colors.red[300],
                               // padding: const EdgeInsets.all(14),
                             ),
                             onPressed: () {

@@ -1,8 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-
 	import { createEventDispatcher } from 'svelte';
-	import { page } from '$app/stores';
 	import FullScreenModal from './full-screen-modal.svelte';
 	export let localVersion: string;
 	export let remoteVersion: string;

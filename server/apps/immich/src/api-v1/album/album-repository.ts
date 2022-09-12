@@ -50,9 +50,14 @@ export class AlbumRepository implements IAlbumRepository {
       where: { sharedUserId: userId },
     });
 
-    const sharingAlbums = ownedAlbums.map((album) => album.sharedUsers?.length || 0).reduce((a, b) => a + b, 0);
+    let sharedAlbumCount = 0;
+    ownedAlbums.map((album) => {
+      if (album.sharedUsers?.length) {
+        sharedAlbumCount += 1;
+      }
+    });
 
-    return new AlbumCountResponseDto(ownedAlbums.length, sharedAlbums, sharingAlbums);
+    return new AlbumCountResponseDto(ownedAlbums.length, sharedAlbums, sharedAlbumCount);
   }
 
   async create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity> {

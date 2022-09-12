@@ -47,6 +47,8 @@ services:
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
       - .env
+    environment:
+      - PUBLIC_TZ=${TZ}
     restart: always
 
   redis:

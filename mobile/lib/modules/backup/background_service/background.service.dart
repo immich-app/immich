@@ -173,7 +173,8 @@ class BackgroundService {
       }
     } catch (error) {
       debugPrint(
-          "[_clearErrorNotifications] failed to communicate with plugin");
+        "[_clearErrorNotifications] failed to communicate with plugin",
+      );
     }
     return false;
   }
@@ -344,7 +345,9 @@ class BackgroundService {
   }
 
   Future<bool> _runBackup(
-      BackupService backupService, HiveBackupAlbums backupAlbumInfo) async {
+    BackupService backupService,
+    HiveBackupAlbums backupAlbumInfo,
+  ) async {
     _errorGracePeriodExceeded = _isErrorGracePeriodExceeded();
 
     if (_canceledBySystem) {
@@ -445,6 +448,7 @@ class BackgroundService {
 }
 
 /// entry point called by Kotlin/Java code; needs to be a top-level function
+@pragma('vm:entry-point')
 void _nativeEntry() {
   WidgetsFlutterBinding.ensureInitialized();
   BackgroundService backgroundService = BackgroundService();

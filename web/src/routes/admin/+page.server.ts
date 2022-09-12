@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { serverApi, UserResponseDto } from '@api';
+import { serverApi } from '@api';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent }) => {

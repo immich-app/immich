@@ -6,8 +6,6 @@
 	import type { PageData } from './$types';
 
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { onMount } from 'svelte';
-	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
 	import {
 		assetInteractionStore,
 		isMultiSelectStoreState,

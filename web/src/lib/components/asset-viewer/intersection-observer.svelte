@@ -10,7 +10,7 @@
 	export let root: HTMLElement | null = null;
 
 	let intersecting = false;
-	let container: any;
+	let container: HTMLDivElement;
 	const dispatch = createEventDispatcher();
 
 	onMount(() => {

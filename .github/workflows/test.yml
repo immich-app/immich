@@ -28,3 +28,14 @@ jobs:
 
       - name: Run tests
         run: cd server && npm ci && npm run check:all
+
+  web-unit-tests:
+    name: Run web unit test suites and checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        run: cd web && npm ci && npm run check:all

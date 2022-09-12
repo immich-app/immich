@@ -48,10 +48,14 @@
 		}
 	};
 
+	let removeNotificationTimeout: NodeJS.Timeout | undefined = undefined;
+
 	onMount(() => {
-		setTimeout(() => {
+		removeNotificationTimeout = setTimeout(() => {
 			notificationController.removeNotificationById(notificationInfo.id);
 		}, notificationInfo.timeout);
+
+		return () => clearTimeout(removeNotificationTimeout);
 	});
 </script>
 
@@ -63,8 +67,10 @@
 >
 	<div class="flex gap-2 place-items-center">
 		<svelte:component this={icon} color={primaryColor()} size="20" />
-		<h2 style:color={primaryColor()} class="font-medium">{notificationInfo.type.toString()}</h2>
+		<h2 style:color={primaryColor()} class="font-medium" data-testid="title">
+			{notificationInfo.type.toString()}
+		</h2>
 	</div>
 
-	<p class="text-sm pl-[28px] pr-[16px]">{notificationInfo.message}</p>
+	<p class="text-sm pl-[28px] pr-[16px]" data-testid="message">{notificationInfo.message}</p>
 </div>
