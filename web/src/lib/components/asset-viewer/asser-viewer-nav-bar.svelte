@@ -2,9 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
-	import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	const dispatch = createEventDispatcher();

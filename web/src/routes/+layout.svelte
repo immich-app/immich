@@ -7,7 +7,6 @@
 	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import { onMount } from 'svelte';
 	import { checkAppVersion } from '$lib/utils/check-app-version';
-	import { page } from '$app/stores';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
 	import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';

@@ -18,7 +18,7 @@
 	$: {
 		appearsInAlbums = [];
 
-		api.albumApi.getAllAlbums(undefined, asset.id).then(result => {
+		api.albumApi.getAllAlbums(undefined, asset.id).then((result) => {
 			appearsInAlbums = result.data;
 		});
 	}
@@ -29,12 +29,14 @@
 	let isShowDetail = false;
 	let appearsInAlbums: AlbumResponseDto[] = [];
 
+	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
+
 	onMount(() => {
-		document.addEventListener('keydown', (keyInfo) => handleKeyboardPress(keyInfo.key));
+		document.addEventListener('keydown', onKeyboardPress);
 	});
 
 	onDestroy(() => {
-		document.removeEventListener('keydown', (e) => {});
+		document.removeEventListener('keydown', onKeyboardPress);
 	});
 
 	const handleKeyboardPress = (key: string) => {
@@ -205,7 +207,7 @@
 		<div
 			transition:fly={{ duration: 150 }}
 			id="detail-panel"
-			class="bg-immich-bg w-[360px] row-span-full transition-all "
+			class="bg-immich-bg w-[360px] row-span-full transition-all overflow-y-auto"
 			translate="yes"
 		>
 			<DetailPanel {asset} albums={appearsInAlbums} on:close={() => (isShowDetail = false)} />

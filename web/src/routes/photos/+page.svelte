@@ -6,8 +6,6 @@
 	import type { PageData } from './$types';
 
 	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { onMount } from 'svelte';
-	import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
 	import {
 		assetInteractionStore,
 		isMultiSelectStoreState,
@@ -25,14 +23,6 @@
 	import { assetStore } from '$lib/stores/assets.store';
 
 	export let data: PageData;
-
-	onMount(async () => {
-		openWebsocketConnection();
-
-		return () => {
-			closeWebsocketConnection();
-		};
-	});
 
 	const deleteSelectedAssetHandler = async () => {
 		try {

@@ -6,10 +6,6 @@ RED='\033[0;31m'
 GREEN='\032[0;31m'
 NC='\033[0m' # No Color
 
-machine_has() {
-  type "$1" >/dev/null 2>&1
-}
-
 create_immich_directory() {
   echo "Creating Immich directory..."
   mkdir -p ./immich-app/immich-data
@@ -45,18 +41,21 @@ populate_upload_location() {
 start_docker_compose() {
   echo "Starting Immich's docker containers"
 
-  if machine_has "docker compose"; then {
-    docker compose up --remove-orphans -d
+  if docker compose &> /dev/null; then
+    docker_bin="docker compose"
+  elif docker-compose &> /dev/null; then
+    docker_bin="docker-compose"
+  else
+    echo 'Cannot find `docker compose` or `docker-compose`.'
+    exit 1
+  fi
 
+  if $docker_bin up --remove-orphans -d; then
     show_friendly_message
     exit 0
-  }; fi
-
-  if machine_has "docker-compose"; then
-    docker-compose up --remove-orphans -d
-
-    show_friendly_message
-    exit 0
+  else
+    echo "Could not start. Check for errors above."
+    exit 1
   fi
 }
 

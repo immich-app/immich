@@ -87,6 +87,31 @@ export interface AdminSignupResponseDto {
 /**
  * 
  * @export
+ * @interface AlbumCountResponseDto
+ */
+export interface AlbumCountResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof AlbumCountResponseDto
+     */
+    'owned': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AlbumCountResponseDto
+     */
+    'shared': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AlbumCountResponseDto
+     */
+    'sharing': number;
+}
+/**
+ * 
+ * @export
  * @interface AlbumResponseDto
  */
 export interface AlbumResponseDto {
@@ -182,6 +207,25 @@ export interface AssetCountByTimeBucketResponseDto {
      * @memberof AssetCountByTimeBucketResponseDto
      */
     'buckets': Array<AssetCountByTimeBucket>;
+}
+/**
+ * 
+ * @export
+ * @interface AssetCountByUserIdResponseDto
+ */
+export interface AssetCountByUserIdResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByUserIdResponseDto
+     */
+    'photos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByUserIdResponseDto
+     */
+    'videos': number;
 }
 /**
  * 
@@ -1419,6 +1463,39 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAlbumCountByUserId: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/album/count-by-user-id`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1678,6 +1755,15 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAlbumCountByUserId(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumCountResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAlbumCountByUserId(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1777,6 +1863,14 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          */
         deleteAlbum(albumId: string, options?: any): AxiosPromise<void> {
             return localVarFp.deleteAlbum(albumId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAlbumCountByUserId(options?: any): AxiosPromise<AlbumCountResponseDto> {
+            return localVarFp.getAlbumCountByUserId(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1881,6 +1975,16 @@ export class AlbumApi extends BaseAPI {
      */
     public deleteAlbum(albumId: string, options?: AxiosRequestConfig) {
         return AlbumApiFp(this.configuration).deleteAlbum(albumId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AlbumApi
+     */
+    public getAlbumCountByUserId(options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).getAlbumCountByUserId(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2230,6 +2334,39 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(getAssetCountByTimeBucketDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAssetCountByUserId: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/asset/count-by-user-id`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2645,6 +2782,15 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getAssetCountByUserId(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetCountByUserIdResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetCountByUserId(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getAssetSearchTerms(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetSearchTerms(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -2799,6 +2945,14 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getAssetCountByTimeBucket(getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto, options?: any): AxiosPromise<AssetCountByTimeBucketResponseDto> {
             return localVarFp.getAssetCountByTimeBucket(getAssetCountByTimeBucketDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAssetCountByUserId(options?: any): AxiosPromise<AssetCountByUserIdResponseDto> {
+            return localVarFp.getAssetCountByUserId(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2964,6 +3118,16 @@ export class AssetApi extends BaseAPI {
      */
     public getAssetCountByTimeBucket(getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getAssetCountByTimeBucket(getAssetCountByTimeBucketDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public getAssetCountByUserId(options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getAssetCountByUserId(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

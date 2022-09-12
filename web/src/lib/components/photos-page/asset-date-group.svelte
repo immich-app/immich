@@ -7,7 +7,6 @@
 	import lodash from 'lodash-es';
 	import moment from 'moment';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
-	import { createEventDispatcher } from 'svelte';
 	import {
 		assetInteractionStore,
 		assetsInAlbumStoreState,
@@ -22,7 +21,7 @@
 
 	let isMouseOverGroup = false;
 	let actualBucketHeight: number;
-	let hoveredDateGroup: string = '';
+	let hoveredDateGroup = '';
 	$: assetsGroupByDate = lodash
 		.chain(assets)
 		.groupBy((a) => moment(a.createdAt).format('ddd, MMM DD YYYY'))

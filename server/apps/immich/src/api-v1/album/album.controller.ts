@@ -24,6 +24,7 @@ import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
+import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
 @UseGuards(JwtAuthGuard)
@@ -32,6 +33,11 @@ import { AlbumResponseDto } from './response-dto/album-response.dto';
 @Controller('album')
 export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
+
+  @Get('count-by-user-id')
+  async getAlbumCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
+    return this.albumService.getAlbumCountByUserId(authUser);
+  }
 
   @Post()
   async createAlbum(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createAlbumDto: CreateAlbumDto) {

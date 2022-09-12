@@ -12,21 +12,23 @@
 
 	const dispatch = createEventDispatcher();
 
+	const onScroll = () => {
+		if (window.pageYOffset > 80) {
+			appBarBorder = 'border border-gray-200 bg-gray-50';
+		} else {
+			appBarBorder = 'bg-immich-bg border border-transparent';
+		}
+	};
+
 	onMount(() => {
 		if (browser) {
-			document.addEventListener('scroll', (e) => {
-				if (window.pageYOffset > 80) {
-					appBarBorder = 'border border-gray-200 bg-gray-50';
-				} else {
-					appBarBorder = 'bg-immich-bg border border-transparent';
-				}
-			});
+			document.addEventListener('scroll', onScroll);
 		}
 	});
 
 	onDestroy(() => {
 		if (browser) {
-			document.removeEventListener('scroll', (e) => {});
+			document.removeEventListener('scroll', onScroll);
 		}
 	});
 </script>

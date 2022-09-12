@@ -19,7 +19,8 @@ export const openWebsocketConnection = () => {
 };
 
 const listenToEvent = (socket: Socket) => {
-	socket.on('on_upload_success', (data) => {});
+	//TODO: if we are not using this, we should probably remove it?
+	socket.on('on_upload_success', () => undefined);
 
 	socket.on('error', (e) => {
 		console.log('Websocket Error', e);
