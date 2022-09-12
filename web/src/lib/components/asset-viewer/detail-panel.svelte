@@ -36,8 +36,7 @@
 			if (asset.exifInfo?.dateTimeOriginal && !env.PUBLIC_TZ) {
 				const dateTimeOriginal = asset.exifInfo.dateTimeOriginal;
 
-				asset.exifInfo.dateTimeOriginal = dateTimeOriginal
-					.slice(0, dateTimeOriginal.length - 1);
+				asset.exifInfo.dateTimeOriginal = dateTimeOriginal.slice(0, dateTimeOriginal.length - 1);
 			}
 		}
 	});
