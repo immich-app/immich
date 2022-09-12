@@ -7,6 +7,7 @@
 	import moment from 'moment';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { browser } from '$app/env';
+	import { env } from '$env/dynamic/public';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
 
 	type Leaflet = typeof import('leaflet');
@@ -29,6 +30,13 @@
 		if (browser) {
 			if (asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null) {
 				await drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
+			}
+
+			// remove timezone when user not config PUBLIC_TZ var. Etc/UTC is used in default.
+			if (asset.exifInfo?.dateTimeOriginal && !env.PUBLIC_TZ) {
+				const dateTimeOriginal = asset.exifInfo.dateTimeOriginal;
+
+				asset.exifInfo.dateTimeOriginal = dateTimeOriginal.slice(0, dateTimeOriginal.length - 1);
 			}
 		}
 	});
@@ -126,11 +134,7 @@
 					<p>{moment(asset.exifInfo.dateTimeOriginal).format('MMM DD, YYYY')}</p>
 					<div class="flex gap-2 text-sm">
 						<p>
-							{moment(
-								asset.exifInfo.dateTimeOriginal
-									.toString()
-									.slice(0, asset.exifInfo.dateTimeOriginal.toString().length - 1)
-							).format('ddd, hh:mm A')}
+							{moment(asset.exifInfo.dateTimeOriginal).format('ddd, hh:mm A')}
 						</p>
 						<p>GMT{moment(asset.exifInfo.dateTimeOriginal).format('Z')}</p>
 					</div>

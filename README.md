@@ -147,6 +147,7 @@ wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.en
 * Populate `UPLOAD_LOCATION` as prefered location for storing backup assets.
 * Populate a secret value for `JWT_SECRET`, you can use this command: `openssl rand -base64 128`
 * [Optional] Populate Mapbox value to use reverse geocoding.
+* [Optional] Populate `TZ` as your timezone, default is `Etc/UTC`.
 
 ### Step 3 - Start the containers
 
