@@ -1,5 +1,4 @@
 import exifr from 'exifr';
-import e from 'express';
 
 function createTimeUtils() {
   const checkValidTimestamp = (timestamp: string): boolean => {
