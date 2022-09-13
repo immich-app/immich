@@ -4,10 +4,13 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity } from '@app/database/entities/album.entity';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
+import { IAssetRepository } from '../asset/asset-repository';
 
 describe('Album service', () => {
   let sut: AlbumService;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
+  let assetRepositoryMock: jest.Mocked<IAssetRepository>;
+
   const authUser: AuthUserDto = Object.freeze({
     id: '1111',
     email: 'auth@test.com',
@@ -118,7 +121,22 @@ describe('Album service', () => {
       getListByAssetId: jest.fn(),
       getCountByUserId: jest.fn(),
     };
-    sut = new AlbumService(albumRepositoryMock);
+
+    assetRepositoryMock = {
+      create: jest.fn(),
+      getAllByUserId: jest.fn(),
+      getAllByDeviceId: jest.fn(),
+      getAssetCountByTimeBucket: jest.fn(),
+      getById: jest.fn(),
+      getDetectedObjectsByUserId: jest.fn(),
+      getLocationsByUserId: jest.fn(),
+      getSearchPropertiesByUserId: jest.fn(),
+      getAssetByTimeBucket: jest.fn(),
+      getAssetByChecksum: jest.fn(),
+      getAssetCountByUserId: jest.fn(),
+    };
+
+    sut = new AlbumService(albumRepositoryMock, assetRepositoryMock);
   });
 
   it('creates album', async () => {
