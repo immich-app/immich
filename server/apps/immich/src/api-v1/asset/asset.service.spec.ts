@@ -6,6 +6,7 @@ import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 
 describe('AssetService', () => {
   let sui: AssetService;
@@ -87,6 +88,12 @@ describe('AssetService', () => {
     return [result1, result2];
   };
 
+  const _getAssetCountByUserId = (): AssetCountByUserIdResponseDto => {
+    const result = new AssetCountByUserIdResponseDto(2, 2);
+
+    return result;
+  };
+
   beforeAll(() => {
     assetRepositoryMock = {
       create: jest.fn(),
@@ -154,5 +161,17 @@ describe('AssetService', () => {
 
     expect(result.totalCount).toEqual(assetCountByTimeBucket.reduce((a, b) => a + b.count, 0));
     expect(result.buckets.length).toEqual(2);
+  });
+
+  it('get asset count by user id', async () => {
+    const assetCount = _getAssetCountByUserId();
+
+    assetRepositoryMock.getAssetCountByUserId.mockImplementation(() =>
+      Promise.resolve<AssetCountByUserIdResponseDto>(assetCount),
+    );
+
+    const result = await sui.getAssetCountByUserId(authUser);
+
+    expect(result).toEqual(assetCount);
   });
 });
