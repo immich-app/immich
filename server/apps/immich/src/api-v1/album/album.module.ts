@@ -8,6 +8,7 @@ import { AlbumEntity } from '../../../../../libs/database/src/entities/album.ent
 import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
 import { AlbumRepository, ALBUM_REPOSITORY } from './album-repository';
+import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AssetEntity, UserEntity, AlbumEntity, AssetAlbumEntity, UserAlbumEntity])],
@@ -17,6 +18,10 @@ import { AlbumRepository, ALBUM_REPOSITORY } from './album-repository';
     {
       provide: ALBUM_REPOSITORY,
       useClass: AlbumRepository,
+    },
+    {
+      provide: ASSET_REPOSITORY,
+      useClass: AssetRepository,
     },
   ],
 })
