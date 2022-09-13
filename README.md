@@ -186,9 +186,9 @@ docker-compose pull && docker-compose up -d
 
 | F-Droid | Google Play | iOS |
 | - | - | - |
-| <a href="https://f-droid.org/packages/app.alextran.immich"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80"></a> | <p align="left"> <img src="design/google-play-qr-code.png" width="200" title="Google Play Store"> <p/> | <p align="left"> <img src="design/ios-qr-code.png" width="200" title="Apple App Store"> <p/> |
+| <a href="https://f-droid.org/packages/app.alextran.immich"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80"></a> | <p align="left"> <a href="https://play.google.com/store/apps/details?id=app.alextran.immich"><img src="design/google-play-qr-code.png" width="200" title="Google Play Store"></a> <p/> | <p align="left"> <a href="https://apps.apple.com/us/app/immich/id1613945652"><img src="design/ios-qr-code.png" width="200" title="Apple App Store"></a> <p/> |
 
-> *The App version might be lagging behind the latest release due to the review process.*
+> *The Play/App Store version might be lagging behind the latest release due to the review process.*
 
 
   <br/>  
