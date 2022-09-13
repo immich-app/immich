@@ -36,6 +36,7 @@ import {
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { timeUtils } from '@app/common/utils';
 
 const fileInfo = promisify(stat);
 
@@ -56,6 +57,18 @@ export class AssetService {
     mimeType: string,
     checksum: Buffer,
   ): Promise<AssetEntity> {
+    // Check valid time.
+    const createdAt = createAssetDto.createdAt;
+    const modifiedAt = createAssetDto.modifiedAt;
+
+    if (!timeUtils.checkValidTimestamp(createdAt)) {
+      createAssetDto.createdAt = await timeUtils.getTimestampFromExif(originalPath);
+    }
+
+    if (!timeUtils.checkValidTimestamp(modifiedAt)) {
+      createAssetDto.modifiedAt = await timeUtils.getTimestampFromExif(originalPath);
+    }
+
     const assetEntity = await this._assetRepository.create(
       createAssetDto,
       authUser.id,
