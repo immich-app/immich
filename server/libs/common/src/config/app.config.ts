@@ -16,5 +16,6 @@ export const immichAppConfig: ConfigModuleOptions = {
       then: Joi.string().optional().allow(null, ''),
       otherwise: Joi.string().required(),
     }),
+    LOG_LEVEL: Joi.string().optional().valid('simple', 'verbose').default('simple'),
   }),
 };

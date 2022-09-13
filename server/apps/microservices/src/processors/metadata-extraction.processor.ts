@@ -1,3 +1,4 @@
+import { ImmichLogLevel } from '@app/common/constants/log-level.constant';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
@@ -16,6 +17,7 @@ import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
 import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { Job } from 'bull';
@@ -28,6 +30,7 @@ import { Repository } from 'typeorm/repository/Repository';
 @Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
   private geocodingClient?: GeocodeService;
+  private logLevel: ImmichLogLevel;
 
   constructor(
     @InjectRepository(AssetEntity)
@@ -38,12 +41,16 @@ export class MetadataExtractionProcessor {
 
     @InjectRepository(SmartInfoEntity)
     private smartInfoRepository: Repository<SmartInfoEntity>,
+
+    private configService: ConfigService,
   ) {
     if (process.env.ENABLE_MAPBOX == 'true' && process.env.MAPBOX_KEY) {
       this.geocodingClient = mapboxGeocoding({
         accessToken: process.env.MAPBOX_KEY,
       });
     }
+
+    this.logLevel = this.configService.get('LOG_LEVEL') || ImmichLogLevel.SIMPLE;
   }
 
   @Process(exifExtractionProcessorName)
@@ -139,6 +146,10 @@ export class MetadataExtractionProcessor {
       await this.exifRepository.save(newExif);
     } catch (e) {
       Logger.error(`Error extracting EXIF ${String(e)}`, 'extractExif');
+
+      if (this.logLevel === ImmichLogLevel.VERBOSE) {
+        console.trace('Error extracting EXIF', e);
+      }
     }
   }
 
