@@ -13,7 +13,7 @@ import {
 } from '@app/job/constants/queue-name.constant';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
 import { MicroservicesService } from './microservices.service';
@@ -40,42 +40,48 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
         },
       }),
     }),
-    BullModule.registerQueue({
-      name: thumbnailGeneratorQueueName,
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
+    BullModule.registerQueue(
+      {
+        name: thumbnailGeneratorQueueName,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
       },
-    }, {
-      name: assetUploadedQueueName,
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
+      {
+        name: assetUploadedQueueName,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
       },
-    }, {
-      name: metadataExtractionQueueName,
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
+      {
+        name: metadataExtractionQueueName,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
       },
-    }, {
-      name: videoConversionQueueName,
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
+      {
+        name: videoConversionQueueName,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
       },
-    }, {
-      name: generateChecksumQueueName,
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
+      {
+        name: generateChecksumQueueName,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
       },
-    }),
+    ),
     CommunicationModule,
   ],
   controllers: [],
@@ -86,6 +92,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     MetadataExtractionProcessor,
     VideoTranscodeProcessor,
     GenerateChecksumProcessor,
+    ConfigService,
   ],
   exports: [],
 })
