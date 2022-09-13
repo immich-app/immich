@@ -10,10 +10,14 @@ import { GetAlbumsDto } from './dto/get-albums.dto';
 import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from './response-dto/album-response.dto';
 import { ALBUM_REPOSITORY, IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
+import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
 
 @Injectable()
 export class AlbumService {
-  constructor(@Inject(ALBUM_REPOSITORY) private _albumRepository: IAlbumRepository) {}
+  constructor(
+    @Inject(ALBUM_REPOSITORY) private _albumRepository: IAlbumRepository,
+    @Inject(ASSET_REPOSITORY) private _assetRepository: IAssetRepository,
+  ) {}
 
   private async _getAlbum({
     authUser,
@@ -54,6 +58,11 @@ export class AlbumService {
       return albums.map(mapAlbumExcludeAssetInfo);
     }
     const albums = await this._albumRepository.getList(authUser.id, getAlbumsDto);
+
+    for (const album of albums) {
+      await this._checkValidThumbnail(album);
+    }
+
     return albums.map((album) => mapAlbumExcludeAssetInfo(album));
   }
 
@@ -122,5 +131,19 @@ export class AlbumService {
 
   async getAlbumCountByUserId(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
     return this._albumRepository.getCountByUserId(authUser.id);
+  }
+
+  async _checkValidThumbnail(album: AlbumEntity): Promise<AlbumEntity> {
+    const assetId = album.albumThumbnailAssetId;
+    if (assetId) {
+      try {
+        await this._assetRepository.getById(assetId);
+      } catch (e) {
+        album.albumThumbnailAssetId = null;
+        return await this._albumRepository.updateAlbum(album, {});
+      }
+    }
+
+    return album;
   }
 }
