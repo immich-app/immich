@@ -2,9 +2,18 @@ echo "Starting Immich installation..."
 
 ip_address=$(hostname -I | awk '{print $1}')
 
+release_version=$(curl --silent "https://api.github.com/repos/immich-app/immich/releases/latest" |
+  grep '"tag_name":' |
+  sed -E 's/.*"([^"]+)".*/\1/')
 RED='\033[0;31m'
 GREEN='\032[0;31m'
 NC='\033[0m' # No Color
+
+get_release_version() {
+  curl --silent "https://api.github.com/repos/immich-app/immich/releases/latest" | # Get latest release from GitHub api
+    grep '"tag_name":' |                                                           # Get tag line
+    sed -E 's/.*"([^"]+)".*/\1/'                                                   # Pluck JSON value
+}
 
 create_immich_directory() {
   echo "Creating Immich directory..."
@@ -13,12 +22,12 @@ create_immich_directory() {
 
 download_docker_compose_file() {
   echo "Downloading docker-compose.yml..."
-  curl -L https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml -o ./immich-app/docker-compose.yml >/dev/null 2>&1
+  curl -L https://raw.githubusercontent.com/immich-app/immich/$release_version/docker/docker-compose.yml -o ./immich-app/docker-compose.yml >/dev/null 2>&1
 }
 
 download_dot_env_file() {
   echo "Downloading .env file..."
-  curl -L https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example -o ./immich-app/.env >/dev/null 2>&1
+  curl -L https://raw.githubusercontent.com/immich-app/immich/$release_version/docker/.env.example -o ./immich-app/.env >/dev/null 2>&1
 }
 
 populate_upload_location() {
@@ -41,9 +50,9 @@ populate_upload_location() {
 start_docker_compose() {
   echo "Starting Immich's docker containers"
 
-  if docker compose &> /dev/null; then
+  if docker compose &>/dev/null; then
     docker_bin="docker compose"
-  elif docker-compose &> /dev/null; then
+  elif docker-compose &>/dev/null; then
     docker_bin="docker-compose"
   else
     echo 'Cannot find `docker compose` or `docker-compose`.'
