@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/modules/settings/ui/cache_settings/cache_settings_slider_pref.dart';
 import 'package:immich_mobile/shared/services/cache.service.dart';
@@ -15,6 +16,9 @@ class CacheSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final CacheService cacheService = ref.watch(cacheServiceProvider);
+    final AppSettingsService settingsService =
+        ref.watch(appSettingsServiceProvider);
+
     final clearCacheState = useState(false);
 
     Future<void> clearCache() async {
@@ -60,6 +64,36 @@ class CacheSettings extends HookConsumerWidget {
       );
     }
 
+    List<Widget> statisticsSegment() {
+      return [
+        ListTile(
+          title: const Text(
+            "cache_settings_statistics_title",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ).tr(),
+        ),
+        cacheStatisticsRow(
+          "cache_settings_statistics_thumbnail".tr(),
+          CacheType.thumbnail,
+        ),
+        cacheStatisticsRow(
+          "cache_settings_statistics_album".tr(),
+          CacheType.albumThumbnail,
+        ),
+        cacheStatisticsRow(
+          "cache_settings_statistics_shared".tr(),
+          CacheType.sharedAlbumThumbnail,
+        ),
+        cacheStatisticsRow(
+          "cache_settings_statistics_full".tr(),
+          CacheType.imageViewerFull,
+        ),
+      ];
+    }
+
     return ExpansionTile(
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
       textColor: Theme.of(context).primaryColor,
@@ -97,31 +131,9 @@ class CacheSettings extends HookConsumerWidget {
           max: 1000,
           divisions: 20,
         ),
-        ListTile(
-          title: const Text(
-            "cache_settings_statistics_title",
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ).tr(),
-        ),
-        cacheStatisticsRow(
-          "cache_settings_statistics_thumbnail".tr(),
-          CacheType.thumbnail,
-        ),
-        cacheStatisticsRow(
-          "cache_settings_statistics_album".tr(),
-          CacheType.albumThumbnail,
-        ),
-        cacheStatisticsRow(
-          "cache_settings_statistics_shared".tr(),
-          CacheType.sharedAlbumThumbnail,
-        ),
-        cacheStatisticsRow(
-          "cache_settings_statistics_full".tr(),
-          CacheType.imageViewerFull,
-        ),
+        if (settingsService
+            .getSetting(AppSettingsEnum.useExperimentalCacheRepo))
+          ...statisticsSegment(),
         ListTile(
           title: const Text(
             "cache_settings_clear_cache_button_title",

@@ -32,11 +32,17 @@ class CacheService {
   }
 
   ImmichCacheRepository getCacheRepo(CacheType type) {
+    ImmichCacheRepository repo;
+
     if (!_cacheRepositoryInstances.containsKey(type)) {
-      final repo = ImmichCacheInfoRepository(
-        "cache_${type.name}",
-        "cacheKeys_${type.name}",
-      );
+      if (_settingsService.getSetting(AppSettingsEnum.useExperimentalCacheRepo)) {
+        repo = ImmichCacheInfoRepository(
+          "cache_${type.name}",
+          "cacheKeys_${type.name}",
+        );
+      } else {
+        repo = LegacyCacheRepository(databaseName: "cache_${type.name}");
+      }
       _cacheRepositoryInstances[type] = repo;
     }
 
