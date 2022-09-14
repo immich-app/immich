@@ -2,8 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -17,13 +15,11 @@ class ThumbnailImage extends HookConsumerWidget {
   final AssetResponseDto asset;
   final List<AssetResponseDto> assetList;
   final bool showStorageIndicator;
-  final BaseCacheManager? cacheManager;
 
   const ThumbnailImage({
     Key? key,
     required this.asset,
     required this.assetList,
-    this.cacheManager,
     this.showStorageIndicator = true,
   }) : super(key: key);
 
@@ -96,7 +92,6 @@ class ThumbnailImage extends HookConsumerWidget {
               ),
               child: CachedNetworkImage(
                 cacheKey: asset.id,
-                cacheManager: cacheManager,
                 width: 300,
                 height: 300,
                 memCacheHeight: asset.type == AssetTypeEnum.IMAGE ? 250 : 400,
@@ -114,7 +109,7 @@ class ThumbnailImage extends HookConsumerWidget {
                   ),
                 ),
                 errorWidget: (context, url, error) {
-                  debugPrint("Error getting thumbnail $url = $error");
+                  // debugPrint("Error getting thumbnail $url = $error");
                   return Icon(
                     Icons.image_not_supported_outlined,
                     color: Theme.of(context).primaryColor,

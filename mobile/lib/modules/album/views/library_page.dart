@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/services/cache.service.dart';
 
 class LibraryPage extends HookConsumerWidget {
   const LibraryPage({Key? key}) : super(key: key);
@@ -14,7 +13,6 @@ class LibraryPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = ref.watch(albumProvider);
-    final cacheService = ref.watch(cacheServiceProvider);
 
     useEffect(
       () {
@@ -104,7 +102,6 @@ class LibraryPage extends HookConsumerWidget {
                   _buildCreateAlbumButton(),
                   for (var album in albums)
                     AlbumThumbnailCard(
-                      cacheService: cacheService,
                       album: album,
                     ),
                 ],

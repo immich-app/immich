@@ -17,7 +17,7 @@ dependencies:
   hive: ^2.2.1
   hive_flutter: ^1.1.0
   dio: ^4.0.4
-  cached_network_image: ^3.2.1
+  cached_network_image: ^3.2.2
   percent_indicator: ^4.2.2
   intl: ^0.17.0
   auto_route: ^4.0.1

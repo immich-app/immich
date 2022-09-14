@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:photo_view/photo_view.dart';
 
 enum _RemoteImageStatus { empty, thumbnail, preview, full }
@@ -70,13 +69,11 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   CachedNetworkImageProvider _authorizedImageProvider(
     String url,
     String cacheKey,
-    BaseCacheManager? cacheManager,
   ) {
     return CachedNetworkImageProvider(
       url,
       headers: {"Authorization": widget.authToken},
       cacheKey: cacheKey,
-      cacheManager: cacheManager,
     );
   }
 
@@ -113,7 +110,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     thumbnailProvider = _authorizedImageProvider(
       widget.thumbnailUrl,
       widget.cacheKey,
-      widget.thumbnailCacheManager,
     );
     _imageProvider = thumbnailProvider;
 
@@ -130,7 +126,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       previewProvider = _authorizedImageProvider(
         widget.previewUrl!,
         "${widget.cacheKey}_previewStage",
-        widget.previewCacheManager,
       );
       previewProvider.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((ImageInfo imageInfo, _) {
@@ -142,7 +137,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     fullProvider = _authorizedImageProvider(
       widget.imageUrl,
       "${widget.cacheKey}_fullStage",
-      widget.fullCacheManager,
     );
     fullProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
@@ -184,9 +178,6 @@ class RemotePhotoView extends StatefulWidget {
     this.previewUrl,
     required this.onLoadingCompleted,
     required this.onLoadingStart,
-    this.thumbnailCacheManager,
-    this.previewCacheManager,
-    this.fullCacheManager,
     required this.cacheKey,
   }) : super(key: key);
 
@@ -196,9 +187,6 @@ class RemotePhotoView extends StatefulWidget {
   final String? previewUrl;
   final Function onLoadingCompleted;
   final Function onLoadingStart;
-  final BaseCacheManager? thumbnailCacheManager;
-  final BaseCacheManager? previewCacheManager;
-  final BaseCacheManager? fullCacheManager;
   final String cacheKey;
 
   final void Function() onSwipeDown;

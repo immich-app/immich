@@ -16,7 +16,6 @@ import 'package:immich_mobile/modules/settings/services/app_settings.service.dar
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
-import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:openapi/api.dart';
 
 class HomePage extends HookConsumerWidget {
@@ -25,7 +24,6 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appSettingService = ref.watch(appSettingsServiceProvider);
-    final cacheService = ref.watch(cacheServiceProvider);
 
     ScrollController scrollController = useScrollController();
     var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
@@ -91,7 +89,6 @@ class HomePage extends HookConsumerWidget {
 
             imageGridGroup.add(
               ImageGrid(
-                cacheManager: cacheService.getCache(CacheType.thumbnail),
                 assetGroup: immichAssetList,
                 sortedAssetGroup: sortedAssetList,
                 tilesPerRow:
