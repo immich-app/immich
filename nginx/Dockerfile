@@ -1,5 +1,5 @@
-FROM registry.access.redhat.com/ubi9/nginx-120:latest
+FROM docker.io/nginxinc/nginx-unprivileged:latest
 
-COPY nginx.conf "${NGINX_CONF_PATH}"
+COPY nginx.conf "/etc/nginx/nginx.conf"
 
 CMD nginx -g "daemon off;"
