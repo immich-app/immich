@@ -1,11 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
-import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -24,7 +22,6 @@ class SelectionThumbnailImage extends HookConsumerWidget {
     var newAssetsForAlbum =
         ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
     var isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
-    final cacheService = ref.watch(cacheServiceProvider);
 
     Widget _buildSelectionIcon(AssetResponseDto asset) {
       var isSelected = selectedAsset.map((item) => item.id).contains(asset.id);
@@ -114,7 +111,6 @@ class SelectionThumbnailImage extends HookConsumerWidget {
           Container(
             decoration: BoxDecoration(border: drawBorderColor()),
             child: CachedNetworkImage(
-              cacheManager: cacheService.getCache(CacheType.thumbnail),
               cacheKey: asset.id,
               width: 150,
               height: 150,

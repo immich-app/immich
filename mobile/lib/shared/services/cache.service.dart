@@ -7,7 +7,6 @@ import 'package:immich_mobile/utils/immich_cache_info_repository.dart';
 enum CacheType {
   // Shared cache for asset thumbnails in various modules
   thumbnail,
-
   imageViewerPreview,
   imageViewerFull,
   albumThumbnail,
@@ -67,7 +66,10 @@ class CacheService {
   }
 
   BaseCacheManager _getDefaultCache(
-      String cacheName, int size, CacheInfoRepository repo) {
+    String cacheName,
+    int size,
+    CacheInfoRepository repo,
+  ) {
     return CacheManager(
       Config(
         cacheName,

@@ -8,7 +8,6 @@ import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
-import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -41,7 +40,6 @@ class ImageViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final downloadAssetStatus =
         ref.watch(imageViewerStateProvider).downloadAssetStatus;
-    final cacheService = ref.watch(cacheServiceProvider);
 
     getAssetExif() async {
       assetDetail =
@@ -87,12 +85,6 @@ class ImageViewerPage extends HookConsumerWidget {
               onSwipeUp: () => showInfo(),
               onLoadingCompleted: onLoadingCompleted,
               onLoadingStart: onLoadingStart,
-              thumbnailCacheManager:
-                  cacheService.getCache(CacheType.thumbnail),
-              previewCacheManager:
-                  cacheService.getCache(CacheType.imageViewerPreview),
-              fullCacheManager:
-                  cacheService.getCache(CacheType.imageViewerFull),
             ),
           ),
         ),
