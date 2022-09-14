@@ -84,7 +84,7 @@ export class MetadataExtractionProcessor {
       newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
       newExif.fileSizeInByte = fileSize || null;
       newExif.orientation = exifData['Orientation'] || null;
-      newExif.dateTimeOriginal = exifData['DateTimeOriginal'] || null;
+      newExif.dateTimeOriginal = new Date(asset.createdAt) || null;
       newExif.modifyDate = exifData['ModifyDate'] || null;
       newExif.lensModel = exifData['LensModel'] || null;
       newExif.fNumber = exifData['FNumber'] || null;
