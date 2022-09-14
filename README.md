@@ -116,7 +116,7 @@ The directory which is used to store the backup file is `./immich-app/immich-dat
 
   <br/>  
 
-## Custom installation (Recommended)
+## Custom installation (Recommended, Docker)
 
 ### Step 1 - Download necessary files
 
@@ -168,6 +168,62 @@ wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.en
 
   <br/>  
 
+## Custom installation (standard installation)
+### Step 1 - Get the script
+Choose the right script for your OS, located in installation/ project's directory.
+```Bash
+# Here for Alpine Linux
+$ wget https://raw.githubusercontent.com/immich-app/immich/main/installation/alpine.sh
+```
+
+### Step 2 - Start the installation
+```Bash
+# ./alpine.sh -h
+
+#############################################################
+# Immich v1.28.0_38-dev installation script for Alpine 3.14 #
+#############################################################
+Immich installation script.
+usage: ./alpine.sh [--install|--upgrade [--dev]] [--uninstall] [-h]
+
+  --install     Install Immich
+  --upgrade     Upgrade Immich
+  --dev         Run in dev mode
+  --uninstall   Remove Immich (without medias nor database)
+  -h            Show this help message
+```
+
+```Bash
+# ./alpine.sh --install
+```
+You will be asked about:
+- Redis (local or remote server)
+- PostgreSQL (local or remote server, credentials)
+- Immich components (JWT secret, Mapbox, medias storage directory)
+- Nginx (local or remote)
+
+### Step 3 - Register admin user
+
+- Navigate to the web at `http://<machine-ip-address>:80` or behind your external reverse-proxy.
+Follow the prompts to register admin user. 
+<p align="center">
+  <img src="design/admin-registration-form.png" width="300" title="Admin Registration">
+</p>
+
+- You can add and manage users from the administration page. 
+<p align="center">
+ <img src="design/admin-interface.png" width="500" title="Admin User Management">
+</p>
+
+### Step 5 - Access the mobile app
+
+- Login the mobile app with the server endpoint URL at `http://<machine-ip-address>/api`
+<p align="center">
+  <img src="design/login-screen.jpeg" width="250" title="Example login screen">
+</p> 
+
+  <br/>  
+
 # Mobile app
 
 | F-Droid | Google Play | iOS |
@@ -181,6 +237,7 @@ wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.en
 
 # Development
 
+## Docker
 The development environment can be started from the root of the project after populating the `.env` file with the command:
 
 ```bash
@@ -188,6 +245,18 @@ make dev # required Makefile installed on the system.
 ``` 
 
 All servers and web container are hot reload for quick feedback loop.
+
+## Standard
+`--dev` can be used to run installation against local source code.
+The repo must be located at `/tmp/immich-<immich_version>`. The `immich_version` must be the one set in the script variable `immich_ver`.
+```Bash
+# A fresh dev install
+# ./alpine.sh --install --dev
+
+# Upgrade to a dev version
+# ./alpine.sh --upgrade --dev
+```
+
 
 ## Note for developers
 ### 1 - OpenAPI
