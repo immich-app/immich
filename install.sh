@@ -64,7 +64,7 @@ show_friendly_message() {
   echo "You can access the website at http://$ip_address:2283 and the server URL for the mobile app is http://$ip_address:2283/api"
   echo "The backup (or upload) location is $upload_location"
   echo "---------------------------------------------------"
-  echo "If you want to confgure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc. 
+  echo "If you want to configure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc. 
   
   1. First bring down the containers with the command 'docker-compose down' in the immich-app directory, 
   
