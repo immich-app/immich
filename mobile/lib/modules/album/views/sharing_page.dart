@@ -9,6 +9,7 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -20,6 +21,7 @@ class SharingPage extends HookConsumerWidget {
     var box = Hive.box(userInfoBox);
     var thumbnailRequestUrl = '${box.get(serverEndpointKey)}/asset/thumbnail';
     final List<AlbumResponseDto> sharedAlbums = ref.watch(sharedAlbumProvider);
+    final CacheService cacheService = ref.watch(cacheServiceProvider);
 
     useEffect(
       () {
@@ -45,6 +47,8 @@ class SharingPage extends HookConsumerWidget {
                   height: 60,
                   memCacheHeight: 200,
                   fit: BoxFit.cover,
+                  cacheManager:
+                      cacheService.getCache(CacheType.sharedAlbumThumbnail),
                   imageUrl: getAlbumThumbnailUrl(album),
                   cacheKey: album.albumThumbnailAssetId,
                   httpHeaders: {

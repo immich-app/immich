@@ -1,12 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -14,11 +17,13 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
   final AssetResponseDto asset;
   final List<AssetResponseDto> assetList;
   final bool showStorageIndicator;
+  final BaseCacheManager? cacheManager;
 
   const AlbumViewerThumbnail({
     Key? key,
     required this.asset,
     required this.assetList,
+    this.cacheManager,
     this.showStorageIndicator = true,
   }) : super(key: key);
 
@@ -121,6 +126,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
       return Container(
         decoration: BoxDecoration(border: drawBorderColor()),
         child: CachedNetworkImage(
+          cacheManager: cacheManager,
           cacheKey: asset.id,
           width: 300,
           height: 300,

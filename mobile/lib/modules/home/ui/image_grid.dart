@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/thumbnail_image.dart';
 import 'package:openapi/api.dart';
@@ -9,11 +10,13 @@ class ImageGrid extends ConsumerWidget {
   final List<AssetResponseDto> sortedAssetGroup;
   final int tilesPerRow;
   final bool showStorageIndicator;
+  final BaseCacheManager? cacheManager;
 
   ImageGrid({
     Key? key,
     required this.assetGroup,
     required this.sortedAssetGroup,
+    this.cacheManager,
     this.tilesPerRow = 4,
     this.showStorageIndicator = true,
   }) : super(key: key);
@@ -36,6 +39,7 @@ class ImageGrid extends ConsumerWidget {
             child: Stack(
               children: [
                 ThumbnailImage(
+                  cacheManager: cacheManager,
                   asset: assetGroup[index],
                   assetList: sortedAssetGroup,
                   showStorageIndicator: showStorageIndicator,

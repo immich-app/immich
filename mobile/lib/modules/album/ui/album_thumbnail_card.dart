@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/services/cache.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -14,9 +15,11 @@ class AlbumThumbnailCard extends StatelessWidget {
   const AlbumThumbnailCard({
     Key? key,
     required this.album,
+    required this.cacheService,
   }) : super(key: key);
 
   final AlbumResponseDto album;
+  final CacheService cacheService;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +39,7 @@ class AlbumThumbnailCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: CachedNetworkImage(
+                cacheManager: cacheService.getCache(CacheType.albumThumbnail),
                 memCacheHeight: max(400, cardSize.toInt() * 3),
                 width: cardSize,
                 height: cardSize,
