@@ -422,10 +422,10 @@ setup_server()
     # Where to store data
     while [ ! -d "$upload_path" ]
     do
-        read -p "Full path where medias will be stored: " upload_path
+        read -p "Full path where medias will be stored (without trailing /): " upload_path
     done
     ln -s "$upload_path" ./upload
-    chown -R node:node ./upload
+    chown -R node:node ./upload/
     echo "export UPLOAD_LOCATION=$upload_path" >> /etc/profile.d/node.sh
 
     # Load new variables
