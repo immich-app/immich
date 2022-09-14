@@ -1,6 +1,5 @@
-FROM nginx:latest
+FROM registry.access.redhat.com/ubi9/nginx-120:latest
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf "${NGINX_CONF_PATH}"
 
-EXPOSE 80
-EXPOSE 443
+CMD nginx -g "daemon off;"
