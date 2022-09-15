@@ -17,7 +17,9 @@ class ImageViewerPage extends HookConsumerWidget {
   final AssetResponseDto asset;
   final String authToken;
   final ValueNotifier<bool> isZoomedListener;
-
+  final void Function() isZoomedFunction;
+  final void Function() onLoadingCompleted;
+  final void Function() onLoadingStart;
   final bool threeStageLoading;
 
   ImageViewerPage({
@@ -25,7 +27,10 @@ class ImageViewerPage extends HookConsumerWidget {
     required this.heroTag,
     required this.asset,
     required this.authToken,
+    required this.isZoomedFunction,
     required this.isZoomedListener,
+    required this.onLoadingCompleted,
+    required this.onLoadingStart,
     required this.threeStageLoading,
   }) : super(key: key);
 
@@ -74,9 +79,12 @@ class ImageViewerPage extends HookConsumerWidget {
                   ? getThumbnailUrl(asset, type: ThumbnailFormat.JPEG)
                   : null,
               authToken: authToken,
+              isZoomedFunction: isZoomedFunction,
               isZoomedListener: isZoomedListener,
               onSwipeDown: () => AutoRouter.of(context).pop(),
               onSwipeUp: () => showInfo(),
+              onLoadingCompleted: onLoadingCompleted,
+              onLoadingStart: onLoadingStart,
             ),
           ),
         ),

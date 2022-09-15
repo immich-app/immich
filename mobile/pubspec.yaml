@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  photo_manager: ^2.0.6
+  photo_manager: ^2.2.1
   flutter_hooks: ^0.18.0
   hooks_riverpod: ^2.0.0-dev.0
   hive: ^2.2.1

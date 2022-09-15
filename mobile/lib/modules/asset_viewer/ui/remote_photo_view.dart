@@ -58,6 +58,14 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     widget.isZoomedFunction();
   }
 
+  void _fireStartLoadingEvent() {
+    widget.onLoadingStart();
+  }
+
+  void _fireFinishedLoadingEvent() {
+    widget.onLoadingCompleted();
+  }
+
   CachedNetworkImageProvider _authorizedImageProvider(
     String url,
     String cacheKey,
@@ -85,6 +93,12 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
         newStatus == _RemoteImageStatus.preview) return;
 
     if (!mounted) return;
+
+    if (newStatus != _RemoteImageStatus.full) {
+      _fireStartLoadingEvent();
+    } else {
+      _fireFinishedLoadingEvent();
+    }
 
     setState(() {
       debugPrint("Setting state to $newStatus");
@@ -166,6 +180,8 @@ class RemotePhotoView extends StatefulWidget {
     required this.onSwipeDown,
     required this.onSwipeUp,
     this.previewUrl,
+    required this.onLoadingCompleted,
+    required this.onLoadingStart,
     required this.cacheKey,
   }) : super(key: key);
 
@@ -173,6 +189,8 @@ class RemotePhotoView extends StatefulWidget {
   final String imageUrl;
   final String authToken;
   final String? previewUrl;
+  final Function onLoadingCompleted;
+  final Function onLoadingStart;
   final String cacheKey;
 
   final void Function() onSwipeDown;
