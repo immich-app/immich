@@ -57,10 +57,7 @@ class _$AppRouter extends RootStackRouter {
               heroTag: args.heroTag,
               asset: args.asset,
               authToken: args.authToken,
-              isZoomedFunction: args.isZoomedFunction,
               isZoomedListener: args.isZoomedListener,
-              onLoadingCompleted: args.onLoadingCompleted,
-              onLoadingStart: args.onLoadingStart,
               threeStageLoading: args.threeStageLoading));
     },
     VideoViewerRoute.name: (routeData) {
@@ -295,10 +292,7 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
       required String heroTag,
       required AssetResponseDto asset,
       required String authToken,
-      required void Function() isZoomedFunction,
       required ValueNotifier<bool> isZoomedListener,
-      required void Function() onLoadingCompleted,
-      required void Function() onLoadingStart,
       required bool threeStageLoading})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
@@ -307,10 +301,7 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
                 heroTag: heroTag,
                 asset: asset,
                 authToken: authToken,
-                isZoomedFunction: isZoomedFunction,
                 isZoomedListener: isZoomedListener,
-                onLoadingCompleted: onLoadingCompleted,
-                onLoadingStart: onLoadingStart,
                 threeStageLoading: threeStageLoading));
 
   static const String name = 'ImageViewerRoute';
@@ -322,10 +313,7 @@ class ImageViewerRouteArgs {
       required this.heroTag,
       required this.asset,
       required this.authToken,
-      required this.isZoomedFunction,
       required this.isZoomedListener,
-      required this.onLoadingCompleted,
-      required this.onLoadingStart,
       required this.threeStageLoading});
 
   final Key? key;
@@ -336,19 +324,13 @@ class ImageViewerRouteArgs {
 
   final String authToken;
 
-  final void Function() isZoomedFunction;
-
   final ValueNotifier<bool> isZoomedListener;
-
-  final void Function() onLoadingCompleted;
-
-  final void Function() onLoadingStart;
 
   final bool threeStageLoading;
 
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, onLoadingCompleted: $onLoadingCompleted, onLoadingStart: $onLoadingStart, threeStageLoading: $threeStageLoading}';
+    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedListener: $isZoomedListener, threeStageLoading: $threeStageLoading}';
   }
 }
 
