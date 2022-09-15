@@ -237,7 +237,7 @@ Cheers! 🎉
 
 ## TensorFlow Build Issue
 
-*This is a known issue for incorrect Promox setup*
+*This is a known issue for incorrect Proxmox setup*
 
 TensorFlow doesn't run with older CPU architecture, it requires a CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
  
@@ -245,7 +245,7 @@ TensorFlow doesn't run with older CPU architecture, it requires a CPU with AVX a
 more /proc/cpuinfo | grep flags
 ``` 
   
-If you are running virtualization in Promox, the VM doesn't have the flag enabled.
+If you are running virtualization in Proxmox, the VM doesn't have the flag enabled.
   
 You need to change the CPU type from `kvm64` to `host` under VMs hardware tab.
   
