@@ -11,9 +11,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   bool _zoomedIn = false;
 
   static const int swipeThreshold = 100;
-  late CachedNetworkImageProvider fullProvider;
-  late CachedNetworkImageProvider previewProvider;
-  late CachedNetworkImageProvider thumbnailProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +104,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   void _loadImages() {
-    thumbnailProvider = _authorizedImageProvider(
+    CachedNetworkImageProvider thumbnailProvider = _authorizedImageProvider(
       widget.thumbnailUrl,
       widget.cacheKey,
     );
@@ -123,7 +120,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     );
 
     if (widget.previewUrl != null) {
-      previewProvider = _authorizedImageProvider(
+      CachedNetworkImageProvider previewProvider = _authorizedImageProvider(
         widget.previewUrl!,
         "${widget.cacheKey}_previewStage",
       );
@@ -134,7 +131,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       );
     }
 
-    fullProvider = _authorizedImageProvider(
+    CachedNetworkImageProvider fullProvider = _authorizedImageProvider(
       widget.imageUrl,
       "${widget.cacheKey}_fullStage",
     );
@@ -154,14 +151,14 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   @override
   void dispose() async {
     super.dispose();
-    await thumbnailProvider.evict();
-    await fullProvider.evict();
+    // await thumbnailProvider.evict();
+    // await fullProvider.evict();
 
-    if (widget.previewUrl != null) {
-      await previewProvider.evict();
-    }
+    // if (widget.previewUrl != null) {
+    //   await previewProvider.evict();
+    // }
 
-    _imageProvider.evict();
+    await _imageProvider.evict();
   }
 }
 
