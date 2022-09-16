@@ -2,7 +2,11 @@ import { IAssetRepository } from './asset-repository';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetService } from './asset.service';
 import { Repository } from 'typeorm';
-import { AssetEntity } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { CreateAssetDto } from './dto/create-asset.dto';
+import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
+import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 
 describe('AssetService', () => {
   let sui: AssetService;
@@ -10,43 +14,85 @@ describe('AssetService', () => {
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
 
   const authUser: AuthUserDto = Object.freeze({
-    id: '3ea54709-e168-42b7-90b0-a0dfe8a7ecbd',
+    id: 'user_id_1',
     email: 'auth@test.com',
   });
 
-  // const _getCreateAssetDto = (): CreateAssetDto => {
-  //   const createAssetDto = new CreateAssetDto();
-  //   createAssetDto.deviceAssetId = 'deviceAssetId';
-  //   createAssetDto.deviceId = 'deviceId';
-  //   createAssetDto.assetType = AssetType.OTHER;
-  //   createAssetDto.createdAt = '2022-06-19T23:41:36.910Z';
-  //   createAssetDto.modifiedAt = '2022-06-19T23:41:36.910Z';
-  //   createAssetDto.isFavorite = false;
-  //   createAssetDto.duration = '0:00:00.000000';
+  const _getCreateAssetDto = (): CreateAssetDto => {
+    const createAssetDto = new CreateAssetDto();
+    createAssetDto.deviceAssetId = 'deviceAssetId';
+    createAssetDto.deviceId = 'deviceId';
+    createAssetDto.assetType = AssetType.OTHER;
+    createAssetDto.createdAt = '2022-06-19T23:41:36.910Z';
+    createAssetDto.modifiedAt = '2022-06-19T23:41:36.910Z';
+    createAssetDto.isFavorite = false;
+    createAssetDto.duration = '0:00:00.000000';
 
-  //   return createAssetDto;
-  // };
-  // const _getAsset = () => {
-  //   const assetEntity = new AssetEntity();
+    return createAssetDto;
+  };
 
-  //   assetEntity.id = 'e8edabfd-7d8a-45d0-9d61-7c7ca60f2c67';
-  //   assetEntity.userId = '3ea54709-e168-42b7-90b0-a0dfe8a7ecbd';
-  //   assetEntity.deviceAssetId = '4967046344801';
-  //   assetEntity.deviceId = '116766fd-2ef2-52dc-a3ef-149988997291';
-  //   assetEntity.type = AssetType.VIDEO;
-  //   assetEntity.originalPath =
-  //     'upload/3ea54709-e168-42b7-90b0-a0dfe8a7ecbd/original/116766fd-2ef2-52dc-a3ef-149988997291/51c97f95-244f-462d-bdf0-e1dc19913516.jpg';
-  //   assetEntity.resizePath = '';
-  //   assetEntity.createdAt = '2022-06-19T23:41:36.910Z';
-  //   assetEntity.modifiedAt = '2022-06-19T23:41:36.910Z';
-  //   assetEntity.isFavorite = false;
-  //   assetEntity.mimeType = 'image/jpeg';
-  //   assetEntity.webpPath = '';
-  //   assetEntity.encodedVideoPath = '';
-  //   assetEntity.duration = '0:00:00.000000';
+  const _getAsset_1 = () => {
+    const asset_1 = new AssetEntity();
 
-  //   return assetEntity;
-  // };
+    asset_1.id = 'id_1';
+    asset_1.userId = 'user_id_1';
+    asset_1.deviceAssetId = 'device_asset_id_1';
+    asset_1.deviceId = 'device_id_1';
+    asset_1.type = AssetType.VIDEO;
+    asset_1.originalPath = 'fake_path/asset_1.jpeg';
+    asset_1.resizePath = '';
+    asset_1.createdAt = '2022-06-19T23:41:36.910Z';
+    asset_1.modifiedAt = '2022-06-19T23:41:36.910Z';
+    asset_1.isFavorite = false;
+    asset_1.mimeType = 'image/jpeg';
+    asset_1.webpPath = '';
+    asset_1.encodedVideoPath = '';
+    asset_1.duration = '0:00:00.000000';
+    return asset_1;
+  };
+
+  const _getAsset_2 = () => {
+    const asset_2 = new AssetEntity();
+
+    asset_2.id = 'id_2';
+    asset_2.userId = 'user_id_1';
+    asset_2.deviceAssetId = 'device_asset_id_2';
+    asset_2.deviceId = 'device_id_1';
+    asset_2.type = AssetType.VIDEO;
+    asset_2.originalPath = 'fake_path/asset_2.jpeg';
+    asset_2.resizePath = '';
+    asset_2.createdAt = '2022-06-19T23:41:36.910Z';
+    asset_2.modifiedAt = '2022-06-19T23:41:36.910Z';
+    asset_2.isFavorite = false;
+    asset_2.mimeType = 'image/jpeg';
+    asset_2.webpPath = '';
+    asset_2.encodedVideoPath = '';
+    asset_2.duration = '0:00:00.000000';
+
+    return asset_2;
+  };
+
+  const _getAssets = () => {
+    return [_getAsset_1(), _getAsset_2()];
+  };
+
+  const _getAssetCountByTimeBucket = (): AssetCountByTimeBucket[] => {
+    const result1 = new AssetCountByTimeBucket();
+    result1.count = 2;
+    result1.timeBucket = '2022-06-01T00:00:00.000Z';
+
+    const result2 = new AssetCountByTimeBucket();
+    result1.count = 5;
+    result1.timeBucket = '2022-07-01T00:00:00.000Z';
+
+    return [result1, result2];
+  };
+
+  const _getAssetCountByUserId = (): AssetCountByUserIdResponseDto => {
+    const result = new AssetCountByUserIdResponseDto(2, 2);
+
+    return result;
+  };
 
   beforeAll(() => {
     assetRepositoryMock = {
@@ -67,29 +113,65 @@ describe('AssetService', () => {
   });
 
   // Currently failing due to calculate checksum from a file
-  // it('create an asset', async () => {
-  //   const assetEntity = _getAsset();
+  it('create an asset', async () => {
+    const assetEntity = _getAsset_1();
 
-  //   assetRepositoryMock.create.mockImplementation(() => Promise.resolve<AssetEntity>(assetEntity));
+    assetRepositoryMock.create.mockImplementation(() => Promise.resolve<AssetEntity>(assetEntity));
 
-  //   const originalPath =
-  //     'upload/3ea54709-e168-42b7-90b0-a0dfe8a7ecbd/original/116766fd-2ef2-52dc-a3ef-149988997291/51c97f95-244f-462d-bdf0-e1dc19913516.jpg';
-  //   const mimeType = 'image/jpeg';
-  //   const createAssetDto = _getCreateAssetDto();
-  //   const result = await sui.createUserAsset(authUser, createAssetDto, originalPath, mimeType);
+    const originalPath = 'fake_path/asset_1.jpeg';
+    const mimeType = 'image/jpeg';
+    const createAssetDto = _getCreateAssetDto();
+    const result = await sui.createUserAsset(
+      authUser,
+      createAssetDto,
+      originalPath,
+      mimeType,
+      Buffer.from('0x5041E6328F7DF8AFF650BEDAED9251897D9A6241', 'hex'),
+    );
 
-  //   expect(result.userId).toEqual(authUser.id);
-  //   expect(result.resizePath).toEqual('');
-  //   expect(result.webpPath).toEqual('');
-  // });
+    expect(result.userId).toEqual(authUser.id);
+    expect(result.resizePath).toEqual('');
+    expect(result.webpPath).toEqual('');
+  });
 
   it('get assets by device id', async () => {
-    assetRepositoryMock.getAllByDeviceId.mockImplementation(() => Promise.resolve<string[]>(['4967046344801']));
+    const assets = _getAssets();
 
-    const deviceId = '116766fd-2ef2-52dc-a3ef-149988997291';
+    assetRepositoryMock.getAllByDeviceId.mockImplementation(() =>
+      Promise.resolve<string[]>(Array.from(assets.map((asset) => asset.deviceAssetId))),
+    );
+
+    const deviceId = 'device_id_1';
     const result = await sui.getUserAssetsByDeviceId(authUser, deviceId);
 
-    expect(result.length).toEqual(1);
-    expect(result[0]).toEqual('4967046344801');
+    expect(result.length).toEqual(2);
+    expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
+  });
+
+  it('get assets count by time bucket', async () => {
+    const assetCountByTimeBucket = _getAssetCountByTimeBucket();
+
+    assetRepositoryMock.getAssetCountByTimeBucket.mockImplementation(() =>
+      Promise.resolve<AssetCountByTimeBucket[]>(assetCountByTimeBucket),
+    );
+
+    const result = await sui.getAssetCountByTimeBucket(authUser, {
+      timeGroup: TimeGroupEnum.Month,
+    });
+
+    expect(result.totalCount).toEqual(assetCountByTimeBucket.reduce((a, b) => a + b.count, 0));
+    expect(result.buckets.length).toEqual(2);
+  });
+
+  it('get asset count by user id', async () => {
+    const assetCount = _getAssetCountByUserId();
+
+    assetRepositoryMock.getAssetCountByUserId.mockImplementation(() =>
+      Promise.resolve<AssetCountByUserIdResponseDto>(assetCount),
+    );
+
+    const result = await sui.getAssetCountByUserId(authUser);
+
+    expect(result).toEqual(assetCount);
   });
 });
