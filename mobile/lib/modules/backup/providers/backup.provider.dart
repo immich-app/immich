@@ -185,7 +185,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       var assetCountInAlbum = await album.assetCountAsync;
       if (assetCountInAlbum > 0) {
-        print("Album: ${album.name} - $assetCountInAlbum");
         var assetList =
             await album.getAssetListRange(start: 0, end: assetCountInAlbum);
 

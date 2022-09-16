@@ -26,7 +26,7 @@ class AvailableAlbum {
 
   String get name => albumEntity.name;
 
-  int get assetCount => albumEntity.assetCount;
+  Future<int> get assetCount => albumEntity.assetCountAsync;
 
   String get id => albumEntity.id;
 
