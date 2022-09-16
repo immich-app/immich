@@ -87,14 +87,12 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     if (!mounted) return;
 
     setState(() {
-      debugPrint("Setting state to $newStatus");
       _status = newStatus;
       _imageProvider = provider;
     });
   }
 
   void _loadImages() {
-    debugPrint("Load image");
     thumbnailProvider = _authorizedImageProvider(
       widget.thumbnailUrl,
       widget.cacheKey,
@@ -135,15 +133,14 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
   @override
   void initState() {
-    _loadImages();
     super.initState();
+    _loadImages();
   }
 
   @override
   void dispose() async {
     super.dispose();
 
-    debugPrint("RemotePhotoView disposed");
     await thumbnailProvider.evict();
     await fullProvider.evict();
 
