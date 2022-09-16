@@ -94,6 +94,8 @@ class ThumbnailImage extends HookConsumerWidget {
                 width: 300,
                 height: 300,
                 memCacheHeight: 200,
+                maxWidthDiskCache: 200,
+                maxHeightDiskCache: 200,
                 fit: BoxFit.cover,
                 imageUrl: thumbnailRequestUrl,
                 httpHeaders: {
