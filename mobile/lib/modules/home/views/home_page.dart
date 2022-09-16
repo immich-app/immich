@@ -41,6 +41,7 @@ class HomePage extends HookConsumerWidget {
 
     useEffect(
       () {
+        print("home page build useEffect");
         ref.read(websocketProvider.notifier).connect();
         ref.read(assetProvider.notifier).getAllAsset();
         ref.watch(serverInfoProvider.notifier).getServerVersion();

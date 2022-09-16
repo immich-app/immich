@@ -90,8 +90,7 @@ class ThumbnailImage extends HookConsumerWidget {
                     : const Border(),
               ),
               child: CachedNetworkImage(
-                key: key,
-                cacheKey: asset.id,
+                cacheKey: 'thumbnail-image-${asset.id}',
                 width: 300,
                 height: 300,
                 memCacheHeight: 200,
@@ -110,6 +109,8 @@ class ThumbnailImage extends HookConsumerWidget {
                 ),
                 errorWidget: (context, url, error) {
                   // debugPrint("Error getting thumbnail $url = $error");
+                  CachedNetworkImage.evictFromCache(thumbnailRequestUrl);
+
                   return Icon(
                     Icons.image_not_supported_outlined,
                     color: Theme.of(context).primaryColor,

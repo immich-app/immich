@@ -24,8 +24,6 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
     double iconSize = 18.0;
 
     return AppBar(
-      // iconTheme: IconThemeData(color: Colors.grey[100]),
-      // actionsIconTheme: IconThemeData(color: Colors.grey[100]),
       foregroundColor: Colors.grey[100],
       toolbarHeight: 60,
       backgroundColor: Colors.transparent,
