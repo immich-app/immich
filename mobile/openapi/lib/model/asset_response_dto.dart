@@ -175,15 +175,15 @@ class AssetResponseDto {
       // Ensure that the map contains the required keys.
       // Note 1: the values aren't checked for validity beyond being non-null.
       // Note 2: this code is stripped in release mode!
-      // assert(() {
-      //   requiredKeys.forEach((key) {
-      //     assert(json.containsKey(key),
-      //         'Required key "AssetResponseDto[$key]" is missing from JSON.');
-      //     assert(json[key] != null,
-      //         'Required key "AssetResponseDto[$key]" has a null value in JSON.');
-      //   });
-      //   return true;
-      // }());
+      assert(() {
+        requiredKeys.forEach((key) {
+          assert(json.containsKey(key),
+              'Required key "AssetResponseDto[$key]" is missing from JSON.');
+          assert(json[key] != null,
+              'Required key "AssetResponseDto[$key]" has a null value in JSON.');
+        });
+        return true;
+      }());
 
       return AssetResponseDto(
         type: AssetTypeEnum.fromJson(json[r'type'])!,
