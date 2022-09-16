@@ -108,7 +108,7 @@ class ThumbnailImage extends HookConsumerWidget {
                   ),
                 ),
                 errorWidget: (context, url, error) {
-                  // debugPrint("Error getting thumbnail $url = $error");
+                  debugPrint("Error getting thumbnail $url = $error");
                   CachedNetworkImage.evictFromCache(thumbnailRequestUrl);
 
                   return Icon(
