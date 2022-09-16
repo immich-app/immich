@@ -1,9 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Snowburst+One&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+	font-family: 'Work Sans';
+	src: url('/fonts/WorkSans-VariableFont_wght.ttf') format('truetype-variations');
+	font-weight: 1 999;
+}
+
+@font-face {
+	font-family: 'Snowburst One';
+	src: url('/fonts/SnowburstOne-Regular.ttf') format('truetype');
+}
 
 :root {
 	font-family: 'Work Sans', sans-serif;
