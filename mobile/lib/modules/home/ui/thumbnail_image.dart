@@ -32,7 +32,7 @@ class ThumbnailImage extends HookConsumerWidget {
         ref.watch(homePageStateProvider).isMultiSelectEnable;
     var deviceId = ref.watch(authenticationProvider).deviceId;
 
-    Widget _buildSelectionIcon(AssetResponseDto asset) {
+    Widget buildSelectionIcon(AssetResponseDto asset) {
       if (selectedAsset.contains(asset)) {
         return Icon(
           Icons.check_circle,
@@ -48,7 +48,6 @@ class ThumbnailImage extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        debugPrint("View ${asset.id}");
         if (isMultiSelectEnable &&
             selectedAsset.contains(asset) &&
             selectedAsset.length == 1) {
@@ -91,10 +90,12 @@ class ThumbnailImage extends HookConsumerWidget {
                     : const Border(),
               ),
               child: CachedNetworkImage(
-                cacheKey: asset.id,
+                cacheKey: 'thumbnail-image-${asset.id}',
                 width: 300,
                 height: 300,
-                memCacheHeight: asset.type == AssetTypeEnum.IMAGE ? 250 : 400,
+                memCacheHeight: 200,
+                maxWidthDiskCache: 200,
+                maxHeightDiskCache: 200,
                 fit: BoxFit.cover,
                 imageUrl: thumbnailRequestUrl,
                 httpHeaders: {
@@ -109,7 +110,9 @@ class ThumbnailImage extends HookConsumerWidget {
                   ),
                 ),
                 errorWidget: (context, url, error) {
-                  // debugPrint("Error getting thumbnail $url = $error");
+                  debugPrint("Error getting thumbnail $url = $error");
+                  CachedNetworkImage.evictFromCache(thumbnailRequestUrl);
+
                   return Icon(
                     Icons.image_not_supported_outlined,
                     color: Theme.of(context).primaryColor,
@@ -122,7 +125,7 @@ class ThumbnailImage extends HookConsumerWidget {
                 padding: const EdgeInsets.all(3.0),
                 child: Align(
                   alignment: Alignment.topLeft,
-                  child: _buildSelectionIcon(asset),
+                  child: buildSelectionIcon(asset),
                 ),
               ),
             if (showStorageIndicator)

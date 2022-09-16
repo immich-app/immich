@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  photo_manager: ^2.0.6
+  photo_manager: ^2.2.1
   flutter_hooks: ^0.18.0
   hooks_riverpod: ^2.0.0-dev.0
   hive: ^2.2.1
@@ -20,7 +20,7 @@ dependencies:
   cached_network_image: ^3.2.2
   percent_indicator: ^4.2.2
   intl: ^0.17.0
-  auto_route: ^4.0.1
+  auto_route: ^5.0.1
   exif: ^3.1.1
   transparent_image: ^2.0.0
   flutter_launcher_icons: "^0.9.2"
@@ -43,7 +43,6 @@ dependencies:
   easy_localization: ^3.0.1
   share_plus: ^4.0.10
   flutter_displaymode: ^0.4.0
-  flutter_cache_manager: 3.3.0
 
   path: ^1.8.1
   path_provider: ^2.0.11
@@ -59,8 +58,8 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.1
   hive_generator: ^1.1.2
-  build_runner: ^2.1.7
-  auto_route_generator: ^4.0.0
+  build_runner: ^2.2.1
+  auto_route_generator: ^5.0.2
 
 flutter:
   uses-material-design: true

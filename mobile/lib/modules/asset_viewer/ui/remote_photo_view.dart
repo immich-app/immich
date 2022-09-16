@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
@@ -58,14 +57,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     widget.isZoomedFunction();
   }
 
-  void _fireStartLoadingEvent() {
-    widget.onLoadingStart();
-  }
-
-  void _fireFinishedLoadingEvent() {
-    widget.onLoadingCompleted();
-  }
-
   CachedNetworkImageProvider _authorizedImageProvider(
     String url,
     String cacheKey,
@@ -93,12 +84,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
         newStatus == _RemoteImageStatus.preview) return;
 
     if (!mounted) return;
-
-    if (newStatus != _RemoteImageStatus.full) {
-      _fireStartLoadingEvent();
-    } else {
-      _fireFinishedLoadingEvent();
-    }
 
     setState(() {
       _status = newStatus;
@@ -147,21 +132,23 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
   @override
   void initState() {
-    _loadImages();
     super.initState();
+    _loadImages();
   }
 
   @override
   void dispose() async {
     super.dispose();
-    await thumbnailProvider.evict();
-    await fullProvider.evict();
 
-    if (widget.previewUrl != null) {
+    if (_status == _RemoteImageStatus.full) {
+      await fullProvider.evict();
+    } else if (_status == _RemoteImageStatus.preview) {
       await previewProvider.evict();
+    } else if (_status == _RemoteImageStatus.thumbnail) {
+      await thumbnailProvider.evict();
     }
 
-    _imageProvider.evict();
+    await _imageProvider.evict();
   }
 }
 
@@ -176,8 +163,6 @@ class RemotePhotoView extends StatefulWidget {
     required this.onSwipeDown,
     required this.onSwipeUp,
     this.previewUrl,
-    required this.onLoadingCompleted,
-    required this.onLoadingStart,
     required this.cacheKey,
   }) : super(key: key);
 
@@ -185,8 +170,6 @@ class RemotePhotoView extends StatefulWidget {
   final String imageUrl;
   final String authToken;
   final String? previewUrl;
-  final Function onLoadingCompleted;
-  final Function onLoadingStart;
   final String cacheKey;
 
   final void Function() onSwipeDown;

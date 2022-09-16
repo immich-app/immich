@@ -183,17 +183,21 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
 
-      var assetList =
-          await album.getAssetListRange(start: 0, end: album.assetCount);
+      var assetCountInAlbum = await album.assetCountAsync;
+      if (assetCountInAlbum > 0) {
+        var assetList =
+            await album.getAssetListRange(start: 0, end: assetCountInAlbum);
 
-      if (assetList.isNotEmpty) {
-        var thumbnailAsset = assetList.first;
-        var thumbnailData = await thumbnailAsset
-            .thumbnailDataWithSize(const ThumbnailSize(512, 512));
-        availableAlbum = availableAlbum.copyWith(thumbnailData: thumbnailData);
+        if (assetList.isNotEmpty) {
+          var thumbnailAsset = assetList.first;
+          var thumbnailData = await thumbnailAsset
+              .thumbnailDataWithSize(const ThumbnailSize(512, 512));
+          availableAlbum =
+              availableAlbum.copyWith(thumbnailData: thumbnailData);
+        }
+
+        availableAlbums.add(availableAlbum);
       }
-
-      availableAlbums.add(availableAlbum);
     }
 
     state = state.copyWith(availableAlbums: availableAlbums);
@@ -296,14 +300,18 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     Set<AssetEntity> assetsFromExcludedAlbums = {};
 
     for (var album in state.selectedBackupAlbums) {
-      var assets = await album.albumEntity
-          .getAssetListRange(start: 0, end: album.assetCount);
+      var assets = await album.albumEntity.getAssetListRange(
+        start: 0,
+        end: await album.albumEntity.assetCountAsync,
+      );
       assetsFromSelectedAlbums.addAll(assets);
     }
 
     for (var album in state.excludedBackupAlbums) {
-      var assets = await album.albumEntity
-          .getAssetListRange(start: 0, end: album.assetCount);
+      var assets = await album.albumEntity.getAssetListRange(
+        start: 0,
+        end: await album.albumEntity.assetCountAsync,
+      );
       assetsFromExcludedAlbums.addAll(assets);
     }
 
@@ -353,11 +361,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final bool isEnabled = await _backgroundService.isBackgroundBackupEnabled();
     state = state.copyWith(backgroundBackup: isEnabled);
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
-      await Future.wait([
-        _getBackupAlbumsInfo(),
-        _updateServerInfo(),
-      ]);
-
+      await _getBackupAlbumsInfo();
+      await _updateServerInfo();
       await _updateBackupAssetCount();
     }
   }

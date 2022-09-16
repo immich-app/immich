@@ -121,8 +121,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                 authToken: 'Bearer ${box.get(accessTokenKey)}',
                 isZoomedFunction: isZoomedMethod,
                 isZoomedListener: isZoomedListener,
-                onLoadingCompleted: () => {},
-                onLoadingStart: () => {},
                 asset: assetList[index],
                 heroTag: assetList[index].id,
                 threeStageLoading: threeStageLoading.value,
