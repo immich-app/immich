@@ -28,7 +28,7 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
       // actionsIconTheme: IconThemeData(color: Colors.grey[100]),
       foregroundColor: Colors.grey[100],
       toolbarHeight: 60,
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       leading: IconButton(
         onPressed: () {
           AutoRouter.of(context).pop();
