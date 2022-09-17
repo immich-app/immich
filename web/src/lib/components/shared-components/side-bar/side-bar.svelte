@@ -55,8 +55,8 @@
 <section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6">
 	<!-- {domCount} -->
 	<a
-		sveltekit:prefetch
-		sveltekit:noscroll
+		data-sveltekit-prefetch
+		data-sveltekit-noscroll
 		href={$page.routeId !== 'photos' ? `/photos` : null}
 		class="relative"
 	>
@@ -92,7 +92,11 @@
 		</div>
 	</a>
 
-	<a sveltekit:prefetch href={$page.routeId !== 'sharing' ? `/sharing` : null} class="relative">
+	<a
+		data-sveltekit-prefetch
+		href={$page.routeId !== 'sharing' ? `/sharing` : null}
+		class="relative"
+	>
 		<SideBarButton
 			title="Sharing"
 			logo={AccountMultipleOutline}
@@ -126,7 +130,7 @@
 	<div class="text-xs ml-5 my-4">
 		<p>LIBRARY</p>
 	</div>
-	<a sveltekit:prefetch href={$page.routeId !== 'albums' ? `/albums` : null} class="relative">
+	<a data-sveltekit-prefetch href={$page.routeId !== 'albums' ? `/albums` : null} class="relative">
 		<SideBarButton
 			title="Albums"
 			logo={ImageAlbum}
