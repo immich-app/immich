@@ -70,7 +70,7 @@
 			<!-- Share Album List -->
 			<div class="w-full flex flex-col place-items-center">
 				{#each data.sharedAlbums as album}
-					<a sveltekit:prefetch href={`albums/${album.id}`}>
+					<a data-sveltekit-prefetch href={`albums/${album.id}`}>
 						<SharedAlbumListTile {album} user={data.user} />
 					</a>
 				{/each}

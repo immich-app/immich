@@ -25,7 +25,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
-	import { browser } from '$app/env';
+	import { browser } from '$app/environment';
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
 
 	export let album: AlbumResponseDto;
@@ -69,9 +69,9 @@
 	$: isMultiSelectionMode = multiSelectAsset.size > 0;
 
 	afterNavigate(({ from }) => {
-		backUrl = from?.pathname ?? '/albums';
+		backUrl = from?.url.pathname ?? '/albums';
 
-		if (from?.pathname === '/sharing') {
+		if (from?.url.pathname === '/sharing') {
 			isCreatingSharedAlbum = true;
 		}
 	});

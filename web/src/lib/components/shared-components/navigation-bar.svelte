@@ -44,7 +44,11 @@
 
 <section id="dashboard-navbar" class="fixed w-screen  z-[100] bg-immich-bg text-sm">
 	<div class="flex border-b place-items-center px-6 py-2 ">
-		<a sveltekit:prefetch class="flex gap-2 place-items-center hover:cursor-pointer" href="/photos">
+		<a
+			data-sveltekit-prefetch
+			class="flex gap-2 place-items-center hover:cursor-pointer"
+			href="/photos"
+		>
 			<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" />
 			<h1 class="font-immich-title text-2xl text-immich-primary">IMMICH</h1>
 		</a>
@@ -67,7 +71,7 @@
 			{/if}
 
 			{#if user.isAdmin}
-				<a sveltekit:prefetch href={`admin`}>
+				<a data-sveltekit-prefetch href={`admin`}>
 					<button
 						class={`flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5 p-2 rounded-lg font-medium ${
 							$page.url.pathname == '/admin' && 'text-immich-primary underline'

@@ -7,12 +7,12 @@
 		<code class="text-xs text-red-500">Error code {$page.status}</code>
 		<br />
 		<code class="text-sm">
-			{$page.error.message}
+			{$page.error?.message}
 		</code>
 		<br />
 		<div class="mt-5">
 			<p class="text-sm font-medium">Verbose</p>
-			<pre class="text-xs">{Object.values($page.error)}</pre>
+			<pre class="text-xs">{JSON.stringify($page.error)}</pre>
 		</div>
 
 		<a
