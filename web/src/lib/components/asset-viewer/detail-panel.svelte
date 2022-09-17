@@ -4,10 +4,9 @@
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
 	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
-	import moment, { utc } from 'moment';
+	import moment from 'moment';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { env } from '$env/dynamic/public';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
 
 	type Leaflet = typeof import('leaflet');
