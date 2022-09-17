@@ -7,11 +7,11 @@ import 'package:immich_mobile/modules/home/ui/daily_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/disable_multi_select_button.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/home/ui/image_grid.dart';
+import 'package:immich_mobile/modules/home/ui/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
@@ -61,52 +61,6 @@ class HomePage extends HookConsumerWidget {
     }
 
     Widget _buildBody() {
-      if (assetGroupByDateTime.isNotEmpty) {
-        int? lastMonth;
-
-        assetGroupByDateTime.forEach((dateGroup, immichAssetList) {
-          try {
-            DateTime parseDateGroup = DateTime.parse(dateGroup);
-            int currentMonth = parseDateGroup.month;
-
-            if (lastMonth != null) {
-              if (currentMonth - lastMonth! != 0) {
-                imageGridGroup.add(
-                  MonthlyTitleText(
-                    isoDate: dateGroup,
-                  ),
-                );
-              }
-            }
-
-            imageGridGroup.add(
-              DailyTitleText(
-                key: Key('${dateGroup.toString()}title'),
-                isoDate: dateGroup,
-                assetGroup: immichAssetList,
-              ),
-            );
-
-            imageGridGroup.add(
-              ImageGrid(
-                assetGroup: immichAssetList,
-                sortedAssetGroup: sortedAssetList,
-                tilesPerRow:
-                    appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
-                showStorageIndicator: appSettingService
-                    .getSetting(AppSettingsEnum.storageIndicator),
-              ),
-            );
-
-            lastMonth = currentMonth;
-          } catch (e) {
-            debugPrint(
-              "[ERROR] Cannot parse $dateGroup - Wrong create date format : ${immichAssetList.map((asset) => asset.createdAt).toList()}",
-            );
-          }
-        });
-      }
-
       _buildSliverAppBar() {
         return isMultiSelectEnable
             ? const SliverToBoxAdapter(
@@ -132,17 +86,7 @@ class HomePage extends HookConsumerWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 60.0, bottom: 0.0),
-              child: DraggableScrollbar.semicircle(
-                backgroundColor: Theme.of(context).hintColor,
-                controller: scrollController,
-                heightScrollThumb: 48.0,
-                child: CustomScrollView(
-                  controller: scrollController,
-                  slivers: [
-                    ...imageGridGroup,
-                  ],
-                ),
-              ),
+              child: ImmichAssetGrid(assetGroups: assetGroupByDateTime, assetsPerRow: 4,),
             ),
             if (isMultiSelectEnable) ...[
               _buildSelectedItemCountIndicator(),
