@@ -1,13 +1,7 @@
 import { UserEntity } from '@app/database/entities/user.entity';
-import {
-  BadGatewayException,
-  BadRequestException,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { UserResponseDto } from './response-dto/user-response.dto';
-import { IUserRepository, UserRepository } from './user-repository';
+import { IUserRepository } from './user-repository';
 import { UserService } from './user.service';
 
 describe('UserService', () => {
