@@ -1,3 +1,4 @@
+import { APP_UPLOAD_LOCATION } from '@app/common';
 import { ImmichLogLevel } from '@app/common/constants/log-level.constant';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import {
@@ -19,9 +20,11 @@ import { Job, Queue } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync } from 'node:fs';
+import sanitize from 'sanitize-filename';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
-import { CommunicationGateway } from '../../../immich/src/api-v1/communication/communication.gateway';
+import { join } from 'path';
+import { CommunicationGateway } from 'apps/immich/src/api-v1/communication/communication.gateway';
 
 @Processor(thumbnailGeneratorQueueName)
 export class ThumbnailGeneratorProcessor {
@@ -46,9 +49,12 @@ export class ThumbnailGeneratorProcessor {
 
   @Process({ name: generateJPEGThumbnailProcessorName, concurrency: 3 })
   async generateJPEGThumbnail(job: Job<JpegGeneratorProcessor>) {
-    const { asset } = job.data;
+    const basePath = APP_UPLOAD_LOCATION;
 
-    const resizePath = `upload/${asset.userId}/thumb/${asset.deviceId}/`;
+    const { asset } = job.data;
+    const sanitizedDeviceId = sanitize(asset.deviceId);
+
+    const resizePath = join(basePath, asset.userId, 'thumb', sanitizedDeviceId);
 
     if (!existsSync(resizePath)) {
       mkdirSync(resizePath, { recursive: true });
