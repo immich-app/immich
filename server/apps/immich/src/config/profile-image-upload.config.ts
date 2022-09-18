@@ -5,6 +5,7 @@ import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { Request } from 'express';
+import sanitize from 'sanitize-filename';
 
 export const profileImageUploadOption: MulterOptions = {
   fileFilter: (req: Request, file: any, cb: any) => {
@@ -35,8 +36,9 @@ export const profileImageUploadOption: MulterOptions = {
         return;
       }
       const userId = req.user.id;
+      const fileName = `${userId}${extname(file.originalname)}`;
 
-      cb(null, `${userId}${extname(file.originalname)}`);
+      cb(null, sanitize(fileName));
     },
   }),
 };
