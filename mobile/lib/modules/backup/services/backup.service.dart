@@ -127,7 +127,9 @@ class BackupService {
     for (int i = 0; i < albums.length; i++) {
       final AssetPathEntity? a = albums[i];
       if (a != null && a.lastModified?.isBefore(lastBackup[i]) != true) {
-        result.addAll(await a.getAssetListRange(start: 0, end: a.assetCount));
+        result.addAll(
+          await a.getAssetListRange(start: 0, end: await a.assetCountAsync),
+        );
         lastBackup[i] = now;
       }
     }
