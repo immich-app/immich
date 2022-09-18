@@ -26,6 +26,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
+import { find } from 'geo-tz';
 
 @Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
@@ -75,6 +76,8 @@ export class MetadataExtractionProcessor {
         throw new Error(`can not parse exif data from file ${asset.originalPath}`);
       }
 
+      const createdAt = new Date(exifData.DateTimeOriginal || exifData.CreateDate || new Date(asset.createdAt));
+      console.log('CrerateAt', createdAt);
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.make = exifData['Make'] || null;
@@ -84,7 +87,7 @@ export class MetadataExtractionProcessor {
       newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
       newExif.fileSizeInByte = fileSize || null;
       newExif.orientation = exifData['Orientation'] || null;
-      newExif.dateTimeOriginal = new Date(asset.createdAt) || null;
+      newExif.dateTimeOriginal = createdAt;
       newExif.modifyDate = exifData['ModifyDate'] || null;
       newExif.lensModel = exifData['LensModel'] || null;
       newExif.fNumber = exifData['FNumber'] || null;
@@ -93,6 +96,11 @@ export class MetadataExtractionProcessor {
       newExif.exposureTime = exifData['ExposureTime'] || null;
       newExif.latitude = exifData['latitude'] || null;
       newExif.longitude = exifData['longitude'] || null;
+
+      if (newExif.longitude && newExif.latitude) {
+        const tz = find(newExif.latitude, newExif.longitude)[0];
+        console.log('Timezone is ', tz);
+      }
 
       // Reverse GeoCoding
       if (this.geocodingClient && exifData['longitude'] && exifData['latitude']) {
@@ -144,6 +152,14 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.save(newExif);
+
+      // Update time from EXIF
+      if (createdAt) {
+        await this.assetRepository.save({
+          id: asset.id,
+          createdAt: createdAt.toISOString(),
+        });
+      }
     } catch (e) {
       Logger.error(`Error extracting EXIF ${String(e)}`, 'extractExif');
 

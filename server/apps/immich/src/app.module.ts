@@ -65,7 +65,7 @@ export class AppModule implements NestModule {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   configure(consumer: MiddlewareConsumer): void {
     if (process.env.NODE_ENV == 'development') {
-      consumer.apply(AppLoggerMiddleware).forRoutes('*');
+      // consumer.apply(AppLoggerMiddleware).forRoutes('*');
     }
   }
 }
