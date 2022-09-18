@@ -12,5 +12,5 @@ export const serverVersion: IServerVersion = {
   major: 1,
   minor: 29,
   patch: 1,
-  build: 42,
+  build: 43,
 };
