@@ -74,8 +74,11 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Put()
-  async updateUser(@Body(ValidationPipe) updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
-    return await this.userService.updateUser(updateUserDto);
+  async updateUser(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    return await this.userService.updateUser(authUser, updateUserDto);
   }
 
   @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
