@@ -6,6 +6,7 @@ import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { Request } from 'express';
 import { randomUUID } from 'crypto';
+import sanitize from 'sanitize-filename';
 
 export const assetUploadOption: MulterOptions = {
   fileFilter: (req: Request, file: any, cb: any) => {
@@ -19,17 +20,13 @@ export const assetUploadOption: MulterOptions = {
   storage: diskStorage({
     destination: (req: Request, file: Express.Multer.File, cb: any) => {
       const basePath = APP_UPLOAD_LOCATION;
-      // TODO these are currently not used. Shall we remove them?
-      // const fileInfo = req.body as CreateAssetDto;
-
-      // const yearInfo = new Date(fileInfo.createdAt).getFullYear();
-      // const monthInfo = new Date(fileInfo.createdAt).getMonth();
 
       if (!req.user) {
         return;
       }
 
-      const originalUploadFolder = join(basePath, req.user.id, 'original', req.body['deviceId']);
+      const sanitizedDeviceId = sanitize(req.body['deviceId']);
+      const originalUploadFolder = join(basePath, req.user.id, 'original', sanitizedDeviceId);
 
       if (!existsSync(originalUploadFolder)) {
         mkdirSync(originalUploadFolder, { recursive: true });
@@ -41,8 +38,9 @@ export const assetUploadOption: MulterOptions = {
 
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
       const fileNameUUID = randomUUID();
+      const fileName = `${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`;
 
-      cb(null, `${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`);
+      cb(null, sanitize(fileName));
     },
   }),
 };
