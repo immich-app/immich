@@ -1,5 +1,7 @@
 import { UserEntity } from '@app/database/entities/user.entity';
+import { BadGatewayException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
+import { UserResponseDto } from './response-dto/user-response.dto';
 import { IUserRepository, UserRepository } from './user-repository';
 import { UserService } from './user.service';
 
@@ -43,6 +45,19 @@ describe('UserService', () => {
     createdAt: '2021-01-01',
   });
 
+  const updatedImmichUser: UserEntity = Object.freeze({
+    id: 'immich_id',
+    email: 'immich@test.com',
+    password: 'immich_password',
+    salt: 'immich_salt',
+    firstName: 'updated_immich_first_name',
+    lastName: 'updated_immich_last_name',
+    isAdmin: false,
+    shouldChangePassword: true,
+    profileImagePath: '',
+    createdAt: '2021-01-01',
+  });
+
   beforeAll(() => {
     userRepositoryMock = {
       create: jest.fn(),
@@ -54,5 +69,39 @@ describe('UserService', () => {
     };
 
     sui = new UserService(userRepositoryMock);
+  });
+
+  it('should be defined', () => {
+    expect(sui).toBeDefined();
+  });
+
+  it('user can only update its information', () => {
+    const requestor = immichAuthUser;
+
+    userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(immichUser));
+
+    const result = sui.updateUser(requestor, {
+      id: 'not_immich_auth_user_id',
+      password: 'I take over your account now',
+    });
+    expect(result).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('admin can update any user information', async () => {
+    const requestor = adminAuthUser;
+    const userToUpdate = immichUser;
+
+    userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(adminUser));
+    userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(userToUpdate));
+    userRepositoryMock.update.mockImplementationOnce(() => Promise.resolve(updatedImmichUser));
+
+    const result = await sui.updateUser(requestor, {
+      id: userToUpdate.id,
+      shouldChangePassword: true,
+    });
+
+    expect(result).toBeDefined();
+    expect(result.id).toEqual(updatedImmichUser.id);
+    expect(result.shouldChangePassword).toEqual(updatedImmichUser.shouldChangePassword);
   });
 });

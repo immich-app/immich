@@ -85,8 +85,10 @@ export class UserService {
       throw new NotFoundException('Requestor not found');
     }
 
-    if (requestor.id !== updateUserDto.id && !requestor.isAdmin) {
-      throw new BadRequestException('Unauthorized');
+    if (!requestor.isAdmin) {
+      if (requestor.id !== updateUserDto.id) {
+        throw new BadRequestException('Unauthorized');
+      }
     }
 
     const user = await this.userRepository.get(updateUserDto.id);
