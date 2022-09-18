@@ -1,5 +1,10 @@
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadGatewayException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { UserResponseDto } from './response-dto/user-response.dto';
 import { IUserRepository, UserRepository } from './user-repository';
@@ -75,33 +80,64 @@ describe('UserService', () => {
     expect(sui).toBeDefined();
   });
 
-  it('user can only update its information', () => {
-    const requestor = immichAuthUser;
+  describe('Update user', () => {
+    it('should update user', () => {
+      const requestor = immichAuthUser;
+      const userToUpdate = immichUser;
 
-    userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(immichUser));
+      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(immichUser));
+      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(userToUpdate));
+      userRepositoryMock.update.mockImplementationOnce(() => Promise.resolve(updatedImmichUser));
 
-    const result = sui.updateUser(requestor, {
-      id: 'not_immich_auth_user_id',
-      password: 'I take over your account now',
-    });
-    expect(result).rejects.toBeInstanceOf(BadRequestException);
-  });
-
-  it('admin can update any user information', async () => {
-    const requestor = adminAuthUser;
-    const userToUpdate = immichUser;
-
-    userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(adminUser));
-    userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(userToUpdate));
-    userRepositoryMock.update.mockImplementationOnce(() => Promise.resolve(updatedImmichUser));
-
-    const result = await sui.updateUser(requestor, {
-      id: userToUpdate.id,
-      shouldChangePassword: true,
+      const result = sui.updateUser(requestor, {
+        id: userToUpdate.id,
+        shouldChangePassword: true,
+      });
+      expect(result).resolves.toBeDefined();
     });
 
-    expect(result).toBeDefined();
-    expect(result.id).toEqual(updatedImmichUser.id);
-    expect(result.shouldChangePassword).toEqual(updatedImmichUser.shouldChangePassword);
+    it('user can only update its information', () => {
+      const requestor = immichAuthUser;
+
+      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(immichUser));
+
+      const result = sui.updateUser(requestor, {
+        id: 'not_immich_auth_user_id',
+        password: 'I take over your account now',
+      });
+      expect(result).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('admin can update any user information', async () => {
+      const requestor = adminAuthUser;
+      const userToUpdate = immichUser;
+
+      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(adminUser));
+      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(userToUpdate));
+      userRepositoryMock.update.mockImplementationOnce(() => Promise.resolve(updatedImmichUser));
+
+      const result = await sui.updateUser(requestor, {
+        id: userToUpdate.id,
+        shouldChangePassword: true,
+      });
+
+      expect(result).toBeDefined();
+      expect(result.id).toEqual(updatedImmichUser.id);
+      expect(result.shouldChangePassword).toEqual(updatedImmichUser.shouldChangePassword);
+    });
+
+    it('update user information should throw error if user not found', () => {
+      const requestor = adminAuthUser;
+      const userToUpdate = immichUser;
+
+      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(adminUser));
+      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(null));
+
+      const result = sui.updateUser(requestor, {
+        id: userToUpdate.id,
+        shouldChangePassword: true,
+      });
+      expect(result).rejects.toBeInstanceOf(NotFoundException);
+    });
   });
 });
