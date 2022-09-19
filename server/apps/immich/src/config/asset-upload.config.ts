@@ -25,7 +25,7 @@ export const assetUploadOption: MulterOptions = {
         return;
       }
 
-      const sanitizedDeviceId = sanitize(req.body['deviceId']);
+      const sanitizedDeviceId = sanitize(String(req.body['deviceId']));
       const originalUploadFolder = join(basePath, req.user.id, 'original', sanitizedDeviceId);
 
       if (!existsSync(originalUploadFolder)) {
