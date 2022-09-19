@@ -52,7 +52,7 @@ export class ThumbnailGeneratorProcessor {
     const basePath = APP_UPLOAD_LOCATION;
 
     const { asset } = job.data;
-    const sanitizedDeviceId = sanitize(asset.deviceId);
+    const sanitizedDeviceId = sanitize(String(asset.deviceId));
 
     const resizePath = join(basePath, asset.userId, 'thumb', sanitizedDeviceId);
 

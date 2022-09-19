@@ -38,7 +38,7 @@ export const profileImageUploadOption: MulterOptions = {
       const userId = req.user.id;
       const fileName = `${userId}${extname(file.originalname)}`;
 
-      cb(null, sanitize(fileName));
+      cb(null, sanitize(String(fileName)));
     },
   }),
 };
