@@ -20,8 +20,8 @@ export const load: LayoutServerLoad = async ({ request }) => {
 		return {
 			user: userInfo
 		};
-	} catch (e: any) {
-		console.error('[ERROR] layout.server.ts [LayoutServerLoad]: ', e.data);
+	} catch (e) {
+		console.error('[ERROR] layout.server.ts [LayoutServerLoad]: ', e);
 		return {
 			user: undefined
 		};
