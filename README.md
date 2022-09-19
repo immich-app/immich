@@ -25,7 +25,16 @@
 
 ## Demo
 
-https://demo.immich.app
+You can access the web demo at https://demo.immich.app
+
+For the mobile app, you can use https://demo.immich.app/api for the `Server Endpoint URL`
+
+
+```
+The credential
+email: demo@immich.app
+password: demo
+```
 
 ```
 Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
