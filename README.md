@@ -23,12 +23,20 @@
   <br/>   
 </p>
 
+## Demo
+
+https://demo.immich.app
+
+```
+Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
+```
+
 ## Content
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Update](#update)
-- [Mobile App](#-mobile-app)
+- [Mobile App](#mobile-app)
 - [Development](#development)
 - [Support](#support)
 - [Known Issues](#known-issues)
