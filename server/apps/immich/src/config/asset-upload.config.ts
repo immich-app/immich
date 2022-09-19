@@ -39,8 +39,8 @@ export const assetUploadOption: MulterOptions = {
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
       const fileNameUUID = randomUUID();
       const fileName = `${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`;
-
-      cb(null, sanitize(fileName));
+      const sanitizedFileName = sanitize(fileName);
+      cb(null, sanitizedFileName);
     },
   }),
 };

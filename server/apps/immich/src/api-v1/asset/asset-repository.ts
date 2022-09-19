@@ -171,7 +171,6 @@ export class AssetRepository implements IAssetRepository {
       .createQueryBuilder('asset')
       .where('asset.userId = :userId', { userId: userId })
       .andWhere('asset.resizePath is not NULL')
-      .andWhere('asset.type = :type', { type: AssetType.IMAGE })
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
       .orderBy('asset.createdAt', 'DESC');
 
@@ -226,7 +225,6 @@ export class AssetRepository implements IAssetRepository {
       where: {
         userId: userId,
         deviceId: deviceId,
-        type: AssetType.IMAGE,
       },
       select: ['deviceAssetId'],
     });
