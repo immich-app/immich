@@ -80,7 +80,7 @@ export class ScheduleTasksService {
     }
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async reverseGeocoding() {
     const isMapboxEnable = this.configService.get('ENABLE_MAPBOX');
 
