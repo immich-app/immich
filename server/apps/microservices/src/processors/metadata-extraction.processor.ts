@@ -98,6 +98,22 @@ export class MetadataExtractionProcessor {
       newExif.latitude = exifData['latitude'] || null;
       newExif.longitude = exifData['longitude'] || null;
 
+      /**
+       * Correctly store UTC time based on timezone
+       * The timestamp being extracted from EXIF is based on the timezone
+       * of the container. We need to correct it to UTC time based on the
+       * timezone of the location.
+       *
+       * The timezone of the location can be exracted from the lat/lon
+       * GPS coordinates.
+       *
+       * Any assets that doesn't have this information will used the
+       * createdAt timestamp of the asset instead.
+       *
+       * The updated/corrected timestamp will be used to update the
+       * createdAt timestamp in the asset table. So that the information
+       * is consistent across the database.
+       *  */
       if (newExif.longitude && newExif.latitude) {
         const tz = find(newExif.latitude, newExif.longitude)[0];
         const localTimeWithTimezone = createdAt.toISOString();
@@ -119,7 +135,12 @@ export class MetadataExtractionProcessor {
         });
       }
 
-      // Reverse GeoCoding
+      /**
+       * Reverse Geocoding
+       *
+       * Get the city, state or region name of the asset
+       * based on lat/lon GPS coordinates.
+       */
       if (this.geocodingClient && exifData['longitude'] && exifData['latitude']) {
         const geoCodeInfo: MapiResponse = await this.geocodingClient
           .reverseGeocode({
@@ -151,7 +172,10 @@ export class MetadataExtractionProcessor {
         newExif.country = country || null;
       }
 
-      // Enrich metadata
+      /**
+       * IF the EXIF doesn't contain the width and height of the image,
+       * We will use Sharpjs to get the information.
+       */
       if (!newExif.exifImageHeight || !newExif.exifImageWidth || !newExif.orientation) {
         const metadata = await sharp(asset.originalPath).metadata();
 
