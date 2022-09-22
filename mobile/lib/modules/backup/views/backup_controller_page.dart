@@ -508,7 +508,7 @@ class BackupControllerPage extends HookConsumerWidget {
                                 DateTime.parse(
                                   backupState.currentUploadAsset.createdAt
                                       .toString(),
-                                ),
+                                ).toLocal(),
                               )
                             ],
                           ),

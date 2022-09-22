@@ -11,7 +11,6 @@ import {
   UseInterceptors,
   UploadedFile,
   Response,
-  Request,
   ParseBoolPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -22,7 +21,7 @@ import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { profileImageUploadOption } from '../../config/profile-image-upload.config';
-import { Response as Res, Request as Req } from 'express';
+import { Response as Res } from 'express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from './response-dto/user-response.dto';
 import { UserCountResponseDto } from './response-dto/user-count-response.dto';
@@ -93,9 +92,7 @@ export class UserController {
   async createProfileImage(
     @GetAuthUser() authUser: AuthUserDto,
     @UploadedFile() fileInfo: Express.Multer.File,
-    @Request() req: Req,
   ): Promise<CreateProfileImageResponseDto> {
-    console.log(req.body, req.file);
     return await this.userService.createProfileImage(authUser, fileInfo);
   }
 

@@ -12,6 +12,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 			user
 		};
 	} catch (e) {
+		console.log('Photo page load error', e);
 		throw redirect(302, '/auth/login');
 	}
 };

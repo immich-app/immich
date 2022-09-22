@@ -15,7 +15,6 @@ import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { DatabaseModule } from '@app/database';
-import { AppLoggerMiddleware } from './middlewares/app-logger.middleware';
 
 @Module({
   imports: [
@@ -65,7 +64,7 @@ export class AppModule implements NestModule {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   configure(consumer: MiddlewareConsumer): void {
     if (process.env.NODE_ENV == 'development') {
-      consumer.apply(AppLoggerMiddleware).forRoutes('*');
+      // consumer.apply(AppLoggerMiddleware).forRoutes('*');
     }
   }
 }

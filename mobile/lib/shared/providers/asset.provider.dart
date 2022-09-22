@@ -81,8 +81,8 @@ final assetGroupByDateTimeProvider = StateProvider((ref) {
     (a, b) => b.compareTo(a),
   );
   return assets.groupListsBy(
-    (element) =>
-        DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)),
+    (element) => DateFormat('y-MM-dd')
+        .format(DateTime.parse(element.createdAt).toLocal()),
   );
 });
 
@@ -95,7 +95,7 @@ final assetGroupByMonthYearProvider = StateProvider((ref) {
   );
 
   return assets.groupListsBy(
-    (element) =>
-        DateFormat('MMMM, y').format(DateTime.parse(element.createdAt)),
+    (element) => DateFormat('MMMM, y')
+        .format(DateTime.parse(element.createdAt).toLocal()),
   );
 });

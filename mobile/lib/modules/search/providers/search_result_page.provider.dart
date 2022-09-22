@@ -62,7 +62,7 @@ final searchResultGroupByDateTimeProvider = StateProvider((ref) {
     (a, b) => b.compareTo(a),
   );
   return assets.groupListsBy(
-    (element) =>
-        DateFormat('y-MM-dd').format(DateTime.parse(element.createdAt)),
+    (element) => DateFormat('y-MM-dd')
+        .format(DateTime.parse(element.createdAt).toLocal()),
   );
 });

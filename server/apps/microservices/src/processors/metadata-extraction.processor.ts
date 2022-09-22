@@ -26,6 +26,8 @@ import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
+import { find } from 'geo-tz';
+import * as luxon from 'luxon';
 
 @Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
@@ -75,6 +77,8 @@ export class MetadataExtractionProcessor {
         throw new Error(`can not parse exif data from file ${asset.originalPath}`);
       }
 
+      const createdAt = new Date(exifData.DateTimeOriginal || exifData.CreateDate || new Date(asset.createdAt));
+
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.make = exifData['Make'] || null;
@@ -84,7 +88,7 @@ export class MetadataExtractionProcessor {
       newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
       newExif.fileSizeInByte = fileSize || null;
       newExif.orientation = exifData['Orientation'] || null;
-      newExif.dateTimeOriginal = new Date(asset.createdAt) || null;
+      newExif.dateTimeOriginal = createdAt;
       newExif.modifyDate = exifData['ModifyDate'] || null;
       newExif.lensModel = exifData['LensModel'] || null;
       newExif.fNumber = exifData['FNumber'] || null;
@@ -94,7 +98,49 @@ export class MetadataExtractionProcessor {
       newExif.latitude = exifData['latitude'] || null;
       newExif.longitude = exifData['longitude'] || null;
 
-      // Reverse GeoCoding
+      /**
+       * Correctly store UTC time based on timezone
+       * The timestamp being extracted from EXIF is based on the timezone
+       * of the container. We need to correct it to UTC time based on the
+       * timezone of the location.
+       *
+       * The timezone of the location can be exracted from the lat/lon
+       * GPS coordinates.
+       *
+       * Any assets that doesn't have this information will used the
+       * createdAt timestamp of the asset instead.
+       *
+       * The updated/corrected timestamp will be used to update the
+       * createdAt timestamp in the asset table. So that the information
+       * is consistent across the database.
+       *  */
+      if (newExif.longitude && newExif.latitude) {
+        const tz = find(newExif.latitude, newExif.longitude)[0];
+        const localTimeWithTimezone = createdAt.toISOString();
+
+        if (localTimeWithTimezone.length == 24) {
+          // Remove the last character
+          const localTimeWithoutTimezone = localTimeWithTimezone.slice(0, -1);
+          const correctUTCTime = luxon.DateTime.fromISO(localTimeWithoutTimezone, { zone: tz }).toUTC().toISO();
+          newExif.dateTimeOriginal = new Date(correctUTCTime);
+          await this.assetRepository.save({
+            id: asset.id,
+            createdAt: correctUTCTime,
+          });
+        }
+      } else {
+        await this.assetRepository.save({
+          id: asset.id,
+          createdAt: createdAt.toISOString(),
+        });
+      }
+
+      /**
+       * Reverse Geocoding
+       *
+       * Get the city, state or region name of the asset
+       * based on lat/lon GPS coordinates.
+       */
       if (this.geocodingClient && exifData['longitude'] && exifData['latitude']) {
         const geoCodeInfo: MapiResponse = await this.geocodingClient
           .reverseGeocode({
@@ -126,7 +172,10 @@ export class MetadataExtractionProcessor {
         newExif.country = country || null;
       }
 
-      // Enrich metadata
+      /**
+       * IF the EXIF doesn't contain the width and height of the image,
+       * We will use Sharpjs to get the information.
+       */
       if (!newExif.exifImageHeight || !newExif.exifImageWidth || !newExif.orientation) {
         const metadata = await sharp(asset.originalPath).metadata();
 
