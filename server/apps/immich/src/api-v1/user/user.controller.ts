@@ -93,7 +93,6 @@ export class UserController {
   async createProfileImage(
     @GetAuthUser() authUser: AuthUserDto,
     @UploadedFile() fileInfo: Express.Multer.File,
-    @Request() req: Req,
   ): Promise<CreateProfileImageResponseDto> {
     return await this.userService.createProfileImage(authUser, fileInfo);
   }
