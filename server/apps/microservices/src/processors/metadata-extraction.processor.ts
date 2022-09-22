@@ -27,6 +27,7 @@ import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { find } from 'geo-tz';
+import * as luxon from 'luxon';
 
 @Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
@@ -77,7 +78,7 @@ export class MetadataExtractionProcessor {
       }
 
       const createdAt = new Date(exifData.DateTimeOriginal || exifData.CreateDate || new Date(asset.createdAt));
-      console.log('CrerateAt', createdAt);
+
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.make = exifData['Make'] || null;
@@ -99,7 +100,23 @@ export class MetadataExtractionProcessor {
 
       if (newExif.longitude && newExif.latitude) {
         const tz = find(newExif.latitude, newExif.longitude)[0];
-        console.log('Timezone is ', tz);
+        const localTimeWithTimezone = createdAt.toISOString();
+
+        if (localTimeWithTimezone.length == 24) {
+          // Remove the last character
+          const localTimeWithoutTimezone = localTimeWithTimezone.slice(0, -1);
+          const correctUTCTime = luxon.DateTime.fromISO(localTimeWithoutTimezone, { zone: tz }).toUTC().toISO();
+          newExif.dateTimeOriginal = new Date(correctUTCTime);
+          await this.assetRepository.save({
+            id: asset.id,
+            createdAt: correctUTCTime,
+          });
+        }
+      } else {
+        await this.assetRepository.save({
+          id: asset.id,
+          createdAt: createdAt.toISOString(),
+        });
       }
 
       // Reverse GeoCoding
@@ -152,14 +169,6 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.save(newExif);
-
-      // Update time from EXIF
-      if (createdAt) {
-        await this.assetRepository.save({
-          id: asset.id,
-          createdAt: createdAt.toISOString(),
-        });
-      }
     } catch (e) {
       Logger.error(`Error extracting EXIF ${String(e)}`, 'extractExif');
 
