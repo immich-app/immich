@@ -81,7 +81,7 @@ class ExifBottomSheet extends ConsumerWidget {
           if (assetDetail.exifInfo?.dateTimeOriginal != null)
             Text(
               DateFormat('date_format'.tr()).format(
-                assetDetail.exifInfo!.dateTimeOriginal!,
+                assetDetail.exifInfo!.dateTimeOriginal!.toLocal(),
               ),
               style: TextStyle(
                 color: Colors.grey[400],
