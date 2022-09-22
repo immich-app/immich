@@ -95,7 +95,6 @@ export class UserController {
     @UploadedFile() fileInfo: Express.Multer.File,
     @Request() req: Req,
   ): Promise<CreateProfileImageResponseDto> {
-    console.log(req.body, req.file);
     return await this.userService.createProfileImage(authUser, fileInfo);
   }
 
