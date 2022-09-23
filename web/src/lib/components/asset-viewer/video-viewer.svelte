@@ -47,7 +47,7 @@
 	{#if asset}
 		<video
 			controls
-			class="h-full object-contain controls"
+			class="h-full object-contain"
 			on:canplay={handleCanPlay}
 			bind:this={videoPlayerNode}
 		>
@@ -62,10 +62,3 @@
 		{/if}
 	{/if}
 </div>
-
-<style>
-	.controls {
-		max-width: 100%;
-		max-height: 100%;
-	}
-</style>
