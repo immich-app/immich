@@ -150,7 +150,7 @@
 	</div>
 
 	<div
-		class={`row-start-2 row-span-end col-start-1 col-span-2 flex place-items-center hover:cursor-pointer w-3/4 ${
+		class={`row-start-2 row-span-end col-start-1 col-span-2 flex place-items-center hover:cursor-pointer w-3/4 mb-[60px] ${
 			asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
 		}`}
 		on:mouseenter={() => {
@@ -182,7 +182,7 @@
 	</div>
 
 	<div
-		class={`row-start-2 row-span-full col-start-3 col-span-2 flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end ${
+		class={`row-start-2 row-span-full col-start-3 col-span-2 flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end mb-[60px] ${
 			asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'
 		}`}
 		on:click={navigateAssetForward}
@@ -195,7 +195,7 @@
 		}}
 	>
 		<button
-			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4 z-[1000]"
+			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4"
 			class:navigation-button-hover={halfRightHover}
 			on:click={navigateAssetForward}
 		>
