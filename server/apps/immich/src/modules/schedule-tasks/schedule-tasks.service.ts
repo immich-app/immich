@@ -94,7 +94,11 @@ export class ScheduleTasksService {
       });
 
       for (const exif of exifInfo) {
-        await this.metadataExtractionQueue.add(reverseGeocodingProcessorName, { exif }, { jobId: randomUUID() });
+        await this.metadataExtractionQueue.add(
+          reverseGeocodingProcessorName,
+          { exifId: exif.id, latitude: exif.latitude!, longitude: exif.longitude! },
+          { jobId: randomUUID() },
+        );
       }
     }
   }

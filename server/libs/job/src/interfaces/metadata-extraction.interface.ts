@@ -1,5 +1,4 @@
 import { AssetEntity } from '@app/database/entities/asset.entity';
-import { ExifEntity } from '@app/database/entities/exif.entity';
 
 export interface IExifExtractionProcessor {
   /**
@@ -36,10 +35,9 @@ export interface IVideoLengthExtractionProcessor {
 }
 
 export interface IReverseGeocodingProcessor {
-  /**
-   * The Asset entity that was saved in the database
-   */
-  exif: ExifEntity;
+  exifId: string;
+  latitude: number;
+  longitude: number;
 }
 
 export type IMetadataExtractionJob =
