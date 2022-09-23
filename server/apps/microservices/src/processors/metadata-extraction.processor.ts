@@ -47,7 +47,7 @@ function geocoderLookup(points: { latitude: number; longitude: number }[]) {
   });
 }
 
-const geocodingPrecisionLevels = [ "cities15000", "cities5000", "cities1000", "cities500" ]
+const geocodingPrecisionLevels = ['cities15000', 'cities5000', 'cities1000', 'cities500'];
 
 export interface AdminCode {
   name: string;
@@ -66,9 +66,9 @@ export interface GeoData {
   featureCode: string;
   countryCode: string;
   cc2?: any;
-  admin1Code: AdminCode;
-  admin2Code: AdminCode;
-  admin3Code: string;
+  admin1Code?: AdminCode;
+  admin2Code?: AdminCode;
+  admin3Code?: any;
   admin4Code?: any;
   population: string;
   elevation: string;
@@ -117,20 +117,23 @@ export class MetadataExtractionProcessor {
     this.logLevel = this.configService.get('LOG_LEVEL') || ImmichLogLevel.SIMPLE;
   }
 
-  private async reverseGeocodeExif(latitude: number, longitude: number): Promise<{country: string, state: string, city: string}> {
+  private async reverseGeocodeExif(
+    latitude: number,
+    longitude: number,
+  ): Promise<{ country: string; state: string; city: string }> {
     const geoCodeInfo = await geocoderLookup([{ latitude, longitude }]);
 
     const country = getName(geoCodeInfo.countryCode, 'en');
     const city = geoCodeInfo.name;
 
     let state = '';
-    if (geoCodeInfo.admin2Code.name) state += geoCodeInfo.admin2Code.name;
-    if (geoCodeInfo.admin1Code.name) {
-      if (geoCodeInfo.admin2Code.name) state += ', ';
+    if (geoCodeInfo.admin2Code?.name) state += geoCodeInfo.admin2Code.name;
+    if (geoCodeInfo.admin1Code?.name) {
+      if (geoCodeInfo.admin2Code?.name) state += ', ';
       state += geoCodeInfo.admin1Code.name;
     }
 
-    return { country, state, city }
+    return { country, state, city };
   }
 
   @Process(exifExtractionProcessorName)
