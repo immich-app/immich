@@ -96,6 +96,7 @@ export class ScheduleTasksService {
       for (const exif of exifInfo) {
         await this.metadataExtractionQueue.add(
           reverseGeocodingProcessorName,
+          // tslint:disable-next-line
           { exifId: exif.id, latitude: exif.latitude!, longitude: exif.longitude! },
           { jobId: randomUUID() },
         );
