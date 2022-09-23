@@ -13,8 +13,6 @@ import {
   reverseGeocodingProcessorName,
   IReverseGeocodingProcessor,
 } from '@app/job';
-import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
-import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -26,12 +24,63 @@ import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
+import geocoder, { InitOptions } from 'local-reverse-geocoder';
+import { getName } from 'i18n-iso-countries';
 import { find } from 'geo-tz';
 import * as luxon from 'luxon';
 
+function geocoderInit(init: InitOptions) {
+  return new Promise<void>(function (resolve) {
+    geocoder.init(init, () => {
+      resolve();
+    });
+  });
+}
+
+function geocoderLookup(points: { latitude: number; longitude: number }[]) {
+  return new Promise<GeoData>(function (resolve) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    geocoder.lookUp(points, 1, (err, addresses) => {
+      resolve(addresses[0][0]);
+    });
+  });
+}
+
+const geocodingPrecisionLevels = [ "cities15000", "cities5000", "cities1000", "cities500" ]
+
+export interface AdminCode {
+  name: string;
+  asciiName: string;
+  geoNameId: string;
+}
+
+export interface GeoData {
+  geoNameId: string;
+  name: string;
+  asciiName: string;
+  alternateNames: string;
+  latitude: string;
+  longitude: string;
+  featureClass: string;
+  featureCode: string;
+  countryCode: string;
+  cc2?: any;
+  admin1Code: AdminCode;
+  admin2Code: AdminCode;
+  admin3Code: string;
+  admin4Code?: any;
+  population: string;
+  elevation: string;
+  dem: string;
+  timezone: string;
+  modificationDate: string;
+  distance: number;
+}
+
 @Processor(metadataExtractionQueueName)
 export class MetadataExtractionProcessor {
-  private geocodingClient?: GeocodeService;
+  private isGeocodeInitialized = false;
   private logLevel: ImmichLogLevel;
 
   constructor(
@@ -46,13 +95,42 @@ export class MetadataExtractionProcessor {
 
     private configService: ConfigService,
   ) {
-    if (process.env.ENABLE_MAPBOX == 'true' && process.env.MAPBOX_KEY) {
-      this.geocodingClient = mapboxGeocoding({
-        accessToken: process.env.MAPBOX_KEY,
+    if (configService.get('DISABLE_REVERSE_GEOCODING') !== 'true') {
+      Logger.log('Initialising Reverse Geocoding');
+      geocoderInit({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        citiesFileOverride: geocodingPrecisionLevels[configService.get('REVERSE_GEOCODING_PRECISION')],
+        load: {
+          admin1: true,
+          admin2: true,
+          admin3And4: false,
+          alternateNames: false,
+        },
+        countries: [],
+      }).then(() => {
+        this.isGeocodeInitialized = true;
+        Logger.log('Reverse Geocoding Initialised');
       });
     }
 
     this.logLevel = this.configService.get('LOG_LEVEL') || ImmichLogLevel.SIMPLE;
+  }
+
+  private async reverseGeocodeExif(latitude: number, longitude: number): Promise<{country: string, state: string, city: string}> {
+    const geoCodeInfo = await geocoderLookup([{ latitude, longitude }]);
+
+    const country = getName(geoCodeInfo.countryCode, 'en');
+    const city = geoCodeInfo.name;
+
+    let state = '';
+    if (geoCodeInfo.admin2Code.name) state += geoCodeInfo.admin2Code.name;
+    if (geoCodeInfo.admin1Code.name) {
+      if (geoCodeInfo.admin2Code.name) state += ', ';
+      state += geoCodeInfo.admin1Code.name;
+    }
+
+    return { country, state, city }
   }
 
   @Process(exifExtractionProcessorName)
@@ -141,35 +219,11 @@ export class MetadataExtractionProcessor {
        * Get the city, state or region name of the asset
        * based on lat/lon GPS coordinates.
        */
-      if (this.geocodingClient && exifData['longitude'] && exifData['latitude']) {
-        const geoCodeInfo: MapiResponse = await this.geocodingClient
-          .reverseGeocode({
-            query: [exifData['longitude'], exifData['latitude']],
-            types: ['country', 'region', 'place'],
-          })
-          .send();
-
-        const res: [] = geoCodeInfo.body['features'];
-
-        let city = '';
-        let state = '';
-        let country = '';
-
-        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
-          city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
-        }
-
-        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
-          state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
-        }
-
-        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
-          country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
-        }
-
-        newExif.city = city || null;
-        newExif.state = state || null;
-        newExif.country = country || null;
+      if (this.isGeocodeInitialized && newExif.latitude && newExif.longitude) {
+        const { country, state, city } = await this.reverseGeocodeExif(newExif.latitude, newExif.longitude);
+        newExif.country = country;
+        newExif.state = state;
+        newExif.city = city;
       }
 
       /**
@@ -204,35 +258,10 @@ export class MetadataExtractionProcessor {
 
   @Process({ name: reverseGeocodingProcessorName })
   async reverseGeocoding(job: Job<IReverseGeocodingProcessor>) {
-    const { exif } = job.data;
-
-    if (this.geocodingClient) {
-      const geoCodeInfo: MapiResponse = await this.geocodingClient
-        .reverseGeocode({
-          query: [Number(exif.longitude), Number(exif.latitude)],
-          types: ['country', 'region', 'place'],
-        })
-        .send();
-
-      const res: [] = geoCodeInfo.body['features'];
-
-      let city = '';
-      let state = '';
-      let country = '';
-
-      if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
-        city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
-      }
-
-      if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
-        state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
-      }
-
-      if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
-        country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
-      }
-
-      await this.exifRepository.update({ id: exif.id }, { city, state, country });
+    if (this.isGeocodeInitialized) {
+      const { latitude, longitude } = job.data;
+      const { country, state, city } = await this.reverseGeocodeExif(latitude, longitude);
+      await this.exifRepository.update({ id: job.data.exifId }, { city, state, country });
     }
   }
 
@@ -344,35 +373,11 @@ export class MetadataExtractionProcessor {
       }
 
       // Reverse GeoCoding
-      if (this.geocodingClient && newExif.longitude && newExif.latitude) {
-        const geoCodeInfo: MapiResponse = await this.geocodingClient
-          .reverseGeocode({
-            query: [newExif.longitude, newExif.latitude],
-            types: ['country', 'region', 'place'],
-          })
-          .send();
-
-        const res: [] = geoCodeInfo.body['features'];
-
-        let city = '';
-        let state = '';
-        let country = '';
-
-        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
-          city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
-        }
-
-        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
-          state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
-        }
-
-        if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
-          country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
-        }
-
-        newExif.city = city || null;
-        newExif.state = state || null;
-        newExif.country = country || null;
+      if (this.isGeocodeInitialized && newExif.longitude && newExif.latitude) {
+        const { country, state, city } = await this.reverseGeocodeExif(newExif.latitude, newExif.longitude);
+        newExif.country = country;
+        newExif.state = state;
+        newExif.city = city;
       }
 
       for (const stream of data.streams) {

@@ -10,12 +10,8 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_PASSWORD: Joi.string().required(),
     DB_DATABASE_NAME: Joi.string().required(),
     JWT_SECRET: Joi.string().required(),
-    ENABLE_MAPBOX: Joi.boolean().required().valid(true, false),
-    MAPBOX_KEY: Joi.any().when('ENABLE_MAPBOX', {
-      is: false,
-      then: Joi.string().optional().allow(null, ''),
-      otherwise: Joi.string().required(),
-    }),
+    DISABLE_REVERSE_GEOCODING: Joi.boolean().optional().valid(true, false).default(false),
+    REVERSE_GEOCODING_PRECISION: Joi.number().optional().valid(0,1,2,3).default(3),
     LOG_LEVEL: Joi.string().optional().valid('simple', 'verbose').default('simple'),
   }),
 };
