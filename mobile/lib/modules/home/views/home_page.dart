@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/daily_title_text.dart';
@@ -25,6 +26,8 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appSettingService = ref.watch(appSettingsServiceProvider);
+
+    var renderList = ref.watch(renderListProvider);
 
     ScrollController scrollController = useScrollController();
     var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
@@ -124,7 +127,7 @@ class HomePage extends HookConsumerWidget {
       _buildAssetGrid() {
         if (appSettingService.getSetting(AppSettingsEnum.useExperimentalAssetGrid)) {
           return ImmichAssetGrid(
-            assetGroups: assetGroupByDateTime,
+            renderList: renderList,
             assetsPerRow:
             appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
             showStorageIndicator: appSettingService
