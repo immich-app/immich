@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -30,9 +31,14 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final Map<String, List<AssetResponseDto>> assetGroups;
   final int assetsPerRow;
   final double margin;
+  final bool showStorageIndicator;
 
   const ImmichAssetGrid(
-      {super.key, required this.assetGroups, required this.assetsPerRow, this.margin = 5.0});
+      {super.key,
+      required this.assetGroups,
+      required this.assetsPerRow,
+      required this.showStorageIndicator,
+      this.margin = 5.0});
 
   List<_AssetGridElement> get _renderList {
     List<_AssetGridElement> elements = [];
@@ -65,7 +71,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     return assetGroups.entries.map((e) => e.value).flattened.toList();
   }
 
-  Widget _buildRow(BuildContext context, _AssetGridRow row) {
+  Widget _buildAssetRow(BuildContext context, _AssetGridRow row) {
     double size = MediaQuery.of(context).size.width / assetsPerRow - margin * 2;
 
     return Row(
@@ -75,9 +81,35 @@ class ImmichAssetGrid extends HookConsumerWidget {
           width: size,
           height: size,
           margin: EdgeInsets.all(margin),
-          child: ThumbnailImage(asset: asset, assetList: _assets),
+          child: ThumbnailImage(
+            asset: asset,
+            assetList: _assets,
+            showStorageIndicator: showStorageIndicator,
+          ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildTitle(BuildContext context, String title) {
+    var currentYear = DateTime.now().year;
+    var groupYear = DateTime.parse(title).year;
+
+    var formatDateTemplate = currentYear == groupYear
+        ? "daily_title_text_date".tr()
+        : "daily_title_text_date_year".tr();
+    var dateText = DateFormat(formatDateTemplate).format(DateTime.parse(title));
+
+    return Container(
+      key: Key(title),
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      child: Text(
+        dateText,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
@@ -85,9 +117,9 @@ class ImmichAssetGrid extends HookConsumerWidget {
     final item = _renderList[position];
 
     if (item.type == _AssetGridElementType.title) {
-      return Text(item.title!);
+      return _buildTitle(c, item.title!);
     } else if (item.type == _AssetGridElementType.assetRow) {
-      return _buildRow(c, item.assetRow!);
+      return _buildAssetRow(c, item.assetRow!);
     }
 
     return const Text("Invalid widget type!");
