@@ -31,7 +31,7 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 
 		fileSelector.type = 'file';
 		fileSelector.multiple = true;
-		fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng,.3gp';
+		fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng,.3gp,.nef';
 
 		fileSelector.onchange = async (e: Event) => {
 			const target = e.target as HTMLInputElement;
