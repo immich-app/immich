@@ -10,7 +10,9 @@ import sanitize from 'sanitize-filename';
 
 export const assetUploadOption: MulterOptions = {
   fileFilter: (req: Request, file: any, cb: any) => {
-    if (file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp)$/)) {
+    if (
+      file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef)$/)
+    ) {
       cb(null, true);
     } else {
       cb(new HttpException(`Unsupported file type ${extname(file.originalname)}`, HttpStatus.BAD_REQUEST), false);
