@@ -62,6 +62,52 @@ class HomePage extends HookConsumerWidget {
     }
 
     Widget _buildBody() {
+      if (assetGroupByDateTime.isNotEmpty) {
+        int? lastMonth;
+
+        assetGroupByDateTime.forEach((dateGroup, immichAssetList) {
+          try {
+            DateTime parseDateGroup = DateTime.parse(dateGroup);
+            int currentMonth = parseDateGroup.month;
+
+            if (lastMonth != null) {
+              if (currentMonth - lastMonth! != 0) {
+                imageGridGroup.add(
+                  MonthlyTitleText(
+                    isoDate: dateGroup,
+                  ),
+                );
+              }
+            }
+
+            imageGridGroup.add(
+              DailyTitleText(
+                key: Key('${dateGroup.toString()}title'),
+                isoDate: dateGroup,
+                assetGroup: immichAssetList,
+              ),
+            );
+
+            imageGridGroup.add(
+              ImageGrid(
+                assetGroup: immichAssetList,
+                sortedAssetGroup: sortedAssetList,
+                tilesPerRow:
+                    appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
+                showStorageIndicator: appSettingService
+                    .getSetting(AppSettingsEnum.storageIndicator),
+              ),
+            );
+
+            lastMonth = currentMonth;
+          } catch (e) {
+            debugPrint(
+              "[ERROR] Cannot parse $dateGroup - Wrong create date format : ${immichAssetList.map((asset) => asset.createdAt).toList()}",
+            );
+          }
+        });
+      }
+
       _buildSliverAppBar() {
         return isMultiSelectEnable
             ? const SliverToBoxAdapter(
@@ -73,6 +119,30 @@ class HomePage extends HookConsumerWidget {
             : ImmichSliverAppBar(
                 onPopBack: reloadAllAsset,
               );
+      }
+
+      _buildAssetGrid() {
+        if (appSettingService.getSetting(AppSettingsEnum.useExperimentalAssetGrid)) {
+          return ImmichAssetGrid(
+            assetGroups: assetGroupByDateTime,
+            assetsPerRow:
+            appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
+            showStorageIndicator: appSettingService
+                .getSetting(AppSettingsEnum.storageIndicator),
+          );
+        } else {
+          return DraggableScrollbar.semicircle(
+            backgroundColor: Theme.of(context).hintColor,
+            controller: scrollController,
+            heightScrollThumb: 48.0,
+            child: CustomScrollView(
+              controller: scrollController,
+              slivers: [
+                ...imageGridGroup,
+              ],
+            ),
+          );
+        }
       }
 
       return SafeArea(
@@ -87,13 +157,7 @@ class HomePage extends HookConsumerWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 60.0, bottom: 0.0),
-              child: ImmichAssetGrid(
-                assetGroups: assetGroupByDateTime,
-                assetsPerRow:
-                    appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
-                showStorageIndicator: appSettingService
-                    .getSetting(AppSettingsEnum.storageIndicator),
-              ),
+              child: _buildAssetGrid(),
             ),
             if (isMultiSelectEnable) ...[
               _buildSelectedItemCountIndicator(),
