@@ -82,9 +82,9 @@ export class ScheduleTasksService {
 
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async reverseGeocoding() {
-    const isMapboxEnable = this.configService.get('ENABLE_MAPBOX');
+    const isGeocodingEnabled = this.configService.get('DISABLE_REVERSE_GEOCODING') !== 'true';
 
-    if (isMapboxEnable) {
+    if (isGeocodingEnabled) {
       const exifInfo = await this.exifRepository.find({
         where: {
           city: IsNull(),
@@ -96,7 +96,7 @@ export class ScheduleTasksService {
       for (const exif of exifInfo) {
         await this.metadataExtractionQueue.add(
           reverseGeocodingProcessorName,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           { exifId: exif.id, latitude: exif.latitude!, longitude: exif.longitude! },
           { jobId: randomUUID() },
         );
