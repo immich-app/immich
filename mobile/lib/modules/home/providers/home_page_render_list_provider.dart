@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -23,8 +22,11 @@ class RenderAssetGridElement {
   final RenderAssetGridElementType type;
   final RenderAssetGridRow? assetRow;
   final String? title;
+  final int? month;
+  final int? year;
 
-  RenderAssetGridElement(this.type, {this.assetRow, this.title});
+  RenderAssetGridElement(this.type,
+      {this.assetRow, this.title, this.month, this.year});
 }
 
 final renderListProvider = StateProvider((ref) {
@@ -41,13 +43,15 @@ final renderListProvider = StateProvider((ref) {
 
     if (lastDate == null || lastDate!.month != date.month) {
       elements.add(
-        RenderAssetGridElement(RenderAssetGridElementType.monthTitle, title: groupName),
+        RenderAssetGridElement(RenderAssetGridElementType.monthTitle,
+            title: groupName, month: date.month, year: date.year),
       );
     }
 
     // Add group title
     elements.add(
-      RenderAssetGridElement(RenderAssetGridElementType.dayTitle, title: groupName),
+      RenderAssetGridElement(RenderAssetGridElementType.dayTitle,
+          title: groupName, month: date.month, year: date.year),
     );
 
     // Add rows
@@ -57,6 +61,8 @@ final renderListProvider = StateProvider((ref) {
 
       final rowElement = RenderAssetGridElement(
         RenderAssetGridElementType.assetRow,
+        month: date.month,
+        year: date.year,
         assetRow: RenderAssetGridRow(
           assets.sublist(cursor, cursor + rowElements),
         ),

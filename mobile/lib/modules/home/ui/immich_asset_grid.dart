@@ -7,10 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
+import 'package:immich_mobile/modules/home/ui/draggable_scrollbar_custom.dart';
 import 'package:immich_mobile/modules/home/ui/thumbnail_image.dart';
 import 'package:openapi/api.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ImmichAssetGrid extends HookConsumerWidget {
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _itemPositionsListener =
+      ItemPositionsListener.create();
+
   final List<RenderAssetGridElement> renderList;
   final int assetsPerRow;
   final double margin;
@@ -37,9 +43,13 @@ class ImmichAssetGrid extends HookConsumerWidget {
         .toList();
   }
 
-  Widget _buildAssetRow(BuildContext context, RenderAssetGridRow row) {
-    double size = MediaQuery.of(context).size.width / assetsPerRow -
+  double _getItemSize(BuildContext context) {
+    return MediaQuery.of(context).size.width / assetsPerRow -
         margin * (assetsPerRow - 1) / assetsPerRow;
+  }
+
+  Widget _buildAssetRow(BuildContext context, RenderAssetGridRow row) {
+    double size = _getItemSize(context);
 
     return Row(
       key: Key("asset-row-${row.assets.first.id}"),
@@ -119,11 +129,44 @@ class ImmichAssetGrid extends HookConsumerWidget {
     return const Text("Invalid widget type!");
   }
 
+  void scrollToDate(int year, int month) {
+    int index = 0;
+    for (int i = 0; i < renderList.length; i++) {
+      final element = renderList[i];
+      if (element.year == year && element.month == month) {
+        index = i;
+        break;
+      }
+    }
+
+    _itemScrollController.scrollTo(
+      index: index,
+      duration: const Duration(seconds: 1),
+    );
+  }
+
+  Text _labelBuilder(int pos) {
+    return Text(
+      "${renderList[pos].month} / ${renderList[pos].year}",
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ListView.builder(
-      itemBuilder: _itemBuilder,
-      itemCount: renderList.length,
-    ).build(context);
+    return DraggableScrollbar.semicircle(
+        itemPositionsListener: _itemPositionsListener,
+        controller: _itemScrollController,
+        backgroundColor: Theme.of(context).hintColor,
+        labelTextBuilder: _labelBuilder,
+        child: ScrollablePositionedList.builder(
+          itemBuilder: _itemBuilder,
+          itemPositionsListener: _itemPositionsListener,
+          itemScrollController: _itemScrollController,
+          itemCount: renderList.length,
+        ));
   }
 }

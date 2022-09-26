@@ -125,14 +125,15 @@ class HomePage extends HookConsumerWidget {
       }
 
       _buildAssetGrid() {
-        if (appSettingService.getSetting(AppSettingsEnum.useExperimentalAssetGrid)) {
+        if (appSettingService
+            .getSetting(AppSettingsEnum.useExperimentalAssetGrid)) {
           return ImmichAssetGrid(
-            renderList: renderList,
-            assetsPerRow:
-            appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
-            showStorageIndicator: appSettingService
-                .getSetting(AppSettingsEnum.storageIndicator),
-          );
+              renderList: renderList,
+              assetsPerRow:
+              appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
+              showStorageIndicator: appSettingService
+                  .getSetting(AppSettingsEnum.storageIndicator),
+            );
         } else {
           return DraggableScrollbar.semicircle(
             backgroundColor: Theme.of(context).hintColor,
