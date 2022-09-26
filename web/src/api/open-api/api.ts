@@ -683,10 +683,16 @@ export type DeviceTypeEnum = typeof DeviceTypeEnum[keyof typeof DeviceTypeEnum];
 export interface ExifResponseDto {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof ExifResponseDto
      */
-    'id'?: string | null;
+    'id'?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifResponseDto
+     */
+    'fileSizeInByte'?: number | null;
     /**
      * 
      * @type {string}
@@ -717,12 +723,6 @@ export interface ExifResponseDto {
      * @memberof ExifResponseDto
      */
     'exifImageHeight'?: number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifResponseDto
-     */
-    'fileSizeInByte'?: number | null;
     /**
      * 
      * @type {string}

@@ -13,6 +13,7 @@
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import type { PageData } from './$types';
 	import { api, UserResponseDto } from '@api';
+	import SettingPanel from '$lib/components/admin-page/settings/setting-panel.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
@@ -141,7 +142,7 @@
 					/>
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.SETTINGS}
-					<p>setting</p>
+					<SettingPanel />
 				{/if}
 			</section>
 		</section>
