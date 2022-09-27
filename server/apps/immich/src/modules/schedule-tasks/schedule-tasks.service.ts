@@ -105,4 +105,29 @@ export class ScheduleTasksService {
       }
     }
   }
+
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async extractExif() {
+    const exifAssets = await this.assetRepository.find({
+      where: {
+        exifInfo: IsNull(),
+      },
+    });
+
+    for (const asset of exifAssets) {
+      if (asset.type === AssetType.VIDEO) {
+        await this.metadataExtractionQueue.add(
+          videoMetadataExtractionProcessorName,
+          { asset, fileName: asset.id },
+          { jobId: randomUUID() },
+        );
+      } else {
+        await this.metadataExtractionQueue.add(
+          exifExtractionProcessorName,
+          { asset, fileName: asset.id },
+          { jobId: randomUUID() },
+        );
+      }
+    }
+  }
 }
