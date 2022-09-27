@@ -54,6 +54,8 @@ class DraggableScrollbar extends StatefulWidget {
   /// Determines scrollThumb displaying. If you draw own ScrollThumb and it is true you just don't need to use animation parameters in [scrollThumbBuilder]
   final bool alwaysVisibleScrollThumb;
 
+  final Function(bool scrolling) scrollStateListener;
+
   DraggableScrollbar.semicircle({
     Key? key,
     Key? scrollThumbKey,
@@ -61,6 +63,7 @@ class DraggableScrollbar extends StatefulWidget {
     required this.child,
     required this.controller,
     required this.itemPositionsListener,
+    required this.scrollStateListener,
     this.heightScrollThumb = 48.0,
     this.backgroundColor = Colors.white,
     this.padding,
@@ -198,7 +201,6 @@ class ScrollLabel extends StatelessWidget {
 class DraggableScrollbarState extends State<DraggableScrollbar>
     with TickerProviderStateMixin {
   late double _barOffset;
-  late int _viewOffset;
   late bool _isDragInProcess;
 
   late AnimationController _thumbAnimationController;
@@ -211,7 +213,6 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
   void initState() {
     super.initState();
     _barOffset = 0.0;
-    _viewOffset = 0;
     _isDragInProcess = false;
 
     _thumbAnimationController = AnimationController(
@@ -346,7 +347,24 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
       _labelAnimationController.forward();
       _fadeoutTimer?.cancel();
     });
+
+    widget.scrollStateListener(true);
   }
+
+  int get itemPos {
+    int numberOfItems = widget.child.itemCount;
+    return ((_barOffset / barMaxScrollExtent) * numberOfItems).toInt();
+  }
+
+
+  void _jumpToBarPos() {
+    widget.controller.jumpTo(
+      index: itemPos,
+    );
+  }
+
+  Timer? dragHaltTimer;
+  int lastTimerPos = 0;
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     setState(() {
@@ -362,6 +380,21 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
         if (_barOffset > barMaxScrollExtent) {
           _barOffset = barMaxScrollExtent;
         }
+
+        if (itemPos != lastTimerPos) {
+          lastTimerPos = itemPos;
+          dragHaltTimer?.cancel();
+          widget.scrollStateListener(true);
+
+          dragHaltTimer = Timer(
+            const Duration(milliseconds: 200),
+                () {
+              widget.scrollStateListener(false);
+            },
+          );
+        }
+
+        _jumpToBarPos();
       }
     });
   }
@@ -373,18 +406,13 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
       _fadeoutTimer = null;
     });
 
-    int numberOfItems = widget.child.itemCount;
+    _jumpToBarPos();
 
     setState(() {
       _isDragInProcess = false;
-
-      int pos = ((_barOffset / barMaxScrollExtent) * numberOfItems).toInt();
-
-      widget.controller.jumpTo(
-        index: pos,
-        //1duration: const Duration(seconds: 1),
-      );
     });
+
+    widget.scrollStateListener(false);
   }
 }
 

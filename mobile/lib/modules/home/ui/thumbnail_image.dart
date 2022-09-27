@@ -15,12 +15,14 @@ class ThumbnailImage extends HookConsumerWidget {
   final AssetResponseDto asset;
   final List<AssetResponseDto> assetList;
   final bool showStorageIndicator;
+  final bool useGrayBoxPlaceholder;
 
   const ThumbnailImage({
     Key? key,
     required this.asset,
     required this.assetList,
     this.showStorageIndicator = true,
+    this.useGrayBoxPlaceholder = false,
   }) : super(key: key);
 
   @override
@@ -102,13 +104,19 @@ class ThumbnailImage extends HookConsumerWidget {
                   "Authorization": "Bearer ${box.get(accessTokenKey)}"
                 },
                 fadeInDuration: const Duration(milliseconds: 250),
-                progressIndicatorBuilder: (context, url, downloadProgress) =>
-                    Transform.scale(
-                  scale: 0.2,
-                  child: CircularProgressIndicator(
-                    value: downloadProgress.progress,
-                  ),
-                ),
+                progressIndicatorBuilder: (context, url, downloadProgress) {
+                  if (useGrayBoxPlaceholder) {
+                    return const DecoratedBox(
+                      decoration: BoxDecoration(color: Colors.grey),
+                    );
+                  }
+                  return Transform.scale(
+                    scale: 0.2,
+                    child: CircularProgressIndicator(
+                      value: downloadProgress.progress,
+                    ),
+                  );
+                },
                 errorWidget: (context, url, error) {
                   debugPrint("Error getting thumbnail $url = $error");
                   CachedNetworkImage.evictFromCache(thumbnailRequestUrl);

@@ -5,12 +5,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar_custom.dart';
-import 'package:immich_mobile/modules/home/ui/thumbnail_image.dart';
 import 'package:openapi/api.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
+import 'thumbnail_image.dart';
 
 class ImmichAssetGrid extends HookConsumerWidget {
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -48,7 +50,23 @@ class ImmichAssetGrid extends HookConsumerWidget {
         margin * (assetsPerRow - 1) / assetsPerRow;
   }
 
-  Widget _buildAssetRow(BuildContext context, RenderAssetGridRow row) {
+  Widget _buildThumbnailOrPlaceholder(
+      AssetResponseDto asset, bool placeholder) {
+    if (placeholder) {
+      return const DecoratedBox(
+        decoration: BoxDecoration(color: Colors.grey),
+      );
+    }
+    return ThumbnailImage(
+      asset: asset,
+      assetList: _assets,
+      showStorageIndicator: showStorageIndicator,
+      useGrayBoxPlaceholder: true,
+    );
+  }
+
+  Widget _buildAssetRow(
+      BuildContext context, RenderAssetGridRow row, bool scrolling) {
     double size = _getItemSize(context);
 
     return Row(
@@ -61,11 +79,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
           width: size,
           height: size,
           margin: EdgeInsets.only(top: margin, right: last ? 0.0 : margin),
-          child: ThumbnailImage(
-            asset: asset,
-            assetList: _assets,
-            showStorageIndicator: showStorageIndicator,
-          ),
+          child: _buildThumbnailOrPlaceholder(asset, scrolling),
         );
       }).toList(),
     );
@@ -115,7 +129,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     );
   }
 
-  Widget _itemBuilder(BuildContext c, int position) {
+  Widget _itemBuilder(BuildContext c, int position, bool scrolling) {
     final item = renderList[position];
 
     if (item.type == RenderAssetGridElementType.dayTitle) {
@@ -123,26 +137,10 @@ class ImmichAssetGrid extends HookConsumerWidget {
     } else if (item.type == RenderAssetGridElementType.monthTitle) {
       return _buildMonthTitle(c, item.title!);
     } else if (item.type == RenderAssetGridElementType.assetRow) {
-      return _buildAssetRow(c, item.assetRow!);
+      return _buildAssetRow(c, item.assetRow!, scrolling);
     }
 
     return const Text("Invalid widget type!");
-  }
-
-  void scrollToDate(int year, int month) {
-    int index = 0;
-    for (int i = 0; i < renderList.length; i++) {
-      final element = renderList[i];
-      if (element.year == year && element.month == month) {
-        index = i;
-        break;
-      }
-    }
-
-    _itemScrollController.scrollTo(
-      index: index,
-      duration: const Duration(seconds: 1),
-    );
   }
 
   Text _labelBuilder(int pos) {
@@ -157,13 +155,26 @@ class ImmichAssetGrid extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final scrolling = useState(false);
+
+    void dragScrolling(bool active) {
+      scrolling.value = active;
+    }
+
+    Widget itemBuilder(BuildContext c, int position) {
+      return _itemBuilder(c, position, scrolling.value);
+    }
+
     return DraggableScrollbar.semicircle(
+        scrollStateListener: dragScrolling,
         itemPositionsListener: _itemPositionsListener,
         controller: _itemScrollController,
         backgroundColor: Theme.of(context).hintColor,
         labelTextBuilder: _labelBuilder,
+        scrollbarAnimationDuration: const Duration(seconds: 1),
+        scrollbarTimeToFade: const Duration(seconds: 4),
         child: ScrollablePositionedList.builder(
-          itemBuilder: _itemBuilder,
+          itemBuilder: itemBuilder,
           itemPositionsListener: _itemPositionsListener,
           itemScrollController: _itemScrollController,
           itemCount: renderList.length,
