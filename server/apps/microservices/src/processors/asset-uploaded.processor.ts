@@ -42,13 +42,18 @@ export class AssetUploadedProcessor {
    */
   @Process(assetUploadedProcessorName)
   async processUploadedVideo(job: Job<IAssetUploadedJob>) {
-    const { asset, fileName, fileSize } = job.data;
+    const { asset, fileName } = job.data;
 
     await this.thumbnailGeneratorQueue.add(generateJPEGThumbnailProcessorName, { asset }, { jobId: randomUUID() });
 
     // Video Conversion
     if (asset.type == AssetType.VIDEO) {
       await this.videoConversionQueue.add(mp4ConversionProcessorName, { asset }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add(
+        videoMetadataExtractionProcessorName,
+        { asset, fileName },
+        { jobId: randomUUID() },
+      );
     } else {
       // Extract Metadata/Exif for Images - Currently the EXIF library on the web cannot extract EXIF for video yet
       await this.metadataExtractionQueue.add(
@@ -56,18 +61,8 @@ export class AssetUploadedProcessor {
         {
           asset,
           fileName,
-          fileSize,
         },
         { jobId: randomUUID() },
-      );
-    }
-
-    // Extract video duration if uploaded from the web & CLI
-    if (asset.type == AssetType.VIDEO) {
-      await this.metadataExtractionQueue.add(
-        videoMetadataExtractionProcessorName,
-        { asset, fileName, fileSize },
-        { jobId: randomUUID() }
       );
     }
   }

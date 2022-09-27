@@ -8,14 +8,16 @@ import { Queue } from 'bull';
 import { randomUUID } from 'crypto';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import {
+  exifExtractionProcessorName,
+  generateWEBPThumbnailProcessorName,
   IMetadataExtractionJob,
   IVideoTranscodeJob,
   metadataExtractionQueueName,
-  thumbnailGeneratorQueueName,
-  videoConversionQueueName,
-  generateWEBPThumbnailProcessorName,
   mp4ConversionProcessorName,
   reverseGeocodingProcessorName,
+  thumbnailGeneratorQueueName,
+  videoConversionQueueName,
+  videoMetadataExtractionProcessorName,
 } from '@app/job';
 import { ConfigService } from '@nestjs/config';
 
