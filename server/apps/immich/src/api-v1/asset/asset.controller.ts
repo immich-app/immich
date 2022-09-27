@@ -97,7 +97,7 @@ export class AssetController {
 
       await this.assetUploadedQueue.add(
         assetUploadedProcessorName,
-        { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
+        { asset: savedAsset, fileName: file.originalname },
         { jobId: savedAsset.id },
       );
 
