@@ -28,6 +28,7 @@ import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import { getName } from 'i18n-iso-countries';
 import { find } from 'geo-tz';
 import * as luxon from 'luxon';
+import fs from 'node:fs';
 
 function geocoderInit(init: InitOptions) {
   return new Promise<void>(function (resolve) {
@@ -139,7 +140,7 @@ export class MetadataExtractionProcessor {
   @Process(exifExtractionProcessorName)
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
-      const { asset, fileName, fileSize }: { asset: AssetEntity; fileName: string; fileSize: number } = job.data;
+      const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
       const exifData = await exifr.parse(asset.originalPath, {
         tiff: true,
         ifd0: true as any,
@@ -160,6 +161,9 @@ export class MetadataExtractionProcessor {
 
       const createdAt = new Date(exifData.DateTimeOriginal || exifData.CreateDate || new Date(asset.createdAt));
 
+      const fileStats = fs.statSync(asset.originalPath);
+      const fileSizeInBytes = fileStats.size;
+
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.make = exifData['Make'] || null;
@@ -167,7 +171,7 @@ export class MetadataExtractionProcessor {
       newExif.imageName = path.parse(fileName).name || null;
       newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
       newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
-      newExif.fileSizeInByte = fileSize || null;
+      newExif.fileSizeInByte = fileSizeInBytes || null;
       newExif.orientation = exifData['Orientation'] || null;
       newExif.dateTimeOriginal = createdAt;
       newExif.modifyDate = exifData['ModifyDate'] || null;

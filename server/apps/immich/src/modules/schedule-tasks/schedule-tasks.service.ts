@@ -8,14 +8,16 @@ import { Queue } from 'bull';
 import { randomUUID } from 'crypto';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import {
+  exifExtractionProcessorName,
+  generateWEBPThumbnailProcessorName,
   IMetadataExtractionJob,
   IVideoTranscodeJob,
   metadataExtractionQueueName,
-  thumbnailGeneratorQueueName,
-  videoConversionQueueName,
-  generateWEBPThumbnailProcessorName,
   mp4ConversionProcessorName,
   reverseGeocodingProcessorName,
+  thumbnailGeneratorQueueName,
+  videoConversionQueueName,
+  videoMetadataExtractionProcessorName,
 } from '@app/job';
 import { ConfigService } from '@nestjs/config';
 
@@ -82,9 +84,9 @@ export class ScheduleTasksService {
 
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async reverseGeocoding() {
-    const isMapboxEnable = this.configService.get('ENABLE_MAPBOX');
+    const isGeocodingEnabled = this.configService.get('DISABLE_REVERSE_GEOCODING') !== 'true';
 
-    if (isMapboxEnable) {
+    if (isGeocodingEnabled) {
       const exifInfo = await this.exifRepository.find({
         where: {
           city: IsNull(),
@@ -96,8 +98,33 @@ export class ScheduleTasksService {
       for (const exif of exifInfo) {
         await this.metadataExtractionQueue.add(
           reverseGeocodingProcessorName,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           { exifId: exif.id, latitude: exif.latitude!, longitude: exif.longitude! },
+          { jobId: randomUUID() },
+        );
+      }
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async extractExif() {
+    const exifAssets = await this.assetRepository.find({
+      where: {
+        exifInfo: IsNull(),
+      },
+    });
+
+    for (const asset of exifAssets) {
+      if (asset.type === AssetType.VIDEO) {
+        await this.metadataExtractionQueue.add(
+          videoMetadataExtractionProcessorName,
+          { asset, fileName: asset.id },
+          { jobId: randomUUID() },
+        );
+      } else {
+        await this.metadataExtractionQueue.add(
+          exifExtractionProcessorName,
+          { asset, fileName: asset.id },
           { jobId: randomUUID() },
         );
       }

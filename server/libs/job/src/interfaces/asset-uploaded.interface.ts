@@ -10,9 +10,4 @@ export interface IAssetUploadedJob {
    * Original file name
    */
   fileName: string;
-
-  /**
-   * File size in byte
-   */
-  fileSize: number;
 }
