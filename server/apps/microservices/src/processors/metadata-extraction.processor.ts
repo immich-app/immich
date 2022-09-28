@@ -109,6 +109,7 @@ export class MetadataExtractionProcessor {
           alternateNames: false,
         },
         countries: [],
+        dumpDirectory: configService.get('REVERSE_GEOCODING_DUMP_DIRECTORY') || (process.cwd() + '/.reverse-geocoding-dump/'),
       }).then(() => {
         this.isGeocodeInitialized = true;
         Logger.log('Reverse Geocoding Initialised');
