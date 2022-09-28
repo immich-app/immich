@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class ExperimentalSettings extends HookConsumerWidget {
   const ExperimentalSettings({
@@ -29,9 +30,15 @@ class ExperimentalSettings extends HookConsumerWidget {
     void changeUseExperimentalAssetGrid(bool status) {
       useExperimentalAssetGrid.value = status;
       appSettingService.setSetting(
-          AppSettingsEnum.useExperimentalAssetGrid, status);
+        AppSettingsEnum.useExperimentalAssetGrid,
+        status,
+      );
 
-      Fluttertoast.showToast(msg: "settings_require_restart".tr());
+      ImmichToast.show(
+        context: context,
+        msg: "settings_require_restart".tr(),
+        gravity: ToastGravity.BOTTOM,
+      );
     }
 
     return ExpansionTile(
