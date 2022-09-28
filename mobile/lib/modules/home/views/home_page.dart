@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/daily_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/disable_multi_select_button.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/home/ui/image_grid.dart';
+import 'package:immich_mobile/modules/home/ui/asset_list_v2/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
@@ -24,6 +26,8 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appSettingService = ref.watch(appSettingsServiceProvider);
+
+    var renderList = ref.watch(renderListProvider);
 
     ScrollController scrollController = useScrollController();
     var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
@@ -120,6 +124,31 @@ class HomePage extends HookConsumerWidget {
               );
       }
 
+      _buildAssetGrid() {
+        if (appSettingService
+            .getSetting(AppSettingsEnum.useExperimentalAssetGrid)) {
+          return ImmichAssetGrid(
+              renderList: renderList,
+              assetsPerRow:
+              appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
+              showStorageIndicator: appSettingService
+                  .getSetting(AppSettingsEnum.storageIndicator),
+            );
+        } else {
+          return DraggableScrollbar.semicircle(
+            backgroundColor: Theme.of(context).hintColor,
+            controller: scrollController,
+            heightScrollThumb: 48.0,
+            child: CustomScrollView(
+              controller: scrollController,
+              slivers: [
+                ...imageGridGroup,
+              ],
+            ),
+          );
+        }
+      }
+
       return SafeArea(
         bottom: !isMultiSelectEnable,
         top: !isMultiSelectEnable,
@@ -132,17 +161,7 @@ class HomePage extends HookConsumerWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 60.0, bottom: 0.0),
-              child: DraggableScrollbar.semicircle(
-                backgroundColor: Theme.of(context).hintColor,
-                controller: scrollController,
-                heightScrollThumb: 48.0,
-                child: CustomScrollView(
-                  controller: scrollController,
-                  slivers: [
-                    ...imageGridGroup,
-                  ],
-                ),
-              ),
+              child: _buildAssetGrid(),
             ),
             if (isMultiSelectEnable) ...[
               _buildSelectedItemCountIndicator(),
