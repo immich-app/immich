@@ -1,0 +1,1 @@
+* Added improvement for timeline view
