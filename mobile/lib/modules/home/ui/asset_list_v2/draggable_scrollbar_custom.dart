@@ -202,6 +202,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     with TickerProviderStateMixin {
   late double _barOffset;
   late bool _isDragInProcess;
+  late int _currentItem;
 
   late AnimationController _thumbAnimationController;
   late Animation<double> _thumbAnimation;
@@ -214,6 +215,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     super.initState();
     _barOffset = 0.0;
     _isDragInProcess = false;
+    _currentItem = 0;
 
     _thumbAnimationController = AnimationController(
       vsync: this,
@@ -245,7 +247,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
   }
 
   double get barMaxScrollExtent =>
-      MediaQuery.of(context).size.height - widget.heightScrollThumb;
+      (context.size?.height ?? 0) - widget.heightScrollThumb;
 
   double get barMinScrollExtent => 0;
 
@@ -255,9 +257,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     if (widget.labelTextBuilder != null && _isDragInProcess) {
       int numberOfItems = widget.child.itemCount;
 
-      labelText = widget.labelTextBuilder!(
-        ((_barOffset / barMaxScrollExtent) * numberOfItems).toInt(),
-      );
+      labelText = widget.labelTextBuilder!(_currentItem);
     }
 
     return LayoutBuilder(
@@ -331,6 +331,10 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
           _thumbAnimationController.forward();
         }
 
+        if (itemPos < numberOfItems) {
+          _currentItem = itemPos;
+        }
+
         _fadeoutTimer?.cancel();
         _fadeoutTimer = Timer(widget.scrollbarTimeToFade, () {
           _thumbAnimationController.reverse();
@@ -358,6 +362,9 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
 
 
   void _jumpToBarPos() {
+    if (itemPos > widget.child.itemCount - 1) {
+      return;
+    }
     widget.controller.jumpTo(
       index: itemPos,
     );
@@ -394,6 +401,9 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
           );
         }
 
+        if (itemPos < widget.child.itemCount) {
+          _currentItem = itemPos;
+        }
         _jumpToBarPos();
       }
     });
@@ -406,6 +416,9 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
       _fadeoutTimer = null;
     });
 
+    if (itemPos < widget.child.itemCount) {
+      _currentItem = itemPos;
+    }
     _jumpToBarPos();
 
     setState(() {
