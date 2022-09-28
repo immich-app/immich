@@ -24,9 +24,16 @@ class RenderAssetGridElement {
   final String? title;
   final int? month;
   final int? year;
+  final List<AssetResponseDto>? relatedAssetList;
 
-  RenderAssetGridElement(this.type,
-      {this.assetRow, this.title, this.month, this.year});
+  RenderAssetGridElement(
+    this.type, {
+    this.assetRow,
+    this.title,
+    this.month,
+    this.year,
+    this.relatedAssetList,
+  });
 }
 
 final renderListProvider = StateProvider((ref) {
@@ -50,8 +57,13 @@ final renderListProvider = StateProvider((ref) {
 
     // Add group title
     elements.add(
-      RenderAssetGridElement(RenderAssetGridElementType.dayTitle,
-          title: groupName, month: date.month, year: date.year),
+      RenderAssetGridElement(
+        RenderAssetGridElementType.dayTitle,
+        title: groupName,
+        month: date.month,
+        year: date.year,
+        relatedAssetList: assets,
+      ),
     );
 
     // Add rows

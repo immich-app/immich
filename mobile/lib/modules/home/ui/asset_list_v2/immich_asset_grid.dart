@@ -8,11 +8,12 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
-import 'package:immich_mobile/modules/home/ui/draggable_scrollbar_custom.dart';
+import 'package:immich_mobile/modules/home/ui/asset_list_v2/daily_title_text.dart';
+import 'package:immich_mobile/modules/home/ui/asset_list_v2/draggable_scrollbar_custom.dart';
 import 'package:openapi/api.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import 'thumbnail_image.dart';
+import '../thumbnail_image.dart';
 
 class ImmichAssetGrid extends HookConsumerWidget {
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -85,29 +86,11 @@ class ImmichAssetGrid extends HookConsumerWidget {
     );
   }
 
-  Widget _buildTitle(BuildContext context, String title) {
-    var currentYear = DateTime.now().year;
-    var groupYear = DateTime.parse(title).year;
-
-    var formatDateTemplate = currentYear == groupYear
-        ? "daily_title_text_date".tr()
-        : "daily_title_text_date_year".tr();
-    var dateText = DateFormat(formatDateTemplate).format(DateTime.parse(title));
-
-    return Padding(
-      key: Key("date-$title"),
-      padding: const EdgeInsets.only(
-        left: 12.0,
-        top: 12.0,
-        bottom: 12.0,
-      ),
-      child: Text(
-        dateText,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+  Widget _buildTitle(
+      BuildContext context, String title, List<AssetResponseDto> assets) {
+    return DailyTitleText(
+      isoDate: title,
+      assetGroup: assets,
     );
   }
 
@@ -133,7 +116,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     final item = renderList[position];
 
     if (item.type == RenderAssetGridElementType.dayTitle) {
-      return _buildTitle(c, item.title!);
+      return _buildTitle(c, item.title!, item.relatedAssetList!);
     } else if (item.type == RenderAssetGridElementType.monthTitle) {
       return _buildMonthTitle(c, item.title!);
     } else if (item.type == RenderAssetGridElementType.assetRow) {

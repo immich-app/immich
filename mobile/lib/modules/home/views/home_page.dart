@@ -8,7 +8,7 @@ import 'package:immich_mobile/modules/home/ui/daily_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/disable_multi_select_button.dart';
 import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/home/ui/image_grid.dart';
-import 'package:immich_mobile/modules/home/ui/immich_asset_grid.dart';
+import 'package:immich_mobile/modules/home/ui/asset_list_v2/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
