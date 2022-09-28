@@ -56,7 +56,7 @@ final renderListProvider = StateProvider((ref) {
 
     // Add rows
     int cursor = 0;
-    while (cursor < assets.length - 1) {
+    while (cursor < assets.length) {
       int rowElements = min(assets.length - cursor, assetsPerRow);
 
       final rowElement = RenderAssetGridElement(
