@@ -147,7 +147,27 @@ class ThumbnailImage extends HookConsumerWidget {
                   color: Colors.white,
                   size: 18,
                 ),
-              )
+              ),
+            if (asset.type != AssetTypeEnum.IMAGE)
+              Positioned(
+                top: 5,
+                right: 5,
+                child: Row(
+                  children: [
+                    Text(
+                      asset.duration.toString().substring(0, 7),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.play_circle_outline_rounded,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
