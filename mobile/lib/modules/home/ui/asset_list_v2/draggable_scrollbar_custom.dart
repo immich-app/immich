@@ -251,6 +251,8 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
 
   double get barMinScrollExtent => 0;
 
+  int get maxItemCount => widget.child.itemCount;
+
   @override
   Widget build(BuildContext context) {
     Text? labelText;
@@ -312,10 +314,9 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     setState(() {
       int firstItemIndex =
           widget.itemPositionsListener.itemPositions.value.first.index;
-      int numberOfItems = widget.child.itemCount;
 
       if (notification is ScrollUpdateNotification) {
-        _barOffset = (firstItemIndex / numberOfItems) * barMaxScrollExtent;
+        _barOffset = (firstItemIndex / maxItemCount) * barMaxScrollExtent;
 
         if (_barOffset < barMinScrollExtent) {
           _barOffset = barMinScrollExtent;
@@ -331,7 +332,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
           _thumbAnimationController.forward();
         }
 
-        if (itemPos < numberOfItems) {
+        if (itemPos < maxItemCount) {
           _currentItem = itemPos;
         }
 
@@ -360,11 +361,13 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     return ((_barOffset / barMaxScrollExtent) * numberOfItems).toInt();
   }
 
-
   void _jumpToBarPos() {
-    if (itemPos > widget.child.itemCount - 1) {
+    if (itemPos > maxItemCount - 1) {
       return;
     }
+
+    _currentItem = itemPos;
+
     widget.controller.jumpTo(
       index: itemPos,
     );
@@ -401,9 +404,6 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
           );
         }
 
-        if (itemPos < widget.child.itemCount) {
-          _currentItem = itemPos;
-        }
         _jumpToBarPos();
       }
     });
@@ -416,12 +416,8 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
       _fadeoutTimer = null;
     });
 
-    if (itemPos < widget.child.itemCount) {
-      _currentItem = itemPos;
-    }
-    _jumpToBarPos();
-
     setState(() {
+      _jumpToBarPos();
       _isDragInProcess = false;
     });
 
