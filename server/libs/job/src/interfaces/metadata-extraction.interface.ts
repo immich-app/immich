@@ -10,11 +10,6 @@ export interface IExifExtractionProcessor {
    * Original file name
    */
   fileName: string;
-
-  /**
-   * File size in byte
-   */
-  fileSize: number;
 }
 
 export interface IVideoLengthExtractionProcessor {
@@ -27,11 +22,6 @@ export interface IVideoLengthExtractionProcessor {
    * Original file name
    */
   fileName: string;
-
-  /**
-   * File size in byte
-   */
-  fileSize: number;
 }
 
 export interface IReverseGeocodingProcessor {
