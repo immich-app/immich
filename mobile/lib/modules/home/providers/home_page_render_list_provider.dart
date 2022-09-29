@@ -1,38 +1,10 @@
 import 'dart:math';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/ui/asset_list_v2/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:openapi/api.dart';
-
-enum RenderAssetGridElementType {
-  assetRow,
-  dayTitle,
-  monthTitle;
-}
-
-class RenderAssetGridRow {
-  final List<AssetResponseDto> assets;
-
-  RenderAssetGridRow(this.assets);
-}
-
-class RenderAssetGridElement {
-  final RenderAssetGridElementType type;
-  final RenderAssetGridRow? assetRow;
-  final String? title;
-  final DateTime date;
-  final List<AssetResponseDto>? relatedAssetList;
-
-  RenderAssetGridElement(
-    this.type, {
-    this.assetRow,
-    this.title,
-    required this.date,
-    this.relatedAssetList,
-  });
-}
 
 final renderListProvider = StateProvider((ref) {
   var assetGroups = ref.watch(assetGroupByDateTimeProvider);

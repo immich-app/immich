@@ -7,13 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_list_v2/daily_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/asset_list_v2/draggable_scrollbar_custom.dart';
 import 'package:openapi/api.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../thumbnail_image.dart';
+import 'asset_grid_data_structure.dart';
 
 class ImmichAssetGrid extends HookConsumerWidget {
   final ItemScrollController _itemScrollController = ItemScrollController();
