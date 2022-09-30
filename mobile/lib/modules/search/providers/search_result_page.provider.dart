@@ -1,8 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/ui/asset_list_v2/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/search/models/search_result_page_state.model.dart';
 
 import 'package:immich_mobile/modules/search/services/search.service.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:intl/intl.dart';
 import 'package:openapi/api.dart';
 
@@ -65,4 +68,13 @@ final searchResultGroupByDateTimeProvider = StateProvider((ref) {
     (element) => DateFormat('y-MM-dd')
         .format(DateTime.parse(element.createdAt).toLocal()),
   );
+});
+
+final searchRenderListProvider = StateProvider((ref) {
+  var assetGroups = ref.watch(searchResultGroupByDateTimeProvider);
+
+  var settings = ref.watch(appSettingsServiceProvider);
+  final assetsPerRow = settings.getSetting(AppSettingsEnum.tilesPerRow);
+
+  return assetGroupsToRenderList(assetGroups, assetsPerRow);
 });
