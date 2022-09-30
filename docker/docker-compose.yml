@@ -6,6 +6,7 @@ services:
     entrypoint: ["/bin/sh", "./start-server.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - "geocoding-dump:/usr/src/app/.reverse-geocoding-dump"
     env_file:
       - .env
     environment:
