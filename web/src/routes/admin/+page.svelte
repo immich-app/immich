@@ -13,7 +13,9 @@
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import type { PageData } from './$types';
 	import { api, UserResponseDto } from '@api';
-	import SettingPanel from '$lib/components/admin-page/settings/setting-panel.svelte';
+	import SettingPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+	import ScheduleJobPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
@@ -108,17 +110,17 @@
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
 	<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col gap-1">
 		<SideBarButton
-			title="User"
+			title="Users"
 			logo={AccountMultipleOutline}
 			actionType={AdminSideBarSelection.USER_MANAGEMENT}
 			isSelected={selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
 			on:selected={onButtonClicked}
 		/>
 		<SideBarButton
-			title="Settings"
+			title="Jobs"
 			logo={Cog}
-			actionType={AdminSideBarSelection.SETTINGS}
-			isSelected={selectedAction === AdminSideBarSelection.SETTINGS}
+			actionType={AdminSideBarSelection.JOBS}
+			isSelected={selectedAction === AdminSideBarSelection.JOBS}
 			on:selected={onButtonClicked}
 		/>
 
@@ -141,8 +143,8 @@
 						on:edit-user={editUserHandler}
 					/>
 				{/if}
-				{#if selectedAction === AdminSideBarSelection.SETTINGS}
-					<SettingPanel />
+				{#if selectedAction === AdminSideBarSelection.JOBS}
+					<JobsPanel />
 				{/if}
 			</section>
 		</section>

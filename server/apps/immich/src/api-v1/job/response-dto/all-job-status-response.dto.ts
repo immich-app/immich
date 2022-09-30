@@ -1,10 +1,29 @@
-import Bull from 'bull';
+import { ApiProperty } from '@nestjs/swagger';
 
+export class JobCounts {
+  active!: number;
+  completed!: number;
+  failed!: number;
+  delayed!: number;
+  waiting!: number;
+}
 export class AllJobStatusResponseDto {
   isThumbnailGenerationActive!: boolean;
-  thumbnailGenerationQueueCount!: Bull.JobCounts;
+
+  @ApiProperty({
+    type: JobCounts,
+  })
+  thumbnailGenerationQueueCount!: JobCounts;
   isMetadataExtractionActive!: boolean;
-  metadataExtractionQueueCount!: Bull.JobCounts;
+
+  @ApiProperty({
+    type: JobCounts,
+  })
+  metadataExtractionQueueCount!: JobCounts;
   isVideoConversionActive!: boolean;
-  videoConversionQueueCount!: Bull.JobCounts;
+
+  @ApiProperty({
+    type: JobCounts,
+  })
+  videoConversionQueueCount!: JobCounts;
 }

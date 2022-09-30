@@ -19,6 +19,7 @@ import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
 import { QueueNameEnum } from '@app/job';
 import { GetJobDto } from './dto/get-job.dto';
+import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @UseGuards(AdminRolesGuard)
@@ -39,12 +40,12 @@ export class JobController {
   }
 
   @Get('/one')
-  getJobStatus(@Query(new ValidationPipe({ transform: true })) query: GetJobDto) {
+  getJobStatus(@Query(new ValidationPipe({ transform: true })) query: GetJobDto): Promise<JobStatusResponseDto> {
     return this.jobService.getJobStatus(query);
   }
 
   @Put('/stop')
-  stopJob(@Query(new ValidationPipe({ transform: true })) query: GetJobDto) {
+  stopJob(@Query(new ValidationPipe({ transform: true })) query: GetJobDto): Promise<JobStatusResponseDto> {
     return this.jobService.stopJob(query);
   }
 }

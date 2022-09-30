@@ -178,16 +178,28 @@ export interface AlbumResponseDto {
 export interface AllJobStatusResponseDto {
     /**
      * 
+     * @type {JobCounts}
+     * @memberof AllJobStatusResponseDto
+     */
+    'thumbnailGenerationQueueCount': JobCounts;
+    /**
+     * 
+     * @type {JobCounts}
+     * @memberof AllJobStatusResponseDto
+     */
+    'metadataExtractionQueueCount': JobCounts;
+    /**
+     * 
+     * @type {JobCounts}
+     * @memberof AllJobStatusResponseDto
+     */
+    'videoConversionQueueCount': JobCounts;
+    /**
+     * 
      * @type {boolean}
      * @memberof AllJobStatusResponseDto
      */
     'isThumbnailGenerationActive': boolean;
-    /**
-     * 
-     * @type {object}
-     * @memberof AllJobStatusResponseDto
-     */
-    'thumbnailGenerationQueueCount': object;
     /**
      * 
      * @type {boolean}
@@ -196,22 +208,10 @@ export interface AllJobStatusResponseDto {
     'isMetadataExtractionActive': boolean;
     /**
      * 
-     * @type {object}
-     * @memberof AllJobStatusResponseDto
-     */
-    'metadataExtractionQueueCount': object;
-    /**
-     * 
      * @type {boolean}
      * @memberof AllJobStatusResponseDto
      */
     'isVideoConversionActive': boolean;
-    /**
-     * 
-     * @type {object}
-     * @memberof AllJobStatusResponseDto
-     */
-    'videoConversionQueueCount': object;
 }
 /**
  * 
@@ -883,6 +883,43 @@ export interface GetAssetCountByTimeBucketDto {
      * @memberof GetAssetCountByTimeBucketDto
      */
     'timeGroup': TimeGroupEnum;
+}
+/**
+ * 
+ * @export
+ * @interface JobCounts
+ */
+export interface JobCounts {
+    /**
+     * 
+     * @type {number}
+     * @memberof JobCounts
+     */
+    'active': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof JobCounts
+     */
+    'completed': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof JobCounts
+     */
+    'failed': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof JobCounts
+     */
+    'delayed': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof JobCounts
+     */
+    'waiting': number;
 }
 /**
  * 

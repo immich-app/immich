@@ -145,6 +145,7 @@ Class | Method | HTTP request | Description
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
+ - [JobCounts](doc//JobCounts.md)
  - [JobStatusResponseDto](doc//JobStatusResponseDto.md)
  - [JobType](doc//JobType.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)

@@ -250,6 +250,8 @@ class ApiClient {
           return GetAssetByTimeBucketDto.fromJson(value);
         case 'GetAssetCountByTimeBucketDto':
           return GetAssetCountByTimeBucketDto.fromJson(value);
+        case 'JobCounts':
+          return JobCounts.fromJson(value);
         case 'JobStatusResponseDto':
           return JobStatusResponseDto.fromJson(value);
         case 'JobType':

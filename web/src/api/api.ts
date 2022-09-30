@@ -4,6 +4,7 @@ import {
 	AuthenticationApi,
 	Configuration,
 	DeviceInfoApi,
+	JobApi,
 	ServerInfoApi,
 	UserApi
 } from './open-api';
@@ -15,6 +16,8 @@ class ImmichApi {
 	public authenticationApi: AuthenticationApi;
 	public deviceInfoApi: DeviceInfoApi;
 	public serverInfoApi: ServerInfoApi;
+	public jobApi: JobApi;
+
 	private config = new Configuration({ basePath: '/api' });
 
 	constructor() {
@@ -24,6 +27,7 @@ class ImmichApi {
 		this.authenticationApi = new AuthenticationApi(this.config);
 		this.deviceInfoApi = new DeviceInfoApi(this.config);
 		this.serverInfoApi = new ServerInfoApi(this.config);
+		this.jobApi = new JobApi(this.config);
 	}
 
 	public setAccessToken(accessToken: string) {

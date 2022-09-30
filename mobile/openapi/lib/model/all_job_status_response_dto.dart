@@ -13,56 +13,56 @@ part of openapi.api;
 class AllJobStatusResponseDto {
   /// Returns a new [AllJobStatusResponseDto] instance.
   AllJobStatusResponseDto({
-    required this.isThumbnailGenerationActive,
     required this.thumbnailGenerationQueueCount,
-    required this.isMetadataExtractionActive,
     required this.metadataExtractionQueueCount,
-    required this.isVideoConversionActive,
     required this.videoConversionQueueCount,
+    required this.isThumbnailGenerationActive,
+    required this.isMetadataExtractionActive,
+    required this.isVideoConversionActive,
   });
+
+  JobCounts thumbnailGenerationQueueCount;
+
+  JobCounts metadataExtractionQueueCount;
+
+  JobCounts videoConversionQueueCount;
 
   bool isThumbnailGenerationActive;
 
-  Object thumbnailGenerationQueueCount;
-
   bool isMetadataExtractionActive;
-
-  Object metadataExtractionQueueCount;
 
   bool isVideoConversionActive;
 
-  Object videoConversionQueueCount;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
-     other.isThumbnailGenerationActive == isThumbnailGenerationActive &&
      other.thumbnailGenerationQueueCount == thumbnailGenerationQueueCount &&
-     other.isMetadataExtractionActive == isMetadataExtractionActive &&
      other.metadataExtractionQueueCount == metadataExtractionQueueCount &&
-     other.isVideoConversionActive == isVideoConversionActive &&
-     other.videoConversionQueueCount == videoConversionQueueCount;
+     other.videoConversionQueueCount == videoConversionQueueCount &&
+     other.isThumbnailGenerationActive == isThumbnailGenerationActive &&
+     other.isMetadataExtractionActive == isMetadataExtractionActive &&
+     other.isVideoConversionActive == isVideoConversionActive;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (isThumbnailGenerationActive.hashCode) +
     (thumbnailGenerationQueueCount.hashCode) +
-    (isMetadataExtractionActive.hashCode) +
     (metadataExtractionQueueCount.hashCode) +
-    (isVideoConversionActive.hashCode) +
-    (videoConversionQueueCount.hashCode);
+    (videoConversionQueueCount.hashCode) +
+    (isThumbnailGenerationActive.hashCode) +
+    (isMetadataExtractionActive.hashCode) +
+    (isVideoConversionActive.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[isThumbnailGenerationActive=$isThumbnailGenerationActive, thumbnailGenerationQueueCount=$thumbnailGenerationQueueCount, isMetadataExtractionActive=$isMetadataExtractionActive, metadataExtractionQueueCount=$metadataExtractionQueueCount, isVideoConversionActive=$isVideoConversionActive, videoConversionQueueCount=$videoConversionQueueCount]';
+  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueueCount=$thumbnailGenerationQueueCount, metadataExtractionQueueCount=$metadataExtractionQueueCount, videoConversionQueueCount=$videoConversionQueueCount, isThumbnailGenerationActive=$isThumbnailGenerationActive, isMetadataExtractionActive=$isMetadataExtractionActive, isVideoConversionActive=$isVideoConversionActive]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
-      _json[r'isThumbnailGenerationActive'] = isThumbnailGenerationActive;
       _json[r'thumbnailGenerationQueueCount'] = thumbnailGenerationQueueCount;
-      _json[r'isMetadataExtractionActive'] = isMetadataExtractionActive;
       _json[r'metadataExtractionQueueCount'] = metadataExtractionQueueCount;
-      _json[r'isVideoConversionActive'] = isVideoConversionActive;
       _json[r'videoConversionQueueCount'] = videoConversionQueueCount;
+      _json[r'isThumbnailGenerationActive'] = isThumbnailGenerationActive;
+      _json[r'isMetadataExtractionActive'] = isMetadataExtractionActive;
+      _json[r'isVideoConversionActive'] = isVideoConversionActive;
     return _json;
   }
 
@@ -85,12 +85,12 @@ class AllJobStatusResponseDto {
       }());
 
       return AllJobStatusResponseDto(
+        thumbnailGenerationQueueCount: JobCounts.fromJson(json[r'thumbnailGenerationQueueCount'])!,
+        metadataExtractionQueueCount: JobCounts.fromJson(json[r'metadataExtractionQueueCount'])!,
+        videoConversionQueueCount: JobCounts.fromJson(json[r'videoConversionQueueCount'])!,
         isThumbnailGenerationActive: mapValueOfType<bool>(json, r'isThumbnailGenerationActive')!,
-        thumbnailGenerationQueueCount: mapValueOfType<Object>(json, r'thumbnailGenerationQueueCount')!,
         isMetadataExtractionActive: mapValueOfType<bool>(json, r'isMetadataExtractionActive')!,
-        metadataExtractionQueueCount: mapValueOfType<Object>(json, r'metadataExtractionQueueCount')!,
         isVideoConversionActive: mapValueOfType<bool>(json, r'isVideoConversionActive')!,
-        videoConversionQueueCount: mapValueOfType<Object>(json, r'videoConversionQueueCount')!,
       );
     }
     return null;
@@ -140,12 +140,12 @@ class AllJobStatusResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'isThumbnailGenerationActive',
     'thumbnailGenerationQueueCount',
-    'isMetadataExtractionActive',
     'metadataExtractionQueueCount',
-    'isVideoConversionActive',
     'videoConversionQueueCount',
+    'isThumbnailGenerationActive',
+    'isMetadataExtractionActive',
+    'isVideoConversionActive',
   };
 }
 

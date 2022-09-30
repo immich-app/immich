@@ -36,6 +36,7 @@ doc/ExifResponseDto.md
 doc/GetAssetByTimeBucketDto.md
 doc/GetAssetCountByTimeBucketDto.md
 doc/JobApi.md
+doc/JobCounts.md
 doc/JobStatusResponseDto.md
 doc/JobType.md
 doc/LoginCredentialDto.md
@@ -104,6 +105,7 @@ lib/model/device_type_enum.dart
 lib/model/exif_response_dto.dart
 lib/model/get_asset_by_time_bucket_dto.dart
 lib/model/get_asset_count_by_time_bucket_dto.dart
+lib/model/job_counts.dart
 lib/model/job_status_response_dto.dart
 lib/model/job_type.dart
 lib/model/login_credential_dto.dart
@@ -125,8 +127,4 @@ lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 pubspec.yaml
-test/all_job_status_response_dto_test.dart
-test/create_job_dto_test.dart
-test/job_api_test.dart
-test/job_status_response_dto_test.dart
-test/job_type_test.dart
+test/job_counts_test.dart

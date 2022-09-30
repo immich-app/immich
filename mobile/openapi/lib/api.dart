@@ -64,6 +64,7 @@ part 'model/device_type_enum.dart';
 part 'model/exif_response_dto.dart';
 part 'model/get_asset_by_time_bucket_dto.dart';
 part 'model/get_asset_count_by_time_bucket_dto.dart';
+part 'model/job_counts.dart';
 part 'model/job_status_response_dto.dart';
 part 'model/job_type.dart';
 part 'model/login_credential_dto.dart';
