@@ -15,10 +15,13 @@ import {
   videoConversionQueueName,
   generateChecksumQueueName,
 } from '@app/job';
+import { AssetEntity } from '@app/database/entities/asset.entity';
+import { ExifEntity } from '@app/database/entities/exif.entity';
+import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([UserEntity, AssetEntity, ExifEntity]),
     ImmichJwtModule,
     JwtModule.register(jwtConfig),
     BullModule.registerQueue(
@@ -65,6 +68,13 @@ import {
     ),
   ],
   controllers: [JobController],
-  providers: [JobService, ImmichJwtService],
+  providers: [
+    JobService,
+    ImmichJwtService,
+    {
+      provide: ASSET_REPOSITORY,
+      useClass: AssetRepository,
+    },
+  ],
 })
 export class JobModule {}

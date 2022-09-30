@@ -20,8 +20,8 @@ export class JobController {
   }
 
   @Get()
-  findAll() {
-    return this.jobService.findAll();
+  getJobsStatus() {
+    return this.jobService.getJobsStatus();
   }
 
   @Get(':id')

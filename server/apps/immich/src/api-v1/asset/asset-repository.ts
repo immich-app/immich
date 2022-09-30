@@ -10,6 +10,8 @@ import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { find } from 'lodash';
+import { IsNull } from 'typeorm';
 
 export interface IAssetRepository {
   create(
@@ -29,6 +31,8 @@ export interface IAssetRepository {
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
+  getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
+  getAssetWithNoEXIF(): Promise<AssetEntity[]>;
 }
 
 export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
@@ -39,6 +43,23 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
+  async getAssetWithNoThumbnail(): Promise<AssetEntity[]> {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .where('asset.resizePath IS NULL')
+      .orWhere('asset.resizePath = :resizePath', { resizePath: '' })
+      .orWhere('asset.webpPath IS NULL')
+      .orWhere('asset.webpPath = :webpPath', { webpPath: '' })
+      .getMany();
+  }
+
+  async getAssetWithNoEXIF(): Promise<AssetEntity[]> {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.exifInfo', 'ei')
+      .where('ei."assetId" IS NULL')
+      .getMany();
+  }
 
   async getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {
     // Get asset count by AssetType

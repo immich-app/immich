@@ -108,11 +108,11 @@ export class ScheduleTasksService {
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async extractExif() {
-    const exifAssets = await this.assetRepository.find({
-      where: {
-        exifInfo: IsNull(),
-      },
-    });
+    const exifAssets = await this.assetRepository
+      .createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.exifInfo', 'ei')
+      .where('ei."assetId" IS NULL')
+      .getMany();
 
     for (const asset of exifAssets) {
       if (asset.type === AssetType.VIDEO) {
