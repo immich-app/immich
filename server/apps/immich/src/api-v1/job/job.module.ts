@@ -7,9 +7,63 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '../../config/jwt.config';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bull';
+import {
+  thumbnailGeneratorQueueName,
+  assetUploadedQueueName,
+  metadataExtractionQueueName,
+  videoConversionQueueName,
+  generateChecksumQueueName,
+} from '@app/job';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity]), ImmichJwtModule, JwtModule.register(jwtConfig)],
+  imports: [
+    TypeOrmModule.forFeature([UserEntity]),
+    ImmichJwtModule,
+    JwtModule.register(jwtConfig),
+    BullModule.registerQueue(
+      {
+        name: thumbnailGeneratorQueueName,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      },
+      {
+        name: assetUploadedQueueName,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      },
+      {
+        name: metadataExtractionQueueName,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      },
+      {
+        name: videoConversionQueueName,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      },
+      {
+        name: generateChecksumQueueName,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      },
+    ),
+  ],
   controllers: [JobController],
   providers: [JobService, ImmichJwtService],
 })

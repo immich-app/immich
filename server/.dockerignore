@@ -1,4 +1,4 @@
 node_modules/
 upload/
 dist/
-
+.reverse-geocoding-dump

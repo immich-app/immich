@@ -1,18 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import {
+  IMetadataExtractionJob,
+  IThumbnailGenerationJob,
+  IVideoTranscodeJob,
+  metadataExtractionQueueName,
+  thumbnailGeneratorQueueName,
+  videoConversionQueueName,
+} from '@app/job';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class JobService {
+  constructor(
+    @InjectQueue(thumbnailGeneratorQueueName)
+    private thumbnailGeneratorQueue: Queue<IThumbnailGenerationJob>,
+
+    @InjectQueue(metadataExtractionQueueName)
+    private metadataExtractionQueue: Queue<IMetadataExtractionJob>,
+
+    @InjectQueue(videoConversionQueueName)
+    private videoConversionQueue: Queue<IVideoTranscodeJob>,
+  ) {}
   create(createJobDto: CreateJobDto) {
     return 'This action adds a new job';
   }
 
-  findAll() {
-    return `This action returns all job`;
+  async findAll() {
+    return await this.thumbnailGeneratorQueue.getJobCounts();
   }
 
-  findOne(id: number) {
+  async findOne(id: number) {
     return `This action returns a #${id} job`;
   }
 
