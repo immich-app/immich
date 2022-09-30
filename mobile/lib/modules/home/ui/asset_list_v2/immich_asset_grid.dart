@@ -136,9 +136,12 @@ class ImmichAssetGrid extends HookConsumerWidget {
     );
   }
 
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scrolling = useState(false);
+
+    final useDragScrolling = _assets.length > 100;
 
     void dragScrolling(bool active) {
       scrolling.value = active;
@@ -146,6 +149,17 @@ class ImmichAssetGrid extends HookConsumerWidget {
 
     Widget itemBuilder(BuildContext c, int position) {
       return _itemBuilder(c, position, scrolling.value);
+    }
+
+    final listWidget = ScrollablePositionedList.builder(
+      itemBuilder: itemBuilder,
+      itemPositionsListener: _itemPositionsListener,
+      itemScrollController: _itemScrollController,
+      itemCount: renderList.length,
+    );
+
+    if (!useDragScrolling) {
+      return listWidget;
     }
 
     return DraggableScrollbar.semicircle(
@@ -157,11 +171,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
         labelConstraints: const BoxConstraints(maxHeight: 28),
         scrollbarAnimationDuration: const Duration(seconds: 1),
         scrollbarTimeToFade: const Duration(seconds: 4),
-        child: ScrollablePositionedList.builder(
-          itemBuilder: itemBuilder,
-          itemPositionsListener: _itemPositionsListener,
-          itemScrollController: _itemScrollController,
-          itemCount: renderList.length,
-        ));
+        child: listWidget,
+    );
   }
 }
