@@ -15,10 +15,12 @@ import { Queue } from 'bull';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { GetAllJobStatusResponseDto } from './response-dto/get-all-job-status-response.dto';
+import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
 import { randomUUID } from 'crypto';
 import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
 import { AssetType } from '@app/database/entities/asset.entity';
+import { GetJobDto } from './dto/get-job.dto';
+import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 
 @Injectable()
 export class JobService {
@@ -89,28 +91,63 @@ export class JobService {
     return 'This action adds a new job';
   }
 
-  async getJobsStatus(): Promise<GetAllJobStatusResponseDto> {
+  async getJobsStatus(): Promise<AllJobStatusResponseDto> {
     const thumbnailGeneratorJobCount = await this.thumbnailGeneratorQueue.getJobCounts();
     const metadataExtractionJobCount = await this.metadataExtractionQueue.getJobCounts();
     const videoConversionJobCount = await this.videoConversionQueue.getJobCounts();
 
-    const response = new GetAllJobStatusResponseDto();
-    response.thumbnailGenerator = Boolean(thumbnailGeneratorJobCount.waiting);
-    response.metadataExtraction = Boolean(metadataExtractionJobCount.waiting);
-    response.videoConversion = Boolean(videoConversionJobCount.waiting);
+    const response = new AllJobStatusResponseDto();
+    response.isThumbnailGenerationActive = Boolean(thumbnailGeneratorJobCount.waiting);
+    response.thumbnailGenerationQueueCount = thumbnailGeneratorJobCount;
+    response.isMetadataExtractionActive = Boolean(metadataExtractionJobCount.waiting);
+    response.metadataExtractionQueueCount = metadataExtractionJobCount;
+    response.isVideoConversionActive = Boolean(videoConversionJobCount.waiting);
+    response.videoConversionQueueCount = videoConversionJobCount;
 
     return response;
   }
 
-  async findOne(id: number) {
-    return `This action returns a #${id} job`;
+  async getJobStatus(query: GetJobDto): Promise<JobStatusResponseDto> {
+    const response = new JobStatusResponseDto();
+    if (query.jobType === QueueNameEnum.THUMBNAIL_GENERATION) {
+      response.isActive = Boolean((await this.thumbnailGeneratorQueue.getJobCounts()).waiting);
+      response.queueCount = await this.thumbnailGeneratorQueue.getJobCounts();
+    }
+
+    if (query.jobType === QueueNameEnum.METADATA_EXTRACTION) {
+      response.isActive = Boolean((await this.metadataExtractionQueue.getJobCounts()).waiting);
+      response.queueCount = await this.metadataExtractionQueue.getJobCounts();
+    }
+
+    if (query.jobType === QueueNameEnum.VIDEO_CONVERSION) {
+      response.isActive = Boolean((await this.videoConversionQueue.getJobCounts()).waiting);
+      response.queueCount = await this.videoConversionQueue.getJobCounts();
+    }
+
+    return response;
   }
 
-  update(id: number, updateJobDto: UpdateJobDto) {
-    return `This action updates a #${id} job`;
-  }
+  async stopJob(query: GetJobDto): Promise<JobStatusResponseDto> {
+    const response = new JobStatusResponseDto();
 
-  remove(id: number) {
-    return `This action removes a #${id} job`;
+    if (query.jobType === QueueNameEnum.THUMBNAIL_GENERATION) {
+      this.thumbnailGeneratorQueue.empty();
+      response.isActive = Boolean((await this.thumbnailGeneratorQueue.getJobCounts()).waiting);
+      response.queueCount = await this.thumbnailGeneratorQueue.getJobCounts();
+    }
+
+    if (query.jobType === QueueNameEnum.METADATA_EXTRACTION) {
+      this.metadataExtractionQueue.empty();
+      response.isActive = Boolean((await this.metadataExtractionQueue.getJobCounts()).waiting);
+      response.queueCount = await this.metadataExtractionQueue.getJobCounts();
+    }
+
+    if (query.jobType === QueueNameEnum.VIDEO_CONVERSION) {
+      this.videoConversionQueue.empty();
+      response.isActive = Boolean((await this.videoConversionQueue.getJobCounts()).waiting);
+      response.queueCount = await this.videoConversionQueue.getJobCounts();
+    }
+
+    return response;
   }
 }

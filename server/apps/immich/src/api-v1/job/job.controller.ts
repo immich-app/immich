@@ -1,10 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ValidationPipe,
+  Query,
+  Put,
+} from '@nestjs/common';
 import { JobService } from './job.service';
 import { CreateJobDto } from './dto/create-job.dto';
-import { UpdateJobDto } from './dto/update-job.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
+import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
+import { QueueNameEnum } from '@app/job';
+import { GetJobDto } from './dto/get-job.dto';
 
 @UseGuards(JwtAuthGuard)
 @UseGuards(AdminRolesGuard)
@@ -20,22 +34,17 @@ export class JobController {
   }
 
   @Get()
-  getJobsStatus() {
+  getAllJobsStatus(): Promise<AllJobStatusResponseDto> {
     return this.jobService.getJobsStatus();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.jobService.findOne(+id);
+  @Get('/one')
+  getJobStatus(@Query(new ValidationPipe({ transform: true })) query: GetJobDto) {
+    return this.jobService.getJobStatus(query);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
-    return this.jobService.update(+id, updateJobDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.jobService.remove(+id);
+  @Put('/stop')
+  stopJob(@Query(new ValidationPipe({ transform: true })) query: GetJobDto) {
+    return this.jobService.stopJob(query);
   }
 }
