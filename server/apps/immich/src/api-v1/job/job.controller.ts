@@ -1,23 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  ValidationPipe,
-  Query,
-  Put,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, ValidationPipe, Query, Put } from '@nestjs/common';
 import { JobService } from './job.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
-import { QueueNameEnum } from '@app/job';
 import { GetJobDto } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 
