@@ -10,7 +10,7 @@
 <div class="flex border p-6 rounded-2xl bg-white">
 	<div class="w-[70%]">
 		<h1 class="font-medium text-immich-primary">{title}</h1>
-		<p class="text-sm mt-1">{subtitle}</p>
+		<p class="text-sm mt-1 font-medium">{subtitle}</p>
 		<slot />
 	</div>
 	<div class="w-[30%] flex place-items-center place-content-end">

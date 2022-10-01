@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { AllJobStatusResponseDto, api } from '@api';
+	import {
+		ImmichNotification,
+		notificationController,
+		NotificationType
+	} from '$lib/components/shared-components/notification/notification';
+	import { AllJobStatusResponseDto, api, JobType } from '@api';
 	import { onDestroy, onMount } from 'svelte';
 	import JobTile from './job-tile.svelte';
 
@@ -18,12 +23,67 @@
 	onDestroy(() => {
 		clearInterval(setIntervalHandler);
 	});
+
+	const runThumbnailGeneration = async () => {
+		try {
+			const { data } = await api.jobApi.create({
+				jobType: JobType.ThumbnailGeneration
+			});
+
+			if (data) {
+				notificationController.show({
+					message: `Thumbnail generation job started for ${data} asset`,
+					type: NotificationType.Info
+				});
+			} else {
+				notificationController.show({
+					message: `No missing thumbnails found`,
+					type: NotificationType.Info
+				});
+			}
+		} catch (e) {
+			console.log('[ERROR] runThumbnailGeneration', e);
+
+			notificationController.show({
+				message: `Error running thumbnail generation job, check console for more detail`,
+				type: NotificationType.Error
+			});
+		}
+	};
+
+	const runExtractEXIF = async () => {
+		try {
+			const { data } = await api.jobApi.create({
+				jobType: JobType.MetadataExtraction
+			});
+
+			if (data) {
+				notificationController.show({
+					message: `Extract EXIF job started for ${data} asset`,
+					type: NotificationType.Info
+				});
+			} else {
+				notificationController.show({
+					message: `No missing EXIF found`,
+					type: NotificationType.Info
+				});
+			}
+		} catch (e) {
+			console.log('[ERROR] runExtractEXIF', e);
+
+			notificationController.show({
+				message: `Error running extract EXIF job, check console for more detail`,
+				type: NotificationType.Error
+			});
+		}
+	};
 </script>
 
 <div class="flex flex-col gap-6">
 	<JobTile
 		title={'Generate thumbnails'}
 		subtitle={'Regenerate missing thumbnail (JPEG, WEBP) for all assets'}
+		on:click={runThumbnailGeneration}
 	>
 		<table class="text-left w-full mt-4">
 			<!-- table header -->
@@ -35,7 +95,7 @@
 				</tr>
 			</thead>
 			<tbody class="overflow-y-auto rounded-md w-full max-h-[320px] block border">
-				<tr class="text-center flex place-items-center w-full h-[50px]">
+				<tr class="text-center flex place-items-center w-full h-[40px]">
 					<td class="text-sm px-2 w-1/3 text-ellipsis"
 						>{allJobsStatus?.isThumbnailGenerationActive ? 'Active' : 'Idle'}</td
 					>
@@ -50,7 +110,11 @@
 		</table>
 	</JobTile>
 
-	<JobTile title={'Extract EXIF'} subtitle={'Extract missing EXIF information for all assets'}>
+	<JobTile
+		title={'Extract EXIF'}
+		subtitle={'Extract missing EXIF information for all assets'}
+		on:click={runExtractEXIF}
+	>
 		<table class="text-left w-full mt-4">
 			<!-- table header -->
 			<thead class="border rounded-md mb-2 bg-gray-50 flex text-immich-primary w-full h-12">
@@ -61,7 +125,7 @@
 				</tr>
 			</thead>
 			<tbody class="overflow-y-auto rounded-md w-full max-h-[320px] block border">
-				<tr class="text-center flex place-items-center w-full h-[50px]">
+				<tr class="text-center flex place-items-center w-full h-[40px]">
 					<td class="text-sm px-2 w-1/3 text-ellipsis"
 						>{allJobsStatus?.isMetadataExtractionActive ? 'Active' : 'Idle'}</td
 					>
