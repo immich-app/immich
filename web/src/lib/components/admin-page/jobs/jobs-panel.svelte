@@ -1,6 +1,5 @@
 <script lang="ts">
 	import {
-		ImmichNotification,
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';

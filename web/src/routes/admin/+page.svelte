@@ -13,8 +13,6 @@
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import type { PageData } from './$types';
 	import { api, UserResponseDto } from '@api';
-	import SettingPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
-	import ScheduleJobPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
 	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
