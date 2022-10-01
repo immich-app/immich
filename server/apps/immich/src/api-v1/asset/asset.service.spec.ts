@@ -107,6 +107,8 @@ describe('AssetService', () => {
       getAssetByTimeBucket: jest.fn(),
       getAssetByChecksum: jest.fn(),
       getAssetCountByUserId: jest.fn(),
+      getAssetWithNoEXIF: jest.fn(),
+      getAssetWithNoThumbnail: jest.fn(),
     };
 
     sui = new AssetService(assetRepositoryMock, a);
