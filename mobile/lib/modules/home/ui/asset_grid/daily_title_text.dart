@@ -8,11 +8,17 @@ class DailyTitleText extends ConsumerWidget {
   const DailyTitleText({
     Key? key,
     required this.isoDate,
-    required this.assetGroup,
+    required this.multiselectEnabled,
+    required this.onSelect,
+    required this.onDeselect,
+    required this.selected,
   }) : super(key: key);
 
   final String isoDate;
-  final List<AssetResponseDto> assetGroup;
+  final bool multiselectEnabled;
+  final Function onSelect;
+  final Function onDeselect;
+  final bool selected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,51 +29,12 @@ class DailyTitleText extends ConsumerWidget {
         : "daily_title_text_date_year".tr();
     var dateText =
         DateFormat(formatDateTemplate).format(DateTime.parse(isoDate));
-    var isMultiSelectEnable =
-        ref.watch(homePageStateProvider).isMultiSelectEnable;
-    var selectedDateGroup = ref.watch(homePageStateProvider).selectedDateGroup;
-    var selectedItems = ref.watch(homePageStateProvider).selectedItems;
 
-    void _handleTitleIconClick() {
-      if (isMultiSelectEnable &&
-          selectedDateGroup.contains(dateText) &&
-          selectedDateGroup.length == 1 &&
-          selectedItems.length <= assetGroup.length) {
-        // Multi select is active - click again on the icon while it is the only active group -> disable multi select
-        ref.watch(homePageStateProvider.notifier).disableMultiSelect();
-      } else if (isMultiSelectEnable &&
-          selectedDateGroup.contains(dateText) &&
-          selectedItems.length != assetGroup.length) {
-        // Multi select is active - click again on the icon while it is not the only active group -> remove that group from selected group/items
-        ref
-            .watch(homePageStateProvider.notifier)
-            .removeSelectedDateGroup(dateText);
-        ref
-            .watch(homePageStateProvider.notifier)
-            .removeMultipleSelectedItem(assetGroup);
-      } else if (isMultiSelectEnable &&
-          selectedDateGroup.contains(dateText) &&
-          selectedDateGroup.length > 1) {
-        ref
-            .watch(homePageStateProvider.notifier)
-            .removeSelectedDateGroup(dateText);
-        ref
-            .watch(homePageStateProvider.notifier)
-            .removeMultipleSelectedItem(assetGroup);
-      } else if (isMultiSelectEnable && !selectedDateGroup.contains(dateText)) {
-        ref
-            .watch(homePageStateProvider.notifier)
-            .addSelectedDateGroup(dateText);
-        ref
-            .watch(homePageStateProvider.notifier)
-            .addMultipleSelectedItems(assetGroup);
+    void handleTitleIconClick() {
+      if (selected) {
+        onDeselect();
       } else {
-        ref
-            .watch(homePageStateProvider.notifier)
-            .enableMultiSelect(assetGroup.toSet());
-        ref
-            .watch(homePageStateProvider.notifier)
-            .addSelectedDateGroup(dateText);
+        onSelect();
       }
     }
 
@@ -89,8 +56,8 @@ class DailyTitleText extends ConsumerWidget {
           ),
           const Spacer(),
           GestureDetector(
-            onTap: _handleTitleIconClick,
-            child: isMultiSelectEnable && selectedDateGroup.contains(dateText)
+            onTap: handleTitleIconClick,
+            child: multiselectEnabled && selected
                 ? Icon(
                     Icons.check_circle_rounded,
                     color: Theme.of(context).primaryColor,

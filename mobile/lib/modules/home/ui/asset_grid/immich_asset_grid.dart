@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
@@ -5,35 +6,27 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/ui/thumbnail_image.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:openapi/api.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'asset_grid_data_structure.dart';
 import 'daily_title_text.dart';
+import 'disable_multi_select_button.dart';
 import 'draggable_scrollbar_custom.dart';
 
-class ImmichAssetGrid extends HookConsumerWidget {
+typedef ImmichAssetGridSelectionListener = void Function(bool);
+
+class ImmichAssetGridState extends State<ImmichAssetGrid> {
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
-      ItemPositionsListener.create();
+  ItemPositionsListener.create();
 
-  final List<RenderAssetGridElement> renderList;
-  final int assetsPerRow;
-  final double margin;
-  final bool showStorageIndicator;
-
-  ImmichAssetGrid({
-    super.key,
-    required this.renderList,
-    required this.assetsPerRow,
-    required this.showStorageIndicator,
-    this.margin = 5.0,
-  });
+  bool _scrolling = false;
+  bool _multiselect = false;
+  Set<String> _selectedAssets = HashSet();
 
   List<AssetResponseDto> get _assets {
-    return renderList
+    return widget.renderList
         .map((e) {
           if (e.type == RenderAssetGridElementType.assetRow) {
             return e.assetRow!.assets;
@@ -44,10 +37,49 @@ class ImmichAssetGrid extends HookConsumerWidget {
         .flattened
         .toList();
   }
+  
+  void _selectAssets(List<AssetResponseDto> assets) {
+    setState(() {
+
+      if (!_multiselect) {
+        _multiselect = true;
+        widget.listener?.call(true);
+      }
+
+      for (var e in assets) {
+        _selectedAssets.add(e.id);
+      }
+    });
+  }
+
+  void _deselectAssets(List<AssetResponseDto> assets) {
+    setState(() {
+      for (var e in assets) {
+        _selectedAssets.remove(e.id);
+      }
+
+      if (_selectedAssets.isEmpty) {
+        _multiselect = false;
+        widget.listener?.call(false);
+      }
+    });
+  }
+
+  void _deselectAll() {
+    setState(() {
+      _multiselect = false;
+      _selectedAssets.clear();
+    });
+    widget.listener?.call(false);
+  }
+
+  bool _allAssetsSelected(List<AssetResponseDto> assets) {
+    return _multiselect && assets.firstWhereOrNull((e) => !_selectedAssets.contains(e.id)) == null;
+  }
 
   double _getItemSize(BuildContext context) {
-    return MediaQuery.of(context).size.width / assetsPerRow -
-        margin * (assetsPerRow - 1) / assetsPerRow;
+    return MediaQuery.of(context).size.width / widget.assetsPerRow -
+        widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
   }
 
   Widget _buildThumbnailOrPlaceholder(
@@ -60,7 +92,10 @@ class ImmichAssetGrid extends HookConsumerWidget {
     return ThumbnailImage(
       asset: asset,
       assetList: _assets,
-      showStorageIndicator: showStorageIndicator,
+      multiselectEnabled: _multiselect,
+      isSelected: _selectedAssets.contains(asset.id),
+      onSelect: () => _selectAssets([asset]),
+      onDeselect: () => _deselectAssets([asset]),
       useGrayBoxPlaceholder: true,
     );
   }
@@ -78,7 +113,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
           key: Key("asset-${asset.id}"),
           width: size,
           height: size,
-          margin: EdgeInsets.only(top: margin, right: last ? 0.0 : margin),
+          margin: EdgeInsets.only(top: widget.margin, right: last ? 0.0 : widget.margin),
           child: _buildThumbnailOrPlaceholder(asset, scrolling),
         );
       }).toList(),
@@ -89,7 +124,10 @@ class ImmichAssetGrid extends HookConsumerWidget {
       BuildContext context, String title, List<AssetResponseDto> assets) {
     return DailyTitleText(
       isoDate: title,
-      assetGroup: assets,
+      multiselectEnabled: _multiselect,
+      onSelect: () => _selectAssets(assets),
+      onDeselect: () => _deselectAssets(assets),
+      selected: _allAssetsSelected(assets),
     );
   }
 
@@ -111,22 +149,22 @@ class ImmichAssetGrid extends HookConsumerWidget {
     );
   }
 
-  Widget _itemBuilder(BuildContext c, int position, bool scrolling) {
-    final item = renderList[position];
+  Widget _itemBuilder(BuildContext c, int position) {
+    final item = widget.renderList[position];
 
     if (item.type == RenderAssetGridElementType.dayTitle) {
       return _buildTitle(c, item.title!, item.relatedAssetList!);
     } else if (item.type == RenderAssetGridElementType.monthTitle) {
       return _buildMonthTitle(c, item.title!);
     } else if (item.type == RenderAssetGridElementType.assetRow) {
-      return _buildAssetRow(c, item.assetRow!, scrolling);
+      return _buildAssetRow(c, item.assetRow!, _scrolling);
     }
 
     return const Text("Invalid widget type!");
   }
 
   Text _labelBuilder(int pos) {
-    final date = renderList[pos].date;
+    final date = widget.renderList[pos].date;
     return Text(DateFormat.yMMMd().format(date),
       style: const TextStyle(
         color: Colors.white,
@@ -135,26 +173,27 @@ class ImmichAssetGrid extends HookConsumerWidget {
     );
   }
 
+  Widget _buildMultiSelectIndicator() {
+    return DisableMultiSelectButton(
+      onPressed: () => _deselectAll(),
+      selectedItemCount: _selectedAssets.length,
+    );
+  }
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final scrolling = useState(false);
-
+  Widget _buildAssetGrid() {
     final useDragScrolling = _assets.length > 100;
 
     void dragScrolling(bool active) {
-      scrolling.value = active;
-    }
-
-    Widget itemBuilder(BuildContext c, int position) {
-      return _itemBuilder(c, position, scrolling.value);
+      setState(() {
+        _scrolling = active;
+      });
     }
 
     final listWidget = ScrollablePositionedList.builder(
-      itemBuilder: itemBuilder,
+      itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
       itemScrollController: _itemScrollController,
-      itemCount: renderList.length,
+      itemCount: widget.renderList.length,
     );
 
     if (!useDragScrolling) {
@@ -162,15 +201,48 @@ class ImmichAssetGrid extends HookConsumerWidget {
     }
 
     return DraggableScrollbar.semicircle(
-        scrollStateListener: dragScrolling,
-        itemPositionsListener: _itemPositionsListener,
-        controller: _itemScrollController,
-        backgroundColor: Theme.of(context).hintColor,
-        labelTextBuilder: _labelBuilder,
-        labelConstraints: const BoxConstraints(maxHeight: 28),
-        scrollbarAnimationDuration: const Duration(seconds: 1),
-        scrollbarTimeToFade: const Duration(seconds: 4),
-        child: listWidget,
+      scrollStateListener: dragScrolling,
+      itemPositionsListener: _itemPositionsListener,
+      controller: _itemScrollController,
+      backgroundColor: Theme.of(context).hintColor,
+      labelTextBuilder: _labelBuilder,
+      labelConstraints: const BoxConstraints(maxHeight: 28),
+      scrollbarAnimationDuration: const Duration(seconds: 1),
+      scrollbarTimeToFade: const Duration(seconds: 4),
+      child: listWidget,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        _buildAssetGrid(),
+        if (_multiselect) _buildMultiSelectIndicator(),
+      ],
+    );
+  }
+}
+
+class ImmichAssetGrid extends StatefulWidget {
+  final List<RenderAssetGridElement> renderList;
+  final int assetsPerRow;
+  final double margin;
+  final bool showStorageIndicator;
+  final ImmichAssetGridSelectionListener? listener;
+
+
+  ImmichAssetGrid({
+    super.key,
+    required this.renderList,
+    required this.assetsPerRow,
+    required this.showStorageIndicator,
+    this.listener,
+    this.margin = 5.0,
+  });
+
+  @override
+  State<StatefulWidget> createState() {
+    return ImmichAssetGridState();
   }
 }

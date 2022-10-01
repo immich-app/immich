@@ -5,7 +5,6 @@ import 'package:immich_mobile/modules/home/providers/home_page_render_list_provi
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
-import 'package:immich_mobile/modules/home/ui/disable_multi_select_button.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -20,12 +19,9 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appSettingService = ref.watch(appSettingsServiceProvider);
-
     var renderList = ref.watch(renderListProvider);
 
-    var isMultiSelectEnable =
-        ref.watch(homePageStateProvider).isMultiSelectEnable;
-    var homePageState = ref.watch(homePageStateProvider);
+    final multiselectEnabled = useState(false);
 
     useEffect(
       () {
@@ -41,16 +37,9 @@ class HomePage extends HookConsumerWidget {
       ref.read(assetProvider.notifier).getAllAsset();
     }
 
-    buildSelectedItemCountIndicator() {
-      return DisableMultiSelectButton(
-        onPressed: ref.watch(homePageStateProvider.notifier).disableMultiSelect,
-        selectedItemCount: homePageState.selectedItems.length,
-      );
-    }
-
     Widget buildBody() {
       buildSliverAppBar() {
-        return isMultiSelectEnable
+        return multiselectEnabled.value
             ? const SliverToBoxAdapter(
                 child: SizedBox(
                   height: 70,
@@ -62,9 +51,13 @@ class HomePage extends HookConsumerWidget {
               );
       }
 
+      void selectionListener(bool multiselect) {
+        multiselectEnabled.value = multiselect;
+      }
+
       return SafeArea(
-        bottom: !isMultiSelectEnable,
-        top: !isMultiSelectEnable,
+        bottom: !multiselectEnabled.value,
+        top: !multiselectEnabled.value,
         child: Stack(
           children: [
             CustomScrollView(
@@ -80,10 +73,10 @@ class HomePage extends HookConsumerWidget {
                     appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
                 showStorageIndicator: appSettingService
                     .getSetting(AppSettingsEnum.storageIndicator),
+                listener: selectionListener,
               ),
             ),
-            if (isMultiSelectEnable) ...[
-              buildSelectedItemCountIndicator(),
+            if (multiselectEnabled.value) ...[
               const ControlBottomAppBar(),
             ],
           ],

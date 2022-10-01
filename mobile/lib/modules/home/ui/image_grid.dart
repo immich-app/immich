@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/ui/thumbnail_image.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
