@@ -20,7 +20,6 @@ services:
     entrypoint: ["/bin/sh", "./start-microservices.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - "geocoding-dump:/usr/src/app/.reverse-geocoding-dump"
     env_file:
       - .env
     environment:
@@ -82,4 +81,3 @@ services:
 
 volumes:
   pgdata:
-  geocoding-dump:
