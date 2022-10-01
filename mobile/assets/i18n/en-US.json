@@ -167,8 +167,5 @@
   "version_announcement_overlay_text_3": " and ensure your docker-compose and .env setup is up-to-date to prevent any misconfigurations, especially if you use WatchTower or any mechanism that handles updating your server application automatically.",
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
   "experimental_settings_title": "Experimental",
-  "experimental_settings_subtitle": "Use at your own risk!",
-  "experimental_settings_new_asset_list_title": "Enable experimental photo grid",
-  "experimental_settings_new_asset_list_subtitle": "Work in progress",
-  "settings_require_restart": "Please restart Immich to apply this setting"
+  "experimental_settings_subtitle": "Use at your own risk!"
 }

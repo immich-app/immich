@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/ui/asset_list_v2/asset_grid_data_structure.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/search/models/search_result_page_state.model.dart';
 
 import 'package:immich_mobile/modules/search/services/search.service.dart';

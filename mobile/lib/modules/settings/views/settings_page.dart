@@ -43,7 +43,7 @@ class SettingsPage extends HookConsumerWidget {
               const ThemeSetting(),
               const AssetListSettings(),
               if (Platform.isAndroid) const NotificationSetting(),
-              const ExperimentalSettings(),
+              //const ExperimentalSettings(),
             ],
           ).toList(),
         ],
