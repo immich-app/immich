@@ -1,9 +1,11 @@
 <script lang="ts">
+	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import { createEventDispatcher } from 'svelte';
 
 	export let title: string;
 	export let subtitle: string;
 	export let buttonTitle = 'Run';
+	export let jobStatus: boolean;
 	const dispatch = createEventDispatcher();
 </script>
 
@@ -16,8 +18,14 @@
 	<div class="w-[30%] flex place-items-center place-content-end">
 		<button
 			on:click={() => dispatch('click')}
-			class="border px-6 py-3 text-sm bg-gray-50 font-medium rounded-2xl hover:bg-immich-primary/10 transition-all"
-			>{buttonTitle}</button
+			class="border px-6 py-3 text-sm bg-gray-50 font-medium rounded-2xl hover:bg-immich-primary/10 transition-all hover:cursor-pointer disabled:cursor-not-allowed"
+			disabled={jobStatus}
 		>
+			{#if jobStatus}
+				<LoadingSpinner />
+			{:else}
+				{buttonTitle}
+			{/if}
+		</button>
 	</div>
 </div>

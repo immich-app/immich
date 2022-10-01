@@ -84,6 +84,7 @@
 		title={'Generate thumbnails'}
 		subtitle={'Regenerate missing thumbnail (JPEG, WEBP) for all assets'}
 		on:click={runThumbnailGeneration}
+		jobStatus={allJobsStatus?.isThumbnailGenerationActive}
 	>
 		<table class="text-left w-full mt-4">
 			<!-- table header -->
@@ -114,6 +115,7 @@
 		title={'Extract EXIF'}
 		subtitle={'Extract missing EXIF information for all assets'}
 		on:click={runExtractEXIF}
+		jobStatus={allJobsStatus?.isMetadataExtractionActive}
 	>
 		<table class="text-left w-full mt-4">
 			<!-- table header -->
