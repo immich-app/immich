@@ -41,53 +41,16 @@ export class JobService {
   }
 
   async startJob(jobDto: GetJobDto): Promise<number> {
-    if (jobDto.jobId === QueueNameEnum.THUMBNAIL_GENERATION) {
-      const jobCount = await this.thumbnailGeneratorQueue.getJobCounts();
-
-      if (jobCount.waiting > 0) {
-        throw new BadRequestException('Thumbnail generation job is already running');
-      }
-
-      const assetsWithNoThumbnail = await this._assetRepository.getAssetWithNoThumbnail();
-
-      for (const asset of assetsWithNoThumbnail) {
-        await this.thumbnailGeneratorQueue.add(generateJPEGThumbnailProcessorName, { asset }, { jobId: randomUUID() });
-      }
-
-      return assetsWithNoThumbnail.length;
+    switch (jobDto.jobId) {
+      case QueueNameEnum.THUMBNAIL_GENERATION:
+        return this.runThumbnailGenerationJob();
+      case QueueNameEnum.METADATA_EXTRACTION:
+        return this.runMetadataExtractionJob();
+      case QueueNameEnum.VIDEO_CONVERSION:
+        return 0;
+      default:
+        throw new BadRequestException('Invalid job id');
     }
-
-    if (jobDto.jobId === QueueNameEnum.METADATA_EXTRACTION) {
-      const jobCount = await this.metadataExtractionQueue.getJobCounts();
-
-      if (jobCount.waiting > 0) {
-        throw new BadRequestException('Metadata extraction job is already running');
-      }
-
-      const assetsWithNoExif = await this._assetRepository.getAssetWithNoEXIF();
-      for (const asset of assetsWithNoExif) {
-        if (asset.type === AssetType.VIDEO) {
-          await this.metadataExtractionQueue.add(
-            videoMetadataExtractionProcessorName,
-            { asset, fileName: asset.id },
-            { jobId: randomUUID() },
-          );
-        } else {
-          await this.metadataExtractionQueue.add(
-            exifExtractionProcessorName,
-            { asset, fileName: asset.id },
-            { jobId: randomUUID() },
-          );
-        }
-      }
-      return assetsWithNoExif.length;
-    }
-
-    if (jobDto.jobId === QueueNameEnum.VIDEO_CONVERSION) {
-      // TODO - Implement when the PR for video conversion option is merged
-    }
-
-    return 0;
   }
 
   async getAllJobsStatus(): Promise<AllJobStatusResponseDto> {
@@ -140,5 +103,47 @@ export class JobService {
     }
 
     return 0;
+  }
+
+  private async runThumbnailGenerationJob(): Promise<number> {
+    const jobCount = await this.thumbnailGeneratorQueue.getJobCounts();
+
+    if (jobCount.waiting > 0) {
+      throw new BadRequestException('Thumbnail generation job is already running');
+    }
+
+    const assetsWithNoThumbnail = await this._assetRepository.getAssetWithNoThumbnail();
+
+    for (const asset of assetsWithNoThumbnail) {
+      await this.thumbnailGeneratorQueue.add(generateJPEGThumbnailProcessorName, { asset }, { jobId: randomUUID() });
+    }
+
+    return assetsWithNoThumbnail.length;
+  }
+
+  private async runMetadataExtractionJob(): Promise<number> {
+    const jobCount = await this.metadataExtractionQueue.getJobCounts();
+
+    if (jobCount.waiting > 0) {
+      throw new BadRequestException('Metadata extraction job is already running');
+    }
+
+    const assetsWithNoExif = await this._assetRepository.getAssetWithNoEXIF();
+    for (const asset of assetsWithNoExif) {
+      if (asset.type === AssetType.VIDEO) {
+        await this.metadataExtractionQueue.add(
+          videoMetadataExtractionProcessorName,
+          { asset, fileName: asset.id },
+          { jobId: randomUUID() },
+        );
+      } else {
+        await this.metadataExtractionQueue.add(
+          exifExtractionProcessorName,
+          { asset, fileName: asset.id },
+          { jobId: randomUUID() },
+        );
+      }
+    }
+    return assetsWithNoExif.length;
   }
 }
