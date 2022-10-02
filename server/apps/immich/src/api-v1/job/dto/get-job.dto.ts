@@ -5,11 +5,11 @@ import { IsEnum, IsNotEmpty } from 'class-validator';
 export class GetJobDto {
   @IsNotEmpty()
   @IsEnum(QueueNameEnum, {
-    message: `jobType must be one of ${Object.values(QueueNameEnum).join()}`,
+    message: `params must be one of ${Object.values(QueueNameEnum).join()}`,
   })
   @ApiProperty({
     enum: QueueNameEnum,
-    enumName: 'jobType',
+    enumName: 'JobId',
   })
-  jobType!: string;
+  jobId!: string;
 }

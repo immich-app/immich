@@ -97,10 +97,9 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeviceInfoApi* | [**createDeviceInfo**](doc//DeviceInfoApi.md#createdeviceinfo) | **POST** /device-info | 
 *DeviceInfoApi* | [**updateDeviceInfo**](doc//DeviceInfoApi.md#updatedeviceinfo) | **PATCH** /device-info | 
-*JobApi* | [**create**](doc//JobApi.md#create) | **POST** /job | 
-*JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /job | 
-*JobApi* | [**getJobStatus**](doc//JobApi.md#getjobstatus) | **GET** /job/one | 
-*JobApi* | [**stopJob**](doc//JobApi.md#stopjob) | **PUT** /job/stop | 
+*JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
+*JobApi* | [**getJobStatus**](doc//JobApi.md#getjobstatus) | **GET** /jobs/{jobId} | 
+*JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
@@ -132,7 +131,6 @@ Class | Method | HTTP request | Description
  - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
  - [CreateDeviceInfoDto](doc//CreateDeviceInfoDto.md)
- - [CreateJobDto](doc//CreateJobDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateUserDto](doc//CreateUserDto.md)
  - [CuratedLocationsResponseDto](doc//CuratedLocationsResponseDto.md)
@@ -145,9 +143,11 @@ Class | Method | HTTP request | Description
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
+ - [JobCommand](doc//JobCommand.md)
+ - [JobCommandDto](doc//JobCommandDto.md)
  - [JobCounts](doc//JobCounts.md)
+ - [JobId](doc//JobId.md)
  - [JobStatusResponseDto](doc//JobStatusResponseDto.md)
- - [JobType](doc//JobType.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)

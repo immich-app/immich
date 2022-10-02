@@ -9,58 +9,10 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**create**](JobApi.md#create) | **POST** /job | 
-[**getAllJobsStatus**](JobApi.md#getalljobsstatus) | **GET** /job | 
-[**getJobStatus**](JobApi.md#getjobstatus) | **GET** /job/one | 
-[**stopJob**](JobApi.md#stopjob) | **PUT** /job/stop | 
+[**getAllJobsStatus**](JobApi.md#getalljobsstatus) | **GET** /jobs | 
+[**getJobStatus**](JobApi.md#getjobstatus) | **GET** /jobs/{jobId} | 
+[**sendJobCommand**](JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
 
-
-# **create**
-> Object create(createJobDto)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = JobApi();
-final createJobDto = CreateJobDto(); // CreateJobDto | 
-
-try {
-    final result = api_instance.create(createJobDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling JobApi->create: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **createJobDto** | [**CreateJobDto**](CreateJobDto.md)|  | 
-
-### Return type
-
-[**Object**](Object.md)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllJobsStatus**
 > AllJobStatusResponseDto getAllJobsStatus()
@@ -106,7 +58,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getJobStatus**
-> JobStatusResponseDto getJobStatus(jobType)
+> JobStatusResponseDto getJobStatus(jobId)
 
 
 
@@ -121,10 +73,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = JobApi();
-final jobType = ; // JobType | 
+final jobId = ; // JobId | 
 
 try {
-    final result = api_instance.getJobStatus(jobType);
+    final result = api_instance.getJobStatus(jobId);
     print(result);
 } catch (e) {
     print('Exception when calling JobApi->getJobStatus: $e\n');
@@ -135,7 +87,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobType** | [**JobType**](.md)|  | 
+ **jobId** | [**JobId**](.md)|  | 
 
 ### Return type
 
@@ -152,8 +104,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **stopJob**
-> JobStatusResponseDto stopJob(jobType)
+# **sendJobCommand**
+> num sendJobCommand(jobId, jobCommandDto)
 
 
 
@@ -168,13 +120,14 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = JobApi();
-final jobType = ; // JobType | 
+final jobId = ; // JobId | 
+final jobCommandDto = JobCommandDto(); // JobCommandDto | 
 
 try {
-    final result = api_instance.stopJob(jobType);
+    final result = api_instance.sendJobCommand(jobId, jobCommandDto);
     print(result);
 } catch (e) {
-    print('Exception when calling JobApi->stopJob: $e\n');
+    print('Exception when calling JobApi->sendJobCommand: $e\n');
 }
 ```
 
@@ -182,11 +135,12 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobType** | [**JobType**](.md)|  | 
+ **jobId** | [**JobId**](.md)|  | 
+ **jobCommandDto** | [**JobCommandDto**](JobCommandDto.md)|  | 
 
 ### Return type
 
-[**JobStatusResponseDto**](JobStatusResponseDto.md)
+**num**
 
 ### Authorization
 
@@ -194,7 +148,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

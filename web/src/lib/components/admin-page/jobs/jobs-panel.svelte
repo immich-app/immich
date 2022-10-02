@@ -3,7 +3,7 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import { AllJobStatusResponseDto, api, JobType } from '@api';
+	import { AllJobStatusResponseDto, api, JobCommand, JobId } from '@api';
 	import { onDestroy, onMount } from 'svelte';
 	import JobTile from './job-tile.svelte';
 
@@ -18,6 +18,7 @@
 			allJobsStatus = data;
 		}, 1000);
 	});
+	1;
 
 	onDestroy(() => {
 		clearInterval(setIntervalHandler);
@@ -25,8 +26,8 @@
 
 	const runThumbnailGeneration = async () => {
 		try {
-			const { data } = await api.jobApi.create({
-				jobType: JobType.ThumbnailGeneration
+			const { data } = await api.jobApi.sendJobCommand(JobId.ThumbnailGeneration, {
+				command: JobCommand.Start
 			});
 
 			if (data) {
@@ -52,8 +53,8 @@
 
 	const runExtractEXIF = async () => {
 		try {
-			const { data } = await api.jobApi.create({
-				jobType: JobType.MetadataExtraction
+			const { data } = await api.jobApi.sendJobCommand(JobId.MetadataExtraction, {
+				command: JobCommand.Start
 			});
 
 			if (data) {

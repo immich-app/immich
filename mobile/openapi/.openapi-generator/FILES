@@ -21,7 +21,6 @@ doc/CheckDuplicateAssetDto.md
 doc/CheckDuplicateAssetResponseDto.md
 doc/CreateAlbumDto.md
 doc/CreateDeviceInfoDto.md
-doc/CreateJobDto.md
 doc/CreateProfileImageResponseDto.md
 doc/CreateUserDto.md
 doc/CuratedLocationsResponseDto.md
@@ -36,9 +35,11 @@ doc/ExifResponseDto.md
 doc/GetAssetByTimeBucketDto.md
 doc/GetAssetCountByTimeBucketDto.md
 doc/JobApi.md
+doc/JobCommand.md
+doc/JobCommandDto.md
 doc/JobCounts.md
+doc/JobId.md
 doc/JobStatusResponseDto.md
-doc/JobType.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -92,7 +93,6 @@ lib/model/check_duplicate_asset_dto.dart
 lib/model/check_duplicate_asset_response_dto.dart
 lib/model/create_album_dto.dart
 lib/model/create_device_info_dto.dart
-lib/model/create_job_dto.dart
 lib/model/create_profile_image_response_dto.dart
 lib/model/create_user_dto.dart
 lib/model/curated_locations_response_dto.dart
@@ -105,9 +105,11 @@ lib/model/device_type_enum.dart
 lib/model/exif_response_dto.dart
 lib/model/get_asset_by_time_bucket_dto.dart
 lib/model/get_asset_count_by_time_bucket_dto.dart
+lib/model/job_command.dart
+lib/model/job_command_dto.dart
 lib/model/job_counts.dart
+lib/model/job_id.dart
 lib/model/job_status_response_dto.dart
-lib/model/job_type.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
@@ -127,4 +129,6 @@ lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 pubspec.yaml
-test/job_counts_test.dart
+test/job_command_dto_test.dart
+test/job_command_test.dart
+test/job_id_test.dart

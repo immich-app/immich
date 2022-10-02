@@ -12,7 +12,6 @@ import {
 } from '@app/job';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { CreateJobDto } from './dto/create-job.dto';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
 import { randomUUID } from 'crypto';
@@ -41,8 +40,8 @@ export class JobService {
     this.videoConversionQueue.empty();
   }
 
-  async create(createJobDto: CreateJobDto) {
-    if (createJobDto.jobType === QueueNameEnum.THUMBNAIL_GENERATION) {
+  async startJob(jobDto: GetJobDto): Promise<number> {
+    if (jobDto.jobId === QueueNameEnum.THUMBNAIL_GENERATION) {
       const jobCount = await this.thumbnailGeneratorQueue.getJobCounts();
 
       if (jobCount.waiting > 0) {
@@ -58,7 +57,7 @@ export class JobService {
       return assetsWithNoThumbnail.length;
     }
 
-    if (createJobDto.jobType === QueueNameEnum.METADATA_EXTRACTION) {
+    if (jobDto.jobId === QueueNameEnum.METADATA_EXTRACTION) {
       const jobCount = await this.metadataExtractionQueue.getJobCounts();
 
       if (jobCount.waiting > 0) {
@@ -84,13 +83,13 @@ export class JobService {
       return assetsWithNoExif.length;
     }
 
-    if (createJobDto.jobType === QueueNameEnum.VIDEO_CONVERSION) {
+    if (jobDto.jobId === QueueNameEnum.VIDEO_CONVERSION) {
     }
 
-    return 'This action adds a new job';
+    return 0;
   }
 
-  async getJobsStatus(): Promise<AllJobStatusResponseDto> {
+  async getAllJobsStatus(): Promise<AllJobStatusResponseDto> {
     const thumbnailGeneratorJobCount = await this.thumbnailGeneratorQueue.getJobCounts();
     const metadataExtractionJobCount = await this.metadataExtractionQueue.getJobCounts();
     const videoConversionJobCount = await this.videoConversionQueue.getJobCounts();
@@ -108,17 +107,17 @@ export class JobService {
 
   async getJobStatus(query: GetJobDto): Promise<JobStatusResponseDto> {
     const response = new JobStatusResponseDto();
-    if (query.jobType === QueueNameEnum.THUMBNAIL_GENERATION) {
+    if (query.jobId === QueueNameEnum.THUMBNAIL_GENERATION) {
       response.isActive = Boolean((await this.thumbnailGeneratorQueue.getJobCounts()).waiting);
       response.queueCount = await this.thumbnailGeneratorQueue.getJobCounts();
     }
 
-    if (query.jobType === QueueNameEnum.METADATA_EXTRACTION) {
+    if (query.jobId === QueueNameEnum.METADATA_EXTRACTION) {
       response.isActive = Boolean((await this.metadataExtractionQueue.getJobCounts()).waiting);
       response.queueCount = await this.metadataExtractionQueue.getJobCounts();
     }
 
-    if (query.jobType === QueueNameEnum.VIDEO_CONVERSION) {
+    if (query.jobId === QueueNameEnum.VIDEO_CONVERSION) {
       response.isActive = Boolean((await this.videoConversionQueue.getJobCounts()).waiting);
       response.queueCount = await this.videoConversionQueue.getJobCounts();
     }
@@ -126,27 +125,19 @@ export class JobService {
     return response;
   }
 
-  async stopJob(query: GetJobDto): Promise<JobStatusResponseDto> {
-    const response = new JobStatusResponseDto();
-
-    if (query.jobType === QueueNameEnum.THUMBNAIL_GENERATION) {
+  async stopJob(query: GetJobDto): Promise<number> {
+    if (query.jobId === QueueNameEnum.THUMBNAIL_GENERATION) {
       this.thumbnailGeneratorQueue.empty();
-      response.isActive = Boolean((await this.thumbnailGeneratorQueue.getJobCounts()).waiting);
-      response.queueCount = await this.thumbnailGeneratorQueue.getJobCounts();
     }
 
-    if (query.jobType === QueueNameEnum.METADATA_EXTRACTION) {
+    if (query.jobId === QueueNameEnum.METADATA_EXTRACTION) {
       this.metadataExtractionQueue.empty();
-      response.isActive = Boolean((await this.metadataExtractionQueue.getJobCounts()).waiting);
-      response.queueCount = await this.metadataExtractionQueue.getJobCounts();
     }
 
-    if (query.jobType === QueueNameEnum.VIDEO_CONVERSION) {
+    if (query.jobId === QueueNameEnum.VIDEO_CONVERSION) {
       this.videoConversionQueue.empty();
-      response.isActive = Boolean((await this.videoConversionQueue.getJobCounts()).waiting);
-      response.queueCount = await this.videoConversionQueue.getJobCounts();
     }
 
-    return response;
+    return 0;
   }
 }

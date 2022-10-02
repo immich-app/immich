@@ -64,8 +64,11 @@ String parameterToString(dynamic value) {
   if (value is DeviceTypeEnum) {
     return DeviceTypeEnumTypeTransformer().encode(value).toString();
   }
-  if (value is JobType) {
-    return JobTypeTypeTransformer().encode(value).toString();
+  if (value is JobCommand) {
+    return JobCommandTypeTransformer().encode(value).toString();
+  }
+  if (value is JobId) {
+    return JobIdTypeTransformer().encode(value).toString();
   }
   if (value is ThumbnailFormat) {
     return ThumbnailFormatTypeTransformer().encode(value).toString();

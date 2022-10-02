@@ -16,57 +16,10 @@ class JobApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /job' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [CreateJobDto] createJobDto (required):
-  Future<Response> createWithHttpInfo(CreateJobDto createJobDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/job';
-
-    // ignore: prefer_final_locals
-    Object? postBody = createJobDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [CreateJobDto] createJobDto (required):
-  Future<Object?> create(CreateJobDto createJobDto,) async {
-    final response = await createWithHttpInfo(createJobDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'GET /job' operation and returns the [Response].
+  /// Performs an HTTP 'GET /jobs' operation and returns the [Response].
   Future<Response> getAllJobsStatusWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/job';
+    final path = r'/jobs';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -104,13 +57,14 @@ class JobApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /job/one' operation and returns the [Response].
+  /// Performs an HTTP 'GET /jobs/{jobId}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [JobType] jobType (required):
-  Future<Response> getJobStatusWithHttpInfo(JobType jobType,) async {
+  /// * [JobId] jobId (required):
+  Future<Response> getJobStatusWithHttpInfo(JobId jobId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/job/one';
+    final path = r'/jobs/{jobId}'
+      .replaceAll('{jobId}', jobId.toString());
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -118,8 +72,6 @@ class JobApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-      queryParams.addAll(_queryParams('', 'jobType', jobType));
 
     const contentTypes = <String>[];
 
@@ -137,9 +89,9 @@ class JobApi {
 
   /// Parameters:
   ///
-  /// * [JobType] jobType (required):
-  Future<JobStatusResponseDto?> getJobStatus(JobType jobType,) async {
-    final response = await getJobStatusWithHttpInfo(jobType,);
+  /// * [JobId] jobId (required):
+  Future<JobStatusResponseDto?> getJobStatus(JobId jobId,) async {
+    final response = await getJobStatusWithHttpInfo(jobId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -153,24 +105,25 @@ class JobApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /job/stop' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /jobs/{jobId}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [JobType] jobType (required):
-  Future<Response> stopJobWithHttpInfo(JobType jobType,) async {
+  /// * [JobId] jobId (required):
+  ///
+  /// * [JobCommandDto] jobCommandDto (required):
+  Future<Response> sendJobCommandWithHttpInfo(JobId jobId, JobCommandDto jobCommandDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/job/stop';
+    final path = r'/jobs/{jobId}'
+      .replaceAll('{jobId}', jobId.toString());
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = jobCommandDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'jobType', jobType));
-
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
@@ -186,9 +139,11 @@ class JobApi {
 
   /// Parameters:
   ///
-  /// * [JobType] jobType (required):
-  Future<JobStatusResponseDto?> stopJob(JobType jobType,) async {
-    final response = await stopJobWithHttpInfo(jobType,);
+  /// * [JobId] jobId (required):
+  ///
+  /// * [JobCommandDto] jobCommandDto (required):
+  Future<num?> sendJobCommand(JobId jobId, JobCommandDto jobCommandDto,) async {
+    final response = await sendJobCommandWithHttpInfo(jobId, jobCommandDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -196,7 +151,7 @@ class JobApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'JobStatusResponseDto',) as JobStatusResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'num',) as num;
     
     }
     return null;
