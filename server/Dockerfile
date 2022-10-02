@@ -18,17 +18,13 @@ WORKDIR /usr/src/app
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
 
-COPY package.json package-lock.json ./
 COPY start-server.sh start-microservices.sh ./
 
 RUN mkdir -p /usr/src/app/dist \
   && apk add --no-cache libheif vips ffmpeg
 
-COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/bin ./bin
-
-RUN npm prune --production
 
 VOLUME /usr/src/app/upload
 

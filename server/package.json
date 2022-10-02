@@ -13,8 +13,8 @@
     "build": "nest build immich && nest build microservices && nest build cli",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug 0.0.0.0:9230 --watch",
+    "start:dev": "nest start --watch --tsc",
+    "start:debug": "nest start --debug 0.0.0.0:9230 --watch --tsc",
     "start:prod": "node dist/main",
     "lint": "eslint \"{apps,libs}/**/*.ts\" --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
@@ -75,7 +75,7 @@
     "socket.io-redis": "^6.1.1",
     "swagger-ui-express": "^4.4.0",
     "systeminformation": "^5.11.0",
-    "typeorm": "^0.3.6"
+    "typeorm": "^0.3.10"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.8",
@@ -107,10 +107,10 @@
     "source-map-support": "^0.5.20",
     "supertest": "^6.1.3",
     "ts-jest": "^27.0.3",
-    "ts-loader": "^9.2.3",
-    "ts-node": "^10.0.0",
+    "ts-loader": "^9.4.1",
+    "ts-node": "^10.9.1",
     "tsconfig-paths": "^3.10.1",
-    "typescript": "^4.3.5"
+    "typescript": "^4.8.4"
   },
   "jest": {
     "clearMocks": true,

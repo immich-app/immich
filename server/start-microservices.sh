@@ -1,1 +1,1 @@
-node dist/apps/microservices/apps/microservices/src/main
+node dist/apps/microservices/main

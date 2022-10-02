@@ -1,1 +1,1 @@
-node dist/apps/immich/apps/immich/src/main
+node dist/apps/immich/main
