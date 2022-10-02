@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, ValidationPipe, Query, Put, Param } from '@nestjs/common';
+import { Controller, Get, Body, UseGuards, ValidationPipe, Put, Param } from '@nestjs/common';
 import { JobService } from './job.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
