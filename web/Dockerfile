@@ -1,20 +1,26 @@
 # Our Node base image
 FROM node:16-alpine3.14 as base
 
-WORKDIR /usr/src/app
+COPY LICENSE /licenses/LICENSE.txt
+COPY LICENSE /LICENSE
 
-RUN chown node:node /usr/src/app
+WORKDIR /usr/src/app
 
 RUN apk add --no-cache setpriv
 
-COPY --chown=node:node package*.json ./
+COPY package*.json ./
 
 RUN npm ci
 
-COPY --chown=node:node . .
+COPY . .
 
 RUN npm run build
 
+RUN   chown -R node:0 /usr/src/app \
+  &&  chmod -R g=u /usr/src/app
+
+RUN addgroup node root
+USER node
 EXPOSE 3000
 
 FROM base AS dev

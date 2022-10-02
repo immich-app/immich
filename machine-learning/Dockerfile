@@ -7,8 +7,9 @@ WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
 
-RUN apt-get update
-RUN apt-get install gcc g++ make cmake python3 python3-pip ffmpeg -y
+RUN   apt-get update \
+  &&  apt-get install --no-install-recommends gcc g++ make cmake python3 python3-pip ffmpeg -y \
+  &&  apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN npm ci
 RUN npm rebuild @tensorflow/tfjs-node --build-from-source
@@ -23,6 +24,9 @@ FROM node:16-bullseye-slim
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+COPY LICENSE /licenses/LICENSE.txt
+COPY LICENSE /LICENSE
+
 WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
@@ -30,13 +34,19 @@ COPY entrypoint.sh ./
 
 RUN mkdir -p /usr/src/app/dist \
   && mkdir -p /usr/src/app/node_modules \
+  && mkdir -p /usr/src/app/.reverse-geocoding-dump \
   && apt-get update \
-  && apt-get install -y ffmpeg \
-  && rm -rf /var/cache/apt/lists
+  && apt-get install --no-install-recommends -y ffmpeg \
+  && apt-get clean \
+  && rm -rf /var/cache/apt/lists/*
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 
 RUN npm prune --production
 
-# CMD [ "node", "dist/main" ]
+RUN   chown -R node:0 /usr/src/app \
+  &&  chmod -R g=u /usr/src/app
+
+RUN addgroup node root
+USER node
