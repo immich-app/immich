@@ -363,7 +363,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
       await _getBackupAlbumsInfo();
       await _updateServerInfo();
-      await _updateBackupAssetCount();
+      //await _updateBackupAssetCount();
     }
   }
 

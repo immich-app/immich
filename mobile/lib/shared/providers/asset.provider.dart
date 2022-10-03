@@ -66,6 +66,19 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
       }
     }
   }
+
+  deleteLocalAssets(Set<AssetEntity> deleteLocalAssets) async {
+    var deleteIdList = <String>[];
+    for (var asset in deleteLocalAssets) {
+      deleteIdList.add(asset.id);
+    }
+
+    try {
+      await PhotoManager.editor.deleteWithIds(deleteIdList);
+    } catch (e) {
+      debugPrint("Delete asset from device failed: $e");
+    }
+  }
 }
 
 final assetProvider =

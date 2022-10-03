@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
   const ControlBottomAppBar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final homePageState = ref.watch(homePageStateProvider);
     return Positioned(
       bottom: 0,
       left: 0,
@@ -36,7 +38,20 @@ class ControlBottomAppBar extends ConsumerWidget {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
-                          return const DeleteDialog();
+                          return DeleteDialog(
+                            title: "delete_dialog_title",
+                            subtitle: "delete_dialog_alert",
+                            deleteFunction: () {
+                              ref
+                                  .watch(assetProvider.notifier)
+                                  .deleteAssets(homePageState.selectedItems);
+                              ref
+                                  .watch(homePageStateProvider.notifier)
+                                  .disableMultiSelect();
+
+                              Navigator.of(context).pop();
+                            },
+                          );
                         },
                       );
                     },

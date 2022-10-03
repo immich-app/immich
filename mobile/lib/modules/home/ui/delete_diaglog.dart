@@ -1,21 +1,26 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 
 class DeleteDialog extends ConsumerWidget {
-  const DeleteDialog({Key? key}) : super(key: key);
+  final String title;
+  final String subtitle;
+  final Function deleteFunction;
+
+  const DeleteDialog(
+      {Key? key,
+      required this.title,
+      required this.subtitle,
+      required this.deleteFunction})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final homePageState = ref.watch(homePageStateProvider);
-
     return AlertDialog(
       backgroundColor: Colors.grey[200],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      title: const Text("delete_dialog_title").tr(),
-      content: const Text("delete_dialog_alert").tr(),
+      title: Text(title).tr(),
+      content: Text(subtitle).tr(),
       actions: [
         TextButton(
           onPressed: () {
@@ -28,12 +33,7 @@ class DeleteDialog extends ConsumerWidget {
         ),
         TextButton(
           onPressed: () {
-            ref
-                .watch(assetProvider.notifier)
-                .deleteAssets(homePageState.selectedItems);
-            ref.watch(homePageStateProvider.notifier).disableMultiSelect();
-
-            Navigator.of(context).pop();
+            deleteFunction();
           },
           child: Text(
             "delete_dialog_ok",

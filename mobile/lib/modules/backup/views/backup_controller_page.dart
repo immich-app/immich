@@ -147,6 +147,62 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
+    // ListTile _buildDeleteLocalAssetsController() {
+    //   // BackupInfoCard(
+    //   //   title: "Assets are all uploaded",
+    //   //   subtitle: "Delete",
+    //   //   info:
+    //   //       "${backupState.allUniqueAssets.length == backupState.selectedAlbumsBackupAssetsIds.length}",
+    //   // ),
+
+    // var isUploaded = backupState.allUniqueAssets.length ==
+    //     backupState.selectedAlbumsBackupAssetsIds.length;
+    //   var backupBtnText = authenticationState.deviceInfo.isAutoBackup
+    //       ? "backup_controller_page_turn_off".tr()
+    //       : "backup_controller_page_turn_on".tr();
+    //   return ListTile(
+    //     leading: isUploaded
+    //         ? Icon(
+    //             Icons.delete_forever_rounded,
+    //             color: Theme.of(context).primaryColor,
+    //           )
+    //         : const Icon(Icons.cloud_upload_rounded),
+    //     title: Text(
+    //       isUploaded
+    //           ? "can_delete_backed_up_assets".tr()
+    //           : "cannot_delete_backed_up_assets".tr(),
+    //       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+    //     ),
+    //     subtitle: Padding(
+    //       padding: const EdgeInsets.symmetric(vertical: 8.0),
+    //       child: Column(
+    //         crossAxisAlignment: CrossAxisAlignment.start,
+    //         children: [
+    //           if (!isUploaded)
+    //             const Text(
+    //               "delete_backed_up_assets_description",
+    //               style: TextStyle(fontSize: 14),
+    //             ).tr(),
+    //           Padding(
+    //             padding: const EdgeInsets.only(top: 8.0),
+    //             child: ElevatedButton(
+    //               style: ButtonStyle(backgroundColor: isUploaded ? Colors.black : Colors.grey),
+    //               onPressed: () {},
+    //               child: Text(
+    //                 "delete_dialog_ok".tr(),
+    //                 style: const TextStyle(
+    //                   fontWeight: FontWeight.bold,
+    //                   fontSize: 12,
+    //                 ),
+    //               ),
+    //             ),
+    //           )
+    //         ],
+    //       ),
+    //     ),
+    //   );
+    // }
+
     void _showErrorToUser(String msg) {
       final snackBar = SnackBar(
         content: Text(
@@ -619,6 +675,13 @@ class BackupControllerPage extends HookConsumerWidget {
               info:
                   "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
+            //_buildDeleteLocalAssetsController(),
+            // BackupInfoCard(
+            //   title: "Assets are all uploaded",
+            //   subtitle: "Delete",
+            //   info:
+            //       "${backupState.allUniqueAssets.length == backupState.selectedAlbumsBackupAssetsIds.length}",
+            // ),
             const Divider(),
             _buildAutoBackupController(),
             if (Platform.isAndroid) const Divider(),
