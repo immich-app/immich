@@ -62,7 +62,7 @@ export class ThumbnailGeneratorProcessor {
 
     const temp = asset.originalPath.split('/');
     const originalFilename = temp[temp.length - 1].split('.')[0];
-    const jpegThumbnailPath = resizePath + originalFilename + '.jpeg';
+    const jpegThumbnailPath = join(resizePath, `${originalFilename}.jpeg`);
 
     if (asset.type == AssetType.IMAGE) {
       try {
