@@ -23,17 +23,19 @@ class JobId {
 
   String toJson() => value;
 
-  static const thumbnailGeneration = JobId._(r'thumbnail-generation');
-  static const metadataExtraction = JobId._(r'metadata-extraction');
-  static const videoConversion = JobId._(r'video-conversion');
-  static const checksumGeneration = JobId._(r'checksum-generation');
+  static const thumbnailGenerationQueue = JobId._(r'thumbnail-generation-queue');
+  static const metadataExtractionQueue = JobId._(r'metadata-extraction-queue');
+  static const videoConversionQueue = JobId._(r'video-conversion-queue');
+  static const generateChecksumQueue = JobId._(r'generate-checksum-queue');
+  static const assetUploadedQueue = JobId._(r'asset-uploaded-queue');
 
   /// List of all possible values in this [enum][JobId].
   static const values = <JobId>[
-    thumbnailGeneration,
-    metadataExtraction,
-    videoConversion,
-    checksumGeneration,
+    thumbnailGenerationQueue,
+    metadataExtractionQueue,
+    videoConversionQueue,
+    generateChecksumQueue,
+    assetUploadedQueue,
   ];
 
   static JobId? fromJson(dynamic value) => JobIdTypeTransformer().decode(value);
@@ -72,10 +74,11 @@ class JobIdTypeTransformer {
   JobId? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data.toString()) {
-        case r'thumbnail-generation': return JobId.thumbnailGeneration;
-        case r'metadata-extraction': return JobId.metadataExtraction;
-        case r'video-conversion': return JobId.videoConversion;
-        case r'checksum-generation': return JobId.checksumGeneration;
+        case r'thumbnail-generation-queue': return JobId.thumbnailGenerationQueue;
+        case r'metadata-extraction-queue': return JobId.metadataExtractionQueue;
+        case r'video-conversion-queue': return JobId.videoConversionQueue;
+        case r'generate-checksum-queue': return JobId.generateChecksumQueue;
+        case r'asset-uploaded-queue': return JobId.assetUploadedQueue;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

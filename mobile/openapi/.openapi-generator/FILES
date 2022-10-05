@@ -129,6 +129,3 @@ lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 pubspec.yaml
-test/job_command_dto_test.dart
-test/job_command_test.dart
-test/job_id_test.dart
