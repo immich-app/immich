@@ -8,13 +8,7 @@ import { jwtConfig } from '../../config/jwt.config';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
-import {
-  assetUploadedQueueName,
-  metadataExtractionQueueName,
-  videoConversionQueueName,
-  generateChecksumQueueName,
-  QueueNameEnum,
-} from '@app/job';
+import { QueueNameEnum } from '@app/job';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
@@ -34,7 +28,7 @@ import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
         },
       },
       {
-        name: assetUploadedQueueName,
+        name: QueueNameEnum.ASSET_UPLOADED,
         defaultJobOptions: {
           attempts: 3,
           removeOnComplete: true,
@@ -42,7 +36,7 @@ import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
         },
       },
       {
-        name: metadataExtractionQueueName,
+        name: QueueNameEnum.METADATA_EXTRACTION,
         defaultJobOptions: {
           attempts: 3,
           removeOnComplete: true,
@@ -50,7 +44,7 @@ import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
         },
       },
       {
-        name: videoConversionQueueName,
+        name: QueueNameEnum.VIDEO_CONVERSION,
         defaultJobOptions: {
           attempts: 3,
           removeOnComplete: true,
@@ -58,7 +52,7 @@ import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
         },
       },
       {
-        name: generateChecksumQueueName,
+        name: QueueNameEnum.CHECKSUM_GENERATION,
         defaultJobOptions: {
           attempts: 3,
           removeOnComplete: true,

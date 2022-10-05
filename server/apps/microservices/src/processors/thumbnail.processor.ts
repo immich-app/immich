@@ -7,7 +7,6 @@ import {
   generateWEBPThumbnailProcessorName,
   imageTaggingProcessorName,
   objectDetectionProcessorName,
-  metadataExtractionQueueName,
   JpegGeneratorProcessor,
   QueueNameEnum,
 } from '@app/job';
@@ -39,7 +38,7 @@ export class ThumbnailGeneratorProcessor {
 
     private wsCommunicationGateway: CommunicationGateway,
 
-    @InjectQueue(metadataExtractionQueueName)
+    @InjectQueue(QueueNameEnum.METADATA_EXTRACTION)
     private metadataExtractionQueue: Queue,
 
     private configService: ConfigService,

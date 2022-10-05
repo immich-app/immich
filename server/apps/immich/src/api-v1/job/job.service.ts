@@ -4,9 +4,7 @@ import {
   IMetadataExtractionJob,
   IThumbnailGenerationJob,
   IVideoTranscodeJob,
-  metadataExtractionQueueName,
   QueueNameEnum,
-  videoConversionQueueName,
   videoMetadataExtractionProcessorName,
 } from '@app/job';
 import { InjectQueue } from '@nestjs/bull';
@@ -25,10 +23,10 @@ export class JobService {
     @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue<IThumbnailGenerationJob>,
 
-    @InjectQueue(metadataExtractionQueueName)
+    @InjectQueue(QueueNameEnum.METADATA_EXTRACTION)
     private metadataExtractionQueue: Queue<IMetadataExtractionJob>,
 
-    @InjectQueue(videoConversionQueueName)
+    @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
 
     @Inject(ASSET_REPOSITORY)

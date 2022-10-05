@@ -12,11 +12,9 @@ import {
   generateWEBPThumbnailProcessorName,
   IMetadataExtractionJob,
   IVideoTranscodeJob,
-  metadataExtractionQueueName,
   mp4ConversionProcessorName,
   QueueNameEnum,
   reverseGeocodingProcessorName,
-  videoConversionQueueName,
   videoMetadataExtractionProcessorName,
 } from '@app/job';
 import { ConfigService } from '@nestjs/config';
@@ -33,10 +31,10 @@ export class ScheduleTasksService {
     @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue,
 
-    @InjectQueue(videoConversionQueueName)
+    @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
 
-    @InjectQueue(metadataExtractionQueueName)
+    @InjectQueue(QueueNameEnum.METADATA_EXTRACTION)
     private metadataExtractionQueue: Queue<IMetadataExtractionJob>,
 
     private configService: ConfigService,

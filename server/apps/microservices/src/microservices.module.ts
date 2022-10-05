@@ -4,13 +4,7 @@ import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
-import {
-  assetUploadedQueueName,
-  generateChecksumQueueName,
-  metadataExtractionQueueName,
-  QueueNameEnum,
-  videoConversionQueueName,
-} from '@app/job/constants/queue-name.constant';
+import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -50,7 +44,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
         },
       },
       {
-        name: assetUploadedQueueName,
+        name: QueueNameEnum.ASSET_UPLOADED,
         defaultJobOptions: {
           attempts: 3,
           removeOnComplete: true,
@@ -58,7 +52,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
         },
       },
       {
-        name: metadataExtractionQueueName,
+        name: QueueNameEnum.METADATA_EXTRACTION,
         defaultJobOptions: {
           attempts: 3,
           removeOnComplete: true,
@@ -66,7 +60,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
         },
       },
       {
-        name: videoConversionQueueName,
+        name: QueueNameEnum.VIDEO_CONVERSION,
         defaultJobOptions: {
           attempts: 3,
           removeOnComplete: true,
@@ -74,7 +68,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
         },
       },
       {
-        name: generateChecksumQueueName,
+        name: QueueNameEnum.CHECKSUM_GENERATION,
         defaultJobOptions: {
           attempts: 3,
           removeOnComplete: true,

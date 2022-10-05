@@ -9,9 +9,9 @@ import {
   imageTaggingProcessorName,
   objectDetectionProcessorName,
   videoMetadataExtractionProcessorName,
-  metadataExtractionQueueName,
   reverseGeocodingProcessorName,
   IReverseGeocodingProcessor,
+  QueueNameEnum,
 } from '@app/job';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -79,7 +79,7 @@ export interface GeoData {
   distance: number;
 }
 
-@Processor(metadataExtractionQueueName)
+@Processor(QueueNameEnum.METADATA_EXTRACTION)
 export class MetadataExtractionProcessor {
   private isGeocodeInitialized = false;
   private logLevel: ImmichLogLevel;
@@ -109,7 +109,8 @@ export class MetadataExtractionProcessor {
           alternateNames: false,
         },
         countries: [],
-        dumpDirectory: configService.get('REVERSE_GEOCODING_DUMP_DIRECTORY') || (process.cwd() + '/.reverse-geocoding-dump/'),
+        dumpDirectory:
+          configService.get('REVERSE_GEOCODING_DUMP_DIRECTORY') || process.cwd() + '/.reverse-geocoding-dump/',
       }).then(() => {
         this.isGeocodeInitialized = true;
         Logger.log('Reverse Geocoding Initialised');
