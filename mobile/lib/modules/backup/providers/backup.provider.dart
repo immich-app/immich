@@ -300,10 +300,22 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     Set<AssetEntity> assetsFromExcludedAlbums = {};
 
     for (var album in state.selectedBackupAlbums) {
-      var assets = await album.albumEntity.getAssetListRange(
+      var assets;
+      //checks if there are no assets avaible to upload
+      if (await album.albumEntity.assetCountAsync == 0) {
+        state = state.copyWith(
+          backupProgress: BackUpProgressEnum.idle,
+          allAssetsInDatabase: [],
+          allUniqueAssets: {},
+          selectedAlbumsBackupAssetsIds: {},
+        );
+        return;
+      }
+      assets = await album.albumEntity.getAssetListRange(
         start: 0,
         end: await album.albumEntity.assetCountAsync,
       );
+      print(assets);
       assetsFromSelectedAlbums.addAll(assets);
     }
 
@@ -314,20 +326,18 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
       assetsFromExcludedAlbums.addAll(assets);
     }
-
     Set<AssetEntity> allUniqueAssets =
         assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
     var allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
 
-    if (allAssetsInDatabase == null) {
-      return;
-    }
-
-    // Find asset that were backup from selected albums
     Set<String> selectedAlbumsBackupAssets =
         Set.from(allUniqueAssets.map((e) => e.id));
     selectedAlbumsBackupAssets
-        .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
+        .removeWhere((assetId) => !allAssetsInDatabase!.contains(assetId));
+
+    if (allAssetsInDatabase == null) {
+      return;
+    }
 
     if (allUniqueAssets.isEmpty) {
       debugPrint("No Asset On Device");
@@ -363,7 +373,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
       await _getBackupAlbumsInfo();
       await _updateServerInfo();
-      //await _updateBackupAssetCount();
+      await _updateBackupAssetCount();
     }
   }
 
@@ -483,6 +493,57 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
       _updatePersistentAlbumsSelection();
     }
+
+    _updateServerInfo();
+  }
+
+  void _onDeviceCleanup() {
+    if (state.allUniqueAssets.length -
+            state.selectedAlbumsBackupAssetsIds.length ==
+        0) {
+      final latestAssetBackup =
+          state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(
+                (v, e) => e.isAfter(v) ? e : v,
+              );
+      state = state.copyWith(
+        selectedBackupAlbums: state.selectedBackupAlbums
+            .map((e) => e.copyWith(lastBackup: latestAssetBackup))
+            .toSet(),
+        excludedBackupAlbums: state.excludedBackupAlbums
+            .map((e) => e.copyWith(lastBackup: latestAssetBackup))
+            .toSet(),
+        backupProgress: BackUpProgressEnum.done,
+        progressInPercentage: 0.0,
+      );
+      _updatePersistentAlbumsSelection();
+    }
+    // state = state.copyWith(
+    //   selectedAlbumsBackupAssetsIds: {
+    //     ...state.selectedAlbumsBackupAssetsIds,
+    //     deviceAssetId
+    //   },
+    //   allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
+    // );
+
+    // if (state.allUniqueAssets.length -
+    //         state.selectedAlbumsBackupAssetsIds.length ==
+    //     0) {
+    //   final latestAssetBackup =
+    //       state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(
+    //             (v, e) => e.isAfter(v) ? e : v,
+    //           );
+    //   state = state.copyWith(
+    //     selectedBackupAlbums: state.selectedBackupAlbums
+    //         .map((e) => e.copyWith(lastBackup: latestAssetBackup))
+    //         .toSet(),
+    //     excludedBackupAlbums: state.excludedBackupAlbums
+    //         .map((e) => e.copyWith(lastBackup: latestAssetBackup))
+    //         .toSet(),
+    //     backupProgress: BackUpProgressEnum.done,
+    //     progressInPercentage: 0.0,
+    //   );
+    //   _updatePersistentAlbumsSelection();
+    // }
 
     _updateServerInfo();
   }
