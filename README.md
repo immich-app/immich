@@ -46,6 +46,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 - [Installation](#installation)
 - [Update](#update)
 - [Mobile App](#mobile-app)
+- [App Beta Invitation links](#App-Beta-release-channel)
 - [Development](#development)
 - [Support](#support)
 - [Known Issues](#known-issues)
@@ -205,7 +206,11 @@ docker-compose pull && docker-compose up -d
 
 > *The Play/App Store version might be lagging behind the latest release due to the review process.*
 
+# App Beta release channel
 
+You can opt-in to join app beta release channel by following the links below:
+* Android: Invitation link from [web](https://play.google.com/store/apps/details?id=app.alextran.immich) or from [mobile](https://play.google.com/store/apps/details?id=app.alextran.immich)
+* iOS: [TestFlight invitation link](https://testflight.apple.com/join/1vYsAa8P)
   <br/>  
 
 # Development

@@ -189,6 +189,7 @@ class ScrollLabel extends StatelessWidget {
           borderRadius: const BorderRadius.all(Radius.circular(16.0)),
           child: Container(
             constraints: constraints ?? _defaultConstraints,
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
             alignment: Alignment.center,
             child: child,
           ),
@@ -257,8 +258,6 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
   Widget build(BuildContext context) {
     Text? labelText;
     if (widget.labelTextBuilder != null && _isDragInProcess) {
-      int numberOfItems = widget.child.itemCount;
-
       labelText = widget.labelTextBuilder!(_currentItem);
     }
 

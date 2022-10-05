@@ -127,8 +127,8 @@ class ImmichAssetGrid extends HookConsumerWidget {
   }
 
   Text _labelBuilder(int pos) {
-    return Text(
-      "${renderList[pos].month} / ${renderList[pos].year}",
+    final date = renderList[pos].date;
+    return Text(DateFormat.yMMMd().format(date),
       style: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.bold,
@@ -154,6 +154,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
         controller: _itemScrollController,
         backgroundColor: Theme.of(context).hintColor,
         labelTextBuilder: _labelBuilder,
+        labelConstraints: const BoxConstraints(maxHeight: 28),
         scrollbarAnimationDuration: const Duration(seconds: 1),
         scrollbarTimeToFade: const Duration(seconds: 4),
         child: ScrollablePositionedList.builder(
