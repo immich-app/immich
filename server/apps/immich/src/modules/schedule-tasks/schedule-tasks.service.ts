@@ -14,8 +14,8 @@ import {
   IVideoTranscodeJob,
   metadataExtractionQueueName,
   mp4ConversionProcessorName,
+  QueueNameEnum,
   reverseGeocodingProcessorName,
-  thumbnailGeneratorQueueName,
   videoConversionQueueName,
   videoMetadataExtractionProcessorName,
 } from '@app/job';
@@ -30,7 +30,7 @@ export class ScheduleTasksService {
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
-    @InjectQueue(thumbnailGeneratorQueueName)
+    @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue,
 
     @InjectQueue(videoConversionQueueName)

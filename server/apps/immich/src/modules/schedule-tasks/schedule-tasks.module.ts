@@ -5,7 +5,7 @@ import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ScheduleTasksService } from './schedule-tasks.service';
 import {
   metadataExtractionQueueName,
-  thumbnailGeneratorQueueName,
+  QueueNameEnum,
   videoConversionQueueName,
 } from '@app/job/constants/queue-name.constant';
 import { ExifEntity } from '@app/database/entities/exif.entity';
@@ -22,7 +22,7 @@ import { ExifEntity } from '@app/database/entities/exif.entity';
       },
     }),
     BullModule.registerQueue({
-      name: thumbnailGeneratorQueueName,
+      name: QueueNameEnum.THUMBNAIL_GENERATION,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,

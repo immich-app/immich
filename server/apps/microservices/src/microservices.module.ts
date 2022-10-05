@@ -8,7 +8,7 @@ import {
   assetUploadedQueueName,
   generateChecksumQueueName,
   metadataExtractionQueueName,
-  thumbnailGeneratorQueueName,
+  QueueNameEnum,
   videoConversionQueueName,
 } from '@app/job/constants/queue-name.constant';
 import { BullModule } from '@nestjs/bull';
@@ -42,7 +42,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     }),
     BullModule.registerQueue(
       {
-        name: thumbnailGeneratorQueueName,
+        name: QueueNameEnum.THUMBNAIL_GENERATION,
         defaultJobOptions: {
           attempts: 3,
           removeOnComplete: true,

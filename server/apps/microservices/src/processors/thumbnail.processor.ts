@@ -8,8 +8,8 @@ import {
   imageTaggingProcessorName,
   objectDetectionProcessorName,
   metadataExtractionQueueName,
-  thumbnailGeneratorQueueName,
   JpegGeneratorProcessor,
+  QueueNameEnum,
 } from '@app/job';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -26,7 +26,7 @@ import { Repository } from 'typeorm/repository/Repository';
 import { join } from 'path';
 import { CommunicationGateway } from 'apps/immich/src/api-v1/communication/communication.gateway';
 
-@Processor(thumbnailGeneratorQueueName)
+@Processor(QueueNameEnum.THUMBNAIL_GENERATION)
 export class ThumbnailGeneratorProcessor {
   private logLevel: ImmichLogLevel;
 
@@ -34,7 +34,7 @@ export class ThumbnailGeneratorProcessor {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @InjectQueue(thumbnailGeneratorQueueName)
+    @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue,
 
     private wsCommunicationGateway: CommunicationGateway,

@@ -6,13 +6,13 @@ import {
   IVideoTranscodeJob,
   assetUploadedQueueName,
   metadataExtractionQueueName,
-  thumbnailGeneratorQueueName,
   videoConversionQueueName,
   assetUploadedProcessorName,
   exifExtractionProcessorName,
   generateJPEGThumbnailProcessorName,
   mp4ConversionProcessorName,
   videoMetadataExtractionProcessorName,
+  QueueNameEnum,
 } from '@app/job';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Job, Queue } from 'bull';
@@ -21,7 +21,7 @@ import { randomUUID } from 'crypto';
 @Processor(assetUploadedQueueName)
 export class AssetUploadedProcessor {
   constructor(
-    @InjectQueue(thumbnailGeneratorQueueName)
+    @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue<IThumbnailGenerationJob>,
 
     @InjectQueue(metadataExtractionQueueName)

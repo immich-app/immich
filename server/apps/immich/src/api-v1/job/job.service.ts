@@ -6,7 +6,6 @@ import {
   IVideoTranscodeJob,
   metadataExtractionQueueName,
   QueueNameEnum,
-  thumbnailGeneratorQueueName,
   videoConversionQueueName,
   videoMetadataExtractionProcessorName,
 } from '@app/job';
@@ -23,7 +22,7 @@ import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 @Injectable()
 export class JobService {
   constructor(
-    @InjectQueue(thumbnailGeneratorQueueName)
+    @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue<IThumbnailGenerationJob>,
 
     @InjectQueue(metadataExtractionQueueName)

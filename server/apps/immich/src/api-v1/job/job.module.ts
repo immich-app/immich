@@ -9,11 +9,11 @@ import { UserEntity } from '@app/database/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import {
-  thumbnailGeneratorQueueName,
   assetUploadedQueueName,
   metadataExtractionQueueName,
   videoConversionQueueName,
   generateChecksumQueueName,
+  QueueNameEnum,
 } from '@app/job';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
@@ -26,7 +26,7 @@ import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
     JwtModule.register(jwtConfig),
     BullModule.registerQueue(
       {
-        name: thumbnailGeneratorQueueName,
+        name: QueueNameEnum.THUMBNAIL_GENERATION,
         defaultJobOptions: {
           attempts: 3,
           removeOnComplete: true,
