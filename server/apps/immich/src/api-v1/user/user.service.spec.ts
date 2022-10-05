@@ -65,6 +65,7 @@ describe('UserService', () => {
       getByEmail: jest.fn(),
       getList: jest.fn(),
       update: jest.fn(),
+      delete: jest.fn(),
     };
 
     sui = new UserService(userRepositoryMock);
@@ -132,6 +133,18 @@ describe('UserService', () => {
         shouldChangePassword: true,
       });
       expect(result).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('admin can delete any user', async () => {
+      const userToDelete = immichUser;
+
+      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(userToDelete));
+      userRepositoryMock.delete.mockImplementationOnce(() => Promise.resolve(userToDelete));
+
+      const result = await sui.deleteUser(userToDelete.id);
+
+      expect(result).toBeDefined();
+      expect(result.id).toEqual(userToDelete.id);
     });
   });
 });

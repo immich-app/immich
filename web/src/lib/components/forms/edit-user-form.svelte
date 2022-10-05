@@ -63,6 +63,24 @@
 			});
 		}
 	};
+
+	const deleteUser = async () => {
+		try {
+			if (window.confirm('Do you want to delete the user?')) {
+				const { status } = await api.userApi.deleteUser(user.id);
+
+				if (status == 200) {
+					dispatch('delete-success');
+				}
+			}
+		} catch (e) {
+			console.error('Error deleting user', e);
+			notificationController.show({
+				message: 'Error deleting user, check console for more details',
+				type: NotificationType.Error
+			});
+		}
+	};
 </script>
 
 <div class="border bg-white p-4 shadow-sm w-[500px] rounded-3xl py-8">
@@ -121,6 +139,11 @@
 				on:click={resetPassword}
 				class="flex-1 transition-colors bg-[#F9DEDC] hover:bg-red-50 text-[#410E0B] px-6 py-3 rounded-full w-full font-medium"
 				>Reset password
+			</button>
+			<button
+					on:click={deleteUser}
+					class="flex-1 transition-colors bg-[#F9DEDC] hover:bg-red-50 text-[#410E0B] px-6 py-3 rounded-full w-full font-medium"
+			>Delete user
 			</button>
 			<button
 				type="submit"

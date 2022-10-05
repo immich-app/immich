@@ -22,6 +22,7 @@
 	let shouldShowEditUserForm = false;
 	let shouldShowCreateUserForm = false;
 	let shouldShowInfoPanel = false;
+	let shouldShowDeletionPanel = false;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AdminSideBarSelection;
@@ -49,11 +50,19 @@
 		shouldShowEditUserForm = false;
 	};
 
-	const onEditPasswordSuccess = async () => {
+	const onDeleteUserSuccess = async () => {
 		const getAllUsersRes = await api.userApi.getAllUsers(false);
 		data.allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
+		shouldShowInfoPanel = false;
+		shouldShowDeletionPanel = true;
+	};
+
+	const onEditPasswordSuccess = async () => {
+		shouldShowEditUserForm = false;
 		shouldShowInfoPanel = true;
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
 	};
 </script>
 
@@ -74,6 +83,7 @@
 		<EditUserForm
 			user={editUser}
 			on:edit-success={onEditUserSuccess}
+			on:delete-success={onDeleteUserSuccess}
 			on:reset-password-success={onEditPasswordSuccess}
 		/>
 	</FullScreenModal>
@@ -97,6 +107,28 @@
 					on:click={() => (shouldShowInfoPanel = false)}
 					class="mt-6 bg-immich-primary hover:bg-immich-primary/75 px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
 					>Done
+				</button>
+			</div>
+		</div>
+	</FullScreenModal>
+{/if}
+
+{#if shouldShowDeletionPanel}
+	<FullScreenModal on:clickOutside={() => (shouldShowDeletionPanel = false)}>
+		<div class="border bg-white shadow-sm w-[500px] rounded-3xl p-8 text-sm">
+			<h1 class="font-medium text-immich-primary text-lg mb-4">User deleted successfully</h1>
+
+			<p>
+				The user has been deleted successfully.
+				<br />
+				The files associated with the user have not been deleted.
+			</p>
+
+			<div class="flex w-full">
+				<button
+						on:click={() => (shouldShowDeletionPanel = false)}
+						class="mt-6 bg-immich-primary hover:bg-immich-primary/75 px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
+				>Done
 				</button>
 			</div>
 		</div>

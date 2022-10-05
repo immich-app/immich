@@ -144,4 +144,24 @@ export class UserService {
       throw new NotFoundException('User does not have a profile image');
     }
   }
+
+  async deleteUser(userId: string): Promise<UserResponseDto> {
+    const user = await this.userRepository.get(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.isAdmin) {
+        throw new BadRequestException('Cannot delete admin user');
+    }
+
+    try {
+      const deletedUser = await this.userRepository.delete(user);
+
+      return mapUser(deletedUser);
+    } catch (e) {
+      Logger.error(e, 'Delete user');
+      throw new InternalServerErrorException('Failed to delete user');
+    }
+  }
 }

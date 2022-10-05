@@ -11,6 +11,7 @@ export interface IUserRepository {
   getByEmail(email: string): Promise<UserEntity | null>;
   getList(filter?: { excludeId?: string }): Promise<UserEntity[]>;
   create(createUserDto: CreateUserDto): Promise<UserEntity>;
+  delete(user: UserEntity) : Promise<UserEntity>
   update(user: UserEntity, updateUserDto: UpdateUserDto): Promise<UserEntity>;
   createProfileImage(user: UserEntity, fileInfo: Express.Multer.File): Promise<UserEntity>;
 }
@@ -86,6 +87,10 @@ export class UserRepository implements IUserRepository {
     }
 
     return this.userRepository.save(user);
+  }
+
+  async delete(user: UserEntity): Promise<UserEntity> {
+    return this.userRepository.remove(user);
   }
 
   async createProfileImage(user: UserEntity, fileInfo: Express.Multer.File): Promise<UserEntity> {

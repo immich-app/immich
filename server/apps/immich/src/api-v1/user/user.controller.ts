@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -63,6 +64,14 @@ export class UserController {
     @Body(new ValidationPipe({ transform: true })) createUserDto: CreateUserDto,
   ): Promise<UserResponseDto> {
     return await this.userService.createUser(createUserDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(AdminRolesGuard)
+  @Delete(':userId')
+  async deleteUser(@Param("userId") userId: string): Promise<UserResponseDto> {
+    return await this.userService.deleteUser(userId);
   }
 
   @Get('/count')
