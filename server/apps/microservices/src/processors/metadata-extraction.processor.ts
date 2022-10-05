@@ -96,7 +96,7 @@ export class MetadataExtractionProcessor {
 
     private configService: ConfigService,
   ) {
-    if (configService.get('DISABLE_REVERSE_GEOCODING') !== 'true') {
+    if (!configService.get('DISABLE_REVERSE_GEOCODING')) {
       Logger.log('Initialising Reverse Geocoding');
       geocoderInit({
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
