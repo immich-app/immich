@@ -20,15 +20,15 @@ class JobCounts {
     required this.waiting,
   });
 
-  num active;
+  int active;
 
-  num completed;
+  int completed;
 
-  num failed;
+  int failed;
 
-  num delayed;
+  int delayed;
 
-  num waiting;
+  int waiting;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobCounts &&
@@ -79,21 +79,11 @@ class JobCounts {
       }());
 
       return JobCounts(
-        active: json[r'active'] == null
-            ? null
-            : num.parse(json[r'active'].toString()),
-        completed: json[r'completed'] == null
-            ? null
-            : num.parse(json[r'completed'].toString()),
-        failed: json[r'failed'] == null
-            ? null
-            : num.parse(json[r'failed'].toString()),
-        delayed: json[r'delayed'] == null
-            ? null
-            : num.parse(json[r'delayed'].toString()),
-        waiting: json[r'waiting'] == null
-            ? null
-            : num.parse(json[r'waiting'].toString()),
+        active: mapValueOfType<int>(json, r'active')!,
+        completed: mapValueOfType<int>(json, r'completed')!,
+        failed: mapValueOfType<int>(json, r'failed')!,
+        delayed: mapValueOfType<int>(json, r'delayed')!,
+        waiting: mapValueOfType<int>(json, r'waiting')!,
       );
     }
     return null;

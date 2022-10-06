@@ -1,10 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class JobCounts {
+  @ApiProperty({ type: 'integer' })
   active!: number;
+  @ApiProperty({ type: 'integer' })
   completed!: number;
+  @ApiProperty({ type: 'integer' })
   failed!: number;
+  @ApiProperty({ type: 'integer' })
   delayed!: number;
+  @ApiProperty({ type: 'integer' })
   waiting!: number;
 }
 export class AllJobStatusResponseDto {
