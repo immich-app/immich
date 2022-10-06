@@ -34,6 +34,6 @@ jobs:
           git init
           git add .
           git commit -m "Update SDK"
-          git remote add origin https://immich-app:"${{ secrets.GITHUB_TOKEN }}"@$github.com/immich-app/typescript-axios-sdk.git
+          git remote add origin https://immich-app:"${{ secrets.GITHUB_TOKEN }}"@github.com/immich-app/typescript-axios-sdk.git
           git pull origin main
           git push origin main
