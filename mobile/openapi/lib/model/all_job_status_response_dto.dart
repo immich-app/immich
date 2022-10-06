@@ -16,9 +16,11 @@ class AllJobStatusResponseDto {
     required this.thumbnailGenerationQueueCount,
     required this.metadataExtractionQueueCount,
     required this.videoConversionQueueCount,
+    required this.machineLearningQueueCount,
     required this.isThumbnailGenerationActive,
     required this.isMetadataExtractionActive,
     required this.isVideoConversionActive,
+    required this.isMachineLearningActive,
   });
 
   JobCounts thumbnailGenerationQueueCount;
@@ -27,20 +29,26 @@ class AllJobStatusResponseDto {
 
   JobCounts videoConversionQueueCount;
 
+  JobCounts machineLearningQueueCount;
+
   bool isThumbnailGenerationActive;
 
   bool isMetadataExtractionActive;
 
   bool isVideoConversionActive;
 
+  bool isMachineLearningActive;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
      other.thumbnailGenerationQueueCount == thumbnailGenerationQueueCount &&
      other.metadataExtractionQueueCount == metadataExtractionQueueCount &&
      other.videoConversionQueueCount == videoConversionQueueCount &&
+     other.machineLearningQueueCount == machineLearningQueueCount &&
      other.isThumbnailGenerationActive == isThumbnailGenerationActive &&
      other.isMetadataExtractionActive == isMetadataExtractionActive &&
-     other.isVideoConversionActive == isVideoConversionActive;
+     other.isVideoConversionActive == isVideoConversionActive &&
+     other.isMachineLearningActive == isMachineLearningActive;
 
   @override
   int get hashCode =>
@@ -48,21 +56,25 @@ class AllJobStatusResponseDto {
     (thumbnailGenerationQueueCount.hashCode) +
     (metadataExtractionQueueCount.hashCode) +
     (videoConversionQueueCount.hashCode) +
+    (machineLearningQueueCount.hashCode) +
     (isThumbnailGenerationActive.hashCode) +
     (isMetadataExtractionActive.hashCode) +
-    (isVideoConversionActive.hashCode);
+    (isVideoConversionActive.hashCode) +
+    (isMachineLearningActive.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueueCount=$thumbnailGenerationQueueCount, metadataExtractionQueueCount=$metadataExtractionQueueCount, videoConversionQueueCount=$videoConversionQueueCount, isThumbnailGenerationActive=$isThumbnailGenerationActive, isMetadataExtractionActive=$isMetadataExtractionActive, isVideoConversionActive=$isVideoConversionActive]';
+  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueueCount=$thumbnailGenerationQueueCount, metadataExtractionQueueCount=$metadataExtractionQueueCount, videoConversionQueueCount=$videoConversionQueueCount, machineLearningQueueCount=$machineLearningQueueCount, isThumbnailGenerationActive=$isThumbnailGenerationActive, isMetadataExtractionActive=$isMetadataExtractionActive, isVideoConversionActive=$isVideoConversionActive, isMachineLearningActive=$isMachineLearningActive]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'thumbnailGenerationQueueCount'] = thumbnailGenerationQueueCount;
       _json[r'metadataExtractionQueueCount'] = metadataExtractionQueueCount;
       _json[r'videoConversionQueueCount'] = videoConversionQueueCount;
+      _json[r'machineLearningQueueCount'] = machineLearningQueueCount;
       _json[r'isThumbnailGenerationActive'] = isThumbnailGenerationActive;
       _json[r'isMetadataExtractionActive'] = isMetadataExtractionActive;
       _json[r'isVideoConversionActive'] = isVideoConversionActive;
+      _json[r'isMachineLearningActive'] = isMachineLearningActive;
     return _json;
   }
 
@@ -88,9 +100,11 @@ class AllJobStatusResponseDto {
         thumbnailGenerationQueueCount: JobCounts.fromJson(json[r'thumbnailGenerationQueueCount'])!,
         metadataExtractionQueueCount: JobCounts.fromJson(json[r'metadataExtractionQueueCount'])!,
         videoConversionQueueCount: JobCounts.fromJson(json[r'videoConversionQueueCount'])!,
+        machineLearningQueueCount: JobCounts.fromJson(json[r'machineLearningQueueCount'])!,
         isThumbnailGenerationActive: mapValueOfType<bool>(json, r'isThumbnailGenerationActive')!,
         isMetadataExtractionActive: mapValueOfType<bool>(json, r'isMetadataExtractionActive')!,
         isVideoConversionActive: mapValueOfType<bool>(json, r'isVideoConversionActive')!,
+        isMachineLearningActive: mapValueOfType<bool>(json, r'isMachineLearningActive')!,
       );
     }
     return null;
@@ -143,9 +157,11 @@ class AllJobStatusResponseDto {
     'thumbnailGenerationQueueCount',
     'metadataExtractionQueueCount',
     'videoConversionQueueCount',
+    'machineLearningQueueCount',
     'isThumbnailGenerationActive',
     'isMetadataExtractionActive',
     'isVideoConversionActive',
+    'isMachineLearningActive',
   };
 }
 

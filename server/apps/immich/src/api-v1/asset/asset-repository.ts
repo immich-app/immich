@@ -46,9 +46,9 @@ export class AssetRepository implements IAssetRepository {
   async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
     return await this.assetRepository
       .createQueryBuilder('asset')
-      .leftJoinAndSelect('asset.exifInfo', 'ei')
+      .leftJoinAndSelect('asset.smartInfo', 'si')
       .where('asset.resizePath IS NOT NULL')
-      .andWhere('ei.id IS NULL')
+      .andWhere('si.id IS NULL')
       .getMany();
   }
 

@@ -9,7 +9,7 @@ import axios from 'axios';
 import { Job } from 'bull';
 import { Repository } from 'typeorm';
 
-@Processor(QueueNameEnum.METADATA_EXTRACTION)
+@Processor(QueueNameEnum.MACHINE_LEARNING)
 export class MachineLearningProcessor {
   constructor(
     @InjectRepository(SmartInfoEntity)

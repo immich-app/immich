@@ -13,6 +13,7 @@ import { CommunicationModule } from '../../immich/src/api-v1/communication/commu
 import { MicroservicesService } from './microservices.service';
 import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
 import { GenerateChecksumProcessor } from './processors/generate-checksum.processor';
+import { MachineLearningProcessor } from './processors/machine-learning.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
@@ -94,6 +95,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     MetadataExtractionProcessor,
     VideoTranscodeProcessor,
     GenerateChecksumProcessor,
+    MachineLearningProcessor,
     ConfigService,
   ],
   exports: [],

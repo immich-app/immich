@@ -77,12 +77,39 @@
 			});
 		}
 	};
+
+	const runMachineLearning = async () => {
+		try {
+			const { data } = await api.jobApi.sendJobCommand(JobId.MachineLearning, {
+				command: JobCommand.Start
+			});
+
+			if (data) {
+				notificationController.show({
+					message: `Object detection job started for ${data} asset`,
+					type: NotificationType.Info
+				});
+			} else {
+				notificationController.show({
+					message: `No missing object detection found`,
+					type: NotificationType.Info
+				});
+			}
+		} catch (e) {
+			console.log('[ERROR] runMachineLearning', e);
+
+			notificationController.show({
+				message: `Error running machine learning job, check console for more detail`,
+				type: NotificationType.Error
+			});
+		}
+	};
 </script>
 
 <div class="flex flex-col gap-6">
 	<JobTile
 		title={'Generate thumbnails'}
-		subtitle={'Regenerate missing thumbnail (JPEG, WEBP) for all assets'}
+		subtitle={'Regenerate missing thumbnail (JPEG, WEBP)'}
 		on:click={runThumbnailGeneration}
 		jobStatus={allJobsStatus?.isThumbnailGenerationActive}
 		waitingJobCount={allJobsStatus?.thumbnailGenerationQueueCount.waiting}
@@ -91,7 +118,7 @@
 
 	<JobTile
 		title={'Extract EXIF'}
-		subtitle={'Extract missing EXIF information for all assets'}
+		subtitle={'Extract missing EXIF information'}
 		on:click={runExtractEXIF}
 		jobStatus={allJobsStatus?.isMetadataExtractionActive}
 		waitingJobCount={allJobsStatus?.metadataExtractionQueueCount.waiting}
@@ -100,10 +127,10 @@
 
 	<JobTile
 		title={'Detect objects'}
-		subtitle={'Detect and classify missing objects in all assets'}
-		on:click={runExtractEXIF}
-		jobStatus={allJobsStatus?.isMetadataExtractionActive}
-		waitingJobCount={allJobsStatus?.metadataExtractionQueueCount.waiting}
-		activeJobCount={allJobsStatus?.metadataExtractionQueueCount.active}
+		subtitle={'Run machine learning process to detect and classify objects'}
+		on:click={runMachineLearning}
+		jobStatus={allJobsStatus?.isMachineLearningActive}
+		waitingJobCount={allJobsStatus?.machineLearningQueueCount.waiting}
+		activeJobCount={allJobsStatus?.machineLearningQueueCount.active}
 	/>
 </div>
