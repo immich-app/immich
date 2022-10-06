@@ -14,8 +14,10 @@ jobs:
       # Checkout your code
       - name: Checkout
         uses: actions/checkout@v2
-
-      # Generate your OpenAPI document (if you don't write it manually)
+        run: |
+          git config --global init.defaultBranch main
+          git config --global user.email "immichbot@immich.app"
+          git config --global user.name "Immich Bot"
 
       # Use the action to generate a client package
       # This uses the default path for the openapi document and thus assumes there is an openapi.json in the current workspace.
@@ -29,4 +31,10 @@ jobs:
       # Do something with the generated client (likely publishing it somewhere)
       - name: Do something with the client
         run: |
-          cd typescript-axios-client && /bin/sh git_push.sh immich-app typescript-axios-sdk "update" "github.com"
+          cd typescript-axios-client  
+          git init
+          git add .
+          git commit -m "Update SDK"
+          git remote add origin git@github.com:immich-app/typescript-axios-sdk.git
+          git pull origin main
+          git push origin main
