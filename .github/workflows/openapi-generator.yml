@@ -9,7 +9,7 @@ on:
 jobs:
   generate-typescript-axios:
     runs-on: ubuntu-latest
-    name: Example
+    name: OpenAPI Generator
     steps:
       # Checkout your code
       - name: Checkout
@@ -29,4 +29,4 @@ jobs:
       # Do something with the generated client (likely publishing it somewhere)
       - name: Do something with the client
         run: |
-          cd typescript-axios-client && ls
+          cd typescript-axios-client && /bin/sh git_push.sh immich-app typescript-axios-sdk "update" "github.com"
