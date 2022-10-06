@@ -38,6 +38,7 @@ jobs:
           push: ${{ github.event_name == 'pull_request' && github.repository == 'immich-app/immich' }}
           tags: |
             altran1502/immich-server:staging
+            altran1502/immich-server:${{ github.event.pull_request.number }}
 
   build_and_push_machine_learning_staging:
     runs-on: ubuntu-latest
@@ -67,6 +68,7 @@ jobs:
           push: ${{ github.event_name == 'pull_request' && github.repository == 'immich-app/immich' }}
           tags: |
             altran1502/immich-machine-learning:staging
+            altran1502/immich-machine-learning:${{ github.event.pull_request.number }}
 
   build_and_push_web_staging:
     runs-on: ubuntu-latest
@@ -96,6 +98,7 @@ jobs:
           push: ${{ github.event_name == 'pull_request' && github.repository == 'immich-app/immich' }}
           tags: |
             altran1502/immich-web:staging
+            altran1502/immich-web:${{ github.event.pull_request.number }}
 
   build_and_push_nginx_staging:
     runs-on: ubuntu-latest
@@ -124,3 +127,4 @@ jobs:
           push: ${{ github.event_name == 'pull_request' && github.repository == 'immich-app/immich' }}
           tags: |
             altran1502/immich-proxy:staging
+            altran1502/immich-proxy:${{ github.event.pull_request.number }}
