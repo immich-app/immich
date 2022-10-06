@@ -31,12 +31,12 @@ jobs:
         run: |
           git config --global init.defaultBranch main
           git config --global pull.rebase false
-          git config --global user.email "immichbot@immich.app"
-          git config --global user.name "Immich Bot"
+          git config --global user.email "alex.tran1502@gmail.com"
+          git config --global user.name "Alex Tran"
           cd typescript-axios-client  
           git init
           git add .
           git commit -m "Update SDK"
-          git remote add origin https://immich-app:"${{ secrets.GH_TOKEN }}"@github.com/immich-app/typescript-axios-sdk.git
+          git remote add origin https://immich-app:"${{ secrets.GH_TOKEN }}"@github.com/immich-app/immich-sdk-typescript-axios.git
           git pull origin main --allow-unrelated-histories
           git push origin main 2>&1 | grep -v 'To https'
