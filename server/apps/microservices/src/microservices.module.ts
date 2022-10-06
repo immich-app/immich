@@ -75,6 +75,14 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
           removeOnFail: false,
         },
       },
+      {
+        name: QueueNameEnum.MACHINE_LEARNING,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      },
     ),
     CommunicationModule,
   ],

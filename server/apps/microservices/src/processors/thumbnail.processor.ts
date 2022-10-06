@@ -5,10 +5,9 @@ import {
   WebpGeneratorProcessor,
   generateJPEGThumbnailProcessorName,
   generateWEBPThumbnailProcessorName,
-  imageTaggingProcessorName,
-  objectDetectionProcessorName,
   JpegGeneratorProcessor,
   QueueNameEnum,
+  MachineLearningJobNameEnum,
 } from '@app/job';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -24,6 +23,7 @@ import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { join } from 'path';
 import { CommunicationGateway } from 'apps/immich/src/api-v1/communication/communication.gateway';
+import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
 
 @Processor(QueueNameEnum.THUMBNAIL_GENERATION)
 export class ThumbnailGeneratorProcessor {
@@ -38,8 +38,8 @@ export class ThumbnailGeneratorProcessor {
 
     private wsCommunicationGateway: CommunicationGateway,
 
-    @InjectQueue(QueueNameEnum.METADATA_EXTRACTION)
-    private metadataExtractionQueue: Queue,
+    @InjectQueue(QueueNameEnum.MACHINE_LEARNING)
+    private machineLearningQueue: Queue<IMachineLearningJob>,
 
     private configService: ConfigService,
   ) {
@@ -79,8 +79,12 @@ export class ThumbnailGeneratorProcessor {
       asset.resizePath = jpegThumbnailPath;
 
       await this.thumbnailGeneratorQueue.add(generateWEBPThumbnailProcessorName, { asset }, { jobId: randomUUID() });
-      await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
-      await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
+      await this.machineLearningQueue.add(MachineLearningJobNameEnum.IMAGE_TAGGING, { asset }, { jobId: randomUUID() });
+      await this.machineLearningQueue.add(
+        MachineLearningJobNameEnum.OBJECT_DETECTION,
+        { asset },
+        { jobId: randomUUID() },
+      );
       this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
 
@@ -109,8 +113,12 @@ export class ThumbnailGeneratorProcessor {
       asset.resizePath = jpegThumbnailPath;
 
       await this.thumbnailGeneratorQueue.add(generateWEBPThumbnailProcessorName, { asset }, { jobId: randomUUID() });
-      await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
-      await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
+      await this.machineLearningQueue.add(MachineLearningJobNameEnum.IMAGE_TAGGING, { asset }, { jobId: randomUUID() });
+      await this.machineLearningQueue.add(
+        MachineLearningJobNameEnum.OBJECT_DETECTION,
+        { asset },
+        { jobId: randomUUID() },
+      );
 
       this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }

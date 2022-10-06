@@ -136,6 +136,7 @@ describe('Album service', () => {
       getAssetCountByUserId: jest.fn(),
       getAssetWithNoEXIF: jest.fn(),
       getAssetWithNoThumbnail: jest.fn(),
+      getAssetWithNoSmartInfo: jest.fn(),
     };
 
     sut = new AlbumService(albumRepositoryMock, assetRepositoryMock);

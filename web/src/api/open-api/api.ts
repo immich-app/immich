@@ -942,11 +942,10 @@ export interface JobCounts {
  */
 
 export const JobId = {
-    ThumbnailGenerationQueue: 'thumbnail-generation-queue',
-    MetadataExtractionQueue: 'metadata-extraction-queue',
-    VideoConversionQueue: 'video-conversion-queue',
-    GenerateChecksumQueue: 'generate-checksum-queue',
-    AssetUploadedQueue: 'asset-uploaded-queue'
+    ThumbnailGeneration: 'thumbnail-generation',
+    MetadataExtraction: 'metadata-extraction',
+    VideoConversion: 'video-conversion',
+    ObjectDetection: 'object-detection'
 } as const;
 
 export type JobId = typeof JobId[keyof typeof JobId];

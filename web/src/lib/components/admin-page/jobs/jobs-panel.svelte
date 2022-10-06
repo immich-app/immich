@@ -85,60 +85,25 @@
 		subtitle={'Regenerate missing thumbnail (JPEG, WEBP) for all assets'}
 		on:click={runThumbnailGeneration}
 		jobStatus={allJobsStatus?.isThumbnailGenerationActive}
-	>
-		<table class="text-left w-full mt-4">
-			<!-- table header -->
-			<thead class="border rounded-md mb-2 bg-gray-50 flex text-immich-primary w-full h-12">
-				<tr class="flex w-full place-items-center">
-					<th class="text-center w-1/3 font-medium text-sm">Status</th>
-					<th class="text-center w-1/3 font-medium text-sm">Active</th>
-					<th class="text-center w-1/3 font-medium text-sm">Waiting</th>
-				</tr>
-			</thead>
-			<tbody class="overflow-y-auto rounded-md w-full max-h-[320px] block border">
-				<tr class="text-center flex place-items-center w-full h-[40px]">
-					<td class="text-sm px-2 w-1/3 text-ellipsis"
-						>{allJobsStatus?.isThumbnailGenerationActive ? 'Active' : 'Idle'}</td
-					>
-					<td class="text-sm px-2 w-1/3 text-ellipsis"
-						>{allJobsStatus?.thumbnailGenerationQueueCount.active}</td
-					>
-					<td class="text-sm px-2 w-1/3 text-ellipsis"
-						>{allJobsStatus?.thumbnailGenerationQueueCount.waiting}</td
-					>
-				</tr>
-			</tbody>
-		</table>
-	</JobTile>
+		waitingJobCount={allJobsStatus?.thumbnailGenerationQueueCount.waiting}
+		activeJobCount={allJobsStatus?.thumbnailGenerationQueueCount.active}
+	/>
 
 	<JobTile
 		title={'Extract EXIF'}
 		subtitle={'Extract missing EXIF information for all assets'}
 		on:click={runExtractEXIF}
 		jobStatus={allJobsStatus?.isMetadataExtractionActive}
-	>
-		<table class="text-left w-full mt-4">
-			<!-- table header -->
-			<thead class="border rounded-md mb-2 bg-gray-50 flex text-immich-primary w-full h-12">
-				<tr class="flex w-full place-items-center">
-					<th class="text-center w-1/3 font-medium text-sm">Status</th>
-					<th class="text-center w-1/3 font-medium text-sm">Active</th>
-					<th class="text-center w-1/3 font-medium text-sm">Waiting</th>
-				</tr>
-			</thead>
-			<tbody class="overflow-y-auto rounded-md w-full max-h-[320px] block border">
-				<tr class="text-center flex place-items-center w-full h-[40px]">
-					<td class="text-sm px-2 w-1/3 text-ellipsis"
-						>{allJobsStatus?.isMetadataExtractionActive ? 'Active' : 'Idle'}</td
-					>
-					<td class="text-sm px-2 w-1/3 text-ellipsis"
-						>{allJobsStatus?.metadataExtractionQueueCount.active}</td
-					>
-					<td class="text-sm px-2 w-1/3 text-ellipsis"
-						>{allJobsStatus?.metadataExtractionQueueCount.waiting}</td
-					>
-				</tr>
-			</tbody>
-		</table>
-	</JobTile>
+		waitingJobCount={allJobsStatus?.metadataExtractionQueueCount.waiting}
+		activeJobCount={allJobsStatus?.metadataExtractionQueueCount.active}
+	/>
+
+	<JobTile
+		title={'Detect objects'}
+		subtitle={'Detect and classify missing objects in all assets'}
+		on:click={runExtractEXIF}
+		jobStatus={allJobsStatus?.isMetadataExtractionActive}
+		waitingJobCount={allJobsStatus?.metadataExtractionQueueCount.waiting}
+		activeJobCount={allJobsStatus?.metadataExtractionQueueCount.active}
+	/>
 </div>

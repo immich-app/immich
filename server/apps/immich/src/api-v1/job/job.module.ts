@@ -59,6 +59,14 @@ import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
           removeOnFail: false,
         },
       },
+      {
+        name: QueueNameEnum.MACHINE_LEARNING,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      },
     ),
   ],
   controllers: [JobController],

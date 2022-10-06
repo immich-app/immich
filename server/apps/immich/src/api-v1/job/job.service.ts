@@ -4,6 +4,7 @@ import {
   IMetadataExtractionJob,
   IThumbnailGenerationJob,
   IVideoTranscodeJob,
+  MachineLearningJobNameEnum,
   QueueNameEnum,
   videoMetadataExtractionProcessorName,
 } from '@app/job';
@@ -14,8 +15,9 @@ import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.
 import { randomUUID } from 'crypto';
 import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
 import { AssetType } from '@app/database/entities/asset.entity';
-import { GetJobDto } from './dto/get-job.dto';
+import { GetJobDto, JobId } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
+import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
 
 @Injectable()
 export class JobService {
@@ -29,6 +31,9 @@ export class JobService {
     @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
 
+    @InjectQueue(QueueNameEnum.MACHINE_LEARNING)
+    private machineLearningQueue: Queue<IMachineLearningJob>,
+
     @Inject(ASSET_REPOSITORY)
     private _assetRepository: IAssetRepository,
   ) {
@@ -39,12 +44,14 @@ export class JobService {
 
   async startJob(jobDto: GetJobDto): Promise<number> {
     switch (jobDto.jobId) {
-      case QueueNameEnum.THUMBNAIL_GENERATION:
+      case JobId.THUMBNAIL_GENERATION:
         return this.runThumbnailGenerationJob();
-      case QueueNameEnum.METADATA_EXTRACTION:
+      case JobId.METADATA_EXTRACTION:
         return this.runMetadataExtractionJob();
-      case QueueNameEnum.VIDEO_CONVERSION:
+      case JobId.VIDEO_CONVERSION:
         return 0;
+      case JobId.MACHINE_LEARNING:
+        return this.runMachineLearningPipeline();
       default:
         throw new BadRequestException('Invalid job id');
     }
@@ -54,6 +61,7 @@ export class JobService {
     const thumbnailGeneratorJobCount = await this.thumbnailGeneratorQueue.getJobCounts();
     const metadataExtractionJobCount = await this.metadataExtractionQueue.getJobCounts();
     const videoConversionJobCount = await this.videoConversionQueue.getJobCounts();
+    const machineLearningJobCount = await this.machineLearningQueue.getJobCounts();
 
     const response = new AllJobStatusResponseDto();
     response.isThumbnailGenerationActive = Boolean(thumbnailGeneratorJobCount.waiting);
@@ -62,23 +70,25 @@ export class JobService {
     response.metadataExtractionQueueCount = metadataExtractionJobCount;
     response.isVideoConversionActive = Boolean(videoConversionJobCount.waiting);
     response.videoConversionQueueCount = videoConversionJobCount;
+    response.isMachineLearningActive = Boolean(machineLearningJobCount.waiting);
+    response.machineLearningQueueCount = machineLearningJobCount;
 
     return response;
   }
 
   async getJobStatus(query: GetJobDto): Promise<JobStatusResponseDto> {
     const response = new JobStatusResponseDto();
-    if (query.jobId === QueueNameEnum.THUMBNAIL_GENERATION) {
+    if (query.jobId === JobId.THUMBNAIL_GENERATION) {
       response.isActive = Boolean((await this.thumbnailGeneratorQueue.getJobCounts()).waiting);
       response.queueCount = await this.thumbnailGeneratorQueue.getJobCounts();
     }
 
-    if (query.jobId === QueueNameEnum.METADATA_EXTRACTION) {
+    if (query.jobId === JobId.METADATA_EXTRACTION) {
       response.isActive = Boolean((await this.metadataExtractionQueue.getJobCounts()).waiting);
       response.queueCount = await this.metadataExtractionQueue.getJobCounts();
     }
 
-    if (query.jobId === QueueNameEnum.VIDEO_CONVERSION) {
+    if (query.jobId === JobId.VIDEO_CONVERSION) {
       response.isActive = Boolean((await this.videoConversionQueue.getJobCounts()).waiting);
       response.queueCount = await this.videoConversionQueue.getJobCounts();
     }
@@ -87,19 +97,22 @@ export class JobService {
   }
 
   async stopJob(query: GetJobDto): Promise<number> {
-    if (query.jobId === QueueNameEnum.THUMBNAIL_GENERATION) {
-      this.thumbnailGeneratorQueue.empty();
+    switch (query.jobId) {
+      case JobId.THUMBNAIL_GENERATION:
+        this.thumbnailGeneratorQueue.empty();
+        return 0;
+      case JobId.METADATA_EXTRACTION:
+        this.metadataExtractionQueue.empty();
+        return 0;
+      case JobId.VIDEO_CONVERSION:
+        this.videoConversionQueue.empty();
+        return 0;
+      case JobId.MACHINE_LEARNING:
+        this.machineLearningQueue.empty();
+        return 0;
+      default:
+        throw new BadRequestException('Invalid job id');
     }
-
-    if (query.jobId === QueueNameEnum.METADATA_EXTRACTION) {
-      this.metadataExtractionQueue.empty();
-    }
-
-    if (query.jobId === QueueNameEnum.VIDEO_CONVERSION) {
-      this.videoConversionQueue.empty();
-    }
-
-    return 0;
   }
 
   private async runThumbnailGenerationJob(): Promise<number> {
@@ -142,5 +155,26 @@ export class JobService {
       }
     }
     return assetsWithNoExif.length;
+  }
+
+  private async runMachineLearningPipeline(): Promise<number> {
+    const jobCount = await this.machineLearningQueue.getJobCounts();
+
+    if (jobCount.waiting > 0) {
+      throw new BadRequestException('Metadata extraction job is already running');
+    }
+
+    const assetWithNoSmartInfo = await this._assetRepository.getAssetWithNoSmartInfo();
+
+    for (const asset of assetWithNoSmartInfo) {
+      await this.machineLearningQueue.add(MachineLearningJobNameEnum.IMAGE_TAGGING, { asset }, { jobId: randomUUID() });
+      await this.machineLearningQueue.add(
+        MachineLearningJobNameEnum.OBJECT_DETECTION,
+        { asset },
+        { jobId: randomUUID() },
+      );
+    }
+
+    return assetWithNoSmartInfo.length;
   }
 }

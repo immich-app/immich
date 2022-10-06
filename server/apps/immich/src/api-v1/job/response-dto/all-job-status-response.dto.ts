@@ -9,21 +9,27 @@ export class JobCounts {
 }
 export class AllJobStatusResponseDto {
   isThumbnailGenerationActive!: boolean;
+  isMetadataExtractionActive!: boolean;
+  isVideoConversionActive!: boolean;
+  isMachineLearningActive!: boolean;
 
   @ApiProperty({
     type: JobCounts,
   })
   thumbnailGenerationQueueCount!: JobCounts;
-  isMetadataExtractionActive!: boolean;
 
   @ApiProperty({
     type: JobCounts,
   })
   metadataExtractionQueueCount!: JobCounts;
-  isVideoConversionActive!: boolean;
 
   @ApiProperty({
     type: JobCounts,
   })
   videoConversionQueueCount!: JobCounts;
+
+  @ApiProperty({
+    type: JobCounts,
+  })
+  machineLearningQueueCount!: JobCounts;
 }
