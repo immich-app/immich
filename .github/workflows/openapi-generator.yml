@@ -6,6 +6,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  repository-projects: write
+
 jobs:
   generate-typescript-axios:
     runs-on: ubuntu-latest
