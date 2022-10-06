@@ -13,8 +13,9 @@ jobs:
     steps:
       # Checkout your code
       - name: Checkout
-        uses: actions/checkout@v2
-        token: ${{ secrets.GH_TOKEN }}
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
 
       # Use the action to generate a client package
       # This uses the default path for the openapi document and thus assumes there is an openapi.json in the current workspace.
