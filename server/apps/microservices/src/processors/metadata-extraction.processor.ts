@@ -1,7 +1,6 @@
 import { ImmichLogLevel } from '@app/common/constants/log-level.constant';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
-import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import {
   IExifExtractionProcessor,
   IVideoLengthExtractionProcessor,
@@ -10,13 +9,12 @@ import {
   reverseGeocodingProcessorName,
   IReverseGeocodingProcessor,
   QueueNameEnum,
-  IThumbnailGenerationJob,
 } from '@app/job';
-import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Job, Queue } from 'bull';
+import { Job } from 'bull';
 import exifr from 'exifr';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
