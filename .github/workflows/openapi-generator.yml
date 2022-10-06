@@ -36,5 +36,5 @@ jobs:
           git add .
           git commit -m "Update SDK"
           git remote add origin https://immich-app:"${{ secrets.GITHUB_TOKEN }}"@github.com/immich-app/typescript-axios-sdk.git
-          git pull origin main
+          git pull origin main --allow-unrelated-histories
           git push origin main 2>&1 | grep -v 'To https'
