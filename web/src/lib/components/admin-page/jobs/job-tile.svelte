@@ -15,6 +15,9 @@
 	<div class="w-[70%]">
 		<h1 class="font-medium text-immich-primary">{title}</h1>
 		<p class="text-sm mt-1 font-medium">{subtitle}</p>
+		<p class="text-sm">
+			<slot />
+		</p>
 		<table class="text-left w-full mt-4">
 			<!-- table header -->
 			<thead class="border rounded-md mb-2 bg-gray-50 flex text-immich-primary w-full h-12">

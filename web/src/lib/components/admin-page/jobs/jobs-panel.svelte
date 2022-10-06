@@ -132,5 +132,7 @@
 		jobStatus={allJobsStatus?.isMachineLearningActive}
 		waitingJobCount={allJobsStatus?.machineLearningQueueCount.waiting}
 		activeJobCount={allJobsStatus?.machineLearningQueueCount.active}
-	/>
+	>
+		Note that some asset does not have any object detected, this is normal.
+	</JobTile>
 </div>
