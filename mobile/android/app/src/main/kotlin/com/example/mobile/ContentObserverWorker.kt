@@ -46,9 +46,6 @@ class ContentObserverWorker(ctx: Context, params: WorkerParameters) : Worker(ctx
          * @param context Android Context
          */
         fun enable(context: Context, immediate: Boolean = false) {
-            // migration to remove any old active background task
-            WorkManager.getInstance(context).cancelUniqueWork("immich/photoListener")
-
             enqueueObserverWorker(context, ExistingWorkPolicy.KEEP)
             Log.d(TAG, "enabled ContentObserverWorker")
             if (immediate) {
@@ -123,8 +120,10 @@ class ContentObserverWorker(ctx: Context, params: WorkerParameters) : Worker(ctx
             WorkManager.getInstance(context).enqueueUniqueWork(TASK_NAME_OBSERVER, policy, work)
         }
 
-        private fun startBackupWorker(context: Context, delayMilliseconds: Long) {
+        fun startBackupWorker(context: Context, delayMilliseconds: Long) {
             val sp = context.getSharedPreferences(BackupWorker.SHARED_PREF_NAME, Context.MODE_PRIVATE)
+            if (!sp.getBoolean(SHARED_PREF_SERVICE_ENABLED, false))
+                return
             val requireWifi = sp.getBoolean(SHARED_PREF_REQUIRE_WIFI, true)
             val requireCharging = sp.getBoolean(SHARED_PREF_REQUIRE_CHARGING, false)
             BackupWorker.enqueueBackupWorker(context, requireWifi, requireCharging, delayMilliseconds)
