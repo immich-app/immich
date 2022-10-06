@@ -14,10 +14,6 @@ jobs:
       # Checkout your code
       - name: Checkout
         uses: actions/checkout@v2
-        run: |
-          git config --global init.defaultBranch main
-          git config --global user.email "immichbot@immich.app"
-          git config --global user.name "Immich Bot"
 
       # Use the action to generate a client package
       # This uses the default path for the openapi document and thus assumes there is an openapi.json in the current workspace.
@@ -31,6 +27,9 @@ jobs:
       # Do something with the generated client (likely publishing it somewhere)
       - name: Do something with the client
         run: |
+          git config --global init.defaultBranch main
+          git config --global user.email "immichbot@immich.app"
+          git config --global user.name "Immich Bot"
           cd typescript-axios-client  
           git init
           git add .
