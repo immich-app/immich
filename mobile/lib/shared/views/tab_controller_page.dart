@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class TabControllerPage extends ConsumerWidget {
@@ -10,8 +10,6 @@ class TabControllerPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var isMultiSelectEnable =
-        ref.watch(homePageStateProvider).isMultiSelectEnable;
 
     return AutoTabsRouter(
       routes: [
@@ -32,7 +30,7 @@ class TabControllerPage extends ConsumerWidget {
               opacity: animation,
               child: child,
             ),
-            bottomNavigationBar: isMultiSelectEnable
+            bottomNavigationBar: false
                 ? null
                 : BottomNavigationBar(
                     selectedLabelStyle: const TextStyle(

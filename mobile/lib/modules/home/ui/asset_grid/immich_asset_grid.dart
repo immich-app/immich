@@ -14,12 +14,13 @@ import 'daily_title_text.dart';
 import 'disable_multi_select_button.dart';
 import 'draggable_scrollbar_custom.dart';
 
-typedef ImmichAssetGridSelectionListener = void Function(bool);
+typedef ImmichAssetGridSelectionListener = void Function(
+    bool, Set<AssetResponseDto>);
 
 class ImmichAssetGridState extends State<ImmichAssetGrid> {
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
-  ItemPositionsListener.create();
+      ItemPositionsListener.create();
 
   bool _scrolling = false;
   bool _multiselect = false;
@@ -37,18 +38,26 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
         .flattened
         .toList();
   }
-  
+
+  Set<AssetResponseDto> _getSelectedAssets() {
+    return _selectedAssets
+        .map((e) => _assets.firstWhereOrNull((a) => a.id == e))
+        .whereNotNull()
+        .toSet();
+  }
+
+  void _callSelectionListener() {
+    widget.listener?.call(_multiselect, _getSelectedAssets());
+  }
+
   void _selectAssets(List<AssetResponseDto> assets) {
     setState(() {
-
-      if (!_multiselect) {
-        _multiselect = true;
-        widget.listener?.call(true);
-      }
-
       for (var e in assets) {
         _selectedAssets.add(e.id);
       }
+
+      _multiselect = true;
+      _callSelectionListener();
     });
   }
 
@@ -60,8 +69,9 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
 
       if (_selectedAssets.isEmpty) {
         _multiselect = false;
-        widget.listener?.call(false);
       }
+
+      _callSelectionListener();
     });
   }
 
@@ -70,11 +80,13 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       _multiselect = false;
       _selectedAssets.clear();
     });
-    widget.listener?.call(false);
+
+    _callSelectionListener();
   }
 
   bool _allAssetsSelected(List<AssetResponseDto> assets) {
-    return _multiselect && assets.firstWhereOrNull((e) => !_selectedAssets.contains(e.id)) == null;
+    return _multiselect &&
+        assets.firstWhereOrNull((e) => !_selectedAssets.contains(e.id)) == null;
   }
 
   double _getItemSize(BuildContext context) {
@@ -113,7 +125,8 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
           key: Key("asset-${asset.id}"),
           width: size,
           height: size,
-          margin: EdgeInsets.only(top: widget.margin, right: last ? 0.0 : widget.margin),
+          margin: EdgeInsets.only(
+              top: widget.margin, right: last ? 0.0 : widget.margin),
           child: _buildThumbnailOrPlaceholder(asset, scrolling),
         );
       }).toList(),
@@ -165,7 +178,8 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
 
   Text _labelBuilder(int pos) {
     final date = widget.renderList[pos].date;
-    return Text(DateFormat.yMMMd().format(date),
+    return Text(
+      DateFormat.yMMMd().format(date),
       style: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.bold,
@@ -230,7 +244,6 @@ class ImmichAssetGrid extends StatefulWidget {
   final double margin;
   final bool showStorageIndicator;
   final ImmichAssetGridSelectionListener? listener;
-
 
   ImmichAssetGrid({
     super.key,

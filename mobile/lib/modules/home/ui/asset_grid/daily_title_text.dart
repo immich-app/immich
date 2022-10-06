@@ -1,8 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
-import 'package:openapi/api.dart';
 
 class DailyTitleText extends ConsumerWidget {
   const DailyTitleText({
