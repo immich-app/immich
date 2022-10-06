@@ -28,6 +28,7 @@ jobs:
       - name: Do something with the client
         run: |
           git config --global init.defaultBranch main
+          git config --global pull.rebase false
           git config --global user.email "immichbot@immich.app"
           git config --global user.name "Immich Bot"
           cd typescript-axios-client  
