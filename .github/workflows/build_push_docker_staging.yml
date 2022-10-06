@@ -2,8 +2,6 @@ name: Build and Push Docker Image - Staging
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
