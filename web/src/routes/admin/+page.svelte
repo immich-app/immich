@@ -4,6 +4,7 @@
 	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
+	import Cog from 'svelte-material-icons/Cog.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import UserManagement from '$lib/components/admin-page/user-management.svelte';
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -12,6 +13,7 @@
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import type { PageData } from './$types';
 	import { api, UserResponseDto } from '@api';
+	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
@@ -104,12 +106,19 @@
 {/if}
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
-	<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col">
+	<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col gap-1">
 		<SideBarButton
-			title="User"
+			title="Users"
 			logo={AccountMultipleOutline}
 			actionType={AdminSideBarSelection.USER_MANAGEMENT}
 			isSelected={selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
+			on:selected={onButtonClicked}
+		/>
+		<SideBarButton
+			title="Jobs"
+			logo={Cog}
+			actionType={AdminSideBarSelection.JOBS}
+			isSelected={selectedAction === AdminSideBarSelection.JOBS}
 			on:selected={onButtonClicked}
 		/>
 
@@ -131,6 +140,9 @@
 						on:create-user={() => (shouldShowCreateUserForm = true)}
 						on:edit-user={editUserHandler}
 					/>
+				{/if}
+				{#if selectedAction === AdminSideBarSelection.JOBS}
+					<JobsPanel />
 				{/if}
 			</section>
 		</section>

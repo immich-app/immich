@@ -8,6 +8,7 @@ doc/AdminSignupResponseDto.md
 doc/AlbumApi.md
 doc/AlbumCountResponseDto.md
 doc/AlbumResponseDto.md
+doc/AllJobStatusResponseDto.md
 doc/AssetApi.md
 doc/AssetCountByTimeBucket.md
 doc/AssetCountByTimeBucketResponseDto.md
@@ -33,6 +34,12 @@ doc/DeviceTypeEnum.md
 doc/ExifResponseDto.md
 doc/GetAssetByTimeBucketDto.md
 doc/GetAssetCountByTimeBucketDto.md
+doc/JobApi.md
+doc/JobCommand.md
+doc/JobCommandDto.md
+doc/JobCounts.md
+doc/JobId.md
+doc/JobStatusResponseDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -59,6 +66,7 @@ lib/api/album_api.dart
 lib/api/asset_api.dart
 lib/api/authentication_api.dart
 lib/api/device_info_api.dart
+lib/api/job_api.dart
 lib/api/server_info_api.dart
 lib/api/user_api.dart
 lib/api_client.dart
@@ -74,6 +82,7 @@ lib/model/add_users_dto.dart
 lib/model/admin_signup_response_dto.dart
 lib/model/album_count_response_dto.dart
 lib/model/album_response_dto.dart
+lib/model/all_job_status_response_dto.dart
 lib/model/asset_count_by_time_bucket.dart
 lib/model/asset_count_by_time_bucket_response_dto.dart
 lib/model/asset_count_by_user_id_response_dto.dart
@@ -96,6 +105,11 @@ lib/model/device_type_enum.dart
 lib/model/exif_response_dto.dart
 lib/model/get_asset_by_time_bucket_dto.dart
 lib/model/get_asset_count_by_time_bucket_dto.dart
+lib/model/job_command.dart
+lib/model/job_command_dto.dart
+lib/model/job_counts.dart
+lib/model/job_id.dart
+lib/model/job_status_response_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart

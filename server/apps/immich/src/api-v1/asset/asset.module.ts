@@ -7,7 +7,7 @@ import { BullModule } from '@nestjs/bull';
 import { BackgroundTaskModule } from '../../modules/background-task/background-task.module';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { CommunicationModule } from '../communication/communication.module';
-import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
+import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
 
 @Module({
@@ -16,7 +16,7 @@ import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
     BackgroundTaskModule,
     TypeOrmModule.forFeature([AssetEntity]),
     BullModule.registerQueue({
-      name: assetUploadedQueueName,
+      name: QueueNameEnum.ASSET_UPLOADED,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,
