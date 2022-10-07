@@ -15,5 +15,5 @@ export class GetAssetThumbnailDto {
     required: false,
     enumName: 'ThumbnailFormat',
   })
-  format = GetAssetThumbnailFormatEnum.WEBP;
+  format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
 }

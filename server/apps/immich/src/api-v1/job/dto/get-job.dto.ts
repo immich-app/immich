@@ -18,5 +18,5 @@ export class GetJobDto {
     enum: JobId,
     enumName: 'JobId',
   })
-  jobId!: string;
+  jobId!: JobId;
 }
