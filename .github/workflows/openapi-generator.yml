@@ -54,4 +54,10 @@ jobs:
           git config --global pull.rebase false
           git config --global user.email "alex.tran1502@gmail.com"
           git config --global user.name "Alex Tran"
-          cd dart-client && ls
+          cd dart-client
+          git init
+          git add .
+          git commit -m "Update SDK"
+          git remote add origin https://immich-app:"${{ secrets.GH_TOKEN }}"@github.com/immich-app/immich-sdk-rust.git
+          git pull origin main --allow-unrelated-histories
+          git push origin main 2>&1 | grep -v 'To https'
