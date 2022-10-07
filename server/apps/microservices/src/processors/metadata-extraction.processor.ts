@@ -20,7 +20,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
-import geocoder, { InitOptions } from 'local-reverse-geocoder';
+import geocoder, { AddressObject, InitOptions } from 'local-reverse-geocoder';
 import { getName } from 'i18n-iso-countries';
 import { find } from 'geo-tz';
 import * as luxon from 'luxon';
@@ -39,20 +39,20 @@ function geocoderLookup(points: { latitude: number; longitude: number }[]) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     geocoder.lookUp(points, 1, (err, addresses) => {
-      resolve(addresses[0][0]);
+      resolve(addresses[0][0] as GeoData);
     });
   });
 }
 
 const geocodingPrecisionLevels = ['cities15000', 'cities5000', 'cities1000', 'cities500'];
 
-export interface AdminCode {
+export type AdminCode = {
   name: string;
   asciiName: string;
   geoNameId: string;
-}
+};
 
-export interface GeoData {
+export type GeoData = {
   geoNameId: string;
   name: string;
   asciiName: string;
@@ -63,8 +63,8 @@ export interface GeoData {
   featureCode: string;
   countryCode: string;
   cc2?: any;
-  admin1Code?: AdminCode;
-  admin2Code?: AdminCode;
+  admin1Code?: AdminCode | string;
+  admin2Code?: AdminCode | string;
   admin3Code?: any;
   admin4Code?: any;
   population: string;
@@ -73,7 +73,7 @@ export interface GeoData {
   timezone: string;
   modificationDate: string;
   distance: number;
-}
+};
 
 @Processor(QueueNameEnum.METADATA_EXTRACTION)
 export class MetadataExtractionProcessor {
@@ -123,10 +123,22 @@ export class MetadataExtractionProcessor {
     const city = geoCodeInfo.name;
 
     let state = '';
-    if (geoCodeInfo.admin2Code?.name) state += geoCodeInfo.admin2Code.name;
-    if (geoCodeInfo.admin1Code?.name) {
-      if (geoCodeInfo.admin2Code?.name) state += ', ';
-      state += geoCodeInfo.admin1Code.name;
+
+    if (geoCodeInfo.admin2Code) {
+      const adminCode2 = geoCodeInfo.admin2Code as AdminCode;
+      state += adminCode2.name;
+    }
+
+    if (geoCodeInfo.admin1Code) {
+      const adminCode1 = geoCodeInfo.admin1Code as AdminCode;
+
+      if (geoCodeInfo.admin2Code) {
+        const adminCode2 = geoCodeInfo.admin2Code as AdminCode;
+        if (adminCode2.name) {
+          state += ', ';
+        }
+      }
+      state += adminCode1.name;
     }
 
     return { country, state, city };
