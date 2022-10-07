@@ -20,7 +20,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
-import geocoder, { AddressObject, InitOptions } from 'local-reverse-geocoder';
+import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import { getName } from 'i18n-iso-countries';
 import { find } from 'geo-tz';
 import * as luxon from 'luxon';
