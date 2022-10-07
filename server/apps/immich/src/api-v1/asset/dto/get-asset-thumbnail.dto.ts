@@ -9,6 +9,7 @@ export enum GetAssetThumbnailFormatEnum {
 export class GetAssetThumbnailDto {
   @IsOptional()
   @ApiProperty({
+    type: String,
     enum: GetAssetThumbnailFormatEnum,
     default: GetAssetThumbnailFormatEnum.WEBP,
     required: false,

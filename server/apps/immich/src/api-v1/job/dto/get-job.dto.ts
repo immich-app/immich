@@ -14,6 +14,7 @@ export class GetJobDto {
     message: `params must be one of ${Object.values(JobId).join()}`,
   })
   @ApiProperty({
+    type: String,
     enum: JobId,
     enumName: 'JobId',
   })
