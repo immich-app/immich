@@ -55,7 +55,7 @@
     "geo-tz": "^7.0.2",
     "i18n-iso-countries": "^7.5.0",
     "joi": "^17.5.0",
-    "local-reverse-geocoder": "^0.12.2",
+    "local-reverse-geocoder": "^0.12.5",
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
     "passport": "^0.6.0",
