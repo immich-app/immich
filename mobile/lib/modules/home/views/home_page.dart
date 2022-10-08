@@ -48,10 +48,12 @@ class HomePage extends HookConsumerWidget {
 
       void onShareAssets() {
         ref.watch(shareServiceProvider).shareAssets(selection.value.toList());
+        multiselectEnabled.value = false;
       }
 
       void onDelete() {
         ref.watch(assetProvider.notifier).deleteAssets(selection.value);
+        multiselectEnabled.value = false;
       }
 
       return SafeArea(
@@ -82,6 +84,7 @@ class HomePage extends HookConsumerWidget {
                 showStorageIndicator: appSettingService
                     .getSetting(AppSettingsEnum.storageIndicator),
                 listener: selectionListener,
+                selectionActive: multiselectEnabled.value,
               ),
             ),
             if (multiselectEnabled.value) ...[

@@ -23,7 +23,6 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       ItemPositionsListener.create();
 
   bool _scrolling = false;
-  bool _multiselect = false;
   Set<String> _selectedAssets = HashSet();
 
   List<AssetResponseDto> get _assets {
@@ -46,8 +45,8 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
         .toSet();
   }
 
-  void _callSelectionListener() {
-    widget.listener?.call(_multiselect, _getSelectedAssets());
+  void _callSelectionListener(bool selectionActive) {
+    widget.listener?.call(selectionActive, _getSelectedAssets());
   }
 
   void _selectAssets(List<AssetResponseDto> assets) {
@@ -55,9 +54,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       for (var e in assets) {
         _selectedAssets.add(e.id);
       }
-
-      _multiselect = true;
-      _callSelectionListener();
+      _callSelectionListener(true);
     });
   }
 
@@ -66,26 +63,20 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       for (var e in assets) {
         _selectedAssets.remove(e.id);
       }
-
-      if (_selectedAssets.isEmpty) {
-        _multiselect = false;
-      }
-
-      _callSelectionListener();
+      _callSelectionListener(_selectedAssets.isNotEmpty);
     });
   }
 
   void _deselectAll() {
     setState(() {
-      _multiselect = false;
       _selectedAssets.clear();
     });
 
-    _callSelectionListener();
+    _callSelectionListener(false);
   }
 
   bool _allAssetsSelected(List<AssetResponseDto> assets) {
-    return _multiselect &&
+    return widget.selectionActive &&
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e.id)) == null;
   }
 
@@ -104,7 +95,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     return ThumbnailImage(
       asset: asset,
       assetList: _assets,
-      multiselectEnabled: _multiselect,
+      multiselectEnabled: widget.selectionActive,
       isSelected: _selectedAssets.contains(asset.id),
       onSelect: () => _selectAssets([asset]),
       onDeselect: () => _deselectAssets([asset]),
@@ -137,7 +128,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       BuildContext context, String title, List<AssetResponseDto> assets) {
     return DailyTitleText(
       isoDate: title,
-      multiselectEnabled: _multiselect,
+      multiselectEnabled: widget.selectionActive,
       onSelect: () => _selectAssets(assets),
       onDeselect: () => _deselectAssets(assets),
       selected: _allAssetsSelected(assets),
@@ -227,12 +218,23 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     );
   }
 
+
+  @override
+  void didUpdateWidget(ImmichAssetGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!widget.selectionActive) {
+      setState(() {
+        _selectedAssets.clear();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         _buildAssetGrid(),
-        if (_multiselect) _buildMultiSelectIndicator(),
+        if (widget.selectionActive) _buildMultiSelectIndicator(),
       ],
     );
   }
@@ -244,6 +246,7 @@ class ImmichAssetGrid extends StatefulWidget {
   final double margin;
   final bool showStorageIndicator;
   final ImmichAssetGridSelectionListener? listener;
+  final bool selectionActive;
 
   ImmichAssetGrid({
     super.key,
@@ -252,6 +255,7 @@ class ImmichAssetGrid extends StatefulWidget {
     required this.showStorageIndicator,
     this.listener,
     this.margin = 5.0,
+    this.selectionActive = false
   });
 
   @override
