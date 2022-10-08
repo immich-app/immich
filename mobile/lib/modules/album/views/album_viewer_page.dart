@@ -1,12 +1,9 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
@@ -15,10 +12,12 @@ import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_appbar.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_editable_title.dart';
+import 'package:immich_mobile/modules/album/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:openapi/api.dart';
 
@@ -29,7 +28,6 @@ class AlbumViewerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appSettingService = ref.watch(appSettingsServiceProvider);
     FocusNode titleFocusNode = useFocusNode();
     ScrollController scrollController = useScrollController();
     var albumInfo = ref.watch(sharedAlbumDetailProvider(albumId));
@@ -190,17 +188,34 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget _buildImageGrid(AlbumResponseDto albumInfo) {
-      final assetsPerRow =
-          appSettingService.getSetting(AppSettingsEnum.tilesPerRow);
+      final appSettingService = ref.watch(appSettingsServiceProvider);
       final bool showStorageIndicator =
           appSettingService.getSetting(AppSettingsEnum.storageIndicator);
-      final renderList = assetsToRenderList(albumInfo.assets, assetsPerRow);
 
-      return ImmichAssetGrid(
-        assetsPerRow: assetsPerRow,
-        renderList: renderList,
-        showStorageIndicator: showStorageIndicator,
-      );
+      if (albumInfo.assets.isNotEmpty) {
+        return SliverPadding(
+          padding: const EdgeInsets.only(top: 10.0),
+          sliver: SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount:
+                  appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
+              crossAxisSpacing: 5.0,
+              mainAxisSpacing: 5,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                return AlbumViewerThumbnail(
+                  asset: albumInfo.assets[index],
+                  assetList: albumInfo.assets,
+                  showStorageIndicator: showStorageIndicator,
+                );
+              },
+              childCount: albumInfo.assetCount,
+            ),
+          ),
+        );
+      }
+      return const SliverToBoxAdapter();
     }
 
     Widget _buildControlButton(AlbumResponseDto albumInfo) {
@@ -233,7 +248,29 @@ class AlbumViewerPage extends HookConsumerWidget {
         onTap: () {
           titleFocusNode.unfocus();
         },
-        child: _buildImageGrid(albumInfo),
+        child: DraggableScrollbar.semicircle(
+          backgroundColor: Theme.of(context).hintColor,
+          controller: scrollController,
+          heightScrollThumb: 48.0,
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              _buildHeader(albumInfo),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: ImmichSliverPersistentAppBarDelegate(
+                  minHeight: 50,
+                  maxHeight: 50,
+                  child: Container(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: _buildControlButton(albumInfo),
+                  ),
+                ),
+              ),
+              _buildImageGrid(albumInfo)
+            ],
+          ),
+        ),
       );
     }
 
