@@ -29,6 +29,9 @@ export interface IAssetRepository {
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
+  getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
+  getAssetWithNoEXIF(): Promise<AssetEntity[]>;
+  getAssetWithNoSmartInfo(): Promise<AssetEntity[]>;
 }
 
 export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
@@ -39,6 +42,33 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
+
+  async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.smartInfo', 'si')
+      .where('asset.resizePath IS NOT NULL')
+      .andWhere('si.id IS NULL')
+      .getMany();
+  }
+
+  async getAssetWithNoThumbnail(): Promise<AssetEntity[]> {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .where('asset.resizePath IS NULL')
+      .orWhere('asset.resizePath = :resizePath', { resizePath: '' })
+      .orWhere('asset.webpPath IS NULL')
+      .orWhere('asset.webpPath = :webpPath', { webpPath: '' })
+      .getMany();
+  }
+
+  async getAssetWithNoEXIF(): Promise<AssetEntity[]> {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.exifInfo', 'ei')
+      .where('ei."assetId" IS NULL')
+      .getMany();
+  }
 
   async getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {
     // Get asset count by AssetType

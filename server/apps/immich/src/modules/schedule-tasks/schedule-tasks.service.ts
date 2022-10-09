@@ -12,11 +12,9 @@ import {
   generateWEBPThumbnailProcessorName,
   IMetadataExtractionJob,
   IVideoTranscodeJob,
-  metadataExtractionQueueName,
   mp4ConversionProcessorName,
+  QueueNameEnum,
   reverseGeocodingProcessorName,
-  thumbnailGeneratorQueueName,
-  videoConversionQueueName,
   videoMetadataExtractionProcessorName,
 } from '@app/job';
 import { ConfigService } from '@nestjs/config';
@@ -30,13 +28,13 @@ export class ScheduleTasksService {
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
-    @InjectQueue(thumbnailGeneratorQueueName)
+    @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue,
 
-    @InjectQueue(videoConversionQueueName)
+    @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
 
-    @InjectQueue(metadataExtractionQueueName)
+    @InjectQueue(QueueNameEnum.METADATA_EXTRACTION)
     private metadataExtractionQueue: Queue<IMetadataExtractionJob>,
 
     private configService: ConfigService,
@@ -108,11 +106,11 @@ export class ScheduleTasksService {
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async extractExif() {
-    const exifAssets = await this.assetRepository.find({
-      where: {
-        exifInfo: IsNull(),
-      },
-    });
+    const exifAssets = await this.assetRepository
+      .createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.exifInfo', 'ei')
+      .where('ei."assetId" IS NULL')
+      .getMany();
 
     for (const asset of exifAssets) {
       if (asset.type === AssetType.VIDEO) {

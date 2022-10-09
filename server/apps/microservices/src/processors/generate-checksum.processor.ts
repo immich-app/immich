@@ -1,5 +1,5 @@
 import { AssetEntity } from '@app/database/entities/asset.entity';
-import { generateChecksumQueueName } from '@app/job';
+import { QueueNameEnum } from '@app/job';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import { FindOptionsWhere, IsNull, MoreThan, QueryFailedError, Repository } from 'typeorm';
 
 // TODO: just temporary task to generate previous uploaded assets.
-@Processor(generateChecksumQueueName)
+@Processor(QueueNameEnum.CHECKSUM_GENERATION)
 export class GenerateChecksumProcessor {
   constructor(
     @InjectRepository(AssetEntity)
@@ -33,7 +33,7 @@ export class GenerateChecksumProcessor {
       const assets = await this.assetRepository.find({
         where: whereStat,
         take: pageSize,
-        order: { id: 'ASC' }
+        order: { id: 'ASC' },
       });
 
       if (!assets?.length) {

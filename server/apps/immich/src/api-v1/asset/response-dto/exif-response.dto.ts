@@ -1,12 +1,16 @@
 import { ExifEntity } from '@app/database/entities/exif.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ExifResponseDto {
-  id?: string | null = null;
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  id?: number | null = null;
   make?: string | null = null;
   model?: string | null = null;
   imageName?: string | null = null;
   exifImageWidth?: number | null = null;
   exifImageHeight?: number | null = null;
+
+  @ApiProperty({ type: 'integer', format: 'int64' })
   fileSizeInByte?: number | null = null;
   orientation?: string | null = null;
   dateTimeOriginal?: Date | null = null;
@@ -25,13 +29,13 @@ export class ExifResponseDto {
 
 export function mapExif(entity: ExifEntity): ExifResponseDto {
   return {
-    id: entity.id,
+    id: parseInt(entity.id),
     make: entity.make,
     model: entity.model,
     imageName: entity.imageName,
     exifImageWidth: entity.exifImageWidth,
     exifImageHeight: entity.exifImageHeight,
-    fileSizeInByte: entity.fileSizeInByte,
+    fileSizeInByte: entity.fileSizeInByte ? parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,
     dateTimeOriginal: entity.dateTimeOriginal,
     modifyDate: entity.modifyDate,
