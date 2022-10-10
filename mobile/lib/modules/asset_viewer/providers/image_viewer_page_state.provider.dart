@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -64,5 +63,7 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
 final imageViewerStateProvider =
     StateNotifierProvider<ImageViewerStateNotifier, ImageViewerPageState>(
   ((ref) => ImageViewerStateNotifier(
-      ref.watch(imageViewerServiceProvider), ref.watch(shareServiceProvider))),
+        ref.watch(imageViewerServiceProvider),
+        ref.watch(shareServiceProvider),
+      )),
 );

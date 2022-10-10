@@ -48,8 +48,11 @@ final renderListProvider = StateProvider((ref) {
 
     if (lastDate == null || lastDate!.month != date.month) {
       elements.add(
-        RenderAssetGridElement(RenderAssetGridElementType.monthTitle,
-            title: groupName, date: date),
+        RenderAssetGridElement(
+          RenderAssetGridElementType.monthTitle,
+          title: groupName,
+          date: date,
+        ),
       );
     }
 

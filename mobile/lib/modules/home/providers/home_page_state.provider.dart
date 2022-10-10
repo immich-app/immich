@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/models/home_page_state.model.dart';
@@ -7,7 +6,6 @@ import 'package:immich_mobile/shared/ui/share_dialog.dart';
 import 'package:openapi/api.dart';
 
 class HomePageStateNotifier extends StateNotifier<HomePageState> {
-
   final ShareService _shareService;
 
   HomePageStateNotifier(this._shareService)

@@ -17,9 +17,6 @@ class ManualDeviceCleanupWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // var isUploaded = backupState.allUniqueAssets.length ==
-    //         backupState.selectedAlbumsBackupAssetsIds.length &&
-    //     backupState.allUniqueAssets.isNotEmpty;
     final isUploaded = useState(
       backupState.allUniqueAssets.length ==
               backupState.selectedAlbumsBackupAssetsIds.length &&
@@ -66,7 +63,6 @@ class ManualDeviceCleanupWidget extends HookConsumerWidget {
                                 );
                             ref.watch(backupProvider.notifier).cancelBackup();
                             ref.watch(backupProvider.notifier).getBackupInfo();
-                            ref.watch(backupProvider.notifier).dispose();
                             isUploaded.value = false;
                             Navigator.of(context).pop();
                           },

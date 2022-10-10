@@ -1,19 +1,14 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_list_v2/daily_title_text.dart';
 import 'package:immich_mobile/modules/home/ui/asset_list_v2/draggable_scrollbar_custom.dart';
+import 'package:immich_mobile/modules/home/ui/thumbnail_image.dart';
 import 'package:openapi/api.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-
-import '../thumbnail_image.dart';
 
 class ImmichAssetGrid extends HookConsumerWidget {
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -52,7 +47,9 @@ class ImmichAssetGrid extends HookConsumerWidget {
   }
 
   Widget _buildThumbnailOrPlaceholder(
-      AssetResponseDto asset, bool placeholder) {
+    AssetResponseDto asset,
+    bool placeholder,
+  ) {
     if (placeholder) {
       return const DecoratedBox(
         decoration: BoxDecoration(color: Colors.grey),
@@ -67,7 +64,10 @@ class ImmichAssetGrid extends HookConsumerWidget {
   }
 
   Widget _buildAssetRow(
-      BuildContext context, RenderAssetGridRow row, bool scrolling) {
+    BuildContext context,
+    RenderAssetGridRow row,
+    bool scrolling,
+  ) {
     double size = _getItemSize(context);
 
     return Row(
@@ -87,7 +87,10 @@ class ImmichAssetGrid extends HookConsumerWidget {
   }
 
   Widget _buildTitle(
-      BuildContext context, String title, List<AssetResponseDto> assets) {
+    BuildContext context,
+    String title,
+    List<AssetResponseDto> assets,
+  ) {
     return DailyTitleText(
       isoDate: title,
       assetGroup: assets,
@@ -128,7 +131,8 @@ class ImmichAssetGrid extends HookConsumerWidget {
 
   Text _labelBuilder(int pos) {
     final date = renderList[pos].date;
-    return Text(DateFormat.yMMMd().format(date),
+    return Text(
+      DateFormat.yMMMd().format(date),
       style: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.bold,
@@ -149,19 +153,20 @@ class ImmichAssetGrid extends HookConsumerWidget {
     }
 
     return DraggableScrollbar.semicircle(
-        scrollStateListener: dragScrolling,
+      scrollStateListener: dragScrolling,
+      itemPositionsListener: _itemPositionsListener,
+      controller: _itemScrollController,
+      backgroundColor: Theme.of(context).hintColor,
+      labelTextBuilder: _labelBuilder,
+      labelConstraints: const BoxConstraints(maxHeight: 28),
+      scrollbarAnimationDuration: const Duration(seconds: 1),
+      scrollbarTimeToFade: const Duration(seconds: 4),
+      child: ScrollablePositionedList.builder(
+        itemBuilder: itemBuilder,
         itemPositionsListener: _itemPositionsListener,
-        controller: _itemScrollController,
-        backgroundColor: Theme.of(context).hintColor,
-        labelTextBuilder: _labelBuilder,
-        labelConstraints: const BoxConstraints(maxHeight: 28),
-        scrollbarAnimationDuration: const Duration(seconds: 1),
-        scrollbarTimeToFade: const Duration(seconds: 4),
-        child: ScrollablePositionedList.builder(
-          itemBuilder: itemBuilder,
-          itemPositionsListener: _itemPositionsListener,
-          itemScrollController: _itemScrollController,
-          itemCount: renderList.length,
-        ));
+        itemScrollController: _itemScrollController,
+        itemCount: renderList.length,
+      ),
+    );
   }
 }

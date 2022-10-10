@@ -53,7 +53,9 @@ class NotificationSetting extends HookConsumerWidget {
             value: sliderValue.value,
             onChanged: (double v) => sliderValue.value = v,
             onChangeEnd: (double v) => appSettingService.setSetting(
-                AppSettingsEnum.uploadErrorNotificationGracePeriod, v.toInt()),
+              AppSettingsEnum.uploadErrorNotificationGracePeriod,
+              v.toInt(),
+            ),
             max: 5.0,
             divisions: 5,
             label: formattedValue,

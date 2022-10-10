@@ -6,7 +6,9 @@ enum AppSettingsEnum<T> {
   themeMode<String>("themeMode", "system"), // "light","dark","system"
   tilesPerRow<int>("tilesPerRow", 4),
   uploadErrorNotificationGracePeriod<int>(
-      "uploadErrorNotificationGracePeriod", 2),
+    "uploadErrorNotificationGracePeriod",
+    2,
+  ),
   storageIndicator<bool>("storageIndicator", true),
   thumbnailCacheSize<int>("thumbnailCacheSize", 10000),
   imageCacheSize<int>("imageCacheSize", 350),

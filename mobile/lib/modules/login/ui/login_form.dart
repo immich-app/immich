@@ -202,9 +202,9 @@ class LoginButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.grey[50],
+        backgroundColor: Theme.of(context).primaryColor,
         visualDensity: VisualDensity.standard,
-        primary: Theme.of(context).primaryColor,
-        onPrimary: Colors.grey[50],
         elevation: 2,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
       ),

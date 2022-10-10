@@ -112,8 +112,10 @@ class ImmichCacheInfoRepository extends ImmichCacheRepository {
   }
 
   @override
-  Future<CacheObject> insert(CacheObject cacheObject,
-      {bool setTouchedToNow = true}) async {
+  Future<CacheObject> insert(
+    CacheObject cacheObject, {
+    bool setTouchedToNow = true,
+  }) async {
     int newId = keyLookupHiveBox.length == 0
         ? 0
         : keyLookupHiveBox.values.reduce(max) + 1;
@@ -144,8 +146,10 @@ class ImmichCacheInfoRepository extends ImmichCacheRepository {
   }
 
   @override
-  Future<int> update(CacheObject cacheObject,
-      {bool setTouchedToNow = true}) async {
+  Future<int> update(
+    CacheObject cacheObject, {
+    bool setTouchedToNow = true,
+  }) async {
     if (cacheObject.id != null) {
       cacheObjectLookupBox.put(cacheObject.id, cacheObject.toMap());
       return 1;

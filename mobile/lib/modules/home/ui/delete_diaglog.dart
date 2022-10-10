@@ -7,12 +7,12 @@ class DeleteDialog extends ConsumerWidget {
   final String subtitle;
   final Function deleteFunction;
 
-  const DeleteDialog(
-      {Key? key,
-      required this.title,
-      required this.subtitle,
-      required this.deleteFunction})
-      : super(key: key);
+  const DeleteDialog({
+    Key? key,
+    required this.title,
+    required this.subtitle,
+    required this.deleteFunction,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
