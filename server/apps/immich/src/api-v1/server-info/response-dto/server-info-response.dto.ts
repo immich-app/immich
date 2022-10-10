@@ -5,13 +5,13 @@ export class ServerInfoResponseDto {
   diskUse!: string;
   diskAvailable!: string;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', format: 'int64' })
   diskSizeRaw!: number;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', format: 'int64' })
   diskUseRaw!: number;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', format: 'int64' })
   diskAvailableRaw!: number;
 
   @ApiProperty({ type: 'number', format: 'float' })

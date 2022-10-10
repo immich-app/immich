@@ -15,6 +15,7 @@ import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { DatabaseModule } from '@app/database';
+import { JobModule } from './api-v1/job/job.module';
 
 @Module({
   imports: [
@@ -55,6 +56,8 @@ import { DatabaseModule } from '@app/database';
     ScheduleModule.forRoot(),
 
     ScheduleTasksModule,
+
+    JobModule,
   ],
   controllers: [AppController],
   providers: [],
