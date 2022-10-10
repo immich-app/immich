@@ -53,7 +53,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 # Features 
 
-> ⚠️ WARNING: **NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS**. This project is under heavy development, there will be continuous functions, features and api changes.
+> ⚠️ WARNING: **NOT READY FOR PRODUCTION! DO NOT USE TO STORE YOUR ASSETS**. This project is under heavy development. There will be continuous functions, features and api changes.
 
 | Features | Mobile | Web |
 | - | - | - | 
@@ -118,11 +118,11 @@ There are several services that compose Immich:
 
 NOTE: When using a reverse proxy in front of Immich (such as NGINX), the reverse proxy might require extra configuration to allow large files to be uploaded (such as client_max_body_size in the case of NGINX).
 
-## Testing One-step installation (not recommended for production)
+## Testing one-step installation (not recommended for production)
 
-> ⚠️ *This installation method is for evaluating Immich before futher customization to meet the users' needs.*
+> ⚠️ *This installation method is for evaluating Immich before further customization to meet the users' needs.*
 
-*Applicable system: Ubuntu, Debian, MacOS*
+*Applicable operating systems: Ubuntu, Debian, MacOS*
 
 - In the shell, from the directory of your choice, run the following command:
 
@@ -204,7 +204,7 @@ docker-compose pull && docker-compose up -d
 | - | - | - |
 | <a href="https://f-droid.org/packages/app.alextran.immich"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80"></a> | <p align="left"> <a href="https://play.google.com/store/apps/details?id=app.alextran.immich"><img src="design/google-play-qr-code.png" width="200" title="Google Play Store"></a> <p/> | <p align="left"> <a href="https://apps.apple.com/us/app/immich/id1613945652"><img src="design/ios-qr-code.png" width="200" title="Apple App Store"></a> <p/> |
 
-> *The Play/App Store version might be lagging behind the latest release due to the review process.*
+> *The Play/App Store version might be lagging behind the latest release due to their review process.*
 
 # App Beta release channel
 
