@@ -53,6 +53,7 @@ dependencies:
 
   openapi:
     path: openapi
+  storage_space: ^1.0.1+5
 
 dev_dependencies:
   flutter_test:

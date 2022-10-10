@@ -31,15 +31,15 @@ class ManualDeviceCleanupWidget extends HookConsumerWidget {
             child: ListTile(
               title: Text(
                 isUploaded.value
-                    ? "delete_backed_up_assets_enabled"
-                    : "delete_backed_up_assets_disabled",
+                    ? "cleanup_device_settings_delete_enabled"
+                    : "cleanup_device_settings_delete_disabled",
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ).tr(),
               subtitle: const Text(
-                "delete_backed_up_assets_description",
+                "cleanup_device_settings_delete_description",
                 style: TextStyle(
                   fontSize: 12,
                 ),
@@ -54,8 +54,9 @@ class ManualDeviceCleanupWidget extends HookConsumerWidget {
                       context: context,
                       builder: (BuildContext context) {
                         return DeleteDialog(
-                          title: "delete_backed_up_assets_enabled",
-                          subtitle: "delete_backed_up_assets_description",
+                          title: "cleanup_device_settings_delete_enabled",
+                          subtitle:
+                              "cleanup_device_settings_delete_description",
                           deleteFunction: () {
                             debugPrint("Deleting Local Assets");
                             ref.watch(assetProvider.notifier).deleteLocalAssets(
