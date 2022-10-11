@@ -3,7 +3,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { extname, join, basename } from 'path';
 import { Request } from 'express';
 import { randomUUID } from 'crypto';
 import sanitize from 'sanitize-filename';
@@ -39,8 +39,9 @@ export const assetUploadOption: MulterOptions = {
     },
 
     filename: (req: Request, file: Express.Multer.File, cb: any) => {
+      const originalFileName = sanitize(basename(file.originalname, extname(file.originalname)));
       const fileNameUUID = randomUUID();
-      const fileName = `${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`;
+      const fileName = `${originalFileName}-${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`;
       const sanitizedFileName = sanitize(fileName);
       cb(null, sanitizedFileName);
     },
