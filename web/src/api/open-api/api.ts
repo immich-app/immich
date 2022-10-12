@@ -75,6 +75,19 @@ export interface AddUsersDto {
 /**
  * 
  * @export
+ * @interface AdminConfigResponseDto
+ */
+export interface AdminConfigResponseDto {
+    /**
+     * 
+     * @type {object}
+     * @memberof AdminConfigResponseDto
+     */
+    'config': object;
+}
+/**
+ * 
+ * @export
  * @interface AdminSignupResponseDto
  */
 export interface AdminSignupResponseDto {
@@ -1589,6 +1602,104 @@ export interface ValidateAccessTokenResponseDto {
      */
     'authStatus': boolean;
 }
+
+/**
+ * AdminConfigApi - axios parameter creator
+ * @export
+ */
+export const AdminConfigApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAdminConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/config/admin`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * AdminConfigApi - functional programming interface
+ * @export
+ */
+export const AdminConfigApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = AdminConfigApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAdminConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AdminConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAdminConfig(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * AdminConfigApi - factory interface
+ * @export
+ */
+export const AdminConfigApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = AdminConfigApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAdminConfig(options?: any): AxiosPromise<AdminConfigResponseDto> {
+            return localVarFp.getAdminConfig(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * AdminConfigApi - object-oriented interface
+ * @export
+ * @class AdminConfigApi
+ * @extends {BaseAPI}
+ */
+export class AdminConfigApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AdminConfigApi
+     */
+    public getAdminConfig(options?: AxiosRequestConfig) {
+        return AdminConfigApiFp(this.configuration).getAdminConfig(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
 
 /**
  * AlbumApi - axios parameter creator

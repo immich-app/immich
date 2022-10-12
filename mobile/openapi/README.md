@@ -46,15 +46,13 @@ import 'package:openapi/api.dart';
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
-final api_instance = AlbumApi();
-final albumId = albumId_example; // String | 
-final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
+final api_instance = AdminConfigApi();
 
 try {
-    final result = api_instance.addAssetsToAlbum(albumId, addAssetsDto);
+    final result = api_instance.getAdminConfig();
     print(result);
 } catch (e) {
-    print('Exception when calling AlbumApi->addAssetsToAlbum: $e\n');
+    print('Exception when calling AdminConfigApi->getAdminConfig: $e\n');
 }
 
 ```
@@ -65,6 +63,7 @@ All URIs are relative to */api*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*AdminConfigApi* | [**getAdminConfig**](doc//AdminConfigApi.md#getadminconfig) | **GET** /config/admin | 
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{albumId}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{albumId}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
@@ -121,6 +120,7 @@ Class | Method | HTTP request | Description
  - [AddAssetsDto](doc//AddAssetsDto.md)
  - [AddAssetsResponseDto](doc//AddAssetsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
+ - [AdminConfigResponseDto](doc//AdminConfigResponseDto.md)
  - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)

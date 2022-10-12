@@ -27,6 +27,7 @@ part 'auth/oauth.dart';
 part 'auth/http_basic_auth.dart';
 part 'auth/http_bearer_auth.dart';
 
+part 'api/admin_config_api.dart';
 part 'api/album_api.dart';
 part 'api/asset_api.dart';
 part 'api/authentication_api.dart';
@@ -38,6 +39,7 @@ part 'api/user_api.dart';
 part 'model/add_assets_dto.dart';
 part 'model/add_assets_response_dto.dart';
 part 'model/add_users_dto.dart';
+part 'model/admin_config_response_dto.dart';
 part 'model/admin_signup_response_dto.dart';
 part 'model/album_count_response_dto.dart';
 part 'model/album_response_dto.dart';

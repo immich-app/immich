@@ -5,7 +5,7 @@ import { AssetModule } from './api-v1/asset/asset.module';
 import { AuthModule } from './api-v1/auth/auth.module';
 import { ImmichJwtModule } from './modules/immich-jwt/immich-jwt.module';
 import { DeviceInfoModule } from './api-v1/device-info/device-info.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule as NestJSConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
@@ -17,10 +17,11 @@ import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.mod
 import { DatabaseModule } from '@app/database';
 import { JobModule } from './api-v1/job/job.module';
 import { AdminConfigModule } from '@app/admin-config';
+import { ConfigModule } from "./api-v1/config/config.module";
 
 @Module({
   imports: [
-    ConfigModule.forRoot(immichAppConfig),
+    NestJSConfigModule.forRoot(immichAppConfig),
 
     DatabaseModule,
     UserModule,
@@ -61,6 +62,8 @@ import { AdminConfigModule } from '@app/admin-config';
     JobModule,
 
     AdminConfigModule,
+
+    ConfigModule
   ],
   controllers: [AppController],
   providers: [],
