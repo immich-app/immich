@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/immich-app/immich,5517,2962
+/immich-app/immich/issues,772,267
+/immich-app/immich/pulls,328,107
+/immich-app/immich/tree/main/docker,260,139
+/immich-app/immich/releases,253,162
+/immich-app/immich/blob/main/docker/docker-compose.yml,206,123
+/immich-app/immich/blob/main/docker/.env.example,193,129
+/immich-app/immich/commits/main,152,39
+/immich-app/immich/releases/tag/v1.30.0_46-dev,121,97
+/immich-app/immich/tree/main/server,114,76
