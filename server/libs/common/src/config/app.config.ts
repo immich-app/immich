@@ -3,7 +3,7 @@ import { ConfigModuleOptions } from '@nestjs/config';
 import Joi from 'joi';
 import { createSecretKey, generateKeySync } from 'node:crypto'
 
-const jwtSecretValidator: Joi.CustomValidator<string> = (value, _) => {
+const jwtSecretValidator: Joi.CustomValidator<string> = (value, ) => {
   const key = createSecretKey(value, "base64")
   const keySizeBits = (key.symmetricKeySize ?? 0) * 8
 
