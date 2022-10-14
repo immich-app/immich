@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
+import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
@@ -21,8 +22,7 @@ class HomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appSettingService = ref.watch(appSettingsServiceProvider);
     var renderList = ref.watch(renderListProvider);
-
-    final multiselectEnabled = useState(false);
+    final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selection = useState(<AssetResponseDto>{});
 
     useEffect(
@@ -41,29 +41,31 @@ class HomePage extends HookConsumerWidget {
 
     Widget buildBody() {
       void selectionListener(
-          bool multiselect, Set<AssetResponseDto> selectedAssets) {
-        multiselectEnabled.value = multiselect;
+        bool multiselect,
+        Set<AssetResponseDto> selectedAssets,
+      ) {
+        multiselectEnabled.state = multiselect;
         selection.value = selectedAssets;
       }
 
       void onShareAssets() {
         ref.watch(shareServiceProvider).shareAssets(selection.value.toList());
-        multiselectEnabled.value = false;
+        multiselectEnabled.state = false;
       }
 
       void onDelete() {
         ref.watch(assetProvider.notifier).deleteAssets(selection.value);
-        multiselectEnabled.value = false;
+        multiselectEnabled.state = false;
       }
 
       return SafeArea(
-        bottom: !multiselectEnabled.value,
-        top: !multiselectEnabled.value,
+        bottom: !multiselectEnabled.state,
+        top: !multiselectEnabled.state,
         child: Stack(
           children: [
             CustomScrollView(
               slivers: [
-                multiselectEnabled.value
+                multiselectEnabled.state
                     ? const SliverToBoxAdapter(
                         child: SizedBox(
                           height: 70,
@@ -84,10 +86,10 @@ class HomePage extends HookConsumerWidget {
                 showStorageIndicator: appSettingService
                     .getSetting(AppSettingsEnum.storageIndicator),
                 listener: selectionListener,
-                selectionActive: multiselectEnabled.value,
+                selectionActive: multiselectEnabled.state,
               ),
             ),
-            if (multiselectEnabled.value) ...[
+            if (multiselectEnabled.state) ...[
               ControlBottomAppBar(
                 onShare: onShareAssets,
                 onDelete: onDelete,
