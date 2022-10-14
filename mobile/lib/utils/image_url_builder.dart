@@ -25,9 +25,11 @@ String getImageUrl(final AssetResponseDto asset) {
   return '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false';
 }
 
-String _getThumbnailUrl(final String id,
-    {ThumbnailFormat type = ThumbnailFormat.WEBP}) {
+String _getThumbnailUrl(
+  final String id, {
+  ThumbnailFormat type = ThumbnailFormat.WEBP,
+}) {
   final box = Hive.box(userInfoBox);
 
-  return '${box.get(serverEndpointKey)}/asset/thumbnail/${id}?format=${type.value}';
+  return '${box.get(serverEndpointKey)}/asset/thumbnail/$id?format=${type.value}';
 }
