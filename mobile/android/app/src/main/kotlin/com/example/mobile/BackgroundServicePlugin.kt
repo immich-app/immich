@@ -10,7 +10,7 @@ import io.flutter.plugin.common.MethodChannel
  * Android plugin for Dart `BackgroundService`
  *
  * Receives messages/method calls from the foreground Dart side to manage
- * the background service, e.g. start (enqueue), stop (cancel) 
+ * the background service, e.g. start (enqueue), stop (cancel)
  */
 class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
@@ -38,14 +38,15 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         val ctx = context!!
-        when(call.method) {
+        when (call.method) {
             "enable" -> {
                 val args = call.arguments<ArrayList<*>>()!!
                 ctx.getSharedPreferences(BackupWorker.SHARED_PREF_NAME, Context.MODE_PRIVATE)
-                    .edit()
-                    .putLong(BackupWorker.SHARED_PREF_CALLBACK_KEY, args.get(0) as Long)
-                    .putString(BackupWorker.SHARED_PREF_NOTIFICATION_TITLE, args.get(1) as String)
-                    .apply()
+                        .edit()
+                        .putBoolean(ContentObserverWorker.SHARED_PREF_SERVICE_ENABLED, true)
+                        .putLong(BackupWorker.SHARED_PREF_CALLBACK_KEY, args.get(0) as Long)
+                        .putString(BackupWorker.SHARED_PREF_NOTIFICATION_TITLE, args.get(1) as String)
+                        .apply()
                 ContentObserverWorker.enable(ctx, immediate = args.get(2) as Boolean)
                 result.success(true)
             }
@@ -54,7 +55,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 val requireUnmeteredNetwork = args.get(0) as Boolean
                 val requireCharging = args.get(1) as Boolean
                 ContentObserverWorker.configureWork(ctx, requireUnmeteredNetwork, requireCharging)
-                result.success(true)   
+                result.success(true)
             }
             "disable" -> {
                 ContentObserverWorker.disable(ctx)

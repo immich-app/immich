@@ -1,11 +1,8 @@
 import 'dart:collection';
-import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:openapi/api.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -15,7 +12,9 @@ import 'disable_multi_select_button.dart';
 import 'draggable_scrollbar_custom.dart';
 
 typedef ImmichAssetGridSelectionListener = void Function(
-    bool, Set<AssetResponseDto>);
+  bool,
+  Set<AssetResponseDto>,
+);
 
 class ImmichAssetGridState extends State<ImmichAssetGrid> {
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -23,7 +22,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       ItemPositionsListener.create();
 
   bool _scrolling = false;
-  Set<String> _selectedAssets = HashSet();
+  final Set<String> _selectedAssets = HashSet();
 
   List<AssetResponseDto> get _assets {
     return widget.renderList
@@ -86,7 +85,9 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Widget _buildThumbnailOrPlaceholder(
-      AssetResponseDto asset, bool placeholder) {
+    AssetResponseDto asset,
+    bool placeholder,
+  ) {
     if (placeholder) {
       return const DecoratedBox(
         decoration: BoxDecoration(color: Colors.grey),
@@ -104,7 +105,10 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Widget _buildAssetRow(
-      BuildContext context, RenderAssetGridRow row, bool scrolling) {
+    BuildContext context,
+    RenderAssetGridRow row,
+    bool scrolling,
+  ) {
     double size = _getItemSize(context);
 
     return Row(
@@ -117,7 +121,9 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
           width: size,
           height: size,
           margin: EdgeInsets.only(
-              top: widget.margin, right: last ? 0.0 : widget.margin),
+            top: widget.margin,
+            right: last ? 0.0 : widget.margin,
+          ),
           child: _buildThumbnailOrPlaceholder(asset, scrolling),
         );
       }).toList(),
@@ -125,7 +131,10 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Widget _buildTitle(
-      BuildContext context, String title, List<AssetResponseDto> assets) {
+    BuildContext context,
+    String title,
+    List<AssetResponseDto> assets,
+  ) {
     return DailyTitleText(
       isoDate: title,
       multiselectEnabled: widget.selectionActive,
@@ -186,7 +195,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Widget _buildAssetGrid() {
-    final useDragScrolling = _assets.length > 100;
+    final useDragScrolling = _assets.length >= 20;
 
     void dragScrolling(bool active) {
       setState(() {
@@ -218,7 +227,6 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     );
   }
 
-
   @override
   void didUpdateWidget(ImmichAssetGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -248,14 +256,14 @@ class ImmichAssetGrid extends StatefulWidget {
   final ImmichAssetGridSelectionListener? listener;
   final bool selectionActive;
 
-  ImmichAssetGrid({
+  const ImmichAssetGrid({
     super.key,
     required this.renderList,
     required this.assetsPerRow,
     required this.showStorageIndicator,
     this.listener,
     this.margin = 5.0,
-    this.selectionActive = false
+    this.selectionActive = false,
   });
 
   @override

@@ -16,12 +16,17 @@
 default_platform(:android)
 
 platform :android do
-  desc "Build Android"
-  lane :build do
+  desc "Build Android and Release Testing"
+  lane :beta do
     gradle(
       task: 'bundle', 
       build_type: 'Release',
+      properties: {
+        "android.injected.version.code" => 47,
+        "android.injected.version.name" => "1.30.2",
+      }
     )
+    upload_to_play_store(skip_upload_apk: true, skip_upload_images: true, skip_upload_screenshots: true, aab: '../build/app/outputs/bundle/release/app-release.aab', track: 'beta')
   end
 
   desc "Build and Release Android"
@@ -30,8 +35,8 @@ platform :android do
       task: 'bundle', 
       build_type: 'Release',
       properties: {
-        "android.injected.version.code" => 46,
-        "android.injected.version.name" => "1.30.0",
+        "android.injected.version.code" => 49,
+        "android.injected.version.name" => "1.31.0",
       }
     )
     upload_to_play_store(skip_upload_apk: true, skip_upload_images: true, skip_upload_screenshots: true, aab: '../build/app/outputs/bundle/release/app-release.aab')
