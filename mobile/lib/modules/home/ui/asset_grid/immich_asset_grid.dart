@@ -100,6 +100,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       onSelect: () => _selectAssets([asset]),
       onDeselect: () => _deselectAssets([asset]),
       useGrayBoxPlaceholder: true,
+      showStorageIndicator: widget.showStorageIndicator,
     );
   }
 
