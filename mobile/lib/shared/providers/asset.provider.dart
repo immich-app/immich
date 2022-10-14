@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
+import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
@@ -9,15 +10,22 @@ import 'package:photo_manager/photo_manager.dart';
 
 class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
   final AssetService _assetService;
+  final AssetCacheService _assetCacheService;
+
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
 
-  AssetNotifier(this._assetService) : super([]);
+  AssetNotifier(this._assetService, this._assetCacheService) : super([]);
 
   getAllAsset() async {
+    if (_assetCacheService.isValid() && state.isEmpty) {
+      state = await _assetCacheService.getAssetsAsync();
+    }
+
     var allAssets = await _assetService.getAllAsset();
 
     if (allAssets != null) {
       state = allAssets;
+      _assetCacheService.putAssets(allAssets);
     }
   }
 
@@ -70,7 +78,8 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
 
 final assetProvider =
     StateNotifierProvider<AssetNotifier, List<AssetResponseDto>>((ref) {
-  return AssetNotifier(ref.watch(assetServiceProvider));
+  return AssetNotifier(
+      ref.watch(assetServiceProvider), ref.watch(assetCacheServiceProvider));
 });
 
 final assetGroupByDateTimeProvider = StateProvider((ref) {
