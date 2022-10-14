@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -120,6 +121,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
             .delete(savedLoginInfoKey);
       }
     } catch (e) {
+      HapticFeedback.vibrate();
       debugPrint("Error logging in $e");
       return false;
     }
