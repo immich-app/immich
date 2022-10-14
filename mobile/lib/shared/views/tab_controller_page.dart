@@ -34,6 +34,7 @@ class TabControllerPage extends ConsumerWidget {
             bottomNavigationBar: multiselectEnabled
                 ? null
                 : BottomNavigationBar(
+                    enableFeedback: true,
                     selectedLabelStyle: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
