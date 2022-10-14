@@ -12,7 +12,7 @@ class DeleteDialog extends ConsumerWidget {
     final homePageState = ref.watch(homePageStateProvider);
 
     return AlertDialog(
-      backgroundColor: Colors.grey[200],
+      // backgroundColor: Colors.grey[200],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       title: const Text("delete_dialog_title").tr(),
       content: const Text("delete_dialog_alert").tr(),
@@ -21,9 +21,12 @@ class DeleteDialog extends ConsumerWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: const Text(
+          child: Text(
             "delete_dialog_cancel",
-            style: TextStyle(color: Colors.blueGrey),
+            style: TextStyle(
+              color: Theme.of(context).primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
           ).tr(),
         ),
         TextButton(
@@ -37,7 +40,10 @@ class DeleteDialog extends ConsumerWidget {
           },
           child: Text(
             "delete_dialog_ok",
-            style: TextStyle(color: Colors.red[400]),
+            style: TextStyle(
+              color: Colors.red[400],
+              fontWeight: FontWeight.bold,
+            ),
           ).tr(),
         ),
       ],

@@ -21,7 +21,9 @@ Future<bool> loadTranslations() async {
 
   await controller.loadTranslations();
 
-  return Localization.load(controller.locale,
-      translations: controller.translations,
-      fallbackTranslations: controller.fallbackTranslations);
+  return Localization.load(
+    controller.locale,
+    translations: controller.translations,
+    fallbackTranslations: controller.fallbackTranslations,
+  );
 }

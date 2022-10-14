@@ -30,7 +30,6 @@ class ImageGrid extends ConsumerWidget {
       ),
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
-          var assetType = assetGroup[index].type;
           return GestureDetector(
             onTap: () {},
             child: ThumbnailImage(

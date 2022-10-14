@@ -151,7 +151,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         actions: [
           TextButton(
             style: TextButton.styleFrom(
-              primary: Theme.of(context).primaryColor,
+              foregroundColor: Theme.of(context).primaryColor,
             ),
             onPressed:
                 sharedUsersList.value.isEmpty ? null : _createSharedAlbum,
