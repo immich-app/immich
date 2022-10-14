@@ -1,11 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
-  const ControlBottomAppBar({Key? key}) : super(key: key);
+  final Function onShare;
+  final Function onDelete;
+
+  const ControlBottomAppBar(
+      {Key? key, required this.onShare, required this.onDelete})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,7 +40,9 @@ class ControlBottomAppBar extends ConsumerWidget {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
-                          return const DeleteDialog();
+                          return DeleteDialog(
+                            onDelete: onDelete,
+                          );
                         },
                       );
                     },
@@ -45,14 +51,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                     iconData: Icons.share,
                     label: "control_bottom_app_bar_share".tr(),
                     onPressed: () {
-                      final homePageState = ref.watch(homePageStateProvider);
-                      ref.watch(homePageStateProvider.notifier).shareAssets(
-                            homePageState.selectedItems.toList(),
-                            context,
-                          );
-                      ref
-                          .watch(homePageStateProvider.notifier)
-                          .disableMultiSelect();
+                      onShare();
                     },
                   ),
                 ],

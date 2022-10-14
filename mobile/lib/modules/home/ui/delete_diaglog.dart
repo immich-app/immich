@@ -1,15 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 
 class DeleteDialog extends ConsumerWidget {
-  const DeleteDialog({Key? key}) : super(key: key);
+  final Function onDelete;
+
+  const DeleteDialog({Key? key, required this.onDelete}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final homePageState = ref.watch(homePageStateProvider);
 
     return AlertDialog(
       // backgroundColor: Colors.grey[200],
@@ -31,11 +30,7 @@ class DeleteDialog extends ConsumerWidget {
         ),
         TextButton(
           onPressed: () {
-            ref
-                .watch(assetProvider.notifier)
-                .deleteAssets(homePageState.selectedItems);
-            ref.watch(homePageStateProvider.notifier).disableMultiSelect();
-
+            onDelete();
             Navigator.of(context).pop();
           },
           child: Text(
