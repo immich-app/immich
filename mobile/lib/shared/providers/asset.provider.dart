@@ -16,6 +16,10 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
 
   AssetNotifier(this._assetService, this._assetCacheService) : super([]);
 
+  _cacheState() {
+    _assetCacheService.putAssets(state);
+  }
+
   getAllAsset() async {
     if (_assetCacheService.isValid() && state.isEmpty) {
       state = await _assetCacheService.getAssetsAsync();
@@ -25,16 +29,18 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
 
     if (allAssets != null) {
       state = allAssets;
-      _assetCacheService.putAssets(allAssets);
+      _cacheState();
     }
   }
 
   clearAllAsset() {
     state = [];
+    _cacheState();
   }
 
   onNewAssetUploaded(AssetResponseDto newAsset) {
     state = [...state, newAsset];
+    _cacheState();
   }
 
   deleteAssets(Set<AssetResponseDto> deleteAssets) async {
@@ -73,6 +79,8 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
             state.where((immichAsset) => immichAsset.id != asset.id).toList();
       }
     }
+
+    _cacheState();
   }
 }
 
