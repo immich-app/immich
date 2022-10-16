@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -9,15 +9,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
-import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/services/uploader.service.dart';
+import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:openapi/api.dart';
-import 'package:photo_manager/photo_manager.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
-import 'package:cancellation_token_http/http.dart' as http;
+import 'package:photo_manager/photo_manager.dart';
 
 final backupServiceProvider = Provider(
   (ref) => BackupService(
@@ -27,6 +26,7 @@ final backupServiceProvider = Provider(
 
 class BackupService {
   final ApiService _apiService;
+  final UploadService _uploadService = UploadService();
 
   BackupService(this._apiService);
 
@@ -167,12 +167,14 @@ class BackupService {
   Future<bool> backupAsset(
     Iterable<AssetEntity> assetList,
     http.CancellationToken cancelToken,
-    Function(String, String) singleAssetDoneCb,
-    Function(int, int) uploadProgressCb,
-    Function(CurrentUploadAsset) setCurrentUploadAssetCb,
-    Function(ErrorUploadAsset) errorCb,
+    Function(CurrentUploadAsset) onCompleted,
+    Function(CurrentUploadAsset, int, int) onProgress,
+    Function(CurrentUploadAsset) onUploadStarted,
+    Function(ErrorUploadAsset) onError,
   ) async {
-    String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+    var userInfo = Hive.box(userInfoBox);
+    String deviceId = userInfo.get(deviceIdKey);
+    String accessToken = userInfo.get(accessTokenKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
     bool anyErrors = false;
@@ -191,82 +193,71 @@ class BackupService {
               originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
           var mimeType = FileHelper.getMimeType(file.path);
-          var fileStream = file.openRead();
-          var assetRawUploadData = http.MultipartFile(
-            "assetData",
-            fileStream,
-            file.lengthSync(),
-            filename: fileNameWithoutPath,
-            contentType: MediaType(
-              mimeType["type"],
-              mimeType["subType"],
-            ),
+
+          final uploadingAsset = CurrentUploadAsset(
+            id: entity.id,
+            deviceId: deviceId,
+            createdAt: entity.createDateTime,
+            fileName: originalFileName,
+            fileType: _getAssetType(entity.type),
           );
 
-          var box = Hive.box(userInfoBox);
+          final assetId = uploadingAsset.id;
+          final headers = {"Authorization": "Bearer $accessToken"};
+          Map<String, String> formFields = {};
+          formFields['deviceAssetId'] = entity.id;
+          formFields['deviceId'] = deviceId;
+          formFields['assetType'] = _getAssetType(entity.type);
+          formFields['createdAt'] = entity.createDateTime.toIso8601String();
+          formFields['modifiedAt'] = entity.modifiedDateTime.toIso8601String();
+          formFields['isFavorite'] = entity.isFavorite.toString();
+          formFields['fileExtension'] = fileExtension;
+          formFields['duration'] = entity.videoDuration.toString();
 
-          var req = MultipartRequest(
-            'POST',
-            Uri.parse('$savedEndpoint/asset/upload'),
-            onProgress: ((bytes, totalBytes) =>
-                uploadProgressCb(bytes, totalBytes)),
-          );
-          req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
-
-          req.fields['deviceAssetId'] = entity.id;
-          req.fields['deviceId'] = deviceId;
-          req.fields['assetType'] = _getAssetType(entity.type);
-          req.fields['createdAt'] = entity.createDateTime.toIso8601String();
-          req.fields['modifiedAt'] = entity.modifiedDateTime.toIso8601String();
-          req.fields['isFavorite'] = entity.isFavorite.toString();
-          req.fields['fileExtension'] = fileExtension;
-          req.fields['duration'] = entity.videoDuration.toString();
-
-          req.files.add(assetRawUploadData);
-
-          setCurrentUploadAssetCb(
-            CurrentUploadAsset(
-              id: entity.id,
-              createdAt: entity.createDateTime,
-              fileName: originalFileName,
-              fileType: _getAssetType(entity.type),
-            ),
+          final mediaType = mimeType["type"] + "/" + mimeType["subType"];
+          final uploadJob = UploadJob(
+            assetId: assetId,
+            serverEndpoint: savedEndpoint,
+            originalFileName: originalFileName,
+            fileNameWithoutPath: fileNameWithoutPath,
+            src: file,
+            mediaType: mediaType,
+            headers: headers,
+            formFields: formFields,
           );
 
-          var response = await req.send(cancellationToken: cancelToken);
+          onUploadStarted(uploadingAsset);
 
-          if (response.statusCode == 201) {
-            singleAssetDoneCb(entity.id, deviceId);
-          } else {
-            var data = await response.stream.bytesToString();
-            var error = jsonDecode(data);
-
-            debugPrint(
-              "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
-            );
-
-            errorCb(
-              ErrorUploadAsset(
-                asset: entity,
-                id: entity.id,
-                createdAt: entity.createDateTime,
-                fileName: originalFileName,
-                fileType: _getAssetType(entity.type),
-                errorMessage: error['error'],
+          final uploadResult = await _uploadService.run(
+            uploadJob,
+            onProgress: (id, completed, size) =>
+                onProgress(uploadingAsset, completed, size),
+            onCompleted: (id) => onCompleted(uploadingAsset),
+            onError: (id, error) => {
+              onError(
+                ErrorUploadAsset(
+                  id: entity.id,
+                  asset: entity,
+                  uploadAsset: uploadingAsset,
+                  createdAt: entity.createDateTime,
+                  fileName: originalFileName,
+                  fileType: _getAssetType(entity.type),
+                  errorMessage: error.toString(),
+                ),
               ),
-            );
-            continue;
+            },
+            cancelToken: cancelToken,
+          );
+          if (uploadResult.isCancelled) {
+            return false;
+          }
+          if (!uploadResult.success) {
+            anyErrors = true;
           }
         }
-      } on http.CancelledException {
-        debugPrint("Backup was cancelled by the user");
-        return false;
-      } catch (e) {
-        debugPrint("ERROR backupAsset: ${e.toString()}");
-        anyErrors = true;
-        continue;
       } finally {
         if (Platform.isIOS) {
+          // we opened the file in this try-block, so we should also do the cleanup here:
           file?.deleteSync();
         }
       }

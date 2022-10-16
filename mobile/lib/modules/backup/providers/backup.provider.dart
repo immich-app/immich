@@ -5,13 +5,13 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
-import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -52,6 +52,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             selectedAlbumsBackupAssetsIds: const {},
             currentUploadAsset: CurrentUploadAsset(
               id: '...',
+              deviceId: '...',
               createdAt: DateTime.parse('2020-10-04'),
               fileName: '...',
               fileType: '...',
@@ -455,7 +456,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  void _onAssetUploaded(String deviceAssetId, String deviceId) {
+  void _onAssetUploaded(CurrentUploadAsset asset) {
+    final deviceAssetId = asset.id;
     state = state.copyWith(
       selectedAlbumsBackupAssetsIds: {
         ...state.selectedAlbumsBackupAssetsIds,
@@ -487,7 +489,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     _updateServerInfo();
   }
 
-  void _onUploadProgress(int sent, int total) {
+  void _onUploadProgress(CurrentUploadAsset asset, int sent, int total) {
     state = state.copyWith(
       progressInPercentage: (sent.toDouble() / total.toDouble() * 100),
     );

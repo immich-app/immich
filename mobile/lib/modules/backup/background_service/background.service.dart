@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show IsolateNameServer, PluginUtilities;
+
 import 'package:cancellation_token_http/http.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
@@ -410,8 +411,8 @@ class BackgroundService {
     final bool ok = await backupService.backupAsset(
       toUpload,
       _cancellationToken!,
-      notifyTotalProgress ? _onAssetUploaded : (assetId, deviceId) {},
-      notifySingleProgress ? _onProgress : (sent, total) {},
+      notifyTotalProgress ? _onAssetUploaded : (asset) {},
+      notifySingleProgress ? _onProgress : (asset, sent, total) {},
       notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
       _onBackupError,
     );
@@ -429,7 +430,9 @@ class BackgroundService {
     return "$percent% ($_uploadedAssetsCount/$_assetsToUploadCount)";
   }
 
-  void _onAssetUploaded(String deviceAssetId, String deviceId) {
+  void _onAssetUploaded(CurrentUploadAsset asset) {
+    final deviceAssetId = asset.id;
+    final deviceId = asset.deviceId;
     debugPrint("Uploaded $deviceAssetId from $deviceId");
     _uploadedAssetsCount++;
     _updateNotification(
@@ -439,7 +442,7 @@ class BackgroundService {
     );
   }
 
-  void _onProgress(int sent, int total) {
+  void _onProgress(CurrentUploadAsset asset, int sent, int total) {
     final int now = Timeline.now;
     // limit updates to 10 per second (or Android drops important notifications)
     if (now > _lastDetailProgressUpdate + 100000) {
