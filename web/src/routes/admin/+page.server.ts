@@ -11,9 +11,15 @@ export const load: PageServerLoad = async ({ parent }) => {
 		throw redirect(302, '/photos');
 	}
 
-	const { data: allUsers } = await serverApi.userApi.getAllUsers(false);
+	const allUsers = serverApi.userApi.getAllUsers(false);
+	const settings = serverApi.adminConfigApi.getAdminConfig();
+
+	const { data: allUsersData } = await allUsers;
+	const { data: settingsData } = await settings;
+
 	return {
 		user: user,
-		allUsers: allUsers
+		allUsers: allUsersData,
+		settings: settingsData
 	};
 };

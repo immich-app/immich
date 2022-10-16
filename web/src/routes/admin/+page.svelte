@@ -4,6 +4,7 @@
 	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
+	import Sync from 'svelte-material-icons/Sync.svelte';
 	import Cog from 'svelte-material-icons/Cog.svelte';
 	import Server from 'svelte-material-icons/Server.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
@@ -15,6 +16,7 @@
 	import type { PageData } from './$types';
 	import { api, ServerStatsResponseDto, UserResponseDto } from '@api';
 	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+	import SettingsPanel from '$lib/components/admin-page/settings/settings-panel.svelte';
 	import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
@@ -129,10 +131,17 @@
 		/>
 		<SideBarButton
 			title="Jobs"
-			logo={Cog}
+			logo={Sync}
 			actionType={AdminSideBarSelection.JOBS}
 			isSelected={selectedAction === AdminSideBarSelection.JOBS}
 			on:selected={onButtonClicked}
+		/>
+		<SideBarButton
+				title="Settings"
+				logo={Cog}
+				actionType={AdminSideBarSelection.SETTINGS}
+				isSelected={selectedAction === AdminSideBarSelection.SETTINGS}
+				on:selected={onButtonClicked}
 		/>
 		<SideBarButton
 			title="Server Stats"
@@ -164,6 +173,11 @@
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.JOBS}
 					<JobsPanel />
+				{/if}
+				{#if selectedAction === AdminSideBarSelection.SETTINGS}
+					<SettingsPanel
+							settings={data.settings}
+					/>
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.STATS && serverStat}
 					<ServerStatsPanel stats={serverStat} allUsers={data.allUsers} />

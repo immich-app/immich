@@ -1,4 +1,5 @@
 import {
+	AdminConfigApi,
 	AlbumApi,
 	AssetApi,
 	AuthenticationApi,
@@ -17,6 +18,7 @@ class ImmichApi {
 	public deviceInfoApi: DeviceInfoApi;
 	public serverInfoApi: ServerInfoApi;
 	public jobApi: JobApi;
+	public adminConfigApi: AdminConfigApi
 
 	private config = new Configuration({ basePath: '/api' });
 
@@ -28,6 +30,7 @@ class ImmichApi {
 		this.deviceInfoApi = new DeviceInfoApi(this.config);
 		this.serverInfoApi = new ServerInfoApi(this.config);
 		this.jobApi = new JobApi(this.config);
+		this.adminConfigApi = new AdminConfigApi(this.config);
 	}
 
 	public setAccessToken(accessToken: string) {

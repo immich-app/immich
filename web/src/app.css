@@ -62,6 +62,10 @@ input:focus-visible {
 		@apply bg-slate-100 p-2 rounded-md dark:text-immich-dark-bg focus:border-immich-primary text-sm;
 	}
 
+	.immich-form-input-dark {
+		@apply bg-slate-200 p-2 rounded-md focus:border-immich-primary text-sm;
+	}
+
 	.immich-form-label {
 		@apply font-medium text-sm text-gray-500 dark:text-gray-300;
 	}
