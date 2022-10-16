@@ -19,6 +19,10 @@ class AssetCacheService {
         _cacheBox.get(assetListCachedAssets) is String;
   }
 
+  void invalidate() {
+    _cacheBox.clear();
+  }
+
   void putAssets(List<AssetResponseDto> assets) {
     final mapList = assets.map((e) => e.toJson()).toList();
     final jsonString = json.encode(mapList);

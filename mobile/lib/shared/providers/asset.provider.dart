@@ -21,15 +21,28 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
   }
 
   getAllAsset() async {
+    final stopwatch = Stopwatch();
+
+
     if (_assetCacheService.isValid() && state.isEmpty) {
+      stopwatch.start();
       state = await _assetCacheService.getAssetsAsync();
+      debugPrint("Reading assets from cache: ${stopwatch.elapsedMilliseconds}ms");
+      stopwatch.reset();
     }
 
+    stopwatch.start();
     var allAssets = await _assetService.getAllAsset();
+    debugPrint("Query assets from API: ${stopwatch.elapsedMilliseconds}ms");
+    stopwatch.reset();
 
     if (allAssets != null) {
       state = allAssets;
+
+      stopwatch.start();
       _cacheState();
+      debugPrint("Store assets in cache: ${stopwatch.elapsedMilliseconds}ms");
+      stopwatch.reset();
     }
   }
 

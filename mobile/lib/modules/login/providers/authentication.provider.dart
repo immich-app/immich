@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -15,6 +16,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     this._deviceInfoService,
     this._backupService,
     this._apiService,
+    this._assetCacheService,
   ) : super(
           AuthenticationState(
             deviceId: "",
@@ -41,6 +43,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   final DeviceInfoService _deviceInfoService;
   final BackupService _backupService;
   final ApiService _apiService;
+  final AssetCacheService _assetCacheService;
 
   Future<bool> login(
     String email,
@@ -151,7 +154,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   Future<bool> logout() async {
     Hive.box(userInfoBox).delete(accessTokenKey);
     state = state.copyWith(isAuthenticated: false);
-
+    _assetCacheService.invalidate();
     return true;
   }
 
@@ -197,5 +200,6 @@ final authenticationProvider =
     ref.watch(deviceInfoServiceProvider),
     ref.watch(backupServiceProvider),
     ref.watch(apiServiceProvider),
+    ref.watch(assetCacheServiceProvider),
   );
 });
