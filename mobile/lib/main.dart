@@ -37,8 +37,14 @@ void main() async {
   await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
   await Hive.openBox(hiveGithubReleaseInfoBox);
   await Hive.openBox(userSettingInfoBox);
-  await Hive.openBox(assetListCacheBox);
-  await Hive.openBox(albumListCacheBox);
+
+  final sw = Stopwatch();
+  sw.start();
+
+  await Hive.openLazyBox(assetListCacheBox);
+  await Hive.openLazyBox(albumListCacheBox);
+
+  debugPrint("Hive box open took ${sw.elapsedMilliseconds} ms");
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

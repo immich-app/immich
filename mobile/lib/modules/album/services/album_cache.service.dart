@@ -15,9 +15,9 @@ class AlbumCacheService extends JsonCache<List<AlbumResponseDto>> {
   }
 
   @override
-  List<AlbumResponseDto> get() {
+  Future<List<AlbumResponseDto>> get() async {
     try {
-      final mapList =  readRawData() as List<dynamic>;
+      final mapList = await readRawData() as List<dynamic>;
 
       final responseData = mapList
           .map((e) => AlbumResponseDto.fromJson(e))

@@ -26,7 +26,7 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
 
     if (_assetCacheService.isValid() && state.isEmpty) {
       stopwatch.start();
-      state = await _assetCacheService.getAsync();
+      state = await _assetCacheService.get();
       debugPrint("Reading assets from cache: ${stopwatch.elapsedMilliseconds}ms");
       stopwatch.reset();
     }

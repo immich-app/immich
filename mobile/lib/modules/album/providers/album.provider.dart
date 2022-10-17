@@ -15,7 +15,7 @@ class AlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
   getAllAlbums() async {
 
     if (_albumCacheService.isValid() && state.isEmpty) {
-      state = await _albumCacheService.getAsync();
+      state = await _albumCacheService.get();
     }
 
     List<AlbumResponseDto>? albums =

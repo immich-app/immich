@@ -27,9 +27,9 @@ const String backupRequireWifi = "immichBackupRequireWifi"; // Key 2
 const String backupRequireCharging = "immichBackupRequireCharging"; // Key 3
 
 // Asset cache
-const String assetListCacheBox = "assetListCacheBox";
+const String assetListCacheBox = "assetListCacheBoxl";
 const String assetListCachedAssets = "assetListCachedAssets";
 
 // Album cache
-const String albumListCacheBox = "albumListCacheBox";
+const String albumListCacheBox = "albumListCacheBoxl";
 const String albumListCachedAssets = "albumListCachedAssets";

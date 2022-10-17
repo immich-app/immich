@@ -11,12 +11,12 @@ import 'package:openapi/api.dart';
 abstract class JsonCache<T> {
   final String boxName;
   final String valueKey;
-  final Box _cacheBox;
+  final LazyBox _cacheBox;
 
-  JsonCache(this.boxName, this.valueKey) : _cacheBox = Hive.box(boxName);
+  JsonCache(this.boxName, this.valueKey) : _cacheBox = Hive.lazyBox(boxName);
 
   bool isValid() {
-    return _cacheBox.containsKey(valueKey) && _cacheBox.get(valueKey) is String;
+    return _cacheBox.containsKey(valueKey) && _cacheBox.containsKey(valueKey);
   }
 
   void invalidate() {
@@ -28,17 +28,13 @@ abstract class JsonCache<T> {
     _cacheBox.put(valueKey, jsonString);
   }
 
-  dynamic readRawData() {
-    return json.decode(_cacheBox.get(valueKey));
+  dynamic readRawData() async {
+    final data = await _cacheBox.get(valueKey);
+    return json.decode(data);
   }
 
   void put(T data);
-
-  T get();
-
-  Future<T> getAsync() async {
-    return Future.microtask(() => get());
-  }
+  Future<T> get();
 }
 
 class AssetCacheService extends JsonCache<List<AssetResponseDto>> {
@@ -50,9 +46,9 @@ class AssetCacheService extends JsonCache<List<AssetResponseDto>> {
   }
 
   @override
-  List<AssetResponseDto> get() {
+  Future<List<AssetResponseDto>> get() async {
     try {
-      final mapList =  readRawData() as List<dynamic>;
+      final mapList = await readRawData() as List<dynamic>;
 
       final responseData = mapList
           .map((e) => AssetResponseDto.fromJson(e))
@@ -66,7 +62,6 @@ class AssetCacheService extends JsonCache<List<AssetResponseDto>> {
       return [];
     }
   }
-
 }
 
 final assetCacheServiceProvider = Provider(
