@@ -101,7 +101,7 @@ export class AssetController {
         { jobId: savedAsset.id },
       );
 
-      return new AssetFileUploadResponseDto(savedAsset.id);
+      return new AssetFileUploadResponseDto(savedAsset.id, false);
     } catch (err) {
       await this.backgroundTaskService.deleteFileOnDisk([
         {
@@ -111,7 +111,7 @@ export class AssetController {
 
       if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
         const existedAsset = await this.assetService.getAssetByChecksum(authUser.id, checksum);
-        return new AssetFileUploadResponseDto(existedAsset.id);
+        return new AssetFileUploadResponseDto(existedAsset.id, true);
       }
 
       Logger.error(`Error uploading file ${err}`);
