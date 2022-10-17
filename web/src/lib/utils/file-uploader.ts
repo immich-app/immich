@@ -158,6 +158,7 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		};
 
 		request.onreadystatechange = () => {
+			console.log(uploadType);
 			try {
 				if (request.readyState === 4 && uploadType === UploadType.ALBUM) {
 					const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
@@ -168,6 +169,13 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 
 					if (request.status !== 201) {
 						handleUploadError(asset, res);
+					}
+				}
+
+				if (request.readyState === 4 && uploadType === UploadType.GENERAL) {
+					const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
+					if (res.isDuplicated) {
+						handleUploadError(asset, null, ' This file already exists in your library.');
 					}
 				}
 			} catch (e) {
@@ -201,12 +209,12 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 }
 // TODO: This should have a proper type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleUploadError(asset: File, respBody?: any) {
-	const extraMsg = respBody ? ' ' + respBody.message : '';
+function handleUploadError(asset: File, respBody: any, extraMessage?: string) {
+	const extraMsg = respBody ? ' ' + respBody?.message : '';
 
 	notificationController.show({
 		type: NotificationType.Error,
-		message: `Cannot upload file ${asset.name}!${extraMsg}`,
+		message: `Cannot upload file ${asset.name} ${extraMsg}${extraMessage}`,
 		timeout: 5000
 	});
 }

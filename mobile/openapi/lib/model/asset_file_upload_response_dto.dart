@@ -14,25 +14,31 @@ class AssetFileUploadResponseDto {
   /// Returns a new [AssetFileUploadResponseDto] instance.
   AssetFileUploadResponseDto({
     required this.id,
+    required this.isDuplicated,
   });
 
   String id;
 
+  bool isDuplicated;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFileUploadResponseDto &&
-     other.id == id;
+     other.id == id &&
+     other.isDuplicated == isDuplicated;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode);
+    (id.hashCode) +
+    (isDuplicated.hashCode);
 
   @override
-  String toString() => 'AssetFileUploadResponseDto[id=$id]';
+  String toString() => 'AssetFileUploadResponseDto[id=$id, isDuplicated=$isDuplicated]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'id'] = id;
+      _json[r'isDuplicated'] = isDuplicated;
     return _json;
   }
 
@@ -56,6 +62,7 @@ class AssetFileUploadResponseDto {
 
       return AssetFileUploadResponseDto(
         id: mapValueOfType<String>(json, r'id')!,
+        isDuplicated: mapValueOfType<bool>(json, r'isDuplicated')!,
       );
     }
     return null;
@@ -106,6 +113,7 @@ class AssetFileUploadResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'id',
+    'isDuplicated',
   };
 }
 
