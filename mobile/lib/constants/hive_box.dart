@@ -29,3 +29,7 @@ const String backupRequireCharging = "immichBackupRequireCharging"; // Key 3
 // Asset cache
 const String assetListCacheBox = "assetListCacheBox";
 const String assetListCachedAssets = "assetListCachedAssets";
+
+// Album cache
+const String albumListCacheBox = "albumListCacheBox";
+const String albumListCachedAssets = "albumListCachedAssets";

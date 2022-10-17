@@ -4,36 +4,55 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:openapi/api.dart';
 
-final assetCacheServiceProvider = Provider(
-  (ref) => AssetCacheService(),
-);
+abstract class JsonCache<T> {
+  final String boxName;
+  final String valueKey;
+  final Box _cacheBox;
 
-class AssetCacheService {
-  final _cacheBox = Hive.box(assetListCacheBox);
+  JsonCache(this.boxName, this.valueKey) : _cacheBox = Hive.box(boxName);
 
   bool isValid() {
-    return _cacheBox.containsKey(assetListCachedAssets) &&
-        _cacheBox.get(assetListCachedAssets) is String;
+    return _cacheBox.containsKey(valueKey) && _cacheBox.get(valueKey) is String;
   }
 
   void invalidate() {
     _cacheBox.clear();
   }
 
-  void putAssets(List<AssetResponseDto> assets) {
-    final mapList = assets.map((e) => e.toJson()).toList();
-    final jsonString = json.encode(mapList);
-
-    _cacheBox.put(assetListCachedAssets, jsonString);
+  void putRawData(dynamic data) {
+    final jsonString = json.encode(data);
+    _cacheBox.put(valueKey, jsonString);
   }
 
-  List<AssetResponseDto> getAssets() {
+  dynamic readRawData() {
+    return json.decode(_cacheBox.get(valueKey));
+  }
+
+  void put(T data);
+
+  T get();
+
+  Future<T> getAsync() async {
+    return Future.microtask(() => get());
+  }
+}
+
+class AssetCacheService extends JsonCache<List<AssetResponseDto>> {
+  AssetCacheService() : super(assetListCacheBox, assetListCachedAssets);
+
+  @override
+  void put(List<AssetResponseDto> data) {
+    putRawData(data.map((e) => e.toJson()).toList());
+  }
+
+  @override
+  List<AssetResponseDto> get() {
     try {
-      final jsonString = _cacheBox.get(assetListCachedAssets);
-      final mapList = json.decode(jsonString) as List<dynamic>;
+      final mapList =  readRawData() as List<dynamic>;
 
       final responseData = mapList
           .map((e) => AssetResponseDto.fromJson(e))
@@ -48,7 +67,8 @@ class AssetCacheService {
     }
   }
 
-  Future<List<AssetResponseDto>> getAssetsAsync() async {
-    return Future.microtask(() => getAssets());
-  }
 }
+
+final assetCacheServiceProvider = Provider(
+      (ref) => AssetCacheService(),
+);

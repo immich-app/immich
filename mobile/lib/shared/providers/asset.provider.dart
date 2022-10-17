@@ -17,7 +17,7 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
   AssetNotifier(this._assetService, this._assetCacheService) : super([]);
 
   _cacheState() {
-    _assetCacheService.putAssets(state);
+    _assetCacheService.put(state);
   }
 
   getAllAsset() async {
@@ -26,7 +26,7 @@ class AssetNotifier extends StateNotifier<List<AssetResponseDto>> {
 
     if (_assetCacheService.isValid() && state.isEmpty) {
       stopwatch.start();
-      state = await _assetCacheService.getAssetsAsync();
+      state = await _assetCacheService.getAsync();
       debugPrint("Reading assets from cache: ${stopwatch.elapsedMilliseconds}ms");
       stopwatch.reset();
     }
