@@ -1,9 +1,11 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Put, UseGuards, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from './config.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
-import { AdminConfigResponseDto } from "./response-dto/admin-config-response.dto";
+import { AdminConfigResponseDto } from './response-dto/admin-config-response.dto';
+import { SetAdminConfigDto } from './dto/set-admin-config';
+import { AdminConfigKey } from '@app/database/entities/admin-config.entity';
 
 @UseGuards(JwtAuthGuard)
 @UseGuards(AdminRolesGuard)
@@ -18,22 +20,15 @@ export class ConfigController {
     return this.adminConfigService.getAllConfig();
   }
 
-  // @Get('/:jobId')
-  // getJobStatus(@Param(ValidationPipe) params: GetJobDto): Promise<JobStatusResponseDto> {
-  //   return this.jobService.getJobStatus(params);
-  // }
-  //
-  // @Put('/:jobId')
-  // async sendJobCommand(
-  //   @Param(ValidationPipe) params: GetJobDto,
-  //   @Body(ValidationPipe) body: JobCommandDto,
-  // ): Promise<number> {
-  //   if (body.command === 'start') {
-  //     return await this.jobService.startJob(params);
-  //   }
-  //   if (body.command === 'stop') {
-  //     return await this.jobService.stopJob(params);
-  //   }
-  //   return 0;
-  // }
+  @Put('/admin')
+  async putAdminConfig(@Body(ValidationPipe) body: SetAdminConfigDto): Promise<AdminConfigResponseDto> {
+    if (
+      body.config.filter((entry) => {
+        return !Object.values(AdminConfigKey).includes(entry.key);
+      }).length !== 0
+    ) {
+      throw new BadRequestException('Incorrect config key provided');
+    }
+    return this.adminConfigService.setConfigValue(body.config);
+  }
 }
