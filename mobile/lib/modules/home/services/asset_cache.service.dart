@@ -1,35 +1,51 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:openapi/api.dart';
+import 'package:path_provider/path_provider.dart';
 
 abstract class JsonCache<T> {
-  final String boxName;
-  final String valueKey;
-  final LazyBox _cacheBox;
+  final String cacheFileName;
 
-  JsonCache(this.boxName, this.valueKey) : _cacheBox = Hive.lazyBox(boxName);
+  JsonCache(this.cacheFileName);
 
-  bool isValid() {
-    return _cacheBox.containsKey(valueKey) && _cacheBox.containsKey(valueKey);
+  Future<File> _getCacheFile() async {
+    final basePath = await getTemporaryDirectory();
+    final basePathName = basePath.path;
+
+    final file = File("$basePathName/$cacheFileName.bin");
+
+    return file;
   }
 
-  void invalidate() {
-    _cacheBox.clear();
+  Future<bool> isValid() async {
+    final file = await _getCacheFile();
+    return await file.exists();
   }
 
-  void putRawData(dynamic data) {
+  Future<void> invalidate() async {
+    final file = await _getCacheFile();
+    await file.delete();
+  }
+
+  Future<void> putRawData(dynamic data) async {
     final jsonString = json.encode(data);
-    _cacheBox.put(valueKey, jsonString);
+    final file = await _getCacheFile();
+
+    if (!await file.exists()) {
+      await file.create();
+    }
+
+    await file.writeAsString(jsonString);
   }
 
   dynamic readRawData() async {
-    final data = await _cacheBox.get(valueKey);
+    final file = await _getCacheFile();
+    final data = await file.readAsString();
     return json.decode(data);
   }
 
@@ -38,7 +54,7 @@ abstract class JsonCache<T> {
 }
 
 class AssetCacheService extends JsonCache<List<AssetResponseDto>> {
-  AssetCacheService() : super(assetListCacheBox, assetListCachedAssets);
+  AssetCacheService() : super("asset_cache");
 
   @override
   void put(List<AssetResponseDto> data) {

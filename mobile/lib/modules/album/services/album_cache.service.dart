@@ -2,12 +2,11 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
 import 'package:openapi/api.dart';
 
 class AlbumCacheService extends JsonCache<List<AlbumResponseDto>> {
-  AlbumCacheService() : super(albumListCacheBox, albumListCachedAssets);
+  AlbumCacheService() : super("album_cache");
 
   @override
   void put(List<AlbumResponseDto> data) {

@@ -25,11 +25,3 @@ const String backgroundBackupInfoBox = "immichBackgroundBackupInfoBox"; // Box
 const String backupFailedSince = "immichBackupFailedSince"; // Key 1
 const String backupRequireWifi = "immichBackupRequireWifi"; // Key 2
 const String backupRequireCharging = "immichBackupRequireCharging"; // Key 3
-
-// Asset cache
-const String assetListCacheBox = "assetListCacheBoxl";
-const String assetListCachedAssets = "assetListCachedAssets";
-
-// Album cache
-const String albumListCacheBox = "albumListCacheBoxl";
-const String albumListCachedAssets = "albumListCachedAssets";

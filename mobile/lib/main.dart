@@ -38,14 +38,6 @@ void main() async {
   await Hive.openBox(hiveGithubReleaseInfoBox);
   await Hive.openBox(userSettingInfoBox);
 
-  final sw = Stopwatch();
-  sw.start();
-
-  await Hive.openLazyBox(assetListCacheBox);
-  await Hive.openLazyBox(albumListCacheBox);
-
-  debugPrint("Hive box open took ${sw.elapsedMilliseconds} ms");
-
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarIconBrightness: Brightness.light,
