@@ -5,8 +5,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
 import 'package:openapi/api.dart';
 
-class AlbumCacheService extends JsonCache<List<AlbumResponseDto>> {
-  AlbumCacheService() : super("album_cache");
+class BaseAlbumCacheService extends JsonCache<List<AlbumResponseDto>> {
+  BaseAlbumCacheService(super.cacheFileName);
 
   @override
   void put(List<AlbumResponseDto> data) {
@@ -29,9 +29,21 @@ class AlbumCacheService extends JsonCache<List<AlbumResponseDto>> {
       return [];
     }
   }
+}
 
+class AlbumCacheService extends BaseAlbumCacheService {
+  AlbumCacheService() : super("album_cache");
+}
+
+class SharedAlbumCacheService extends BaseAlbumCacheService {
+  SharedAlbumCacheService() : super("shared_album_cache");
 }
 
 final albumCacheServiceProvider = Provider(
       (ref) => AlbumCacheService(),
 );
+
+final sharedAlbumCacheServiceProvider = Provider(
+      (ref) => SharedAlbumCacheService(),
+);
+

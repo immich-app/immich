@@ -19,6 +19,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     this._apiService,
     this._assetCacheService,
     this._albumCacheService,
+    this._sharedAlbumCacheService,
   ) : super(
           AuthenticationState(
             deviceId: "",
@@ -47,6 +48,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   final ApiService _apiService;
   final AssetCacheService _assetCacheService;
   final AlbumCacheService _albumCacheService;
+  final SharedAlbumCacheService _sharedAlbumCacheService;
 
   Future<bool> login(
     String email,
@@ -159,6 +161,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     state = state.copyWith(isAuthenticated: false);
     _assetCacheService.invalidate();
     _albumCacheService.invalidate();
+    _sharedAlbumCacheService.invalidate();
     return true;
   }
 
@@ -206,5 +209,6 @@ final authenticationProvider =
     ref.watch(apiServiceProvider),
     ref.watch(assetCacheServiceProvider),
     ref.watch(albumCacheServiceProvider),
+    ref.watch(sharedAlbumCacheServiceProvider),
   );
 });
