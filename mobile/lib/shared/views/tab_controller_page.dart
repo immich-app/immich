@@ -12,7 +12,6 @@ class TabControllerPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselectEnabled = ref.watch(multiselectProvider);
-
     return AutoTabsRouter(
       routes: [
         const HomeRoute(),
@@ -22,9 +21,17 @@ class TabControllerPage extends ConsumerWidget {
       ],
       builder: (context, child, animation) {
         final tabsRouter = AutoTabsRouter.of(context);
+        final appRouter = AutoRouter.of(context);
         return WillPopScope(
           onWillPop: () async {
-            tabsRouter.setActiveIndex(0);
+            if (tabsRouter.activeIndex == 0) {
+              if (!appRouter.canNavigateBack) {
+                appRouter.navigateBack();
+              }
+              return appRouter.canNavigateBack;
+            } else {
+              tabsRouter.setActiveIndex(0);
+            }
             return false;
           },
           child: Scaffold(
