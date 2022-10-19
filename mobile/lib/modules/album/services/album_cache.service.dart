@@ -2,7 +2,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
+import 'package:immich_mobile/shared/services/json_cache.dart';
 import 'package:openapi/api.dart';
 
 class BaseAlbumCacheService extends JsonCache<List<AlbumResponseDto>> {
