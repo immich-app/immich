@@ -24,15 +24,13 @@ class TabControllerPage extends ConsumerWidget {
         final appRouter = AutoRouter.of(context);
         return WillPopScope(
           onWillPop: () async {
-            if (tabsRouter.activeIndex == 0) {
-              if (!appRouter.canNavigateBack) {
-                appRouter.navigateBack();
-              }
-              return appRouter.canNavigateBack;
-            } else {
+            bool atHomeTab = tabsRouter.activeIndex == 0;
+            if (!atHomeTab) {
               tabsRouter.setActiveIndex(0);
+            } else {
+              appRouter.navigateBack();
             }
-            return false;
+            return atHomeTab;
           },
           child: Scaffold(
             body: FadeTransition(
