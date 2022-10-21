@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Post, Res, UseGuards, ValidationPipe, Ip } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
@@ -19,9 +19,10 @@ export class AuthController {
   @Post('/login')
   async login(
     @Body(new ValidationPipe({ transform: true })) loginCredential: LoginCredentialDto,
+    @Ip() clientIp: string,
     @Res() response: Response,
   ): Promise<LoginResponseDto> {
-    const loginResponse = await this.authService.login(loginCredential);
+    const loginResponse = await this.authService.login(loginCredential, clientIp);
 
     // Set Cookies
     const accessTokenCookie = this.authService.getCookieWithJwtToken(loginResponse);
