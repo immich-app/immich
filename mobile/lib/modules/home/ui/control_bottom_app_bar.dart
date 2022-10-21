@@ -6,10 +6,14 @@ import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 class ControlBottomAppBar extends ConsumerWidget {
   final Function onShare;
   final Function onDelete;
+  final Function onAddToAlbum;
 
-  const ControlBottomAppBar(
-      {Key? key, required this.onShare, required this.onDelete})
-      : super(key: key);
+  const ControlBottomAppBar({
+    Key? key,
+    required this.onShare,
+    required this.onDelete,
+    required this.onAddToAlbum,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,6 +58,13 @@ class ControlBottomAppBar extends ConsumerWidget {
                       onShare();
                     },
                   ),
+                  ControlBoxButton(
+                    iconData: Icons.photo_album,
+                    label: "control_bottom_app_bar_add_to_album".tr(),
+                    onPressed: () {
+                      onAddToAlbum();
+                    },
+                  ),
                 ],
               ),
             )
@@ -79,6 +90,7 @@ class ControlBoxButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      height: 90,
       width: 60,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -90,7 +102,10 @@ class ControlBoxButton extends StatelessWidget {
             },
             icon: Icon(iconData, size: 30),
           ),
-          Text(label)
+          Text(
+            label,
+            textAlign: TextAlign.center,
+          )
         ],
       ),
     );

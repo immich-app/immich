@@ -1,8 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
+import 'package:immich_mobile/modules/home/ui/add_to_album/add_to_album_dialog.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
@@ -13,6 +15,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:openapi/api.dart';
 
 class HomePage extends HookConsumerWidget {
@@ -58,6 +61,21 @@ class HomePage extends HookConsumerWidget {
         multiselectEnabled.state = false;
       }
 
+      void onAddToAlbum() {
+        showDialog(
+            context: context,
+            builder: (BuildContext dialogContext) {
+
+              onSuccess(String albumName) {
+                ImmichToast.show(context: context, msg: "home_page_add_to_album".tr(args: [albumName]));
+                Navigator.of(dialogContext).pop();
+              }
+
+              return AddToAlbumDialog(selection.value, onSuccess);
+            },
+        );
+      }
+
       return SafeArea(
         bottom: !multiselectEnabled.state,
         top: !multiselectEnabled.state,
@@ -93,6 +111,7 @@ class HomePage extends HookConsumerWidget {
               ControlBottomAppBar(
                 onShare: onShareAssets,
                 onDelete: onDelete,
+                onAddToAlbum: onAddToAlbum,
               ),
             ],
           ],
