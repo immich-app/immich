@@ -8,7 +8,6 @@ class ErrorUploadAsset extends Equatable {
   final String fileType;
   final AssetEntity asset;
   final String errorMessage;
-  final bool isDuplicated;
 
   const ErrorUploadAsset({
     required this.id,
@@ -17,7 +16,6 @@ class ErrorUploadAsset extends Equatable {
     required this.fileType,
     required this.asset,
     required this.errorMessage,
-    required this.isDuplicated,
   });
 
   ErrorUploadAsset copyWith({
@@ -27,7 +25,6 @@ class ErrorUploadAsset extends Equatable {
     String? fileType,
     AssetEntity? asset,
     String? errorMessage,
-    bool? isDuplicated,
   }) {
     return ErrorUploadAsset(
       id: id ?? this.id,
@@ -36,13 +33,12 @@ class ErrorUploadAsset extends Equatable {
       fileType: fileType ?? this.fileType,
       asset: asset ?? this.asset,
       errorMessage: errorMessage ?? this.errorMessage,
-      isDuplicated: isDuplicated ?? this.isDuplicated,
     );
   }
 
   @override
   String toString() {
-    return 'ErrorUploadAsset(id: $id, createdAt: $createdAt, fileName: $fileName, fileType: $fileType, asset: $asset, errorMessage: $errorMessage, isDuplicated: $isDuplicated)';
+    return 'ErrorUploadAsset(id: $id, createdAt: $createdAt, fileName: $fileName, fileType: $fileType, asset: $asset, errorMessage: $errorMessage)';
   }
 
   @override
@@ -54,7 +50,6 @@ class ErrorUploadAsset extends Equatable {
       fileType,
       asset,
       errorMessage,
-      isDuplicated,
     ];
   }
 }

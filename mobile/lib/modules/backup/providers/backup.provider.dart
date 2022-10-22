@@ -455,7 +455,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  void _onAssetUploaded(String deviceAssetId, String deviceId) {
+  void _onAssetUploaded(
+    String deviceAssetId,
+    String deviceId,
+    bool isDuplicated,
+  ) {
     state = state.copyWith(
       selectedAlbumsBackupAssetsIds: {
         ...state.selectedAlbumsBackupAssetsIds,
