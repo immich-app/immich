@@ -167,7 +167,7 @@ class BackupService {
   Future<bool> backupAsset(
     Iterable<AssetEntity> assetList,
     http.CancellationToken cancelToken,
-    Function(String, String) singleAssetDoneCb,
+    Function(String, String) uploadSuccessCb,
     Function(int, int) uploadProgressCb,
     Function(CurrentUploadAsset) setCurrentUploadAssetCb,
     Function(ErrorUploadAsset) errorCb,
@@ -236,7 +236,14 @@ class BackupService {
           var response = await req.send(cancellationToken: cancelToken);
 
           if (response.statusCode == 201) {
-            singleAssetDoneCb(entity.id, deviceId);
+            var responseBody = await response.stream.bytesToString();
+            var uploadResponse =
+                AssetFileUploadResponseDto.fromJson(jsonDecode(responseBody));
+
+            if (uploadResponse != null && uploadResponse.isDuplicated) {
+            } else {
+              uploadSuccessCb(entity.id, deviceId);
+            }
           } else {
             var data = await response.stream.bytesToString();
             var error = jsonDecode(data);
