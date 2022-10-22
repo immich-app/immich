@@ -241,6 +241,18 @@ class BackupService {
                 AssetFileUploadResponseDto.fromJson(jsonDecode(responseBody));
 
             if (uploadResponse != null && uploadResponse.isDuplicated) {
+              errorCb(
+                ErrorUploadAsset(
+                  asset: entity,
+                  id: entity.id,
+                  createdAt: entity.createDateTime,
+                  fileName: originalFileName,
+                  fileType: _getAssetType(entity.type),
+                  errorMessage: "Duplicated asset",
+                  isDuplicated: true,
+                ),
+              );
+              // continue;
             } else {
               uploadSuccessCb(entity.id, deviceId);
             }
@@ -260,6 +272,7 @@ class BackupService {
                 fileName: originalFileName,
                 fileType: _getAssetType(entity.type),
                 errorMessage: error['error'],
+                isDuplicated: false,
               ),
             );
             continue;

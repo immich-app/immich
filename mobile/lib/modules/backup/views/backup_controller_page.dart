@@ -419,7 +419,6 @@ class BackupControllerPage extends HookConsumerWidget {
               ActionChip(
                 avatar: Icon(
                   Icons.info,
-                  size: 24,
                   color: Colors.red[400],
                 ),
                 elevation: 1,
