@@ -37,6 +37,7 @@ import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-buck
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { timeUtils } from '@app/common/utils';
+import { AssetCountResponseDto } from './response-dto/asset-count-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -496,5 +497,9 @@ export class AssetService {
 
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this._assetRepository.getAssetCountByUserId(authUser.id);
+  }
+
+  getAssetCount(): Promise<AssetCountResponseDto> {
+    return this._assetRepository.getAssetCount();
   }
 }

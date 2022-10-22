@@ -5,6 +5,7 @@
 	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import Cog from 'svelte-material-icons/Cog.svelte';
+	import Server from 'svelte-material-icons/Server.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import UserManagement from '$lib/components/admin-page/user-management.svelte';
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -121,6 +122,13 @@
 			isSelected={selectedAction === AdminSideBarSelection.JOBS}
 			on:selected={onButtonClicked}
 		/>
+		<SideBarButton
+			title="Server Stats"
+			logo={Server}
+			actionType={AdminSideBarSelection.STATS}
+			isSelected={selectedAction === AdminSideBarSelection.STATS}
+			on:selected={onButtonClicked}
+		/>
 
 		<div class="mb-6 mt-auto">
 			<StatusBox />
@@ -143,6 +151,12 @@
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.JOBS}
 					<JobsPanel />
+				{/if}
+				{#if selectedAction === AdminSideBarSelection.STATS}
+					<div class="border p-6 rounded-2xl bg-white">
+						<p class="mt-1 font-medium">Photos: {data.assetCount.photos}</p>
+						<p class="mt-1 font-medium">Videos: {data.assetCount.videos}</p>
+					</div>
 				{/if}
 			</section>
 		</section>

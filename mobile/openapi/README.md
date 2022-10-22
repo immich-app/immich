@@ -81,6 +81,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 *AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
+*AssetApi* | [**getAssetCount**](doc//AssetApi.md#getassetcount) | **GET** /asset/count | 
 *AssetApi* | [**getAssetCountByTimeBucket**](doc//AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
 *AssetApi* | [**getAssetCountByUserId**](doc//AssetApi.md#getassetcountbyuserid) | **GET** /asset/count-by-user-id | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
@@ -124,6 +125,7 @@ Class | Method | HTTP request | Description
  - [AssetCountByTimeBucket](doc//AssetCountByTimeBucket.md)
  - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
  - [AssetCountByUserIdResponseDto](doc//AssetCountByUserIdResponseDto.md)
+ - [AssetCountResponseDto](doc//AssetCountResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)

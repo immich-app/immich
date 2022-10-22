@@ -285,6 +285,25 @@ export interface AssetCountByUserIdResponseDto {
 /**
  * 
  * @export
+ * @interface AssetCountResponseDto
+ */
+export interface AssetCountResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountResponseDto
+     */
+    'photos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountResponseDto
+     */
+    'videos': number;
+}
+/**
+ * 
+ * @export
  * @interface AssetFileUploadResponseDto
  */
 export interface AssetFileUploadResponseDto {
@@ -2457,6 +2476,39 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAssetCount: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/asset/count`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {GetAssetCountByTimeBucketDto} getAssetCountByTimeBucketDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2923,6 +2975,15 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAssetCount(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetCountResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetCount(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {GetAssetCountByTimeBucketDto} getAssetCountByTimeBucketDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3090,6 +3151,14 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getAssetByTimeBucket(getAssetByTimeBucketDto: GetAssetByTimeBucketDto, options?: any): AxiosPromise<Array<AssetResponseDto>> {
             return localVarFp.getAssetByTimeBucket(getAssetByTimeBucketDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAssetCount(options?: any): AxiosPromise<AssetCountResponseDto> {
+            return localVarFp.getAssetCount(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3261,6 +3330,16 @@ export class AssetApi extends BaseAPI {
      */
     public getAssetByTimeBucket(getAssetByTimeBucketDto: GetAssetByTimeBucketDto, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getAssetByTimeBucket(getAssetByTimeBucketDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public getAssetCount(options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getAssetCount(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
