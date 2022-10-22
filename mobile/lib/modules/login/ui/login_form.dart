@@ -228,7 +228,7 @@ class LoginButton extends ConsumerWidget {
             AutoRouter.of(context).push(const ChangePasswordRoute());
           } else {
             ref.watch(backupProvider.notifier).resumeBackup();
-            AutoRouter.of(context).pushNamed("/tab-controller-page");
+            AutoRouter.of(context).replace(const TabControllerRoute());
           }
         } else {
           ImmichToast.show(

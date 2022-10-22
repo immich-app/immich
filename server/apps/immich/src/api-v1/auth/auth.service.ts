@@ -50,10 +50,11 @@ export class AuthService {
     return null;
   }
 
-  public async login(loginCredential: LoginCredentialDto): Promise<LoginResponseDto> {
+  public async login(loginCredential: LoginCredentialDto, clientIp: string): Promise<LoginResponseDto> {
     const validatedUser = await this.validateUser(loginCredential);
 
     if (!validatedUser) {
+      Logger.warn(`Failed login attempt for user ${loginCredential.email} from ip address ${clientIp}`)
       throw new BadRequestException('Incorrect email or password');
     }
 
