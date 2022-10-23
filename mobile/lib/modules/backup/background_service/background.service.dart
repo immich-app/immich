@@ -448,7 +448,6 @@ class BackgroundService {
     if (isDuplicated) {
       backupService.saveDuplicatedAssetIdToLocalStorage(deviceAssetId);
       _assetsToUploadCount--;
-      return;
     } else {
       _uploadedAssetsCount++;
     }
