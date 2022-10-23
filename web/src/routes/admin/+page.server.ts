@@ -12,10 +12,10 @@ export const load: PageServerLoad = async ({ parent }) => {
 	}
 
 	const { data: allUsers } = await serverApi.userApi.getAllUsers(false);
-	const { data: assetCount } = await serverApi.assetApi.getAssetCount();
+	const { data: stats } = await serverApi.serverInfoApi.getStats();
 	return {
 		user: user,
 		allUsers: allUsers,
-		assetCount: assetCount
+		stats: stats
 	};
 };

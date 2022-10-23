@@ -210,8 +210,6 @@ class ApiClient {
           return AssetCountByTimeBucketResponseDto.fromJson(value);
         case 'AssetCountByUserIdResponseDto':
           return AssetCountByUserIdResponseDto.fromJson(value);
-        case 'AssetCountResponseDto':
-          return AssetCountResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetResponseDto':
@@ -274,6 +272,8 @@ class ApiClient {
           return ServerInfoResponseDto.fromJson(value);
         case 'ServerPingResponse':
           return ServerPingResponse.fromJson(value);
+        case 'ServerStatsResponseDto':
+          return ServerStatsResponseDto.fromJson(value);
         case 'ServerVersionReponseDto':
           return ServerVersionReponseDto.fromJson(value);
         case 'SignUpDto':
@@ -290,6 +290,8 @@ class ApiClient {
           return UpdateDeviceInfoDto.fromJson(value);
         case 'UpdateUserDto':
           return UpdateUserDto.fromJson(value);
+        case 'UsageByUserDto':
+          return UsageByUserDto.fromJson(value);
         case 'UserCountResponseDto':
           return UserCountResponseDto.fromJson(value);
         case 'UserResponseDto':

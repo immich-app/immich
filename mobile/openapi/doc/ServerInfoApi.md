@@ -11,6 +11,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getServerInfo**](ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 [**getServerVersion**](ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
+[**getStats**](ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 [**pingServer**](ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 
 
@@ -76,6 +77,43 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**ServerVersionReponseDto**](ServerVersionReponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getStats**
+> ServerStatsResponseDto getStats()
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = ServerInfoApi();
+
+try {
+    final result = api_instance.getStats();
+    print(result);
+} catch (e) {
+    print('Exception when calling ServerInfoApi->getStats: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**ServerStatsResponseDto**](ServerStatsResponseDto.md)
 
 ### Authorization
 

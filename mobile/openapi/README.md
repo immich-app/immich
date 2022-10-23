@@ -81,7 +81,6 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 *AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
-*AssetApi* | [**getAssetCount**](doc//AssetApi.md#getassetcount) | **GET** /asset/count | 
 *AssetApi* | [**getAssetCountByTimeBucket**](doc//AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
 *AssetApi* | [**getAssetCountByUserId**](doc//AssetApi.md#getassetcountbyuserid) | **GET** /asset/count-by-user-id | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
@@ -103,6 +102,7 @@ Class | Method | HTTP request | Description
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
+*ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
@@ -125,7 +125,6 @@ Class | Method | HTTP request | Description
  - [AssetCountByTimeBucket](doc//AssetCountByTimeBucket.md)
  - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
  - [AssetCountByUserIdResponseDto](doc//AssetCountByUserIdResponseDto.md)
- - [AssetCountResponseDto](doc//AssetCountResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
@@ -157,6 +156,7 @@ Class | Method | HTTP request | Description
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
  - [ServerPingResponse](doc//ServerPingResponse.md)
+ - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
@@ -165,6 +165,7 @@ Class | Method | HTTP request | Description
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
+ - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserCountResponseDto](doc//UserCountResponseDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)

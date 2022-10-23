@@ -10,7 +10,6 @@ import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { AssetCountResponseDto } from './response-dto/asset-count-response.dto';
 
 export interface IAssetRepository {
   create(
@@ -28,7 +27,6 @@ export interface IAssetRepository {
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
-  getAssetCount(): Promise<AssetCountResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
   getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
@@ -70,27 +68,6 @@ export class AssetRepository implements IAssetRepository {
       .leftJoinAndSelect('asset.exifInfo', 'ei')
       .where('ei."assetId" IS NULL')
       .getMany();
-  }
-
-  async getAssetCount(): Promise<AssetCountResponseDto> {
-    // Get asset count by AssetType
-    const res = await this.assetRepository
-      .createQueryBuilder('asset')
-      .select(`COUNT(asset.id)`, 'count')
-      .addSelect(`asset.type`, 'type')
-      .groupBy('asset.type')
-      .getRawMany();
-
-    const assetCount = new AssetCountByUserIdResponseDto(0, 0);
-    res.map((item) => {
-      if (item.type === 'IMAGE') {
-        assetCount.photos = item.count;
-      } else if (item.type === 'VIDEO') {
-        assetCount.videos = item.count;
-      }
-    });
-
-    return assetCount;
   }
 
   async getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {

@@ -285,25 +285,6 @@ export interface AssetCountByUserIdResponseDto {
 /**
  * 
  * @export
- * @interface AssetCountResponseDto
- */
-export interface AssetCountResponseDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetCountResponseDto
-     */
-    'photos': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetCountResponseDto
-     */
-    'videos': number;
-}
-/**
- * 
- * @export
  * @interface AssetFileUploadResponseDto
  */
 export interface AssetFileUploadResponseDto {
@@ -1179,6 +1160,49 @@ export interface ServerPingResponse {
 /**
  * 
  * @export
+ * @interface ServerStatsResponseDto
+ */
+export interface ServerStatsResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof ServerStatsResponseDto
+     */
+    'photos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ServerStatsResponseDto
+     */
+    'videos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ServerStatsResponseDto
+     */
+    'objects': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ServerStatsResponseDto
+     */
+    'usageRaw': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServerStatsResponseDto
+     */
+    'usage': string;
+    /**
+     * 
+     * @type {Array<UsageByUserDto>}
+     * @memberof ServerStatsResponseDto
+     */
+    'usageByUser': Array<UsageByUserDto>;
+}
+/**
+ * 
+ * @export
  * @interface ServerVersionReponseDto
  */
 export interface ServerVersionReponseDto {
@@ -1383,6 +1407,49 @@ export interface UpdateUserDto {
      * @memberof UpdateUserDto
      */
     'profileImagePath'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface UsageByUserDto
+ */
+export interface UsageByUserDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UsageByUserDto
+     */
+    'userId': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof UsageByUserDto
+     */
+    'objects': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof UsageByUserDto
+     */
+    'videos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof UsageByUserDto
+     */
+    'photos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof UsageByUserDto
+     */
+    'usageRaw': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof UsageByUserDto
+     */
+    'usage': string;
 }
 /**
  * 
@@ -2476,39 +2543,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAssetCount: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/asset/count`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {GetAssetCountByTimeBucketDto} getAssetCountByTimeBucketDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2975,15 +3009,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getAssetCount(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetCountResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetCount(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {GetAssetCountByTimeBucketDto} getAssetCountByTimeBucketDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3151,14 +3176,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getAssetByTimeBucket(getAssetByTimeBucketDto: GetAssetByTimeBucketDto, options?: any): AxiosPromise<Array<AssetResponseDto>> {
             return localVarFp.getAssetByTimeBucket(getAssetByTimeBucketDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAssetCount(options?: any): AxiosPromise<AssetCountResponseDto> {
-            return localVarFp.getAssetCount(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3330,16 +3347,6 @@ export class AssetApi extends BaseAPI {
      */
     public getAssetByTimeBucket(getAssetByTimeBucketDto: GetAssetByTimeBucketDto, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getAssetByTimeBucket(getAssetByTimeBucketDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AssetApi
-     */
-    public getAssetCount(options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAssetCount(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4225,6 +4232,35 @@ export const ServerInfoApiAxiosParamCreator = function (configuration?: Configur
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getStats: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/server-info/stats`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         pingServer: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/server-info/ping`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4282,6 +4318,15 @@ export const ServerInfoApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getStats(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServerStatsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getStats(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async pingServer(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServerPingResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.pingServer(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -4311,6 +4356,14 @@ export const ServerInfoApiFactory = function (configuration?: Configuration, bas
          */
         getServerVersion(options?: any): AxiosPromise<ServerVersionReponseDto> {
             return localVarFp.getServerVersion(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getStats(options?: any): AxiosPromise<ServerStatsResponseDto> {
+            return localVarFp.getStats(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4348,6 +4401,16 @@ export class ServerInfoApi extends BaseAPI {
      */
     public getServerVersion(options?: AxiosRequestConfig) {
         return ServerInfoApiFp(this.configuration).getServerVersion(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ServerInfoApi
+     */
+    public getStats(options?: AxiosRequestConfig) {
+        return ServerInfoApiFp(this.configuration).getStats(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

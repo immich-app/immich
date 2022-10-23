@@ -15,6 +15,7 @@
 	import type { PageData } from './$types';
 	import { api, UserResponseDto } from '@api';
 	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+	import ServerStats from '$lib/components/admin-page/server-stats.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
@@ -153,10 +154,7 @@
 					<JobsPanel />
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.STATS}
-					<div class="border p-6 rounded-2xl bg-white">
-						<p class="mt-1 font-medium">Photos: {data.assetCount.photos}</p>
-						<p class="mt-1 font-medium">Videos: {data.assetCount.videos}</p>
-					</div>
+					<ServerStats stats={data.stats} />
 				{/if}
 			</section>
 		</section>
