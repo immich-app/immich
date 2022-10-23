@@ -154,7 +154,7 @@
 					<JobsPanel />
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.STATS}
-					<ServerStats stats={data.stats} />
+					<ServerStats stats={data.stats} allUsers={data.allUsers} />
 				{/if}
 			</section>
 		</section>
