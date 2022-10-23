@@ -48,6 +48,7 @@ doc/SearchAssetDto.md
 doc/ServerInfoApi.md
 doc/ServerInfoResponseDto.md
 doc/ServerPingResponse.md
+doc/ServerStatsResponseDto.md
 doc/ServerVersionReponseDto.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
@@ -56,6 +57,7 @@ doc/TimeGroupEnum.md
 doc/UpdateAlbumDto.md
 doc/UpdateDeviceInfoDto.md
 doc/UpdateUserDto.md
+doc/UsageByUserDto.md
 doc/UserApi.md
 doc/UserCountResponseDto.md
 doc/UserResponseDto.md
@@ -117,6 +119,7 @@ lib/model/remove_assets_dto.dart
 lib/model/search_asset_dto.dart
 lib/model/server_info_response_dto.dart
 lib/model/server_ping_response.dart
+lib/model/server_stats_response_dto.dart
 lib/model/server_version_reponse_dto.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
@@ -125,6 +128,7 @@ lib/model/time_group_enum.dart
 lib/model/update_album_dto.dart
 lib/model/update_device_info_dto.dart
 lib/model/update_user_dto.dart
+lib/model/usage_by_user_dto.dart
 lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart

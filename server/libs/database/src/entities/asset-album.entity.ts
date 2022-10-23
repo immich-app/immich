@@ -1,4 +1,4 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, Unique} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { AlbumEntity } from './album.entity';
 import { AssetEntity } from './asset.entity';
 

@@ -54,7 +54,7 @@ export class AuthService {
     const validatedUser = await this.validateUser(loginCredential);
 
     if (!validatedUser) {
-      Logger.warn(`Failed login attempt for user ${loginCredential.email} from ip address ${clientIp}`)
+      Logger.warn(`Failed login attempt for user ${loginCredential.email} from ip address ${clientIp}`);
       throw new BadRequestException('Incorrect email or password');
     }
 

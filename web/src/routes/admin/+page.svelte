@@ -5,6 +5,7 @@
 	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import Cog from 'svelte-material-icons/Cog.svelte';
+	import Server from 'svelte-material-icons/Server.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import UserManagement from '$lib/components/admin-page/user-management.svelte';
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -14,6 +15,7 @@
 	import type { PageData } from './$types';
 	import { api, UserResponseDto } from '@api';
 	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+	import ServerStats from '$lib/components/admin-page/server-stats.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
@@ -121,6 +123,13 @@
 			isSelected={selectedAction === AdminSideBarSelection.JOBS}
 			on:selected={onButtonClicked}
 		/>
+		<SideBarButton
+			title="Server Stats"
+			logo={Server}
+			actionType={AdminSideBarSelection.STATS}
+			isSelected={selectedAction === AdminSideBarSelection.STATS}
+			on:selected={onButtonClicked}
+		/>
 
 		<div class="mb-6 mt-auto">
 			<StatusBox />
@@ -143,6 +152,9 @@
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.JOBS}
 					<JobsPanel />
+				{/if}
+				{#if selectedAction === AdminSideBarSelection.STATS}
+					<ServerStats stats={data.stats} allUsers={data.allUsers} />
 				{/if}
 			</section>
 		</section>

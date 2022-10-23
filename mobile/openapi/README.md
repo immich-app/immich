@@ -102,6 +102,7 @@ Class | Method | HTTP request | Description
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
+*ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
@@ -155,6 +156,7 @@ Class | Method | HTTP request | Description
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
  - [ServerPingResponse](doc//ServerPingResponse.md)
+ - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
@@ -163,6 +165,7 @@ Class | Method | HTTP request | Description
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
+ - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserCountResponseDto](doc//UserCountResponseDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)

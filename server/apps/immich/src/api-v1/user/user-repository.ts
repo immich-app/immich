@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { UpdateUserDto } from './dto/update-user.dto'
+import { UpdateUserDto } from './dto/update-user.dto';
 
 export interface IUserRepository {
   get(userId: string): Promise<UserEntity | null>;
