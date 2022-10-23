@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -296,6 +297,25 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Those assets are unique and are used as the total assets
   ///
   Future<void> _updateBackupAssetCount() async {
+    // Get duplicated asset box - This is the first instance where the duplicated asset box is used.
+    HiveDuplicatedAssets? duplicatedAssets =
+        Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
+            .get(duplicatedAssetsKey);
+
+    if (duplicatedAssets == null) {
+      Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox).put(
+        duplicatedAssetsKey,
+        HiveDuplicatedAssets(duplicatedAssetIds: []),
+      );
+    }
+    // duplicatedAssets ??= HiveDuplicatedAssets(duplicatedAssetIds: []);
+    // Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
+    //     .put(duplicatedAssetsKey, duplicatedAssets);
+
+    print(
+      "Duplicated asset ${Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox).get(duplicatedAssetsKey)}",
+    );
+
     Set<AssetEntity> assetsFromSelectedAlbums = {};
     Set<AssetEntity> assetsFromExcludedAlbums = {};
 
@@ -394,7 +414,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Invoke backup process
   ///
   Future<void> startBackupProcess() async {
-    assert(state.backupProgress == BackUpProgressEnum.idle);
+    // assert(state.backupProgress == BackUpProgressEnum.idle);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
     await getBackupInfo();
@@ -455,37 +475,64 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
+  void _saveDuplicatedAssetIdToLocalStorage(String deviceAssetId) {
+    HiveDuplicatedAssets? duplicatedAssets =
+        Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
+            .get(duplicatedAssetsKey);
+
+    if (duplicatedAssets == null) {
+      duplicatedAssets = HiveDuplicatedAssets(
+        duplicatedAssetIds: [deviceAssetId],
+      );
+    } else {
+      duplicatedAssets.duplicatedAssetIds = [
+        ...duplicatedAssets.duplicatedAssetIds,
+        deviceAssetId
+      ];
+    }
+
+    duplicatedAssets.duplicatedAssetIds =
+        duplicatedAssets.duplicatedAssetIds.toSet().toList();
+
+    Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
+        .put(duplicatedAssetsKey, duplicatedAssets);
+  }
+
   void _onAssetUploaded(
     String deviceAssetId,
     String deviceId,
     bool isDuplicated,
   ) {
-    state = state.copyWith(
-      selectedAlbumsBackupAssetsIds: {
-        ...state.selectedAlbumsBackupAssetsIds,
-        deviceAssetId
-      },
-      allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
-    );
-
-    if (state.allUniqueAssets.length -
-            state.selectedAlbumsBackupAssetsIds.length ==
-        0) {
-      final latestAssetBackup =
-          state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(
-                (v, e) => e.isAfter(v) ? e : v,
-              );
+    if (isDuplicated) {
+      _saveDuplicatedAssetIdToLocalStorage(deviceAssetId);
+    } else {
       state = state.copyWith(
-        selectedBackupAlbums: state.selectedBackupAlbums
-            .map((e) => e.copyWith(lastBackup: latestAssetBackup))
-            .toSet(),
-        excludedBackupAlbums: state.excludedBackupAlbums
-            .map((e) => e.copyWith(lastBackup: latestAssetBackup))
-            .toSet(),
-        backupProgress: BackUpProgressEnum.done,
-        progressInPercentage: 0.0,
+        selectedAlbumsBackupAssetsIds: {
+          ...state.selectedAlbumsBackupAssetsIds,
+          deviceAssetId
+        },
+        allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
       );
-      _updatePersistentAlbumsSelection();
+
+      if (state.allUniqueAssets.length -
+              state.selectedAlbumsBackupAssetsIds.length ==
+          0) {
+        final latestAssetBackup =
+            state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(
+                  (v, e) => e.isAfter(v) ? e : v,
+                );
+        state = state.copyWith(
+          selectedBackupAlbums: state.selectedBackupAlbums
+              .map((e) => e.copyWith(lastBackup: latestAssetBackup))
+              .toSet(),
+          excludedBackupAlbums: state.excludedBackupAlbums
+              .map((e) => e.copyWith(lastBackup: latestAssetBackup))
+              .toSet(),
+          backupProgress: BackUpProgressEnum.done,
+          progressInPercentage: 0.0,
+        );
+        _updatePersistentAlbumsSelection();
+      }
     }
 
     _updateServerInfo();
