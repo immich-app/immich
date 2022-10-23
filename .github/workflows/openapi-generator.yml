@@ -29,7 +29,7 @@ jobs:
       - name: Push to typescript repo
         run: |
           git config --global init.defaultBranch main
-          git config --global pull.rebase false
+          git config --global pull.rebase true
           git config --global user.email "alex.tran1502@gmail.com"
           git config --global user.name "Alex Tran"
           cd typescript-axios-client  
@@ -50,7 +50,7 @@ jobs:
       - name: Push to Dart repo
         run: |
           git config --global init.defaultBranch main
-          git config --global pull.rebase false
+          git config --global pull.rebase true
           git config --global user.email "alex.tran1502@gmail.com"
           git config --global user.name "Alex Tran"
           cd dart-client
@@ -71,7 +71,7 @@ jobs:
       - name: Push to Rust repo
         run: |
           git config --global init.defaultBranch main
-          git config --global pull.rebase false
+          git config --global pull.rebase true
           git config --global user.email "alex.tran1502@gmail.com"
           git config --global user.name "Alex Tran"
           cd rust-client
