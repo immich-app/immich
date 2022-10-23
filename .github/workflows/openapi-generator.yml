@@ -37,7 +37,7 @@ jobs:
           git add .
           git commit -m "Update SDK"
           git remote add origin https://immich-app:"${{ secrets.GH_TOKEN }}"@github.com/immich-app/immich-sdk-typescript-axios.git
-          git pull origin main --allow-unrelated-histories
+          git pull origin main --allow-unrelated-histories --force
           git push origin main 2>&1 | grep -v 'To https'
 
       - name: Generate Dart SDK
