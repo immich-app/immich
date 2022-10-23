@@ -19,6 +19,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:cancellation_token_http/http.dart' as http;
 
+import '../models/hive_duplicated_assets.model.dart';
+
 final backupServiceProvider = Provider(
   (ref) => BackupService(
     ref.watch(apiServiceProvider),
@@ -40,6 +42,31 @@ class BackupService {
       return null;
     }
   }
+
+  void saveDuplicatedAssetIdToLocalStorage(String deviceAssetId) {
+    HiveDuplicatedAssets? duplicatedAssets =
+        Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
+            .get(duplicatedAssetsKey);
+
+    if (duplicatedAssets == null) {
+      duplicatedAssets = HiveDuplicatedAssets(
+        duplicatedAssetIds: [deviceAssetId],
+      );
+    } else {
+      duplicatedAssets.duplicatedAssetIds = [
+        ...duplicatedAssets.duplicatedAssetIds,
+        deviceAssetId
+      ];
+    }
+
+    duplicatedAssets.duplicatedAssetIds =
+        duplicatedAssets.duplicatedAssetIds.toSet().toList();
+
+    Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
+        .put(duplicatedAssetsKey, duplicatedAssets);
+  }
+
+  Future<List<String>> getDuplicatedAssetIds() async {}
 
   /// Returns all assets newer than the last successful backup per album
   Future<List<AssetEntity>> buildUploadCandidates(
@@ -79,6 +106,7 @@ class BackupService {
         backupAlbums.lastExcludedBackupTime,
         now,
       );
+
       return toAdd.toSet().difference(toRemove.toSet()).toList();
     } else {
       return await _fetchAssetsAndUpdateLastBackup(

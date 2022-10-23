@@ -20,6 +20,8 @@ import 'package:immich_mobile/modules/settings/services/app_settings.service.dar
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../models/hive_duplicated_assets.model.dart';
+
 final backgroundServiceProvider = Provider(
   (ref) => BackgroundService(),
 );
@@ -316,10 +318,13 @@ class BackgroundService {
 
     Hive.registerAdapter(HiveSavedLoginInfoAdapter());
     Hive.registerAdapter(HiveBackupAlbumsAdapter());
+    Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
+
     await Hive.openBox(userInfoBox);
     await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
     await Hive.openBox(userSettingInfoBox);
     await Hive.openBox(backgroundBackupInfoBox);
+    await Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox);
 
     ApiService apiService = ApiService();
     apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));

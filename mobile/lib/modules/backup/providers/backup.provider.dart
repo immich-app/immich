@@ -476,36 +476,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  void _saveDuplicatedAssetIdToLocalStorage(String deviceAssetId) {
-    HiveDuplicatedAssets? duplicatedAssets =
-        Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
-            .get(duplicatedAssetsKey);
-
-    if (duplicatedAssets == null) {
-      duplicatedAssets = HiveDuplicatedAssets(
-        duplicatedAssetIds: [deviceAssetId],
-      );
-    } else {
-      duplicatedAssets.duplicatedAssetIds = [
-        ...duplicatedAssets.duplicatedAssetIds,
-        deviceAssetId
-      ];
-    }
-
-    duplicatedAssets.duplicatedAssetIds =
-        duplicatedAssets.duplicatedAssetIds.toSet().toList();
-
-    Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
-        .put(duplicatedAssetsKey, duplicatedAssets);
-  }
-
   void _onAssetUploaded(
     String deviceAssetId,
     String deviceId,
     bool isDuplicated,
   ) {
     if (isDuplicated) {
-      _saveDuplicatedAssetIdToLocalStorage(deviceAssetId);
+      _backupService.saveDuplicatedAssetIdToLocalStorage(deviceAssetId);
       state = state.copyWith(
         allUniqueAssets: state.allUniqueAssets
             .where((asset) => asset.id != deviceAssetId)
