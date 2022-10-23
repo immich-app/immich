@@ -416,7 +416,8 @@ class BackgroundService {
       toUpload,
       _cancellationToken!,
       notifyTotalProgress
-          ? _onAssetUploaded
+          ? (assetId, deviceId, isDuplicated) =>
+              _onAssetUploaded(backupService, assetId, deviceId, isDuplicated)
           : (assetId, deviceId, isDuplicated) {},
       notifySingleProgress ? _onProgress : (sent, total) {},
       notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
@@ -437,12 +438,21 @@ class BackgroundService {
   }
 
   void _onAssetUploaded(
+    BackupService backupService,
     String deviceAssetId,
     String deviceId,
     bool isDuplicated,
   ) {
     debugPrint("Uploaded $deviceAssetId from $deviceId");
-    _uploadedAssetsCount++;
+
+    if (isDuplicated) {
+      backupService.saveDuplicatedAssetIdToLocalStorage(deviceAssetId);
+      _assetsToUploadCount--;
+      return;
+    } else {
+      _uploadedAssetsCount++;
+    }
+
     _updateNotification(
       progress: _uploadedAssetsCount,
       max: _assetsToUploadCount,

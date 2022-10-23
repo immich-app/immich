@@ -66,7 +66,18 @@ class BackupService {
         .put(duplicatedAssetsKey, duplicatedAssets);
   }
 
-  Future<List<String>> getDuplicatedAssetIds() async {}
+  /// Get duplicated asset id from Hive storage
+  Set<String> getDuplicatedAssetIds() {
+    HiveDuplicatedAssets? duplicatedAssets =
+        Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
+            .get(duplicatedAssetsKey);
+
+    if (duplicatedAssets == null) {
+      return {};
+    }
+
+    return duplicatedAssets.duplicatedAssetIds.toSet();
+  }
 
   /// Returns all assets newer than the last successful backup per album
   Future<List<AssetEntity>> buildUploadCandidates(
@@ -106,8 +117,13 @@ class BackupService {
         backupAlbums.lastExcludedBackupTime,
         now,
       );
+      final Set<String> duplicatedAssetIds = getDuplicatedAssetIds();
 
-      return toAdd.toSet().difference(toRemove.toSet()).toList();
+      return toAdd
+          .toSet()
+          .difference(toRemove.toSet())
+          .where((candidate) => !duplicatedAssetIds.contains(candidate.id))
+          .toList();
     } else {
       return await _fetchAssetsAndUpdateLastBackup(
         selectedAlbums,
