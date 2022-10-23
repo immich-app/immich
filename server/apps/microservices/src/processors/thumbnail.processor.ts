@@ -65,7 +65,11 @@ export class ThumbnailGeneratorProcessor {
 
     if (asset.type == AssetType.IMAGE) {
       try {
-        await sharp(asset.originalPath).resize(1440, 2560, { fit: 'inside' }).jpeg().rotate().toFile(jpegThumbnailPath);
+        await sharp(asset.originalPath, { failOnError: false })
+          .resize(1440, 2560, { fit: 'inside' })
+          .jpeg()
+          .rotate()
+          .toFile(jpegThumbnailPath);
         await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
       } catch (error) {
         Logger.error('Failed to generate jpeg thumbnail for asset: ' + asset.id);
@@ -135,7 +139,7 @@ export class ThumbnailGeneratorProcessor {
     const webpPath = asset.resizePath.replace('jpeg', 'webp');
 
     try {
-      await sharp(asset.resizePath).resize(250).webp().rotate().toFile(webpPath);
+      await sharp(asset.resizePath, { failOnError: false }).resize(250).webp().rotate().toFile(webpPath);
       await this.assetRepository.update({ id: asset.id }, { webpPath: webpPath });
     } catch (error) {
       Logger.error('Failed to generate webp thumbnail for asset: ' + asset.id);
