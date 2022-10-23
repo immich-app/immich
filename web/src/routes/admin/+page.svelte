@@ -13,7 +13,7 @@
 	import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import type { PageData } from './$types';
-	import { api, UserResponseDto } from '@api';
+	import { api, ServerStatsResponseDto, UserResponseDto } from '@api';
 	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
 	import ServerStats from '$lib/components/admin-page/server-stats.svelte';
 
@@ -26,6 +26,7 @@
 	let shouldShowEditUserForm = false;
 	let shouldShowCreateUserForm = false;
 	let shouldShowInfoPanel = false;
+	let serverStat: ServerStatsResponseDto;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AdminSideBarSelection;
@@ -33,6 +34,7 @@
 
 	onMount(() => {
 		selectedAction = AdminSideBarSelection.USER_MANAGEMENT;
+		getServerStats();
 	});
 
 	const onUserCreated = async () => {
@@ -58,6 +60,15 @@
 		data.allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
 		shouldShowInfoPanel = true;
+	};
+
+	const getServerStats = async () => {
+		try {
+			const res = await api.serverInfoApi.getStats();
+			serverStat = res.data;
+		} catch (e) {
+			console.log(e);
+		}
 	};
 </script>
 
@@ -130,7 +141,6 @@
 			isSelected={selectedAction === AdminSideBarSelection.STATS}
 			on:selected={onButtonClicked}
 		/>
-
 		<div class="mb-6 mt-auto">
 			<StatusBox />
 		</div>
@@ -153,8 +163,8 @@
 				{#if selectedAction === AdminSideBarSelection.JOBS}
 					<JobsPanel />
 				{/if}
-				{#if selectedAction === AdminSideBarSelection.STATS}
-					<ServerStats stats={data.stats} allUsers={data.allUsers} />
+				{#if selectedAction === AdminSideBarSelection.STATS && serverStat}
+					<ServerStats stats={serverStat} allUsers={data.allUsers} />
 				{/if}
 			</section>
 		</section>
