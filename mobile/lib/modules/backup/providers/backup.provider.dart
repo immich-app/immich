@@ -308,13 +308,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         HiveDuplicatedAssets(duplicatedAssetIds: []),
       );
     }
-    // duplicatedAssets ??= HiveDuplicatedAssets(duplicatedAssetIds: []);
-    // Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
-    //     .put(duplicatedAssetsKey, duplicatedAssets);
-
-    print(
-      "Duplicated asset ${Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox).get(duplicatedAssetsKey)}",
-    );
 
     Set<AssetEntity> assetsFromSelectedAlbums = {};
     Set<AssetEntity> assetsFromExcludedAlbums = {};
@@ -346,8 +339,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     // Find asset that were backup from selected albums
     Set<String> selectedAlbumsBackupAssets =
         Set.from(allUniqueAssets.map((e) => e.id));
+
     selectedAlbumsBackupAssets
         .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
+
+    // Remove duplicated asset from all unique assets
+    if (duplicatedAssets != null) {
+      allUniqueAssets.removeWhere(
+        (asset) => duplicatedAssets.duplicatedAssetIds.contains(asset.id),
+      );
+    }
 
     if (allUniqueAssets.isEmpty) {
       debugPrint("No Asset On Device");
@@ -505,6 +506,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   ) {
     if (isDuplicated) {
       _saveDuplicatedAssetIdToLocalStorage(deviceAssetId);
+      state = state.copyWith(
+        allUniqueAssets: state.allUniqueAssets
+            .where((asset) => asset.id != deviceAssetId)
+            .toSet(),
+      );
     } else {
       state = state.copyWith(
         selectedAlbumsBackupAssetsIds: {
@@ -513,26 +519,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         },
         allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
       );
+    }
 
-      if (state.allUniqueAssets.length -
-              state.selectedAlbumsBackupAssetsIds.length ==
-          0) {
-        final latestAssetBackup =
-            state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(
-                  (v, e) => e.isAfter(v) ? e : v,
-                );
-        state = state.copyWith(
-          selectedBackupAlbums: state.selectedBackupAlbums
-              .map((e) => e.copyWith(lastBackup: latestAssetBackup))
-              .toSet(),
-          excludedBackupAlbums: state.excludedBackupAlbums
-              .map((e) => e.copyWith(lastBackup: latestAssetBackup))
-              .toSet(),
-          backupProgress: BackUpProgressEnum.done,
-          progressInPercentage: 0.0,
-        );
-        _updatePersistentAlbumsSelection();
-      }
+    if (state.allUniqueAssets.length -
+            state.selectedAlbumsBackupAssetsIds.length ==
+        0) {
+      final latestAssetBackup =
+          state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(
+                (v, e) => e.isAfter(v) ? e : v,
+              );
+      state = state.copyWith(
+        selectedBackupAlbums: state.selectedBackupAlbums
+            .map((e) => e.copyWith(lastBackup: latestAssetBackup))
+            .toSet(),
+        excludedBackupAlbums: state.excludedBackupAlbums
+            .map((e) => e.copyWith(lastBackup: latestAssetBackup))
+            .toSet(),
+        backupProgress: BackUpProgressEnum.done,
+        progressInPercentage: 0.0,
+      );
+      _updatePersistentAlbumsSelection();
     }
 
     _updateServerInfo();
