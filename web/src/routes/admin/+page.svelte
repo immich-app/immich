@@ -15,6 +15,7 @@
 	import type { PageData } from './$types';
 	import { api, ServerStatsResponseDto, UserResponseDto } from '@api';
 	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+	import ServerStats from '$lib/components/admin-page/server-stats.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
@@ -133,7 +134,13 @@
 			isSelected={selectedAction === AdminSideBarSelection.JOBS}
 			on:selected={onButtonClicked}
 		/>
-
+		<SideBarButton
+			title="Server Stats"
+			logo={Server}
+			actionType={AdminSideBarSelection.STATS}
+			isSelected={selectedAction === AdminSideBarSelection.STATS}
+			on:selected={onButtonClicked}
+		/>
 		<div class="mb-6 mt-auto">
 			<StatusBox />
 		</div>
@@ -155,6 +162,9 @@
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.JOBS}
 					<JobsPanel />
+				{/if}
+				{#if selectedAction === AdminSideBarSelection.STATS && serverStat}
+					<ServerStats stats={serverStat} allUsers={data.allUsers} />
 				{/if}
 			</section>
 		</section>
