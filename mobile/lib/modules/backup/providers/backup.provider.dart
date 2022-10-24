@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -584,6 +585,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           albums.lastExcludedBackupTime,
         );
       }
+      await Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox);
       final Box backgroundBox = await Hive.openBox(backgroundBackupInfoBox);
       state = state.copyWith(
         backupProgress: previous,
@@ -624,6 +626,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       try {
         if (Hive.isBoxOpen(hiveBackupInfoBox)) {
           await Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).close();
+        }
+      } catch (error) {
+        debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");
+      }
+      try {
+        if (Hive.isBoxOpen(duplicatedAssetsBox)) {
+          await Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox).close();
         }
       } catch (error) {
         debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");
