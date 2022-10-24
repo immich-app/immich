@@ -1,7 +1,7 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
 import { AssetEntity } from '@app/database/entities/asset.entity';
+import { QueueNameEnum } from '@app/job';
 import { mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
-import { videoConversionQueueName } from '@app/job/constants/queue-name.constant';
 import { IMp4ConversionProcessor } from '@app/job/interfaces/video-transcode.interface';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -11,7 +11,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'fs';
 import { Repository } from 'typeorm';
 
-@Processor(videoConversionQueueName)
+@Processor(QueueNameEnum.VIDEO_CONVERSION)
 export class VideoTranscodeProcessor {
   constructor(
     @InjectRepository(AssetEntity)

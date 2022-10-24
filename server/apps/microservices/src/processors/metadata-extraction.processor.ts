@@ -1,23 +1,19 @@
 import { ImmichLogLevel } from '@app/common/constants/log-level.constant';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
-import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import {
   IExifExtractionProcessor,
   IVideoLengthExtractionProcessor,
   exifExtractionProcessorName,
-  imageTaggingProcessorName,
-  objectDetectionProcessorName,
   videoMetadataExtractionProcessorName,
-  metadataExtractionQueueName,
   reverseGeocodingProcessorName,
   IReverseGeocodingProcessor,
+  QueueNameEnum,
 } from '@app/job';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import axios from 'axios';
 import { Job } from 'bull';
 import exifr from 'exifr';
 import ffmpeg from 'fluent-ffmpeg';
@@ -43,20 +39,20 @@ function geocoderLookup(points: { latitude: number; longitude: number }[]) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     geocoder.lookUp(points, 1, (err, addresses) => {
-      resolve(addresses[0][0]);
+      resolve(addresses[0][0] as GeoData);
     });
   });
 }
 
 const geocodingPrecisionLevels = ['cities15000', 'cities5000', 'cities1000', 'cities500'];
 
-export interface AdminCode {
+export type AdminCode = {
   name: string;
   asciiName: string;
   geoNameId: string;
-}
+};
 
-export interface GeoData {
+export type GeoData = {
   geoNameId: string;
   name: string;
   asciiName: string;
@@ -67,8 +63,8 @@ export interface GeoData {
   featureCode: string;
   countryCode: string;
   cc2?: any;
-  admin1Code?: AdminCode;
-  admin2Code?: AdminCode;
+  admin1Code?: AdminCode | string;
+  admin2Code?: AdminCode | string;
   admin3Code?: any;
   admin4Code?: any;
   population: string;
@@ -77,9 +73,9 @@ export interface GeoData {
   timezone: string;
   modificationDate: string;
   distance: number;
-}
+};
 
-@Processor(metadataExtractionQueueName)
+@Processor(QueueNameEnum.METADATA_EXTRACTION)
 export class MetadataExtractionProcessor {
   private isGeocodeInitialized = false;
   private logLevel: ImmichLogLevel;
@@ -91,12 +87,9 @@ export class MetadataExtractionProcessor {
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
-    @InjectRepository(SmartInfoEntity)
-    private smartInfoRepository: Repository<SmartInfoEntity>,
-
     private configService: ConfigService,
   ) {
-    if (configService.get('DISABLE_REVERSE_GEOCODING') !== 'true') {
+    if (!configService.get('DISABLE_REVERSE_GEOCODING')) {
       Logger.log('Initialising Reverse Geocoding');
       geocoderInit({
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -109,7 +102,8 @@ export class MetadataExtractionProcessor {
           alternateNames: false,
         },
         countries: [],
-        dumpDirectory: configService.get('REVERSE_GEOCODING_DUMP_DIRECTORY') || (process.cwd() + '/.reverse-geocoding-dump/'),
+        dumpDirectory:
+          configService.get('REVERSE_GEOCODING_DUMP_DIRECTORY') || process.cwd() + '/.reverse-geocoding-dump/',
       }).then(() => {
         this.isGeocodeInitialized = true;
         Logger.log('Reverse Geocoding Initialised');
@@ -129,10 +123,22 @@ export class MetadataExtractionProcessor {
     const city = geoCodeInfo.name;
 
     let state = '';
-    if (geoCodeInfo.admin2Code?.name) state += geoCodeInfo.admin2Code.name;
-    if (geoCodeInfo.admin1Code?.name) {
-      if (geoCodeInfo.admin2Code?.name) state += ', ';
-      state += geoCodeInfo.admin1Code.name;
+
+    if (geoCodeInfo.admin2Code) {
+      const adminCode2 = geoCodeInfo.admin2Code as AdminCode;
+      state += adminCode2.name;
+    }
+
+    if (geoCodeInfo.admin1Code) {
+      const adminCode1 = geoCodeInfo.admin1Code as AdminCode;
+
+      if (geoCodeInfo.admin2Code) {
+        const adminCode2 = geoCodeInfo.admin2Code as AdminCode;
+        if (adminCode2.name) {
+          state += ', ';
+        }
+      }
+      state += adminCode1.name;
     }
 
     return { country, state, city };
@@ -270,48 +276,6 @@ export class MetadataExtractionProcessor {
       const { latitude, longitude } = job.data;
       const { country, state, city } = await this.reverseGeocodeExif(latitude, longitude);
       await this.exifRepository.update({ id: job.data.exifId }, { city, state, country });
-    }
-  }
-
-  @Process({ name: imageTaggingProcessorName, concurrency: 2 })
-  async tagImage(job: Job) {
-    const { asset }: { asset: AssetEntity } = job.data;
-
-    const res = await axios.post('http://immich-machine-learning:3003/image-classifier/tag-image', {
-      thumbnailPath: asset.resizePath,
-    });
-
-    if (res.status == 201 && res.data.length > 0) {
-      const smartInfo = new SmartInfoEntity();
-      smartInfo.assetId = asset.id;
-      smartInfo.tags = [...res.data];
-
-      await this.smartInfoRepository.upsert(smartInfo, {
-        conflictPaths: ['assetId'],
-      });
-    }
-  }
-
-  @Process({ name: objectDetectionProcessorName, concurrency: 2 })
-  async detectObject(job: Job) {
-    try {
-      const { asset }: { asset: AssetEntity } = job.data;
-
-      const res = await axios.post('http://immich-machine-learning:3003/object-detection/detect-object', {
-        thumbnailPath: asset.resizePath,
-      });
-
-      if (res.status == 201 && res.data.length > 0) {
-        const smartInfo = new SmartInfoEntity();
-        smartInfo.assetId = asset.id;
-        smartInfo.objects = [...res.data];
-
-        await this.smartInfoRepository.upsert(smartInfo, {
-          conflictPaths: ['assetId'],
-        });
-      }
-    } catch (error) {
-      Logger.error(`Failed to trigger object detection pipe line ${String(error)}`);
     }
   }
 

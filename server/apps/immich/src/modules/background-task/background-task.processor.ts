@@ -46,6 +46,14 @@ export class BackgroundTaskProcessor {
           }
         });
       }
+
+      if (asset.encodedVideoPath) {
+        fs.unlink(asset.encodedVideoPath, (err) => {
+          if (err) {
+            console.log('error deleting ', asset.encodedVideoPath);
+          }
+        });
+      }
     }
   }
 }

@@ -29,4 +29,6 @@ COPY --from=builder /usr/src/app/dist ./dist
 
 RUN npm prune --production
 
+VOLUME /usr/src/app/upload
+
 EXPOSE 3001

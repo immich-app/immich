@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -44,9 +45,20 @@ final renderListProvider = StateProvider((ref) {
   DateTime? lastDate;
 
   assetGroups.forEach((groupName, assets) {
-    final date = DateTime.parse(groupName);
+    try {
+      final date = DateTime.parse(groupName);
 
-    if (lastDate == null || lastDate!.month != date.month) {
+      if (lastDate == null || lastDate!.month != date.month) {
+        elements.add(
+          RenderAssetGridElement(
+            RenderAssetGridElementType.monthTitle,
+            title: groupName,
+            date: date,
+          ),
+        );
+      }
+
+      // Add group title
       elements.add(
         RenderAssetGridElement(
           RenderAssetGridElementType.monthTitle,
@@ -76,14 +88,34 @@ final renderListProvider = StateProvider((ref) {
         date: date,
         assetRow: RenderAssetGridRow(
           assets.sublist(cursor, cursor + rowElements),
+          RenderAssetGridElementType.dayTitle,
+          title: groupName,
+          date: date,
+          relatedAssetList: assets,
         ),
       );
 
-      elements.add(rowElement);
-      cursor += rowElements;
-    }
+      // Add rows
+      int cursor = 0;
+      while (cursor < assets.length) {
+        int rowElements = min(assets.length - cursor, assetsPerRow);
 
-    lastDate = date;
+        final rowElement = RenderAssetGridElement(
+          RenderAssetGridElementType.assetRow,
+          date: date,
+          assetRow: RenderAssetGridRow(
+            assets.sublist(cursor, cursor + rowElements),
+          ),
+        );
+
+        elements.add(rowElement);
+        cursor += rowElements;
+      }
+
+      lastDate = date;
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   });
 
   return elements;

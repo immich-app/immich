@@ -20,5 +20,12 @@ export const generateWEBPThumbnailProcessorName = 'generate-webp-thumbnail';
 export const exifExtractionProcessorName = 'exif-extraction';
 export const videoMetadataExtractionProcessorName = 'extract-video-metadata';
 export const reverseGeocodingProcessorName = 'reverse-geocoding';
-export const objectDetectionProcessorName = 'detect-object';
-export const imageTaggingProcessorName = 'tag-image';
+
+/**
+ * Machine learning Queue Jobs
+ */
+
+export enum MachineLearningJobNameEnum {
+  OBJECT_DETECTION = 'detect-object',
+  IMAGE_TAGGING = 'tag-image',
+}

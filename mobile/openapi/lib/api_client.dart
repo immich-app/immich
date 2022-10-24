@@ -202,6 +202,8 @@ class ApiClient {
           return AlbumCountResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
+        case 'AllJobStatusResponseDto':
+          return AllJobStatusResponseDto.fromJson(value);
         case 'AssetCountByTimeBucket':
           return AssetCountByTimeBucket.fromJson(value);
         case 'AssetCountByTimeBucketResponseDto':
@@ -246,6 +248,16 @@ class ApiClient {
           return GetAssetByTimeBucketDto.fromJson(value);
         case 'GetAssetCountByTimeBucketDto':
           return GetAssetCountByTimeBucketDto.fromJson(value);
+        case 'JobCommand':
+          return JobCommandTypeTransformer().decode(value);
+        case 'JobCommandDto':
+          return JobCommandDto.fromJson(value);
+        case 'JobCounts':
+          return JobCounts.fromJson(value);
+        case 'JobId':
+          return JobIdTypeTransformer().decode(value);
+        case 'JobStatusResponseDto':
+          return JobStatusResponseDto.fromJson(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':

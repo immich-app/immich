@@ -119,7 +119,7 @@
 			in:fade={{ duration: 100 }}
 			out:fade={{ duration: 100 }}
 			id="account-info-panel"
-			class="absolute right-[25px] top-[75px] bg-white shadow-lg rounded-2xl w-[360px] text-center"
+			class="absolute right-[25px] top-[75px] bg-white shadow-lg rounded-2xl w-[360px] text-center z-[100]"
 			use:clickOutside
 			on:out-click={() => (shouldShowAccountInfoPanel = false)}
 		>

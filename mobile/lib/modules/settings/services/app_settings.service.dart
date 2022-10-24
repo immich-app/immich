@@ -9,11 +9,15 @@ enum AppSettingsEnum<T> {
     "uploadErrorNotificationGracePeriod",
     2,
   ),
+
+  backgroundBackupTotalProgress<bool>("backgroundBackupTotalProgress", true),
+  backgroundBackupSingleProgress<bool>("backgroundBackupSingleProgress", false),
   storageIndicator<bool>("storageIndicator", true),
   thumbnailCacheSize<int>("thumbnailCacheSize", 10000),
   imageCacheSize<int>("imageCacheSize", 350),
   albumThumbnailCacheSize<int>("albumThumbnailCacheSize", 200),
-  useExperimentalAssetGrid<bool>("useExperimentalAssetGrid", false);
+  useExperimentalAssetGrid<bool>("useExperimentalAssetGrid", false),
+  automaticDeviceCleanup<bool>("automaticDeviceCleanup", false);
 
   const AppSettingsEnum(this.hiveKey, this.defaultValue);
 

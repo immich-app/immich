@@ -1,0 +1,83 @@
+name: Generate OpenAPI SDK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  generate-typescript-axios:
+    runs-on: ubuntu-latest
+    name: OpenAPI Generator
+    steps:
+      # Checkout your code
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      # Use the action to generate a client package
+      # This uses the default path for the openapi document and thus assumes there is an openapi.json in the current workspace.
+      - name: Generate Typescript Axios Client
+        uses: openapi-generators/openapitools-generator-action@v1
+        with:
+          generator: typescript-axios
+          generator-tag: v6.2.0
+          openapi-file: server/immich-openapi-specs.json
+
+      # Do something with the generated client (likely publishing it somewhere)
+      - name: Push to typescript repo
+        run: |
+          git config --global init.defaultBranch main
+          git config --global pull.rebase false
+          git config --global user.email "alex.tran1502@gmail.com"
+          git config --global user.name "Alex Tran"
+          cd typescript-axios-client  
+          git init
+          git add .
+          git commit -m "Update SDK"
+          git remote add origin https://immich-app:"${{ secrets.GH_TOKEN }}"@github.com/immich-app/immich-sdk-typescript-axios.git
+          git pull origin main --allow-unrelated-histories
+          git push origin main 2>&1 | grep -v 'To https'
+
+      - name: Generate Dart SDK
+        uses: openapi-generators/openapitools-generator-action@v1
+        with:
+          generator: dart
+          generator-tag: v6.2.0
+          openapi-file: server/immich-openapi-specs.json
+
+      - name: Push to Dart repo
+        run: |
+          git config --global init.defaultBranch main
+          git config --global pull.rebase false
+          git config --global user.email "alex.tran1502@gmail.com"
+          git config --global user.name "Alex Tran"
+          cd dart-client
+          git init
+          git add .
+          git commit -m "Update SDK"
+          git remote add origin https://immich-app:"${{ secrets.GH_TOKEN }}"@github.com/immich-app/immich-sdk-dart.git
+          git pull origin main --allow-unrelated-histories
+          git push origin main 2>&1 | grep -v 'To https'
+
+      - name: Generate Rust SDK
+        uses: openapi-generators/openapitools-generator-action@v1
+        with:
+          generator: rust
+          generator-tag: v6.2.0
+          openapi-file: server/immich-openapi-specs.json
+
+      - name: Push to Rust repo
+        run: |
+          git config --global init.defaultBranch main
+          git config --global pull.rebase false
+          git config --global user.email "alex.tran1502@gmail.com"
+          git config --global user.name "Alex Tran"
+          cd rust-client
+          git init
+          git add .
+          git commit -m "Update SDK"
+          git remote add origin https://immich-app:"${{ secrets.GH_TOKEN }}"@github.com/immich-app/immich-sdk-rust.git
+          git pull origin main --allow-unrelated-histories
+          git push origin main 2>&1 | grep -v 'To https'
