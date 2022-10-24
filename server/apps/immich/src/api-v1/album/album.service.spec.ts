@@ -1,5 +1,5 @@
 import { AlbumService } from './album.service';
-import { IAlbumRepository } from './album-repository';
+import {AddAssetsResult, IAlbumRepository} from './album-repository';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity } from '@app/database/entities/album.entity';
@@ -328,10 +328,17 @@ describe('Album service', () => {
 
   it('adds assets to owned album', async () => {
     const albumEntity = _getOwnedAlbum();
+
+    const albumResponse: AddAssetsResult = {
+      newAlbum: albumEntity,
+      assetsAlreadyInAlbum: [],
+      assetsAdded: 1
+    };
+
     const albumId = albumEntity.id;
 
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResult>(albumResponse));
 
     const result = await sut.addAssetsToAlbum(
       authUser,
@@ -339,7 +346,10 @@ describe('Album service', () => {
         assetIds: ['1'],
       },
       albumId,
-    );
+      {
+        tryAdd: false,
+      },
+    ) as AlbumResponseDto;
 
     // TODO: stub and expect album rendered
     expect(result.id).toEqual(albumId);
@@ -347,10 +357,17 @@ describe('Album service', () => {
 
   it('adds assets to shared album (shared with auth user)', async () => {
     const albumEntity = _getSharedWithAuthUserAlbum();
+
+    const albumResponse: AddAssetsResult = {
+      newAlbum: albumEntity,
+      assetsAlreadyInAlbum: [],
+      assetsAdded: 1
+    };
+
     const albumId = albumEntity.id;
 
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResult>(albumResponse));
 
     const result = await sut.addAssetsToAlbum(
       authUser,
@@ -358,7 +375,10 @@ describe('Album service', () => {
         assetIds: ['1'],
       },
       albumId,
-    );
+      {
+        tryAdd: false,
+      },
+    ) as AlbumResponseDto;
 
     // TODO: stub and expect album rendered
     expect(result.id).toEqual(albumId);
@@ -366,10 +386,17 @@ describe('Album service', () => {
 
   it('prevents adding assets to a not owned / shared album', async () => {
     const albumEntity = _getNotOwnedNotSharedAlbum();
+
+    const albumResponse: AddAssetsResult = {
+      newAlbum: albumEntity,
+      assetsAlreadyInAlbum: [],
+      assetsAdded: 1
+    };
+
     const albumId = albumEntity.id;
 
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResult>(albumResponse));
 
     expect(
       sut.addAssetsToAlbum(
@@ -378,6 +405,9 @@ describe('Album service', () => {
           assetIds: ['1'],
         },
         albumId,
+        {
+          tryAdd: false,
+        },
       ),
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
@@ -424,10 +454,17 @@ describe('Album service', () => {
 
   it('prevents removing assets from a not owned / shared album', async () => {
     const albumEntity = _getNotOwnedNotSharedAlbum();
+
+    const albumResponse: AddAssetsResult = {
+      newAlbum: albumEntity,
+      assetsAlreadyInAlbum: [],
+      assetsAdded: 1
+    };
+
     const albumId = albumEntity.id;
 
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResult>(albumResponse));
 
     expect(
       sut.removeAssetsFromAlbum(

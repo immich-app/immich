@@ -22,7 +22,9 @@ class AlbumApi {
   /// * [String] albumId (required):
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
-  Future<Response> addAssetsToAlbumWithHttpInfo(String albumId, AddAssetsDto addAssetsDto,) async {
+  ///
+  /// * [bool] tryAdd:
+  Future<Response> addAssetsToAlbumWithHttpInfo(String albumId, AddAssetsDto addAssetsDto, { bool? tryAdd, }) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{albumId}/assets'
       .replaceAll('{albumId}', albumId);
@@ -33,6 +35,10 @@ class AlbumApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (tryAdd != null) {
+      queryParams.addAll(_queryParams('', 'tryAdd', tryAdd));
+    }
 
     const contentTypes = <String>['application/json'];
 
@@ -53,8 +59,10 @@ class AlbumApi {
   /// * [String] albumId (required):
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
-  Future<AlbumResponseDto?> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto,) async {
-    final response = await addAssetsToAlbumWithHttpInfo(albumId, addAssetsDto,);
+  ///
+  /// * [bool] tryAdd:
+  Future<Object?> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto, { bool? tryAdd, }) async {
+    final response = await addAssetsToAlbumWithHttpInfo(albumId, addAssetsDto,  tryAdd: tryAdd, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -62,7 +70,7 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto',) as AlbumResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
     
     }
     return null;

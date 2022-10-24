@@ -1543,10 +1543,11 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
          * 
          * @param {string} albumId 
          * @param {AddAssetsDto} addAssetsDto 
+         * @param {boolean} [tryAdd] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToAlbum: async (albumId: string, addAssetsDto: AddAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        addAssetsToAlbum: async (albumId: string, addAssetsDto: AddAssetsDto, tryAdd?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('addAssetsToAlbum', 'albumId', albumId)
             // verify required parameter 'addAssetsDto' is not null or undefined
@@ -1567,6 +1568,10 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (tryAdd !== undefined) {
+                localVarQueryParameter['tryAdd'] = tryAdd;
+            }
 
 
     
@@ -1955,11 +1960,12 @@ export const AlbumApiFp = function(configuration?: Configuration) {
          * 
          * @param {string} albumId 
          * @param {AddAssetsDto} addAssetsDto 
+         * @param {boolean} [tryAdd] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToAlbum(albumId, addAssetsDto, options);
+        async addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, tryAdd?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToAlbum(albumId, addAssetsDto, tryAdd, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -2070,11 +2076,12 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          * 
          * @param {string} albumId 
          * @param {AddAssetsDto} addAssetsDto 
+         * @param {boolean} [tryAdd] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, options?: any): AxiosPromise<AlbumResponseDto> {
-            return localVarFp.addAssetsToAlbum(albumId, addAssetsDto, options).then((request) => request(axios, basePath));
+        addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, tryAdd?: boolean, options?: any): AxiosPromise<object> {
+            return localVarFp.addAssetsToAlbum(albumId, addAssetsDto, tryAdd, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2175,12 +2182,13 @@ export class AlbumApi extends BaseAPI {
      * 
      * @param {string} albumId 
      * @param {AddAssetsDto} addAssetsDto 
+     * @param {boolean} [tryAdd] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).addAssetsToAlbum(albumId, addAssetsDto, options).then((request) => request(this.axios, this.basePath));
+    public addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, tryAdd?: boolean, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).addAssetsToAlbum(albumId, addAssetsDto, tryAdd, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

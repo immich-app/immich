@@ -49,9 +49,10 @@ import 'package:openapi/api.dart';
 final api_instance = AlbumApi();
 final albumId = albumId_example; // String | 
 final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
+final tryAdd = true; // bool | 
 
 try {
-    final result = api_instance.addAssetsToAlbum(albumId, addAssetsDto);
+    final result = api_instance.addAssetsToAlbum(albumId, addAssetsDto, tryAdd);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->addAssetsToAlbum: $e\n');
