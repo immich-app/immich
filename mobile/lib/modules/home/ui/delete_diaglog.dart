@@ -5,19 +5,19 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 class DeleteDialog extends ConsumerWidget {
   final String title;
   final String subtitle;
-  final Function deleteFunction;
+  final Function onDelete;
 
   const DeleteDialog({
     Key? key,
     required this.title,
     required this.subtitle,
-    required this.deleteFunction,
+    required this.onDelete,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
-      backgroundColor: Colors.grey[200],
+      // backgroundColor: Colors.grey[200],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       title: Text(title).tr(),
       content: Text(subtitle).tr(),
@@ -26,18 +26,25 @@ class DeleteDialog extends ConsumerWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: const Text(
+          child: Text(
             "delete_dialog_cancel",
-            style: TextStyle(color: Colors.blueGrey),
+            style: TextStyle(
+              color: Theme.of(context).primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
           ).tr(),
         ),
         TextButton(
           onPressed: () {
-            deleteFunction();
+            onDelete();
+            Navigator.of(context).pop();
           },
           child: Text(
             "delete_dialog_ok",
-            style: TextStyle(color: Colors.red[400]),
+            style: TextStyle(
+              color: Colors.red[400],
+              fontWeight: FontWeight.bold,
+            ),
           ).tr(),
         ),
       ],

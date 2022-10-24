@@ -4,14 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/ui/daily_title_text.dart';
-import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
-import 'package:immich_mobile/modules/home/ui/image_grid.dart';
-import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 class SearchResultPage extends HookConsumerWidget {
   const SearchResultPage({Key? key, required this.searchTerm})
@@ -21,16 +19,11 @@ class SearchResultPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ScrollController scrollController = useScrollController();
     final searchTermController = useTextEditingController(text: "");
     final isNewSearch = useState(false);
     final currentSearchTerm = useState(searchTerm);
 
-    final List<Widget> imageGridGroup = [];
-
     FocusNode? searchFocusNode;
-
-    List<AssetResponseDto> sortedAssetList = [];
 
     useEffect(
       () {
@@ -117,7 +110,12 @@ class SearchResultPage extends HookConsumerWidget {
 
     _buildSearchResult() {
       var searchResultPageState = ref.watch(searchResultPageProvider);
-      var assetGroupByDateTime = ref.watch(searchResultGroupByDateTimeProvider);
+      var searchResultRenderList = ref.watch(searchRenderListProvider);
+
+      var settings = ref.watch(appSettingsServiceProvider);
+      final assetsPerRow = settings.getSetting(AppSettingsEnum.tilesPerRow);
+      final showStorageIndicator =
+          settings.getSetting(AppSettingsEnum.storageIndicator);
 
       if (searchResultPageState.isError) {
         return const Text("Error");
@@ -132,57 +130,11 @@ class SearchResultPage extends HookConsumerWidget {
       }
 
       if (searchResultPageState.isSuccess) {
-        if (searchResultPageState.searchResult.isNotEmpty) {
-          int? lastMonth;
-          // set sorted List
-          for (var group in assetGroupByDateTime.values) {
-            for (var value in group) {
-              sortedAssetList.add(value);
-            }
-          }
-          assetGroupByDateTime.forEach((dateGroup, immichAssetList) {
-            DateTime parseDateGroup = DateTime.parse(dateGroup);
-            int currentMonth = parseDateGroup.month;
-
-            if (lastMonth != null) {
-              if (currentMonth - lastMonth! != 0) {
-                imageGridGroup.add(
-                  MonthlyTitleText(
-                    isoDate: dateGroup,
-                  ),
-                );
-              }
-            }
-
-            imageGridGroup.add(
-              DailyTitleText(
-                isoDate: dateGroup,
-                assetGroup: immichAssetList,
-              ),
-            );
-
-            imageGridGroup.add(
-              ImageGrid(
-                assetGroup: immichAssetList,
-                sortedAssetGroup: sortedAssetList,
-              ),
-            );
-
-            lastMonth = currentMonth;
-          });
-
-          return DraggableScrollbar.semicircle(
-            backgroundColor: Theme.of(context).hintColor,
-            controller: scrollController,
-            heightScrollThumb: 48.0,
-            child: CustomScrollView(
-              controller: scrollController,
-              slivers: [...imageGridGroup],
-            ),
-          );
-        } else {
-          return const Text("No assets found");
-        }
+        return ImmichAssetGrid(
+          renderList: searchResultRenderList,
+          assetsPerRow: assetsPerRow,
+          showStorageIndicator: showStorageIndicator,
+        );
       }
 
       return const SizedBox();

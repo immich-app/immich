@@ -202,9 +202,9 @@ class LoginButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.grey[50],
-        backgroundColor: Theme.of(context).primaryColor,
         visualDensity: VisualDensity.standard,
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.grey[50],
         elevation: 2,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
       ),
@@ -228,7 +228,7 @@ class LoginButton extends ConsumerWidget {
             AutoRouter.of(context).push(const ChangePasswordRoute());
           } else {
             ref.watch(backupProvider.notifier).resumeBackup();
-            AutoRouter.of(context).pushNamed("/tab-controller-page");
+            AutoRouter.of(context).replace(const TabControllerRoute());
           }
         } else {
           ImmichToast.show(

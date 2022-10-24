@@ -29,9 +29,9 @@ class SplashScreenPage extends HookConsumerWidget {
       if (isAuthenticated) {
         // Resume backup (if enable) then navigate
         ref.watch(backupProvider.notifier).resumeBackup();
-        AutoRouter.of(context).pushNamed("/tab-controller-page");
+        AutoRouter.of(context).replace(const TabControllerRoute());
       } else {
-        AutoRouter.of(context).push(const LoginRoute());
+        AutoRouter.of(context).replace(const LoginRoute());
       }
     }
 
@@ -40,7 +40,7 @@ class SplashScreenPage extends HookConsumerWidget {
         if (loginInfo?.isSaveLogin == true) {
           performLoggingIn();
         } else {
-          AutoRouter.of(context).push(const LoginRoute());
+          AutoRouter.of(context).replace(const LoginRoute());
         }
         return null;
       },

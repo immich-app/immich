@@ -158,7 +158,6 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     void _showBatteryOptimizationInfoToUser() {
-      final buttonTextColor = Theme.of(context).primaryColor;
       showDialog<void>(
         context: context,
         barrierDismissible: false,
@@ -173,13 +172,14 @@ class BackupControllerPage extends HookConsumerWidget {
               ).tr(),
             ),
             actions: [
-              OutlinedButton(
+              ElevatedButton(
                 onPressed: () => launchUrl(
                   Uri.parse('https://dontkillmyapp.com'),
                   mode: LaunchMode.externalApplication,
                 ),
                 child: const Text(
                   "backup_controller_page_background_battery_info_link",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                 ).tr(),
               ),
               ElevatedButton(
@@ -220,7 +220,12 @@ class BackupControllerPage extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isBackgroundEnabled)
-              const Text("backup_controller_page_background_description").tr(),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child:
+                    const Text("backup_controller_page_background_description")
+                        .tr(),
+              ),
             if (isBackgroundEnabled)
               SwitchListTile(
                 title:

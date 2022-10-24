@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_swipe_detector/flutter_swipe_detector.dart';
 import 'package:hive/hive.dart';
@@ -111,6 +112,9 @@ class GalleryViewerPage extends HookConsumerWidget {
               : const BouncingScrollPhysics(),
           itemCount: assetList.length,
           scrollDirection: Axis.horizontal,
+          onPageChanged: (value) {
+            HapticFeedback.selectionClick();
+          },
           itemBuilder: (context, index) {
             initState(index);
 

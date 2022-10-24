@@ -1,8 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
+import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class TabControllerPage extends ConsumerWidget {
@@ -10,9 +11,7 @@ class TabControllerPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var isMultiSelectEnable =
-        ref.watch(homePageStateProvider).isMultiSelectEnable;
-
+    final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
       routes: [
         const HomeRoute(),
@@ -22,17 +21,23 @@ class TabControllerPage extends ConsumerWidget {
       ],
       builder: (context, child, animation) {
         final tabsRouter = AutoTabsRouter.of(context);
+        final appRouter = AutoRouter.of(context);
         return WillPopScope(
           onWillPop: () async {
-            tabsRouter.setActiveIndex(0);
-            return false;
+            bool atHomeTab = tabsRouter.activeIndex == 0;
+            if (!atHomeTab) {
+              tabsRouter.setActiveIndex(0);
+            } else {
+              appRouter.navigateBack();
+            }
+            return atHomeTab;
           },
           child: Scaffold(
             body: FadeTransition(
               opacity: animation,
               child: child,
             ),
-            bottomNavigationBar: isMultiSelectEnable
+            bottomNavigationBar: multiselectEnabled
                 ? null
                 : BottomNavigationBar(
                     selectedLabelStyle: const TextStyle(
@@ -45,6 +50,7 @@ class TabControllerPage extends ConsumerWidget {
                     ),
                     currentIndex: tabsRouter.activeIndex,
                     onTap: (index) {
+                      HapticFeedback.selectionClick();
                       tabsRouter.setActiveIndex(index);
                     },
                     items: [

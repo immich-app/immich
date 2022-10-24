@@ -126,8 +126,8 @@ ThemeData immichLightTheme = ThemeData(
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      foregroundColor: Colors.white,
       backgroundColor: Colors.indigo,
+      foregroundColor: Colors.white,
     ),
   ),
 );

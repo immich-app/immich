@@ -1,16 +1,18 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
-  const ControlBottomAppBar({Key? key}) : super(key: key);
+  final Function onShare;
+  final Function onDelete;
+
+  const ControlBottomAppBar(
+      {Key? key, required this.onShare, required this.onDelete})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final homePageState = ref.watch(homePageStateProvider);
     return Positioned(
       bottom: 0,
       left: 0,
@@ -39,18 +41,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                         context: context,
                         builder: (BuildContext context) {
                           return DeleteDialog(
-                            title: "delete_dialog_title",
-                            subtitle: "delete_dialog_alert",
-                            deleteFunction: () {
-                              ref
-                                  .watch(assetProvider.notifier)
-                                  .deleteAssets(homePageState.selectedItems);
-                              ref
-                                  .watch(homePageStateProvider.notifier)
-                                  .disableMultiSelect();
-
-                              Navigator.of(context).pop();
-                            },
+                            onDelete: onDelete,
                           );
                         },
                       );
@@ -60,14 +51,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                     iconData: Icons.share,
                     label: "control_bottom_app_bar_share".tr(),
                     onPressed: () {
-                      final homePageState = ref.watch(homePageStateProvider);
-                      ref.watch(homePageStateProvider.notifier).shareAssets(
-                            homePageState.selectedItems.toList(),
-                            context,
-                          );
-                      ref
-                          .watch(homePageStateProvider.notifier)
-                          .disableMultiSelect();
+                      onShare();
                     },
                   ),
                 ],
