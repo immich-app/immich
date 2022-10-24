@@ -182,6 +182,7 @@ export class AssetController {
   async getAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this.assetService.getAssetCountByUserId(authUser);
   }
+
   /**
    * Get all AssetEntity belong to the user
    */

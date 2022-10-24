@@ -1,13 +1,12 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class DropExifTextSearchableColumns1656888918620 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`ALTER TABLE "exif" DROP COLUMN "exif_text_searchable_column"`);
+  }
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "exif" DROP COLUMN "exif_text_searchable_column"`);
-    }
-
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
       ALTER TABLE exif 
       DROP COLUMN IF EXISTS exif_text_searchable_column;
 
@@ -29,6 +28,5 @@ export class DropExifTextSearchableColumns1656888918620 implements MigrationInte
         ON exif 
         USING GIN (exif_text_searchable_column);
     `);
-    }
-
+  }
 }

@@ -5,6 +5,7 @@
 	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import Cog from 'svelte-material-icons/Cog.svelte';
+	import Server from 'svelte-material-icons/Server.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import UserManagement from '$lib/components/admin-page/user-management.svelte';
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -12,8 +13,9 @@
 	import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import type { PageData } from './$types';
-	import { api, UserResponseDto } from '@api';
+	import { api, ServerStatsResponseDto, UserResponseDto } from '@api';
 	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+	import ServerStats from '$lib/components/admin-page/server-stats.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
@@ -24,6 +26,7 @@
 	let shouldShowEditUserForm = false;
 	let shouldShowCreateUserForm = false;
 	let shouldShowInfoPanel = false;
+	let serverStat: ServerStatsResponseDto;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AdminSideBarSelection;
@@ -31,6 +34,7 @@
 
 	onMount(() => {
 		selectedAction = AdminSideBarSelection.USER_MANAGEMENT;
+		getServerStats();
 	});
 
 	const onUserCreated = async () => {
@@ -56,6 +60,15 @@
 		data.allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
 		shouldShowInfoPanel = true;
+	};
+
+	const getServerStats = async () => {
+		try {
+			const res = await api.serverInfoApi.getStats();
+			serverStat = res.data;
+		} catch (e) {
+			console.log(e);
+		}
 	};
 </script>
 
@@ -121,7 +134,13 @@
 			isSelected={selectedAction === AdminSideBarSelection.JOBS}
 			on:selected={onButtonClicked}
 		/>
-
+		<SideBarButton
+			title="Server Stats"
+			logo={Server}
+			actionType={AdminSideBarSelection.STATS}
+			isSelected={selectedAction === AdminSideBarSelection.STATS}
+			on:selected={onButtonClicked}
+		/>
 		<div class="mb-6 mt-auto">
 			<StatusBox />
 		</div>
@@ -143,6 +162,9 @@
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.JOBS}
 					<JobsPanel />
+				{/if}
+				{#if selectedAction === AdminSideBarSelection.STATS && serverStat}
+					<ServerStats stats={serverStat} allUsers={data.allUsers} />
 				{/if}
 			</section>
 		</section>

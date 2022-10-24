@@ -16,7 +16,7 @@ export class AlbumEntity {
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: string;
 
-  @Column({ comment: 'Asset ID to be used as thumbnail', type: 'varchar', nullable: true})
+  @Column({ comment: 'Asset ID to be used as thumbnail', type: 'varchar', nullable: true })
   albumThumbnailAssetId!: string | null;
 
   @OneToMany(() => UserAlbumEntity, (userAlbums) => userAlbums.albumInfo)
