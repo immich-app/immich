@@ -14,13 +14,12 @@ import 'package:immich_mobile/modules/backup/background_service/localization.dar
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:photo_manager/photo_manager.dart';
-
-import '../models/hive_duplicated_assets.model.dart';
 
 final backgroundServiceProvider = Provider(
   (ref) => BackgroundService(),
@@ -447,10 +446,9 @@ class BackgroundService {
 
     if (isDuplicated) {
       backupService.saveDuplicatedAssetIdToLocalStorage(deviceAssetId);
-      _assetsToUploadCount--;
-    } else {
-      _uploadedAssetsCount++;
     }
+
+    _uploadedAssetsCount++;
 
     _updateNotification(
       progress: _uploadedAssetsCount,

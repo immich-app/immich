@@ -10,7 +10,6 @@ import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
-import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -297,18 +296,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Those assets are unique and are used as the total assets
   ///
   Future<void> _updateBackupAssetCount() async {
-    // Get duplicated asset box - This is the first instance where the duplicated asset box is used.
-    HiveDuplicatedAssets? duplicatedAssets =
-        Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
-            .get(duplicatedAssetsKey);
-
-    if (duplicatedAssets == null) {
-      Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox).put(
-        duplicatedAssetsKey,
-        HiveDuplicatedAssets(duplicatedAssetIds: []),
-      );
-    }
-
+    Set<String> duplicatedAssetIds = _backupService.getDuplicatedAssetIds();
     Set<AssetEntity> assetsFromSelectedAlbums = {};
     Set<AssetEntity> assetsFromExcludedAlbums = {};
 
@@ -344,11 +332,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
 
     // Remove duplicated asset from all unique assets
-    if (duplicatedAssets != null) {
-      allUniqueAssets.removeWhere(
-        (asset) => duplicatedAssets.duplicatedAssetIds.contains(asset.id),
-      );
-    }
+    allUniqueAssets.removeWhere(
+      (asset) => duplicatedAssetIds.contains(asset.id),
+    );
 
     if (allUniqueAssets.isEmpty) {
       debugPrint("No Asset On Device");
