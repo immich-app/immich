@@ -164,6 +164,20 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     _assetCacheService.invalidate();
     _albumCacheService.invalidate();
     _sharedAlbumCacheService.invalidate();
+
+    // Remove login info from local storage
+    var loginInfo =
+        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
+    if (loginInfo != null) {
+      loginInfo.email = "";
+      loginInfo.password = "";
+      loginInfo.isSaveLogin = false;
+
+      Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
+        savedLoginInfoKey,
+        loginInfo,
+      );
+    }
     return true;
   }
 
