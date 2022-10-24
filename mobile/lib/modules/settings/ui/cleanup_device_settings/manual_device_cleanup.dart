@@ -65,7 +65,6 @@ class ManualDeviceCleanupWidget extends HookConsumerWidget {
                             ref.watch(backupProvider.notifier).cancelBackup();
                             ref.watch(backupProvider.notifier).getBackupInfo();
                             isUploaded.value = false;
-                            Navigator.of(context).pop();
                           },
                         );
                       },
