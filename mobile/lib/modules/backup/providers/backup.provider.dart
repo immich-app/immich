@@ -329,14 +329,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
     var allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
 
-    Set<String> selectedAlbumsBackupAssets =
-        Set.from(allUniqueAssets.map((e) => e.id));
-    selectedAlbumsBackupAssets
-        .removeWhere((assetId) => !allAssetsInDatabase!.contains(assetId));
-
     if (allAssetsInDatabase == null) {
       return;
     }
+
+    Set<String> selectedAlbumsBackupAssets =
+        Set.from(allUniqueAssets.map((e) => e.id));
+    selectedAlbumsBackupAssets
+        .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
 
     if (allUniqueAssets.isEmpty) {
       debugPrint("No Asset On Device");
