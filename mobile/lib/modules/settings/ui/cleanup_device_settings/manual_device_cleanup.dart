@@ -57,7 +57,7 @@ class ManualDeviceCleanupWidget extends HookConsumerWidget {
                           title: "cleanup_device_settings_delete_enabled",
                           subtitle:
                               "cleanup_device_settings_delete_description",
-                          deleteFunction: () {
+                          onDelete: () {
                             debugPrint("Deleting Local Assets");
                             ref.watch(assetProvider.notifier).deleteLocalAssets(
                                   backupState.allUniqueAssets,
