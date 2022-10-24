@@ -42,8 +42,8 @@ class ControlBottomAppBar extends ConsumerWidget {
                         builder: (BuildContext context) {
                           return DeleteDialog(
                             onDelete: onDelete,
-                            title: "delete_dialog_title".tr(),
-                            subtitle: 'delete_dialog_alert'.tr(),
+                            title: "delete_dialog_title",
+                            subtitle: "delete_dialog_alert",
                           );
                         },
                       );
