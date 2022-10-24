@@ -46,21 +46,11 @@ class BackupService {
   void saveDuplicatedAssetIdToLocalStorage(String deviceAssetId) {
     HiveDuplicatedAssets? duplicatedAssets =
         Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
-            .get(duplicatedAssetsKey);
-
-    if (duplicatedAssets == null) {
-      duplicatedAssets = HiveDuplicatedAssets(
-        duplicatedAssetIds: [deviceAssetId],
-      );
-    } else {
-      duplicatedAssets.duplicatedAssetIds = [
-        ...duplicatedAssets.duplicatedAssetIds,
-        deviceAssetId
-      ];
-    }
+                .get(duplicatedAssetsKey) ??
+            HiveDuplicatedAssets(duplicatedAssetIds: []);
 
     duplicatedAssets.duplicatedAssetIds =
-        duplicatedAssets.duplicatedAssetIds.toSet().toList();
+        {...duplicatedAssets.duplicatedAssetIds, deviceAssetId}.toList();
 
     Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
         .put(duplicatedAssetsKey, duplicatedAssets);
@@ -70,11 +60,8 @@ class BackupService {
   Set<String> getDuplicatedAssetIds() {
     HiveDuplicatedAssets? duplicatedAssets =
         Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
-            .get(duplicatedAssetsKey);
-
-    if (duplicatedAssets == null) {
-      return {};
-    }
+                .get(duplicatedAssetsKey) ??
+            HiveDuplicatedAssets(duplicatedAssetIds: []);
 
     return duplicatedAssets.duplicatedAssetIds.toSet();
   }
@@ -284,9 +271,7 @@ class BackupService {
             var uploadResponse =
                 AssetFileUploadResponseDto.fromJson(jsonDecode(responseBody));
             var isDuplicated =
-                (uploadResponse != null && uploadResponse.isDuplicated)
-                    ? true
-                    : false;
+                uploadResponse != null && uploadResponse.isDuplicated;
 
             uploadSuccessCb(entity.id, deviceId, isDuplicated);
           } else {

@@ -415,7 +415,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Invoke backup process
   ///
   Future<void> startBackupProcess() async {
-    // assert(state.backupProgress == BackUpProgressEnum.idle);
+    assert(state.backupProgress == BackUpProgressEnum.idle);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
     await getBackupInfo();
