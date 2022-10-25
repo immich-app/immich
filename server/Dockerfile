@@ -14,7 +14,7 @@ RUN apt-get -qq update > /dev/null && \
       ffmpeg > /dev/null && \
     apt-get -qq -y clean > /dev/null && apt-get -qq -y autoremove && apt-get -qq -y purge --auto-remove && rm -rf /var/lib/apt/lists/*
 
-RUN npm ci
+RUN npm ci --no-fund --no-audit --omit dev --build-from-source
 
 COPY . .
 
