@@ -195,7 +195,6 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 
 		request.send(formData);
 	} catch (e) {
-		console.log(e);
 		console.log('error uploading file ', e);
 	}
 }
