@@ -10,11 +10,10 @@ RUN apt-get -qq update > /dev/null && \
       build-essential \
       python3 \
       libheif-dev \
-      libvips-dev \
       ffmpeg > /dev/null && \
     apt-get -qq -y clean > /dev/null && apt-get -qq -y autoremove && apt-get -qq -y purge --auto-remove && rm -rf /var/lib/apt/lists/*
 
-RUN npm ci
+RUN SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm ci
 
 COPY . .
 
@@ -33,7 +32,6 @@ RUN mkdir -p /usr/src/app/dist
 RUN apt-get -qq update > /dev/null && \
     apt-get -qq install -y --no-install-recommends \
       libheif-dev \
-      libvips-dev \
       ffmpeg > /dev/null && \
     apt-get -qq -y clean > /dev/null && apt-get -qq autoremove -y > /dev/null && apt-get -qq purge -y --auto-remove > /dev/null && rm -rf /var/lib/apt/lists/*
 
