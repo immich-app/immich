@@ -17,7 +17,7 @@ import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import {AddAssetsDto, AddAssetsQueryDto} from './dto/add-assets.dto';
+import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
@@ -59,9 +59,8 @@ export class AlbumController {
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) addAssetsDto: AddAssetsDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
-    @Query() query: AddAssetsQueryDto,
-  ) : Promise<AddAssetsResponseDto | AlbumResponseDto> {
-    return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId, query);
+  ) : Promise<AddAssetsResponseDto> {
+    return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId);
   }
 
   @Get()

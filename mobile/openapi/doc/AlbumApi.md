@@ -22,7 +22,7 @@ Method | HTTP request | Description
 
 
 # **addAssetsToAlbum**
-> Object addAssetsToAlbum(albumId, addAssetsDto, tryAdd)
+> AddAssetsResponseDto addAssetsToAlbum(albumId, addAssetsDto)
 
 
 
@@ -39,10 +39,9 @@ import 'package:openapi/api.dart';
 final api_instance = AlbumApi();
 final albumId = albumId_example; // String | 
 final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
-final tryAdd = true; // bool | 
 
 try {
-    final result = api_instance.addAssetsToAlbum(albumId, addAssetsDto, tryAdd);
+    final result = api_instance.addAssetsToAlbum(albumId, addAssetsDto);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->addAssetsToAlbum: $e\n');
@@ -55,11 +54,10 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albumId** | **String**|  | 
  **addAssetsDto** | [**AddAssetsDto**](AddAssetsDto.md)|  | 
- **tryAdd** | **bool**|  | [optional] 
 
 ### Return type
 
-[**Object**](Object.md)
+[**AddAssetsResponseDto**](AddAssetsResponseDto.md)
 
 ### Authorization
 

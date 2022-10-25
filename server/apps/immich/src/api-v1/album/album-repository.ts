@@ -11,6 +11,7 @@ import { GetAlbumsDto } from './dto/get-albums.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
+import {AddAssetsResponseDto} from "./response-dto/add-assets-response.dto";
 
 export interface IAlbumRepository {
   create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
@@ -20,20 +21,13 @@ export interface IAlbumRepository {
   addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity>;
   removeUser(album: AlbumEntity, userId: string): Promise<void>;
   removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<AlbumEntity>;
-  addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResult>;
+  addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto>;
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
   getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]>;
   getCountByUserId(userId: string): Promise<AlbumCountResponseDto>;
 }
 
 export const ALBUM_REPOSITORY = 'ALBUM_REPOSITORY';
-
-export class AddAssetsResult {
-  newAlbum!: AlbumEntity;
-
-  assetsAdded!: number;
-  assetsAlreadyInAlbum!: string[];
-}
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
@@ -267,7 +261,7 @@ export class AlbumRepository implements IAlbumRepository {
     }
   }
 
-  async addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResult> {
+  async addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto> {
     const newRecords: AssetAlbumEntity[] = [];
     const alreadyExisting: string[] = [];
 
@@ -291,12 +285,10 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     await this.assetAlbumRepository.save([...newRecords]);
-    const newAlbum = await this.get(album.id) as AlbumEntity;
 
     return {
-      newAlbum,
-      assetsAdded: newRecords.length,
-      assetsAlreadyInAlbum: alreadyExisting
+      successfullyAdded: newRecords.length,
+      alreadyInAlbum: alreadyExisting
     };
   }
 
