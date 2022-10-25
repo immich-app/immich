@@ -110,6 +110,7 @@ describe('AssetService', () => {
       getAssetWithNoEXIF: jest.fn(),
       getAssetWithNoThumbnail: jest.fn(),
       getAssetWithNoSmartInfo: jest.fn(),
+      getExistingAssets: jest.fn(),
     };
 
     sui = new AssetService(assetRepositoryMock, a);
