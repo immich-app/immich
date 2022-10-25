@@ -37,6 +37,8 @@ import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-buck
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { timeUtils } from '@app/common/utils';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -464,6 +466,13 @@ export class AssetService {
     const isDuplicated = res ? true : false;
 
     return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
+  }
+
+  async checkExistingAssets(
+    authUser: AuthUserDto,
+    checkExistingAssetsDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
+    return this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto);
   }
 
   async getAssetCountByTimeBucket(

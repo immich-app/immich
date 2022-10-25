@@ -414,14 +414,7 @@ class BackgroundService {
     final bool ok = await backupService.backupAsset(
       toUpload,
       _cancellationToken!,
-      (assetId, deviceId, isDuplicated) {
-        if (isDuplicated) {
-          backupService.saveDuplicatedAssetIdToLocalStorage(assetId);
-        }
-        if (notifyTotalProgress) {
-          _onAssetUploaded(assetId, deviceId);
-        }
-      },
+      notifyTotalProgress ? _onAssetUploaded : (assetId, deviceId, isDup) {},
       notifySingleProgress ? _onProgress : (sent, total) {},
       notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
       _onBackupError,
@@ -440,11 +433,9 @@ class BackgroundService {
     return "$percent% ($_uploadedAssetsCount/$_assetsToUploadCount)";
   }
 
-  void _onAssetUploaded(String deviceAssetId, String deviceId) {
+  void _onAssetUploaded(String deviceAssetId, String deviceId, bool isDup) {
     debugPrint("Uploaded $deviceAssetId from $deviceId");
-
     _uploadedAssetsCount++;
-
     _updateNotification(
       progress: _uploadedAssetsCount,
       max: _assetsToUploadCount,

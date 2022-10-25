@@ -43,14 +43,14 @@ class BackupService {
     }
   }
 
-  void saveDuplicatedAssetIdToLocalStorage(String deviceAssetId) {
-    HiveDuplicatedAssets? duplicatedAssets =
+  void _saveDuplicatedAssetIdToLocalStorage(List<String> deviceAssetIds) {
+    HiveDuplicatedAssets duplicatedAssets =
         Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
                 .get(duplicatedAssetsKey) ??
             HiveDuplicatedAssets(duplicatedAssetIds: []);
 
     duplicatedAssets.duplicatedAssetIds =
-        {...duplicatedAssets.duplicatedAssetIds, deviceAssetId}.toList();
+        {...duplicatedAssets.duplicatedAssetIds, ...deviceAssetIds}.toList();
 
     Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
         .put(duplicatedAssetsKey, duplicatedAssets);
@@ -58,7 +58,7 @@ class BackupService {
 
   /// Get duplicated asset id from Hive storage
   Set<String> getDuplicatedAssetIds() {
-    HiveDuplicatedAssets? duplicatedAssets =
+    HiveDuplicatedAssets duplicatedAssets =
         Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
                 .get(duplicatedAssetsKey) ??
             HiveDuplicatedAssets(duplicatedAssetIds: []);
@@ -104,13 +104,7 @@ class BackupService {
         backupAlbums.lastExcludedBackupTime,
         now,
       );
-      final Set<String> duplicatedAssetIds = getDuplicatedAssetIds();
-
-      return toAdd
-          .toSet()
-          .difference(toRemove.toSet())
-          .where((candidate) => !duplicatedAssetIds.contains(candidate.id))
-          .toList();
+      return toAdd.toSet().difference(toRemove.toSet()).toList();
     } else {
       return await _fetchAssetsAndUpdateLastBackup(
         selectedAlbums,
@@ -171,28 +165,41 @@ class BackupService {
   Future<List<AssetEntity>> removeAlreadyUploadedAssets(
     List<AssetEntity> candidates,
   ) async {
-    final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
-    if (candidates.length < 10) {
-      final List<CheckDuplicateAssetResponseDto?> duplicateResponse =
-          await Future.wait(
-        candidates.map(
-          (e) => _apiService.assetApi.checkDuplicateAsset(
-            CheckDuplicateAssetDto(deviceAssetId: e.id, deviceId: deviceId),
-          ),
+    if (candidates.isEmpty) {
+      return candidates;
+    }
+    final Set<String> duplicatedAssetIds = getDuplicatedAssetIds();
+    candidates = duplicatedAssetIds.isEmpty
+        ? candidates
+        : candidates
+            .whereNot((asset) => duplicatedAssetIds.contains(asset.id))
+            .toList();
+    if (candidates.isEmpty) {
+      return candidates;
+    }
+    final Set<String> existing = {};
+    try {
+      final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+      final CheckExistingAssetsResponseDto? duplicates =
+          await _apiService.assetApi.checkExistingAssets(
+        CheckExistingAssetsDto(
+          deviceAssetIds: candidates.map((e) => e.id).toList(),
+          deviceId: deviceId,
         ),
       );
-      return candidates
-          .whereIndexed((i, e) => duplicateResponse[i]?.isExist == false)
-          .toList();
-    } else {
-      final List<String>? allAssetsInDatabase = await getDeviceBackupAsset();
-
-      if (allAssetsInDatabase == null) {
-        return candidates;
+      if (duplicates != null) {
+        existing.addAll(duplicates.existingIds);
       }
-      final Set<String> inDb = allAssetsInDatabase.toSet();
-      return candidates.whereNot((e) => inDb.contains(e.id)).toList();
+    } on ApiException {
+      // workaround for older server versions or when checking for too many assets at once
+      final List<String>? allAssetsInDatabase = await getDeviceBackupAsset();
+      if (allAssetsInDatabase != null) {
+        existing.addAll(allAssetsInDatabase);
+      }
     }
+    return existing.isEmpty
+        ? candidates
+        : candidates.whereNot((e) => existing.contains(e.id)).toList();
   }
 
   Future<bool> backupAsset(
@@ -207,6 +214,7 @@ class BackupService {
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
     bool anyErrors = false;
+    final List<String> duplicatedAssetIds = [];
 
     for (var entity in assetList) {
       try {
@@ -266,14 +274,13 @@ class BackupService {
 
           var response = await req.send(cancellationToken: cancelToken);
 
-          if (response.statusCode == 201) {
-            var responseBody = await response.stream.bytesToString();
-            var uploadResponse =
-                AssetFileUploadResponseDto.fromJson(jsonDecode(responseBody));
-            var isDuplicated =
-                uploadResponse != null && uploadResponse.isDuplicated;
-
-            uploadSuccessCb(entity.id, deviceId, isDuplicated);
+          if (response.statusCode == 200) {
+            // asset is a duplicate (already exists on the server)
+            duplicatedAssetIds.add(entity.id);
+            uploadSuccessCb(entity.id, deviceId, true);
+          } else if (response.statusCode == 201) {
+            // stored a new asset on the server
+            uploadSuccessCb(entity.id, deviceId, false);
           } else {
             var data = await response.stream.bytesToString();
             var error = jsonDecode(data);
@@ -297,7 +304,8 @@ class BackupService {
         }
       } on http.CancelledException {
         debugPrint("Backup was cancelled by the user");
-        return false;
+        anyErrors = true;
+        break;
       } catch (e) {
         debugPrint("ERROR backupAsset: ${e.toString()}");
         anyErrors = true;
@@ -307,6 +315,9 @@ class BackupService {
           file?.deleteSync();
         }
       }
+    }
+    if (duplicatedAssetIds.isNotEmpty) {
+      _saveDuplicatedAssetIdToLocalStorage(duplicatedAssetIds);
     }
     return !anyErrors;
   }

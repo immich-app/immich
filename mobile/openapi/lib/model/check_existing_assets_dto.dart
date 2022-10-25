@@ -1,0 +1,121 @@
+//
+// AUTO-GENERATED FILE, DO NOT MODIFY!
+//
+// @dart=2.12
+
+// ignore_for_file: unused_element, unused_import
+// ignore_for_file: always_put_required_named_parameters_first
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: lines_longer_than_80_chars
+
+part of openapi.api;
+
+class CheckExistingAssetsDto {
+  /// Returns a new [CheckExistingAssetsDto] instance.
+  CheckExistingAssetsDto({
+    this.deviceAssetIds = const [],
+    required this.deviceId,
+  });
+
+  List<String> deviceAssetIds;
+
+  String deviceId;
+
+  @override
+  bool operator ==(Object other) => identical(this, other) || other is CheckExistingAssetsDto &&
+     other.deviceAssetIds == deviceAssetIds &&
+     other.deviceId == deviceId;
+
+  @override
+  int get hashCode =>
+    // ignore: unnecessary_parenthesis
+    (deviceAssetIds.hashCode) +
+    (deviceId.hashCode);
+
+  @override
+  String toString() => 'CheckExistingAssetsDto[deviceAssetIds=$deviceAssetIds, deviceId=$deviceId]';
+
+  Map<String, dynamic> toJson() {
+    final _json = <String, dynamic>{};
+      _json[r'deviceAssetIds'] = deviceAssetIds;
+      _json[r'deviceId'] = deviceId;
+    return _json;
+  }
+
+  /// Returns a new [CheckExistingAssetsDto] instance and imports its values from
+  /// [value] if it's a [Map], null otherwise.
+  // ignore: prefer_constructors_over_static_methods
+  static CheckExistingAssetsDto? fromJson(dynamic value) {
+    if (value is Map) {
+      final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        requiredKeys.forEach((key) {
+          assert(json.containsKey(key), 'Required key "CheckExistingAssetsDto[$key]" is missing from JSON.');
+          assert(json[key] != null, 'Required key "CheckExistingAssetsDto[$key]" has a null value in JSON.');
+        });
+        return true;
+      }());
+
+      return CheckExistingAssetsDto(
+        deviceAssetIds: json[r'deviceAssetIds'] is List
+            ? (json[r'deviceAssetIds'] as List).cast<String>()
+            : const [],
+        deviceId: mapValueOfType<String>(json, r'deviceId')!,
+      );
+    }
+    return null;
+  }
+
+  static List<CheckExistingAssetsDto>? listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <CheckExistingAssetsDto>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = CheckExistingAssetsDto.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+
+  static Map<String, CheckExistingAssetsDto> mapFromJson(dynamic json) {
+    final map = <String, CheckExistingAssetsDto>{};
+    if (json is Map && json.isNotEmpty) {
+      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      for (final entry in json.entries) {
+        final value = CheckExistingAssetsDto.fromJson(entry.value);
+        if (value != null) {
+          map[entry.key] = value;
+        }
+      }
+    }
+    return map;
+  }
+
+  // maps a json object with a list of CheckExistingAssetsDto-objects as value to a dart map
+  static Map<String, List<CheckExistingAssetsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+    final map = <String, List<CheckExistingAssetsDto>>{};
+    if (json is Map && json.isNotEmpty) {
+      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      for (final entry in json.entries) {
+        final value = CheckExistingAssetsDto.listFromJson(entry.value, growable: growable,);
+        if (value != null) {
+          map[entry.key] = value;
+        }
+      }
+    }
+    return map;
+  }
+
+  /// The list of required keys that must be present in a JSON.
+  static const requiredKeys = <String>{
+    'deviceAssetIds',
+    'deviceId',
+  };
+}
+

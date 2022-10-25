@@ -469,7 +469,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     bool isDuplicated,
   ) {
     if (isDuplicated) {
-      _backupService.saveDuplicatedAssetIdToLocalStorage(deviceAssetId);
       state = state.copyWith(
         allUniqueAssets: state.allUniqueAssets
             .where((asset) => asset.id != deviceAssetId)
