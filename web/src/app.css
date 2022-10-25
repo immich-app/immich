@@ -48,7 +48,7 @@ html::-webkit-scrollbar-thumb:hover {
 body {
 	/* min-height: 100vh; */
 	margin: 0;
-	background-color: #f6f8fe;
+	/* background-color: #f6f8fe; */
 	color: #5f6368;
 }
 
