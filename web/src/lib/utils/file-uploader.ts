@@ -158,7 +158,6 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		};
 
 		request.onreadystatechange = () => {
-			console.log(uploadType);
 			try {
 				if (request.readyState === 4 && uploadType === UploadType.ALBUM) {
 					const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
@@ -169,13 +168,6 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 
 					if (request.status !== 201) {
 						handleUploadError(asset, res);
-					}
-				}
-
-				if (request.readyState === 4 && uploadType === UploadType.GENERAL) {
-					const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
-					if (res.isDuplicated) {
-						handleUploadError(asset, null, ' This file already exists in your library.');
 					}
 				}
 			} catch (e) {
