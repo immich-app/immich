@@ -5,14 +5,14 @@ WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get -qq update > /dev/null && \
+    apt-get -qq -y --no-install-recommends install \
       build-essential \
       python3 \
       libheif-dev \
       libvips-dev \
-      ffmpeg && \
-    apt-get -y clean && apt-get autoremove -y && apt-get purge -y --auto-remove && rm -rf /var/lib/apt/lists/*
+      ffmpeg > /dev/null && \
+    apt-get -qq -y clean > /dev/null && apt-get -qq -y autoremove && apt-get -qq -y purge --auto-remove && rm -rf /var/lib/apt/lists/*
 
 RUN npm ci
 
@@ -30,12 +30,12 @@ COPY start-server.sh start-microservices.sh ./
 
 RUN mkdir -p /usr/src/app/dist
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get -qq update > /dev/null && \
+    apt-get -qq install -y --no-install-recommends \
       libheif-dev \
       libvips-dev \
-      ffmpeg && \
-    apt-get -y clean && apt-get autoremove -y && apt-get purge -y --auto-remove && rm -rf /var/lib/apt/lists/*
+      ffmpeg > /dev/null && \
+    apt-get -qq -y clean > /dev/null && apt-get -qq autoremove -y > /dev/null && apt-get -qq purge -y --auto-remove > /dev/null && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
