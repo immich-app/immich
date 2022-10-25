@@ -49,6 +49,8 @@ part 'model/asset_response_dto.dart';
 part 'model/asset_type_enum.dart';
 part 'model/check_duplicate_asset_dto.dart';
 part 'model/check_duplicate_asset_response_dto.dart';
+part 'model/check_existing_assets_dto.dart';
+part 'model/check_existing_assets_response_dto.dart';
 part 'model/create_album_dto.dart';
 part 'model/create_device_info_dto.dart';
 part 'model/create_profile_image_response_dto.dart';

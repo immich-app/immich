@@ -48,6 +48,8 @@ import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-buck
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { QueryFailedError } from 'typeorm';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -74,6 +76,7 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @UploadedFile() file: Express.Multer.File,
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
+    @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
     const checksum = await this.assetService.calculateChecksum(file.path);
 
@@ -111,6 +114,7 @@ export class AssetController {
 
       if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
         const existedAsset = await this.assetService.getAssetByChecksum(authUser.id, checksum);
+        res.status(200); // normal POST is 201. we use 200 to indicate the asset already exists
         return new AssetFileUploadResponseDto(existedAsset.id);
       }
 
@@ -253,5 +257,17 @@ export class AssetController {
     @Body(ValidationPipe) checkDuplicateAssetDto: CheckDuplicateAssetDto,
   ): Promise<CheckDuplicateAssetResponseDto> {
     return await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
+  }
+
+  /**
+   * Checks if multiple assets exist on the server and returns all existing - used by background backup 
+   */
+  @Post('/exist')
+  @HttpCode(200)
+  async checkExistingAssets(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
+    return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
   }
 }

@@ -455,6 +455,38 @@ export interface CheckDuplicateAssetResponseDto {
 /**
  * 
  * @export
+ * @interface CheckExistingAssetsDto
+ */
+export interface CheckExistingAssetsDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof CheckExistingAssetsDto
+     */
+    'deviceAssetIds': Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof CheckExistingAssetsDto
+     */
+    'deviceId': string;
+}
+/**
+ * 
+ * @export
+ * @interface CheckExistingAssetsResponseDto
+ */
+export interface CheckExistingAssetsResponseDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof CheckExistingAssetsResponseDto
+     */
+    'existingIds': Array<string>;
+}
+/**
+ * 
+ * @export
  * @interface CreateAlbumDto
  */
 export interface CreateAlbumDto {
@@ -2335,6 +2367,46 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
+         * Checks if multiple assets exist on the server and returns all existing - used by background backup
+         * @summary 
+         * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        checkExistingAssets: async (checkExistingAssetsDto: CheckExistingAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'checkExistingAssetsDto' is not null or undefined
+            assertParamExists('checkExistingAssets', 'checkExistingAssetsDto', checkExistingAssetsDto)
+            const localVarPath = `/asset/exist`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(checkExistingAssetsDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 
          * @param {DeleteAssetDto} deleteAssetDto 
          * @param {*} [options] Override http request option.
@@ -2954,6 +3026,17 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
+         * Checks if multiple assets exist on the server and returns all existing - used by background backup
+         * @summary 
+         * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async checkExistingAssets(checkExistingAssetsDto: CheckExistingAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckExistingAssetsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.checkExistingAssets(checkExistingAssetsDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * 
          * @param {DeleteAssetDto} deleteAssetDto 
          * @param {*} [options] Override http request option.
@@ -3129,6 +3212,16 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.checkDuplicateAsset(checkDuplicateAssetDto, options).then((request) => request(axios, basePath));
         },
         /**
+         * Checks if multiple assets exist on the server and returns all existing - used by background backup
+         * @summary 
+         * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        checkExistingAssets(checkExistingAssetsDto: CheckExistingAssetsDto, options?: any): AxiosPromise<CheckExistingAssetsResponseDto> {
+            return localVarFp.checkExistingAssets(checkExistingAssetsDto, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 
          * @param {DeleteAssetDto} deleteAssetDto 
          * @param {*} [options] Override http request option.
@@ -3288,6 +3381,18 @@ export class AssetApi extends BaseAPI {
      */
     public checkDuplicateAsset(checkDuplicateAssetDto: CheckDuplicateAssetDto, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).checkDuplicateAsset(checkDuplicateAssetDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Checks if multiple assets exist on the server and returns all existing - used by background backup
+     * @summary 
+     * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public checkExistingAssets(checkExistingAssetsDto: CheckExistingAssetsDto, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).checkExistingAssets(checkExistingAssetsDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

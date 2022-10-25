@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -296,6 +297,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Those assets are unique and are used as the total assets
   ///
   Future<void> _updateBackupAssetCount() async {
+    Set<String> duplicatedAssetIds = _backupService.getDuplicatedAssetIds();
     Set<AssetEntity> assetsFromSelectedAlbums = {};
     Set<AssetEntity> assetsFromExcludedAlbums = {};
 
@@ -326,8 +328,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     // Find asset that were backup from selected albums
     Set<String> selectedAlbumsBackupAssets =
         Set.from(allUniqueAssets.map((e) => e.id));
+
     selectedAlbumsBackupAssets
         .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
+
+    // Remove duplicated asset from all unique assets
+    allUniqueAssets.removeWhere(
+      (asset) => duplicatedAssetIds.contains(asset.id),
+    );
 
     if (allUniqueAssets.isEmpty) {
       debugPrint("No Asset On Device");
@@ -455,14 +463,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  void _onAssetUploaded(String deviceAssetId, String deviceId) {
-    state = state.copyWith(
-      selectedAlbumsBackupAssetsIds: {
-        ...state.selectedAlbumsBackupAssetsIds,
-        deviceAssetId
-      },
-      allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
-    );
+  void _onAssetUploaded(
+    String deviceAssetId,
+    String deviceId,
+    bool isDuplicated,
+  ) {
+    if (isDuplicated) {
+      state = state.copyWith(
+        allUniqueAssets: state.allUniqueAssets
+            .where((asset) => asset.id != deviceAssetId)
+            .toSet(),
+      );
+    } else {
+      state = state.copyWith(
+        selectedAlbumsBackupAssetsIds: {
+          ...state.selectedAlbumsBackupAssetsIds,
+          deviceAssetId
+        },
+        allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
+      );
+    }
 
     if (state.allUniqueAssets.length -
             state.selectedAlbumsBackupAssetsIds.length ==
@@ -564,6 +584,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           albums.lastExcludedBackupTime,
         );
       }
+      await Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox);
       final Box backgroundBox = await Hive.openBox(backgroundBackupInfoBox);
       state = state.copyWith(
         backupProgress: previous,
@@ -604,6 +625,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       try {
         if (Hive.isBoxOpen(hiveBackupInfoBox)) {
           await Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).close();
+        }
+      } catch (error) {
+        debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");
+      }
+      try {
+        if (Hive.isBoxOpen(duplicatedAssetsBox)) {
+          await Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox).close();
         }
       } catch (error) {
         debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");

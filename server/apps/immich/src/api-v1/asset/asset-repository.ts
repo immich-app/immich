@@ -10,6 +10,9 @@ import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { In } from 'typeorm/find-options/operator/In';
 
 export interface IAssetRepository {
   create(
@@ -32,6 +35,7 @@ export interface IAssetRepository {
   getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
   getAssetWithNoEXIF(): Promise<AssetEntity[]>;
   getAssetWithNoSmartInfo(): Promise<AssetEntity[]>;
+  getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<CheckExistingAssetsResponseDto>;
 }
 
 export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
@@ -279,4 +283,17 @@ export class AssetRepository implements IAssetRepository {
       relations: ['exifInfo'],
     });
   }
+
+  async getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<CheckExistingAssetsResponseDto> {
+    const existingAssets = await this.assetRepository.find({
+      select: {deviceAssetId: true},
+      where: {
+        deviceAssetId: In(checkDuplicateAssetDto.deviceAssetIds),
+        deviceId: checkDuplicateAssetDto.deviceId,
+        userId,
+      },
+    });
+    return new CheckExistingAssetsResponseDto(existingAssets.map(a => a.deviceAssetId));
+  }
+
 }

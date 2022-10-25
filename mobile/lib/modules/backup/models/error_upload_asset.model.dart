@@ -45,8 +45,10 @@ class ErrorUploadAsset extends Equatable {
   List<Object> get props {
     return [
       id,
+      createdAt,
       fileName,
       fileType,
+      asset,
       errorMessage,
     ];
   }
