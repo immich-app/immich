@@ -4,9 +4,9 @@ module.exports = {
 		extend: {
 			colors: {
 				'immich-primary': '#4250af',
-				'immich-bg': '#f6f8fe',
-				'immich-fg': 'black'
-
+				'immich-bg': 'white',
+				'immich-fg': 'black',
+				'immich-gray': '#F6F6F4'
 				// 'immich-bg': '#121212',
 				// 'immich-fg': '#D0D0D0',
 			},

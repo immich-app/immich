@@ -106,7 +106,7 @@
 	};
 </script>
 
-<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-10">
 	<JobTile
 		title={'Generate thumbnails'}
 		subtitle={'Regenerate missing thumbnail (JPEG, WEBP)'}
