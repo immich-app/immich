@@ -60,12 +60,7 @@
 		on:click|stopPropagation|preventDefault={showAlbumContextMenu}
 		data-testid="context-button-parent"
 	>
-		<CircleIconButton
-			logo={DotsVertical}
-			size={'20'}
-			hoverColor={'rgba(95,99,104, 0.5)'}
-			logoColor={'#fdf8ec'}
-		/>
+		<CircleIconButton logo={DotsVertical} size={'20'} hoverColor={'rgba(95,99,104, 0.5)'} />
 	</div>
 
 	<div class={`h-[275px] w-[275px] z-[-1]`}>

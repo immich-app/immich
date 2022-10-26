@@ -88,7 +88,6 @@
 							on:click={() => showContextMenu(user.id)}
 							logo={DotsVertical}
 							backgroundColor={'transparent'}
-							logoColor={'#5f6368'}
 							hoverColor={'#e2e7e9'}
 							size={'20'}
 						/>

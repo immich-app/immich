@@ -9,7 +9,6 @@
 	export let logo: any;
 	export let backgroundColor = 'transparent';
 	export let hoverColor = '#e2e7e9';
-	export let logoColor = '#5f6368';
 	export let size = '24';
 	export let title = '';
 	let iconButton: HTMLButtonElement;

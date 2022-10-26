@@ -46,7 +46,6 @@
 				on:click={() => dispatch('close-button-click')}
 				logo={backIcon}
 				backgroundColor={'transparent'}
-				logoColor={'rgb(75 85 99)'}
 				hoverColor={'#e2e7e9'}
 				size={'24'}
 			/>
