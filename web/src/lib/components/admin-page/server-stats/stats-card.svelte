@@ -1,4 +1,5 @@
 <script lang="ts">
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	export let logo: any;
 	export let title: string;
 	export let value: string;
