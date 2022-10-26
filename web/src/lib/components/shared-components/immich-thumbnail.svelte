@@ -136,7 +136,7 @@
 	<div
 		style:width={`${thumbnailSize}px`}
 		style:height={`${thumbnailSize}px`}
-		class={`bg-gray-100 relative select-none  ${getSize()} ${
+		class={`bg-gray-100 dark:bg-immich-dark-gray relative select-none ${getSize()} ${
 			disabled ? 'cursor-not-allowed' : 'hover:cursor-pointer'
 		}`}
 		on:mouseenter={handleMouseOverThumbnail}

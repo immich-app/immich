@@ -26,7 +26,7 @@
 	class={`flex gap-4 place-items-center pl-5 py-3 rounded-tr-full rounded-br-full hover:bg-immich-gray dark:hover:bg-immich-dark-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary hover:cursor-pointer
     ${
 			isSelected &&
-			'bg-immich-primary/10 dark:bg-immich-dark-primary/10 text-immich-primary dark:text-immich-dark-primary hover:bg-immich-primary/25'
+			'bg-immich-primary/10 dark:bg-immich-dark-primary/10 text-immich-primary dark:text-[#adcbfa] hover:bg-immich-primary/25'
 		}
   `}
 >
