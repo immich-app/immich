@@ -22,9 +22,12 @@
 		<p class="text-immich-primary">{title}</p>
 	</div>
 
-	<div class="text-center font-mono font-semibold text-2xl">
+	<div class="relative text-center font-mono font-semibold text-2xl">
 		<span class="text-[#DCDADA]">{zeros()}</span><span class="text-immich-primary"
 			>{parseInt(value)}</span
 		>
+		{#if unit}
+			<span class="absolute -top-5 right-2 text-base font-light text-gray-400">{unit}</span>
+		{/if}
 	</div>
 </div>

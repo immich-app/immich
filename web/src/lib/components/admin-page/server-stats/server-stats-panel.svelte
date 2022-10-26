@@ -24,7 +24,7 @@
 	<div>
 		<p class="text-sm">TOTAL USAGE</p>
 
-		<div class="flex mt-5 gap-5">
+		<div class="flex mt-5 justify-between">
 			<StatsCard logo={CameraIris} title={'PHOTOS'} value={stats.photos.toString()} />
 			<StatsCard logo={PlayCircle} title={'VIDEOS'} value={stats.videos.toString()} />
 			<StatsCard logo={FileImageOutline} title={'OBJECTS'} value={stats.objects.toString()} />
@@ -34,7 +34,7 @@
 
 	<div>
 		<p class="text-sm">USER USAGE DETAIL</p>
-		<table class="text-left w-full mt-4">
+		<table class="text-left w-full mt-5">
 			<thead class="border rounded-md mb-4 bg-gray-50 flex text-immich-primary w-full h-12">
 				<tr class="flex w-full place-items-center">
 					<th class="text-center w-1/5 font-medium text-sm">User</th>
