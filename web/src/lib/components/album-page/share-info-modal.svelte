@@ -95,7 +95,7 @@
 					{:else if user.id == currentUser?.id}
 						<button
 							on:click={() => removeUser('me')}
-							class="text-sm text-immich-primary font-medium transition-colors hover:text-immich-primary/75"
+							class="text-sm text-immich-primary dark:text-immich-dark-primary font-medium transition-colors hover:text-immich-primary/75"
 							>Leave</button
 						>
 					{/if}

@@ -113,7 +113,7 @@
 					<div
 						in:fade={{ delay: 500, duration: 150 }}
 						out:fade={{ delay: 200, duration: 150 }}
-						class="absolute -bottom-12 right-5 border bg-gray-500 text-[12px] text-gray-100 p-2 rounded-md shadow-md"
+						class="absolute -bottom-12 right-5 border bg-gray-500 dark:bg-immich-dark-gray text-[12px] text-gray-100 p-2 rounded-md shadow-md dark:border-immich-dark-gray"
 					>
 						<p>{user.firstName} {user.lastName}</p>
 						<p>{user.email}</p>
