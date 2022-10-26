@@ -68,14 +68,14 @@
 <BaseModal on:close={() => dispatch('close')}>
 	<svelte:fragment slot="title">
 		<span class="flex gap-2 place-items-center">
-			<p class="font-medium text-immich-fg">Options</p>
+			<p class="font-medium text-immich-fg dark:text-immich-dark-fg">Options</p>
 		</span>
 	</svelte:fragment>
 
 	<section class="max-h-[400px] overflow-y-auto immich-scrollbar pb-4">
 		{#each album.sharedUsers as user}
 			<div
-				class="flex gap-4 p-5 place-items-center justify-between w-full transition-colors hover:bg-gray-50"
+				class="flex gap-4 p-5 place-items-center justify-between w-full transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
 			>
 				<div class="flex gap-4 place-items-center">
 					<CircleAvatar {user} />

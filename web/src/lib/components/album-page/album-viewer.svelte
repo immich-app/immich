@@ -331,7 +331,7 @@
 	};
 </script>
 
-<section class="bg-immich-bg">
+<section class="bg-immich-bg dark:bg-immich-dark-bg">
 	<!-- Multiselection mode app bar -->
 	{#if isMultiSelectionMode}
 		<ControlAppBar
@@ -340,7 +340,9 @@
 			tailwindClasses={'bg-white shadow-md'}
 		>
 			<svelte:fragment slot="leading">
-				<p class="font-medium text-immich-primary">Selected {multiSelectAsset.size}</p>
+				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
+					Selected {multiSelectAsset.size}
+				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
 				{#if isOwned}
@@ -386,7 +388,7 @@
 					<button
 						disabled={album.assetCount == 0}
 						on:click={() => (isShowShareUserSelection = true)}
-						class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
+						class="immich-text-button border bg-immich-primary dark:bg-immich-dark-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed dark:text-immich-dark-bg dark:border-immich-dark-gray"
 						><span class="px-2">Share</span></button
 					>
 				{/if}
@@ -404,9 +406,9 @@
 			}}
 			on:focus={() => (isEditingTitle = true)}
 			on:blur={() => (isEditingTitle = false)}
-			class={`transition-all text-6xl text-immich-primary w-[99%] border-b-2 border-transparent outline-none ${
+			class={`transition-all text-6xl text-immich-primary dark:text-immich-dark-primary w-[99%] border-b-2 border-transparent outline-none ${
 				isOwned ? 'hover:border-gray-400' : 'hover:border-transparent'
-			} focus:outline-none focus:border-b-2 focus:border-immich-primary bg-immich-bg`}
+			} focus:outline-none focus:border-b-2 focus:border-immich-primary dark:focus:border-immich-dark-primary bg-immich-bg dark:bg-immich-dark-bg dark:focus:bg-immich-dark-gray`}
 			type="text"
 			bind:value={album.albumName}
 			disabled={!isOwned}
@@ -468,13 +470,15 @@
 			<!-- Album is empty - Show asset selectection buttons -->
 			<section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
 				<div class="w-[300px]">
-					<p class="text-xs">ADD PHOTOS</p>
+					<p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
 					<button
 						on:click={() => (isShowAssetSelection = true)}
-						class="w-full py-8 border bg-white rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-100 hover:text-immich-primary"
+						class="w-full py-8 border bg-immich-bg dark:bg-immich-dark-gray text-immich-fg dark:text-immich-dark-fg dark:hover:text-immich-dark-primary rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none"
 					>
-						<span><Plus color="#4250af" size="24" /> </span>
-						<span class="text-lg text-immich-fg">Select photos</span>
+						<span class="text-text-immich-primary dark:text-immich-dark-primary"
+							><Plus size="24" />
+						</span>
+						<span class="text-lg">Select photos</span>
 					</button>
 				</div>
 			</section>

@@ -65,7 +65,9 @@
 			tailwindClasses={'bg-white shadow-md'}
 		>
 			<svelte:fragment slot="leading">
-				<p class="font-medium text-immich-primary">Selected {$selectedAssets.size}</p>
+				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
+					Selected {$selectedAssets.size}
+				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
 				<CircleIconButton
