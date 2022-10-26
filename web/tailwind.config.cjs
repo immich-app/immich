@@ -13,7 +13,7 @@ module.exports = {
 				// Dark Theme
 				'immich-dark-primary': '#adcbfa',
 				'immich-dark-bg': 'black',
-				'immich-dark-fg': 'white',
+				'immich-dark-fg': '#e5e7eb',
 				'immich-dark-gray': '#212121'
 			},
 			fontFamily: {

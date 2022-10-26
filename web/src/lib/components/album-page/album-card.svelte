@@ -78,11 +78,14 @@
 	</div>
 
 	<div class="mt-4">
-		<p class="text-sm font-medium text-gray-800" data-testid="album-name">
+		<p
+			class="text-sm font-medium text-gray-800 dark:text-immich-dark-primary"
+			data-testid="album-name"
+		>
 			{album.albumName}
 		</p>
 
-		<span class="text-xs flex gap-2" data-testid="album-details">
+		<span class="text-xs flex gap-2 dark:text-immich-dark-fg" data-testid="album-details">
 			<p>{album.assetCount} items</p>
 
 			{#if album.shared}

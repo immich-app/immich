@@ -39,13 +39,18 @@
 	<NavigationBar user={data.user} shouldShowUploadButton={false} />
 </section>
 
-<section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
+<section
+	class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg dark:bg-immich-dark-bg"
+>
 	<SideBar />
 
 	<section class="overflow-y-auto relative">
-		<section id="album-content" class="relative pt-8 pl-4 mb-12 bg-immich-bg">
+		<section
+			id="album-content"
+			class="relative pt-8 pl-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg"
+		>
 			<!-- Main Section -->
-			<div class="px-4 flex justify-between place-items-center">
+			<div class="px-4 flex justify-between place-items-center dark:text-immich-dark-fg">
 				<div>
 					<p class="font-medium">Sharing</p>
 				</div>
@@ -53,7 +58,7 @@
 				<div>
 					<button
 						on:click={createSharedAlbum}
-						class="flex place-items-center gap-1 text-sm hover:bg-immich-primary/5 p-2 rounded-lg font-medium hover:text-gray-700"
+						class="flex place-items-center gap-1 text-sm hover:bg-immich-primary/5 p-2 rounded-lg font-medium hover:text-gray-700 dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
 					>
 						<span>
 							<PlusBoxOutline size="18" />
@@ -64,7 +69,7 @@
 			</div>
 
 			<div class="my-4">
-				<hr />
+				<hr class="dark:border-immich-dark-gray" />
 			</div>
 
 			<!-- Share Album List -->
@@ -79,7 +84,7 @@
 			<!-- Empty List -->
 			{#if data.sharedAlbums.length === 0}
 				<div
-					class="border p-5 w-[50%] m-auto mt-10 bg-gray-50 rounded-3xl flex flex-col place-content-center place-items-center"
+					class="border dark:border-immich-dark-gray p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center dark:text-immich-dark-fg"
 				>
 					<img src="/empty-2.svg" alt="Empty shared album" width="500" />
 					<p class="text-center text-immich-text-gray-500">
