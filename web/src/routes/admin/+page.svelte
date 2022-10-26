@@ -33,7 +33,7 @@
 	};
 
 	onMount(() => {
-		selectedAction = AdminSideBarSelection.STATS;
+		selectedAction = AdminSideBarSelection.JOBS;
 		getServerStats();
 	});
 

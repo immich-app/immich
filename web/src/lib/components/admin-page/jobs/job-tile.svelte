@@ -11,14 +11,14 @@
 	const dispatch = createEventDispatcher();
 </script>
 
-<div class="flex border p-6 rounded-2xl border-immich-gray bg-immich-gray">
+<div class="flex border-b pb-5">
 	<div class="w-[70%]">
-		<h1 class="font-medium text-immich-primary">{title}</h1>
-		<p class="text-sm mt-1 font-medium">{subtitle}</p>
+		<h1 class="text-immich-primary text-sm">{title.toUpperCase()}</h1>
+		<p class="text-sm mt-1">{subtitle}</p>
 		<p class="text-sm">
 			<slot />
 		</p>
-		<table class="text-left w-full mt-4">
+		<table class="text-left w-full mt-5">
 			<!-- table header -->
 			<thead
 				class="border rounded-md mb-2 bg-immich-primary/10 flex text-immich-primary w-full h-12"
@@ -41,7 +41,7 @@
 	<div class="w-[30%] flex place-items-center place-content-end">
 		<button
 			on:click={() => dispatch('click')}
-			class="border px-6 py-3 text-sm bg-gray-50 font-medium rounded-2xl hover:bg-immich-primary/10 transition-all hover:cursor-pointer disabled:cursor-not-allowed shadow-sm"
+			class="px-6 py-3 text-sm bg-immich-primary font-medium rounded-2xl hover:bg-immich-primary/50 transition-all hover:cursor-pointer disabled:cursor-not-allowed shadow-sm text-immich-bg"
 			disabled={jobStatus}
 		>
 			{#if jobStatus}

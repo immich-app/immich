@@ -8,8 +8,8 @@
 	const dispatch = createEventDispatcher();
 </script>
 
-<table class="text-left w-full my-4">
-	<thead class="border rounded-md mb-2 bg-gray-50 flex text-immich-primary w-full h-12 ">
+<table class="text-left w-full my-5">
+	<thead class="border rounded-md mb-4 bg-gray-50 flex text-immich-primary w-full h-12 ">
 		<tr class="flex w-full place-items-center">
 			<th class="text-center w-1/4 font-medium text-sm">Email</th>
 			<th class="text-center w-1/4 font-medium text-sm">First name</th>
@@ -20,7 +20,7 @@
 	<tbody class="overflow-y-auto rounded-md w-full max-h-[320px] block border">
 		{#each allUsers as user, i}
 			<tr
-				class={`text-center flex place-items-center w-full border-b h-[80px] ${
+				class={`text-center flex place-items-center w-full h-[80px] ${
 					i % 2 == 0 ? 'bg-gray-100' : 'bg-immich-bg'
 				}`}
 			>
