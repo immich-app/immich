@@ -97,9 +97,7 @@
 	};
 </script>
 
-<section
-	class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg dark:border-l dark:border-l-immich-dark-gray"
->
+<section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
 	<div class="flex place-items-center gap-2">
 		<button
 			class="rounded-full p-3 flex place-items-center place-content-center hover:bg-gray-200 transition-colors dark:text-immich-dark-fg dark:hover:bg-gray-900"
