@@ -24,8 +24,8 @@
 	>
 		{#each allUsers as user, i}
 			<tr
-				class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-fg ${
-					i % 2 == 0 ? 'bg-immich-gray dark:bg-gray-900' : 'bg-immich-bg dark:bg-gray-800'
+				class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-bg ${
+					i % 2 == 0 ? 'bg-immich-gray dark:bg-[#e5e5e5]' : 'bg-immich-bg dark:bg-[#eeeeee]'
 				}`}
 			>
 				<td class="text-sm px-4 w-1/4 text-ellipsis">{user.email}</td>

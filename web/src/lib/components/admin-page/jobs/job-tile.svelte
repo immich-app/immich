@@ -30,7 +30,7 @@
 				</tr>
 			</thead>
 			<tbody
-				class="overflow-y-auto rounded-md w-full max-h-[320px] block border bg-white dark:border-immich-dark-gray dark:bg-gray-900 dark:text-immich-dark-fg"
+				class="overflow-y-auto rounded-md w-full max-h-[320px] block border bg-white dark:border-immich-dark-gray dark:bg-[#e5e5e5] dark:text-immich-dark-bg"
 			>
 				<tr class="text-center flex place-items-center w-full h-[60px]">
 					<td class="text-sm px-2 w-1/3 text-ellipsis">{jobStatus ? 'Active' : 'Idle'}</td>

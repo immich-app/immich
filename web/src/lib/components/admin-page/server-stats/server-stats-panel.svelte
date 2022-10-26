@@ -47,12 +47,12 @@
 				</tr>
 			</thead>
 			<tbody
-				class="overflow-y-auto rounded-md w-full max-h-[320px] block border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+				class="overflow-y-auto rounded-md w-full max-h-[320px] block border dark:border-immich-dark-gray dark:text-immich-dark-bg"
 			>
 				{#each stats.usageByUser as user, i}
 					<tr
 						class={`text-center flex place-items-center w-full h-[50px] ${
-							i % 2 == 0 ? 'bg-immich-gray dark:bg-gray-900' : 'bg-immich-bg dark:bg-gray-800'
+							i % 2 == 0 ? 'bg-immich-gray dark:bg-[#e5e5e5]' : 'bg-immich-bg dark:bg-[#eeeeee]'
 						}`}
 					>
 						<td class="text-sm px-2 w-1/5 text-ellipsis">{getFullName(user.userId)}</td>
