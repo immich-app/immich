@@ -46,7 +46,7 @@
 	};
 </script>
 
-<div>
+<div class="dark:text-immich-dark-fg">
 	<div class="storage-status grid grid-cols-[64px_auto]">
 		<div class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary">
 			<Cloud size={'24'} />
