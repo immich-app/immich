@@ -43,12 +43,18 @@
 	}
 </script>
 
-<div class="border bg-white p-4 shadow-sm w-[500px] rounded-md py-8">
+<div
+	class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] rounded-3xl py-8 dark:text-immich-dark-fg"
+>
 	<div class="flex flex-col place-items-center place-content-center gap-4 px-4">
 		<img class="text-center" src="/immich-logo.svg" height="100" width="100" alt="immich-logo" />
-		<h1 class="text-2xl text-immich-primary font-medium">Change Password</h1>
+		<h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">
+			Change Password
+		</h1>
 
-		<p class="text-sm border rounded-md p-4 font-mono text-gray-600">
+		<p
+			class="text-sm border rounded-md p-4 font-mono text-gray-600 dark:border-immich-dark-bg dark:text-gray-300"
+		>
 			Hi {user.firstName}
 			{user.lastName} ({user.email}),
 			<br />
@@ -93,7 +99,7 @@
 		<div class="flex w-full">
 			<button
 				type="submit"
-				class="m-4 p-2 bg-immich-primary hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full"
+				class="m-4 p-2 bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-4 text-white rounded-md shadow-md w-full"
 				>Change Password</button
 			>
 		</div>

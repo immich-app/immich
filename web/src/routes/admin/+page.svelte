@@ -33,7 +33,7 @@
 	};
 
 	onMount(() => {
-		selectedAction = AdminSideBarSelection.JOBS;
+		selectedAction = AdminSideBarSelection.USER_MANAGEMENT;
 		getServerStats();
 	});
 
@@ -147,8 +147,10 @@
 	</section>
 	<section class="overflow-y-auto relative">
 		<div id="setting-title" class="pt-10 fixed w-full z-50">
-			<h1 class="text-lg ml-8 mb-4 text-immich-primary font-medium">{selectedAction}</h1>
-			<hr />
+			<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
+				{selectedAction}
+			</h1>
+			<hr class="dark:border-immich-dark-gray" />
 		</div>
 
 		<section id="setting-content" class="relative pt-[85px] flex place-content-center">

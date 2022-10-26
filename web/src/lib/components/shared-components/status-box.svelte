@@ -46,18 +46,18 @@
 	};
 </script>
 
-<div>
+<div class="dark:text-immich-dark-fg">
 	<div class="storage-status grid grid-cols-[64px_auto]">
-		<div class="pl-5 pr-6 text-immich-primary">
+		<div class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary">
 			<Cloud size={'24'} />
 		</div>
 		<div>
-			<p class="text-sm font-medium text-immich-primary">Storage</p>
+			<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
 			{#if serverInfo}
 				<div class="w-full bg-gray-200 rounded-full h-[7px] dark:bg-gray-700 my-2">
 					<!-- style={`width: ${$downloadAssets[fileName]}%`} -->
 					<div
-						class="bg-immich-primary h-[7px] rounded-full"
+						class="bg-immich-primary dark:bg-immich-dark-primary h-[7px] rounded-full"
 						style={`width: ${getStorageUsagePercentage()}%`}
 					/>
 				</div>
@@ -70,29 +70,29 @@
 		</div>
 	</div>
 	<div>
-		<hr class="ml-5 my-4" />
+		<hr class="ml-5 my-4 dark:border-immich-dark-gray" />
 	</div>
 	<div class="server-status grid grid-cols-[64px_auto]">
-		<div class="pl-5 pr-6 text-immich-primary">
+		<div class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary">
 			<Dns size={'24'} />
 		</div>
 
-		<div class="text-xs">
-			<p class="text-sm font-medium text-immich-primary">Server</p>
+		<div class="text-xs ">
+			<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
 
-			<div class="flex justify-items-center justify-between mt-2">
+			<div class="flex justify-items-center justify-between mt-2 ">
 				<p>Status</p>
 
 				{#if isServerOk}
-					<p class="font-medium text-immich-primary">Online</p>
+					<p class="font-medium text-immich-primary dark:text-immich-dark-primary">Online</p>
 				{:else}
 					<p class="font-medium text-red-500">Offline</p>
 				{/if}
 			</div>
 
-			<div class="flex justify-items-center justify-between mt-2">
+			<div class="flex justify-items-center justify-between mt-2 ">
 				<p>Version</p>
-				<p class="font-medium text-immich-primary">{serverVersion}</p>
+				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">{serverVersion}</p>
 			</div>
 		</div>
 	</div>

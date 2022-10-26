@@ -36,7 +36,7 @@
 	<div
 		use:clickOutside
 		on:out-click={() => dispatch('close')}
-		class="bg-white w-[450px] min-h-[200px] max-h-[500px] rounded-lg shadow-md"
+		class="bg-immich-bg dark:bg-immich-dark-gray dark:text-immich-dark-fg w-[450px] min-h-[200px] max-h-[500px] rounded-lg shadow-md"
 	>
 		<div class="flex justify-between place-items-center p-5">
 			<div>

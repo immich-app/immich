@@ -14,7 +14,7 @@
 
 	const onScroll = () => {
 		if (window.pageYOffset > 80) {
-			appBarBorder = 'border border-gray-200 bg-gray-50';
+			appBarBorder = 'border border-gray-200 bg-gray-50 dark:border-gray-600';
 		} else {
 			appBarBorder = 'bg-immich-bg border border-transparent';
 		}
@@ -39,14 +39,13 @@
 >
 	<div
 		id="asset-selection-app-bar"
-		class={`flex justify-between ${appBarBorder} rounded-lg p-2 mx-2 mt-2 transition-all place-items-center ${tailwindClasses}`}
+		class={`flex justify-between ${appBarBorder} rounded-lg p-2 mx-2 mt-2 transition-all place-items-center ${tailwindClasses} dark:bg-immich-dark-gray`}
 	>
-		<div class="flex place-items-center gap-6">
+		<div class="flex place-items-center gap-6 dark:text-immich-dark-fg">
 			<CircleIconButton
 				on:click={() => dispatch('close-button-click')}
 				logo={backIcon}
 				backgroundColor={'transparent'}
-				logoColor={'rgb(75 85 99)'}
 				hoverColor={'#e2e7e9'}
 				size={'24'}
 			/>
@@ -54,7 +53,7 @@
 			<slot name="leading" />
 		</div>
 
-		<div class="flex place-items-center gap-1 mr-4">
+		<div class="flex place-items-center gap-1 mr-4 ">
 			<slot name="trailing" />
 		</div>
 	</div>
