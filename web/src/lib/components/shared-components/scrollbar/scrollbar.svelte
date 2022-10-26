@@ -109,7 +109,7 @@
 >
 	{#if isHover}
 		<div
-			class="border-b-2 border-immich-primary w-[100px] right-0 pr-6 py-1 text-sm pl-1 font-medium absolute bg-white z-50 pointer-events-none rounded-tl-md shadow-lg"
+			class="border-b-2 border-immich-primary dark:border-immich-dark-primary w-[100px] right-0 pr-6 py-1 text-sm pl-1 font-medium absolute bg-immich-bg dark:bg-immich-dark-gray z-50 pointer-events-none rounded-tl-md shadow-lg dark:text-immich-dark-fg"
 			style:top={currentMouseYLocation + 'px'}
 		>
 			{hoveredDate?.toLocaleString('default', { month: 'short' })}
@@ -120,7 +120,7 @@
 	<!-- Scroll Position Indicator Line -->
 	{#if !isDragging}
 		<div
-			class="absolute right-0 w-10 h-[2px] bg-immich-primary"
+			class="absolute right-0 w-10 h-[2px] bg-immich-primary dark:bg-immich-dark-primary"
 			style:top={scrollbarPosition + 'px'}
 		/>
 	{/if}
@@ -139,7 +139,7 @@
 				{#if segment.height > 8}
 					<div
 						aria-label={segment.timeGroup + ' ' + segment.count}
-						class="absolute right-0 pr-5 z-10 text-xs font-medium"
+						class="absolute right-0 pr-5 z-10 text-xs font-medium dark:text-immich-dark-fg"
 					>
 						{groupDate.getFullYear()}
 					</div>

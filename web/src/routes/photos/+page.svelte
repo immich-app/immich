@@ -83,7 +83,9 @@
 	{/if}
 </section>
 
-<section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
+<section
+	class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg dark:bg-immich-dark-bg"
+>
 	<SideBar />
 	<AssetGrid />
 </section>
