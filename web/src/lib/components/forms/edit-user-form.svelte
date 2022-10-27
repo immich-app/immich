@@ -65,11 +65,16 @@
 	};
 </script>
 
-<div class="border bg-white p-4 shadow-sm w-[500px] rounded-3xl py-8">
-	<div class="flex flex-col place-items-center place-content-center gap-4 px-4">
-		<!--        <img class="text-center" src="/immich-logo.svg" height="100" width="100" alt="immich-logo"/>-->
-		<AccountEditOutline size="4em" color="#4250affe" />
-		<h1 class="text-2xl text-immich-primary font-medium">Edit user</h1>
+<div
+	class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] rounded-3xl py-8 dark:text-immich-dark-fg"
+>
+	<div
+		class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+	>
+		<AccountEditOutline size="4em" />
+		<h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">
+			Edit user
+		</h1>
 	</div>
 
 	<form on:submit|preventDefault={editUser} autocomplete="off">
@@ -124,7 +129,7 @@
 			</button>
 			<button
 				type="submit"
-				class="flex-1 transition-colors bg-immich-primary hover:bg-immich-primary/75 px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
+				class="flex-1 transition-colors bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
 				>Confirm
 			</button>
 		</div>

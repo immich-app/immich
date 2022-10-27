@@ -10,6 +10,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -30,12 +31,14 @@ void main() async {
 
   Hive.registerAdapter(HiveSavedLoginInfoAdapter());
   Hive.registerAdapter(HiveBackupAlbumsAdapter());
+  Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
 
   await Hive.openBox(userInfoBox);
   await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
   await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
   await Hive.openBox(hiveGithubReleaseInfoBox);
   await Hive.openBox(userSettingInfoBox);
+  await Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

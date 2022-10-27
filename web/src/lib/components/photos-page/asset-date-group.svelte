@@ -115,7 +115,9 @@
 			on:mouseleave={() => (isMouseOverGroup = false)}
 		>
 			<!-- Date group title -->
-			<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
+			<p
+				class="font-medium text-sm text-immich-fg dark:text-immich-dark-fg mb-2 flex place-items-center h-6"
+			>
 				{#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
 					<div
 						transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}

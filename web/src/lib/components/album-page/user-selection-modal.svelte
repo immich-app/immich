@@ -38,7 +38,7 @@
 	<svelte:fragment slot="title">
 		<span class="flex gap-2 place-items-center">
 			<img src="/immich-logo.svg" width="24" alt="Immich" />
-			<p class="font-medium text-immich-fg">Invite to album</p>
+			<p class="font-medium">Invite to album</p>
 		</span>
 	</svelte:fragment>
 
@@ -51,7 +51,7 @@
 					{#key user.id}
 						<button
 							on:click={() => deselectUser(user)}
-							class="flex gap-1 place-items-center border border-gray-400 rounded-full p-1 hover:bg-gray-200 transition-colors"
+							class="flex gap-1 place-items-center border border-gray-400 rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
 						>
 							<CircleAvatar size={28} {user} />
 							<p class="text-xs font-medium">{user.firstName} {user.lastName}</p>
@@ -68,11 +68,11 @@
 				{#each users as user}
 					<button
 						on:click={() => selectUser(user)}
-						class="w-full flex place-items-center gap-4 py-4 px-5 hover:bg-gray-200  transition-all"
+						class="w-full flex place-items-center gap-4 py-4 px-5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
 					>
 						{#if selectedUsers.includes(user)}
 							<span
-								class="bg-immich-primary text-white rounded-full w-12 h-12 border flex place-items-center place-content-center text-3xl"
+								class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-bg rounded-full w-12 h-12 border flex place-items-center place-content-center text-3xl dark:border-immich-dark-gray"
 								>✓</span
 							>
 						{:else}
@@ -80,7 +80,7 @@
 						{/if}
 
 						<div class="text-left">
-							<p class="text-immich-fg">
+							<p class="text-immich-fg dark:text-immich-dark-fg">
 								{user.firstName}
 								{user.lastName}
 							</p>

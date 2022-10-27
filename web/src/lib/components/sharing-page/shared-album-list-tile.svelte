@@ -26,7 +26,7 @@
 </script>
 
 <div
-	class="flex min-w-[550px] border-b border-gray-300 place-items-center py-4  gap-6 transition-all hover:border-immich-primary"
+	class="flex min-w-[550px] border-b border-gray-300 dark:border-immich-dark-gray place-items-center py-4  gap-6 transition-all hover:border-immich-primary dark:hover:border-immich-dark-primary"
 >
 	<div>
 		{#await loadImageData(album.albumThumbnailAssetId)}
@@ -46,13 +46,16 @@
 	</div>
 
 	<div>
-		<p class="font-medium text-gray-800">{album.albumName}</p>
+		<p class="font-medium text-gray-800 dark:text-immich-dark-primary">{album.albumName}</p>
 
 		{#await getAlbumOwnerInfo() then albumOwner}
 			{#if user.email == albumOwner.email}
-				<p class="text-xs text-gray-600">Owned</p>
+				<p class="text-xs text-gray-600 dark:text-immich-dark-fg">Owned</p>
 			{:else}
-				<p class="text-xs text-gray-600">Shared by {albumOwner.firstName} {albumOwner.lastName}</p>
+				<p class="text-xs text-gray-600 dark:text-immich-dark-fg">
+					Shared by {albumOwner.firstName}
+					{albumOwner.lastName}
+				</p>
 			{/if}
 		{/await}
 	</div>

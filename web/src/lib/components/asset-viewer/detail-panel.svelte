@@ -97,16 +97,16 @@
 	};
 </script>
 
-<section class="p-2">
+<section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
 	<div class="flex place-items-center gap-2">
 		<button
-			class="rounded-full p-3 flex place-items-center place-content-center hover:bg-gray-200 transition-colors"
+			class="rounded-full p-3 flex place-items-center place-content-center hover:bg-gray-200 transition-colors dark:text-immich-dark-fg dark:hover:bg-gray-900"
 			on:click={() => dispatch('close')}
 		>
-			<Close size="24" color="#232323" />
+			<Close size="24" />
 		</button>
 
-		<p class="text-immich-fg text-lg">Info</p>
+		<p class="text-immich-fg dark:text-immich-dark-fg text-lg">Info</p>
 	</div>
 
 	<div class="px-4 py-4">
@@ -202,10 +202,10 @@
 	<div class="h-[360px] w-full" id="map" />
 </div>
 
-<section class="p-2">
+<section class="p-2 dark:text-immich-dark-fg">
 	<div class="px-4 py-4">
 		{#if albums.length > 0}
-			<p class="text-sm pb-4">APPEARS IN</p>
+			<p class="text-sm pb-4 ">APPEARS IN</p>
 		{/if}
 		{#each albums as album}
 			<a data-sveltekit-prefetch href={`/albums/${album.id}`}>
@@ -219,7 +219,7 @@
 					</div>
 
 					<div class="mt-auto mb-auto">
-						<p>{album.albumName}</p>
+						<p class="dark:text-immich-dark-primary">{album.albumName}</p>
 						<div class="flex gap-2 text-sm">
 							<p>{album.assetCount} items</p>
 							{#if album.shared}

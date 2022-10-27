@@ -24,6 +24,7 @@
   "backup_controller_page_backup_selected": "Ausgewählt: ",
   "backup_controller_page_backup_sub": "Gesicherte Fotos und Videos",
   "backup_controller_page_cancel": "Abbrechen",
+  "backup_background_service_default_notification": "Suche nach neuen assets…",
   "backup_controller_page_created": "Erstellt: {}",
   "backup_controller_page_desc_backup": "Aktiviere die Sicherung um Elemente automatisch auf den Server zu laden.",
   "backup_controller_page_excluded": "Ausgeschlossen: ",

@@ -42,20 +42,28 @@
 	<NavigationBar user={data.user} shouldShowUploadButton={false} />
 </section>
 
-<section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg ">
+<section
+	class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg  dark:bg-immich-dark-bg"
+>
 	<SideBar />
 
 	<!-- Main Section -->
 
 	<section class="overflow-y-auto relative immich-scrollbar">
-		<section id="album-content" class="relative pt-8 pl-4 mb-12 bg-immich-bg">
-			<div class="px-4 flex justify-between place-items-center">
+		<section
+			id="album-content"
+			class="relative pt-8 pl-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg"
+		>
+			<div class="px-4 flex justify-between place-items-center dark:text-immich-dark-fg">
 				<div>
 					<p class="font-medium">Albums</p>
 				</div>
 
 				<div>
-					<button on:click={handleCreateAlbum} class="immich-text-button text-sm">
+					<button
+						on:click={handleCreateAlbum}
+						class="immich-text-button text-sm dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
+					>
 						<span>
 							<PlusBoxOutline size="18" />
 						</span>
@@ -65,7 +73,7 @@
 			</div>
 
 			<div class="my-4">
-				<hr />
+				<hr class="dark:border-immich-dark-gray" />
 			</div>
 
 			<!-- Album Card -->
@@ -85,11 +93,11 @@
 			<!-- Empty Message -->
 			{#if $albums.length === 0}
 				<div
-					class="border p-5 w-[50%] m-auto mt-10 bg-gray-50 rounded-3xl flex flex-col place-content-center place-items-center"
+					class="border dark:border-immich-dark-gray p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center"
 				>
 					<img src="/empty-1.svg" alt="Empty shared album" width="500" />
 
-					<p class="text-center text-immich-text-gray-500">
+					<p class="text-center text-immich-text-gray-500 dark:text-immich-dark-fg">
 						Create an album to organize your photos and videos
 					</p>
 				</div>

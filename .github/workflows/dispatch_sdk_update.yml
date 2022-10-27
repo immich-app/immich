@@ -1,0 +1,21 @@
+name: Update Immich SDK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  update-sdk-repos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'immich-app',
+              repo: 'immich-sdk-typescript-axios',
+              workflow_id: 'build.yml',
+              ref: 'main'
+            })

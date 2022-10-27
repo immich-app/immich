@@ -15,7 +15,7 @@
 	import type { PageData } from './$types';
 	import { api, ServerStatsResponseDto, UserResponseDto } from '@api';
 	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
-	import ServerStats from '$lib/components/admin-page/server-stats.svelte';
+	import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
@@ -146,13 +146,15 @@
 		</div>
 	</section>
 	<section class="overflow-y-auto relative">
-		<div id="setting-title" class="pt-10 fixed w-full z-50 bg-immich-bg">
-			<h1 class="text-lg ml-8 mb-4 text-immich-primary font-medium">{selectedAction}</h1>
-			<hr />
+		<div id="setting-title" class="pt-10 fixed w-full z-50">
+			<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
+				{selectedAction}
+			</h1>
+			<hr class="dark:border-immich-dark-gray" />
 		</div>
 
 		<section id="setting-content" class="relative pt-[85px] flex place-content-center">
-			<section class="w-[800px] pt-4">
+			<section class="w-[800px] pt-5">
 				{#if selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
 					<UserManagement
 						allUsers={data.allUsers}
@@ -164,7 +166,7 @@
 					<JobsPanel />
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.STATS && serverStat}
-					<ServerStats stats={serverStat} allUsers={data.allUsers} />
+					<ServerStatsPanel stats={serverStat} allUsers={data.allUsers} />
 				{/if}
 			</section>
 		</section>

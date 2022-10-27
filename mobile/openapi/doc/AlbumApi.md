@@ -22,7 +22,7 @@ Method | HTTP request | Description
 
 
 # **addAssetsToAlbum**
-> AddAssetsResponseDto addAssetsToAlbum(albumId, addAssetsDto)
+> AlbumResponseDto addAssetsToAlbum(albumId, addAssetsDto)
 
 
 
@@ -57,7 +57,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AddAssetsResponseDto**](AddAssetsResponseDto.md)
+[**AlbumResponseDto**](AlbumResponseDto.md)
 
 ### Authorization
 

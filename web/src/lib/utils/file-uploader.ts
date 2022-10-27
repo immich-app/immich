@@ -200,12 +200,12 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 }
 // TODO: This should have a proper type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleUploadError(asset: File, respBody?: any) {
-	const extraMsg = respBody ? ' ' + respBody.message : '';
+function handleUploadError(asset: File, respBody: any, extraMessage?: string) {
+	const extraMsg = respBody ? ' ' + respBody?.message : '';
 
 	notificationController.show({
 		type: NotificationType.Error,
-		message: `Cannot upload file ${asset.name}!${extraMsg}`,
+		message: `Cannot upload file ${asset.name} ${extraMsg}${extraMessage}`,
 		timeout: 5000
 	});
 }
