@@ -15,6 +15,7 @@ import {
   HttpCode,
   BadRequestException,
   UploadedFile,
+  Header,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AssetService } from './asset.service';
@@ -143,6 +144,7 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
+  @Header('Cache-Control', 'max-age=300')
   async getAssetThumbnail(
     @Response({ passthrough: true }) res: Res,
     @Param('assetId') assetId: string,
@@ -260,7 +262,7 @@ export class AssetController {
   }
 
   /**
-   * Checks if multiple assets exist on the server and returns all existing - used by background backup 
+   * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
   @Post('/exist')
   @HttpCode(200)
