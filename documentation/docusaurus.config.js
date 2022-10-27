@@ -9,16 +9,16 @@ const config = {
   title: "Immich Documentation",
   tagline:
     "Self-hosted photo and video backup solution directly from your mobile phone",
-  url: "https://your-docusaurus-test-site.com",
+  url: "https://doc.immich.app",
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
-  favicon: "img/favicon.ico",
+  favicon: "img/favicon.png",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "facebook", // Usually your GitHub org/user name.
-  projectName: "docusaurus", // Usually your repo name.
+  organizationName: "immich-app", // Usually your GitHub org/user name.
+  projectName: "immich", // Usually your repo name.
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
@@ -57,6 +57,11 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      docs: {
+        sidebar: {
+          autoCollapseCategories: false,
+        },
+      },
       navbar: {
         title: "Immich",
         logo: {
@@ -66,11 +71,12 @@ const config = {
         items: [
           {
             type: "doc",
-            docId: "overview",
-            position: "left",
-            label: "Docs",
+            docId: "overview/introduction",
+            to: "overview/introduction",
+            position: "right",
+            label: "Documentation",
           },
-          { to: "/blog", label: "Blog", position: "left" },
+          { to: "/blog", label: "Blog", position: "right" },
           {
             href: "https://github.com/facebook/docusaurus",
             label: "GitHub",
@@ -94,16 +100,8 @@ const config = {
             title: "Community",
             items: [
               {
-                label: "Stack Overflow",
-                href: "https://stackoverflow.com/questions/tagged/docusaurus",
-              },
-              {
                 label: "Discord",
                 href: "https://discordapp.com/invite/docusaurus",
-              },
-              {
-                label: "Twitter",
-                href: "https://twitter.com/docusaurus",
               },
             ],
           },
@@ -116,12 +114,12 @@ const config = {
               },
               {
                 label: "GitHub",
-                href: "https://github.com/facebook/docusaurus",
+                href: "https://github.com/immich-app/immich",
               },
             ],
           },
         ],
-        copyright: `The application is available as open source under the terms of the MIT License. Alex Tran © ${new Date().getFullYear()}`,
+        copyright: `Alex Tran - For my family`,
       },
       prism: {
         theme: lightCodeTheme,
