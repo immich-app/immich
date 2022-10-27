@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   Param,
-  UseGuards,
   ValidationPipe,
   Put,
   Query,
@@ -14,10 +13,10 @@ import {
   ParseBoolPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { Authenticated } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
-import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
+import { Admin } from '../../middlewares/admin-role-guard.middleware';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { profileImageUploadOption } from '../../config/profile-image-upload.config';
@@ -33,7 +32,7 @@ import { CreateProfileImageResponseDto } from './response-dto/create-profile-ima
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @Authenticated()
   @ApiBearerAuth()
   @Get()
   async getAllUsers(
@@ -48,16 +47,16 @@ export class UserController {
     return await this.userService.getUserById(userId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Authenticated()
   @ApiBearerAuth()
   @Get('me')
   async getMyUserInfo(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
     return await this.userService.getUserInfo(authUser);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Authenticated()
   @ApiBearerAuth()
-  @UseGuards(AdminRolesGuard)
+  @Admin()
   @Post()
   async createUser(
     @Body(new ValidationPipe({ transform: true })) createUserDto: CreateUserDto,
@@ -70,7 +69,7 @@ export class UserController {
     return await this.userService.getUserCount();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Authenticated()
   @ApiBearerAuth()
   @Put()
   async updateUser(
@@ -81,7 +80,7 @@ export class UserController {
   }
 
   @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
-  @UseGuards(JwtAuthGuard)
+  @Authenticated()
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiBody({
