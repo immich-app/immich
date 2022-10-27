@@ -60,8 +60,8 @@ const config = {
       navbar: {
         title: "Immich",
         logo: {
-          alt: "My Site Logo",
-          src: "img/logo.svg",
+          alt: "Immich University Logo",
+          src: "img/logo.png",
         },
         items: [
           {
@@ -121,7 +121,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `The application is available as open source under the terms of the MIT License. Alex Tran © ${new Date().getFullYear()}`,
       },
       prism: {
         theme: lightCodeTheme,
