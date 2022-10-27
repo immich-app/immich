@@ -22,18 +22,12 @@ COPY package.json package-lock.json ./
 COPY start-server.sh start-microservices.sh ./
 
 RUN mkdir -p /usr/src/app/dist \
-  && mkdir /usr/src/app/.reverse-geocoding-dump \
   && apk add --no-cache libheif vips ffmpeg
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 
 RUN npm prune --production
-
-RUN   chown -R node:0 /usr/src/app \
-  &&  chmod -R g=u /usr/src/app
-
-RUN addgroup node root
 
 VOLUME /usr/src/app/upload
 
