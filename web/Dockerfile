@@ -6,8 +6,9 @@ COPY LICENSE /LICENSE
 
 WORKDIR /usr/src/app
 
-RUN chown node:node /usr/src/app && \
-    apk add --no-cache setpriv
+RUN chown node:node /usr/src/app
+
+RUN apk add --no-cache setpriv
 
 COPY --chown=node:node package*.json ./
 
@@ -15,11 +16,7 @@ RUN npm ci
 
 COPY --chown=node:node . .
 
-RUN   npm run build \
-  &&  chown -R node:0 /usr/src/app \
-  &&  chmod -R g=u /usr/src/app
-
-RUN addgroup node root
+RUN npm run build
 
 EXPOSE 3000
 
