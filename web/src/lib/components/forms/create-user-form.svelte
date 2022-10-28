@@ -10,6 +10,8 @@
 
 	let canCreateUser = false;
 
+	let isCreatingUser = false;
+
 	$: {
 		if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
 			error = 'Password does not match';
@@ -22,7 +24,9 @@
 	const dispatch = createEventDispatcher();
 
 	async function registerUser(event: SubmitEvent) {
-		if (canCreateUser) {
+		if (canCreateUser && !isCreatingUser) {
+			isCreatingUser = true;
+
 			error = '';
 
 			const formElement = event.target as HTMLFormElement;
@@ -45,9 +49,12 @@
 				success = 'New user created';
 
 				dispatch('user-created');
+
+				isCreatingUser = false;
 				return;
 			} else {
 				error = 'Error create user account';
+				isCreatingUser = false;
 			}
 		}
 	}
@@ -120,6 +127,7 @@
 			<button
 				type="submit"
 				class="m-4 bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 px-6 py-3 text-white dark:text-immich-dark-gray rounded-full shadow-md w-full font-medium"
+				disabled={isCreatingUser}
 				>Create
 			</button>
 		</div>
