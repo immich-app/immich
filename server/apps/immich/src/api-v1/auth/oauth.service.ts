@@ -13,14 +13,17 @@ export class OAuthService {
 
   private _client: Client | null = null;
 
-  enabled: boolean;
-  issuerUrl: string;
-  clientMetadata: ClientMetadata;
-  scope: string;
-  redirectUri: string;
+  public readonly enabled: boolean;
+  public readonly autoRegister: boolean;
+
+  private readonly issuerUrl: string;
+  private readonly clientMetadata: ClientMetadata;
+  private readonly scope: string;
+  private readonly redirectUri: string;
 
   constructor(configService: ConfigService) {
     this.enabled = configService.get('OAUTH_ENABLED', false);
+    this.autoRegister = configService.get('OAUTH_AUTO_REGISTER', true);
     this.issuerUrl = configService.get<string>('OAUTH_ISSUER_URL', '');
     this.scope = configService.get<string>('OAUTH_SCOPE', 'openid email profile');
     this.redirectUri = configService.get('OAUTH_REDIRECT_URI', '');

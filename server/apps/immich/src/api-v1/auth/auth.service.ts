@@ -7,7 +7,7 @@ import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { JwtPayloadDto } from './dto/jwt-payload.dto';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import { OAuthProfile } from './oauth.service';
+import { OAuthProfile, OAuthService } from './oauth.service';
 import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/admin-signup-response.dto';
 import { LoginResponseDto, mapLoginResponse } from './response-dto/login-response.dto';
 
@@ -19,6 +19,7 @@ export class AuthService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     private immichJwtService: ImmichJwtService,
+    private oauthService: OAuthService,
   ) {}
 
   private async getUserByEmail(email: string) {
@@ -69,6 +70,13 @@ export class AuthService {
     let user = await this.getUserByEmail(profile.email);
 
     if (!user) {
+      if (!this.oauthService.autoRegister) {
+        this.logger.warn(
+          `Unable to register ${profile.email}. To enable auto registering, set OAUTH_AUTO_REGISTER=true.`,
+        );
+        throw new BadRequestException(`User does not exist and auto registering is disabled.`);
+      }
+
       this.logger.log(`Registering new user: ${profile.email}`);
       user = await this.userRepository.save({
         firstName: profile.given_name || '',

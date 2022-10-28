@@ -35,6 +35,7 @@ export const immichAppConfig: ConfigModuleOptions = {
     REVERSE_GEOCODING_PRECISION: Joi.number().optional().valid(0, 1, 2, 3).default(3),
     LOG_LEVEL: Joi.string().optional().valid('simple', 'verbose').default('simple'),
     OAUTH_ENABLED: Joi.bool().valid(true, false).default(false),
+    OAUTH_AUTO_REGISTER: Joi.bool().valid(true, false).default(true),
     OAUTH_ISSUER_URL: WHEN_OAUTH_ENABLED.default('openid email profile'),
     OAUTH_SCOPE: Joi.string().optional(),
     OAUTH_CLIENT_ID: WHEN_OAUTH_ENABLED,
