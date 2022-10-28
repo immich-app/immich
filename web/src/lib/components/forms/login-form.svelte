@@ -84,5 +84,14 @@
 				>Login</button
 			>
 		</div>
+		<div class="flex w-full">
+			<a href="/api/auth/oauth-authorize" class="w-full flex">
+				<button
+					type="button"
+					class="m-4 p-2 bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80 hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full font-semibold"
+					>OAuth Login</button
+				>
+			</a>
+		</div>
 	</form>
 </div>

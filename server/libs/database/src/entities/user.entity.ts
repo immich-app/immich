@@ -17,10 +17,10 @@ export class UserEntity {
   @Column()
   email!: string;
 
-  @Column({ select: false })
+  @Column({ select: false, nullable: true })
   password?: string;
 
-  @Column({ select: false })
+  @Column({ select: false, nullable: true })
   salt?: string;
 
   @Column({ default: '' })

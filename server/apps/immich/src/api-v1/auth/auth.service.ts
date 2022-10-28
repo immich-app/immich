@@ -1,28 +1,29 @@
+import { UserEntity } from '@app/database/entities/user.entity';
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { UserEntity } from '@app/database/entities/user.entity';
-import { LoginCredentialDto } from './dto/login-credential.dto';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { JwtPayloadDto } from './dto/jwt-payload.dto';
+import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import * as bcrypt from 'bcrypt';
-import { LoginResponseDto, mapLoginResponse } from './response-dto/login-response.dto';
+import { OAuthProfile } from './oauth.service';
 import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/admin-signup-response.dto';
+import { LoginResponseDto, mapLoginResponse } from './response-dto/login-response.dto';
 
 @Injectable()
 export class AuthService {
+  logger = new Logger(AuthService.name);
+
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     private immichJwtService: ImmichJwtService,
   ) {}
 
-  private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity | null> {
-    const user = await this.userRepository.findOne({
-      where: {
-        email: loginCredential.email,
-      },
+  private async getUserByEmail(email: string) {
+    return await this.userRepository.findOne({
+      where: { email },
       select: [
         'id',
         'email',
@@ -35,33 +36,48 @@ export class AuthService {
         'shouldChangePassword',
       ],
     });
-
-    if (!user) {
-      return null;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const isAuthenticated = await this.validatePassword(user.password!, loginCredential.password, user.salt!);
-
-    if (isAuthenticated) {
-      return user;
-    }
-
-    return null;
   }
 
-  public async login(loginCredential: LoginCredentialDto, clientIp: string): Promise<LoginResponseDto> {
-    const validatedUser = await this.validateUser(loginCredential);
+  private async login(user: UserEntity) {
+    const payload = new JwtPayloadDto(user.id, user.email);
+    const accessToken = await this.immichJwtService.generateToken(payload);
 
-    if (!validatedUser) {
+    return mapLoginResponse(user, accessToken);
+  }
+
+  public async loginWithCredentials(loginCredential: LoginCredentialDto, clientIp: string): Promise<LoginResponseDto> {
+    let user = await this.getUserByEmail(loginCredential.email);
+
+    if (user) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const isAuthenticated = await this.validatePassword(user.password!, loginCredential.password, user.salt!);
+      if (isAuthenticated) {
+        user = null;
+      }
+    }
+
+    if (!user) {
       Logger.warn(`Failed login attempt for user ${loginCredential.email} from ip address ${clientIp}`);
       throw new BadRequestException('Incorrect email or password');
     }
 
-    const payload = new JwtPayloadDto(validatedUser.id, validatedUser.email);
-    const accessToken = await this.immichJwtService.generateToken(payload);
+    return this.login(user);
+  }
 
-    return mapLoginResponse(validatedUser, accessToken);
+  public async loginWithOAuth(profile: OAuthProfile): Promise<LoginResponseDto> {
+    this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
+    let user = await this.getUserByEmail(profile.email);
+
+    if (!user) {
+      this.logger.log(`Registering new user: ${profile.email}`);
+      user = await this.userRepository.save({
+        firstName: profile.given_name || '',
+        lastName: profile.family_name || '',
+        email: profile.email,
+      });
+    }
+
+    return this.login(user);
   }
 
   public getCookieWithJwtToken(authLoginInfo: LoginResponseDto) {

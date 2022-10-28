@@ -7,10 +7,11 @@ import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { ImmichJwtModule } from '../../modules/immich-jwt/immich-jwt.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '../../config/jwt.config';
+import { OAuthService } from './oauth.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]), ImmichJwtModule, JwtModule.register(jwtConfig)],
   controllers: [AuthController],
-  providers: [AuthService, ImmichJwtService],
+  providers: [AuthService, OAuthService, ImmichJwtService],
 })
 export class AuthModule {}
