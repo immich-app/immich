@@ -1,8 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AddAssetsDto } from './dto/add-assets.dto';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { AlbumEntity } from '../../../../../libs/database/src/entities/album.entity';
+import { AlbumEntity } from '@app/database/entities/album.entity';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
@@ -11,6 +10,8 @@ import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from './response
 import { ALBUM_REPOSITORY, IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
+import { AddAssetsResponseDto } from "./response-dto/add-assets-response.dto";
+import {AddAssetsDto} from "./dto/add-assets.dto";
 
 @Injectable()
 export class AlbumService {
@@ -108,10 +109,15 @@ export class AlbumService {
     authUser: AuthUserDto,
     addAssetsDto: AddAssetsDto,
     albumId: string,
-  ): Promise<AlbumResponseDto> {
+  ): Promise<AddAssetsResponseDto> {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-    const updatedAlbum = await this._albumRepository.addAssets(album, addAssetsDto);
-    return mapAlbum(updatedAlbum);
+    const result = await this._albumRepository.addAssets(album, addAssetsDto);
+    const newAlbum = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
+
+    return {
+      ...result,
+      album: mapAlbum(newAlbum)
+    };
   }
 
   async updateAlbumInfo(

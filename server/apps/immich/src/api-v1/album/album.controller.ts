@@ -24,6 +24,7 @@ import { GetAlbumsDto } from './dto/get-albums.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
+import {AddAssetsResponseDto} from "./response-dto/add-assets-response.dto";
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
 @Authenticated()
@@ -57,7 +58,7 @@ export class AlbumController {
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) addAssetsDto: AddAssetsDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
-  ) {
+  ) : Promise<AddAssetsResponseDto> {
     return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId);
   }
 
