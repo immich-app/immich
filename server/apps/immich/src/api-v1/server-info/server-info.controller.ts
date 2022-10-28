@@ -6,8 +6,7 @@ import { ServerPingResponse } from './response-dto/server-ping-response.dto';
 import { ServerVersionReponseDto } from './response-dto/server-version-response.dto';
 import { ServerInfoResponseDto } from './response-dto/server-info-response.dto';
 import { ServerStatsResponseDto } from './response-dto/server-stats-response.dto';
-import { Authenticated } from '../../modules/immich-jwt/guards/jwt-auth.guard';
-import { Admin } from '../../middlewares/admin-role-guard.middleware';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 
 @ApiTags('Server Info')
 @Controller('server-info')
@@ -29,8 +28,7 @@ export class ServerInfoController {
     return serverVersion;
   }
 
-  @Authenticated()
-  @Admin()
+  @Authenticated({ admin: true })
   @Get('/stats')
   async getStats(): Promise<ServerStatsResponseDto> {
     return await this.serverInfoService.getStats();

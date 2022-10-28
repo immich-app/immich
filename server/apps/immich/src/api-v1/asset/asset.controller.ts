@@ -16,7 +16,7 @@ import {
   UploadedFile,
   Header,
 } from '@nestjs/common';
-import { Authenticated } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';

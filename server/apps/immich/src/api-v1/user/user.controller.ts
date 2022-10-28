@@ -13,10 +13,9 @@ import {
   ParseBoolPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Authenticated } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Admin } from '../../middlewares/admin-role-guard.middleware';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { profileImageUploadOption } from '../../config/profile-image-upload.config';
@@ -54,9 +53,8 @@ export class UserController {
     return await this.userService.getUserInfo(authUser);
   }
 
-  @Authenticated()
+  @Authenticated({ admin: true })
   @ApiBearerAuth()
-  @Admin()
   @Post()
   async createUser(
     @Body(new ValidationPipe({ transform: true })) createUserDto: CreateUserDto,
