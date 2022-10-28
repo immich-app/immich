@@ -1,16 +1,14 @@
-import { Controller, Get, Body, UseGuards, ValidationPipe, Put, Param } from '@nestjs/common';
+import { Controller, Get, Body, ValidationPipe, Put, Param } from '@nestjs/common';
 import { JobService } from './job.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
-import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
 import { GetJobDto } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 
 import { JobCommandDto } from './dto/job-command.dto';
 
-@UseGuards(JwtAuthGuard)
-@UseGuards(AdminRolesGuard)
+@Authenticated({ admin: true })
 @ApiTags('Job')
 @ApiBearerAuth()
 @Controller('jobs')

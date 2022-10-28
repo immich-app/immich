@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
   ValidationPipe,
   ParseUUIDPipe,
   Put,
@@ -15,7 +14,7 @@ import {
 import { ParseMeUUIDPipe } from '../validation/parse-me-uuid-pipe';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
@@ -27,7 +26,7 @@ import { AlbumResponseDto } from './response-dto/album-response.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
-@UseGuards(JwtAuthGuard)
+@Authenticated()
 @ApiBearerAuth()
 @ApiTags('Album')
 @Controller('album')

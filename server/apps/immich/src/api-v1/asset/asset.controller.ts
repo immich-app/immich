@@ -3,7 +3,6 @@ import {
   Post,
   UseInterceptors,
   Body,
-  UseGuards,
   Get,
   Param,
   ValidationPipe,
@@ -17,7 +16,7 @@ import {
   UploadedFile,
   Header,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
@@ -52,7 +51,7 @@ import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-use
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 
-@UseGuards(JwtAuthGuard)
+@Authenticated()
 @ApiBearerAuth()
 @ApiTags('Asset')
 @Controller('asset')

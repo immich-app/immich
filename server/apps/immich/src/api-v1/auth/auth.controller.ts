@@ -1,7 +1,7 @@
-import { Body, Controller, Post, Res, UseGuards, ValidationPipe, Ip } from '@nestjs/common';
+import { Body, Controller, Post, Res, ValidationPipe, Ip } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AuthService } from './auth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { LoginResponseDto } from './response-dto/login-response.dto';
@@ -42,7 +42,7 @@ export class AuthController {
     return await this.authService.adminSignUp(signUpCredential);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Authenticated()
   @ApiBearerAuth()
   @Post('/validateToken')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
