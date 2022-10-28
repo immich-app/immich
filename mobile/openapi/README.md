@@ -118,6 +118,7 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [AddAssetsDto](doc//AddAssetsDto.md)
+ - [AddAssetsResponseDto](doc//AddAssetsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)

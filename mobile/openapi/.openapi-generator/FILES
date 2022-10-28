@@ -3,6 +3,7 @@
 README.md
 analysis_options.yaml
 doc/AddAssetsDto.md
+doc/AddAssetsResponseDto.md
 doc/AddUsersDto.md
 doc/AdminSignupResponseDto.md
 doc/AlbumApi.md
@@ -82,6 +83,7 @@ lib/auth/http_basic_auth.dart
 lib/auth/http_bearer_auth.dart
 lib/auth/oauth.dart
 lib/model/add_assets_dto.dart
+lib/model/add_assets_response_dto.dart
 lib/model/add_users_dto.dart
 lib/model/admin_signup_response_dto.dart
 lib/model/album_count_response_dto.dart
@@ -137,5 +139,3 @@ lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 pubspec.yaml
-test/check_existing_assets_dto_test.dart
-test/check_existing_assets_response_dto_test.dart

@@ -2,3 +2,5 @@
 .vscode/*
 !.vscode/launch.json
 .idea
+
+docker/upload

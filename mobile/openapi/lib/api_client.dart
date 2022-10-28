@@ -194,6 +194,8 @@ class ApiClient {
           return value is DateTime ? value : DateTime.tryParse(value);
         case 'AddAssetsDto':
           return AddAssetsDto.fromJson(value);
+        case 'AddAssetsResponseDto':
+          return AddAssetsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
         case 'AdminSignupResponseDto':
