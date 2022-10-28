@@ -215,8 +215,10 @@
 			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
 				assetIds: assets.map((a) => a.id)
 			});
-			album = data;
 
+			if (data.album) {
+				album = data.album;
+			}
 			isShowAssetSelection = false;
 		} catch (e) {
 			console.error('Error [createAlbumHandler] ', e);
@@ -233,7 +235,10 @@
 			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
 				assetIds: assetIds
 			});
-			album = data;
+
+			if (data.album) {
+				album = data.album;
+			}
 		} catch (e) {
 			console.error('Error [assetUploadedToAlbumHandler] ', e);
 			notificationController.show({

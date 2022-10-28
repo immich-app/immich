@@ -1,10 +1,11 @@
 import { AlbumService } from './album.service';
-import { IAlbumRepository } from './album-repository';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity } from '@app/database/entities/album.entity';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
 import { IAssetRepository } from '../asset/asset-repository';
+import {AddAssetsResponseDto} from "./response-dto/add-assets-response.dto";
+import {IAlbumRepository} from "./album-repository";
 
 describe('Album service', () => {
   let sut: AlbumService;
@@ -329,10 +330,16 @@ describe('Album service', () => {
 
   it('adds assets to owned album', async () => {
     const albumEntity = _getOwnedAlbum();
+
+    const albumResponse: AddAssetsResponseDto = {
+      alreadyInAlbum: [],
+      successfullyAdded: 1
+    };
+
     const albumId = albumEntity.id;
 
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
     const result = await sut.addAssetsToAlbum(
       authUser,
@@ -340,18 +347,24 @@ describe('Album service', () => {
         assetIds: ['1'],
       },
       albumId,
-    );
+    ) as AddAssetsResponseDto;
 
     // TODO: stub and expect album rendered
-    expect(result.id).toEqual(albumId);
+    expect(result.album?.id).toEqual(albumId);
   });
 
   it('adds assets to shared album (shared with auth user)', async () => {
     const albumEntity = _getSharedWithAuthUserAlbum();
+
+    const albumResponse: AddAssetsResponseDto = {
+      alreadyInAlbum: [],
+      successfullyAdded: 1
+    };
+
     const albumId = albumEntity.id;
 
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
     const result = await sut.addAssetsToAlbum(
       authUser,
@@ -359,18 +372,24 @@ describe('Album service', () => {
         assetIds: ['1'],
       },
       albumId,
-    );
+    ) as AddAssetsResponseDto;
 
     // TODO: stub and expect album rendered
-    expect(result.id).toEqual(albumId);
+    expect(result.album?.id).toEqual(albumId);
   });
 
   it('prevents adding assets to a not owned / shared album', async () => {
     const albumEntity = _getNotOwnedNotSharedAlbum();
+
+    const albumResponse: AddAssetsResponseDto = {
+      alreadyInAlbum: [],
+      successfullyAdded: 1
+    };
+
     const albumId = albumEntity.id;
 
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
     expect(
       sut.addAssetsToAlbum(
@@ -425,10 +444,16 @@ describe('Album service', () => {
 
   it('prevents removing assets from a not owned / shared album', async () => {
     const albumEntity = _getNotOwnedNotSharedAlbum();
+
+    const albumResponse: AddAssetsResponseDto = {
+      alreadyInAlbum: [],
+      successfullyAdded: 1
+    };
+
     const albumId = albumEntity.id;
 
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
+    albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
     expect(
       sut.removeAssetsFromAlbum(

@@ -51,7 +51,7 @@ export class AuthService {
     if (user) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const isAuthenticated = await this.validatePassword(user.password!, loginCredential.password, user.salt!);
-      if (isAuthenticated) {
+      if (!isAuthenticated) {
         user = null;
       }
     }

@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   immich-server:
@@ -7,11 +7,13 @@ services:
       context: ../server
       dockerfile: Dockerfile
       target: builder
-    command: npm run start:dev immich
+    command: npm run start:debug immich
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
+    ports:
+      - 9230:9230
     env_file:
       - .env
     environment:

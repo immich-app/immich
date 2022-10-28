@@ -37,6 +37,31 @@ export interface AddAssetsDto {
 /**
  * 
  * @export
+ * @interface AddAssetsResponseDto
+ */
+export interface AddAssetsResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof AddAssetsResponseDto
+     */
+    'successfullyAdded': number;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof AddAssetsResponseDto
+     */
+    'alreadyInAlbum': Array<string>;
+    /**
+     * 
+     * @type {AlbumResponseDto}
+     * @memberof AddAssetsResponseDto
+     */
+    'album'?: AlbumResponseDto;
+}
+/**
+ * 
+ * @export
  * @interface AddUsersDto
  */
 export interface AddUsersDto {
@@ -1990,7 +2015,7 @@ export const AlbumApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
+        async addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AddAssetsResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToAlbum(albumId, addAssetsDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -2105,7 +2130,7 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, options?: any): AxiosPromise<AlbumResponseDto> {
+        addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, options?: any): AxiosPromise<AddAssetsResponseDto> {
             return localVarFp.addAssetsToAlbum(albumId, addAssetsDto, options).then((request) => request(axios, basePath));
         },
         /**
