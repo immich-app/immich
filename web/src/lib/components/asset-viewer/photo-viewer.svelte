@@ -4,15 +4,23 @@
 	import { onMount } from 'svelte';
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import { api, AssetResponseDto } from '@api';
+	import Keydown from 'svelte-keydown';
 
 	export let assetId: string;
 	export let deviceId: string;
 
 	let assetInfo: AssetResponseDto;
+	let assetData: string;
+
+	let copyImageToClipboard : (src: string) => Promise<Blob>;
 
 	onMount(async () => {
 		const { data } = await api.assetApi.getAssetById(assetId);
 		assetInfo = data;
+
+		//Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
+		const module = await import('copy-image-clipboard')
+		copyImageToClipboard = module.copyImageToClipboard;
 	});
 
 	const loadAssetData = async () => {
@@ -31,13 +39,21 @@
 				return;
 			}
 
-			const assetData = URL.createObjectURL(data);
+			assetData = URL.createObjectURL(data);
 			return assetData;
 		} catch {
 			// Do nothing
 		}
 	};
+
+	const handleCopy = async (keyEvent: CustomEvent<string>) => {
+		if (keyEvent.detail == 'Control-c' || keyEvent.detail == 'Meta-c') {
+			await copyImageToClipboard(assetData);
+		}
+	};
 </script>
+
+<Keydown on:combo={handleCopy} />
 
 <div
 	transition:fade={{ duration: 150 }}
