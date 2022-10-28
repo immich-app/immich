@@ -9,7 +9,7 @@ const config = {
   title: "Immich Documentation",
   tagline:
     "Self-hosted photo and video backup solution directly from your mobile phone",
-  url: "https://docs.immich.app",
+  url: "https://documentation.immich.app",
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
