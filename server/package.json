@@ -11,7 +11,7 @@
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
+    "start:debug": "nest start --debug 0.0.0.0:9230 --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{apps,libs}/**/*.ts\" --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
