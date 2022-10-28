@@ -3703,7 +3703,7 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @throws {RequiredError}
          */
         oauthAuthorize: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/auth/oauth/authorize`;
+            const localVarPath = `/auth/oauth-authorize`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3732,7 +3732,7 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @throws {RequiredError}
          */
         oauthAuthorizeCallback: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/auth/callback`;
+            const localVarPath = `/auth/oauth-callback`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;

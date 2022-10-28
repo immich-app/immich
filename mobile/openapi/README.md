@@ -95,6 +95,8 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
+*AuthenticationApi* | [**oauthAuthorize**](doc//AuthenticationApi.md#oauthauthorize) | **GET** /auth/oauth-authorize | 
+*AuthenticationApi* | [**oauthAuthorizeCallback**](doc//AuthenticationApi.md#oauthauthorizecallback) | **GET** /auth/oauth-callback | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeviceInfoApi* | [**createDeviceInfo**](doc//DeviceInfoApi.md#createdeviceinfo) | **POST** /device-info | 
 *DeviceInfoApi* | [**updateDeviceInfo**](doc//DeviceInfoApi.md#updatedeviceinfo) | **PATCH** /device-info | 
