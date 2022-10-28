@@ -235,7 +235,10 @@
 			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
 				assetIds: assetIds
 			});
-			album = data;
+
+			if (data.album) {
+				album = data.album;
+			}
 		} catch (e) {
 			console.error('Error [assetUploadedToAlbumHandler] ', e);
 			notificationController.show({
