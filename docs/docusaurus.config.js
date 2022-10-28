@@ -9,7 +9,7 @@ const config = {
   title: "Immich Documentation",
   tagline:
     "Self-hosted photo and video backup solution directly from your mobile phone",
-  url: "https://doc.immich.app",
+  url: "https://docs.immich.app",
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -19,7 +19,7 @@ const config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: "immich-app", // Usually your GitHub org/user name.
   projectName: "immich", // Usually your repo name.
-
+  deploymentBranch: "main",
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
   // to replace "en" with "zh-Hans".
@@ -70,15 +70,13 @@ const config = {
         },
         items: [
           {
-            type: "doc",
-            docId: "overview/introduction",
-            to: "overview/introduction",
+            to: "/docs/overview/introduction",
             position: "right",
             label: "Documentation",
           },
           { to: "/blog", label: "Blog", position: "right" },
           {
-            href: "https://github.com/facebook/docusaurus",
+            href: "https://github.com/immich-app/immich",
             label: "GitHub",
             position: "right",
           },
@@ -88,11 +86,15 @@ const config = {
         style: "dark",
         links: [
           {
-            title: "Docs",
+            title: "Overview",
             items: [
               {
-                label: "Tutorial",
-                to: "/docs/intro",
+                label: "Welcome",
+                to: "/docs/overview/introduction",
+              },
+              {
+                label: "Installation",
+                to: "/docs/installation/requirements",
               },
             ],
           },
@@ -101,7 +103,7 @@ const config = {
             items: [
               {
                 label: "Discord",
-                href: "https://discordapp.com/invite/docusaurus",
+                href: "https://discord.com/invite/D8JsnBEuKb",
               },
             ],
           },
