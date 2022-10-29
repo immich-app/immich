@@ -109,9 +109,13 @@
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
 		{@const dateGroupTitle = moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
 		<!-- Asset Group By Date -->
+
 		<div
 			class="flex flex-col"
-			on:mouseenter={() => (isMouseOverGroup = true)}
+			on:mouseenter={() => {
+				isMouseOverGroup = true;
+				assetMouseEventHandler(dateGroupTitle);
+			}}
 			on:mouseleave={() => (isMouseOverGroup = false)}
 		>
 			<!-- Date group title -->
