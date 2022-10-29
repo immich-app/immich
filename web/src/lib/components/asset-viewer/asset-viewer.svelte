@@ -31,6 +31,8 @@
 
 	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
+	let photoViewer: PhotoViewer;
+
 	onMount(() => {
 		document.addEventListener('keydown', onKeyboardPress);
 	});
@@ -146,6 +148,8 @@
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
 			on:download={downloadFile}
+			on:copy={() => photoViewer.doCopy()}
+			showCopyButton={asset.type === AssetTypeEnum.Image}
 		/>
 	</div>
 
@@ -174,7 +178,7 @@
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
 			{#if asset.type === AssetTypeEnum.Image}
-				<PhotoViewer assetId={asset.id} deviceId={asset.deviceId} on:close={closeViewer} />
+				<PhotoViewer bind:this={photoViewer} assetId={asset.id} deviceId={asset.deviceId} on:close={closeViewer} />
 			{:else}
 				<VideoViewer assetId={asset.id} on:close={closeViewer} />
 			{/if}

@@ -46,14 +46,18 @@
 		}
 	};
 
-	const handleCopy = async (keyEvent: CustomEvent<string>) => {
+	const handleKeypress = async (keyEvent: CustomEvent<string>) => {
 		if (keyEvent.detail == 'Control-c' || keyEvent.detail == 'Meta-c') {
-			await copyImageToClipboard(assetData);
+			await doCopy();
 		}
 	};
+
+	export const doCopy = async () => {
+		await copyImageToClipboard(assetData);
+	}
 </script>
 
-<Keydown on:combo={handleCopy} />
+<Keydown on:combo={handleKeypress} />
 
 <div
 	transition:fade={{ duration: 150 }}
