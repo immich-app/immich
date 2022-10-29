@@ -12,14 +12,14 @@
 	let assetInfo: AssetResponseDto;
 	let assetData: string;
 
-	let copyImageToClipboard : (src: string) => Promise<Blob>;
+	let copyImageToClipboard: (src: string) => Promise<Blob>;
 
 	onMount(async () => {
 		const { data } = await api.assetApi.getAssetById(assetId);
 		assetInfo = data;
 
 		//Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
-		const module = await import('copy-image-clipboard')
+		const module = await import('copy-image-clipboard');
 		copyImageToClipboard = module.copyImageToClipboard;
 	});
 
