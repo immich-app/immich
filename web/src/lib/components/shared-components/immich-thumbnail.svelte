@@ -87,6 +87,10 @@
 
 		isThumbnailVideoPlaying = false;
 		videoProgress = '00:00';
+
+		if (videoPlayerNode) {
+			videoPlayerNode.pause();
+		}
 	};
 
 	const handleCanPlay = (ev: Event) => {
