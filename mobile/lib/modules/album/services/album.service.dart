@@ -55,7 +55,7 @@ class AlbumService {
     }
   }
 
-  Future<bool> addAdditionalAssetToAlbum(
+  Future<AddAssetsResponseDto?> addAdditionalAssetToAlbum(
     Set<AssetResponseDto> assets,
     String albumId,
   ) async {
@@ -64,10 +64,10 @@ class AlbumService {
         albumId,
         AddAssetsDto(assetIds: assets.map((asset) => asset.id).toList()),
       );
-      return result != null;
+      return result;
     } catch (e) {
       debugPrint("Error addAdditionalAssetToAlbum  ${e.toString()}");
-      return false;
+      return null;
     }
   }
 
