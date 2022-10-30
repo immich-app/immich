@@ -151,13 +151,13 @@
 					ids: [asset.id]
 				});
 
+				navigateAssetForward();
+
 				for (const asset of deletedAssets) {
 					if (asset.status == 'SUCCESS') {
 						assetStore.removeAsset(asset.id);
 					}
 				}
-
-				navigateAssetForward();
 			}
 		} catch (e) {
 			notificationController.show({
