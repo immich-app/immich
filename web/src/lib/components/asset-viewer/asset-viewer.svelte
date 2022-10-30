@@ -136,7 +136,7 @@
 		}
 	};
 
-	const deleteFile = async () => {
+	const deleteAsset = async () => {
 		try {
 			if (
 				window.confirm(
@@ -168,7 +168,7 @@
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
 			on:download={downloadFile}
-			on:delete={deleteFile}
+			on:delete={deleteAsset}
 		/>
 	</div>
 
