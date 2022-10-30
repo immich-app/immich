@@ -35,7 +35,10 @@ export interface IAssetRepository {
   getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
   getAssetWithNoEXIF(): Promise<AssetEntity[]>;
   getAssetWithNoSmartInfo(): Promise<AssetEntity[]>;
-  getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<CheckExistingAssetsResponseDto>;
+  getExistingAssets(
+    userId: string,
+    checkDuplicateAssetDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto>;
 }
 
 export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
@@ -118,6 +121,7 @@ export class AssetRepository implements IAssetRepository {
         .select(`COUNT(asset.id)::int`, 'count')
         .addSelect(`date_trunc('month', "createdAt")`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
+        .andWhere('asset.resizePath is not NULL')
         .groupBy(`date_trunc('month', "createdAt")`)
         .orderBy(`date_trunc('month', "createdAt")`, 'DESC')
         .getRawMany();
@@ -127,6 +131,7 @@ export class AssetRepository implements IAssetRepository {
         .select(`COUNT(asset.id)::int`, 'count')
         .addSelect(`date_trunc('day', "createdAt")`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
+        .andWhere('asset.resizePath is not NULL')
         .groupBy(`date_trunc('day', "createdAt")`)
         .orderBy(`date_trunc('day', "createdAt")`, 'DESC')
         .getRawMany();
@@ -284,16 +289,18 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  async getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<CheckExistingAssetsResponseDto> {
+  async getExistingAssets(
+    userId: string,
+    checkDuplicateAssetDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
     const existingAssets = await this.assetRepository.find({
-      select: {deviceAssetId: true},
+      select: { deviceAssetId: true },
       where: {
         deviceAssetId: In(checkDuplicateAssetDto.deviceAssetIds),
         deviceId: checkDuplicateAssetDto.deviceId,
         userId,
       },
     });
-    return new CheckExistingAssetsResponseDto(existingAssets.map(a => a.deviceAssetId));
+    return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
   }
-
 }
