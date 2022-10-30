@@ -313,15 +313,6 @@
 
 	const downloadAlbum = async () => {
 		try {
-			await api.albumApi.downloadArchive(album.id);
-		} catch (e) {
-			console.error('Error [setAlbumThumbnailHandler] ', e);
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error setting album thumbnail, check console for more details'
-			});
-		}
-		try {
 			const fileName = album.albumName + '.zip';
 
 			// If assets is already download -> return;
