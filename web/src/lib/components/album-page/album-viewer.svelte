@@ -16,6 +16,8 @@
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
+	import { downloadAssets } from '$lib/stores/download';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
@@ -309,6 +311,53 @@
 		}
 	};
 
+	const downloadAlbum = async () => {
+		try {
+			const fileName = album.albumName + '.zip';
+
+			// If assets is already download -> return;
+			if ($downloadAssets[fileName]) {
+				return;
+			}
+
+			$downloadAssets[fileName] = 0;
+
+			const { data, status } = await api.albumApi.downloadArchive(album.id, {
+				responseType: 'blob'
+			});
+
+			if (!(data instanceof Blob)) {
+				return;
+			}
+
+			if (status === 200) {
+				const fileUrl = URL.createObjectURL(data);
+				const anchor = document.createElement('a');
+				anchor.href = fileUrl;
+				anchor.download = fileName;
+
+				document.body.appendChild(anchor);
+				anchor.click();
+				document.body.removeChild(anchor);
+
+				URL.revokeObjectURL(fileUrl);
+
+				// Remove item from download list
+				setTimeout(() => {
+					const copy = $downloadAssets;
+					delete copy[fileName];
+					$downloadAssets = copy;
+				}, 2000);
+			}
+		} catch (e) {
+			console.error('Error downloading file ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error downloading file, check console for more details.'
+			});
+		}
+	};
+
 	const showAlbumOptionsMenu = (event: CustomEvent) => {
 		contextMenuPosition = {
 			x: event.detail.mouseEvent.x,
@@ -381,6 +430,12 @@
 						/>
 						<CircleIconButton title="Remove album" on:click={removeAlbum} logo={DeleteOutline} />
 					{/if}
+
+					<CircleIconButton
+						title="Download"
+						on:click={() => downloadAlbum()}
+						logo={FolderDownloadOutline}
+					/>
 
 					<CircleIconButton
 						title="Album options"
