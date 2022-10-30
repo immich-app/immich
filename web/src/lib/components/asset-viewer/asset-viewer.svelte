@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import AsserViewerNavBar from './asser-viewer-nav-bar.svelte';
+	import AsserViewerNavBar from './asset-viewer-nav-bar.svelte';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import PhotoViewer from './photo-viewer.svelte';
@@ -135,6 +135,28 @@
 			});
 		}
 	};
+
+	const deleteFile = async () => {
+		try {
+			if (
+				window.confirm(
+					`Caution! Are you sure you want to delete the asset? This step also deletes the asset in the album(s) to which it belongs. You can not undo this action!`
+				)
+			) {
+				await api.assetApi.deleteAsset({
+					ids: [asset.id]
+				});
+
+				navigateAssetForward();
+			}
+		} catch (e) {
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error deleting assets, check console for more details'
+			});
+			console.error('Error deleteSelectedAssetHandler', e);
+		}
+	};
 </script>
 
 <section
@@ -146,6 +168,7 @@
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
 			on:download={downloadFile}
+			on:delete={deleteFile}
 		/>
 	</div>
 
