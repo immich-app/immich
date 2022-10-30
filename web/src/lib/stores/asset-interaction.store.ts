@@ -22,7 +22,7 @@ function createAssetInteractionStore() {
 	let _viewingAssetStoreState: AssetResponseDto;
 	let _selectedAssets: Set<AssetResponseDto>;
 	let _selectedGroup: Set<string>;
-	let _assetsInAblums: AssetResponseDto[];
+	let _assetsInAlbums: AssetResponseDto[];
 	let savedAssetLength = 0;
 	let assetSortedByDate: AssetResponseDto[] = [];
 
@@ -44,7 +44,7 @@ function createAssetInteractionStore() {
 	});
 
 	assetsInAlbumStoreState.subscribe((assets) => {
-		_assetsInAblums = assets;
+		_assetsInAlbums = assets;
 	});
 
 	// Methods
@@ -95,15 +95,17 @@ function createAssetInteractionStore() {
 		}
 
 		const nextAsset = assetSortedByDate[nextIndex];
-		setViewingAsset(nextAsset);
+		if (nextAsset) {
+			setViewingAsset(nextAsset);
+		}
 	};
 
 	/**
 	 * Multiselect
 	 */
 	const addAssetToMultiselectGroup = (asset: AssetResponseDto) => {
-		// Not select if in album alreaady
-		if (_assetsInAblums.find((a) => a.id === asset.id)) {
+		// Not select if in album already
+		if (_assetsInAlbums.find((a) => a.id === asset.id)) {
 			return;
 		}
 
@@ -129,12 +131,13 @@ function createAssetInteractionStore() {
 	const clearMultiselect = () => {
 		_selectedAssets.clear();
 		_selectedGroup.clear();
-		_assetsInAblums = [];
+		_assetsInAlbums = [];
 
 		selectedAssets.set(_selectedAssets);
 		selectedGroup.set(_selectedGroup);
-		assetsInAlbumStoreState.set(_assetsInAblums);
+		assetsInAlbumStoreState.set(_assetsInAlbums);
 	};
+
 	return {
 		setViewingAsset,
 		setIsViewingAsset,
