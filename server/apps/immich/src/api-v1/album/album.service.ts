@@ -22,7 +22,6 @@ import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { Response as Res } from 'express';
 import archiver from 'archiver';
-import { createReadStream } from 'fs';
 
 @Injectable()
 export class AlbumService {
@@ -153,14 +152,12 @@ export class AlbumService {
   async downloadArchive(authUser: AuthUserDto, albumId: string, res: Res) {
     try {
       const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-      const archive = archiver('zip');
+      const archive = archiver('zip', { store: true });
       res.attachment(`${album.albumName}.zip`);
       archive.pipe(res);
       album.assets?.forEach((a) => {
         const name = `${a.assetInfo.exifInfo?.imageName || a.assetInfo.id}.${a.assetInfo.originalPath.split('.')[1]}`;
-        archive.append(createReadStream(a.assetInfo.originalPath), {
-          name,
-        });
+        archive.file(a.assetInfo.originalPath, { name });
       });
       return archive.finalize();
     } catch (e) {
