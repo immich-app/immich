@@ -13,6 +13,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import { assetStore } from '$lib/stores/assets.store';
 
 	export let asset: AssetResponseDto;
 	$: {
@@ -143,19 +144,25 @@
 		try {
 			if (
 				window.confirm(
-					`Caution! Are you sure you want to delete the asset? This step also deletes the asset in the album(s) to which it belongs. You can not undo this action!`
+					`Caution! Are you sure you want to delete this asset? This step also deletes this asset in the album(s) to which it belongs. You can not undo this action!`
 				)
 			) {
-				await api.assetApi.deleteAsset({
+				const { data: deletedAssets } = await api.assetApi.deleteAsset({
 					ids: [asset.id]
 				});
+
+				for (const asset of deletedAssets) {
+					if (asset.status == 'SUCCESS') {
+						assetStore.removeAsset(asset.id);
+					}
+				}
 
 				navigateAssetForward();
 			}
 		} catch (e) {
 			notificationController.show({
 				type: NotificationType.Error,
-				message: 'Error deleting assets, check console for more details'
+				message: 'Error deleting this asset, check console for more details'
 			});
 			console.error('Error deleteSelectedAssetHandler', e);
 		}
