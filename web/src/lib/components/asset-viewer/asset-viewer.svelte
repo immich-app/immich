@@ -44,6 +44,9 @@
 			case 'Escape':
 				closeViewer();
 				return;
+			case 'Delete':
+				deleteAsset();
+				return;
 			case 'i':
 				isShowDetail = !isShowDetail;
 				return;
