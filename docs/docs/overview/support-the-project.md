@@ -12,8 +12,8 @@ If you feel like this is the right cause and the app is something you are seeing
 
 ## Donation
 
-1. Monthly donation via [GitHub Sponsors](https://github.com/sponsors/alextran1502)
-2. One-time donation via [Github Sponsors](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502)
+* Monthly donation via [GitHub Sponsors](https://github.com/sponsors/alextran1502)
+* One-time donation via [Github Sponsors](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502)
 
 ## Contribution
 
