@@ -6,7 +6,7 @@ sidebar_position: 2
 
 Why the colorful flower, you asked?
 
-I really like Japanese culture, especially books, history, and food. The current logo is a spin-off of [the Oda clan's symbol](https://en.wikipedia.org/wiki/Oda_clan). 
+I really like the Japanese culture, especially books, history, and food. The current logo is a spin-off of [the Oda clan's symbol](https://en.wikipedia.org/wiki/Oda_clan). 
 
 ![Oda_emblem](https://user-images.githubusercontent.com/27055614/182044504-a5ed33a8-5640-42de-b359-18fdbee9fb90.svg)
 
