@@ -7,12 +7,52 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
+import 'package:photo_manager/photo_manager.dart';
+
+final imageFamily =
+    FutureProvider.family<Widget, AssetEntity?>((ref, entity) async {
+  if (entity != null) {
+    final bytes =
+        await entity.thumbnailDataWithSize(const ThumbnailSize.square(300));
+    if (bytes != null) {
+      return SizedBox(
+        width: 300,
+        height: 300,
+        child: Image.memory(
+          bytes,
+          width: 300,
+          height: 300,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+  }
+  return const SizedBox(
+    width: 300,
+    height: 300,
+  );
+  // final fb = FutureBuilder(
+  //   future: entity.thumbnailDataWithSize(const ThumbnailSize(200, 200)), //resolution of thumbnail
+  //   builder:
+  //       (BuildContext context, AsyncSnapshot<Uint8List?> snapshot) {
+  //     if (snapshot.connectionState == ConnectionState.done) {
+
+  //       return Image.memory(
+  //               snapshot.data!,
+  //               fit: BoxFit.cover,
+  //             );
+  //     } else {
+  //     return Container();
+  //     }
+  //   },
+  // )
+});
 
 class ThumbnailImage extends HookConsumerWidget {
-  final AssetResponseDto asset;
-  final List<AssetResponseDto> assetList;
+  final Asset asset;
+  final List<Asset> assetList;
   final bool showStorageIndicator;
   final bool useGrayBoxPlaceholder;
   final bool isSelected;
@@ -35,11 +75,12 @@ class ThumbnailImage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var box = Hive.box(userInfoBox);
-    var thumbnailRequestUrl = getThumbnailUrl(asset);
+    var thumbnailRequestUrl =
+        asset.isRemote ? getThumbnailUrl(asset.remote!) : '';
     var deviceId = ref.watch(authenticationProvider).deviceId;
+    final AsyncValue<Widget> image = ref.watch(imageFamily(asset.local));
 
-
-    Widget buildSelectionIcon(AssetResponseDto asset) {
+    Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
         return Icon(
           Icons.check_circle,
@@ -87,42 +128,55 @@ class ThumbnailImage extends HookConsumerWidget {
                       )
                     : const Border(),
               ),
-              child: CachedNetworkImage(
-                cacheKey: 'thumbnail-image-${asset.id}',
-                width: 300,
-                height: 300,
-                memCacheHeight: 200,
-                maxWidthDiskCache: 200,
-                maxHeightDiskCache: 200,
-                fit: BoxFit.cover,
-                imageUrl: thumbnailRequestUrl,
-                httpHeaders: {
-                  "Authorization": "Bearer ${box.get(accessTokenKey)}"
-                },
-                fadeInDuration: const Duration(milliseconds: 250),
-                progressIndicatorBuilder: (context, url, downloadProgress) {
-                  if (useGrayBoxPlaceholder) {
-                    return const DecoratedBox(
-                      decoration: BoxDecoration(color: Colors.grey),
-                    );
-                  }
-                  return Transform.scale(
-                    scale: 0.2,
-                    child: CircularProgressIndicator(
-                      value: downloadProgress.progress,
-                    ),
-                  );
-                },
-                errorWidget: (context, url, error) {
-                  debugPrint("Error getting thumbnail $url = $error");
-                  CachedNetworkImage.evictFromCache(thumbnailRequestUrl);
+              child: asset.isLocal
+                  ? image.when(
+                      data: (data) => data,
+                      error: (error, stackTrace) => const SizedBox(
+                        height: 300,
+                        width: 300,
+                      ),
+                      loading: () => const SizedBox(
+                        width: 300,
+                        height: 300,
+                      ),
+                    )
+                  : CachedNetworkImage(
+                      cacheKey: 'thumbnail-image-${asset.id}',
+                      width: 300,
+                      height: 300,
+                      memCacheHeight: 200,
+                      maxWidthDiskCache: 200,
+                      maxHeightDiskCache: 200,
+                      fit: BoxFit.cover,
+                      imageUrl: thumbnailRequestUrl,
+                      httpHeaders: {
+                        "Authorization": "Bearer ${box.get(accessTokenKey)}"
+                      },
+                      fadeInDuration: const Duration(milliseconds: 250),
+                      progressIndicatorBuilder:
+                          (context, url, downloadProgress) {
+                        if (useGrayBoxPlaceholder) {
+                          return const DecoratedBox(
+                            decoration: BoxDecoration(color: Colors.grey),
+                          );
+                        }
+                        return Transform.scale(
+                          scale: 0.2,
+                          child: CircularProgressIndicator(
+                            value: downloadProgress.progress,
+                          ),
+                        );
+                      },
+                      errorWidget: (context, url, error) {
+                        debugPrint("Error getting thumbnail $url = $error");
+                        CachedNetworkImage.evictFromCache(thumbnailRequestUrl);
 
-                  return Icon(
-                    Icons.image_not_supported_outlined,
-                    color: Theme.of(context).primaryColor,
-                  );
-                },
-              ),
+                        return Icon(
+                          Icons.image_not_supported_outlined,
+                          color: Theme.of(context).primaryColor,
+                        );
+                      },
+                    ),
             ),
             if (multiselectEnabled)
               Padding(
@@ -144,7 +198,7 @@ class ThumbnailImage extends HookConsumerWidget {
                   size: 18,
                 ),
               ),
-            if (asset.type != AssetTypeEnum.IMAGE)
+            if (!asset.isImage)
               Positioned(
                 top: 5,
                 right: 5,

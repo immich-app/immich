@@ -7,12 +7,12 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
 
 class AlbumViewerThumbnail extends HookConsumerWidget {
-  final AssetResponseDto asset;
-  final List<AssetResponseDto> assetList;
+  final Asset asset;
+  final List<Asset> assetList;
   final bool showStorageIndicator;
 
   const AlbumViewerThumbnail({
@@ -25,7 +25,8 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var box = Hive.box(userInfoBox);
-    var thumbnailRequestUrl = getThumbnailUrl(asset);
+    var thumbnailRequestUrl =
+        getThumbnailUrl(asset.remote!); // TODO error on local image
     var deviceId = ref.watch(authenticationProvider).deviceId;
     final selectedAssetsInAlbumViewer =
         ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;
@@ -167,7 +168,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         children: [
           _buildThumbnailImage(),
           if (showStorageIndicator) _buildAssetStoreLocationIcon(),
-          if (asset.type != AssetTypeEnum.IMAGE) _buildVideoLabel(),
+          if (!asset.isImage) _buildVideoLabel(),
           if (isMultiSelectionEnable) _buildAssetSelectionIcon(),
         ],
       ),

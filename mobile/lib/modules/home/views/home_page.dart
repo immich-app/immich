@@ -14,6 +14,7 @@ import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
@@ -31,7 +32,7 @@ class HomePage extends HookConsumerWidget {
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
 
-    final selection = useState(<AssetResponseDto>{});
+    final selection = useState(<Asset>{});
     final albums = ref.watch(albumProvider);
     final albumService = ref.watch(albumServiceProvider);
 
@@ -60,7 +61,7 @@ class HomePage extends HookConsumerWidget {
     Widget buildBody() {
       void selectionListener(
         bool multiselect,
-        Set<AssetResponseDto> selectedAssets,
+        Set<Asset> selectedAssets,
       ) {
         selectionEnabledHook.value = multiselect;
         selection.value = selectedAssets;

@@ -14,12 +14,12 @@ import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart'
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
-  late List<AssetResponseDto> assetList;
-  final AssetResponseDto asset;
+  late List<Asset> assetList;
+  final Asset asset;
 
   GalleryViewerPage({
     Key? key,
@@ -27,7 +27,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     required this.asset,
   }) : super(key: key);
 
-  AssetResponseDto? assetDetail;
+  Asset? assetDetail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -92,11 +92,13 @@ class GalleryViewerPage extends HookConsumerWidget {
         onMoreInfoPressed: () {
           showInfo();
         },
-        onDownloadPressed: () {
-          ref
-              .watch(imageViewerStateProvider.notifier)
-              .downloadAsset(assetList[indexOfAsset], context);
-        },
+        onDownloadPressed: assetList[indexOfAsset].isLocal
+            ? null
+            : () {
+                ref
+                    .watch(imageViewerStateProvider.notifier)
+                    .downloadAsset(assetList[indexOfAsset].remote!, context);
+              },
         onSharePressed: () {
           ref
               .watch(imageViewerStateProvider.notifier)
@@ -120,7 +122,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
             getAssetExif();
 
-            if (assetList[index].type == AssetTypeEnum.IMAGE) {
+            if (assetList[index].isImage) {
               return ImageViewerPage(
                 authToken: 'Bearer ${box.get(accessTokenKey)}',
                 isZoomedFunction: isZoomedMethod,

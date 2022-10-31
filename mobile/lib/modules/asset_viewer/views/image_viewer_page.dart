@@ -8,13 +8,14 @@ import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
 class ImageViewerPage extends HookConsumerWidget {
   final String heroTag;
-  final AssetResponseDto asset;
+  final Asset asset;
   final String authToken;
   final ValueNotifier<bool> isZoomedListener;
   final void Function() isZoomedFunction;
@@ -30,7 +31,7 @@ class ImageViewerPage extends HookConsumerWidget {
     required this.threeStageLoading,
   }) : super(key: key);
 
-  AssetResponseDto? assetDetail;
+  Asset? assetDetail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,11 +69,13 @@ class ImageViewerPage extends HookConsumerWidget {
           child: Hero(
             tag: heroTag,
             child: RemotePhotoView(
-              thumbnailUrl: getThumbnailUrl(asset),
+              asset: asset,
+              thumbnailUrl:
+                  asset.isRemote ? getThumbnailUrl(asset.remote!) : null,
               cacheKey: asset.id,
-              imageUrl: getImageUrl(asset),
-              previewUrl: threeStageLoading
-                  ? getThumbnailUrl(asset, type: ThumbnailFormat.JPEG)
+              imageUrl: asset.isRemote ? getImageUrl(asset.remote!) : null,
+              previewUrl: threeStageLoading && asset.isRemote
+                  ? getThumbnailUrl(asset.remote!, type: ThumbnailFormat.JPEG)
                   : null,
               authToken: authToken,
               isZoomedFunction: isZoomedFunction,

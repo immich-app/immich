@@ -6,14 +6,14 @@ import 'package:chewie/chewie.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:video_player/video_player.dart';
 
 // ignore: must_be_immutable
 class VideoViewerPage extends HookConsumerWidget {
   final String videoUrl;
-  final AssetResponseDto asset;
-  AssetResponseDto? assetDetail;
+  final Asset asset;
+  Asset? assetDetail;
 
   VideoViewerPage({Key? key, required this.videoUrl, required this.asset})
       : super(key: key);

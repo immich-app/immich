@@ -258,9 +258,7 @@ class TabControllerRoute extends PageRouteInfo<void> {
 /// [GalleryViewerPage]
 class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
   GalleryViewerRoute(
-      {Key? key,
-      required List<AssetResponseDto> assetList,
-      required AssetResponseDto asset})
+      {Key? key, required List<Asset> assetList, required Asset asset})
       : super(GalleryViewerRoute.name,
             path: '/gallery-viewer-page',
             args: GalleryViewerRouteArgs(
@@ -275,9 +273,9 @@ class GalleryViewerRouteArgs {
 
   final Key? key;
 
-  final List<AssetResponseDto> assetList;
+  final List<Asset> assetList;
 
-  final AssetResponseDto asset;
+  final Asset asset;
 
   @override
   String toString() {
@@ -291,7 +289,7 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
   ImageViewerRoute(
       {Key? key,
       required String heroTag,
-      required AssetResponseDto asset,
+      required Asset asset,
       required String authToken,
       required void Function() isZoomedFunction,
       required ValueNotifier<bool> isZoomedListener,
@@ -324,7 +322,7 @@ class ImageViewerRouteArgs {
 
   final String heroTag;
 
-  final AssetResponseDto asset;
+  final Asset asset;
 
   final String authToken;
 
@@ -343,8 +341,7 @@ class ImageViewerRouteArgs {
 /// generated route for
 /// [VideoViewerPage]
 class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
-  VideoViewerRoute(
-      {Key? key, required String videoUrl, required AssetResponseDto asset})
+  VideoViewerRoute({Key? key, required String videoUrl, required Asset asset})
       : super(VideoViewerRoute.name,
             path: '/video-viewer-page',
             args: VideoViewerRouteArgs(
@@ -361,7 +358,7 @@ class VideoViewerRouteArgs {
 
   final String videoUrl;
 
-  final AssetResponseDto asset;
+  final Asset asset;
 
   @override
   String toString() {
