@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
@@ -53,7 +54,6 @@ class HomePage extends HookConsumerWidget {
     }
 
     Widget buildBody() {
-
       void selectionListener(
         bool multiselect,
         Set<AssetResponseDto> selectedAssets,
@@ -89,6 +89,8 @@ class HomePage extends HookConsumerWidget {
         selectionEnabledHook.value = false;
       }
 
+      void onCreateNewAlbum() {}
+
       return SafeArea(
         bottom: !multiselectEnabled.state,
         top: !multiselectEnabled.state,
@@ -96,20 +98,14 @@ class HomePage extends HookConsumerWidget {
           children: [
             CustomScrollView(
               slivers: [
-                multiselectEnabled.state
-                    ? const SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: 70,
-                          child: null,
-                        ),
-                      )
-                    : ImmichSliverAppBar(
-                        onPopBack: reloadAllAsset,
-                      ),
+                if (!multiselectEnabled.state)
+                  ImmichSliverAppBar(
+                    onPopBack: reloadAllAsset,
+                  ),
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 60.0, bottom: 0.0),
+              padding: EdgeInsets.only(top: (selectionEnabledHook.value ? 0.0 : 60.0), bottom: 0.0),
               child: ImmichAssetGrid(
                 renderList: renderList,
                 assetsPerRow:
@@ -126,6 +122,7 @@ class HomePage extends HookConsumerWidget {
                 onDelete: onDelete,
                 onAddToAlbum: onAddToAlbum,
                 albums: albums,
+                onCreateNewAlbum: onCreateNewAlbum,
               ),
             ],
           ],

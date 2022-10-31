@@ -12,6 +12,7 @@ class ControlBottomAppBar extends ConsumerWidget {
   final Function onShare;
   final Function onDelete;
   final Function(AlbumResponseDto album) onAddToAlbum;
+  final void Function() onCreateNewAlbum;
 
   final List<AlbumResponseDto> albums;
 
@@ -21,6 +22,7 @@ class ControlBottomAppBar extends ConsumerWidget {
     required this.onDelete,
     required this.albums,
     required this.onAddToAlbum,
+    required this.onCreateNewAlbum,
   }) : super(key: key);
 
   @override
@@ -65,7 +67,7 @@ class ControlBottomAppBar extends ConsumerWidget {
           onTap: () => onAddToAlbum(album),
           child: Container(
             width: 112,
-            padding: EdgeInsets.all(6),
+            padding: const EdgeInsets.all(6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -76,7 +78,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                     height: 100,
                     fit: BoxFit.cover,
                     imageUrl:
-                    getAlbumThumbnailUrl(album, type: ThumbnailFormat.JPEG),
+                        getAlbumThumbnailUrl(album, type: ThumbnailFormat.JPEG),
                     httpHeaders: {
                       "Authorization": "Bearer ${box.get(accessTokenKey)}"
                     },
@@ -85,8 +87,15 @@ class ControlBottomAppBar extends ConsumerWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
-                  child: Text(album.albumName),
-                )
+                  child: Text(
+                    album.albumName,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Text(album.shared
+                        ? "control_bottom_app_bar_album_info_shared"
+                        : "control_bottom_app_bar_album_info")
+                    .tr(args: [album.assetCount.toString()]),
               ],
             ),
           ),
@@ -110,25 +119,42 @@ class ControlBottomAppBar extends ConsumerWidget {
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(8),
-            topRight: Radius.circular(8),
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
           ),
-          color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             renderActionButtons(),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: const Text(
-                "control_bottom_app_bar_add_to_album",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
+            const Divider(
+              thickness: 2,
             ),
+            Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "control_bottom_app_bar_add_to_album",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ).tr(),
+                    TextButton(
+                      onPressed: onCreateNewAlbum,
+                      child: Text(
+                        "control_bottom_app_bar_create_new_album",
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ).tr(),
+                    ),
+                  ],
+                )),
             renderAlbums(),
           ],
         ),
