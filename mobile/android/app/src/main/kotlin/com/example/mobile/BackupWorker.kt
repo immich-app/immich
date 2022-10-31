@@ -50,6 +50,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     private var timeBackupStarted: Long = 0L
     private var notificationBuilder: NotificationCompat.Builder? = null
     private var notificationDetailBuilder: NotificationCompat.Builder? = null
+    private var fgFuture: ListenableFuture<Void>? = null
 
     override fun startWork(): ListenableFuture<ListenableWorker.Result> {
 
@@ -112,6 +113,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         Handler(Looper.getMainLooper()).postAtFrontOfQueue {
             backgroundChannel.invokeMethod("systemStop", null)
         }
+        waitOnSetForegroundAsync()
         // cannot await/get(block) on resolvableFuture as its already cancelled (would throw CancellationException)
         // instead, wait for 5 seconds until forcefully stopping backup work
         Handler(Looper.getMainLooper()).postDelayed({
@@ -119,6 +121,17 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         }, 5000)
     }
 
+    private fun waitOnSetForegroundAsync() {
+        val fgFuture = this.fgFuture
+        if (fgFuture != null && !fgFuture.isCancelled() && !fgFuture.isDone()) {
+            try {
+                fgFuture.get(500, TimeUnit.MILLISECONDS)
+            }
+            catch (e: Exception) {
+                // ignored, there is nothing to be done
+            }
+        }
+    }
 
     private fun stopEngine(result: Result?) {
         if (result != null) {
@@ -128,6 +141,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         engine?.destroy()
         engine = null
         clearBackgroundNotification()
+        waitOnSetForegroundAsync()
     }
 
     override fun onMethodCall(call: MethodCall, r: MethodChannel.Result) {
@@ -207,8 +221,8 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
 
     private fun showInfo(notification: Notification, isDetail: Boolean = false) {
         val id = if(isDetail) NOTIFICATION_DETAIL_ID else NOTIFICATION_ID
-        if (isIgnoringBatteryOptimizations) {
-            setForegroundAsync(ForegroundInfo(id, notification))
+        if (isIgnoringBatteryOptimizations && !isDetail) {
+            fgFuture = setForegroundAsync(ForegroundInfo(id, notification))
         } else {
             notificationManager.notify(id, notification)
         }
