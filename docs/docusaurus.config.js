@@ -63,7 +63,7 @@ const config = {
         },
       },
       navbar: {
-        title: "Immich",
+        title: "Immich Documentation",
         logo: {
           alt: "Immich University Logo",
           src: "img/logo.png",
