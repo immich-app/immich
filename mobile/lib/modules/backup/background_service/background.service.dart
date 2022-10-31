@@ -319,11 +319,14 @@ class BackgroundService {
     Hive.registerAdapter(HiveBackupAlbumsAdapter());
     Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
 
-    await Hive.openBox(userInfoBox);
-    await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
-    await Hive.openBox(userSettingInfoBox);
-    await Hive.openBox(backgroundBackupInfoBox);
-    await Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox);
+    await Future.wait([
+      Hive.openBox(userInfoBox),
+      Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
+      Hive.openBox(userSettingInfoBox),
+      Hive.openBox(backgroundBackupInfoBox),
+      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+      Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+    ]);
 
     ApiService apiService = ApiService();
     apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
@@ -332,7 +335,7 @@ class BackgroundService {
     AppSettingsService settingsService = AppSettingsService();
 
     final Box<HiveBackupAlbums> box =
-        await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
+        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
     final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
     if (backupAlbumInfo == null) {
       return true;

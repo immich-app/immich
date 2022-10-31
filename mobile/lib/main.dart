@@ -28,25 +28,25 @@ import 'constants/hive_box.dart';
 
 void main() async {
   await Hive.initFlutter();
-
   Hive.registerAdapter(HiveSavedLoginInfoAdapter());
   Hive.registerAdapter(HiveBackupAlbumsAdapter());
   Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
 
-  await Hive.openBox(userInfoBox);
-  await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
-  await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
-  await Hive.openBox(hiveGithubReleaseInfoBox);
-  await Hive.openBox(userSettingInfoBox);
-  await Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox);
+  await Future.wait([
+    Hive.openBox(userInfoBox),
+    Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
+    Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+    Hive.openBox(hiveGithubReleaseInfoBox),
+    Hive.openBox(userSettingInfoBox),
+    Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+    EasyLocalization.ensureInitialized(),
+  ]);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarIconBrightness: Brightness.light,
     ),
   );
-
-  await EasyLocalization.ensureInitialized();
 
   if (kReleaseMode && Platform.isAndroid) {
     try {
