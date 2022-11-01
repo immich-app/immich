@@ -46,6 +46,15 @@ class HiveBackupAlbums {
     );
   }
 
+  HiveBackupAlbums deepCopy() {
+    return HiveBackupAlbums(
+      selectedAlbumIds: selectedAlbumIds.toList(),
+      excludedAlbumsIds: excludedAlbumsIds.toList(),
+      lastSelectedBackupTime: lastSelectedBackupTime.toList(),
+      lastExcludedBackupTime: lastExcludedBackupTime.toList(),
+    );
+  }
+
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
 

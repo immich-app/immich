@@ -27,32 +27,42 @@ class AssetService {
   AssetService(this._apiService, this._backupService);
 
   Future<List<Asset>> getAllAsset() async {
+    final List<Asset> assets = [];
     try {
-      HiveBackupAlbums? backupAlbumInfo =
-          Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).get(backupInfoKey);
+      final Future<List<AssetResponseDto>?> remoteTask =
+          _apiService.assetApi.getAllAssets();
 
-      if (backupAlbumInfo != null) {
-        final Future<List<AssetEntity>> localTask =
-            _backupService.buildUploadCandidates(backupAlbumInfo);
-        final Future<List<AssetResponseDto>?> remoteTask =
-            _apiService.assetApi.getAllAssets();
-        final List<AssetEntity> localAssets = await localTask;
-        List<Asset> assets = localAssets.map((e) => Asset.local(e)).toList();
-        List<AssetResponseDto>? remoteAssetDto = await remoteTask;
-        if (remoteAssetDto != null) {
-          assets.addAll(remoteAssetDto.map((e) => Asset.remote(e)));
-        }
-        return assets;
+      /* FIXME this is bad:
+         The background service might also have the box open at the same time.
+         But waiting for it to finish is difficult to do */
+      final Box<HiveBackupAlbums> box =
+          await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
+      final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
+
+      final List<AssetEntity> localAssets = backupAlbumInfo != null
+          ? await _backupService
+              .buildUploadCandidates(backupAlbumInfo.deepCopy())
+          : [];
+      final Iterable<AssetEntity> newLocalAssets;
+
+      List<AssetResponseDto> remoteAssetDto = await remoteTask ?? [];
+      assets.addAll(remoteAssetDto.map((e) => Asset.remote(e)));
+      if (remoteAssetDto.isNotEmpty && localAssets.isNotEmpty) {
+        final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+        Set<String> existingIds = remoteAssetDto
+            .where((e) => e.deviceId == deviceId)
+            .map((e) => e.deviceAssetId)
+            .toSet();
+        newLocalAssets = localAssets.where((e) => !existingIds.contains(e.id));
       } else {
-        final remoteAssets = await _apiService.assetApi.getAllAssets();
-        return remoteAssets != null
-            ? remoteAssets.map((e) => Asset.remote(e)).toList()
-            : [];
+        newLocalAssets = localAssets;
       }
+
+      assets.addAll(newLocalAssets.map((e) => Asset.local(e)));
     } catch (e) {
       debugPrint("Error [getAllAsset]  ${e.toString()}");
-      return [];
     }
+    return assets;
   }
 
   Future<Asset?> getAssetById(String assetId) async {
