@@ -125,20 +125,20 @@ class HomePage extends HookConsumerWidget {
 
       return SafeArea(
         bottom: !multiselectEnabled.state,
-        top: !multiselectEnabled.state,
+        top: true,
         child: Stack(
           children: [
             CustomScrollView(
               slivers: [
                 if (!multiselectEnabled.state)
-                  ImmichSliverAppBar(
-                    onPopBack: reloadAllAsset,
-                  ),
+                ImmichSliverAppBar(
+                  onPopBack: reloadAllAsset,
+                ),
               ],
             ),
             Padding(
               padding: EdgeInsets.only(
-                  top: (selectionEnabledHook.value ? 0.0 : 60.0), bottom: 0.0),
+                  top: selectionEnabledHook.value ? 0 : 60, bottom: 0.0),
               child: ImmichAssetGrid(
                 renderList: renderList,
                 assetsPerRow:
