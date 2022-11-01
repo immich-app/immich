@@ -57,16 +57,24 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      announcementBar: {
+        id: "site_announcement_immich",
+        content:
+          "⚠️ The project is under very active development. Expect bugs and changes. Do not use as a single source to store of your photos and videos!",
+        backgroundColor: "#593f00",
+        textColor: "#ffefc9",
+        isCloseable: false,
+      },
       docs: {
         sidebar: {
           autoCollapseCategories: false,
         },
       },
       navbar: {
-        title: "Immich Documentation",
         logo: {
           alt: "Immich University Logo",
-          src: "img/logo.png",
+          src: "img/color-logo.png",
+          srcDark: "img/logo.png",
         },
         items: [
           {
@@ -83,7 +91,7 @@ const config = {
         ],
       },
       footer: {
-        style: "dark",
+        style: "light",
         links: [
           {
             title: "Overview",
@@ -121,7 +129,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Alex Tran - For my family`,
+        copyright: `Immich is available as open source under the terms of the MIT License.`,
       },
       prism: {
         theme: lightCodeTheme,
