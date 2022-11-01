@@ -45,11 +45,11 @@ class AssetService {
           : [];
       final Iterable<AssetEntity> newLocalAssets;
 
-      List<AssetResponseDto> remoteAssetDto = await remoteTask ?? [];
-      assets.addAll(remoteAssetDto.map((e) => Asset.remote(e)));
-      if (remoteAssetDto.isNotEmpty && localAssets.isNotEmpty) {
+      final List<AssetResponseDto> remoteAssets = await remoteTask ?? [];
+      assets.addAll(remoteAssets.map((e) => Asset.remote(e)));
+      if (remoteAssets.isNotEmpty && localAssets.isNotEmpty) {
         final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
-        Set<String> existingIds = remoteAssetDto
+        final Set<String> existingIds = remoteAssets
             .where((e) => e.deviceId == deviceId)
             .map((e) => e.deviceAssetId)
             .toSet();
