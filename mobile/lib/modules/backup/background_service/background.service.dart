@@ -33,6 +33,7 @@ class BackgroundService {
   static const MethodChannel _backgroundChannel =
       MethodChannel('immich/backgroundChannel');
   static final NumberFormat numberFormat = NumberFormat("###0.##");
+  static const notifyInterval = Duration(milliseconds: 400);
   bool _isBackgroundInitialized = false;
   CancellationToken? _cancellationToken;
   bool _canceledBySystem = false;
@@ -43,9 +44,12 @@ class BackgroundService {
   bool _errorGracePeriodExceeded = true;
   int _uploadedAssetsCount = 0;
   int _assetsToUploadCount = 0;
-  String _lastPrintedProgress = "";
-  late final _Throttle _throttleNotificationUpdates =
-      _Throttle(_updateDetailProgress, const Duration(milliseconds: 400));
+  String _lastPrintedDetailContent = "";
+  String? _lastPrintedDetailTitle;
+  late final _Throttle _throttledNotifiy =
+      _Throttle(_updateProgress, notifyInterval);
+  late final _Throttle _throttledDetailNotify =
+      _Throttle(_updateDetailProgress, notifyInterval);
 
   bool get isBackgroundInitialized {
     return _isBackgroundInitialized;
@@ -438,31 +442,38 @@ class BackgroundService {
   }
 
   void _onAssetUploaded(String deviceAssetId, String deviceId, bool isDup) {
-    debugPrint("Uploaded $deviceAssetId from $deviceId");
     _uploadedAssetsCount++;
-    _updateNotification(
-      progress: _uploadedAssetsCount,
-      max: _assetsToUploadCount,
-      content: _formatAssetBackupProgress(),
-    );
+    _throttledNotifiy();
   }
 
   void _onProgress(int sent, int total) {
-    _throttleNotificationUpdates(sent, total);
+    _throttledDetailNotify(progress: sent, total: total);
   }
 
-  void _updateDetailProgress(int sent, int total) {
-    final String msg = _humanReadableBytesProgress(sent, total);
+  void _updateDetailProgress(String? title, int progress, int total) {
+    final String msg =
+        total > 0 ? _humanReadableBytesProgress(progress, total) : "";
     // only update if message actually differs (to stop many useless notification updates on large assets or slow connections)
-    if (msg != _lastPrintedProgress) {
-      _lastPrintedProgress = msg;
+    if (msg != _lastPrintedDetailContent || _lastPrintedDetailTitle != title) {
+      _lastPrintedDetailContent = msg;
+      _lastPrintedDetailTitle = title;
       _updateNotification(
-        progress: sent,
-        max: total,
+        progress: total > 0 ? (progress * 1000) ~/ total : 0,
+        max: 1000,
         isDetail: true,
+        title: title,
         content: msg,
       );
     }
+  }
+
+  void _updateProgress(String? title, int progress, int total) {
+    _updateNotification(
+      progress: _uploadedAssetsCount,
+      max: _assetsToUploadCount,
+      title: title,
+      content: _formatAssetBackupProgress(),
+    );
   }
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
@@ -474,14 +485,11 @@ class BackgroundService {
   }
 
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
-    _updateNotification(
-      title: "backup_background_service_current_upload_notification"
-          .tr(args: [currentUploadAsset.fileName]),
-      content: "",
-      isDetail: true,
-      progress: 0,
-      max: 0,
-    );
+    _throttledDetailNotify.title =
+        "backup_background_service_current_upload_notification"
+            .tr(args: [currentUploadAsset.fileName]);
+    _throttledDetailNotify.progress = 0;
+    _throttledDetailNotify.total = 0;
   }
 
   bool _isErrorGracePeriodExceeded(AppSettingsService appSettingsService) {
@@ -534,17 +542,24 @@ class BackgroundService {
 
 class _Throttle {
   _Throttle(this._fun, Duration interval) : _interval = interval.inMicroseconds;
-  final void Function(int, int) _fun;
+  final void Function(String?, int, int) _fun;
   final int _interval;
   int _invokedAt = 0;
   Timer? _timer;
-  int _progress = 0;
-  int _total = 0;
 
-  void call(int progress, int total) {
+  String? title;
+  int progress = 0;
+  int total = 0;
+
+  void call({
+    final String? title,
+    final int progress = 0,
+    final int total = 0,
+  }) {
     final time = Timeline.now;
-    _progress = progress;
-    _total = total;
+    this.title = title ?? this.title;
+    this.progress = progress;
+    this.total = total;
     if (time > _invokedAt + _interval) {
       _timer?.cancel();
       _onTimeElapsed();
@@ -555,8 +570,10 @@ class _Throttle {
 
   void _onTimeElapsed() {
     _invokedAt = Timeline.now;
-    _fun(_progress, _total);
+    _fun(title, progress, total);
     _timer = null;
+    // clear title to not send/overwrite it next time if unchanged
+    title = null;
   }
 }
 
