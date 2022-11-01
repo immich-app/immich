@@ -43,8 +43,9 @@ class BackgroundService {
   bool _errorGracePeriodExceeded = true;
   int _uploadedAssetsCount = 0;
   int _assetsToUploadCount = 0;
-  int _lastDetailProgressUpdate = 0;
   String _lastPrintedProgress = "";
+  late final _Throttle _throttleNotificationUpdates =
+      _Throttle(_updateDetailProgress, const Duration(milliseconds: 400));
 
   bool get isBackgroundInitialized {
     return _isBackgroundInitialized;
@@ -447,21 +448,20 @@ class BackgroundService {
   }
 
   void _onProgress(int sent, int total) {
-    final int now = Timeline.now;
-    // limit updates to 10 per second (or Android drops important notifications)
-    if (now > _lastDetailProgressUpdate + 100000) {
-      final String msg = _humanReadableBytesProgress(sent, total);
-      // only update if message actually differs (to stop many useless notification updates on large assets or slow connections)
-      if (msg != _lastPrintedProgress) {
-        _lastDetailProgressUpdate = now;
-        _lastPrintedProgress = msg;
-        _updateNotification(
-          progress: sent,
-          max: total,
-          isDetail: true,
-          content: msg,
-        );
-      }
+    _throttleNotificationUpdates(sent, total);
+  }
+
+  void _updateDetailProgress(int sent, int total) {
+    final String msg = _humanReadableBytesProgress(sent, total);
+    // only update if message actually differs (to stop many useless notification updates on large assets or slow connections)
+    if (msg != _lastPrintedProgress) {
+      _lastPrintedProgress = msg;
+      _updateNotification(
+        progress: sent,
+        max: total,
+        isDetail: true,
+        content: msg,
+      );
     }
   }
 
@@ -529,6 +529,34 @@ class BackgroundService {
     final String done = numberFormat.format(bytes / 1024.0);
     final String total = numberFormat.format(bytesTotal / 1024.0);
     return "$percent% ($done/$total$unit)";
+  }
+}
+
+class _Throttle {
+  _Throttle(this._fun, Duration interval) : _interval = interval.inMicroseconds;
+  final void Function(int, int) _fun;
+  final int _interval;
+  int _invokedAt = 0;
+  Timer? _timer;
+  int _progress = 0;
+  int _total = 0;
+
+  void call(int progress, int total) {
+    final time = Timeline.now;
+    _progress = progress;
+    _total = total;
+    if (time > _invokedAt + _interval) {
+      _timer?.cancel();
+      _onTimeElapsed();
+    } else {
+      _timer ??= Timer(Duration(microseconds: _interval), _onTimeElapsed);
+    }
+  }
+
+  void _onTimeElapsed() {
+    _invokedAt = Timeline.now;
+    _fun(_progress, _total);
+    _timer = null;
   }
 }
 
