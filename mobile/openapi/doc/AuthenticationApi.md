@@ -12,8 +12,6 @@ Method | HTTP request | Description
 [**adminSignUp**](AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 [**login**](AuthenticationApi.md#login) | **POST** /auth/login | 
 [**logout**](AuthenticationApi.md#logout) | **POST** /auth/logout | 
-[**oauthAuthorize**](AuthenticationApi.md#oauthauthorize) | **GET** /auth/oauth-authorize | 
-[**oauthAuthorizeCallback**](AuthenticationApi.md#oauthauthorizecallback) | **GET** /auth/oauth-callback | 
 [**validateAccessToken**](AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 
 
@@ -124,79 +122,6 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**LogoutResponseDto**](LogoutResponseDto.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **oauthAuthorize**
-> oauthAuthorize()
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-
-final api_instance = AuthenticationApi();
-
-try {
-    api_instance.oauthAuthorize();
-} catch (e) {
-    print('Exception when calling AuthenticationApi->oauthAuthorize: $e\n');
-}
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **oauthAuthorizeCallback**
-> LoginResponseDto oauthAuthorizeCallback()
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-
-final api_instance = AuthenticationApi();
-
-try {
-    final result = api_instance.oauthAuthorizeCallback();
-    print(result);
-} catch (e) {
-    print('Exception when calling AuthenticationApi->oauthAuthorizeCallback: $e\n');
-}
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-[**LoginResponseDto**](LoginResponseDto.md)
 
 ### Authorization
 

@@ -7,7 +7,6 @@ import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { JwtPayloadDto } from './dto/jwt-payload.dto';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import { OAuthProfile, OAuthService } from './oauth.service';
 import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/admin-signup-response.dto';
 import { LoginResponseDto, mapLoginResponse } from './response-dto/login-response.dto';
 
@@ -19,10 +18,9 @@ export class AuthService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     private immichJwtService: ImmichJwtService,
-    private oauthService: OAuthService,
   ) {}
 
-  private async getUserByEmail(email: string) {
+  public async getUserByEmail(email: string) {
     return await this.userRepository.findOne({
       where: { email },
       select: [
@@ -39,14 +37,14 @@ export class AuthService {
     });
   }
 
-  private async login(user: UserEntity) {
+  public async createLoginResponse(user: UserEntity) {
     const payload = new JwtPayloadDto(user.id, user.email);
     const accessToken = await this.immichJwtService.generateToken(payload);
 
     return mapLoginResponse(user, accessToken);
   }
 
-  public async loginWithCredentials(loginCredential: LoginCredentialDto, clientIp: string): Promise<LoginResponseDto> {
+  public async login(loginCredential: LoginCredentialDto, clientIp: string): Promise<LoginResponseDto> {
     let user = await this.getUserByEmail(loginCredential.email);
 
     if (user) {
@@ -62,35 +60,16 @@ export class AuthService {
       throw new BadRequestException('Incorrect email or password');
     }
 
-    return this.login(user);
+    return this.createLoginResponse(user);
   }
 
-  public async loginWithOAuth(profile: OAuthProfile): Promise<LoginResponseDto> {
-    this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
-    let user = await this.getUserByEmail(profile.email);
-
-    if (!user) {
-      if (!this.oauthService.autoRegister) {
-        this.logger.warn(
-          `Unable to register ${profile.email}. To enable auto registering, set OAUTH_AUTO_REGISTER=true.`,
-        );
-        throw new BadRequestException(`User does not exist and auto registering is disabled.`);
-      }
-
-      this.logger.log(`Registering new user: ${profile.email}`);
-      user = await this.userRepository.save({
-        firstName: profile.given_name || '',
-        lastName: profile.family_name || '',
-        email: profile.email,
-      });
-    }
-
-    return this.login(user);
-  }
-
-  public getCookieWithJwtToken(authLoginInfo: LoginResponseDto) {
+  public getCookies(loginResponse: LoginResponseDto) {
     const maxAge = 7 * 24 * 3600; // 7 days
-    return `immich_access_token=${authLoginInfo.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}`;
+
+    const accessTokenCookie = `immich_access_token=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}`;
+    const isAuthCookie = `immich_is_authenticated=true; Path=/; Max-Age=${maxAge}`;
+
+    return [accessTokenCookie, isAuthCookie];
   }
 
   // !TODO: refactor this method to use the userService createUser method

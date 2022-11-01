@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/
 import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
 import path from 'path';
-import { OAuthService } from './api-v1/auth/oauth.service';
+import { OAuthService } from './api-v1/oauth/oauth.service';
 import { AppModule } from './app.module';
 import { serverVersion } from './constants/server_version.constant';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';

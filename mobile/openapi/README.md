@@ -95,14 +95,14 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
-*AuthenticationApi* | [**oauthAuthorize**](doc//AuthenticationApi.md#oauthauthorize) | **GET** /auth/oauth-authorize | 
-*AuthenticationApi* | [**oauthAuthorizeCallback**](doc//AuthenticationApi.md#oauthauthorizecallback) | **GET** /auth/oauth-callback | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeviceInfoApi* | [**createDeviceInfo**](doc//DeviceInfoApi.md#createdeviceinfo) | **POST** /device-info | 
 *DeviceInfoApi* | [**updateDeviceInfo**](doc//DeviceInfoApi.md#updatedeviceinfo) | **PATCH** /device-info | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**getJobStatus**](doc//JobApi.md#getjobstatus) | **GET** /jobs/{jobId} | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
+*OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
+*OAuthApi* | [**getConfig**](doc//OAuthApi.md#getconfig) | **GET** /oauth/config | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
@@ -158,6 +158,8 @@ Class | Method | HTTP request | Description
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
+ - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
+ - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
  - [RemoveAssetsDto](doc//RemoveAssetsDto.md)
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
