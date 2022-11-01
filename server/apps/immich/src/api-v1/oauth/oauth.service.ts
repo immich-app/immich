@@ -36,7 +36,7 @@ export class OAuthService {
     this.enabled = configService.get('OAUTH_ENABLED', false);
     this.autoRegister = configService.get('OAUTH_AUTO_REGISTER', true);
     this.issuerUrl = configService.get<string>('OAUTH_ISSUER_URL', '');
-    this.scope = configService.get<string>('OAUTH_SCOPE', 'openid email profile');
+    this.scope = configService.get<string>('OAUTH_SCOPE', '');
     this.buttonText = configService.get<string>('OAUTH_BUTTON_TEXT', '');
 
     this.redirectUri = configService.get('OAUTH_REDIRECT_URI', '');
