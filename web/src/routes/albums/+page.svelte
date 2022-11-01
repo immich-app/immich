@@ -93,7 +93,8 @@
 			<!-- Empty Message -->
 			{#if $albums.length === 0}
 				<div
-					class="border dark:border-immich-dark-gray p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center"
+					on:click={handleCreateAlbum}
+					class="border dark:border-immich-dark-gray hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/25 hover:cursor-pointer p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center"
 				>
 					<img src="/empty-1.svg" alt="Empty shared album" width="500" />
 

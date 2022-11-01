@@ -1,4 +1,12 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { AlbumEntity } from '@app/database/entities/album.entity';
@@ -10,8 +18,10 @@ import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from './response
 import { ALBUM_REPOSITORY, IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
-import { AddAssetsResponseDto } from "./response-dto/add-assets-response.dto";
-import {AddAssetsDto} from "./dto/add-assets.dto";
+import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
+import { AddAssetsDto } from './dto/add-assets.dto';
+import { Response as Res } from 'express';
+import archiver from 'archiver';
 
 @Injectable()
 export class AlbumService {
@@ -116,7 +126,7 @@ export class AlbumService {
 
     return {
       ...result,
-      album: mapAlbum(newAlbum)
+      album: mapAlbum(newAlbum),
     };
   }
 
@@ -137,6 +147,23 @@ export class AlbumService {
 
   async getAlbumCountByUserId(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
     return this._albumRepository.getCountByUserId(authUser.id);
+  }
+
+  async downloadArchive(authUser: AuthUserDto, albumId: string, res: Res) {
+    try {
+      const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
+      const archive = archiver('zip', { store: true });
+      res.attachment(`${album.albumName}.zip`);
+      archive.pipe(res);
+      album.assets?.forEach((a) => {
+        const name = `${a.assetInfo.exifInfo?.imageName || a.assetInfo.id}.${a.assetInfo.originalPath.split('.')[1]}`;
+        archive.file(a.assetInfo.originalPath, { name });
+      });
+      return archive.finalize();
+    } catch (e) {
+      Logger.error(`Error downloading album ${e}`, 'downloadArchive');
+      throw new InternalServerErrorException(`Failed to download album ${e}`, 'DownloadArchive');
+    }
   }
 
   async _checkValidThumbnail(album: AlbumEntity): Promise<AlbumEntity> {
