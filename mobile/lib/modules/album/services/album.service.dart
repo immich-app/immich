@@ -46,6 +46,31 @@ class AlbumService {
     }
   }
 
+  /*
+   * Creates names like Untitled, Untitled (1), Untitled (2), ...
+   */
+  String _getNextAlbumName(List<AlbumResponseDto>? albums) {
+    const baseName = "Untitled";
+
+    if (albums != null) {
+      for (int round = 0; round < albums.length; round++) {
+        final proposedName = "$baseName${round == 0 ? "" : " ($round)"}";
+
+        if (albums.where((a) => a.albumName == proposedName).isEmpty) {
+          return proposedName;
+        }
+      }
+    }
+    return baseName;
+  }
+
+  Future<AlbumResponseDto?> createAlbumWithGeneratedName(
+    Set<AssetResponseDto> assets,
+  ) async {
+    return createAlbum(
+        _getNextAlbumName(await getAlbums(isShared: false)), assets, []);
+  }
+
   Future<AlbumResponseDto?> getAlbumDetail(String albumId) async {
     try {
       return await _apiService.albumApi.getAlbumInfo(albumId);

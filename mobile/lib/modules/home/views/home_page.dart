@@ -77,19 +77,51 @@ class HomePage extends HookConsumerWidget {
             selection.value, album.id);
 
         if (result != null) {
-          ImmichToast.show(
-              context: context,
-              msg: "home_page_add_to_album_success".tr(namedArgs: {
-                "album": album.albumName,
-                "added": result.successfullyAdded.toString(),
-                "failed": result.alreadyInAlbum.length.toString()
-              }));
-        }
 
-        selectionEnabledHook.value = false;
+          if (result.alreadyInAlbum.isNotEmpty) {
+            ImmichToast.show(
+              context: context,
+              msg: "home_page_add_to_album_conflicts".tr(
+                namedArgs: {
+                  "album": album.albumName,
+                  "added": result.successfullyAdded.toString(),
+                  "failed": result.alreadyInAlbum.length.toString()
+                },
+              ),
+            );
+          } else {
+            ImmichToast.show(
+              context: context,
+              msg: "home_page_add_to_album_success".tr(
+                namedArgs: {
+                  "album": album.albumName,
+                  "added": result.successfullyAdded.toString(),
+                },
+              ),
+            );
+          }
+
+          selectionEnabledHook.value = false;
+        }
       }
 
-      void onCreateNewAlbum() {}
+      void onCreateNewAlbum() async {
+        final result =
+            await albumService.createAlbumWithGeneratedName(selection.value);
+
+        if (result != null) {
+          ImmichToast.show(
+            context: context,
+            msg: "home_page_create_album_success".tr(
+              namedArgs: {
+                "album": result.albumName,
+              },
+            ),
+          );
+
+          selectionEnabledHook.value = false;
+        }
+      }
 
       return SafeArea(
         bottom: !multiselectEnabled.state,
@@ -105,7 +137,8 @@ class HomePage extends HookConsumerWidget {
               ],
             ),
             Padding(
-              padding: EdgeInsets.only(top: (selectionEnabledHook.value ? 0.0 : 60.0), bottom: 0.0),
+              padding: EdgeInsets.only(
+                  top: (selectionEnabledHook.value ? 0.0 : 60.0), bottom: 0.0),
               child: ImmichAssetGrid(
                 renderList: renderList,
                 assetsPerRow:
