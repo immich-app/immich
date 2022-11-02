@@ -64,11 +64,13 @@ export class AlbumService {
    * @returns All Shared Album And Its Members
    */
   async getAllAlbums(authUser: AuthUserDto, getAlbumsDto: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+    let albums: AlbumEntity[];
+
     if (typeof getAlbumsDto.assetId === 'string') {
-      const albums = await this._albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
-      return albums.map(mapAlbumExcludeAssetInfo);
+      albums = await this._albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
+    } else {
+      albums = await this._albumRepository.getList(authUser.id, getAlbumsDto);
     }
-    const albums = await this._albumRepository.getList(authUser.id, getAlbumsDto);
 
     for (const album of albums) {
       await this._checkValidThumbnail(album);

@@ -3,7 +3,7 @@ import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder, DataSource } from 'typeorm';
+import { In, Repository, SelectQueryBuilder, DataSource } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -11,7 +11,7 @@ import { GetAlbumsDto } from './dto/get-albums.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
-import {AddAssetsResponseDto} from "./response-dto/add-assets-response.dto";
+import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 
 export interface IAlbumRepository {
   create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
@@ -238,27 +238,29 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   async removeAssets(album: AlbumEntity, removeAssetsDto: RemoveAssetsDto): Promise<AlbumEntity> {
-    let deleteAssetCount = 0;
-    // TODO: should probably do a single delete query?
-    for (const assetId of removeAssetsDto.assetIds) {
-      const res = await this.assetAlbumRepository.delete({ albumId: album.id, assetId: assetId });
-      if (res.affected == 1) deleteAssetCount++;
+    const res = await this.assetAlbumRepository.delete({
+      albumId: album.id,
+      assetId: In(removeAssetsDto.assetIds),
+    });
+
+    const deletedCount = res.affected || 0;
+
+    const updatedAlbum = await this.get(album.id);
+    if (updatedAlbum) {
+      const assets = updatedAlbum.assets || [];
+      const validThumbnail = assets.some((asset) => asset.id === updatedAlbum.albumThumbnailAssetId);
+      if (!validThumbnail) {
+        const albumThumbnailAssetId = assets[0]?.assetId || null;
+        await this.albumRepository.update(album.id, { albumThumbnailAssetId });
+        updatedAlbum.albumThumbnailAssetId = albumThumbnailAssetId;
+      }
     }
 
-    // TODO: No need to return boolean if using a singe delete query
-    if (deleteAssetCount == removeAssetsDto.assetIds.length) {
-      const retAlbum = (await this.get(album.id)) as AlbumEntity;
-
-      if (retAlbum?.assets?.length === 0) {
-        // is empty album
-        await this.albumRepository.update(album.id, { albumThumbnailAssetId: null });
-        retAlbum.albumThumbnailAssetId = null;
-      }
-
-      return retAlbum;
-    } else {
+    if (!updatedAlbum || deletedCount !== removeAssetsDto.assetIds.length) {
       throw new BadRequestException('Some assets were not found in the album');
     }
+
+    return updatedAlbum;
   }
 
   async addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto> {
@@ -267,7 +269,7 @@ export class AlbumRepository implements IAlbumRepository {
 
     for (const assetId of addAssetsDto.assetIds) {
       // Album already contains that asset
-      if (album.assets?.some(a => a.assetId === assetId)) {
+      if (album.assets?.some((a) => a.assetId === assetId)) {
         alreadyExisting.push(assetId);
         continue;
       }
@@ -288,7 +290,7 @@ export class AlbumRepository implements IAlbumRepository {
 
     return {
       successfullyAdded: newRecords.length,
-      alreadyInAlbum: alreadyExisting
+      alreadyInAlbum: alreadyExisting,
     };
   }
 
