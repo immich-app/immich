@@ -25,5 +25,5 @@ The web application will be available at `http://<machine-ip-address>:2283`, and
 The directory which is used to store the backup file is `./immich-app/immich-data` relative to the current directory.
 
 :::tip
-For more information about using the application, please refer to [How to use the application](/docs/category/how-to-use-the-application).
+For more information on how to use the application, please refer to the [Post Installation](/docs/usage/post-installation) guide.
 :::
