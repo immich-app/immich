@@ -24,6 +24,10 @@ Follow the prompt to register for the admin user and log in to the application.
 
 ## Step 3 - Creating a new user (optional)
 
+If you have a family member that want to use the application, you can create a new account for them. The default password is `password` and the user can change their password after logging in the application for the first time.
+
+<img src={require('./img/create-new-user.png').default} title="Admin Registration" />
+
 ## Access the mobile app
 
 ## Start backing up your photos and videos
