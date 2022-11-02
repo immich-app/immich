@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Logger,
   InternalServerErrorException,
+  StreamableFile,
 } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -20,8 +21,8 @@ import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { AddAssetsDto } from './dto/add-assets.dto';
-import { Response as Res } from 'express';
 import archiver from 'archiver';
+import { extname } from 'path';
 
 @Injectable()
 export class AlbumService {
@@ -149,17 +150,28 @@ export class AlbumService {
     return this._albumRepository.getCountByUserId(authUser.id);
   }
 
-  async downloadArchive(authUser: AuthUserDto, albumId: string, res: Res) {
+  async downloadArchive(authUser: AuthUserDto, albumId: string) {
+    const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
+    if (!album.assets || album.assets.length === 0) {
+      throw new BadRequestException('Cannot download an empty album.');
+    }
+
     try {
-      const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
       const archive = archiver('zip', { store: true });
-      res.attachment(`${album.albumName}.zip`);
-      archive.pipe(res);
-      album.assets?.forEach((a) => {
-        const name = `${a.assetInfo.exifInfo?.imageName || a.assetInfo.id}.${a.assetInfo.originalPath.split('.')[1]}`;
-        archive.file(a.assetInfo.originalPath, { name });
-      });
-      return archive.finalize();
+      const stream = new StreamableFile(archive);
+
+      for (const { assetInfo } of album.assets) {
+        const { originalPath } = assetInfo;
+        const name = `${assetInfo.exifInfo?.imageName || assetInfo.id}${extname(originalPath)}`;
+        archive.file(originalPath, { name });
+      }
+
+      archive.finalize();
+
+      return {
+        stream,
+        filename: `${album.albumName}.zip`,
+      };
     } catch (e) {
       Logger.error(`Error downloading album ${e}`, 'downloadArchive');
       throw new InternalServerErrorException(`Failed to download album ${e}`, 'DownloadArchive');
