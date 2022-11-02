@@ -2,7 +2,9 @@
 sidebar_position: 1
 ---
 
+
 # Requirements
+Hardware and software requirement for Immich
 
 ## Software
 
@@ -23,7 +25,7 @@ You can also use Podman to run the application, however, additional configuratio
 
 There are a couple installation method that you can use to install the application. You can choose the one that suits you the best.
 
-1. [Docker Compose - 1-step installation](/docs/installation/one-step-installation)
-2. **[Docker Compose with manual configuration - Recommended](/docs/installation/docker-compose-installation)**
-3. [Portainer with Docker Compose](/docs/installation/portainer-installation)
-4. [Unraid with Docker Compose](/docs/installation/unraid-installation)
+1. [One-step installation (Evaluation only)](/docs/installation/one-step-installation)
+2. **[Docker Compose with manual configuration (Recommended)](/docs/installation/recommended-installation)**
+3. [Portainer](/docs/installation/portainer-installation)
+4. [Unraid (Community contribution)](/docs/installation/unraid-installation)

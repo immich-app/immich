@@ -5,7 +5,7 @@ sidebar_position: 2
 # One-step installation
 
 :::caution
-This method is for evaluation purposes only. It is not recommended for production use. For production usage, please refer to the recommneded installation method [here](/docs/installation/docker-compose-installation).
+This method is for evaluation purposes only. It is not recommended for production use. For production usage, please refer to the recommneded installation method [here](/docs/installation/recommended-installation).
 :::
 
 In the shell, from the directory of your choice, run the following command:
@@ -25,5 +25,5 @@ The web application will be available at `http://<machine-ip-address>:2283`, and
 The directory which is used to store the backup file is `./immich-app/immich-data` relative to the current directory.
 
 :::tip
-For more information about the application mechanism, please refer to [How to use the application](/docs/category/how-to-use-the-app).
+For more information about using the application, please refer to [How to use the application](/docs/category/how-to-use-the-application).
 :::
