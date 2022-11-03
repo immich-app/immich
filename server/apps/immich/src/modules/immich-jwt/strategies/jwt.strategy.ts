@@ -13,8 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
-
-    private immichJwtService: ImmichJwtService,
+    immichJwtService: ImmichJwtService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
