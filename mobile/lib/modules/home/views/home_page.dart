@@ -40,14 +40,17 @@ class HomePage extends HookConsumerWidget {
         ref.read(assetProvider.notifier).getAllAsset();
         ref.read(albumProvider.notifier).getAllAlbums();
         ref.watch(serverInfoProvider.notifier).getServerVersion();
-        return null;
+
+        selectionEnabledHook.addListener(() {
+          multiselectEnabled.state = selectionEnabledHook.value;
+        });
+
+        return () {
+          selectionEnabledHook.dispose();
+        };
       },
       [],
     );
-
-    selectionEnabledHook.addListener(() {
-      multiselectEnabled.state = selectionEnabledHook.value;
-    });
 
     void reloadAllAsset() {
       ref.read(assetProvider.notifier).getAllAsset();
@@ -110,6 +113,8 @@ class HomePage extends HookConsumerWidget {
             await albumService.createAlbumWithGeneratedName(selection.value);
 
         if (result != null) {
+          ref.watch(albumProvider.notifier).getAllAlbums();
+
           ImmichToast.show(
             context: context,
             msg: "home_page_create_album_success".tr(
