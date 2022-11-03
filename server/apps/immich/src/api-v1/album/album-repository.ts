@@ -1,7 +1,7 @@
 import { AlbumEntity } from '@app/database/entities/album.entity';
 import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, SelectQueryBuilder, DataSource } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
@@ -20,7 +20,7 @@ export interface IAlbumRepository {
   delete(album: AlbumEntity): Promise<void>;
   addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity>;
   removeUser(album: AlbumEntity, userId: string): Promise<void>;
-  removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<AlbumEntity>;
+  removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<number>;
   addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto>;
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
   getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]>;
@@ -237,30 +237,13 @@ export class AlbumRepository implements IAlbumRepository {
     await this.userAlbumRepository.delete({ albumId: album.id, sharedUserId: userId });
   }
 
-  async removeAssets(album: AlbumEntity, removeAssetsDto: RemoveAssetsDto): Promise<AlbumEntity> {
+  async removeAssets(album: AlbumEntity, removeAssetsDto: RemoveAssetsDto): Promise<number> {
     const res = await this.assetAlbumRepository.delete({
       albumId: album.id,
       assetId: In(removeAssetsDto.assetIds),
     });
 
-    const deletedCount = res.affected || 0;
-
-    const updatedAlbum = await this.get(album.id);
-    if (updatedAlbum) {
-      const assets = updatedAlbum.assets || [];
-      const validThumbnail = assets.some((asset) => asset.id === updatedAlbum.albumThumbnailAssetId);
-      if (!validThumbnail) {
-        const albumThumbnailAssetId = assets[0]?.assetId || null;
-        await this.albumRepository.update(album.id, { albumThumbnailAssetId });
-        updatedAlbum.albumThumbnailAssetId = albumThumbnailAssetId;
-      }
-    }
-
-    if (!updatedAlbum || deletedCount !== removeAssetsDto.assetIds.length) {
-      throw new BadRequestException('Some assets were not found in the album');
-    }
-
-    return updatedAlbum;
+    return res.affected || 0;
   }
 
   async addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto> {
