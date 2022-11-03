@@ -18,6 +18,6 @@ The app is built with the following technologies
 * [Redis](https://redis.io/) for communication between the core server and the microservices.
 * [NGINX](https://www.nginx.com/) for internal communication between containers and load balancing when scaling.
 
-# App architecture
+## High level architecture
 
 ![Immich Architecture](./img/app-architecture.png)
