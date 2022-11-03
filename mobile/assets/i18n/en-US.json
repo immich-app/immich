@@ -177,6 +177,5 @@
   "home_page_add_to_album_conflicts": "Added {added} assets to album {album}. {failed} assets are already in the album.",
   "control_bottom_app_bar_album_info": "{} items",
   "control_bottom_app_bar_album_info_shared": "{} items · Shared",
-  "control_bottom_app_bar_create_new_album": "Create new album",
-  "home_page_create_album_success": "Created new album {album}"
+  "control_bottom_app_bar_create_new_album": "Create new album"
 }

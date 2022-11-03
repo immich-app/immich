@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -13,6 +14,7 @@ import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
@@ -114,17 +116,9 @@ class HomePage extends HookConsumerWidget {
 
         if (result != null) {
           ref.watch(albumProvider.notifier).getAllAlbums();
-
-          ImmichToast.show(
-            context: context,
-            msg: "home_page_create_album_success".tr(
-              namedArgs: {
-                "album": result.albumName,
-              },
-            ),
-          );
-
           selectionEnabledHook.value = false;
+
+          AutoRouter.of(context).push(AlbumViewerRoute(albumId: result.id));
         }
       }
 
