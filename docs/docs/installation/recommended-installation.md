@@ -116,5 +116,5 @@ docker-compose up -d # or `docker compose up -d` based on your docker-compose ve
 ```
 
 :::tip
-For more information about using the application, please refer to [How to use the application](/docs/category/how-to-use-the-application).
+For more information on how to use the application, please refer to the [Post Installation](/docs/usage/post-installation) guide.
 :::
