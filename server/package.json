@@ -5,9 +5,12 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "bin": {
+    "immich": "./bin/cli.sh"
+  },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "nest build immich && nest build microservices",
+    "build": "nest build immich && nest build microservices && nest build cli",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -59,6 +62,7 @@
     "local-reverse-geocoder": "^0.12.5",
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
+    "nest-commander": "^3.3.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "pg": "^8.7.1",

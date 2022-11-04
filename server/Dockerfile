@@ -26,6 +26,7 @@ RUN mkdir -p /usr/src/app/dist \
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/bin ./bin
 
 RUN npm prune --production
 
