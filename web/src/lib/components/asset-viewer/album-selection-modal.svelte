@@ -45,7 +45,7 @@
 		</span>
 	</svelte:fragment>
 
-	<div class=" max-h-[400px] overflow-y-auto immich-scrollbar">
+	<div class=" max-h-[400px] overflow-y-auto immich-scrollba pb-10">
 		<div class="flex flex-col mb-2">
 			{#if loading}
 				{#each { length: 3 } as _}
@@ -73,14 +73,18 @@
 					</p>
 				</button>
 				{#if albums.length > 0}
-					<p class="text-sm font-medium px-5 py-1">RECENT</p>
+					{#if !shared}
+						<p class="text-xs px-5 py-3">RECENT</p>
+					{/if}
 					{#each recentAlbums as album}
 						{#key album.id}
 							<AlbumListItem variant="simple" {album} on:album={() => handleSelect(album)} />
 						{/key}
 					{/each}
 
-					<p class="text-sm font-medium px-5 py-1">ALL ALBUMS</p>
+					{#if !shared}
+						<p class="text-xs px-5 py-3">ALL ALBUMS</p>
+					{/if}
 					{#each albums as album}
 						{#key album.id}
 							<AlbumListItem {album} on:album={() => handleSelect(album)} />
