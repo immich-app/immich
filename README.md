@@ -1,4 +1,5 @@
-<h2 align="center"> <b>Immich - High performance self-hosted photo and video backup solution.</b> </h2>
+<h3 align="center"Immich - High performance self-hosted photo and video backup solution</h3>
+<br/>
 <img src="design/immich-screenshots.png" title="Login With Custom URL">
 <br/>
 
@@ -12,7 +13,7 @@
   <br/>   
 </p>
 
-<h3 align="center" color="red">
+<h3 align="center">
 ⚠️ WARNING - The project is under very active development. Expect bugs and changes. Do not use as a single source to store of your photos and videos!
 </h3>
 
