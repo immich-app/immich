@@ -322,8 +322,20 @@
 
 			$downloadAssets[fileName] = 0;
 
+			let total = 0;
 			const { data, status } = await api.albumApi.downloadArchive(album.id, {
-				responseType: 'blob'
+				responseType: 'blob',
+				onDownloadProgress: function (progressEvent) {
+					const request = this as XMLHttpRequest;
+					if (!total) {
+						total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
+					}
+
+					if (total) {
+						const current = progressEvent.loaded;
+						$downloadAssets[fileName] = Math.floor((current / total) * 100);
+					}
+				}
 			});
 
 			if (!(data instanceof Blob)) {
