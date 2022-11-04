@@ -1,10 +1,10 @@
-<h1 align="center"> Immich </h1>
- <p align="center"> <b>High performance self-hosted photo and video backup solution.</b> </p>
-<p align="center">
-  <img src="design/feature-panel.png"  title="Immich Logo">
-</p>
+<h1 align="center"> <b>Immich - High performance self-hosted photo and video backup solution.</b> </h1>
+<img src="design/immich-screenshots.png" title="Login With Custom URL">
+
 
 <p align="center">
+  <br/>  
+  <br/>  
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: MIT"></a>
   <a href="https://discord.gg/D8JsnBEuKb">
     <img src="https://img.shields.io/discord/979116623879368755.svg?label=Immich%20Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Immich Discord"/>
@@ -13,7 +13,9 @@
   <br/>   
 </p>
 
-> ⚠️ WARNING - The project is under very active development. Expect bugs and changes. Do not use as a single source to store of your photos and videos!
+<h1 align="center" color="red">
+⚠️ WARNING - The project is under very active development. Expect bugs and changes. Do not use as a single source to store of your photos and videos!
+</h1>
 
 ## Demo
 
@@ -64,8 +66,6 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 <br/>
 
 # Screenshots
-
-<img src="design/immich-screenshots.png" title="Login With Custom URL">
 
 # Support the project
 
