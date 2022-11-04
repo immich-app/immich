@@ -8,8 +8,6 @@
   <br/>   
 </p>
 
-
-
 <p align="center">
 <img src="design/immich-logo.svg" width="150" title="Login With Custom URL">
 </p>
@@ -20,13 +18,22 @@
 </a>
 <br/>
 
-
-
 ## Disclaimer
-* ⚠️ The project is under **very active** development. 
-* ⚠️ Expect bugs and breaking changes. 
-* ⚠️ **Do not use as a single source to store of your photos and videos!**
 
+- ⚠️ The project is under **very active** development.
+- ⚠️ Expect bugs and breaking changes.
+- ⚠️ **Do not use as a single source to store of your photos and videos!**
+
+## Content
+
+- [Official Documentation](https://docs.immich.app/docs/overview/introduction)
+- [Demo](#demo)
+- [Features](#features)
+- [Introduction](https://docs.immich.app/docs/overview/introduction)
+- [Installation](https://docs.immich.app/docs/installation/requirements)
+- [Contribution Guidelines](https://docs.immich.app/docs/contribution-guidelines)
+- [Support The Project](#support-the-project)
+- [Known Issues](#known-issues)
 
 ## Demo
 
@@ -43,16 +50,6 @@ password: demo
 ```
 Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
-
-## Content
-
-- [Official Documentation](https://docs.immich.app/docs/overview/introduction)
-- [Features](#features)
-- [Introduction](https://docs.immich.app/docs/overview/introduction)
-- [Installation](https://docs.immich.app/docs/installation/requirements)
-- [Contribution Guidelines](https://docs.immich.app/docs/contribution-guidelines)
-- [Support The Project](#support-the-project)
-- [Known Issues](#known-issues)
 
 # Features
 
