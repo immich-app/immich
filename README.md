@@ -3,8 +3,7 @@
 <img src="design/immich-screenshots.png" title="Login With Custom URL">
 <br/>
 
-<p align="center">
-  <br/>  
+<p align="center"> 
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: MIT"></a>
   <a href="https://discord.gg/D8JsnBEuKb">
     <img src="https://img.shields.io/discord/979116623879368755.svg?label=Immich%20Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Immich Discord"/>
@@ -13,9 +12,12 @@
   <br/>   
 </p>
 
-<h3 align="center">
-⚠️ WARNING - The project is under very active development. Expect bugs and changes. Do not use as a single source to store of your photos and videos!
-</h3>
+
+## Disclaimer
+* ⚠️ The project is under very active development. 
+* ⚠️ Expect bugs and changes. 
+* ⚠️ Do not use as a single source to store of your photos and videos!
+
 
 ## Demo
 
