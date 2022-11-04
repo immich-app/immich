@@ -12,11 +12,9 @@ function HomepageHeader() {
   return (
     <header className={clsx("hero hero--primary", styles.heroBanner)}>
       <div className="container">
-        <img src="/img/immich-screenshots.png" alt="logo" />
         <h1
           className="hero__title"
           style={{
-            paddingTop: "50px",
             fontFamily: "Snowburst One",
             color: "#adcbfa",
           }}
@@ -43,6 +41,8 @@ function HomepageHeader() {
             </Link>
           </div>
         </div>
+
+        <img src="/img/immich-screenshots.png" alt="logo" />
       </div>
     </header>
   );
@@ -52,7 +52,7 @@ export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={`${siteConfig.title}`}
+      title={`Home`}
       description="immich Self-hosted photo and video backup solution directly from your mobile phone "
     >
       <HomepageHeader />

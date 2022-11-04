@@ -9,8 +9,8 @@
   overflow: hidden;
   text-align: center;
   background: #606c88;
-  background: -webkit-linear-gradient(to top, #1f232d, #606c88);
-  background: linear-gradient(to top, #1f232d, #606c88);
+  background: -webkit-linear-gradient(to top, #4e5362, #606c88);
+  background: linear-gradient(to top, #4e5362, #606c88);
   color: whitesmoke;
 }
 
@@ -31,7 +31,7 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  margin: 0 -0.5rem;
+  margin-bottom: 4rem;
   gap: 1rem;
 }
 

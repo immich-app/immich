@@ -8,7 +8,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 const config = {
   title: "Immich",
   tagline:
-    "Self-hosted photo and video backup solution directly from your mobile phone",
+    "High performance self-hosted photo and video backup solution directly from your mobile phone",
   url: "https://documentation.immich.app",
   baseUrl: "/",
   onBrokenLinks: "throw",
@@ -116,10 +116,10 @@ const config = {
           {
             title: "More",
             items: [
-              // {
-              //   label: "Blog",
-              //   to: "/blog",
-              // },
+              {
+                label: "Blog",
+                to: "/blog",
+              },
               {
                 label: "GitHub",
                 href: "https://github.com/immich-app/immich",
