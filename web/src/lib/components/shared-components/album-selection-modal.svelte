@@ -2,8 +2,8 @@
 	import { AlbumResponseDto, api } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
-	import BaseModal from '../shared-components/base-modal.svelte';
-	import AlbumListItem from './album-list-item.svelte';
+	import BaseModal from './base-modal.svelte';
+	import AlbumListItem from '../asset-viewer/album-list-item.svelte';
 
 	let albums: AlbumResponseDto[] = [];
 	let recentAlbums: AlbumResponseDto[] = [];
