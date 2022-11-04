@@ -8,18 +8,12 @@
   position: relative;
   overflow: hidden;
   text-align: center;
-  background: #0f0c29;
-  background: -webkit-linear-gradient(to top, #24243e, #302b63, #0f0c29);
-  background: linear-gradient(to top, #24243e, #302b63, #0f0c29);
-
-  color: whitesmoke;
-}
-
-[data-theme="dark"] .heroBanner {
   background: #606c88;
   background: -webkit-linear-gradient(to top, #3f4c6b, #606c88);
   background: linear-gradient(to top, #3f4c6b, #606c88);
+  color: whitesmoke;
 }
+
 @media screen and (max-width: 996px) {
   .heroBanner {
     padding: 2rem;
@@ -41,9 +35,7 @@
   gap: 1rem;
 }
 
-.installationButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgb(25, 57, 171);
+.installButton {
+  background-color: #adcbfa;
+  color: #000000;
 }

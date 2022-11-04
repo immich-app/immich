@@ -12,23 +12,36 @@ function HomepageHeader() {
   return (
     <header className={clsx("hero hero--primary", styles.heroBanner)}>
       <div className="container">
-        <img
-          src="/img/immich-screenshots.png"
-          alt="logo"
-          // style={{ height: "800px" }}
-        />
-        <h1 className="hero__title" style={{ paddingTop: "50px" }}>
-          Immich
+        <img src="/img/immich-screenshots.png" alt="logo" />
+        <h1
+          className="hero__title"
+          style={{
+            paddingTop: "50px",
+            fontFamily: "Snowburst One",
+            color: "#adcbfa",
+          }}
+        >
+          IMMICH
         </h1>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
+        <div className={styles.buttonsRow}>
+          <div className={styles.buttons}>
+            <Link
+              className="button button--secondary button--lg"
+              to="docs/overview/introduction"
+            >
+              Introduction
+            </Link>
+          </div>
 
-        <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="docs/overview/introduction"
-          >
-            Getting Started
-          </Link>
+          <div className={styles.buttons}>
+            <Link
+              className={clsx("button button--lg", styles.installButton)}
+              to="docs/installation/requirements"
+            >
+              Installation
+            </Link>
+          </div>
         </div>
       </div>
     </header>
@@ -43,9 +56,7 @@ export default function Home(): JSX.Element {
       description="immich Self-hosted photo and video backup solution directly from your mobile phone "
     >
       <HomepageHeader />
-      <main>
-        <HomepageFeatures />
-      </main>
+      <main>{/* <HomepageFeatures /> */}</main>
     </Layout>
   );
 }
