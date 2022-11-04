@@ -38,4 +38,19 @@
 .installButton {
   background-color: #adcbfa;
   color: #000000;
+  border-radius: 50px;
+}
+
+.installButton:hover {
+  color: #000000;
+}
+
+.introButton {
+  background-color: #e6ebf5;
+  color: #000000;
+  border-radius: 50px;
+}
+
+.introButton:hover {
+  color: #000000;
 }
