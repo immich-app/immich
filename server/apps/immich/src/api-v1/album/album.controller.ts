@@ -121,8 +121,9 @@ export class AlbumController {
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
     @Response({ passthrough: true }) res: Res,
   ): Promise<any> {
-    const { stream, filename } = await this.albumService.downloadArchive(authUser, albumId);
+    const { stream, filename, filesize } = await this.albumService.downloadArchive(authUser, albumId);
     res.attachment(filename);
+    res.setHeader('X-Immich-Content-Length-Hint', filesize);
     return stream;
   }
 }

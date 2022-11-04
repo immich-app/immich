@@ -171,11 +171,13 @@ export class AlbumService {
     try {
       const archive = archiver('zip', { store: true });
       const stream = new StreamableFile(archive);
+      let totalSize = 0;
 
       for (const { assetInfo } of album.assets) {
         const { originalPath } = assetInfo;
         const name = `${assetInfo.exifInfo?.imageName || assetInfo.id}${extname(originalPath)}`;
         archive.file(originalPath, { name });
+        totalSize += Number(assetInfo.exifInfo?.fileSizeInByte || 0);
       }
 
       archive.finalize();
@@ -183,6 +185,7 @@ export class AlbumService {
       return {
         stream,
         filename: `${album.albumName}.zip`,
+        filesize: totalSize,
       };
     } catch (e) {
       Logger.error(`Error downloading album ${e}`, 'downloadArchive');
