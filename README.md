@@ -43,12 +43,10 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ## Content
 - [Features](#features)
 - [Screenshots](#screenshots)
-- [Installation](#installation)
-- [Update](#update)
-- [Mobile App](#mobile-app)
-- [App Beta Invitation links](#App-Beta-release-channel)
-- [Development](#development)
-- [Support](#support)
+- [Introduction](https://docs.immich.app/docs/overview/introduction)
+- [Installation](https://docs.immich.app/docs/category/installation)
+- [Contribution Guidelines](https://docs.immich.app/docs/contribution-guidelines)
+- [Support The Project](#support-the-project)
 - [Known Issues](#known-issues)
 
 # Features 
@@ -78,170 +76,18 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 # Screenshots
 <img src="design/immich-screenshots.png" title="Login With Custom URL"> 
 
-# Project Details
-## 💾 System Requirements
+# Support the project
 
-- **OS**: Preferred unix-based operating system (Ubuntu, Debian, MacOS...etc). 
+I've committed to this project, and I will not stop. I will keep updating the docs, adding new features, and fixing bugs. But I can't do it alone. So I need your help to give me additional motivation to keep going.
 
-- **RAM**: At least 2GB, preferred 4GB.
+As our hosts in the [selfhosted.show - In the episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) said, this is a massive undertaking of what the team and I are doing. And I would love to someday be able to do this full-time, and I am asking for your help to make that happen.
 
-- **Core**: At least 2 cores, preferred 4 cores.
+If you feel like this is the right cause and the app is something you are seeing yourself using for a long time, please consider supporting the project with the option below.
 
-## 🔩 Technology Stack
+## Donation
 
-There are several services that compose Immich:
-
-1. **NestJs** - Backend of the application
-2. **SvelteKit** - Web frontend of the application
-3. **PostgreSQL** - Main database of the application
-4. **Redis** - For sharing websocket instance between docker instances and background tasks message queue.
-5. **Nginx** - Load balancing and optimized file uploading.
-6. **TensorFlow** - Object Detection (COCO SSD) and Image Classification (ImageNet).
-
-
-  <br/>  
-
-# Installation
-
-NOTE: When using a reverse proxy in front of Immich (such as NGINX), the reverse proxy might require extra configuration to allow large files to be uploaded (such as `client_max_body_size` in the case of NGINX).
-## Testing one-step installation (not recommended for production)
-
-> ⚠️ *This installation method is for evaluating Immich before further customization to meet the users' needs.*
-
-*Applicable operating systems: Ubuntu, Debian, MacOS*
-
-- In the shell, from the directory of your choice, run the following command:
-
-```bash
-curl -o- https://raw.githubusercontent.com/immich-app/immich/main/install.sh | bash
-```
-
-This script will download the `docker-compose.yml` file and the `.env` file, then populate the necessary information, and finally run the `docker-compose up` or `docker compose up` (based on your docker's version) command. 
-
-The web application will be available at `http://<machine-ip-address>:2283`, and the server URL for the mobile app will be `http://<machine-ip-address>:2283/api`.
-
-The directory which is used to store the backup file is `./immich-app/immich-data`.
-
-
-  <br/>  
-
-## Custom installation (Recommended)
-
-### Step 1 - Download necessary files
-
-- Create a directory called `immich-app` and cd into it.
-
-- Get `docker-compose.yml`
-
-```bash
-wget https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml
-```
-
-- Get `.env`
-
-```bash
-wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
-```
-
-### Step 2 - Populate .env file with custom information
-
-<a href="https://github.com/immich-app/immich/blob/main/docker/.env.example" target="_blank"><b>See the example <code>.env</code> file</b></a>
-
-* Populate custom database information if necessary.
-* Populate `UPLOAD_LOCATION` as prefered location for storing backup assets.
-* Populate a secret value for `JWT_SECRET`, you can use this command: `openssl rand -base64 128`
-
-### Step 3 - Start the containers
-
-- Run `docker-compose up` or `docker compose up` (based on your docker's version)
-
-### Step 4 - Register admin user
-
-- Navigate to the web at `http://<machine-ip-address>:2283` and follow the prompts to register admin user. 
-<p align="center">
-  <img src="design/admin-registration-form.png" width="300" title="Admin Registration">
-</p>
-
-- You can add and manage users from the administration page. 
-<p align="center">
- <img src="design/admin-interface.png" width="500" title="Admin User Management">
-</p>
-
-### Step 5 - Access the mobile app
-
-- Login the mobile app with the server endpoint URL at `http://<machine-ip-address>:2283/api`
-<p align="center">
-  <img src="design/login-screen.jpeg" width="250" title="Example login screen">
-</p> 
-
-  <br/>  
-
-## Update
-
-If you have installed, you can update the application by navigate to the directory that contains the `docker-compose.yml` file and run the following command:
-
-```bash
-docker-compose pull && docker-compose up -d
-```
-# Unraid Installation
-
-Please follow this [article](https://mfaz.dev/posts/immich-unraid/) for a tutorial on how to install Immich on Unraid
-
-
-# Mobile app
-
-| F-Droid | Google Play | iOS |
-| - | - | - |
-| <a href="https://f-droid.org/packages/app.alextran.immich"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80"></a> | <p align="left"> <a href="https://play.google.com/store/apps/details?id=app.alextran.immich"><img src="design/google-play-qr-code.png" width="200" title="Google Play Store"></a> <p/> | <p align="left"> <a href="https://apps.apple.com/us/app/immich/id1613945652"><img src="design/ios-qr-code.png" width="200" title="Apple App Store"></a> <p/> |
-
-> *The Play/App Store version might be lagging behind the latest release due to their review process.*
-
-# App Beta release channel
-
-You can opt-in to join app beta release channel by following the links below:
-* Android: Invitation link from [web](https://play.google.com/store/apps/details?id=app.alextran.immich) or from [mobile](https://play.google.com/store/apps/details?id=app.alextran.immich)
-* iOS: [TestFlight invitation link](https://testflight.apple.com/join/1vYsAa8P)
-  <br/>  
-
-# Development
-
-The development environment can be started from the root of the project after populating the `.env` file with the command:
-
-```bash
-make dev # required Makefile installed on the system.
-``` 
-
-All servers and web container are hot reload for quick feedback loop.
-
-## Note for developers
-### 1 - OpenAPI
-OpenAPI is used to generate the client (Typescript, Dart) SDK. `openapi-generator-cli` can be installed [here](https://openapi-generator.tech/docs/installation/). When you add a new or modify an existing endpoint, you must run the generate command below to update the client SDK.
-
-```bash
-npm run api:generate # Run from server directory
-```
-You can find the generated client SDK in the [`web/src/api`](web/src/api) for Typescript SDK and [`mobile/openapi`](mobile/openapi) for Dart SDK.
-
-
-  <br/>  
-
-# Support
-
-If you like the app, find it helpful, and want to support me to offset the cost of publishing to AppStores, you can sponsor the project with [**one time**](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) or monthly donation from [**Github Sponsor**](https://github.com/sponsors/alextran1502).
-
-You can also donate using crypto currency with the following addresses:
-
-<p align="" style="display: flex; place-items: center; gap: 15px" title="Bitcoin(BTC)"><img src="design/bitcoin.png" width="25" title="Bitcoin"> <b>Bitcoin</b>: <code>1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX</code></p>
-
-<p align="" style="display: flex; place-items: center; gap: 15px" title="Cardano(ADA)"> <img src="design/cardano.png" width="30" title="Cardano"> <b>Cardano</b>: <code>addr1qyy567vqhqrr3p7vpszr5p264gw89sqcwts2z8wqy4yek87cdmy79zazyjp7tmwhkluhk3krvslkzfvg0h43tytp3f5q49nycc</code> </p>
-
-
-This is also a meaningful way to give me motivation and encouragement to continue working on the app.
-
-Cheers! 🎉
-
-
-  <br/>  
+* Monthly donation via [GitHub Sponsors](https://github.com/sponsors/alextran1502)
+* One-time donation via [Github Sponsors](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502)
 
 # Known Issues
 
