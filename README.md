@@ -1,4 +1,4 @@
-<h3 align="center"Immich - High performance self-hosted photo and video backup solution</h3>
+<h3 align="center">Immich - High performance self-hosted photo and video backup solution</h3>
 <br/>
 <img src="design/immich-screenshots.png" title="Login With Custom URL">
 <br/>
