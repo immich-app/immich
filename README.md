@@ -73,23 +73,10 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Virtual scroll | N/A | Yes
 
 
-  <br/>  
+<br/>  
 
 # Screenshots
-
-### Mobile
-| | | | | |
-| - | - | - | - | - |
-| <img src="design/login-screen.png" width="150" title="Login With Custom URL"> <p align="center"> Login with custom URL </p> | <img src="design/backup-screen.png" width="150" title="Backup Setting Info"> <p align="center"> Backup Settings </p> | <img src="design/selective-backup-screen.png" width="150" title="Backup Setting Info"> <p align="center"> Backup selection </p> | <img src="design/home-screen.jpeg" width="150" title="Home Screen"> <p align="center"> Home Screen </p> | <img src="design/search-screen.jpeg" width="150" title="Curated Search Info"> <p align="center"> Curated search </p> |
-| <img src="design/shared-albums.png" width="150" title="Shared Albums"> <p align="center"> Shared albums </p>  |  <img src="design/nsc6.png" width="150" title="EXIF Info"> <p align="center"> EXIF info </p>  | <img src="https://media.giphy.com/media/y8ZeaAigGmNvlSoKhU/giphy.gif" width="150" title="Loading ~4000 images/videos"> <p align="center"> Loading ~4000 images/videos </p>  |
-
-### Web
-| Home Dashboard | Image view |
-| - | - |
-|<img src="design/web-home.jpeg"  width="100%" title="Home Dashboard"> | <img src="design/web-detail.jpeg" width="100%" title="Detail">|
-
-
-  <br/>  
+<img src="design/immich-screenshots.png" title="Login With Custom URL"> 
 
 # Project Details
 ## 💾 System Requirements

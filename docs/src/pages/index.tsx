@@ -32,7 +32,7 @@ export default function Home(): JSX.Element {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
+      description="immich Self-hosted photo and video backup solution directly from your mobile phone "
     >
       <HomepageHeader />
       <main>
