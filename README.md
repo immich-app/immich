@@ -17,9 +17,9 @@
 
 
 ## Disclaimer
-* ⚠️ The project is under very active development. 
-* ⚠️ Expect bugs and changes. 
-* ⚠️ Do not use as a single source to store of your photos and videos!
+* ⚠️ The project is under **very active** development. 
+* ⚠️ Expect bugs and breaking changes. 
+* ⚠️ **Do not use as a single source to store of your photos and videos!**
 
 
 ## Demo
