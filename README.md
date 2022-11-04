@@ -1,9 +1,8 @@
-<h1 align="center"> <b>Immich - High performance self-hosted photo and video backup solution.</b> </h1>
+<h2 align="center"> <b>Immich - High performance self-hosted photo and video backup solution.</b> </h2>
 <img src="design/immich-screenshots.png" title="Login With Custom URL">
-
+<br/>
 
 <p align="center">
-  <br/>  
   <br/>  
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: MIT"></a>
   <a href="https://discord.gg/D8JsnBEuKb">
