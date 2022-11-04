@@ -37,7 +37,6 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 - [Official Documentation](https://docs.immich.app/docs/overview/introduction)
 - [Features](#features)
-- [Screenshots](#screenshots)
 - [Introduction](https://docs.immich.app/docs/overview/introduction)
 - [Installation](https://docs.immich.app/docs/category/installation)
 - [Contribution Guidelines](https://docs.immich.app/docs/contribution-guidelines)
@@ -63,10 +62,6 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Background backup                           | Android | N/A |
 | Virtual scroll                              | N/A     | Yes |
 
-<br/>
-
-# Screenshots
-
 # Support the project
 
 I've committed to this project, and I will not stop. I will keep updating the docs, adding new features, and fixing bugs. But I can't do it alone. So I need your help to give me additional motivation to keep going.
@@ -77,8 +72,8 @@ If you feel like this is the right cause and the app is something you are seeing
 
 ## Donation
 
-- [Monthly donation](<(https://github.com/sponsors/alextran1502)>) via GitHub Sponsors
-- [One-time](<(https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502)>) donation via Github Sponsors
+- [Monthly donation](https://github.com/sponsors/alextran1502) via GitHub Sponsors
+- [One-time donation](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) via Github Sponsors
 
 # Known Issues
 
