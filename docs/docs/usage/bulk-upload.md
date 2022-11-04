@@ -13,34 +13,12 @@ You can use the CLI to upload the existing gallery to the Immich's server
 * Node.js 16 or above
 * Npm
 
-## Supported file type
-
-
-| Image       | Video     |
-| ----------- | --------- |
-| heif        | mp4       |
-| heic        | quicktime |
-| jpeg        | x-msvideo |
-| png         | 3gpp      |
-| jpg         |           |
-| gif         |           |
-| heic        |           |
-| heif        |           |
-| dng         |           |
-| x-adobe-dng |           |
-| webp        |           |
-| tiff        |           |
-| nef         |           |
-
-
-## Getting Started
-
-### Installation
+## Installation
 ```bash
 npm i -g immich
 ```
 
-### Quick Start
+## Quick Start
 Specify user's credential, Immich's server address and port and the directory you would like to upload videos/photos from.
 
 ```bash
@@ -77,28 +55,21 @@ alias immich="docker run -it --rm -v $(pwd):/import ghcr.io/immich-app/immich-cl
 immich upload --email testuser@email.com --password password --server http://192.168.1.216:2283/api -d /import
 ```
 
-### Install from source
+### Run from source
 
-1 - Clone Repository
-
-```bash
+```bash title="Clone Repository"
 git clone https://github.com/alextran1502/immich-cli
 ```
 
-2 - Install dependencies
 
-```bash
+```bash title="Install dependencies"
 npm install
 ```
 
-3 - Run
-
-```bash
+```bash title="Build the project"
 npm run build
 ```
 
-4 - Run
-
-```bash
+```bash title="Run the command"
 node bin/index.js upload --email testuser@email.com --password password --server http://192.168.1.216:2283/api -d your/target/directory
 ```
