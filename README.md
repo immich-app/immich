@@ -13,7 +13,7 @@
 </p>
 <h3 align="center">Immich - High performance self-hosted photo and video backup solution</h3>
 <br/>
-<a href="https://docs.immich.app">
+<a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Main Screenshot">
 </a>
 <br/>
@@ -26,12 +26,12 @@
 
 ## Content
 
-- [Official Documentation](https://docs.immich.app/docs/overview/introduction)
+- [Official Documentation](https://immich.app/docs/overview/introduction)
 - [Demo](#demo)
 - [Features](#features)
-- [Introduction](https://docs.immich.app/docs/overview/introduction)
-- [Installation](https://docs.immich.app/docs/installation/requirements)
-- [Contribution Guidelines](https://docs.immich.app/docs/contribution-guidelines)
+- [Introduction](https://immich.app/docs/overview/introduction)
+- [Installation](https://immich.app/docs/installation/requirements)
+- [Contribution Guidelines](https://immich.app/docs/contribution-guidelines)
 - [Support The Project](#support-the-project)
 - [Known Issues](#known-issues)
 
