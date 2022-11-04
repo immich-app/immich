@@ -12,16 +12,37 @@ function HomepageHeader() {
   return (
     <header className={clsx("hero hero--primary", styles.heroBanner)}>
       <div className="container">
-        <h1 className="hero__title">{siteConfig.title}</h1>
+        <h1
+          className="hero__title"
+          style={{
+            fontFamily: "Snowburst One",
+            color: "#adcbfa",
+          }}
+        >
+          IMMICH
+        </h1>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="docs/installation/requirements"
-          >
-            Getting Started
-          </Link>
+        <div className={styles.buttonsRow}>
+          <div className={styles.buttons}>
+            <Link
+              className={clsx("button button--lg", styles.introButton)}
+              to="docs/overview/introduction"
+            >
+              Introduction
+            </Link>
+          </div>
+
+          <div className={styles.buttons}>
+            <Link
+              className={clsx("button button--lg", styles.installButton)}
+              to="docs/installation/requirements"
+            >
+              Installation
+            </Link>
+          </div>
         </div>
+
+        <img src="/img/immich-screenshots.png" alt="logo" />
       </div>
     </header>
   );
@@ -31,13 +52,11 @@ export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={`${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
+      title={`Home`}
+      description="immich Self-hosted photo and video backup solution directly from your mobile phone "
     >
       <HomepageHeader />
-      <main>
-        <HomepageFeatures />
-      </main>
+      <main>{/* <HomepageFeatures /> */}</main>
     </Layout>
   );
 }
