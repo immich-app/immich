@@ -1,3 +1,6 @@
+<p align="center">
+<img src="design/immich-logo.svg" width="150" title="Login With Custom URL">
+</p>
 <h3 align="center">Immich - High performance self-hosted photo and video backup solution</h3>
 <br/>
 <img src="design/immich-screenshots.png" title="Login With Custom URL">
@@ -40,7 +43,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 - [Official Documentation](https://docs.immich.app/docs/overview/introduction)
 - [Features](#features)
 - [Introduction](https://docs.immich.app/docs/overview/introduction)
-- [Installation](https://docs.immich.app/docs/category/installation)
+- [Installation](https://docs.immich.app/docs/installation/requirements)
 - [Contribution Guidelines](https://docs.immich.app/docs/contribution-guidelines)
 - [Support The Project](#support-the-project)
 - [Known Issues](#known-issues)
