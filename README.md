@@ -13,9 +13,9 @@
   <br/>   
 </p>
 
-<h1 align="center" color="red">
+<h3 align="center" color="red">
 ⚠️ WARNING - The project is under very active development. Expect bugs and changes. Do not use as a single source to store of your photos and videos!
-</h1>
+</h3>
 
 ## Demo
 
