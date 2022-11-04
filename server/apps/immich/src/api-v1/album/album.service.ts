@@ -65,11 +65,13 @@ export class AlbumService {
    * @returns All Shared Album And Its Members
    */
   async getAllAlbums(authUser: AuthUserDto, getAlbumsDto: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+    let albums: AlbumEntity[];
+
     if (typeof getAlbumsDto.assetId === 'string') {
-      const albums = await this._albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
-      return albums.map(mapAlbumExcludeAssetInfo);
+      albums = await this._albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
+    } else {
+      albums = await this._albumRepository.getList(authUser.id, getAlbumsDto);
     }
-    const albums = await this._albumRepository.getList(authUser.id, getAlbumsDto);
 
     for (const album of albums) {
       await this._checkValidThumbnail(album);
@@ -112,8 +114,18 @@ export class AlbumService {
     albumId: string,
   ): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId });
-    const updateAlbum = await this._albumRepository.removeAssets(album, removeAssetsDto);
-    return mapAlbum(updateAlbum);
+    const deletedCount = await this._albumRepository.removeAssets(album, removeAssetsDto);
+    const newAlbum = await this._getAlbum({ authUser, albumId });
+
+    if (newAlbum) {
+      await this._checkValidThumbnail(newAlbum);
+    }
+
+    if (deletedCount !== removeAssetsDto.assetIds.length) {
+      throw new BadRequestException('Some assets were not found in the album');
+    }
+
+    return mapAlbum(newAlbum);
   }
 
   async addAssetsToAlbum(
@@ -178,17 +190,17 @@ export class AlbumService {
     }
   }
 
-  async _checkValidThumbnail(album: AlbumEntity): Promise<AlbumEntity> {
-    const assetId = album.albumThumbnailAssetId;
-    if (assetId) {
-      try {
-        await this._assetRepository.getById(assetId);
-      } catch (e) {
-        album.albumThumbnailAssetId = null;
-        return await this._albumRepository.updateAlbum(album, {});
+  async _checkValidThumbnail(album: AlbumEntity) {
+    const assets = album.assets || [];
+    const valid = assets.some((asset) => asset.assetId === album.albumThumbnailAssetId);
+    if (!valid) {
+      let dto: UpdateAlbumDto = {};
+      if (assets.length > 0) {
+        const albumThumbnailAssetId = assets[0].assetId;
+        dto = { albumThumbnailAssetId };
       }
+      await this._albumRepository.updateAlbum(album, dto);
+      album.albumThumbnailAssetId = dto.albumThumbnailAssetId || null;
     }
-
-    return album;
   }
 }

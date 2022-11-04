@@ -43,8 +43,8 @@ describe('AlbumCard component', () => {
 			const albumNameElement = sut.getByTestId('album-name');
 			const albumDetailsElement = sut.getByTestId('album-details');
 			const detailsText = `${count} items` + (shared ? ' . Shared' : '');
-			// TODO: is this a bug?
-			expect(albumImgElement).toHaveAttribute('src', '/api/asset/thumbnail/null?format=WEBP');
+
+			expect(albumImgElement).toHaveAttribute('src', 'no-thumbnail.png');
 			expect(albumImgElement).toHaveAttribute('alt', album.id);
 
 			await waitFor(() => expect(albumImgElement).toHaveAttribute('src', 'no-thumbnail.png'));
