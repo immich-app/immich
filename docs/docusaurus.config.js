@@ -42,10 +42,10 @@ const config = {
           // Remove this to remove the "edit this page" links.
           editUrl: "https://github.com/immich-app/immich/tree/main/docs/",
         },
-        blog: {
-          showReadingTime: true,
-          editUrl: "https://github.com/immich-app/immich/tree/main/docs/",
-        },
+        // blog: {
+        //   showReadingTime: true,
+        //   editUrl: "https://github.com/immich-app/immich/tree/main/docs/",
+        // },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },
@@ -58,7 +58,7 @@ const config = {
     ({
       announcementBar: {
         id: "site_announcement_immich",
-        content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use as a single source to store of your photos and videos!`,
+        content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use as a <strong>single source</strong> to store of your photos and videos!`,
         backgroundColor: "#593f00",
         textColor: "#ffefc9",
         isCloseable: false,
@@ -80,7 +80,7 @@ const config = {
             position: "right",
             label: "Documentation",
           },
-          { to: "/blog", label: "Blog", position: "right" },
+          // { to: "/blog", label: "Blog", position: "right" },
           {
             href: "https://github.com/immich-app/immich",
             label: "GitHub",

@@ -3,7 +3,7 @@ sidebar_position: 4
 ---
 
 
-# Mobile App Beta Program
+# Mobile app Beta program
 
 Join the beta release channel to test the latest update of the app
 
