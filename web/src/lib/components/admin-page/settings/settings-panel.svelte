@@ -11,25 +11,25 @@
 </script>
 
 <table class="text-left w-full my-4">
-	<thead class="border rounded-md mb-2 bg-gray-50 flex text-immich-primary w-full h-12 ">
+	<thead class="border rounded-md mb-4 bg-gray-50 flex text-immich-primary w-full h-12 dark:bg-immich-dark-gray dark:text-immich-dark-primary dark:border-immich-dark-gray">
 	<tr class="flex w-full place-items-center">
 		<th class="text-center w-2/5 font-medium text-sm">Setting</th>
 		<th class="text-center w-2/5 font-medium text-sm">Value</th>
 		<th class="text-center w-1/5 font-medium text-sm">Edit</th>
 	</tr>
 	</thead>
-	<tbody class="rounded-md w-full max-h-[320px] block border">
+	<tbody class="rounded-md w-full max-h-[320px] block border dark:border-immich-dark-gray">
 	{#each Object.entries(settings.config) as [name, value], i}
-		<tr class={`text-center flex place-items-center w-full border-b h-[80px] ${
-					i % 2 == 0 ? 'bg-gray-100' : 'bg-immich-bg'
+		<tr class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-fg ${
+					i % 2 == 0 ? 'bg-slate-50 dark:bg-[#181818]' : 'bg-immich-bg dark:bg-immich-dark-bg'
 				}`}>
 			<td class="text-sm px-4 w-2/5 text-ellipsis">
 				{name.split('_').map((word) => {return word.charAt(0).toUpperCase() + word.slice(1)}).join(' ')}
 			</td>
 			<td class="text-sm px-4 w-2/5 text-ellipsis">
 				<input
-					style="text-align: center;"
-					class="immich-form-input-dark"
+					style="text-align: center"
+					class="immich-form-input"
 					id="{name}"
 					name="{name}"
 					type="text"
@@ -40,7 +40,7 @@
 			<td class="text-sm px-4 w-1/5 text-ellipsis">
 				<button
 					on:click={() => {{edit[name] = !edit[name]}}}
-					class="bg-immich-primary text-gray-100 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75">
+					class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75">
 					{#if edit[name]}
 						<SaveOutline size="20" />
 					{:else}
