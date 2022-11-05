@@ -6,13 +6,15 @@
   "compilerOptions": {
     "webpack": false,
     "tsConfigPath": "apps/immich/tsconfig.app.json",
-    "plugins": [  {
-      "name": "@nestjs/swagger",
-      "options": {
-        "classValidatorShim": false,
-        "introspectComments": true
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "classValidatorShim": false,
+          "introspectComments": true
+        }
       }
-    }]
+    ]
   },
   "projects": {
     "immich": {
@@ -31,6 +33,15 @@
       "sourceRoot": "apps/microservices/src",
       "compilerOptions": {
         "tsConfigPath": "apps/microservices/tsconfig.app.json"
+      }
+    },
+    "cli": {
+      "type": "application",
+      "root": "apps/cli",
+      "entryFile": "immich",
+      "sourceRoot": "apps/cli/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/cli/tsconfig.app.json"
       }
     },
     "common": {
