@@ -65,8 +65,7 @@ class _$AppRouter extends RootStackRouter {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
       return MaterialPageX<dynamic>(
           routeData: routeData,
-          child: VideoViewerPage(
-              key: args.key, videoUrl: args.videoUrl, asset: args.asset));
+          child: VideoViewerPage(key: args.key, asset: args.asset));
     },
     BackupControllerRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
@@ -341,28 +340,24 @@ class ImageViewerRouteArgs {
 /// generated route for
 /// [VideoViewerPage]
 class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
-  VideoViewerRoute({Key? key, required String videoUrl, required Asset asset})
+  VideoViewerRoute({Key? key, required Asset asset})
       : super(VideoViewerRoute.name,
             path: '/video-viewer-page',
-            args: VideoViewerRouteArgs(
-                key: key, videoUrl: videoUrl, asset: asset));
+            args: VideoViewerRouteArgs(key: key, asset: asset));
 
   static const String name = 'VideoViewerRoute';
 }
 
 class VideoViewerRouteArgs {
-  const VideoViewerRouteArgs(
-      {this.key, required this.videoUrl, required this.asset});
+  const VideoViewerRouteArgs({this.key, required this.asset});
 
   final Key? key;
-
-  final String videoUrl;
 
   final Asset asset;
 
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, videoUrl: $videoUrl, asset: $asset}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset}';
   }
 }
 

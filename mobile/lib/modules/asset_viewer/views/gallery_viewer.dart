@@ -138,11 +138,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 },
                 child: Hero(
                   tag: assetList[index].id,
-                  child: VideoViewerPage(
-                    asset: assetList[index],
-                    videoUrl:
-                        '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}',
-                  ),
+                  child: VideoViewerPage(asset: assetList[index]),
                 ),
               );
             }
