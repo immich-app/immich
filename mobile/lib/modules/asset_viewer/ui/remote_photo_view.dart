@@ -1,7 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:openapi/api.dart';
+import 'package:photo_manager/photo_manager.dart'
+    show AssetEntityImageProvider, ThumbnailSize;
 import 'package:photo_view/photo_view.dart';
 
 enum _RemoteImageStatus { empty, thumbnail, preview, full }
@@ -11,10 +14,9 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   _RemoteImageStatus _status = _RemoteImageStatus.empty;
   bool _zoomedIn = false;
 
-  late CachedNetworkImageProvider _fullProvider;
-  late CachedNetworkImageProvider _previewProvider;
-  late CachedNetworkImageProvider _thumbnailProvider;
-  late AssetEntityImageProvider _localProvider;
+  late ImageProvider _fullProvider;
+  late ImageProvider _previewProvider;
+  late ImageProvider _thumbnailProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +73,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
   void _performStateTransition(
     _RemoteImageStatus newStatus,
-    CachedNetworkImageProvider provider,
+    ImageProvider provider,
   ) {
     if (_status == newStatus) return;
 
@@ -94,14 +96,26 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
   void _loadImages() {
     if (widget.asset.isLocal) {
-      _localProvider = AssetEntityImageProvider(widget.asset.local!);
-      _imageProvider = _localProvider;
+      _imageProvider = AssetEntityImageProvider(
+        widget.asset.local!,
+        isOriginal: false,
+        thumbnailSize: const ThumbnailSize.square(250),
+      );
+      _fullProvider = AssetEntityImageProvider(widget.asset.local!);
+      _fullProvider.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo image, _) {
+          _performStateTransition(
+            _RemoteImageStatus.full,
+            _fullProvider,
+          );
+        }),
+      );
       return;
     }
 
     _thumbnailProvider = _authorizedImageProvider(
-      widget.thumbnailUrl!,
-      widget.cacheKey,
+      getThumbnailUrl(widget.asset.remote!),
+      widget.asset.id,
     );
     _imageProvider = _thumbnailProvider;
 
@@ -114,10 +128,10 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       }),
     );
 
-    if (widget.previewUrl != null) {
+    if (widget.threeStageLoading) {
       _previewProvider = _authorizedImageProvider(
-        widget.previewUrl!,
-        "${widget.cacheKey}_previewStage",
+        getThumbnailUrl(widget.asset.remote!, type: ThumbnailFormat.JPEG),
+        "${widget.asset.id}_previewStage",
       );
       _previewProvider.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((ImageInfo imageInfo, _) {
@@ -127,8 +141,8 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     }
 
     _fullProvider = _authorizedImageProvider(
-      widget.imageUrl!,
-      "${widget.cacheKey}_fullStage",
+      getImageUrl(widget.asset.remote!),
+      "${widget.asset.id}_fullStage",
     );
     _fullProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
@@ -163,24 +177,17 @@ class RemotePhotoView extends StatefulWidget {
   const RemotePhotoView({
     Key? key,
     required this.asset,
-    required this.thumbnailUrl,
-    required this.imageUrl,
     required this.authToken,
+    required this.threeStageLoading,
     required this.isZoomedFunction,
     required this.isZoomedListener,
     required this.onSwipeDown,
     required this.onSwipeUp,
-    this.previewUrl,
-    required this.cacheKey,
   }) : super(key: key);
 
   final Asset asset;
-  final String? thumbnailUrl;
-  final String? imageUrl;
   final String authToken;
-  final String? previewUrl;
-  final String cacheKey;
-
+  final bool threeStageLoading;
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;
   final void Function() isZoomedFunction;

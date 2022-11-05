@@ -37,8 +37,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final loading = useState(false);
     final isZoomed = useState<bool>(false);
     ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
-
-    int indexOfAsset = assetList.indexOf(asset);
+    final indexOfAsset = useState(assetList.indexOf(asset));
 
     PageController controller =
         PageController(initialPage: assetList.indexOf(asset));
@@ -52,15 +51,15 @@ class GalleryViewerPage extends HookConsumerWidget {
       [],
     );
 
-    @override
-    initState(int index) {
-      indexOfAsset = index;
-    }
-
     getAssetExif() async {
-      assetDetail = await ref
-          .watch(assetServiceProvider)
-          .getAssetById(assetList[indexOfAsset].id);
+      if (assetList[indexOfAsset.value].isRemote) {
+        assetDetail = await ref
+            .watch(assetServiceProvider)
+            .getAssetById(assetList[indexOfAsset.value].id);
+      } else {
+        // TODO local exif parsing?
+        assetDetail = assetList[indexOfAsset.value];
+      }
     }
 
     void showInfo() {
@@ -88,21 +87,20 @@ class GalleryViewerPage extends HookConsumerWidget {
       backgroundColor: Colors.black,
       appBar: TopControlAppBar(
         loading: loading.value,
-        asset: assetList[indexOfAsset],
+        asset: assetList[indexOfAsset.value],
         onMoreInfoPressed: () {
           showInfo();
         },
-        onDownloadPressed: assetList[indexOfAsset].isLocal
+        onDownloadPressed: assetList[indexOfAsset.value].isLocal
             ? null
             : () {
-                ref
-                    .watch(imageViewerStateProvider.notifier)
-                    .downloadAsset(assetList[indexOfAsset].remote!, context);
+                ref.watch(imageViewerStateProvider.notifier).downloadAsset(
+                    assetList[indexOfAsset.value].remote!, context);
               },
         onSharePressed: () {
           ref
               .watch(imageViewerStateProvider.notifier)
-              .shareAsset(assetList[indexOfAsset], context);
+              .shareAsset(assetList[indexOfAsset.value], context);
         },
       ),
       body: SafeArea(
@@ -115,11 +113,10 @@ class GalleryViewerPage extends HookConsumerWidget {
           itemCount: assetList.length,
           scrollDirection: Axis.horizontal,
           onPageChanged: (value) {
+            indexOfAsset.value = value;
             HapticFeedback.selectionClick();
           },
           itemBuilder: (context, index) {
-            initState(index);
-
             getAssetExif();
 
             if (assetList[index].isImage) {

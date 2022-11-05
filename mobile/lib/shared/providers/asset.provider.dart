@@ -119,7 +119,7 @@ final assetGroupByDateTimeProvider = StateProvider((ref) {
 final assetGroupByMonthYearProvider = StateProvider((ref) {
   var assets = ref.watch(assetProvider);
 
-  // TODO: temporary workaround to only allow remote assets to be added to album
+  // TODO: remove once temporary workaround is no longer needed (to only allow remote assets to be added to album)
   assets = assets.where((e) => e.isRemote).toList();
 
   assets.sortByCompare<DateTime>(

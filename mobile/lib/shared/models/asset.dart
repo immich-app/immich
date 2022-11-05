@@ -43,6 +43,7 @@ class Asset {
       ? remote!.duration
       : Duration(seconds: local!.duration).toString();
 
+  /// use only for tests
   set createdAt(DateTime val) {
     if (isRemote) {
       remote!.createdAt = val.toIso8601String();
@@ -79,6 +80,16 @@ Map<String, dynamic> _assetEntityToJson(AssetEntity a) {
   json["typeInt"] = a.typeInt;
   json["width"] = a.width;
   json["height"] = a.height;
+  json["duration"] = a.duration;
+  json["orientation"] = a.orientation;
+  json["isFavorite"] = a.isFavorite;
+  json["title"] = a.title;
+  json["createDateSecond"] = a.createDateSecond;
+  json["modifiedDateSecond"] = a.modifiedDateSecond;
+  json["latitude"] = a.latitude;
+  json["longitude"] = a.longitude;
+  json["mimeType"] = a.mimeType;
+  json["subtype"] = a.subtype;
   return json;
 }
 
@@ -90,6 +101,16 @@ AssetEntity? _assetEntityFromJson(dynamic value) {
       typeInt: json["typeInt"],
       width: json["width"],
       height: json["height"],
+      duration: json["duration"],
+      orientation: json["orientation"],
+      isFavorite: json["isFavorite"],
+      title: json["title"],
+      createDateSecond: json["createDateSecond"],
+      modifiedDateSecond: json["modifiedDateSecond"],
+      latitude: json["latitude"],
+      longitude: json["longitude"],
+      mimeType: json["mimeType"],
+      subtype: json["subtype"],
     );
   }
   return null;

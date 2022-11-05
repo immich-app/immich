@@ -1,12 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class SelectionThumbnailImage extends HookConsumerWidget {
   final Asset asset;
@@ -16,13 +12,11 @@ class SelectionThumbnailImage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var box = Hive.box(userInfoBox);
     var selectedAsset =
         ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
     var newAssetsForAlbum =
         ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
     var isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
-    final AsyncValue<Widget> localImage = ref.watch(imageFamily(asset.local));
 
     Widget _buildSelectionIcon(Asset asset) {
       var isSelected = selectedAsset.map((item) => item.id).contains(asset.id);
@@ -111,42 +105,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
         children: [
           Container(
             decoration: BoxDecoration(border: drawBorderColor()),
-            child: asset.isLocal
-                ? localImage.when(
-                    data: (data) => data,
-                    error: (error, stackTrace) => const SizedBox(
-                      width: 150,
-                      height: 150,
-                    ),
-                    loading: () => const SizedBox(
-                      width: 150,
-                      height: 150,
-                    ),
-                  )
-                : CachedNetworkImage(
-                    cacheKey: asset.id,
-                    width: 150,
-                    height: 150,
-                    memCacheHeight: asset.isImage ? 150 : 150,
-                    fit: BoxFit.cover,
-                    imageUrl: getThumbnailUrl(asset.remote!),
-                    httpHeaders: {
-                      "Authorization": "Bearer ${box.get(accessTokenKey)}"
-                    },
-                    fadeInDuration: const Duration(milliseconds: 250),
-                    progressIndicatorBuilder:
-                        (context, url, downloadProgress) => Transform.scale(
-                      scale: 0.2,
-                      child: CircularProgressIndicator(
-                          value: downloadProgress.progress),
-                    ),
-                    errorWidget: (context, url, error) {
-                      return Icon(
-                        Icons.image_not_supported_outlined,
-                        color: Theme.of(context).primaryColor,
-                      );
-                    },
-                  ),
+            child: ImmichImage(asset, width: 150, height: 150),
           ),
           Padding(
             padding: const EdgeInsets.all(3.0),

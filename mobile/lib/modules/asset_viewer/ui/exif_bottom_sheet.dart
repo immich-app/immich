@@ -104,7 +104,7 @@ class ExifBottomSheet extends ConsumerWidget {
           ),
 
           // Location
-          if (exifInfo?.latitude != null)
+          if (assetDetail.latitude != null)
             Padding(
               padding: const EdgeInsets.only(top: 32.0),
               child: Column(
@@ -121,9 +121,9 @@ class ExifBottomSheet extends ConsumerWidget {
                   if (assetDetail.latitude != null &&
                       assetDetail.longitude != null)
                     _buildMap(),
-                  if (assetDetail.isRemote &&
-                      assetDetail.remote!.exifInfo?.city != null &&
-                      assetDetail.remote!.exifInfo?.state != null)
+                  if (exifInfo != null &&
+                      exifInfo.city != null &&
+                      exifInfo.state != null)
                     _buildLocationText(),
                   Text(
                     "${assetDetail.latitude?.toStringAsFixed(4)}, ${assetDetail.longitude?.toStringAsFixed(4)}",
@@ -133,7 +133,7 @@ class ExifBottomSheet extends ConsumerWidget {
               ),
             ),
           // Detail
-          if (assetDetail.isRemote && assetDetail.remote!.exifInfo != null)
+          if (exifInfo != null)
             Padding(
               padding: const EdgeInsets.only(top: 32.0),
               child: Column(
@@ -157,16 +157,16 @@ class ExifBottomSheet extends ConsumerWidget {
                     iconColor: Colors.grey[300],
                     leading: const Icon(Icons.image),
                     title: Text(
-                      "${exifInfo?.imageName!}${p.extension(assetDetail.remote!.originalPath)}",
+                      "${exifInfo.imageName!}${p.extension(assetDetail.remote!.originalPath)}",
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    subtitle: exifInfo?.exifImageHeight != null
+                    subtitle: exifInfo.exifImageHeight != null
                         ? Text(
-                            "${exifInfo?.exifImageHeight} x ${exifInfo?.exifImageWidth}  ${exifInfo?.fileSizeInByte!}B ",
+                            "${exifInfo.exifImageHeight} x ${exifInfo.exifImageWidth}  ${exifInfo.fileSizeInByte!}B ",
                           )
                         : null,
                   ),
-                  if (exifInfo?.make != null)
+                  if (exifInfo.make != null)
                     ListTile(
                       contentPadding: const EdgeInsets.all(0),
                       dense: true,
@@ -174,11 +174,11 @@ class ExifBottomSheet extends ConsumerWidget {
                       iconColor: Colors.grey[300],
                       leading: const Icon(Icons.camera),
                       title: Text(
-                        "${exifInfo?.make} ${exifInfo?.model}",
+                        "${exifInfo.make} ${exifInfo.model}",
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                        "ƒ/${exifInfo?.fNumber}   1/${(1 / (exifInfo?.exposureTime ?? 1)).toStringAsFixed(0)}   ${exifInfo?.focalLength}mm   ISO${exifInfo?.iso} ",
+                        "ƒ/${exifInfo.fNumber}   1/${(1 / (exifInfo.exposureTime ?? 1)).toStringAsFixed(0)}   ${exifInfo.focalLength}mm   ISO${exifInfo.iso} ",
                       ),
                     ),
                 ],

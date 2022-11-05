@@ -9,8 +9,6 @@ import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
 class ImageViewerPage extends HookConsumerWidget {
@@ -39,8 +37,13 @@ class ImageViewerPage extends HookConsumerWidget {
         ref.watch(imageViewerStateProvider).downloadAssetStatus;
 
     getAssetExif() async {
-      assetDetail =
-          await ref.watch(assetServiceProvider).getAssetById(asset.id);
+      if (asset.isRemote) {
+        assetDetail =
+            await ref.watch(assetServiceProvider).getAssetById(asset.id);
+      } else {
+        // TODO local exif parsing?
+        assetDetail = asset;
+      }
     }
 
     useEffect(
@@ -70,18 +73,12 @@ class ImageViewerPage extends HookConsumerWidget {
             tag: heroTag,
             child: RemotePhotoView(
               asset: asset,
-              thumbnailUrl:
-                  asset.isRemote ? getThumbnailUrl(asset.remote!) : null,
-              cacheKey: asset.id,
-              imageUrl: asset.isRemote ? getImageUrl(asset.remote!) : null,
-              previewUrl: threeStageLoading && asset.isRemote
-                  ? getThumbnailUrl(asset.remote!, type: ThumbnailFormat.JPEG)
-                  : null,
               authToken: authToken,
+              threeStageLoading: threeStageLoading,
               isZoomedFunction: isZoomedFunction,
               isZoomedListener: isZoomedListener,
               onSwipeDown: () => AutoRouter.of(context).pop(),
-              onSwipeUp: () => showInfo(),
+              onSwipeUp: asset.isRemote ? showInfo : () {},
             ),
           ),
         ),
