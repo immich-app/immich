@@ -6,9 +6,8 @@ import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
 import { SystemConfigResponseDto } from './response-dto/system-config-response.dto';
 import { SetSystemConfigDto } from './dto/set-system-config';
 import { SystemConfigKey } from '@app/database/entities/system-config.entity';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 
-@UseGuards(JwtAuthGuard)
-@UseGuards(AdminRolesGuard)
 @ApiTags('Config')
 @ApiBearerAuth()
 @Controller('config')
@@ -16,11 +15,13 @@ export class ConfigController {
   constructor(private readonly configService: ConfigService) {}
 
   @Get('/system')
+  @Authenticated({ admin: true })
   getSystemConfig(): Promise<SystemConfigResponseDto> {
     return this.configService.getAllConfig();
   }
 
   @Put('/system')
+  @Authenticated({ admin: true })
   async putSystemConfig(@Body(ValidationPipe) body: SetSystemConfigDto): Promise<SystemConfigResponseDto> {
     if (
       body.config.filter((entry) => {
