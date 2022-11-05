@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 	}
 
 	const allUsers = serverApi.userApi.getAllUsers(false);
-	const settings = serverApi.adminConfigApi.getAdminConfig();
+	const settings = serverApi.configApi.getSystemConfig();
 
 	const { data: allUsersData } = await allUsers;
 	const { data: settingsData } = await settings;

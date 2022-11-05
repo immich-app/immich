@@ -198,8 +198,6 @@ class ApiClient {
           return AddAssetsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
-        case 'AdminConfigResponseDto':
-          return AdminConfigResponseDto.fromJson(value);
         case 'AdminSignupResponseDto':
           return AdminSignupResponseDto.fromJson(value);
         case 'AlbumCountResponseDto':
@@ -288,6 +286,8 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
+        case 'SystemConfigResponseDto':
+          return SystemConfigResponseDto.fromJson(value);
         case 'ThumbnailFormat':
           return ThumbnailFormatTypeTransformer().decode(value);
         case 'TimeGroupEnum':

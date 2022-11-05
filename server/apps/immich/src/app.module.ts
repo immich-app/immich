@@ -16,8 +16,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { DatabaseModule } from '@app/database';
 import { JobModule } from './api-v1/job/job.module';
-import { AdminConfigModule } from '@app/admin-config';
-import { ConfigModule } from "./api-v1/config/config.module";
+import { SystemConfigModule } from '@app/system-config';
+import { ConfigModule } from './api-v1/config/config.module';
 
 @Module({
   imports: [
@@ -61,9 +61,9 @@ import { ConfigModule } from "./api-v1/config/config.module";
 
     JobModule,
 
-    AdminConfigModule,
+    SystemConfigModule,
 
-    ConfigModule
+    ConfigModule,
   ],
   controllers: [AppController],
   providers: [],

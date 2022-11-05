@@ -46,13 +46,15 @@ import 'package:openapi/api.dart';
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
-final api_instance = AdminConfigApi();
+final api_instance = AlbumApi();
+final albumId = albumId_example; // String | 
+final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
 
 try {
-    final result = api_instance.getAdminConfig();
+    final result = api_instance.addAssetsToAlbum(albumId, addAssetsDto);
     print(result);
 } catch (e) {
-    print('Exception when calling AdminConfigApi->getAdminConfig: $e\n');
+    print('Exception when calling AlbumApi->addAssetsToAlbum: $e\n');
 }
 
 ```
@@ -63,8 +65,6 @@ All URIs are relative to */api*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*AdminConfigApi* | [**getAdminConfig**](doc\/AdminConfigApi.md#getadminconfig) | **GET** /config/admin | 
-*AdminConfigApi* | [**putAdminConfig**](doc\/AdminConfigApi.md#putadminconfig) | **PUT** /config/admin | 
 *AlbumApi* | [**addAssetsToAlbum**](doc\/AlbumApi.md#addassetstoalbum) | **PUT** /album/{albumId}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc\/AlbumApi.md#adduserstoalbum) | **PUT** /album/{albumId}/users | 
 *AlbumApi* | [**createAlbum**](doc\/AlbumApi.md#createalbum) | **POST** /album | 
@@ -97,6 +97,8 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**login**](doc\/AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc\/AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**validateAccessToken**](doc\/AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*ConfigApi* | [**getSystemConfig**](doc\/ConfigApi.md#getsystemconfig) | **GET** /config/system | 
+*ConfigApi* | [**putSystemConfig**](doc\/ConfigApi.md#putsystemconfig) | **PUT** /config/system | 
 *DeviceInfoApi* | [**createDeviceInfo**](doc\/DeviceInfoApi.md#createdeviceinfo) | **POST** /device-info | 
 *DeviceInfoApi* | [**updateDeviceInfo**](doc\/DeviceInfoApi.md#updatedeviceinfo) | **PATCH** /device-info | 
 *JobApi* | [**getAllJobsStatus**](doc\/JobApi.md#getalljobsstatus) | **GET** /jobs | 
@@ -121,7 +123,6 @@ Class | Method | HTTP request | Description
  - [AddAssetsDto](doc\/AddAssetsDto.md)
  - [AddAssetsResponseDto](doc\/AddAssetsResponseDto.md)
  - [AddUsersDto](doc\/AddUsersDto.md)
- - [AdminConfigResponseDto](doc\/AdminConfigResponseDto.md)
  - [AdminSignupResponseDto](doc\/AdminSignupResponseDto.md)
  - [AlbumCountResponseDto](doc\/AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc\/AlbumResponseDto.md)
@@ -166,6 +167,7 @@ Class | Method | HTTP request | Description
  - [ServerVersionReponseDto](doc\/ServerVersionReponseDto.md)
  - [SignUpDto](doc\/SignUpDto.md)
  - [SmartInfoResponseDto](doc\/SmartInfoResponseDto.md)
+ - [SystemConfigResponseDto](doc\/SystemConfigResponseDto.md)
  - [ThumbnailFormat](doc\/ThumbnailFormat.md)
  - [TimeGroupEnum](doc\/TimeGroupEnum.md)
  - [UpdateAlbumDto](doc\/UpdateAlbumDto.md)

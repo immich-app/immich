@@ -3,32 +3,32 @@ import { ConfigService } from './config.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
 import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
-import { AdminConfigResponseDto } from './response-dto/admin-config-response.dto';
-import { SetAdminConfigDto } from './dto/set-admin-config';
-import { AdminConfigKey } from '@app/database/entities/admin-config.entity';
+import { SystemConfigResponseDto } from './response-dto/system-config-response.dto';
+import { SetSystemConfigDto } from './dto/set-system-config';
+import { SystemConfigKey } from '@app/database/entities/system-config.entity';
 
 @UseGuards(JwtAuthGuard)
 @UseGuards(AdminRolesGuard)
-@ApiTags('Admin Config')
+@ApiTags('Config')
 @ApiBearerAuth()
 @Controller('config')
 export class ConfigController {
-  constructor(private readonly adminConfigService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {}
 
-  @Get('/admin')
-  getAdminConfig(): Promise<AdminConfigResponseDto> {
-    return this.adminConfigService.getAllConfig();
+  @Get('/system')
+  getSystemConfig(): Promise<SystemConfigResponseDto> {
+    return this.configService.getAllConfig();
   }
 
-  @Put('/admin')
-  async putAdminConfig(@Body(ValidationPipe) body: SetAdminConfigDto): Promise<AdminConfigResponseDto> {
+  @Put('/system')
+  async putSystemConfig(@Body(ValidationPipe) body: SetSystemConfigDto): Promise<SystemConfigResponseDto> {
     if (
       body.config.filter((entry) => {
-        return !Object.values(AdminConfigKey).includes(entry.key);
+        return !Object.values(SystemConfigKey).includes(entry.key);
       }).length !== 0
     ) {
       throw new BadRequestException('Incorrect config key provided');
     }
-    return this.adminConfigService.setConfigValue(body.config);
+    return this.configService.setConfigValue(body.config);
   }
 }

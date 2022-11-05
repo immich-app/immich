@@ -62,13 +62,13 @@
         "tsConfigPath": "libs/job/tsconfig.lib.json"
       }
     },
-    "admin-config": {
+    "system-config": {
       "type": "library",
-      "root": "libs/admin-config",
+      "root": "libs/system-config",
       "entryFile": "index",
-      "sourceRoot": "libs/admin-config/src",
+      "sourceRoot": "libs/system-config/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/admin-config/tsconfig.lib.json"
+        "tsConfigPath": "libs/system-config/tsconfig.lib.json"
       }
     }
   }

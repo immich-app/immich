@@ -75,19 +75,6 @@ export interface AddUsersDto {
 /**
  * 
  * @export
- * @interface AdminConfigResponseDto
- */
-export interface AdminConfigResponseDto {
-    /**
-     * 
-     * @type {object}
-     * @memberof AdminConfigResponseDto
-     */
-    'config': object;
-}
-/**
- * 
- * @export
  * @interface AdminSignupResponseDto
  */
 export interface AdminSignupResponseDto {
@@ -1360,6 +1347,19 @@ export interface SmartInfoResponseDto {
 /**
  * 
  * @export
+ * @interface SystemConfigResponseDto
+ */
+export interface SystemConfigResponseDto {
+    /**
+     * 
+     * @type {object}
+     * @memberof SystemConfigResponseDto
+     */
+    'config': object;
+}
+/**
+ * 
+ * @export
  * @enum {string}
  */
 
@@ -1602,173 +1602,6 @@ export interface ValidateAccessTokenResponseDto {
      */
     'authStatus': boolean;
 }
-
-/**
- * AdminConfigApi - axios parameter creator
- * @export
- */
-export const AdminConfigApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAdminConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/config/admin`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {object} body 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        putAdminConfig: async (body: object, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'body' is not null or undefined
-            assertParamExists('putAdminConfig', 'body', body)
-            const localVarPath = `/config/admin`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(body, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
-};
-
-/**
- * AdminConfigApi - functional programming interface
- * @export
- */
-export const AdminConfigApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = AdminConfigApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getAdminConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AdminConfigResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAdminConfig(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {object} body 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async putAdminConfig(body: object, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AdminConfigResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.putAdminConfig(body, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-    }
-};
-
-/**
- * AdminConfigApi - factory interface
- * @export
- */
-export const AdminConfigApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = AdminConfigApiFp(configuration)
-    return {
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAdminConfig(options?: any): AxiosPromise<AdminConfigResponseDto> {
-            return localVarFp.getAdminConfig(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {object} body 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        putAdminConfig(body: object, options?: any): AxiosPromise<AdminConfigResponseDto> {
-            return localVarFp.putAdminConfig(body, options).then((request) => request(axios, basePath));
-        },
-    };
-};
-
-/**
- * AdminConfigApi - object-oriented interface
- * @export
- * @class AdminConfigApi
- * @extends {BaseAPI}
- */
-export class AdminConfigApi extends BaseAPI {
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AdminConfigApi
-     */
-    public getAdminConfig(options?: AxiosRequestConfig) {
-        return AdminConfigApiFp(this.configuration).getAdminConfig(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {object} body 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AdminConfigApi
-     */
-    public putAdminConfig(body: object, options?: AxiosRequestConfig) {
-        return AdminConfigApiFp(this.configuration).putAdminConfig(body, options).then((request) => request(this.axios, this.basePath));
-    }
-}
-
 
 /**
  * AlbumApi - axios parameter creator
@@ -4119,6 +3952,173 @@ export class AuthenticationApi extends BaseAPI {
      */
     public validateAccessToken(options?: AxiosRequestConfig) {
         return AuthenticationApiFp(this.configuration).validateAccessToken(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * ConfigApi - axios parameter creator
+ * @export
+ */
+export const ConfigApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSystemConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/config/system`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {object} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        putSystemConfig: async (body: object, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'body' is not null or undefined
+            assertParamExists('putSystemConfig', 'body', body)
+            const localVarPath = `/config/system`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(body, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * ConfigApi - functional programming interface
+ * @export
+ */
+export const ConfigApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = ConfigApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getSystemConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSystemConfig(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {object} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async putSystemConfig(body: object, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.putSystemConfig(body, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * ConfigApi - factory interface
+ * @export
+ */
+export const ConfigApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = ConfigApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSystemConfig(options?: any): AxiosPromise<SystemConfigResponseDto> {
+            return localVarFp.getSystemConfig(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {object} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        putSystemConfig(body: object, options?: any): AxiosPromise<SystemConfigResponseDto> {
+            return localVarFp.putSystemConfig(body, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * ConfigApi - object-oriented interface
+ * @export
+ * @class ConfigApi
+ * @extends {BaseAPI}
+ */
+export class ConfigApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ConfigApi
+     */
+    public getSystemConfig(options?: AxiosRequestConfig) {
+        return ConfigApiFp(this.configuration).getSystemConfig(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {object} body 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ConfigApi
+     */
+    public putSystemConfig(body: object, options?: AxiosRequestConfig) {
+        return ConfigApiFp(this.configuration).putSystemConfig(body, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

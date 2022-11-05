@@ -11,15 +11,15 @@
 part of openapi.api;
 
 
-class AdminConfigApi {
-  AdminConfigApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
+class ConfigApi {
+  ConfigApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /config/admin' operation and returns the [Response].
-  Future<Response> getAdminConfigWithHttpInfo() async {
+  /// Performs an HTTP 'GET /config/system' operation and returns the [Response].
+  Future<Response> getSystemConfigWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/config/admin';
+    final path = r'/config/system';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -42,8 +42,8 @@ class AdminConfigApi {
     );
   }
 
-  Future<AdminConfigResponseDto?> getAdminConfig() async {
-    final response = await getAdminConfigWithHttpInfo();
+  Future<SystemConfigResponseDto?> getSystemConfig() async {
+    final response = await getSystemConfigWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -51,19 +51,19 @@ class AdminConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AdminConfigResponseDto',) as AdminConfigResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigResponseDto',) as SystemConfigResponseDto;
     
     }
     return null;
   }
 
-  /// Performs an HTTP 'PUT /config/admin' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /config/system' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [Object] body (required):
-  Future<Response> putAdminConfigWithHttpInfo(Object body,) async {
+  Future<Response> putSystemConfigWithHttpInfo(Object body,) async {
     // ignore: prefer_const_declarations
-    final path = r'/config/admin';
+    final path = r'/config/system';
 
     // ignore: prefer_final_locals
     Object? postBody = body;
@@ -89,8 +89,8 @@ class AdminConfigApi {
   /// Parameters:
   ///
   /// * [Object] body (required):
-  Future<AdminConfigResponseDto?> putAdminConfig(Object body,) async {
-    final response = await putAdminConfigWithHttpInfo(body,);
+  Future<SystemConfigResponseDto?> putSystemConfig(Object body,) async {
+    final response = await putSystemConfigWithHttpInfo(body,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -98,7 +98,7 @@ class AdminConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AdminConfigResponseDto',) as AdminConfigResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigResponseDto',) as SystemConfigResponseDto;
     
     }
     return null;

@@ -34,11 +34,11 @@
       "@app/job/*": [
         "libs/job/src/*"
       ],
-      "@app/admin-config": [
-        "libs/admin-config/src"
+      "@app/system-config": [
+        "libs/system-config/src"
       ],
-      "@app/admin-config/*": [
-        "libs/admin-config/src/*"
+      "@app/system-config/*": [
+        "libs/system-config/src/*"
       ]
     }
   },

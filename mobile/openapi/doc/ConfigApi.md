@@ -1,4 +1,4 @@
-# openapi.api.AdminConfigApi
+# openapi.api.ConfigApi
 
 ## Load the API package
 ```dart
@@ -9,12 +9,12 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getAdminConfig**](AdminConfigApi.md#getadminconfig) | **GET** /config/admin | 
-[**putAdminConfig**](AdminConfigApi.md#putadminconfig) | **PUT** /config/admin | 
+[**getSystemConfig**](ConfigApi.md#getsystemconfig) | **GET** /config/system | 
+[**putSystemConfig**](ConfigApi.md#putsystemconfig) | **PUT** /config/system | 
 
 
-# **getAdminConfig**
-> AdminConfigResponseDto getAdminConfig()
+# **getSystemConfig**
+> SystemConfigResponseDto getSystemConfig()
 
 
 
@@ -28,13 +28,13 @@ import 'package:openapi/api.dart';
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
-final api_instance = AdminConfigApi();
+final api_instance = ConfigApi();
 
 try {
-    final result = api_instance.getAdminConfig();
+    final result = api_instance.getSystemConfig();
     print(result);
 } catch (e) {
-    print('Exception when calling AdminConfigApi->getAdminConfig: $e\n');
+    print('Exception when calling ConfigApi->getSystemConfig: $e\n');
 }
 ```
 
@@ -43,7 +43,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**AdminConfigResponseDto**](AdminConfigResponseDto.md)
+[**SystemConfigResponseDto**](SystemConfigResponseDto.md)
 
 ### Authorization
 
@@ -56,8 +56,8 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **putAdminConfig**
-> AdminConfigResponseDto putAdminConfig(body)
+# **putSystemConfig**
+> SystemConfigResponseDto putSystemConfig(body)
 
 
 
@@ -71,14 +71,14 @@ import 'package:openapi/api.dart';
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
-final api_instance = AdminConfigApi();
+final api_instance = ConfigApi();
 final body = Object(); // Object | 
 
 try {
-    final result = api_instance.putAdminConfig(body);
+    final result = api_instance.putSystemConfig(body);
     print(result);
 } catch (e) {
-    print('Exception when calling AdminConfigApi->putAdminConfig: $e\n');
+    print('Exception when calling ConfigApi->putSystemConfig: $e\n');
 }
 ```
 
@@ -90,7 +90,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AdminConfigResponseDto**](AdminConfigResponseDto.md)
+[**SystemConfigResponseDto**](SystemConfigResponseDto.md)
 
 ### Authorization
 
