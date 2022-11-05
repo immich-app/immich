@@ -63,7 +63,9 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
     for (var asset in deleteAssets) {
       // Delete asset on device if present
       if (asset.deviceId == deviceId) {
-        var localAsset = await AssetEntity.fromId(asset.deviceAssetId);
+        var localAsset = asset.isLocal
+            ? asset.local
+            : await AssetEntity.fromId(asset.deviceAssetId);
 
         if (localAsset != null) {
           deleteIdList.add(localAsset.id);
