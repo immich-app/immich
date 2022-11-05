@@ -9,7 +9,7 @@
 	import { goto } from '$app/navigation';
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
-	import AlbumSelectionModal from './album-selection-modal.svelte';
+	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
 	import {
 		api,
 		AddAssetsResponseDto,
@@ -300,7 +300,6 @@
 			on:album={handleAddToAlbum}
 			on:close={() => (isShowAlbumPicker = false)}
 		/>
-		<div class="w-full h-full">Hello</div>
 	{/if}
 </section>
 
