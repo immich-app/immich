@@ -9,7 +9,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   _RemoteImageStatus _status = _RemoteImageStatus.empty;
   bool _zoomedIn = false;
 
-  static const int swipeThreshold = 100;
   late CachedNetworkImageProvider fullProvider;
   late CachedNetworkImageProvider previewProvider;
   late CachedNetworkImageProvider thumbnailProvider;
@@ -20,34 +19,33 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
     return IgnorePointer(
       ignoring: !allowMoving,
-      child: PhotoView(
-        imageProvider: _imageProvider,
-        minScale: PhotoViewComputedScale.contained,
-        enablePanAlways: true,
-        scaleStateChangedCallback: _scaleStateChanged,
-        onScaleEnd: _onScaleListener,
+      child: Listener(
+        onPointerMove: handleSwipUpDown,
+        child: PhotoView(
+          imageProvider: _imageProvider,
+          minScale: PhotoViewComputedScale.contained,
+          enablePanAlways: false,
+          scaleStateChangedCallback: _scaleStateChanged,
+        ),
       ),
     );
   }
 
-  void _onScaleListener(
-    BuildContext context,
-    ScaleEndDetails details,
-    PhotoViewControllerValue controllerValue,
-  ) {
-    // Disable swipe events when zoomed in
+  void handleSwipUpDown(PointerMoveEvent details) {
+    int sensitivity = 10;
+
     if (_zoomedIn) {
       return;
     }
-    if (controllerValue.position.dy > swipeThreshold) {
+
+    if (details.delta.dy > sensitivity) {
       widget.onSwipeDown();
-    } else if (controllerValue.position.dy < -swipeThreshold) {
+    } else if (details.delta.dy < -sensitivity) {
       widget.onSwipeUp();
     }
   }
 
   void _scaleStateChanged(PhotoViewScaleState state) {
-    // _onScaleListener;
     _zoomedIn = state != PhotoViewScaleState.initial;
     if (_zoomedIn) {
       widget.isZoomedListener.value = true;
