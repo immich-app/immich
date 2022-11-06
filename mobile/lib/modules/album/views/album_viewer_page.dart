@@ -53,13 +53,13 @@ class AlbumViewerPage extends HookConsumerWidget {
         if (returnPayload.selectedAdditionalAsset.isNotEmpty) {
           ImmichLoadingOverlayController.appLoader.show();
 
-          var isSuccess =
+          var addAssetsResult =
               await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
                     returnPayload.selectedAdditionalAsset,
                     albumId,
                   );
 
-          if (isSuccess) {
+          if (addAssetsResult != null && addAssetsResult.successfullyAdded > 0) {
             ref.refresh(sharedAlbumDetailProvider(albumId));
           }
 
