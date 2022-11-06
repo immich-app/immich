@@ -4,12 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
-import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -79,10 +77,11 @@ class HomePage extends HookConsumerWidget {
 
       void onAddToAlbum(AlbumResponseDto album) async {
         final result = await albumService.addAdditionalAssetToAlbum(
-            selection.value, album.id);
+          selection.value,
+          album.id,
+        );
 
         if (result != null) {
-
           if (result.alreadyInAlbum.isNotEmpty) {
             ImmichToast.show(
               context: context,
@@ -130,14 +129,16 @@ class HomePage extends HookConsumerWidget {
             CustomScrollView(
               slivers: [
                 if (!multiselectEnabled.state)
-                ImmichSliverAppBar(
-                  onPopBack: reloadAllAsset,
-                ),
+                  ImmichSliverAppBar(
+                    onPopBack: reloadAllAsset,
+                  ),
               ],
             ),
             Padding(
               padding: EdgeInsets.only(
-                  top: selectionEnabledHook.value ? 0 : 60, bottom: 0.0),
+                top: selectionEnabledHook.value ? 0 : 60,
+                bottom: 0.0,
+              ),
               child: ImmichAssetGrid(
                 renderList: renderList,
                 assetsPerRow:
@@ -148,15 +149,27 @@ class HomePage extends HookConsumerWidget {
                 selectionActive: selectionEnabledHook.value,
               ),
             ),
-            if (selectionEnabledHook.value) ...[
-              ControlBottomAppBar(
-                onShare: onShareAssets,
-                onDelete: onDelete,
-                onAddToAlbum: onAddToAlbum,
-                albums: albums,
-                onCreateNewAlbum: onCreateNewAlbum,
+            if (selectionEnabledHook.value)
+              // ControlBottomAppBar(
+              //   onShare: onShareAssets,
+              //   onDelete: onDelete,
+              //   onAddToAlbum: onAddToAlbum,
+              //   albums: albums,
+              //   onCreateNewAlbum: onCreateNewAlbum,
+              // ),
+              DraggableScrollableSheet(
+                initialChildSize: 0.30,
+                minChildSize: 0.15,
+                builder: (
+                  BuildContext context,
+                  ScrollController scrollController,
+                ) {
+                  return SingleChildScrollView(
+                    controller: scrollController,
+                    child: const CustomScrollViewContent(),
+                  );
+                },
               ),
-            ],
           ],
         ),
       );
@@ -165,6 +178,56 @@ class HomePage extends HookConsumerWidget {
     return Scaffold(
       drawer: const ProfileDrawer(),
       body: buildBody(),
+    );
+  }
+}
+
+class CustomScrollViewContent extends StatelessWidget {
+  const CustomScrollViewContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 12.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      margin: const EdgeInsets.all(0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const CustomInnerContent(),
+      ),
+    );
+  }
+}
+
+class CustomInnerContent extends StatelessWidget {
+  const CustomInnerContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: const <Widget>[
+        SizedBox(height: 12),
+        CustomDraggingHandle(),
+        SizedBox(height: 500),
+      ],
+    );
+  }
+}
+
+class CustomDraggingHandle extends StatelessWidget {
+  const CustomDraggingHandle({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 5,
+      width: 30,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(16),
+      ),
     );
   }
 }
