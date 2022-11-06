@@ -116,6 +116,7 @@ class ControlBottomAppBar extends ConsumerWidget {
       initialChildSize: 0.30,
       minChildSize: 0.15,
       maxChildSize: 0.57,
+      snap: true,
       builder: (
         BuildContext context,
         ScrollController scrollController,
@@ -126,16 +127,16 @@ class ControlBottomAppBar extends ConsumerWidget {
             elevation: 12.0,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
               ),
             ),
             margin: const EdgeInsets.all(0),
             child: Container(
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
                 ),
               ),
               child: Column(
