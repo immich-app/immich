@@ -42,7 +42,7 @@ function HomepageHeader() {
           </div>
         </div>
 
-        <img src="/img/immich-screenshots.png" alt="logo" />
+        <img src="/img/immich-screenshots.webp" alt="logo" />
       </div>
     </header>
   );
