@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   ValidationPipe,
@@ -65,6 +66,20 @@ export class UserController {
   @Get('/count')
   async getUserCount(): Promise<UserCountResponseDto> {
     return await this.userService.getUserCount();
+  }
+
+  @Authenticated({ admin: true })
+  @ApiBearerAuth()
+  @Delete('/:userId')
+  async deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
+    return await this.userService.deleteUser(authUser, userId);
+  }
+
+  @Authenticated({ admin: true })
+  @ApiBearerAuth()
+  @Post('/:userId/restore')
+  async restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
+    return await this.userService.restoreUser(authUser, userId);
   }
 
   @Authenticated()

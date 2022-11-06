@@ -11,11 +11,13 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createProfileImage**](UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 [**createUser**](UserApi.md#createuser) | **POST** /user | 
+[**deleteUser**](UserApi.md#deleteuser) | **DELETE** /user/{userId} | 
 [**getAllUsers**](UserApi.md#getallusers) | **GET** /user | 
 [**getMyUserInfo**](UserApi.md#getmyuserinfo) | **GET** /user/me | 
 [**getProfileImage**](UserApi.md#getprofileimage) | **GET** /user/profile-image/{userId} | 
 [**getUserById**](UserApi.md#getuserbyid) | **GET** /user/info/{userId} | 
 [**getUserCount**](UserApi.md#getusercount) | **GET** /user/count | 
+[**restoreUser**](UserApi.md#restoreuser) | **POST** /user/{userId}/restore | 
 [**updateUser**](UserApi.md#updateuser) | **PUT** /user | 
 
 
@@ -109,6 +111,53 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **deleteUser**
+> UserResponseDto deleteUser(userId)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = UserApi();
+final userId = userId_example; // String | 
+
+try {
+    final result = api_instance.deleteUser(userId);
+    print(result);
+} catch (e) {
+    print('Exception when calling UserApi->deleteUser: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **userId** | **String**|  | 
+
+### Return type
+
+[**UserResponseDto**](UserResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -314,6 +363,53 @@ This endpoint does not need any parameter.
 ### Authorization
 
 No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **restoreUser**
+> UserResponseDto restoreUser(userId)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = UserApi();
+final userId = userId_example; // String | 
+
+try {
+    final result = api_instance.restoreUser(userId);
+    print(result);
+} catch (e) {
+    print('Exception when calling UserApi->restoreUser: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **userId** | **String**|  | 
+
+### Return type
+
+[**UserResponseDto**](UserResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
 
 ### HTTP request headers
 

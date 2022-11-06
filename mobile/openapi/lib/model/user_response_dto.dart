@@ -21,6 +21,7 @@ class UserResponseDto {
     required this.profileImagePath,
     required this.shouldChangePassword,
     required this.isAdmin,
+    required this.deletedAt,
   });
 
   String id;
@@ -39,6 +40,8 @@ class UserResponseDto {
 
   bool isAdmin;
 
+  DateTime? deletedAt;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
      other.id == id &&
@@ -48,7 +51,8 @@ class UserResponseDto {
      other.createdAt == createdAt &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
-     other.isAdmin == isAdmin;
+     other.isAdmin == isAdmin &&
+     other.deletedAt == deletedAt;
 
   @override
   int get hashCode =>
@@ -60,10 +64,11 @@ class UserResponseDto {
     (createdAt.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
-    (isAdmin.hashCode);
+    (isAdmin.hashCode) +
+    (deletedAt == null ? 0 : deletedAt!.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin]';
+  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -75,6 +80,11 @@ class UserResponseDto {
       _json[r'profileImagePath'] = profileImagePath;
       _json[r'shouldChangePassword'] = shouldChangePassword;
       _json[r'isAdmin'] = isAdmin;
+    if (deletedAt != null) {
+      _json[r'deletedAt'] = deletedAt!.toUtc().toIso8601String();
+    } else {
+      _json[r'deletedAt'] = null;
+    }
     return _json;
   }
 
@@ -105,6 +115,7 @@ class UserResponseDto {
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
+        deletedAt: mapDateTime(json, r'deletedAt', ''),
       );
     }
     return null;
@@ -162,6 +173,7 @@ class UserResponseDto {
     'profileImagePath',
     'shouldChangePassword',
     'isAdmin',
+    'deletedAt',
   };
 }
 

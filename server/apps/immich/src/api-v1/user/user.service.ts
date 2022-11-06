@@ -38,8 +38,8 @@ export class UserService {
     return allUserExceptRequestedUser.map(mapUser);
   }
 
-  async getUserById(userId: string): Promise<UserResponseDto> {
-    const user = await this.userRepository.get(userId);
+  async getUserById(userId: string, withDeleted=false): Promise<UserResponseDto> {
+    const user = await this.userRepository.get(userId, withDeleted);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -102,6 +102,48 @@ export class UserService {
     } catch (e) {
       Logger.error(e, 'Failed to update user info');
       throw new InternalServerErrorException('Failed to update user info');
+    }
+  }
+
+  async deleteUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
+    const requestor = await this.userRepository.get(authUser.id);
+    if (!requestor) {
+      throw new NotFoundException('Requestor not found');
+    }
+    if (!requestor.isAdmin) {
+      throw new BadRequestException('Unauthorized');
+    }
+    const user = await this.userRepository.get(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    try {
+      const deletedUser = await this.userRepository.delete(user);
+      return mapUser(deletedUser);
+    } catch (e) {
+      Logger.error(e, 'Failed to delete user');
+      throw new InternalServerErrorException('Failed to delete user');
+    }
+  }
+
+  async restoreUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
+    const requestor = await this.userRepository.get(authUser.id);
+    if (!requestor) {
+      throw new NotFoundException('Requestor not found');
+    }
+    if (!requestor.isAdmin) {
+      throw new BadRequestException('Unauthorized');
+    }
+    const user = await this.userRepository.get(userId, true);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    try {
+      const restoredUser = await this.userRepository.restore(user);
+      return mapUser(restoredUser);
+    } catch (e) {
+      Logger.error(e, 'Failed to restore deleted user');
+      throw new InternalServerErrorException('Failed to restore deleted user');
     }
   }
 
