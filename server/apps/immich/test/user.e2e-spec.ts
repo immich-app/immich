@@ -104,6 +104,7 @@ describe('User', () => {
               isAdmin: false,
               shouldChangePassword: true,
               profileImagePath: '',
+              deletedAt: null,
             },
             {
               email: userTwoEmail,
@@ -114,6 +115,7 @@ describe('User', () => {
               isAdmin: false,
               shouldChangePassword: true,
               profileImagePath: '',
+              deletedAt: null,
             },
           ]),
         );

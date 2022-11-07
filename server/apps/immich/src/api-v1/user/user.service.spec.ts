@@ -65,6 +65,8 @@ describe('UserService', () => {
       getByEmail: jest.fn(),
       getList: jest.fn(),
       update: jest.fn(),
+      delete: jest.fn(),
+      restore: jest.fn(),
     };
 
     sui = new UserService(userRepositoryMock);
