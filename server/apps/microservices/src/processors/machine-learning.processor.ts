@@ -9,6 +9,9 @@ import axios from 'axios';
 import { Job } from 'bull';
 import { Repository } from 'typeorm';
 
+const immich_machine_learning_host = process.env.IMMICH_MACHINE_LEARNING_HOST || 'immich-machine-learning';
+const immich_machine_learning_port = process.env.IMMICH_MACHINE_LEARNING_PORT || '3003';
+
 @Processor(QueueNameEnum.MACHINE_LEARNING)
 export class MachineLearningProcessor {
   constructor(
@@ -20,9 +23,12 @@ export class MachineLearningProcessor {
   async tagImage(job: Job<IMachineLearningJob>) {
     const { asset } = job.data;
 
-    const res = await axios.post('http://immich-machine-learning:3003/image-classifier/tag-image', {
-      thumbnailPath: asset.resizePath,
-    });
+    const res = await axios.post(
+      'http://' + immich_machine_learning_host + ':' + immich_machine_learning_port + '/image-classifier/tag-image',
+      {
+        thumbnailPath: asset.resizePath,
+      },
+    );
 
     if (res.status == 201 && res.data.length > 0) {
       const smartInfo = new SmartInfoEntity();
@@ -40,9 +46,12 @@ export class MachineLearningProcessor {
     try {
       const { asset }: { asset: AssetEntity } = job.data;
 
-      const res = await axios.post('http://immich-machine-learning:3003/object-detection/detect-object', {
-        thumbnailPath: asset.resizePath,
-      });
+      const res = await axios.post(
+        'http://' + immich_machine_learning_host + ':' + immich_machine_learning_port + '/object-detection/detect-object',
+        {
+          thumbnailPath: asset.resizePath,
+        },
+      );
 
       if (res.status == 201 && res.data.length > 0) {
         const smartInfo = new SmartInfoEntity();
