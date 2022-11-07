@@ -103,7 +103,7 @@ PUBLIC_LOGIN_PAGE_MESSAGE="My Family Photos and Videos Backup Server"
 
 * Populate custom database information if necessary.
 * Populate `UPLOAD_LOCATION` as prefered location for storing backup assets.
-* Populate a secret value for `JWT_SECRET`, you can use the command below to generate a secured key
+* Populate a secret value for `JWT_SECRET`, you can use the command below to generate a secure key
 
 ```bash title="Command to generate secure JWT_SECRET key"
 openssl rand -base64 128

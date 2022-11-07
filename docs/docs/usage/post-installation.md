@@ -14,7 +14,7 @@ The mobile app can be downloaded from
 - [Apple App Store](https://apps.apple.com/us/app/immich/id1613945652)
 - [F-Droid](https://f-droid.org/packages/app.alextran.immich)
 
-## Step 2 - Registering the admin user
+## Step 2 - Register the admin user
 
 The first user to register will be the admin user. The admin user will be able to add other users to the application.
 
@@ -24,7 +24,7 @@ To register for the admin user, access the web application at `http://<machine-i
 
 Follow the prompts to register as the admin user and log in to the application.
 
-## Step 3 - Creating a new user (optional)
+## Step 3 - Create a new user (optional)
 
 If you have a family member who wants to use the application, you can create a new account. The default password is `password`, and the user can change their password after logging in to the application for the first time.
 
@@ -42,7 +42,7 @@ Navigate to the backup screen by clicking on the cloud icon in the top right cor
 
 <img src={require('./img/backup-header.png').default} width="50%" title="Backup button" />
 
-You can select the album you want to back up from the backup screen to the Immich server.
+You can select which album(s) you want to back up to the Immich server from the backup screen.
 
 <img src={require('./img/album-selection.png').default} width="50%" title="Backup button" />
 

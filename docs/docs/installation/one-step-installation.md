@@ -5,10 +5,10 @@ sidebar_position: 2
 # One-step installation
 
 :::caution
-This method is for evaluation purposes only. It is not recommended for production use. For production usage, please refer to the recommneded installation method [here](/docs/installation/recommended-installation).
+This method is for evaluation purposes only. It is not recommended for production use. For production usage, please refer to the recommended installation method [here](/docs/installation/recommended-installation).
 :::
 
-In the shell, from the directory of your choice, run the following command:
+In the shell, from a directory of your choice, run the following command:
 
 ```bash
 curl -o- https://raw.githubusercontent.com/immich-app/immich/main/install.sh | bash
