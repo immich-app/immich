@@ -58,6 +58,7 @@ doc/SmartInfoResponseDto.md
 doc/ThumbnailFormat.md
 doc/TimeGroupEnum.md
 doc/UpdateAlbumDto.md
+doc/UpdateAssetDto.md
 doc/UpdateDeviceInfoDto.md
 doc/UpdateUserDto.md
 doc/UsageByUserDto.md
@@ -132,6 +133,7 @@ lib/model/smart_info_response_dto.dart
 lib/model/thumbnail_format.dart
 lib/model/time_group_enum.dart
 lib/model/update_album_dto.dart
+lib/model/update_asset_dto.dart
 lib/model/update_device_info_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart

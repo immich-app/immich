@@ -1,6 +1,7 @@
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -39,6 +40,7 @@ import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-use
 import { timeUtils } from '@app/common/utils';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
 
 const fileInfo = promisify(stat);
 
@@ -121,6 +123,21 @@ export class AssetService {
     const asset = await this._assetRepository.getById(assetId);
 
     return mapAsset(asset);
+  }
+
+  public async updateAssetById(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+    const asset = await this._assetRepository.getById(assetId);
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    if (authUser.id !== asset.userId) {
+      throw new ForbiddenException('Not the owner');
+    }
+
+    const updatedAsset = await this._assetRepository.update(asset, dto);
+
+    return mapAsset(updatedAsset);
   }
 
   public async downloadFile(query: ServeFileDto, res: Res) {
