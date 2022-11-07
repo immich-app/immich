@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
-import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
@@ -79,10 +78,11 @@ class HomePage extends HookConsumerWidget {
 
       void onAddToAlbum(AlbumResponseDto album) async {
         final result = await albumService.addAdditionalAssetToAlbum(
-            selection.value, album.id);
+          selection.value,
+          album.id,
+        );
 
         if (result != null) {
-
           if (result.alreadyInAlbum.isNotEmpty) {
             ImmichToast.show(
               context: context,
@@ -130,14 +130,16 @@ class HomePage extends HookConsumerWidget {
             CustomScrollView(
               slivers: [
                 if (!multiselectEnabled.state)
-                ImmichSliverAppBar(
-                  onPopBack: reloadAllAsset,
-                ),
+                  ImmichSliverAppBar(
+                    onPopBack: reloadAllAsset,
+                  ),
               ],
             ),
             Padding(
               padding: EdgeInsets.only(
-                  top: selectionEnabledHook.value ? 0 : 60, bottom: 0.0),
+                top: selectionEnabledHook.value ? 0 : 60,
+                bottom: 0.0,
+              ),
               child: ImmichAssetGrid(
                 renderList: renderList,
                 assetsPerRow:
@@ -148,7 +150,7 @@ class HomePage extends HookConsumerWidget {
                 selectionActive: selectionEnabledHook.value,
               ),
             ),
-            if (selectionEnabledHook.value) ...[
+            if (selectionEnabledHook.value)
               ControlBottomAppBar(
                 onShare: onShareAssets,
                 onDelete: onDelete,
@@ -156,7 +158,6 @@ class HomePage extends HookConsumerWidget {
                 albums: albums,
                 onCreateNewAlbum: onCreateNewAlbum,
               ),
-            ],
           ],
         ),
       );
