@@ -1,4 +1,4 @@
-import { assetUtils, userUtils } from '@app/common';
+import { APP_UPLOAD_LOCATION, userUtils } from '@app/common';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { QueueNameEnum, userDeletionProcessorName } from '@app/job';
@@ -6,6 +6,8 @@ import { IUserDeletionJob } from '@app/job/interfaces/user-deletion.interface';
 import { Process, Processor } from '@nestjs/bull';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
+import { join } from 'path';
+import fs from 'fs';
 import { Repository } from 'typeorm';
 
 @Processor(QueueNameEnum.USER_DELETION)
@@ -21,14 +23,13 @@ export class UserDeletionProcessor {
   @Process(userDeletionProcessorName)
   async processUserDeletion(job: Job<IUserDeletionJob>) {
     const { user } = job.data;
-    const userAssets = await this.assetRepository.find({ where: { userId: user.id } });
     // just for extra protection here
     if (userUtils.isReadyForDeletion(user)) {
-      for (const asset of userAssets) {
-        assetUtils.deleteFiles(asset);
-        this.assetRepository.remove(asset);
-      }
-      this.userRepository.remove(user);
+      const basePath = APP_UPLOAD_LOCATION;
+      const userAssetDir = join(basePath, user.id)
+      fs.rmSync(userAssetDir, { recursive: true, force: true })
+      await this.assetRepository.delete({ userId: user.id })
+      await this.userRepository.remove(user);
     }
   }
 }

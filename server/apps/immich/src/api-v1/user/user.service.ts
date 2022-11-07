@@ -131,14 +131,14 @@ export class UserService {
   async restoreUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
     const requestor = await this.userRepository.get(authUser.id);
     if (!requestor) {
-      throw new NotFoundException('Requestor not found');
+      throw new UnauthorizedException('Requestor not found');
     }
     if (!requestor.isAdmin) {
-      throw new BadRequestException('Unauthorized');
+      throw new ForbiddenException('Unauthorized');
     }
     const user = await this.userRepository.get(userId, true);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new BadRequestException('User not found');
     }
     try {
       const restoredUser = await this.userRepository.restore(user);
