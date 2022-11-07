@@ -47,6 +47,10 @@ services:
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
       - .env
+    environment:
+      # Rename these values for svelte public interface
+      - PUBLIC_IMMICH_SERVER_HOST=${IMMICH_SERVER_HOST}
+      - PUBLIC_IMMICH_SERVER_PORT=${IMMICH_SERVER_PORT}
     restart: always
 
   redis:

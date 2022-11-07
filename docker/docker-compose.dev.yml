@@ -68,6 +68,10 @@ services:
     command: npm run dev --host
     env_file:
       - .env
+    environment:
+      # Rename these values for svelte public interface
+      - PUBLIC_IMMICH_SERVER_HOST=${IMMICH_SERVER_HOST}
+      - PUBLIC_IMMICH_SERVER_PORT=${IMMICH_SERVER_PORT}
     ports:
       - 3000:3000
       - 24678:24678
