@@ -30,7 +30,7 @@ class AlbumService {
 
   Future<AlbumResponseDto?> createAlbum(
     String albumName,
-    Set<Asset> assets,
+    Iterable<Asset> assets,
     List<String> sharedUserIds,
   ) async {
     try {
@@ -66,7 +66,7 @@ class AlbumService {
   }
 
   Future<AlbumResponseDto?> createAlbumWithGeneratedName(
-    Set<Asset> assets,
+    Iterable<Asset> assets,
   ) async {
     return createAlbum(
         _getNextAlbumName(await getAlbums(isShared: false)), assets, []);
@@ -82,7 +82,7 @@ class AlbumService {
   }
 
   Future<AddAssetsResponseDto?> addAdditionalAssetToAlbum(
-    Set<Asset> assets,
+    Iterable<Asset> assets,
     String albumId,
   ) async {
     try {
