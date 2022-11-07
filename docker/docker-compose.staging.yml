@@ -71,6 +71,12 @@ services:
   immich-proxy:
     container_name: immich_proxy
     image: altran1502/immich-proxy:staging
+    environment:
+      # Make sure these values get passed through from the env file
+      - IMMICH_SERVER_HOST
+      - IMMICH_SERVER_PORT
+      - IMMICH_WEB_HOST
+      - IMMICH_WEB_PORT
     ports:
       - 2283:8080
     logging:
