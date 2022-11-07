@@ -1,9 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -26,20 +23,31 @@ class ImmichImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (asset.isLocal) {
-      // return _LocalImage(
-      //   asset.local!,
-      //   width: width,
-      //   height: height,
-      // );
       return Image(
         image: AssetEntityImageProvider(
           asset.local!,
           isOriginal: false,
-          thumbnailSize: const ThumbnailSize.square(250),
+          thumbnailSize: const ThumbnailSize.square(250), // like server thumbs
         ),
         width: width,
         height: height,
         fit: BoxFit.cover,
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (wasSynchronouslyLoaded || frame != null) {
+            return child;
+          }
+          return (useGrayBoxPlaceholder
+              ? const SizedBox.square(
+                  dimension: 250,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(color: Colors.grey),
+                  ),
+                )
+              : Transform.scale(
+                  scale: 0.2,
+                  child: const CircularProgressIndicator(),
+                ));
+        },
         errorBuilder: (context, error, stackTrace) {
           debugPrint("Error getting thumb for assetId=${asset.id}: $error");
           return Icon(
@@ -57,10 +65,9 @@ class ImmichImage extends StatelessWidget {
       cacheKey: 'thumbnail-image-${asset.id}',
       width: width,
       height: height,
-      memCacheWidth: width.toInt(),
-      memCacheHeight: height.toInt(),
-      maxWidthDiskCache: 200,
-      maxHeightDiskCache: 200,
+      // keeping memCacheWidth, memCacheHeight, maxWidthDiskCache and
+      // maxHeightDiskCache = null allows to simply store the webp thumbnail
+      // from the server and use it for all rendered thumbnail sizes
       fit: BoxFit.cover,
       fadeInDuration: const Duration(milliseconds: 250),
       progressIndicatorBuilder: (context, url, downloadProgress) {
@@ -87,44 +94,3 @@ class ImmichImage extends StatelessWidget {
     );
   }
 }
-
-/// Alternative to using AssetEntityImageProvider:
-/// gives more configurability?
-class _LocalImage extends ConsumerWidget {
-  const _LocalImage(this.asset, {required this.width, required this.height});
-  final AssetEntity asset;
-  final double width;
-  final double height;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<Uint8List> image = ref.watch(_imageFamily(asset));
-    return image.when(
-      data: (data) => Image.memory(
-        data,
-        width: width,
-        height: height,
-        fit: BoxFit.cover,
-      ),
-      error: (error, stackTrace) => Icon(
-        Icons.image_not_supported_outlined,
-        color: Theme.of(context).primaryColor,
-      ),
-      loading: () => SizedBox(
-        width: width,
-        height: height,
-      ),
-    );
-  }
-}
-
-final _imageFamily =
-    FutureProvider.family<Uint8List, AssetEntity>((ref, entity) async {
-  // settings match thumbnails generated on the server (but jpg instead of webp)
-  final bytes = await entity
-      .thumbnailDataWithSize(const ThumbnailSize.square(250), quality: 80);
-  if (bytes == null) {
-    throw Exception();
-  }
-  return bytes;
-});
