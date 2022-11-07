@@ -154,7 +154,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                     onCreateNewAlbum: () => onCreateNewAlbum(),
                   ),
                   renderAlbums(),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 200),
                 ],
               ),
             ),
