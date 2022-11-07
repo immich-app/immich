@@ -1,11 +1,13 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
   StreamableFile,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -108,14 +110,14 @@ export class UserService {
   async deleteUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
     const requestor = await this.userRepository.get(authUser.id);
     if (!requestor) {
-      throw new NotFoundException('Requestor not found');
+      throw new UnauthorizedException('Requestor not found');
     }
     if (!requestor.isAdmin) {
-      throw new BadRequestException('Unauthorized');
+      throw new ForbiddenException('Unauthorized');
     }
     const user = await this.userRepository.get(userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new BadRequestException('User not found');
     }
     try {
       const deletedUser = await this.userRepository.delete(user);
