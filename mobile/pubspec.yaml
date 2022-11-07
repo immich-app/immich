@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.33.0+52
+version: 1.34.0+53
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
