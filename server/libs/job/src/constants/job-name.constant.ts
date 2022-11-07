@@ -29,3 +29,8 @@ export enum MachineLearningJobNameEnum {
   OBJECT_DETECTION = 'detect-object',
   IMAGE_TAGGING = 'tag-image',
 }
+
+/**
+ * User deletion Queue Jobs
+ */
+export const userDeletionProcessorName = 'user-deletion';

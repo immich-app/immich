@@ -29,7 +29,7 @@ export class UserRepository implements IUserRepository {
     return bcrypt.hash(password, salt);
   }
 
-  async get(userId: string, withDeleted?:boolean): Promise<UserEntity | null> {
+  async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { id: userId }, withDeleted: withDeleted });
   }
 

@@ -22,6 +22,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
-    deletedAt: entity.deletedAt == undefined? null: entity.deletedAt,
+    deletedAt: entity.deletedAt == undefined ? null : entity.deletedAt,
   };
 }

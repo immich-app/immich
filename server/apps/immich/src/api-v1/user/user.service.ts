@@ -40,7 +40,7 @@ export class UserService {
     return allUserExceptRequestedUser.map(mapUser);
   }
 
-  async getUserById(userId: string, withDeleted=false): Promise<UserResponseDto> {
+  async getUserById(userId: string, withDeleted = false): Promise<UserResponseDto> {
     const user = await this.userRepository.get(userId, withDeleted);
     if (!user) {
       throw new NotFoundException('User not found');
