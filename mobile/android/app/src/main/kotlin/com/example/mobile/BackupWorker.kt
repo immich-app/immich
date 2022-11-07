@@ -134,13 +134,13 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     }
 
     private fun stopEngine(result: Result?) {
+        clearBackgroundNotification()
+        engine?.destroy()
+        engine = null
         if (result != null) {
             Log.d(TAG, "stopEngine result=${result}")
             resolvableFuture.set(result)
         }
-        engine?.destroy()
-        engine = null
-        clearBackgroundNotification()
         waitOnSetForegroundAsync()
     }
 

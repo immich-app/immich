@@ -14,6 +14,7 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
   final AssetCacheService _assetCacheService;
 
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
+  bool _getAllAssetInProgress = false;
 
   AssetNotifier(this._assetService, this._assetCacheService) : super([]);
 
@@ -22,22 +23,33 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
   }
 
   getAllAsset() async {
-    final stopwatch = Stopwatch();
-
-    if (await _assetCacheService.isValid() && state.isEmpty) {
-      stopwatch.start();
-      state = await _assetCacheService.get();
-      debugPrint(
-          "Reading assets from cache: ${stopwatch.elapsedMilliseconds}ms");
-      stopwatch.reset();
+    if (_getAllAssetInProgress) {
+      // guard against multiple calls to this method while it's still working
+      return;
     }
+    final stopwatch = Stopwatch();
+    try {
+      _getAllAssetInProgress = true;
 
-    stopwatch.start();
-    var allAssets = await _assetService.getAllAsset();
-    debugPrint("Query assets from API: ${stopwatch.elapsedMilliseconds}ms");
-    stopwatch.reset();
+      final bool isCacheValid = await _assetCacheService.isValid();
+      if (isCacheValid && state.isEmpty) {
+        stopwatch.start();
+        state = await _assetCacheService.get();
+        debugPrint(
+            "Reading assets from cache: ${stopwatch.elapsedMilliseconds}ms");
+        stopwatch.reset();
+      }
 
-    state = allAssets;
+      stopwatch.start();
+      var allAssets = await _assetService.getAllAsset(urgent: !isCacheValid);
+      debugPrint("Query assets from API: ${stopwatch.elapsedMilliseconds}ms");
+      stopwatch.reset();
+
+      state = allAssets;
+    } finally {
+      _getAllAssetInProgress = false;
+    }
+    debugPrint("[getAllAsset] setting new asset state");
 
     stopwatch.start();
     _cacheState();

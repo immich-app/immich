@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
@@ -17,34 +18,24 @@ final assetServiceProvider = Provider(
   (ref) => AssetService(
     ref.watch(apiServiceProvider),
     ref.watch(backupServiceProvider),
+    ref.watch(backgroundServiceProvider),
   ),
 );
 
 class AssetService {
   final ApiService _apiService;
   final BackupService _backupService;
+  final BackgroundService _backgroundService;
 
-  AssetService(this._apiService, this._backupService);
+  AssetService(this._apiService, this._backupService, this._backgroundService);
 
-  Future<List<Asset>> getAllAsset() async {
+  Future<List<Asset>> getAllAsset({bool urgent = false}) async {
     final List<Asset> assets = [];
     try {
       final Future<List<AssetResponseDto>?> remoteTask =
           _apiService.assetApi.getAllAssets();
-
-      /* FIXME this is bad:
-         The background service might also have the box open at the same time.
-         But waiting for it to finish is difficult to do */
-      final Box<HiveBackupAlbums> box =
-          await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
-      final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
-
-      final List<AssetEntity> localAssets = backupAlbumInfo != null
-          ? await _backupService
-              .buildUploadCandidates(backupAlbumInfo.deepCopy())
-          : [];
       final Iterable<AssetEntity> newLocalAssets;
-
+      final List<AssetEntity> localAssets = await _getLocalAssets(urgent);
       final List<AssetResponseDto> remoteAssets = await remoteTask ?? [];
       assets.addAll(remoteAssets.map((e) => Asset.remote(e)));
       if (remoteAssets.isNotEmpty && localAssets.isNotEmpty) {
@@ -63,6 +54,28 @@ class AssetService {
       debugPrint("Error [getAllAsset]  ${e.toString()}");
     }
     return assets;
+  }
+
+  Future<List<AssetEntity>> _getLocalAssets(bool urgent) async {
+    try {
+      final Future<bool> hasAccess = urgent
+          ? _backgroundService.hasAccess
+              .timeout(const Duration(milliseconds: 250))
+          : _backgroundService.hasAccess;
+      if (!await hasAccess) {
+        throw Exception("Error [getAllAsset] failed to gain access");
+      }
+      final box = await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
+      final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
+
+      return backupAlbumInfo != null
+          ? await _backupService
+              .buildUploadCandidates(backupAlbumInfo.deepCopy())
+          : [];
+    } catch (e) {
+      debugPrint("Error [_getLocalAssets] ${e.toString()}");
+      return [];
+    }
   }
 
   Future<Asset?> getAssetById(String assetId) async {

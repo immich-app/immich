@@ -6,46 +6,6 @@ import 'package:immich_mobile/modules/login/providers/authentication.provider.da
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
-import 'package:photo_manager/photo_manager.dart';
-
-final imageFamily =
-    FutureProvider.family<Widget, AssetEntity?>((ref, entity) async {
-  if (entity != null) {
-    final bytes =
-        await entity.thumbnailDataWithSize(const ThumbnailSize.square(300));
-    if (bytes != null) {
-      return SizedBox(
-        width: 300,
-        height: 300,
-        child: Image.memory(
-          bytes,
-          width: 300,
-          height: 300,
-          fit: BoxFit.cover,
-        ),
-      );
-    }
-  }
-  return const SizedBox(
-    width: 300,
-    height: 300,
-  );
-  // final fb = FutureBuilder(
-  //   future: entity.thumbnailDataWithSize(const ThumbnailSize(200, 200)), //resolution of thumbnail
-  //   builder:
-  //       (BuildContext context, AsyncSnapshot<Uint8List?> snapshot) {
-  //     if (snapshot.connectionState == ConnectionState.done) {
-
-  //       return Image.memory(
-  //               snapshot.data!,
-  //               fit: BoxFit.cover,
-  //             );
-  //     } else {
-  //     return Container();
-  //     }
-  //   },
-  // )
-});
 
 class ThumbnailImage extends HookConsumerWidget {
   final Asset asset;
@@ -145,7 +105,7 @@ class ThumbnailImage extends HookConsumerWidget {
                       ? (deviceId == asset.deviceId
                           ? Icons.cloud_done_outlined
                           : Icons.cloud_outlined)
-                      : Icons.photo_library_outlined,
+                      : Icons.cloud_off_outlined,
                   color: Colors.white,
                   size: 18,
                 ),
