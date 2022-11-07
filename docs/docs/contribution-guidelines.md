@@ -38,7 +38,7 @@ Please refer to the [Flutter's official documentation](https://flutter.dev/docs/
 
 ### Lint / format extensions
 
-Setting these in the IDE give a better developer experience auto-formatting code on save and providing instant feedback on lint issues.
+Setting these in the IDE give a better developer experience, auto-formatting code on save, and providing instant feedback on lint issues.
 
 ### VSCode
 
