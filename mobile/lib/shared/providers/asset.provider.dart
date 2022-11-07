@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
@@ -15,6 +17,7 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
 
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
   bool _getAllAssetInProgress = false;
+  bool _deleteInProgress = false;
 
   AssetNotifier(this._assetService, this._assetCacheService) : super([]);
 
@@ -23,7 +26,7 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
   }
 
   getAllAsset() async {
-    if (_getAllAssetInProgress) {
+    if (_getAllAssetInProgress || _deleteInProgress) {
       // guard against multiple calls to this method while it's still working
       return;
     }
@@ -68,48 +71,58 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
   }
 
   deleteAssets(Set<Asset> deleteAssets) async {
+    _deleteInProgress = true;
+    try {
+      final localDeleted = await _deleteLocalAssets(deleteAssets);
+      final remoteDeleted = await _deleteRemoteAssets(deleteAssets);
+      final Set<String> deleted = HashSet();
+      deleted.addAll(localDeleted);
+      deleted.addAll(remoteDeleted);
+      if (deleted.isNotEmpty) {
+        state = state.where((a) => !deleted.contains(a.id)).toList();
+        _cacheState();
+      }
+    } finally {
+      _deleteInProgress = false;
+    }
+  }
+
+  Future<List<String>> _deleteLocalAssets(Set<Asset> assetsToDelete) async {
     var deviceInfo = await _deviceInfoService.getDeviceInfo();
     var deviceId = deviceInfo["deviceId"];
-    var deleteIdList = <String>[];
+    final List<String> local = [];
     // Delete asset from device
-    for (var asset in deleteAssets) {
-      // Delete asset on device if present
-      if (asset.deviceId == deviceId) {
-        var localAsset = asset.isLocal
-            ? asset.local
-            : await AssetEntity.fromId(asset.deviceAssetId);
-
+    for (final Asset asset in assetsToDelete) {
+      if (asset.isLocal) {
+        local.add(asset.id);
+      } else if (asset.deviceId == deviceId) {
+        // Delete asset on device if it is still present
+        var localAsset = await AssetEntity.fromId(asset.deviceAssetId);
         if (localAsset != null) {
-          deleteIdList.add(localAsset.id);
+          local.add(localAsset.id);
         }
       }
     }
-
-    try {
-      await PhotoManager.editor.deleteWithIds(deleteIdList);
-    } catch (e) {
-      debugPrint("Delete asset from device failed: $e");
-    }
-
-    // Delete asset on server
-    List<DeleteAssetResponseDto>? deleteAssetResult =
-        await _assetService.deleteAssets(deleteAssets
-            .where((e) => e.isRemote)
-            .map((e) => e.remote!)
-            .toSet());
-
-    if (deleteAssetResult == null) {
-      return;
-    }
-
-    for (var asset in deleteAssetResult) {
-      if (asset.status == DeleteAssetStatus.SUCCESS) {
-        state =
-            state.where((immichAsset) => immichAsset.id != asset.id).toList();
+    if (local.isNotEmpty) {
+      try {
+        return await PhotoManager.editor.deleteWithIds(local);
+      } catch (e) {
+        debugPrint("Delete asset from device failed: $e");
       }
     }
+    return [];
+  }
 
-    _cacheState();
+  Future<Iterable<String>> _deleteRemoteAssets(
+    Set<Asset> assetsToDelete,
+  ) async {
+    final Iterable<AssetResponseDto> remote =
+        assetsToDelete.where((e) => e.isRemote).map((e) => e.remote!);
+    final List<DeleteAssetResponseDto> deleteAssetResult =
+        await _assetService.deleteAssets(remote) ?? [];
+    return deleteAssetResult
+        .where((a) => a.status == DeleteAssetStatus.SUCCESS)
+        .map((a) => a.id);
   }
 }
 

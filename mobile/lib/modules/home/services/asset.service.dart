@@ -88,12 +88,12 @@ class AssetService {
   }
 
   Future<List<DeleteAssetResponseDto>?> deleteAssets(
-    Set<AssetResponseDto> deleteAssets,
+    Iterable<AssetResponseDto> deleteAssets,
   ) async {
     try {
-      List<String> payload = [];
+      final List<String> payload = [];
 
-      for (var asset in deleteAssets) {
+      for (final asset in deleteAssets) {
         payload.add(asset.id);
       }
 
