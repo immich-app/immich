@@ -28,6 +28,7 @@ class AssetService {
 
   AssetService(this._apiService, this._backupService, this._backgroundService);
 
+  /// Returns all local, remote assets in that order
   Future<List<Asset>> getAllAsset({bool urgent = false}) async {
     final List<Asset> assets = [];
     try {
@@ -37,7 +38,6 @@ class AssetService {
       final Iterable<AssetEntity> newLocalAssets;
       final List<AssetEntity> localAssets = await _getLocalAssets(urgent);
       final List<AssetResponseDto> remoteAssets = await remoteTask ?? [];
-      assets.addAll(remoteAssets.map((e) => Asset.remote(e)));
       if (remoteAssets.isNotEmpty && localAssets.isNotEmpty) {
         final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
         final Set<String> existingIds = remoteAssets
@@ -50,6 +50,8 @@ class AssetService {
       }
 
       assets.addAll(newLocalAssets.map((e) => Asset.local(e)));
+      // the order (first all local, then remote assets) is important!
+      assets.addAll(remoteAssets.map((e) => Asset.remote(e)));
     } catch (e) {
       debugPrint("Error [getAllAsset]  ${e.toString()}");
     }

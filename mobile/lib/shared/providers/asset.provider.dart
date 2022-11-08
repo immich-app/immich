@@ -66,7 +66,24 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
   }
 
   onNewAssetUploaded(AssetResponseDto newAsset) {
-    state = [...state, Asset.remote(newAsset)];
+    final int i = state.indexWhere(
+      (a) =>
+          a.isRemote ||
+          (a.id == newAsset.deviceAssetId && a.deviceId == newAsset.deviceId),
+    );
+
+    if (i == -1 || state[i].deviceAssetId != newAsset.deviceAssetId) {
+      state = [...state, Asset.remote(newAsset)];
+    } else {
+      // order is important to keep all local-only assets at the beginning!
+      state = [
+        ...state.slice(0, i),
+        ...state.slice(i + 1),
+        Asset.remote(newAsset),
+      ];
+      // TODO here is a place to unify local/remote assets by replacing the
+      // local-only asset in the state with a local&remote asset
+    }
     _cacheState();
   }
 
@@ -132,7 +149,8 @@ final assetProvider = StateNotifierProvider<AssetNotifier, List<Asset>>((ref) {
 });
 
 final assetGroupByDateTimeProvider = StateProvider((ref) {
-  var assets = ref.watch(assetProvider);
+  final assets = ref.watch(assetProvider).toList();
+  // `toList()` ist needed to make a copy as to NOT sort the original list/state
 
   assets.sortByCompare<DateTime>(
     (e) => e.createdAt,
@@ -144,10 +162,10 @@ final assetGroupByDateTimeProvider = StateProvider((ref) {
 });
 
 final assetGroupByMonthYearProvider = StateProvider((ref) {
-  var assets = ref.watch(assetProvider);
-
-  // TODO: remove once temporary workaround is no longer needed (to only allow remote assets to be added to album)
-  assets = assets.where((e) => e.isRemote).toList();
+  // TODO: remove `where` once temporary workaround is no longer needed (to only
+  // allow remote assets to be added to album). Keep `toList()` as to NOT sort
+  // the original list/state
+  final assets = ref.watch(assetProvider).where((e) => e.isRemote).toList();
 
   assets.sortByCompare<DateTime>(
     (e) => e.createdAt,
