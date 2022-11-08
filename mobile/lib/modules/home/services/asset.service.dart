@@ -5,14 +5,13 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
+import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/src/types/entity.dart';
-
-import '../../backup/models/hive_backup_albums.model.dart';
 
 final assetServiceProvider = Provider(
   (ref) => AssetService(
@@ -32,6 +31,7 @@ class AssetService {
   Future<List<Asset>> getAllAsset({bool urgent = false}) async {
     final List<Asset> assets = [];
     try {
+      // not using `await` here to fetch local & remote assets concurrently
       final Future<List<AssetResponseDto>?> remoteTask =
           _apiService.assetApi.getAllAssets();
       final Iterable<AssetEntity> newLocalAssets;
@@ -56,6 +56,8 @@ class AssetService {
     return assets;
   }
 
+  /// if [urgent] is `true`, do not block by waiting on the background service
+  /// to finish running. Returns an empty list instead after a timeout.
   Future<List<AssetEntity>> _getLocalAssets(bool urgent) async {
     try {
       final Future<bool> hasAccess = urgent

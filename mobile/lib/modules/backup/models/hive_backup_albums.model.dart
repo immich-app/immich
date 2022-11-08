@@ -46,6 +46,8 @@ class HiveBackupAlbums {
     );
   }
 
+  /// Returns a deep copy to allow safe modification without changing the global
+  /// state of [HiveBackupAlbums] before actually saving the changes
   HiveBackupAlbums deepCopy() {
     return HiveBackupAlbums(
       selectedAlbumIds: selectedAlbumIds.toList(),
