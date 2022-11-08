@@ -70,8 +70,7 @@ services:
       - .env
     environment:
       # Rename these values for svelte public interface
-      - PUBLIC_IMMICH_SERVER_HOST=${IMMICH_SERVER_HOST}
-      - PUBLIC_IMMICH_SERVER_PORT=${IMMICH_SERVER_PORT}
+      - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
     ports:
       - 3000:3000
       - 24678:24678
@@ -106,10 +105,8 @@ services:
     image: immich-proxy-dev:latest
     environment:
       # Make sure these values get passed through from the env file
-      - IMMICH_SERVER_HOST
-      - IMMICH_SERVER_PORT
-      - IMMICH_WEB_HOST
-      - IMMICH_WEB_PORT
+      - IMMICH_SERVER_URL
+      - IMMICH_WEB_URL
     build:
       context: ../nginx
       dockerfile: Dockerfile

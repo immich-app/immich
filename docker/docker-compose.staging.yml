@@ -49,8 +49,7 @@ services:
       - .env
     environment:
       # Rename these values for svelte public interface
-      - PUBLIC_IMMICH_SERVER_HOST=${IMMICH_SERVER_HOST}
-      - PUBLIC_IMMICH_SERVER_PORT=${IMMICH_SERVER_PORT}
+      - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
     restart: always
 
   redis:
@@ -77,10 +76,8 @@ services:
     image: altran1502/immich-proxy:staging
     environment:
       # Make sure these values get passed through from the env file
-      - IMMICH_SERVER_HOST
-      - IMMICH_SERVER_PORT
-      - IMMICH_WEB_HOST
-      - IMMICH_WEB_PORT
+      - IMMICH_SERVER_URL
+      - IMMICH_WEB_URL
     ports:
       - 2283:8080
     logging:

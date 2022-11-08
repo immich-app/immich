@@ -46,7 +46,5 @@ class ImmichApi {
 
 export const api = new ImmichApi();
 export const serverApi = new ImmichApi();
-const immich_server_host = env.PUBLIC_IMMICH_SERVER_HOST || 'immich-server';
-const immich_server_port = env.PUBLIC_IMMICH_SERVER_PORT || 3001;
-const immich_server_url = 'http://' + immich_server_host + ':' + immich_server_port;
+const immich_server_url = env.PUBLIC_IMMICH_SERVER_URL || 'http://immich-server:3001';
 serverApi.setBaseUrl(immich_server_url);

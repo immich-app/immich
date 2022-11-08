@@ -9,8 +9,7 @@ import axios from 'axios';
 import { Job } from 'bull';
 import { Repository } from 'typeorm';
 
-const immich_machine_learning_host = process.env.IMMICH_MACHINE_LEARNING_HOST || 'immich-machine-learning';
-const immich_machine_learning_port = process.env.IMMICH_MACHINE_LEARNING_PORT || '3003';
+const immich_machine_learning_url = process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003';
 
 @Processor(QueueNameEnum.MACHINE_LEARNING)
 export class MachineLearningProcessor {
@@ -24,7 +23,7 @@ export class MachineLearningProcessor {
     const { asset } = job.data;
 
     const res = await axios.post(
-      'http://' + immich_machine_learning_host + ':' + immich_machine_learning_port + '/image-classifier/tag-image',
+      immich_machine_learning_url + '/image-classifier/tag-image',
       {
         thumbnailPath: asset.resizePath,
       },
@@ -47,7 +46,7 @@ export class MachineLearningProcessor {
       const { asset }: { asset: AssetEntity } = job.data;
 
       const res = await axios.post(
-        'http://' + immich_machine_learning_host + ':' + immich_machine_learning_port + '/object-detection/detect-object',
+        immich_machine_learning_url + '/object-detection/detect-object',
         {
           thumbnailPath: asset.resizePath,
         },
