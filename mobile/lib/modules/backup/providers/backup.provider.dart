@@ -565,11 +565,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
       final bool hasLock = await _backgroundService.acquireLock();
       if (!hasLock) {
+        debugPrint("WARNING [resumeBackup] failed to acquireLock");
         return;
       }
-      Box<HiveBackupAlbums> box =
-          await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
-      HiveBackupAlbums? albums = box.get(backupInfoKey);
+      await Future.wait([
+        Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+        Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+        Hive.openBox(backgroundBackupInfoBox),
+      ]);
+      final HiveBackupAlbums? albums =
+          Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).get(backupInfoKey);
       Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
       Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
       if (albums != null) {
@@ -584,8 +589,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           albums.lastExcludedBackupTime,
         );
       }
-      await Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox);
-      final Box backgroundBox = await Hive.openBox(backgroundBackupInfoBox);
+      final Box backgroundBox = Hive.box(backgroundBackupInfoBox);
       state = state.copyWith(
         backupProgress: previous,
         selectedBackupAlbums: selectedAlbums,

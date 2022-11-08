@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:openapi/api.dart';
 
 void main() {
-  final List<AssetResponseDto> testAssets = [];
+  final List<Asset> testAssets = [];
 
   for (int i = 0; i < 150; i++) {
     int month = i ~/ 31;
@@ -11,39 +12,43 @@ void main() {
 
     DateTime date = DateTime(2022, month, day);
 
-    testAssets.add(AssetResponseDto(
-      type: AssetTypeEnum.IMAGE,
-      id: '$i',
-      deviceAssetId: '',
-      ownerId: '',
-      deviceId: '',
-      originalPath: '',
-      resizePath: '',
-      createdAt: date.toIso8601String(),
-      modifiedAt: date.toIso8601String(),
-      isFavorite: false,
-      mimeType: 'image/jpeg',
-      duration: '',
-      webpPath: '',
-      encodedVideoPath: '',
-    ));
+    testAssets.add(
+      Asset.remote(
+        AssetResponseDto(
+          type: AssetTypeEnum.IMAGE,
+          id: '$i',
+          deviceAssetId: '',
+          ownerId: '',
+          deviceId: '',
+          originalPath: '',
+          resizePath: '',
+          createdAt: date.toIso8601String(),
+          modifiedAt: date.toIso8601String(),
+          isFavorite: false,
+          mimeType: 'image/jpeg',
+          duration: '',
+          webpPath: '',
+          encodedVideoPath: '',
+        ),
+      ),
+    );
   }
 
-  final Map<String, List<AssetResponseDto>> groups = {
+  final Map<String, List<Asset>> groups = {
     '2022-01-05': testAssets.sublist(0, 5).map((e) {
-      e.createdAt = DateTime(2022, 1, 5).toIso8601String();
+      e.createdAt = DateTime(2022, 1, 5);
       return e;
     }).toList(),
     '2022-01-10': testAssets.sublist(5, 10).map((e) {
-      e.createdAt = DateTime(2022, 1, 10).toIso8601String();
+      e.createdAt = DateTime(2022, 1, 10);
       return e;
     }).toList(),
     '2022-02-17': testAssets.sublist(10, 15).map((e) {
-      e.createdAt = DateTime(2022, 2, 17).toIso8601String();
+      e.createdAt = DateTime(2022, 2, 17);
       return e;
     }).toList(),
     '2022-10-15': testAssets.sublist(15, 30).map((e) {
-      e.createdAt = DateTime(2022, 10, 15).toIso8601String();
+      e.createdAt = DateTime(2022, 10, 15);
       return e;
     }).toList()
   };

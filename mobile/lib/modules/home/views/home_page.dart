@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
@@ -14,6 +15,7 @@ import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
@@ -31,7 +33,7 @@ class HomePage extends HookConsumerWidget {
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
 
-    final selection = useState(<AssetResponseDto>{});
+    final selection = useState(<Asset>{});
     final albums = ref.watch(albumProvider);
     final albumService = ref.watch(albumServiceProvider);
 
@@ -60,7 +62,7 @@ class HomePage extends HookConsumerWidget {
     Widget buildBody() {
       void selectionListener(
         bool multiselect,
-        Set<AssetResponseDto> selectedAssets,
+        Set<Asset> selectedAssets,
       ) {
         selectionEnabledHook.value = multiselect;
         selection.value = selectedAssets;
@@ -76,9 +78,27 @@ class HomePage extends HookConsumerWidget {
         selectionEnabledHook.value = false;
       }
 
+      Iterable<Asset> remoteOnlySelection() {
+        final Set<Asset> assets = selection.value;
+        final bool onlyRemote = assets.every((e) => e.isRemote);
+        if (!onlyRemote) {
+          ImmichToast.show(
+            context: context,
+            msg: "Can not add local assets to albums yet, skipping",
+            gravity: ToastGravity.BOTTOM,
+          );
+          return assets.where((a) => a.isRemote);
+        }
+        return assets;
+      }
+
       void onAddToAlbum(AlbumResponseDto album) async {
+        final Iterable<Asset> assets = remoteOnlySelection();
+        if (assets.isEmpty) {
+          return;
+        }
         final result = await albumService.addAdditionalAssetToAlbum(
-          selection.value,
+          assets,
           album.id,
         );
 
@@ -103,6 +123,7 @@ class HomePage extends HookConsumerWidget {
                   "added": result.successfullyAdded.toString(),
                 },
               ),
+              toastType: ToastType.success,
             );
           }
 
@@ -111,8 +132,11 @@ class HomePage extends HookConsumerWidget {
       }
 
       void onCreateNewAlbum() async {
-        final result =
-            await albumService.createAlbumWithGeneratedName(selection.value);
+        final Iterable<Asset> assets = remoteOnlySelection();
+        if (assets.isEmpty) {
+          return;
+        }
+        final result = await albumService.createAlbumWithGeneratedName(assets);
 
         if (result != null) {
           ref.watch(albumProvider.notifier).getAllAlbums();

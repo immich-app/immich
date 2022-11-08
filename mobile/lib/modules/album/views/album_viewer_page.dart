@@ -16,6 +16,7 @@ import 'package:immich_mobile/modules/album/ui/album_viewer_thumbnail.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
@@ -38,9 +39,9 @@ class AlbumViewerPage extends HookConsumerWidget {
     /// If they exist, add to selected asset state to show they are already selected.
     void _onAddPhotosPressed(AlbumResponseDto albumInfo) async {
       if (albumInfo.assets.isNotEmpty == true) {
-        ref
-            .watch(assetSelectionProvider.notifier)
-            .addNewAssets(albumInfo.assets.toList());
+        ref.watch(assetSelectionProvider.notifier).addNewAssets(
+              albumInfo.assets.map((e) => Asset.remote(e)).toList(),
+            );
       }
 
       ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(true);
@@ -205,8 +206,9 @@ class AlbumViewerPage extends HookConsumerWidget {
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 return AlbumViewerThumbnail(
-                  asset: albumInfo.assets[index],
-                  assetList: albumInfo.assets,
+                  asset: Asset.remote(albumInfo.assets[index]),
+                  assetList:
+                      albumInfo.assets.map((e) => Asset.remote(e)).toList(),
                   showStorageIndicator: showStorageIndicator,
                 );
               },

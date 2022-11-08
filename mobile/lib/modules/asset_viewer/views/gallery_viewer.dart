@@ -14,12 +14,12 @@ import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart'
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
-  late List<AssetResponseDto> assetList;
-  final AssetResponseDto asset;
+  late List<Asset> assetList;
+  final Asset asset;
 
   GalleryViewerPage({
     Key? key,
@@ -27,7 +27,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     required this.asset,
   }) : super(key: key);
 
-  AssetResponseDto? assetDetail;
+  Asset? assetDetail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,8 +37,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final loading = useState(false);
     final isZoomed = useState<bool>(false);
     ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
-
-    int indexOfAsset = assetList.indexOf(asset);
+    final indexOfAsset = useState(assetList.indexOf(asset));
 
     PageController controller =
         PageController(initialPage: assetList.indexOf(asset));
@@ -52,15 +51,15 @@ class GalleryViewerPage extends HookConsumerWidget {
       [],
     );
 
-    @override
-    initState(int index) {
-      indexOfAsset = index;
-    }
-
     getAssetExif() async {
-      assetDetail = await ref
-          .watch(assetServiceProvider)
-          .getAssetById(assetList[indexOfAsset].id);
+      if (assetList[indexOfAsset.value].isRemote) {
+        assetDetail = await ref
+            .watch(assetServiceProvider)
+            .getAssetById(assetList[indexOfAsset.value].id);
+      } else {
+        // TODO local exif parsing?
+        assetDetail = assetList[indexOfAsset.value];
+      }
     }
 
     void showInfo() {
@@ -88,19 +87,20 @@ class GalleryViewerPage extends HookConsumerWidget {
       backgroundColor: Colors.black,
       appBar: TopControlAppBar(
         loading: loading.value,
-        asset: assetList[indexOfAsset],
+        asset: assetList[indexOfAsset.value],
         onMoreInfoPressed: () {
           showInfo();
         },
-        onDownloadPressed: () {
-          ref
-              .watch(imageViewerStateProvider.notifier)
-              .downloadAsset(assetList[indexOfAsset], context);
-        },
+        onDownloadPressed: assetList[indexOfAsset.value].isLocal
+            ? null
+            : () {
+                ref.watch(imageViewerStateProvider.notifier).downloadAsset(
+                    assetList[indexOfAsset.value].remote!, context);
+              },
         onSharePressed: () {
           ref
               .watch(imageViewerStateProvider.notifier)
-              .shareAsset(assetList[indexOfAsset], context);
+              .shareAsset(assetList[indexOfAsset.value], context);
         },
       ),
       body: SafeArea(
@@ -113,14 +113,13 @@ class GalleryViewerPage extends HookConsumerWidget {
           itemCount: assetList.length,
           scrollDirection: Axis.horizontal,
           onPageChanged: (value) {
+            indexOfAsset.value = value;
             HapticFeedback.selectionClick();
           },
           itemBuilder: (context, index) {
-            initState(index);
-
             getAssetExif();
 
-            if (assetList[index].type == AssetTypeEnum.IMAGE) {
+            if (assetList[index].isImage) {
               return ImageViewerPage(
                 authToken: 'Bearer ${box.get(accessTokenKey)}',
                 isZoomedFunction: isZoomedMethod,
@@ -139,11 +138,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 },
                 child: Hero(
                   tag: assetList[index].id,
-                  child: VideoViewerPage(
-                    asset: assetList[index],
-                    videoUrl:
-                        '${box.get(serverEndpointKey)}/asset/file?aid=${assetList[index].deviceAssetId}&did=${assetList[index].deviceId}',
-                  ),
+                  child: VideoViewerPage(asset: assetList[index]),
                 ),
               );
             }

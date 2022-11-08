@@ -1,17 +1,22 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:openapi/api.dart';
+import 'package:photo_manager/photo_manager.dart'
+    show AssetEntityImageProvider, ThumbnailSize;
 import 'package:photo_view/photo_view.dart';
 
 enum _RemoteImageStatus { empty, thumbnail, preview, full }
 
 class _RemotePhotoViewState extends State<RemotePhotoView> {
-  late CachedNetworkImageProvider _imageProvider;
+  late ImageProvider _imageProvider;
   _RemoteImageStatus _status = _RemoteImageStatus.empty;
   bool _zoomedIn = false;
 
-  late CachedNetworkImageProvider fullProvider;
-  late CachedNetworkImageProvider previewProvider;
-  late CachedNetworkImageProvider thumbnailProvider;
+  late ImageProvider _fullProvider;
+  late ImageProvider _previewProvider;
+  late ImageProvider _thumbnailProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +73,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
   void _performStateTransition(
     _RemoteImageStatus newStatus,
-    CachedNetworkImageProvider provider,
+    ImageProvider provider,
   ) {
     if (_status == newStatus) return;
 
@@ -90,40 +95,58 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   void _loadImages() {
-    thumbnailProvider = _authorizedImageProvider(
-      widget.thumbnailUrl,
-      widget.cacheKey,
-    );
-    _imageProvider = thumbnailProvider;
+    if (widget.asset.isLocal) {
+      _imageProvider = AssetEntityImageProvider(
+        widget.asset.local!,
+        isOriginal: false,
+        thumbnailSize: const ThumbnailSize.square(250),
+      );
+      _fullProvider = AssetEntityImageProvider(widget.asset.local!);
+      _fullProvider.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo image, _) {
+          _performStateTransition(
+            _RemoteImageStatus.full,
+            _fullProvider,
+          );
+        }),
+      );
+      return;
+    }
 
-    thumbnailProvider.resolve(const ImageConfiguration()).addListener(
+    _thumbnailProvider = _authorizedImageProvider(
+      getThumbnailUrl(widget.asset.remote!),
+      widget.asset.id,
+    );
+    _imageProvider = _thumbnailProvider;
+
+    _thumbnailProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
         _performStateTransition(
           _RemoteImageStatus.thumbnail,
-          thumbnailProvider,
+          _thumbnailProvider,
         );
       }),
     );
 
-    if (widget.previewUrl != null) {
-      previewProvider = _authorizedImageProvider(
-        widget.previewUrl!,
-        "${widget.cacheKey}_previewStage",
+    if (widget.threeStageLoading) {
+      _previewProvider = _authorizedImageProvider(
+        getThumbnailUrl(widget.asset.remote!, type: ThumbnailFormat.JPEG),
+        "${widget.asset.id}_previewStage",
       );
-      previewProvider.resolve(const ImageConfiguration()).addListener(
+      _previewProvider.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((ImageInfo imageInfo, _) {
-          _performStateTransition(_RemoteImageStatus.preview, previewProvider);
+          _performStateTransition(_RemoteImageStatus.preview, _previewProvider);
         }),
       );
     }
 
-    fullProvider = _authorizedImageProvider(
-      widget.imageUrl,
-      "${widget.cacheKey}_fullStage",
+    _fullProvider = _authorizedImageProvider(
+      getImageUrl(widget.asset.remote!),
+      "${widget.asset.id}_fullStage",
     );
-    fullProvider.resolve(const ImageConfiguration()).addListener(
+    _fullProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
-        _performStateTransition(_RemoteImageStatus.full, fullProvider);
+        _performStateTransition(_RemoteImageStatus.full, _fullProvider);
       }),
     );
   }
@@ -139,11 +162,11 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     super.dispose();
 
     if (_status == _RemoteImageStatus.full) {
-      await fullProvider.evict();
+      await _fullProvider.evict();
     } else if (_status == _RemoteImageStatus.preview) {
-      await previewProvider.evict();
+      await _previewProvider.evict();
     } else if (_status == _RemoteImageStatus.thumbnail) {
-      await thumbnailProvider.evict();
+      await _thumbnailProvider.evict();
     }
 
     await _imageProvider.evict();
@@ -153,23 +176,18 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 class RemotePhotoView extends StatefulWidget {
   const RemotePhotoView({
     Key? key,
-    required this.thumbnailUrl,
-    required this.imageUrl,
+    required this.asset,
     required this.authToken,
+    required this.threeStageLoading,
     required this.isZoomedFunction,
     required this.isZoomedListener,
     required this.onSwipeDown,
     required this.onSwipeUp,
-    this.previewUrl,
-    required this.cacheKey,
   }) : super(key: key);
 
-  final String thumbnailUrl;
-  final String imageUrl;
+  final Asset asset;
   final String authToken;
-  final String? previewUrl;
-  final String cacheKey;
-
+  final bool threeStageLoading;
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;
   final void Function() isZoomedFunction;

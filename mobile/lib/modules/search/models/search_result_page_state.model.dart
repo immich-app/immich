@@ -1,13 +1,14 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:openapi/api.dart';
 
 class SearchResultPageState {
   final bool isLoading;
   final bool isSuccess;
   final bool isError;
-  final List<AssetResponseDto> searchResult;
+  final List<Asset> searchResult;
 
   SearchResultPageState({
     required this.isLoading,
@@ -20,7 +21,7 @@ class SearchResultPageState {
     bool? isLoading,
     bool? isSuccess,
     bool? isError,
-    List<AssetResponseDto>? searchResult,
+    List<Asset>? searchResult,
   }) {
     return SearchResultPageState(
       isLoading: isLoading ?? this.isLoading,
@@ -44,8 +45,9 @@ class SearchResultPageState {
       isLoading: map['isLoading'] ?? false,
       isSuccess: map['isSuccess'] ?? false,
       isError: map['isError'] ?? false,
-      searchResult: List<AssetResponseDto>.from(
-        map['searchResult']?.map((x) => AssetResponseDto.mapFromJson(x)),
+      searchResult: List<Asset>.from(
+        map['searchResult']
+            ?.map((x) => Asset.remote(AssetResponseDto.fromJson(x))),
       ),
     );
   }

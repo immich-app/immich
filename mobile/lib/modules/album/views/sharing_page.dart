@@ -18,7 +18,6 @@ class SharingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var box = Hive.box(userInfoBox);
-    var thumbnailRequestUrl = '${box.get(serverEndpointKey)}/asset/thumbnail';
     final List<AlbumResponseDto> sharedAlbums = ref.watch(sharedAlbumProvider);
 
     useEffect(

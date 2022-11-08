@@ -6,8 +6,8 @@ import 'package:immich_mobile/modules/search/models/search_result_page_state.mod
 import 'package:immich_mobile/modules/search/services/search.service.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:intl/intl.dart';
-import 'package:openapi/api.dart';
 
 class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
   SearchResultPageNotifier(this._searchService)
@@ -30,8 +30,9 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
       isSuccess: false,
     );
 
-    List<AssetResponseDto>? assets =
-        await _searchService.searchAsset(searchTerm);
+    List<Asset>? assets = (await _searchService.searchAsset(searchTerm))
+        ?.map((e) => Asset.remote(e))
+        .toList();
 
     if (assets != null) {
       state = state.copyWith(
@@ -61,12 +62,11 @@ final searchResultGroupByDateTimeProvider = StateProvider((ref) {
   var assets = ref.watch(searchResultPageProvider).searchResult;
 
   assets.sortByCompare<DateTime>(
-    (e) => DateTime.parse(e.createdAt),
+    (e) => e.createdAt,
     (a, b) => b.compareTo(a),
   );
   return assets.groupListsBy(
-    (element) => DateFormat('y-MM-dd')
-        .format(DateTime.parse(element.createdAt).toLocal()),
+    (element) => DateFormat('y-MM-dd').format(element.createdAt.toLocal()),
   );
 });
 
