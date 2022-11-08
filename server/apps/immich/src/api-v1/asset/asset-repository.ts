@@ -257,7 +257,7 @@ export class AssetRepository implements IAssetRepository {
   /**
    * Update asset
    */
-  async update(asset: AssetEntity, dto: any): Promise<AssetEntity> {
+  async update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
     asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
 
     return await this.assetRepository.save(asset);
