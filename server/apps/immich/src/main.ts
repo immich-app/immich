@@ -8,12 +8,14 @@ import path from 'path';
 import { AppModule } from './app.module';
 import { serverVersion } from './constants/server_version.constant';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
+import { json } from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.set('trust proxy');
   app.use(cookieParser());
+  app.use(json({ limit: '10mb' }));
   if (process.env.NODE_ENV === 'development') {
     app.enableCors();
   }
