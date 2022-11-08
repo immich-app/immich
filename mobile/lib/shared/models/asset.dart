@@ -50,6 +50,15 @@ class Asset {
     }
   }
 
+  @override
+  bool operator ==(other) {
+    if (other is! Asset) return false;
+    return id == other.id && isLocal == other.isLocal;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (isLocal) {
