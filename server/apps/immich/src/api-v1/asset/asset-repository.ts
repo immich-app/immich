@@ -13,6 +13,7 @@ import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-use
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { In } from 'typeorm/find-options/operator/In';
+import { UpdateAssetDto } from './dto/update-asset.dto';
 
 export interface IAssetRepository {
   create(
@@ -22,6 +23,7 @@ export interface IAssetRepository {
     mimeType: string,
     checksum?: Buffer,
   ): Promise<AssetEntity>;
+  update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
   getAllByUserId(userId: string): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -250,6 +252,15 @@ export class AssetRepository implements IAssetRepository {
       throw new BadRequestException('Asset not created');
     }
     return createdAsset;
+  }
+
+  /**
+   * Update asset
+   */
+  async update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
+    asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
+
+    return await this.assetRepository.save(asset);
   }
 
   /**

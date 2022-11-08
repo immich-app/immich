@@ -92,6 +92,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file | 
+*AssetApi* | [**updateAssetById**](doc//AssetApi.md#updateassetbyid) | **PUT** /asset/assetById/{assetId} | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
@@ -170,6 +171,7 @@ Class | Method | HTTP request | Description
  - [ThumbnailFormat](doc//ThumbnailFormat.md)
  - [TimeGroupEnum](doc//TimeGroupEnum.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
+ - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)

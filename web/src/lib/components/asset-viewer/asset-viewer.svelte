@@ -178,6 +178,14 @@
 		}
 	};
 
+	const toggleFavorite = async () => {
+		const { data } = await api.assetApi.updateAssetById(asset.id, {
+			isFavorite: !asset.isFavorite
+		});
+
+		asset.isFavorite = data.isFavorite;
+	};
+
 	const openAlbumPicker = (shared: boolean) => {
 		isShowAlbumPicker = true;
 		addToSharedAlbum = shared;
@@ -218,10 +226,12 @@
 >
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
 		<AsserViewerNavBar
+			{asset}
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
 			on:download={downloadFile}
 			on:delete={deleteAsset}
+			on:favorite={toggleFavorite}
 			on:addToAlbum={() => openAlbumPicker(false)}
 			on:addToSharedAlbum={() => openAlbumPicker(true)}
 		/>
