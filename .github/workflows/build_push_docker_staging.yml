@@ -34,6 +34,8 @@ jobs:
           file: ./server/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: ${{ github.event_name == 'pull_request' && github.repository == 'immich-app/immich' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             altran1502/immich-server:staging
             altran1502/immich-server:${{ github.event.pull_request.number }}
@@ -64,6 +66,8 @@ jobs:
           file: ./machine-learning/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: ${{ github.event_name == 'pull_request' && github.repository == 'immich-app/immich' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             altran1502/immich-machine-learning:staging
             altran1502/immich-machine-learning:${{ github.event.pull_request.number }}

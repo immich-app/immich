@@ -33,6 +33,8 @@ jobs:
           file: ./server/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             altran1502/immich-server:latest
 
@@ -61,6 +63,8 @@ jobs:
           file: ./machine-learning/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             altran1502/immich-machine-learning:latest
 
