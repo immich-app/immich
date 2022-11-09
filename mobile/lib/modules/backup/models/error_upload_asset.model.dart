@@ -1,7 +1,6 @@
-import 'package:equatable/equatable.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-class ErrorUploadAsset extends Equatable {
+class ErrorUploadAsset {
   final String id;
   final DateTime createdAt;
   final String fileName;
@@ -42,14 +41,25 @@ class ErrorUploadAsset extends Equatable {
   }
 
   @override
-  List<Object> get props {
-    return [
-      id,
-      createdAt,
-      fileName,
-      fileType,
-      asset,
-      errorMessage,
-    ];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is ErrorUploadAsset &&
+        other.id == id &&
+        other.createdAt == createdAt &&
+        other.fileName == fileName &&
+        other.fileType == fileType &&
+        other.asset == asset &&
+        other.errorMessage == errorMessage;
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode ^
+        createdAt.hashCode ^
+        fileName.hashCode ^
+        fileType.hashCode ^
+        asset.hashCode ^
+        errorMessage.hashCode;
   }
 }

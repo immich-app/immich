@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ImmichLoadingIndicator extends StatelessWidget {
   const ImmichLoadingIndicator({
@@ -15,10 +14,8 @@ class ImmichLoadingIndicator extends StatelessWidget {
         color: Theme.of(context).primaryColor.withAlpha(200),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: const SpinKitDancingSquare(
-        color: Colors.white,
-        size: 30.0,
-      ),
+      padding: const EdgeInsets.all(15),
+      child: const CircularProgressIndicator(color: Colors.white),
     );
   }
 }
