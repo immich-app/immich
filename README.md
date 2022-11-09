@@ -22,7 +22,7 @@
 
 - ⚠️ The project is under **very active** development.
 - ⚠️ Expect bugs and breaking changes.
-- ⚠️ **Do not use as a single source to store of your photos and videos!**
+- ⚠️ **Do not use it as the only way to store your photos and videos!**
 
 ## Content
 
