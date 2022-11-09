@@ -11,6 +11,8 @@ COPY . .
 
 RUN npm run build
 
+RUN npm prune --production
+
 # Prod stage
 FROM node:16-alpine3.14
 
@@ -27,8 +29,6 @@ RUN mkdir -p /usr/src/app/dist \
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/bin ./bin
-
-RUN npm prune --production
 
 VOLUME /usr/src/app/upload
 

@@ -18,6 +18,7 @@ COPY . .
 
 RUN npm run build
 
+RUN npm prune --production
 
 # Prod stage
 FROM node:16-bullseye-slim
@@ -37,7 +38,5 @@ RUN mkdir -p /usr/src/app/dist \
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
-
-RUN npm prune --production
 
 # CMD [ "node", "dist/main" ]
