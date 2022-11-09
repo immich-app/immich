@@ -48,6 +48,7 @@ doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
 doc/OAuthApi.md
 doc/OAuthCallbackDto.md
+doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
 doc/RemoveAssetsDto.md
 doc/SearchAssetDto.md
@@ -127,6 +128,7 @@ lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
 lib/model/o_auth_callback_dto.dart
+lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
 lib/model/remove_assets_dto.dart
 lib/model/search_asset_dto.dart

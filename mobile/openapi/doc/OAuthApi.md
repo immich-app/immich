@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**callback**](OAuthApi.md#callback) | **POST** /oauth/callback | 
-[**getConfig**](OAuthApi.md#getconfig) | **GET** /oauth/config | 
+[**generateConfig**](OAuthApi.md#generateconfig) | **POST** /oauth/config | 
 
 
 # **callback**
@@ -54,8 +54,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getConfig**
-> OAuthConfigResponseDto getConfig()
+# **generateConfig**
+> OAuthConfigResponseDto generateConfig(oAuthConfigDto)
 
 
 
@@ -64,17 +64,21 @@ No authorization required
 import 'package:openapi/api.dart';
 
 final api_instance = OAuthApi();
+final oAuthConfigDto = OAuthConfigDto(); // OAuthConfigDto | 
 
 try {
-    final result = api_instance.getConfig();
+    final result = api_instance.generateConfig(oAuthConfigDto);
     print(result);
 } catch (e) {
-    print('Exception when calling OAuthApi->getConfig: $e\n');
+    print('Exception when calling OAuthApi->generateConfig: $e\n');
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **oAuthConfigDto** | [**OAuthConfigDto**](OAuthConfigDto.md)|  | 
 
 ### Return type
 
@@ -86,7 +90,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

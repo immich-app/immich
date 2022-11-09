@@ -63,24 +63,27 @@ class OAuthApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /oauth/config' operation and returns the [Response].
-  Future<Response> getConfigWithHttpInfo() async {
+  /// Performs an HTTP 'POST /oauth/config' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [OAuthConfigDto] oAuthConfigDto (required):
+  Future<Response> generateConfigWithHttpInfo(OAuthConfigDto oAuthConfigDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/oauth/config';
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = oAuthConfigDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
       path,
-      'GET',
+      'POST',
       queryParams,
       postBody,
       headerParams,
@@ -89,8 +92,11 @@ class OAuthApi {
     );
   }
 
-  Future<OAuthConfigResponseDto?> getConfig() async {
-    final response = await getConfigWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [OAuthConfigDto] oAuthConfigDto (required):
+  Future<OAuthConfigResponseDto?> generateConfig(OAuthConfigDto oAuthConfigDto,) async {
+    final response = await generateConfigWithHttpInfo(oAuthConfigDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

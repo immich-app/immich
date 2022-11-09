@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
+import { OAuthConfigDto } from './dto/oauth-config.dto';
 import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto';
 
 type OAuthProfile = UserinfoResponse & {
@@ -56,19 +57,24 @@ export class OAuthService {
     }
   }
 
-  public getConfig(): OAuthConfigResponseDto {
+  public getConfig(dto: OAuthConfigDto): OAuthConfigResponseDto {
     if (!this.enabled) {
       return { enabled: false };
     }
 
-    const url = this.getClient().authorizationUrl({ scope: this.scope, state: generators.state() });
+    const url = this.getClient().authorizationUrl({
+      redirect_uri: dto.redirectUri,
+      scope: this.scope,
+      state: generators.state(),
+    });
     return { enabled: true, buttonText: this.buttonText, url };
   }
 
   public async callback(dto: OAuthCallbackDto): Promise<LoginResponseDto> {
+    const redirectUri = dto.url.split('?')[0];
     const client = this.getClient();
     const params = client.callbackParams(dto.url);
-    const tokens = await client.callback(this.redirectUri, params, { state: params.state });
+    const tokens = await client.callback(redirectUri, params, { state: params.state });
     const profile = await client.userinfo<OAuthProfile>(tokens.access_token || '');
 
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);

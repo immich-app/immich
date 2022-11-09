@@ -29,10 +29,12 @@
 		}
 
 		try {
-			const { data } = await api.oauthApi.getConfig();
+			const redirectUri = window.location.href.split('?')[0];
+			console.log(`OAuth Redirect URI: ${redirectUri}`);
+			const { data } = await api.oauthApi.generateConfig({ redirectUri });
 			oauthConfig = data;
 		} catch (e) {
-			console.error('Error [login-form] [oauth.getConfig]', e);
+			console.error('Error [login-form] [oauth.generateConfig]', e);
 		}
 
 		loading = false;

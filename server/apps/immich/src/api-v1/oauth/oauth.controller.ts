@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post, Res, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Post, Res, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthService } from '../auth/auth.service';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
+import { OAuthConfigDto } from './dto/oauth-config.dto';
 import { OAuthService } from './oauth.service';
 import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto';
 
@@ -11,9 +12,9 @@ import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto
 export class OAuthController {
   constructor(private readonly authService: AuthService, private readonly oauthService: OAuthService) {}
 
-  @Get('/config')
-  public getConfig(): OAuthConfigResponseDto {
-    return this.oauthService.getConfig();
+  @Post('/config')
+  public generateConfig(@Body(ValidationPipe) dto: OAuthConfigDto): OAuthConfigResponseDto {
+    return this.oauthService.getConfig(dto);
   }
 
   @Post('/callback')
