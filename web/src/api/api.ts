@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/public';
 import {
 	AlbumApi,
 	AssetApi,
@@ -45,4 +46,5 @@ class ImmichApi {
 
 export const api = new ImmichApi();
 export const serverApi = new ImmichApi();
-serverApi.setBaseUrl('http://immich-server:3001');
+const immich_server_url = env.PUBLIC_IMMICH_SERVER_URL || 'http://immich-server:3001';
+serverApi.setBaseUrl(immich_server_url);
