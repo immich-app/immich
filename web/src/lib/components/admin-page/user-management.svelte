@@ -36,12 +36,12 @@
 	>
 		{#each allUsers as user, i}
 			<tr
-				class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-bg ${
+				class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-fg ${
 					isDeleted(user)
-						? 'bg-red-50'
+						? 'bg-red-300 dark:bg-red-900'
 						: i % 2 == 0
-						? 'bg-immich-gray dark:bg-[#e5e5e5]'
-						: 'bg-immich-bg dark:bg-[#eeeeee]'
+						? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+						: 'bg-immich-bg dark:bg-immich-dark-gray/50'
 				}`}
 			>
 				<td class="text-sm px-4 w-1/4 text-ellipsis">{user.email}</td>
