@@ -35,6 +35,10 @@
 - [Support The Project](#support-the-project)
 - [Known Issues](#known-issues)
 
+## Documentation
+
+You can find the main documentation, including installation guides, at https://immich.app/.
+
 ## Demo
 
 You can access the web demo at https://demo.immich.app
