@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
@@ -29,7 +30,7 @@ class AlbumService {
 
   Future<AlbumResponseDto?> createAlbum(
     String albumName,
-    Set<AssetResponseDto> assets,
+    Iterable<Asset> assets,
     List<String> sharedUserIds,
   ) async {
     try {
@@ -46,6 +47,31 @@ class AlbumService {
     }
   }
 
+  /*
+   * Creates names like Untitled, Untitled (1), Untitled (2), ...
+   */
+  String _getNextAlbumName(List<AlbumResponseDto>? albums) {
+    const baseName = "Untitled";
+
+    if (albums != null) {
+      for (int round = 0; round < albums.length; round++) {
+        final proposedName = "$baseName${round == 0 ? "" : " ($round)"}";
+
+        if (albums.where((a) => a.albumName == proposedName).isEmpty) {
+          return proposedName;
+        }
+      }
+    }
+    return baseName;
+  }
+
+  Future<AlbumResponseDto?> createAlbumWithGeneratedName(
+    Iterable<Asset> assets,
+  ) async {
+    return createAlbum(
+        _getNextAlbumName(await getAlbums(isShared: false)), assets, []);
+  }
+
   Future<AlbumResponseDto?> getAlbumDetail(String albumId) async {
     try {
       return await _apiService.albumApi.getAlbumInfo(albumId);
@@ -55,8 +81,8 @@ class AlbumService {
     }
   }
 
-  Future<bool> addAdditionalAssetToAlbum(
-    Set<AssetResponseDto> assets,
+  Future<AddAssetsResponseDto?> addAdditionalAssetToAlbum(
+    Iterable<Asset> assets,
     String albumId,
   ) async {
     try {
@@ -64,10 +90,10 @@ class AlbumService {
         albumId,
         AddAssetsDto(assetIds: assets.map((asset) => asset.id).toList()),
       );
-      return result != null;
+      return result;
     } catch (e) {
       debugPrint("Error addAdditionalAssetToAlbum  ${e.toString()}");
-      return false;
+      return null;
     }
   }
 

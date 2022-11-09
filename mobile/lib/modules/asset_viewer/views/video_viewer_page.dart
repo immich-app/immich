@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -6,24 +8,41 @@ import 'package:chewie/chewie.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:video_player/video_player.dart';
 
 // ignore: must_be_immutable
 class VideoViewerPage extends HookConsumerWidget {
-  final String videoUrl;
-  final AssetResponseDto asset;
-  AssetResponseDto? assetDetail;
+  final Asset asset;
 
-  VideoViewerPage({Key? key, required this.videoUrl, required this.asset})
-      : super(key: key);
+  const VideoViewerPage({Key? key, required this.asset}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (asset.isLocal) {
+      final AsyncValue<File> videoFile = ref.watch(_fileFamily(asset.local!));
+      return videoFile.when(
+        data: (data) => VideoThumbnailPlayer(file: data),
+        error: (error, stackTrace) => Icon(
+          Icons.image_not_supported_outlined,
+          color: Theme.of(context).primaryColor,
+        ),
+        loading: () => const Center(
+          child: SizedBox(
+            width: 75,
+            height: 75,
+            child: CircularProgressIndicator.adaptive(),
+          ),
+        ),
+      );
+    }
     final downloadAssetStatus =
         ref.watch(imageViewerStateProvider).downloadAssetStatus;
-
-    String jwtToken = Hive.box(userInfoBox).get(accessTokenKey);
+    final box = Hive.box(userInfoBox);
+    final String jwtToken = box.get(accessTokenKey);
+    final String videoUrl =
+        '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}';
 
     return Stack(
       children: [
@@ -40,11 +59,21 @@ class VideoViewerPage extends HookConsumerWidget {
   }
 }
 
-class VideoThumbnailPlayer extends StatefulWidget {
-  final String url;
-  final String? jwtToken;
+final _fileFamily =
+    FutureProvider.family<File, AssetEntity>((ref, entity) async {
+  final file = await entity.file;
+  if (file == null) {
+    throw Exception();
+  }
+  return file;
+});
 
-  const VideoThumbnailPlayer({Key? key, required this.url, this.jwtToken})
+class VideoThumbnailPlayer extends StatefulWidget {
+  final String? url;
+  final String? jwtToken;
+  final File? file;
+
+  const VideoThumbnailPlayer({Key? key, this.url, this.jwtToken, this.file})
       : super(key: key);
 
   @override
@@ -63,10 +92,12 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
 
   Future<void> initializePlayer() async {
     try {
-      videoPlayerController = VideoPlayerController.network(
-        widget.url,
-        httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"},
-      );
+      videoPlayerController = widget.file == null
+          ? VideoPlayerController.network(
+              widget.url!,
+              httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"},
+            )
+          : VideoPlayerController.file(widget.file!);
 
       await videoPlayerController.initialize();
       _createChewieController();

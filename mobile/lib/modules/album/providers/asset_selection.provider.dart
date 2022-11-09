@@ -1,7 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_state.model.dart';
-
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
   AssetSelectionNotifier()
@@ -22,15 +21,15 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
 
   void removeAssetsInMonth(
     String removedMonth,
-    List<AssetResponseDto> assetsInMonth,
+    List<Asset> assetsInMonth,
   ) {
-    Set<AssetResponseDto> currentAssetList = state.selectedNewAssetsForAlbum;
+    Set<Asset> currentAssetList = state.selectedNewAssetsForAlbum;
     Set<String> currentMonthList = state.selectedMonths;
 
     currentMonthList
         .removeWhere((selectedMonth) => selectedMonth == removedMonth);
 
-    for (AssetResponseDto asset in assetsInMonth) {
+    for (Asset asset in assetsInMonth) {
       currentAssetList.removeWhere((e) => e.id == asset.id);
     }
 
@@ -40,7 +39,7 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     );
   }
 
-  void addAdditionalAssets(List<AssetResponseDto> assets) {
+  void addAdditionalAssets(List<Asset> assets) {
     state = state.copyWith(
       selectedAdditionalAssetsForAlbum: {
         ...state.selectedAdditionalAssetsForAlbum,
@@ -49,7 +48,7 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     );
   }
 
-  void addAllAssetsInMonth(String month, List<AssetResponseDto> assetsInMonth) {
+  void addAllAssetsInMonth(String month, List<Asset> assetsInMonth) {
     state = state.copyWith(
       selectedMonths: {...state.selectedMonths, month},
       selectedNewAssetsForAlbum: {
@@ -59,7 +58,7 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     );
   }
 
-  void addNewAssets(List<AssetResponseDto> assets) {
+  void addNewAssets(List<Asset> assets) {
     state = state.copyWith(
       selectedNewAssetsForAlbum: {
         ...state.selectedNewAssetsForAlbum,
@@ -68,20 +67,20 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     );
   }
 
-  void removeSelectedNewAssets(List<AssetResponseDto> assets) {
-    Set<AssetResponseDto> currentList = state.selectedNewAssetsForAlbum;
+  void removeSelectedNewAssets(List<Asset> assets) {
+    Set<Asset> currentList = state.selectedNewAssetsForAlbum;
 
-    for (AssetResponseDto asset in assets) {
+    for (Asset asset in assets) {
       currentList.removeWhere((e) => e.id == asset.id);
     }
 
     state = state.copyWith(selectedNewAssetsForAlbum: currentList);
   }
 
-  void removeSelectedAdditionalAssets(List<AssetResponseDto> assets) {
-    Set<AssetResponseDto> currentList = state.selectedAdditionalAssetsForAlbum;
+  void removeSelectedAdditionalAssets(List<Asset> assets) {
+    Set<Asset> currentList = state.selectedAdditionalAssetsForAlbum;
 
-    for (AssetResponseDto asset in assets) {
+    for (Asset asset in assets) {
       currentList.removeWhere((e) => e.id == asset.id);
     }
 
@@ -109,7 +108,7 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     );
   }
 
-  void addAssetsInAlbumViewer(List<AssetResponseDto> assets) {
+  void addAssetsInAlbumViewer(List<Asset> assets) {
     state = state.copyWith(
       selectedAssetsInAlbumViewer: {
         ...state.selectedAssetsInAlbumViewer,
@@ -118,10 +117,10 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     );
   }
 
-  void removeAssetsInAlbumViewer(List<AssetResponseDto> assets) {
-    Set<AssetResponseDto> currentList = state.selectedAssetsInAlbumViewer;
+  void removeAssetsInAlbumViewer(List<Asset> assets) {
+    Set<Asset> currentList = state.selectedAssetsInAlbumViewer;
 
-    for (AssetResponseDto asset in assets) {
+    for (Asset asset in assets) {
       currentList.removeWhere((e) => e.id == asset.id);
     }
 

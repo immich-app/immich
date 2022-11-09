@@ -6,9 +6,9 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "Immich Documentation",
+  title: "Immich",
   tagline:
-    "Self-hosted photo and video backup solution directly from your mobile phone",
+    "High performance self-hosted photo and video backup solution directly from your mobile phone",
   url: "https://documentation.immich.app",
   baseUrl: "/",
   onBrokenLinks: "throw",
@@ -34,19 +34,18 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
+          showLastUpdateAuthor: true,
+          showLastUpdateTime: true,
+
           sidebarPath: require.resolve("./sidebars.js"),
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+          editUrl: "https://github.com/immich-app/immich/tree/main/docs/",
         },
-        blog: {
-          showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
-        },
+        // blog: {
+        //   showReadingTime: true,
+        //   editUrl: "https://github.com/immich-app/immich/tree/main/docs/",
+        // },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },
@@ -57,16 +56,23 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      announcementBar: {
+        id: "site_announcement_immich",
+        content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use as a <strong>single source</strong> to store of your photos and videos!`,
+        backgroundColor: "#593f00",
+        textColor: "#ffefc9",
+        isCloseable: false,
+      },
       docs: {
         sidebar: {
           autoCollapseCategories: false,
         },
       },
       navbar: {
-        title: "Immich Documentation",
         logo: {
           alt: "Immich University Logo",
-          src: "img/logo.png",
+          src: "img/color-logo.png",
+          srcDark: "img/logo.png",
         },
         items: [
           {
@@ -74,7 +80,7 @@ const config = {
             position: "right",
             label: "Documentation",
           },
-          { to: "/blog", label: "Blog", position: "right" },
+          // { to: "/blog", label: "Blog", position: "right" },
           {
             href: "https://github.com/immich-app/immich",
             label: "GitHub",
@@ -83,7 +89,7 @@ const config = {
         ],
       },
       footer: {
-        style: "dark",
+        style: "light",
         links: [
           {
             title: "Overview",
@@ -121,7 +127,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Alex Tran - For my family`,
+        copyright: `Immich is available as open source under the terms of the MIT License.`,
       },
       prism: {
         theme: lightCodeTheme,

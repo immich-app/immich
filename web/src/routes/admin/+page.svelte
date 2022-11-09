@@ -11,21 +11,25 @@
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
 	import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
+	import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialoge.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import type { PageData } from './$types';
 	import { api, ServerStatsResponseDto, UserResponseDto } from '@api';
 	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
 	import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
+	import RestoreDialoge from '$lib/components/admin-page/restore-dialoge.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
 	export let data: PageData;
 
-	let editUser: UserResponseDto;
+	let selectedUser: UserResponseDto;
 
 	let shouldShowEditUserForm = false;
 	let shouldShowCreateUserForm = false;
 	let shouldShowInfoPanel = false;
+	let shouldShowDeleteConfirmDialog = false;
+	let shouldShowRestoreDialog = false;
 	let serverStat: ServerStatsResponseDto;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
@@ -45,7 +49,7 @@
 
 	const editUserHandler = async (event: CustomEvent) => {
 		const { user } = event.detail;
-		editUser = user;
+		selectedUser = user;
 		shouldShowEditUserForm = true;
 	};
 
@@ -60,6 +64,43 @@
 		data.allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
 		shouldShowInfoPanel = true;
+	};
+
+	const deleteUserHandler = async (event: CustomEvent) => {
+		const { user } = event.detail;
+		selectedUser = user;
+		shouldShowDeleteConfirmDialog = true;
+	};
+
+	const onUserDeleteSuccess = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
+		shouldShowDeleteConfirmDialog = false;
+	};
+
+	const onUserDeleteFail = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
+		shouldShowDeleteConfirmDialog = false;
+	};
+
+	const restoreUserHandler = async (event: CustomEvent) => {
+		const { user } = event.detail;
+		selectedUser = user;
+		shouldShowRestoreDialog = true;
+	};
+
+	const onUserRestoreSuccess = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
+		shouldShowRestoreDialog = false;
+	};
+
+	const onUserRestoreFail = async () => {
+		// show fail dialog
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
+		shouldShowRestoreDialog = false;
 	};
 
 	const getServerStats = async () => {
@@ -87,9 +128,29 @@
 {#if shouldShowEditUserForm}
 	<FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
 		<EditUserForm
-			user={editUser}
+			user={selectedUser}
 			on:edit-success={onEditUserSuccess}
 			on:reset-password-success={onEditPasswordSuccess}
+		/>
+	</FullScreenModal>
+{/if}
+
+{#if shouldShowDeleteConfirmDialog}
+	<FullScreenModal on:clickOutside={() => (shouldShowDeleteConfirmDialog = false)}>
+		<DeleteConfirmDialog
+			user={selectedUser}
+			on:user-delete-success={onUserDeleteSuccess}
+			on:user-delete-fail={onUserDeleteFail}
+		/>
+	</FullScreenModal>
+{/if}
+
+{#if shouldShowRestoreDialog}
+	<FullScreenModal on:clickOutside={() => (shouldShowRestoreDialog = false)}>
+		<RestoreDialoge
+			user={selectedUser}
+			on:user-restore-success={onUserRestoreSuccess}
+			on:user-restore-fail={onUserRestoreFail}
 		/>
 	</FullScreenModal>
 {/if}
@@ -160,6 +221,8 @@
 						allUsers={data.allUsers}
 						on:create-user={() => (shouldShowCreateUserForm = true)}
 						on:edit-user={editUserHandler}
+						on:delete-user={deleteUserHandler}
+						on:restore-user={restoreUserHandler}
 					/>
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.JOBS}

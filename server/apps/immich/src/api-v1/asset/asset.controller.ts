@@ -15,6 +15,7 @@ import {
   BadRequestException,
   UploadedFile,
   Header,
+  Put,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
@@ -50,6 +51,7 @@ import { QueryFailedError } from 'typeorm';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
 
 @Authenticated()
 @ApiBearerAuth()
@@ -220,6 +222,18 @@ export class AssetController {
     @Param('assetId') assetId: string,
   ): Promise<AssetResponseDto> {
     return await this.assetService.getAssetById(authUser, assetId);
+  }
+
+  /**
+   * Update an asset
+   */
+  @Put('/assetById/:assetId')
+  async updateAssetById(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param('assetId') assetId: string,
+    @Body() dto: UpdateAssetDto,
+  ): Promise<AssetResponseDto> {
+    return await this.assetService.updateAssetById(authUser, assetId, dto);
   }
 
   @Delete('/')

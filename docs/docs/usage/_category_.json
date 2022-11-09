@@ -1,8 +1,8 @@
 {
-  "label": "How to use the app",
+  "label": "How to use the application",
   "position": 3,
   "link": {
     "type": "generated-index",
-    "description": "5 minutes to learn the most important Docusaurus concepts."
+    "description": "Quick start on how to use the app on mobile and the web"
   }
 }

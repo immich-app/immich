@@ -6,9 +6,17 @@
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import PhotoViewer from './photo-viewer.svelte';
 	import DetailPanel from './detail-panel.svelte';
+	import { goto } from '$app/navigation';
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
-	import { api, AssetResponseDto, AssetTypeEnum, AlbumResponseDto } from '@api';
+	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
+	import {
+		api,
+		AddAssetsResponseDto,
+		AssetResponseDto,
+		AssetTypeEnum,
+		AlbumResponseDto
+	} from '@api';
 	import {
 		notificationController,
 		NotificationType
@@ -29,6 +37,8 @@
 	let halfRightHover = false;
 	let isShowDetail = false;
 	let appearsInAlbums: AlbumResponseDto[] = [];
+	let isShowAlbumPicker = false;
+	let addToSharedAlbum = true;
 
 	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
@@ -167,6 +177,47 @@
 			console.error('Error deleteSelectedAssetHandler', e);
 		}
 	};
+
+	const toggleFavorite = async () => {
+		const { data } = await api.assetApi.updateAssetById(asset.id, {
+			isFavorite: !asset.isFavorite
+		});
+
+		asset.isFavorite = data.isFavorite;
+	};
+
+	const openAlbumPicker = (shared: boolean) => {
+		isShowAlbumPicker = true;
+		addToSharedAlbum = shared;
+	};
+
+	const showAddNotification = (dto: AddAssetsResponseDto) => {
+		notificationController.show({
+			message: `Added ${dto.successfullyAdded} to ${dto.album?.albumName}`,
+			type: NotificationType.Info
+		});
+
+		if (dto.successfullyAdded === 1 && dto.album) {
+			appearsInAlbums = [...appearsInAlbums, dto.album];
+		}
+	};
+
+	const handleAddToNewAlbum = () => {
+		isShowAlbumPicker = false;
+		api.albumApi.createAlbum({ albumName: 'Untitled', assetIds: [asset.id] }).then((response) => {
+			const album = response.data;
+			goto('/albums/' + album.id);
+		});
+	};
+
+	const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
+		isShowAlbumPicker = false;
+		const album = event.detail.album;
+
+		api.albumApi
+			.addAssetsToAlbum(album.id, { assetIds: [asset.id] })
+			.then((response) => showAddNotification(response.data));
+	};
 </script>
 
 <section
@@ -175,10 +226,14 @@
 >
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
 		<AsserViewerNavBar
+			{asset}
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
 			on:download={downloadFile}
 			on:delete={deleteAsset}
+			on:favorite={toggleFavorite}
+			on:addToAlbum={() => openAlbumPicker(false)}
+			on:addToSharedAlbum={() => openAlbumPicker(true)}
 		/>
 	</div>
 
@@ -245,6 +300,16 @@
 		>
 			<DetailPanel {asset} albums={appearsInAlbums} on:close={() => (isShowDetail = false)} />
 		</div>
+	{/if}
+
+	{#if isShowAlbumPicker}
+		<AlbumSelectionModal
+			shared={addToSharedAlbum}
+			on:newAlbum={handleAddToNewAlbum}
+			on:newSharedAlbum={handleAddToNewAlbum}
+			on:album={handleAddToAlbum}
+			on:close={() => (isShowAlbumPicker = false)}
+		/>
 	{/if}
 </section>
 
