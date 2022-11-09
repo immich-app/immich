@@ -14,7 +14,7 @@ export class OAuthController {
 
   @Post('/config')
   public generateConfig(@Body(ValidationPipe) dto: OAuthConfigDto): OAuthConfigResponseDto {
-    return this.oauthService.getConfig(dto);
+    return this.oauthService.generateConfig(dto);
   }
 
   @Post('/callback')

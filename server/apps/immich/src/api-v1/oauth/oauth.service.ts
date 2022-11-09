@@ -26,7 +26,6 @@ export class OAuthService {
   private readonly issuerUrl: string;
   private readonly clientMetadata: ClientMetadata;
   private readonly scope: string;
-  private readonly redirectUri: string;
 
   constructor(
     configService: ConfigService,
@@ -40,12 +39,10 @@ export class OAuthService {
     this.scope = configService.get<string>('OAUTH_SCOPE', '');
     this.buttonText = configService.get<string>('OAUTH_BUTTON_TEXT', '');
 
-    this.redirectUri = configService.get('OAUTH_REDIRECT_URI', '');
     this.clientMetadata = {
       client_id: configService.get('OAUTH_CLIENT_ID'),
       client_secret: configService.get('OAUTH_CLIENT_SECRET'),
-      redirect_uris: [this.redirectUri],
-      id_token_signed_response_alg: configService.get('OAUTH_TOKEN_RESPONSE_ALG', 'RS256'),
+      id_token_signed_response_alg: configService.get('OAUTH_TOKEN_RESPONSE_ALG'),
       response_types: ['code'],
     } as ClientMetadata;
   }
@@ -57,7 +54,7 @@ export class OAuthService {
     }
   }
 
-  public getConfig(dto: OAuthConfigDto): OAuthConfigResponseDto {
+  public generateConfig(dto: OAuthConfigDto): OAuthConfigResponseDto {
     if (!this.enabled) {
       return { enabled: false };
     }
