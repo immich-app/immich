@@ -1,21 +1,17 @@
 <script lang="ts">
-	import {AdminConfigResponseDto} from '@api';
 
 	import { createEventDispatcher } from 'svelte';
-	import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
-	import SaveOutline from 'svelte-material-icons/ContentSaveOutline.svelte';
-	export let settings: AdminConfigResponseDto;
+	import { SystemConfigResponseDto } from "../../../../api";
+	export let settings: SystemConfigResponseDto;
 
 	const dispatch = createEventDispatcher();
-	const edit: boolean[] = []
 </script>
 
 <table class="text-left w-full my-4">
 	<thead class="border rounded-md mb-4 bg-gray-50 flex text-immich-primary w-full h-12 dark:bg-immich-dark-gray dark:text-immich-dark-primary dark:border-immich-dark-gray">
 	<tr class="flex w-full place-items-center">
-		<th class="text-center w-2/5 font-medium text-sm">Setting</th>
-		<th class="text-center w-2/5 font-medium text-sm">Value</th>
-		<th class="text-center w-1/5 font-medium text-sm">Edit</th>
+		<th class="text-center w-1/2 font-medium text-sm">Setting</th>
+		<th class="text-center w-1/2 font-medium text-sm">Value</th>
 	</tr>
 	</thead>
 	<tbody class="rounded-md w-full max-h-[320px] block border dark:border-immich-dark-gray">
@@ -23,10 +19,10 @@
 		<tr class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-fg ${
 					i % 2 == 0 ? 'bg-slate-50 dark:bg-[#181818]' : 'bg-immich-bg dark:bg-immich-dark-bg'
 				}`}>
-			<td class="text-sm px-4 w-2/5 text-ellipsis">
+			<td class="text-sm px-4 w-1/2 text-ellipsis">
 				{name.split('_').map((word) => {return word.charAt(0).toUpperCase() + word.slice(1)}).join(' ')}
 			</td>
-			<td class="text-sm px-4 w-2/5 text-ellipsis">
+			<td class="text-sm px-4 w-1/2 text-ellipsis">
 				<input
 					style="text-align: center"
 					class="immich-form-input"
@@ -34,19 +30,7 @@
 					name="{name}"
 					type="text"
 					value={value}
-					disabled="{!edit[name]}"
 				/>
-			</td>
-			<td class="text-sm px-4 w-1/5 text-ellipsis">
-				<button
-					on:click={() => {{edit[name] = !edit[name]}}}
-					class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75">
-					{#if edit[name]}
-						<SaveOutline size="20" />
-					{:else}
-						<PencilOutline size="20" />
-					{/if}
-				</button>
 			</td>
 		</tr>
 	{/each}
