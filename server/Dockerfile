@@ -2,6 +2,8 @@ FROM node:16 as builder
 
 WORKDIR /usr/src/app
 
+RUN apk add --update-cache vips-dev
+
 COPY package.json package-lock.json ./
 
 RUN npm ci
