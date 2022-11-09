@@ -54,3 +54,13 @@
 .introButton:hover {
   color: #000000;
 }
+
+.demoButton {
+  background-color: aquamarine;
+  color: #000000;
+  border-radius: 50px;
+}
+
+.demoButton:hover {
+  color: #000000;
+}
