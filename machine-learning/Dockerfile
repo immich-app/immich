@@ -1,5 +1,4 @@
 
-# Build stage
 FROM node:16-bullseye-slim as builder
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -16,9 +15,14 @@ RUN npm rebuild @tensorflow/tfjs-node --build-from-source
 
 COPY . .
 
+
+FROM builder as prod
+
 RUN npm run build
 
-# Prod stage
+RUN npm prune --omit=dev
+
+
 FROM node:16-bullseye-slim
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -29,8 +33,8 @@ RUN apt-get update \
   && apt-get install -y ffmpeg \
   && rm -rf /var/cache/apt/lists
 
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=prod /usr/src/app/node_modules ./node_modules
+COPY --from=prod /usr/src/app/dist ./dist
 
 COPY package.json package-lock.json ./
 COPY entrypoint.sh ./

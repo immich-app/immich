@@ -10,18 +10,22 @@ RUN npm ci
 
 COPY . .
 
-RUN npm run build
 
-# Prod stage
+FROM builder as prod
+
+RUN npm run build
+RUN npm prune --omit=dev
+
+
 FROM node:16-alpine3.14
 
 WORKDIR /usr/src/app
 
 RUN apk add --no-cache libheif vips ffmpeg
 
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/bin ./bin
+COPY --from=prod /usr/src/app/node_modules ./node_modules
+COPY --from=prod /usr/src/app/dist ./dist
+COPY --from=prod /usr/src/app/bin ./bin
 
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
