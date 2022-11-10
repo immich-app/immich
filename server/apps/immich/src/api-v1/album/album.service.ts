@@ -153,9 +153,9 @@ export class AlbumService {
     return this._albumRepository.getCountByUserId(authUser.id);
   }
 
-  async downloadArchive(authUser: AuthUserDto, albumId: string) {
+  async downloadArchive(authUser: AuthUserDto, albumId: string, dto: any) {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-    const assets = (album.assets || []).map((asset) => asset.assetInfo);
+    const assets = (album.assets || []).map((asset) => asset.assetInfo).slice(dto.skip || 0);
 
     return this.downloadService.downloadArchive(album.albumName, assets);
   }

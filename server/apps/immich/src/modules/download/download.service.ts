@@ -2,11 +2,14 @@ import { AssetEntity } from '@app/database/entities/asset.entity';
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, StreamableFile } from '@nestjs/common';
 import archiver from 'archiver';
 import { extname } from 'path';
+import { asHumanReadable, HumanReadableSize } from '../../utils/human-readable.util';
 
 export interface DownloadArchive {
   stream: StreamableFile;
-  filename: string;
-  filesize: number;
+  fileName: string;
+  fileSize: number;
+  fileCount: number;
+  complete: boolean;
 }
 
 @Injectable()
@@ -22,19 +25,35 @@ export class DownloadService {
       const archive = archiver('zip', { store: true });
       const stream = new StreamableFile(archive);
       let totalSize = 0;
+      let fileCount = 0;
+      let complete = true;
 
       for (const { id, originalPath, exifInfo } of assets) {
         const name = `${exifInfo?.imageName || id}${extname(originalPath)}`;
         archive.file(originalPath, { name });
         totalSize += Number(exifInfo?.fileSizeInByte || 0);
+        fileCount++;
+
+        // for easier testing, can be changed before merging.
+        if (totalSize > HumanReadableSize.GB * 1) {
+          complete = false;
+          this.logger.log(
+            `Archive size exceeded after ${fileCount} files, capping at ${totalSize} bytes (${asHumanReadable(
+              totalSize,
+            )})`,
+          );
+          break;
+        }
       }
 
       archive.finalize();
 
       return {
         stream,
-        filename: `${name}.zip`,
-        filesize: totalSize,
+        fileName: `${name}.zip`,
+        fileSize: totalSize,
+        fileCount,
+        complete,
       };
     } catch (error) {
       this.logger.error(`Error creating download archive ${error}`);

@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import path from 'path';
 import { readdirSync, statSync } from 'fs';
+import { asHumanReadable } from '../../utils/human-readable.util';
 
 @Injectable()
 export class ServerInfoService {
@@ -23,41 +24,14 @@ export class ServerInfoService {
     const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
 
     const serverInfo = new ServerInfoResponseDto();
-    serverInfo.diskAvailable = ServerInfoService.getHumanReadableString(diskInfo.available);
-    serverInfo.diskSize = ServerInfoService.getHumanReadableString(diskInfo.total);
-    serverInfo.diskUse = ServerInfoService.getHumanReadableString(diskInfo.total - diskInfo.free);
+    serverInfo.diskAvailable = asHumanReadable(diskInfo.available);
+    serverInfo.diskSize = asHumanReadable(diskInfo.total);
+    serverInfo.diskUse = asHumanReadable(diskInfo.total - diskInfo.free);
     serverInfo.diskAvailableRaw = diskInfo.available;
     serverInfo.diskSizeRaw = diskInfo.total;
     serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
     serverInfo.diskUsagePercentage = parseFloat(usagePercentage);
     return serverInfo;
-  }
-
-  private static getHumanReadableString(sizeInByte: number) {
-    const pepibyte = 1.126 * Math.pow(10, 15);
-    const tebibyte = 1.1 * Math.pow(10, 12);
-    const gibibyte = 1.074 * Math.pow(10, 9);
-    const mebibyte = 1.049 * Math.pow(10, 6);
-    const kibibyte = 1024;
-    // Pebibyte
-    if (sizeInByte >= pepibyte) {
-      // Pe
-      return `${(sizeInByte / pepibyte).toFixed(1)}PB`;
-    } else if (tebibyte <= sizeInByte && sizeInByte < pepibyte) {
-      // Te
-      return `${(sizeInByte / tebibyte).toFixed(1)}TB`;
-    } else if (gibibyte <= sizeInByte && sizeInByte < tebibyte) {
-      // Gi
-      return `${(sizeInByte / gibibyte).toFixed(1)}GB`;
-    } else if (mebibyte <= sizeInByte && sizeInByte < gibibyte) {
-      // Mega
-      return `${(sizeInByte / mebibyte).toFixed(1)}MB`;
-    } else if (kibibyte <= sizeInByte && sizeInByte < mebibyte) {
-      // Kibi
-      return `${(sizeInByte / kibibyte).toFixed(1)}KB`;
-    } else {
-      return `${sizeInByte}B`;
-    }
   }
 
   async getStats(): Promise<ServerStatsResponseDto> {
@@ -90,11 +64,11 @@ export class ServerInfoService {
       const userDiskUsage = await ServerInfoService.getDirectoryStats(path.join(APP_UPLOAD_LOCATION, userId));
       usage.usageRaw = userDiskUsage.size;
       usage.objects = userDiskUsage.fileCount;
-      usage.usage = ServerInfoService.getHumanReadableString(usage.usageRaw);
+      usage.usage = asHumanReadable(usage.usageRaw);
       serverStats.usageRaw += usage.usageRaw;
       serverStats.objects += usage.objects;
     }
-    serverStats.usage = ServerInfoService.getHumanReadableString(serverStats.usageRaw);
+    serverStats.usage = asHumanReadable(serverStats.usageRaw);
     serverStats.usageByUser = Array.from(tmpMap.values());
     return serverStats;
   }
