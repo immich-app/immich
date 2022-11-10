@@ -17,7 +17,6 @@ RUN npm rebuild @tensorflow/tfjs-node --build-from-source
 COPY . .
 
 RUN npm run build
-RUN npm prune --omit=dev
 
 # Prod stage
 FROM node:16-bullseye-slim

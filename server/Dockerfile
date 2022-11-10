@@ -11,7 +11,6 @@ RUN npm ci
 COPY . .
 
 RUN npm run build
-RUN npm prune --omit=dev
 
 # Prod stage
 FROM node:16-alpine3.14
