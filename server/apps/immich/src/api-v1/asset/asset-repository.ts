@@ -81,7 +81,7 @@ export class AssetRepository implements IAssetRepository {
 
   async getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {
     // Get asset count by AssetType
-    const res = await this.assetRepository
+    const items = await this.assetRepository
       .createQueryBuilder('asset')
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')
@@ -89,14 +89,24 @@ export class AssetRepository implements IAssetRepository {
       .groupBy('asset.type')
       .getRawMany();
 
-    const assetCountByUserId = new AssetCountByUserIdResponseDto(0, 0);
-    res.map((item) => {
-      if (item.type === 'IMAGE') {
-        assetCountByUserId.photos = item.count;
-      } else if (item.type === 'VIDEO') {
-        assetCountByUserId.videos = item.count;
-      }
-    });
+    const assetCountByUserId = new AssetCountByUserIdResponseDto();
+
+    // asset type to dto property mapping
+    const map: Record<AssetType, keyof AssetCountByUserIdResponseDto> = {
+      [AssetType.AUDIO]: 'audio',
+      [AssetType.IMAGE]: 'photos',
+      [AssetType.VIDEO]: 'videos',
+      [AssetType.OTHER]: 'other',
+    };
+
+    for (const item of items) {
+      const count = Number(item.count) || 0;
+      const assetType = item.type as AssetType;
+      const type = map[assetType];
+
+      assetCountByUserId[type] = count;
+      assetCountByUserId.total += count;
+    }
 
     return assetCountByUserId;
   }
