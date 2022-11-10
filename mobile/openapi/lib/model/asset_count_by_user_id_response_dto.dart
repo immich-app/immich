@@ -13,32 +13,50 @@ part of openapi.api;
 class AssetCountByUserIdResponseDto {
   /// Returns a new [AssetCountByUserIdResponseDto] instance.
   AssetCountByUserIdResponseDto({
-    required this.photos,
-    required this.videos,
+    this.audio = 0,
+    this.photos = 0,
+    this.videos = 0,
+    this.other = 0,
+    this.total = 0,
   });
+
+  int audio;
 
   int photos;
 
   int videos;
 
+  int other;
+
+  int total;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetCountByUserIdResponseDto &&
+     other.audio == audio &&
      other.photos == photos &&
-     other.videos == videos;
+     other.videos == videos &&
+     other.other == other &&
+     other.total == total;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (audio.hashCode) +
     (photos.hashCode) +
-    (videos.hashCode);
+    (videos.hashCode) +
+    (other.hashCode) +
+    (total.hashCode);
 
   @override
-  String toString() => 'AssetCountByUserIdResponseDto[photos=$photos, videos=$videos]';
+  String toString() => 'AssetCountByUserIdResponseDto[audio=$audio, photos=$photos, videos=$videos, other=$other, total=$total]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
+      _json[r'audio'] = audio;
       _json[r'photos'] = photos;
       _json[r'videos'] = videos;
+      _json[r'other'] = other;
+      _json[r'total'] = total;
     return _json;
   }
 
@@ -61,8 +79,11 @@ class AssetCountByUserIdResponseDto {
       }());
 
       return AssetCountByUserIdResponseDto(
+        audio: mapValueOfType<int>(json, r'audio')!,
         photos: mapValueOfType<int>(json, r'photos')!,
         videos: mapValueOfType<int>(json, r'videos')!,
+        other: mapValueOfType<int>(json, r'other')!,
+        total: mapValueOfType<int>(json, r'total')!,
       );
     }
     return null;
@@ -112,8 +133,11 @@ class AssetCountByUserIdResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'audio',
     'photos',
     'videos',
+    'other',
+    'total',
   };
 }
 
