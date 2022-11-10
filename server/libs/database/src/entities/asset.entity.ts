@@ -1,5 +1,6 @@
 import { Column, Entity, Index, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { ExifEntity } from './exif.entity';
+import { LivePhotoEntity } from './live-photo.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 
 @Entity('assets')
@@ -56,6 +57,9 @@ export class AssetEntity {
 
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;
+
+  @OneToOne(() => LivePhotoEntity, (livePhotoEntity) => livePhotoEntity.asset)
+  livePhotoInfo?: LivePhotoEntity;
 }
 
 export enum AssetType {
