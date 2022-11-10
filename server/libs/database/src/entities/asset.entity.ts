@@ -62,5 +62,6 @@ export enum AssetType {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO',
   AUDIO = 'AUDIO',
+  LIVE_PHOTO = 'LIVE_PHOTO',
   OTHER = 'OTHER',
 }
