@@ -1,13 +1,13 @@
-import { Controller, Post, Body, Patch, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Body, Patch, ValidationPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { DeviceInfoService } from './device-info.service';
 import { CreateDeviceInfoDto } from './dto/create-device-info.dto';
 import { UpdateDeviceInfoDto } from './dto/update-device-info.dto';
 import { DeviceInfoResponseDto } from './response-dto/create-device-info-response.dto';
 
-@UseGuards(JwtAuthGuard)
+@Authenticated()
 @ApiBearerAuth()
 @ApiTags('Device Info')
 @Controller('device-info')

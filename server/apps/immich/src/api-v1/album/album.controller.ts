@@ -6,16 +6,16 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
   ValidationPipe,
   ParseUUIDPipe,
   Put,
   Query,
+  Response,
 } from '@nestjs/common';
 import { ParseMeUUIDPipe } from '../validation/parse-me-uuid-pipe';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
@@ -25,9 +25,11 @@ import { GetAlbumsDto } from './dto/get-albums.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
+import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
+import { Response as Res } from 'express';
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
-@UseGuards(JwtAuthGuard)
+@Authenticated()
 @ApiBearerAuth()
 @ApiTags('Album')
 @Controller('album')
@@ -58,7 +60,7 @@ export class AlbumController {
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) addAssetsDto: AddAssetsDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
-  ) {
+  ): Promise<AddAssetsResponseDto> {
     return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId);
   }
 
@@ -111,5 +113,17 @@ export class AlbumController {
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
   ) {
     return this.albumService.updateAlbumInfo(authUser, updateAlbumInfoDto, albumId);
+  }
+
+  @Get('/:albumId/download')
+  async downloadArchive(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
+    @Response({ passthrough: true }) res: Res,
+  ): Promise<any> {
+    const { stream, filename, filesize } = await this.albumService.downloadArchive(authUser, albumId);
+    res.attachment(filename);
+    res.setHeader('X-Immich-Content-Length-Hint', filesize);
+    return stream;
   }
 }

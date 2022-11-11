@@ -59,16 +59,13 @@ class _$AppRouter extends RootStackRouter {
               authToken: args.authToken,
               isZoomedFunction: args.isZoomedFunction,
               isZoomedListener: args.isZoomedListener,
-              onLoadingCompleted: args.onLoadingCompleted,
-              onLoadingStart: args.onLoadingStart,
               threeStageLoading: args.threeStageLoading));
     },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
       return MaterialPageX<dynamic>(
           routeData: routeData,
-          child: VideoViewerPage(
-              key: args.key, videoUrl: args.videoUrl, asset: args.asset));
+          child: VideoViewerPage(key: args.key, asset: args.asset));
     },
     BackupControllerRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
@@ -260,9 +257,7 @@ class TabControllerRoute extends PageRouteInfo<void> {
 /// [GalleryViewerPage]
 class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
   GalleryViewerRoute(
-      {Key? key,
-      required List<AssetResponseDto> assetList,
-      required AssetResponseDto asset})
+      {Key? key, required List<Asset> assetList, required Asset asset})
       : super(GalleryViewerRoute.name,
             path: '/gallery-viewer-page',
             args: GalleryViewerRouteArgs(
@@ -277,9 +272,9 @@ class GalleryViewerRouteArgs {
 
   final Key? key;
 
-  final List<AssetResponseDto> assetList;
+  final List<Asset> assetList;
 
-  final AssetResponseDto asset;
+  final Asset asset;
 
   @override
   String toString() {
@@ -293,12 +288,10 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
   ImageViewerRoute(
       {Key? key,
       required String heroTag,
-      required AssetResponseDto asset,
+      required Asset asset,
       required String authToken,
       required void Function() isZoomedFunction,
       required ValueNotifier<bool> isZoomedListener,
-      required void Function() onLoadingCompleted,
-      required void Function() onLoadingStart,
       required bool threeStageLoading})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
@@ -309,8 +302,6 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
                 authToken: authToken,
                 isZoomedFunction: isZoomedFunction,
                 isZoomedListener: isZoomedListener,
-                onLoadingCompleted: onLoadingCompleted,
-                onLoadingStart: onLoadingStart,
                 threeStageLoading: threeStageLoading));
 
   static const String name = 'ImageViewerRoute';
@@ -324,15 +315,13 @@ class ImageViewerRouteArgs {
       required this.authToken,
       required this.isZoomedFunction,
       required this.isZoomedListener,
-      required this.onLoadingCompleted,
-      required this.onLoadingStart,
       required this.threeStageLoading});
 
   final Key? key;
 
   final String heroTag;
 
-  final AssetResponseDto asset;
+  final Asset asset;
 
   final String authToken;
 
@@ -340,44 +329,35 @@ class ImageViewerRouteArgs {
 
   final ValueNotifier<bool> isZoomedListener;
 
-  final void Function() onLoadingCompleted;
-
-  final void Function() onLoadingStart;
-
   final bool threeStageLoading;
 
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, onLoadingCompleted: $onLoadingCompleted, onLoadingStart: $onLoadingStart, threeStageLoading: $threeStageLoading}';
+    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, threeStageLoading: $threeStageLoading}';
   }
 }
 
 /// generated route for
 /// [VideoViewerPage]
 class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
-  VideoViewerRoute(
-      {Key? key, required String videoUrl, required AssetResponseDto asset})
+  VideoViewerRoute({Key? key, required Asset asset})
       : super(VideoViewerRoute.name,
             path: '/video-viewer-page',
-            args: VideoViewerRouteArgs(
-                key: key, videoUrl: videoUrl, asset: asset));
+            args: VideoViewerRouteArgs(key: key, asset: asset));
 
   static const String name = 'VideoViewerRoute';
 }
 
 class VideoViewerRouteArgs {
-  const VideoViewerRouteArgs(
-      {this.key, required this.videoUrl, required this.asset});
+  const VideoViewerRouteArgs({this.key, required this.asset});
 
   final Key? key;
 
-  final String videoUrl;
-
-  final AssetResponseDto asset;
+  final Asset asset;
 
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, videoUrl: $videoUrl, asset: $asset}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset}';
   }
 }
 

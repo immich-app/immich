@@ -7,10 +7,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -28,23 +28,27 @@ import 'constants/hive_box.dart';
 
 void main() async {
   await Hive.initFlutter();
-
   Hive.registerAdapter(HiveSavedLoginInfoAdapter());
   Hive.registerAdapter(HiveBackupAlbumsAdapter());
+  Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
 
-  await Hive.openBox(userInfoBox);
-  await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
-  await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
-  await Hive.openBox(hiveGithubReleaseInfoBox);
-  await Hive.openBox(userSettingInfoBox);
+  await Future.wait([
+    Hive.openBox(userInfoBox),
+    Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
+    Hive.openBox(hiveGithubReleaseInfoBox),
+    Hive.openBox(userSettingInfoBox),
+    if (!Platform.isAndroid) Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+    if (!Platform.isAndroid)
+      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+    if (!Platform.isAndroid) Hive.openBox(backgroundBackupInfoBox),
+    EasyLocalization.ensureInitialized(),
+  ]);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarIconBrightness: Brightness.light,
     ),
   );
-
-  await EasyLocalization.ensureInitialized();
 
   if (kReleaseMode && Platform.isAndroid) {
     try {
@@ -84,8 +88,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
 
         if (isAuthenticated) {
+          ref.read(backupProvider.notifier).resumeBackup();
           ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-          ref.watch(backupProvider.notifier).resumeBackup();
           ref.watch(assetProvider.notifier).getAllAsset();
           ref.watch(serverInfoProvider.notifier).getServerVersion();
         }

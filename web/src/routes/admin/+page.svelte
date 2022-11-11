@@ -4,24 +4,33 @@
 	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
+	import Cog from 'svelte-material-icons/Cog.svelte';
+	import Server from 'svelte-material-icons/Server.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import UserManagement from '$lib/components/admin-page/user-management.svelte';
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
 	import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
+	import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialoge.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import type { PageData } from './$types';
-	import { api, UserResponseDto } from '@api';
+	import { api, ServerStatsResponseDto, UserResponseDto } from '@api';
+	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+	import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
+	import RestoreDialoge from '$lib/components/admin-page/restore-dialoge.svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
 	export let data: PageData;
 
-	let editUser: UserResponseDto;
+	let selectedUser: UserResponseDto;
 
 	let shouldShowEditUserForm = false;
 	let shouldShowCreateUserForm = false;
 	let shouldShowInfoPanel = false;
+	let shouldShowDeleteConfirmDialog = false;
+	let shouldShowRestoreDialog = false;
+	let serverStat: ServerStatsResponseDto;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AdminSideBarSelection;
@@ -29,6 +38,7 @@
 
 	onMount(() => {
 		selectedAction = AdminSideBarSelection.USER_MANAGEMENT;
+		getServerStats();
 	});
 
 	const onUserCreated = async () => {
@@ -39,7 +49,7 @@
 
 	const editUserHandler = async (event: CustomEvent) => {
 		const { user } = event.detail;
-		editUser = user;
+		selectedUser = user;
 		shouldShowEditUserForm = true;
 	};
 
@@ -54,6 +64,52 @@
 		data.allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
 		shouldShowInfoPanel = true;
+	};
+
+	const deleteUserHandler = async (event: CustomEvent) => {
+		const { user } = event.detail;
+		selectedUser = user;
+		shouldShowDeleteConfirmDialog = true;
+	};
+
+	const onUserDeleteSuccess = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
+		shouldShowDeleteConfirmDialog = false;
+	};
+
+	const onUserDeleteFail = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
+		shouldShowDeleteConfirmDialog = false;
+	};
+
+	const restoreUserHandler = async (event: CustomEvent) => {
+		const { user } = event.detail;
+		selectedUser = user;
+		shouldShowRestoreDialog = true;
+	};
+
+	const onUserRestoreSuccess = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
+		shouldShowRestoreDialog = false;
+	};
+
+	const onUserRestoreFail = async () => {
+		// show fail dialog
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		data.allUsers = getAllUsersRes.data;
+		shouldShowRestoreDialog = false;
+	};
+
+	const getServerStats = async () => {
+		try {
+			const res = await api.serverInfoApi.getStats();
+			serverStat = res.data;
+		} catch (e) {
+			console.log(e);
+		}
 	};
 </script>
 
@@ -72,9 +128,29 @@
 {#if shouldShowEditUserForm}
 	<FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
 		<EditUserForm
-			user={editUser}
+			user={selectedUser}
 			on:edit-success={onEditUserSuccess}
 			on:reset-password-success={onEditPasswordSuccess}
+		/>
+	</FullScreenModal>
+{/if}
+
+{#if shouldShowDeleteConfirmDialog}
+	<FullScreenModal on:clickOutside={() => (shouldShowDeleteConfirmDialog = false)}>
+		<DeleteConfirmDialog
+			user={selectedUser}
+			on:user-delete-success={onUserDeleteSuccess}
+			on:user-delete-fail={onUserDeleteFail}
+		/>
+	</FullScreenModal>
+{/if}
+
+{#if shouldShowRestoreDialog}
+	<FullScreenModal on:clickOutside={() => (shouldShowRestoreDialog = false)}>
+		<RestoreDialoge
+			user={selectedUser}
+			on:user-restore-success={onUserRestoreSuccess}
+			on:user-restore-fail={onUserRestoreFail}
 		/>
 	</FullScreenModal>
 {/if}
@@ -104,33 +180,56 @@
 {/if}
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
-	<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col">
+	<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col gap-1">
 		<SideBarButton
-			title="User"
+			title="Users"
 			logo={AccountMultipleOutline}
 			actionType={AdminSideBarSelection.USER_MANAGEMENT}
 			isSelected={selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
 			on:selected={onButtonClicked}
 		/>
-
+		<SideBarButton
+			title="Jobs"
+			logo={Cog}
+			actionType={AdminSideBarSelection.JOBS}
+			isSelected={selectedAction === AdminSideBarSelection.JOBS}
+			on:selected={onButtonClicked}
+		/>
+		<SideBarButton
+			title="Server Stats"
+			logo={Server}
+			actionType={AdminSideBarSelection.STATS}
+			isSelected={selectedAction === AdminSideBarSelection.STATS}
+			on:selected={onButtonClicked}
+		/>
 		<div class="mb-6 mt-auto">
 			<StatusBox />
 		</div>
 	</section>
 	<section class="overflow-y-auto relative">
-		<div id="setting-title" class="pt-10 fixed w-full z-50 bg-immich-bg">
-			<h1 class="text-lg ml-8 mb-4 text-immich-primary font-medium">{selectedAction}</h1>
-			<hr />
+		<div id="setting-title" class="pt-10 fixed w-full z-50">
+			<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
+				{selectedAction}
+			</h1>
+			<hr class="dark:border-immich-dark-gray" />
 		</div>
 
 		<section id="setting-content" class="relative pt-[85px] flex place-content-center">
-			<section class="w-[800px] pt-4">
+			<section class="w-[800px] pt-5">
 				{#if selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
 					<UserManagement
 						allUsers={data.allUsers}
 						on:create-user={() => (shouldShowCreateUserForm = true)}
 						on:edit-user={editUserHandler}
+						on:delete-user={deleteUserHandler}
+						on:restore-user={restoreUserHandler}
 					/>
+				{/if}
+				{#if selectedAction === AdminSideBarSelection.JOBS}
+					<JobsPanel />
+				{/if}
+				{#if selectedAction === AdminSideBarSelection.STATS && serverStat}
+					<ServerStatsPanel stats={serverStat} allUsers={data.allUsers} />
 				{/if}
 			</section>
 		</section>

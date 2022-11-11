@@ -99,9 +99,9 @@ class SearchPage extends HookConsumerWidget {
 
     _buildThings() {
       return curatedObjects.when(
-        loading: () => const SizedBox(
-          height: 200,
-          child: Center(child: ImmichLoadingIndicator()),
+        loading: () => SizedBox(
+          height: imageSize,
+          child: const Center(child: ImmichLoadingIndicator()),
         ),
         error: (err, stack) => Text('Error: $err'),
         data: (objects) {
@@ -133,8 +133,7 @@ class SearchPage extends HookConsumerWidget {
                   ),
                 )
               : SizedBox(
-                  // height: imageSize,
-                  width: imageSize,
+                  height: imageSize,
                   child: ListView.builder(
                     padding: const EdgeInsets.only(left: 16),
                     scrollDirection: Axis.horizontal,

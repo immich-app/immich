@@ -17,8 +17,8 @@ import { UserRepository, USER_REPOSITORY } from './user-repository';
     ImmichJwtService,
     {
       provide: USER_REPOSITORY,
-      useClass: UserRepository
-    }
+      useClass: UserRepository,
+    },
   ],
 })
 export class UserModule {}

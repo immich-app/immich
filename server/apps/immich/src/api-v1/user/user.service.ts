@@ -1,11 +1,13 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
   StreamableFile,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -38,8 +40,8 @@ export class UserService {
     return allUserExceptRequestedUser.map(mapUser);
   }
 
-  async getUserById(userId: string): Promise<UserResponseDto> {
-    const user = await this.userRepository.get(userId);
+  async getUserById(userId: string, withDeleted = false): Promise<UserResponseDto> {
+    const user = await this.userRepository.get(userId, withDeleted);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -78,7 +80,19 @@ export class UserService {
     }
   }
 
-  async updateUser(updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+  async updateUser(authUser: AuthUserDto, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+    const requestor = await this.userRepository.get(authUser.id);
+
+    if (!requestor) {
+      throw new NotFoundException('Requestor not found');
+    }
+
+    if (!requestor.isAdmin) {
+      if (requestor.id !== updateUserDto.id) {
+        throw new BadRequestException('Unauthorized');
+      }
+    }
+
     const user = await this.userRepository.get(updateUserDto.id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -88,8 +102,50 @@ export class UserService {
 
       return mapUser(updatedUser);
     } catch (e) {
-      Logger.error(e, 'Create new user');
-      throw new InternalServerErrorException('Failed to register new user');
+      Logger.error(e, 'Failed to update user info');
+      throw new InternalServerErrorException('Failed to update user info');
+    }
+  }
+
+  async deleteUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
+    const requestor = await this.userRepository.get(authUser.id);
+    if (!requestor) {
+      throw new UnauthorizedException('Requestor not found');
+    }
+    if (!requestor.isAdmin) {
+      throw new ForbiddenException('Unauthorized');
+    }
+    const user = await this.userRepository.get(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    try {
+      const deletedUser = await this.userRepository.delete(user);
+      return mapUser(deletedUser);
+    } catch (e) {
+      Logger.error(e, 'Failed to delete user');
+      throw new InternalServerErrorException('Failed to delete user');
+    }
+  }
+
+  async restoreUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
+    const requestor = await this.userRepository.get(authUser.id);
+    if (!requestor) {
+      throw new UnauthorizedException('Requestor not found');
+    }
+    if (!requestor.isAdmin) {
+      throw new ForbiddenException('Unauthorized');
+    }
+    const user = await this.userRepository.get(userId, true);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    try {
+      const restoredUser = await this.userRepository.restore(user);
+      return mapUser(restoredUser);
+    } catch (e) {
+      Logger.error(e, 'Failed to restore deleted user');
+      throw new InternalServerErrorException('Failed to restore deleted user');
     }
   }
 

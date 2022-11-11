@@ -3,7 +3,6 @@ import {
   Post,
   UseInterceptors,
   Body,
-  UseGuards,
   Get,
   Param,
   ValidationPipe,
@@ -15,8 +14,10 @@ import {
   HttpCode,
   BadRequestException,
   UploadedFile,
+  Header,
+  Put,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
@@ -30,7 +31,7 @@ import { CommunicationGateway } from '../communication/communication.gateway';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { IAssetUploadedJob } from '@app/job/index';
-import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
+import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -48,8 +49,11 @@ import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-buck
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { QueryFailedError } from 'typeorm';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
 
-@UseGuards(JwtAuthGuard)
+@Authenticated()
 @ApiBearerAuth()
 @ApiTags('Asset')
 @Controller('asset')
@@ -59,7 +63,7 @@ export class AssetController {
     private assetService: AssetService,
     private backgroundTaskService: BackgroundTaskService,
 
-    @InjectQueue(assetUploadedQueueName)
+    @InjectQueue(QueueNameEnum.ASSET_UPLOADED)
     private assetUploadedQueue: Queue<IAssetUploadedJob>,
   ) {}
 
@@ -74,6 +78,7 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @UploadedFile() file: Express.Multer.File,
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
+    @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
     const checksum = await this.assetService.calculateChecksum(file.path);
 
@@ -97,7 +102,7 @@ export class AssetController {
 
       await this.assetUploadedQueue.add(
         assetUploadedProcessorName,
-        { asset: savedAsset, fileName: file.originalname, fileSize: file.size },
+        { asset: savedAsset, fileName: file.originalname },
         { jobId: savedAsset.id },
       );
 
@@ -111,6 +116,7 @@ export class AssetController {
 
       if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
         const existedAsset = await this.assetService.getAssetByChecksum(authUser.id, checksum);
+        res.status(200); // normal POST is 201. we use 200 to indicate the asset already exists
         return new AssetFileUploadResponseDto(existedAsset.id);
       }
 
@@ -139,6 +145,7 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
+  @Header('Cache-Control', 'max-age=300')
   async getAssetThumbnail(
     @Response({ passthrough: true }) res: Res,
     @Param('assetId') assetId: string,
@@ -182,6 +189,7 @@ export class AssetController {
   async getAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this.assetService.getAssetCountByUserId(authUser);
   }
+
   /**
    * Get all AssetEntity belong to the user
    */
@@ -214,6 +222,18 @@ export class AssetController {
     @Param('assetId') assetId: string,
   ): Promise<AssetResponseDto> {
     return await this.assetService.getAssetById(authUser, assetId);
+  }
+
+  /**
+   * Update an asset
+   */
+  @Put('/assetById/:assetId')
+  async updateAssetById(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param('assetId') assetId: string,
+    @Body() dto: UpdateAssetDto,
+  ): Promise<AssetResponseDto> {
+    return await this.assetService.updateAssetById(authUser, assetId, dto);
   }
 
   @Delete('/')
@@ -252,5 +272,17 @@ export class AssetController {
     @Body(ValidationPipe) checkDuplicateAssetDto: CheckDuplicateAssetDto,
   ): Promise<CheckDuplicateAssetResponseDto> {
     return await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
+  }
+
+  /**
+   * Checks if multiple assets exist on the server and returns all existing - used by background backup
+   */
+  @Post('/exist')
+  @HttpCode(200)
+  async checkExistingAssets(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
+    return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
   }
 }

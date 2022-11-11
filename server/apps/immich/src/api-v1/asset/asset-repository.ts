@@ -10,6 +10,10 @@ import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { In } from 'typeorm/find-options/operator/In';
+import { UpdateAssetDto } from './dto/update-asset.dto';
 
 export interface IAssetRepository {
   create(
@@ -19,6 +23,7 @@ export interface IAssetRepository {
     mimeType: string,
     checksum?: Buffer,
   ): Promise<AssetEntity>;
+  update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
   getAllByUserId(userId: string): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -29,6 +34,13 @@ export interface IAssetRepository {
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
+  getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
+  getAssetWithNoEXIF(): Promise<AssetEntity[]>;
+  getAssetWithNoSmartInfo(): Promise<AssetEntity[]>;
+  getExistingAssets(
+    userId: string,
+    checkDuplicateAssetDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto>;
 }
 
 export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
@@ -39,6 +51,33 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
+
+  async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.smartInfo', 'si')
+      .where('asset.resizePath IS NOT NULL')
+      .andWhere('si.id IS NULL')
+      .getMany();
+  }
+
+  async getAssetWithNoThumbnail(): Promise<AssetEntity[]> {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .where('asset.resizePath IS NULL')
+      .orWhere('asset.resizePath = :resizePath', { resizePath: '' })
+      .orWhere('asset.webpPath IS NULL')
+      .orWhere('asset.webpPath = :webpPath', { webpPath: '' })
+      .getMany();
+  }
+
+  async getAssetWithNoEXIF(): Promise<AssetEntity[]> {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.exifInfo', 'ei')
+      .where('ei."assetId" IS NULL')
+      .getMany();
+  }
 
   async getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {
     // Get asset count by AssetType
@@ -84,6 +123,7 @@ export class AssetRepository implements IAssetRepository {
         .select(`COUNT(asset.id)::int`, 'count')
         .addSelect(`date_trunc('month', "createdAt")`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
+        .andWhere('asset.resizePath is not NULL')
         .groupBy(`date_trunc('month', "createdAt")`)
         .orderBy(`date_trunc('month', "createdAt")`, 'DESC')
         .getRawMany();
@@ -93,6 +133,7 @@ export class AssetRepository implements IAssetRepository {
         .select(`COUNT(asset.id)::int`, 'count')
         .addSelect(`date_trunc('day', "createdAt")`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
+        .andWhere('asset.resizePath is not NULL')
         .groupBy(`date_trunc('day', "createdAt")`)
         .orderBy(`date_trunc('day', "createdAt")`, 'DESC')
         .getRawMany();
@@ -214,6 +255,15 @@ export class AssetRepository implements IAssetRepository {
   }
 
   /**
+   * Update asset
+   */
+  async update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
+    asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
+
+    return await this.assetRepository.save(asset);
+  }
+
+  /**
    * Get assets by device's Id on the database
    * @param userId
    * @param deviceId
@@ -248,5 +298,20 @@ export class AssetRepository implements IAssetRepository {
       },
       relations: ['exifInfo'],
     });
+  }
+
+  async getExistingAssets(
+    userId: string,
+    checkDuplicateAssetDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
+    const existingAssets = await this.assetRepository.find({
+      select: { deviceAssetId: true },
+      where: {
+        deviceAssetId: In(checkDuplicateAssetDto.deviceAssetIds),
+        deviceId: checkDuplicateAssetDto.deviceId,
+        userId,
+      },
+    });
+    return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
   }
 }

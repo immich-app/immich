@@ -32,15 +32,17 @@
 	};
 </script>
 
-<div class="border bg-white p-4 shadow-sm w-[500px] rounded-md py-8">
+<div
+	class="border bg-white dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] rounded-md py-8"
+>
 	<div class="flex flex-col place-items-center place-content-center gap-4 px-4">
 		<img class="text-center" src="/immich-logo.svg" height="100" width="100" alt="immich-logo" />
-		<h1 class="text-2xl text-immich-primary font-medium">Login</h1>
+		<h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">Login</h1>
 	</div>
 
 	{#if loginPageMessage}
 		<p
-			class="text-sm border rounded-md m-4 p-4 text-immich-primary font-medium bg-immich-primary/5"
+			class="text-sm border rounded-md m-4 p-4 text-immich-primary dark:text-immich-dark-primary font-medium bg-immich-primary/5 dark:border-immich-dark-bg"
 		>
 			{@html loginPageMessage}
 		</p>
@@ -78,7 +80,7 @@
 		<div class="flex w-full">
 			<button
 				type="submit"
-				class="m-4 p-2 bg-immich-primary hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full font-semibold"
+				class="m-4 p-2 bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80 hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full font-semibold"
 				>Login</button
 			>
 		</div>

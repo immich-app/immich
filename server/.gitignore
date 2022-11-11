@@ -39,3 +39,4 @@ dist/
 upload/
 tmp/
 core
+.reverse-geocoding-dump/

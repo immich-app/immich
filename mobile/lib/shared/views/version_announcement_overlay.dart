@@ -103,8 +103,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                 style: ElevatedButton.styleFrom(
                                   shape: const StadiumBorder(),
                                   visualDensity: VisualDensity.standard,
-                                  primary: Colors.indigo,
-                                  onPrimary: Colors.grey[50],
+                                  backgroundColor: Colors.indigo,
+                                  foregroundColor: Colors.grey[50],
                                   elevation: 2,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 10,

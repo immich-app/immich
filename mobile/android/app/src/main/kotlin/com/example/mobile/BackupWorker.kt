@@ -1,5 +1,6 @@
 package app.alextran.immich
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -47,6 +48,9 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     private val notificationManager = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private val isIgnoringBatteryOptimizations = isIgnoringBatteryOptimizations(applicationContext)
     private var timeBackupStarted: Long = 0L
+    private var notificationBuilder: NotificationCompat.Builder? = null
+    private var notificationDetailBuilder: NotificationCompat.Builder? = null
+    private var fgFuture: ListenableFuture<Void>? = null
 
     override fun startWork(): ListenableFuture<ListenableWorker.Result> {
 
@@ -61,16 +65,14 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
             // Create a Notification channel if necessary
             createChannel()
         }
-        val title = ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
-            .getString(SHARED_PREF_NOTIFICATION_TITLE, NOTIFICATION_DEFAULT_TITLE)!!
         if (isIgnoringBatteryOptimizations) {
             // normal background services can only up to 10 minutes
             // foreground services are allowed to run indefinitely
             // requires battery optimizations to be disabled (either manually by the user
             // or by the system learning that immich is important to the user)
-            setForegroundAsync(createForegroundInfo(title))
-        } else {
-            showBackgroundInfo(title)
+            val title = ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                .getString(SHARED_PREF_NOTIFICATION_TITLE, NOTIFICATION_DEFAULT_TITLE)!!
+            showInfo(getInfoBuilder(title, indeterminate=true).build())
         }
         engine = FlutterEngine(ctx)
 
@@ -111,6 +113,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         Handler(Looper.getMainLooper()).postAtFrontOfQueue {
             backgroundChannel.invokeMethod("systemStop", null)
         }
+        waitOnSetForegroundAsync()
         // cannot await/get(block) on resolvableFuture as its already cancelled (would throw CancellationException)
         // instead, wait for 5 seconds until forcefully stopping backup work
         Handler(Looper.getMainLooper()).postDelayed({
@@ -118,15 +121,27 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         }, 5000)
     }
 
+    private fun waitOnSetForegroundAsync() {
+        val fgFuture = this.fgFuture
+        if (fgFuture != null && !fgFuture.isCancelled() && !fgFuture.isDone()) {
+            try {
+                fgFuture.get(500, TimeUnit.MILLISECONDS)
+            }
+            catch (e: Exception) {
+                // ignored, there is nothing to be done
+            }
+        }
+    }
 
     private fun stopEngine(result: Result?) {
+        clearBackgroundNotification()
+        engine?.destroy()
+        engine = null
         if (result != null) {
             Log.d(TAG, "stopEngine result=${result}")
             resolvableFuture.set(result)
         }
-        engine?.destroy()
-        engine = null
-        clearBackgroundNotification()
+        waitOnSetForegroundAsync()
     }
 
     override fun onMethodCall(call: MethodCall, r: MethodChannel.Result) {
@@ -154,18 +169,21 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
             }
             "updateNotification" -> {
                 val args = call.arguments<ArrayList<*>>()!!
-                val title = args.get(0) as String
-                val content = args.get(1) as String
-                if (isIgnoringBatteryOptimizations) {
-                    setForegroundAsync(createForegroundInfo(title, content))
-                } else {
-                    showBackgroundInfo(title, content)
+                val title = args.get(0) as String?
+                val content = args.get(1) as String?
+                val progress = args.get(2) as Int
+                val max = args.get(3) as Int
+                val indeterminate = args.get(4) as Boolean
+                val isDetail = args.get(5) as Boolean
+                val onlyIfFG = args.get(6) as Boolean
+                if (!onlyIfFG || isIgnoringBatteryOptimizations) {
+                    showInfo(getInfoBuilder(title, content, isDetail, progress, max, indeterminate).build(), isDetail)
                 }
             }
             "showError" -> {
                 val args = call.arguments<ArrayList<*>>()!!
                 val title = args.get(0) as String
-                val content = args.get(1) as String
+                val content = args.get(1) as String?
                 val individualTag = args.get(2) as String?
                 showError(title, content, individualTag)
             }
@@ -182,13 +200,12 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         }
     }
 
-    private fun showError(title: String, content: String, individualTag: String?) {
+    private fun showError(title: String, content: String?, individualTag: String?) {
         val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ERROR_ID)
            .setContentTitle(title)
            .setTicker(title)
            .setContentText(content)
            .setSmallIcon(R.mipmap.ic_launcher)
-           .setOnlyAlertOnce(true)
            .build()
         notificationManager.notify(individualTag, NOTIFICATION_ERROR_ID, notification)
     }
@@ -197,38 +214,54 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         notificationManager.cancel(NOTIFICATION_ERROR_ID)
     }
 
-    private fun showBackgroundInfo(title: String = NOTIFICATION_DEFAULT_TITLE, content: String? = null) {
-        val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-           .setContentTitle(title)
-           .setTicker(title)
-           .setContentText(content)
-           .setSmallIcon(R.mipmap.ic_launcher)
-           .setOnlyAlertOnce(true)
-           .setOngoing(true)
-           .build()
-        notificationManager.notify(NOTIFICATION_ID, notification)
-    }
-
     private fun clearBackgroundNotification() {
         notificationManager.cancel(NOTIFICATION_ID)
+        notificationManager.cancel(NOTIFICATION_DETAIL_ID)
     }
 
-    private fun createForegroundInfo(title: String = NOTIFICATION_DEFAULT_TITLE, content: String? = null): ForegroundInfo {
-       val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-           .setContentTitle(title)
-           .setTicker(title)
-           .setContentText(content)
-           .setSmallIcon(R.mipmap.ic_launcher)
-           .setOngoing(true)
-           .build()
-       return ForegroundInfo(NOTIFICATION_ID, notification)
-   }
+    private fun showInfo(notification: Notification, isDetail: Boolean = false) {
+        val id = if(isDetail) NOTIFICATION_DETAIL_ID else NOTIFICATION_ID
+        if (isIgnoringBatteryOptimizations && !isDetail) {
+            fgFuture = setForegroundAsync(ForegroundInfo(id, notification))
+        } else {
+            notificationManager.notify(id, notification)
+        }
+    }
+
+    private fun getInfoBuilder(
+        title: String? = null,
+        content: String? = null,
+        isDetail: Boolean = false,
+        progress: Int = 0,
+        max: Int = 0,
+        indeterminate: Boolean = false,
+    ): NotificationCompat.Builder {
+        var builder = if(isDetail) notificationDetailBuilder else notificationBuilder
+        if (builder == null) {
+            builder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setOnlyAlertOnce(true)
+                .setOngoing(true)
+            if (isDetail) {
+                notificationDetailBuilder = builder
+            } else {
+                notificationBuilder = builder
+            }
+        }
+        if (title != null) {
+            builder.setTicker(title).setContentTitle(title)
+        }
+        if (content != null) {
+            builder.setContentText(content)
+        }
+        return builder.setProgress(max, progress, indeterminate)
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createChannel() {
         val foreground = NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_ID, NotificationManager.IMPORTANCE_LOW)
         notificationManager.createNotificationChannel(foreground)
-        val error = NotificationChannel(NOTIFICATION_CHANNEL_ERROR_ID, NOTIFICATION_CHANNEL_ERROR_ID, NotificationManager.IMPORTANCE_DEFAULT)
+        val error = NotificationChannel(NOTIFICATION_CHANNEL_ERROR_ID, NOTIFICATION_CHANNEL_ERROR_ID, NotificationManager.IMPORTANCE_HIGH)
         notificationManager.createNotificationChannel(error)
     }
 
@@ -244,6 +277,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         private const val NOTIFICATION_DEFAULT_TITLE = "Immich"
         private const val NOTIFICATION_ID = 1
         private const val NOTIFICATION_ERROR_ID = 2 
+        private const val NOTIFICATION_DETAIL_ID = 3
         private const val ONE_MINUTE = 60000L
 
         /**

@@ -1,6 +1,9 @@
 # Our Node base image
 FROM node:16-alpine3.14 as base
 
+COPY LICENSE /licenses/LICENSE.txt
+COPY LICENSE /LICENSE
+
 WORKDIR /usr/src/app
 
 RUN chown node:node /usr/src/app

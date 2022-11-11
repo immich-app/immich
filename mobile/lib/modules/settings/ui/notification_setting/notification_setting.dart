@@ -15,12 +15,20 @@ class NotificationSetting extends HookConsumerWidget {
     final appSettingService = ref.watch(appSettingsServiceProvider);
 
     final sliderValue = useState(0.0);
+    final totalProgressValue =
+        useState(AppSettingsEnum.backgroundBackupTotalProgress.defaultValue);
+    final singleProgressValue =
+        useState(AppSettingsEnum.backgroundBackupSingleProgress.defaultValue);
 
     useEffect(
       () {
         sliderValue.value = appSettingService
             .getSetting<int>(AppSettingsEnum.uploadErrorNotificationGracePeriod)
             .toDouble();
+        totalProgressValue.value = appSettingService
+            .getSetting<bool>(AppSettingsEnum.backgroundBackupTotalProgress);
+        singleProgressValue.value = appSettingService
+            .getSetting<bool>(AppSettingsEnum.backgroundBackupSingleProgress);
         return null;
       },
       [],
@@ -42,6 +50,22 @@ class NotificationSetting extends HookConsumerWidget {
         ),
       ).tr(),
       children: [
+        _buildSwitchListTile(
+          context,
+          appSettingService,
+          totalProgressValue,
+          AppSettingsEnum.backgroundBackupTotalProgress,
+          title: 'setting_notifications_total_progress_title'.tr(),
+          subtitle: 'setting_notifications_total_progress_subtitle'.tr(),
+        ),
+        _buildSwitchListTile(
+          context,
+          appSettingService,
+          singleProgressValue,
+          AppSettingsEnum.backgroundBackupSingleProgress,
+          title: 'setting_notifications_single_progress_title'.tr(),
+          subtitle: 'setting_notifications_single_progress_subtitle'.tr(),
+        ),
         ListTile(
           isThreeLine: false,
           dense: true,
@@ -53,7 +77,9 @@ class NotificationSetting extends HookConsumerWidget {
             value: sliderValue.value,
             onChanged: (double v) => sliderValue.value = v,
             onChangeEnd: (double v) => appSettingService.setSetting(
-                AppSettingsEnum.uploadErrorNotificationGracePeriod, v.toInt()),
+              AppSettingsEnum.uploadErrorNotificationGracePeriod,
+              v.toInt(),
+            ),
             max: 5.0,
             divisions: 5,
             label: formattedValue,
@@ -63,6 +89,28 @@ class NotificationSetting extends HookConsumerWidget {
       ],
     );
   }
+}
+
+SwitchListTile _buildSwitchListTile(
+  BuildContext context,
+  AppSettingsService appSettingService,
+  ValueNotifier<bool> valueNotifier,
+  AppSettingsEnum settingsEnum, {
+  required String title,
+  String? subtitle,
+}) {
+  return SwitchListTile(
+    key: Key(settingsEnum.name),
+    value: valueNotifier.value,
+    onChanged: (value) {
+      valueNotifier.value = value;
+      appSettingService.setSetting(settingsEnum, value);
+    },
+    activeColor: Theme.of(context).primaryColor,
+    dense: true,
+    title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+    subtitle: subtitle != null ? Text(subtitle) : null,
+  );
 }
 
 String _formatSliderValue(double v) {

@@ -1,0 +1,2 @@
+* Fixed run background service after being killed 
+* Added background backup progress notifications

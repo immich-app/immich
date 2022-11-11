@@ -16,8 +16,8 @@ class AlbumPreviewPage extends HookConsumerWidget {
     final assets = useState<List<AssetEntity>>([]);
 
     _getAssetsInAlbum() async {
-      assets.value =
-          await album.getAssetListRange(start: 0, end: album.assetCount);
+      assets.value = await album.getAssetListRange(
+          start: 0, end: await album.assetCountAsync);
     }
 
     useEffect(
@@ -34,7 +34,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
         title: Column(
           children: [
             Text(
-              "${album.name} (${album.assetCount})",
+              "${album.name} (${album.assetCountAsync})",
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             Padding(

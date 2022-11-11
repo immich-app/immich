@@ -15,7 +15,6 @@ class CacheSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final CacheService cacheService = ref.watch(cacheServiceProvider);
-
     final clearCacheState = useState(false);
 
     Future<void> clearCache() async {

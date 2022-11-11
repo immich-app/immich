@@ -194,6 +194,8 @@ class ApiClient {
           return value is DateTime ? value : DateTime.tryParse(value);
         case 'AddAssetsDto':
           return AddAssetsDto.fromJson(value);
+        case 'AddAssetsResponseDto':
+          return AddAssetsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
         case 'AdminSignupResponseDto':
@@ -202,6 +204,8 @@ class ApiClient {
           return AlbumCountResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
+        case 'AllJobStatusResponseDto':
+          return AllJobStatusResponseDto.fromJson(value);
         case 'AssetCountByTimeBucket':
           return AssetCountByTimeBucket.fromJson(value);
         case 'AssetCountByTimeBucketResponseDto':
@@ -218,6 +222,10 @@ class ApiClient {
           return CheckDuplicateAssetDto.fromJson(value);
         case 'CheckDuplicateAssetResponseDto':
           return CheckDuplicateAssetResponseDto.fromJson(value);
+        case 'CheckExistingAssetsDto':
+          return CheckExistingAssetsDto.fromJson(value);
+        case 'CheckExistingAssetsResponseDto':
+          return CheckExistingAssetsResponseDto.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
         case 'CreateDeviceInfoDto':
@@ -246,6 +254,16 @@ class ApiClient {
           return GetAssetByTimeBucketDto.fromJson(value);
         case 'GetAssetCountByTimeBucketDto':
           return GetAssetCountByTimeBucketDto.fromJson(value);
+        case 'JobCommand':
+          return JobCommandTypeTransformer().decode(value);
+        case 'JobCommandDto':
+          return JobCommandDto.fromJson(value);
+        case 'JobCounts':
+          return JobCounts.fromJson(value);
+        case 'JobId':
+          return JobIdTypeTransformer().decode(value);
+        case 'JobStatusResponseDto':
+          return JobStatusResponseDto.fromJson(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':
@@ -260,6 +278,8 @@ class ApiClient {
           return ServerInfoResponseDto.fromJson(value);
         case 'ServerPingResponse':
           return ServerPingResponse.fromJson(value);
+        case 'ServerStatsResponseDto':
+          return ServerStatsResponseDto.fromJson(value);
         case 'ServerVersionReponseDto':
           return ServerVersionReponseDto.fromJson(value);
         case 'SignUpDto':
@@ -272,10 +292,14 @@ class ApiClient {
           return TimeGroupEnumTypeTransformer().decode(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
+        case 'UpdateAssetDto':
+          return UpdateAssetDto.fromJson(value);
         case 'UpdateDeviceInfoDto':
           return UpdateDeviceInfoDto.fromJson(value);
         case 'UpdateUserDto':
           return UpdateUserDto.fromJson(value);
+        case 'UsageByUserDto':
+          return UsageByUserDto.fromJson(value);
         case 'UserCountResponseDto':
           return UserCountResponseDto.fromJson(value);
         case 'UserResponseDto':

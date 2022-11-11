@@ -1,6 +1,9 @@
-FROM nginx:latest
+FROM docker.io/nginxinc/nginx-unprivileged:latest
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY LICENSE /licenses/LICENSE.txt
+COPY LICENSE /LICENSE
 
-EXPOSE 80
-EXPOSE 443
+COPY nginx.conf "/etc/nginx/nginx.conf.template"
+COPY start.sh /start.sh
+
+CMD /start.sh

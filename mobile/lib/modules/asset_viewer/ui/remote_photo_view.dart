@@ -1,20 +1,22 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:openapi/api.dart';
+import 'package:photo_manager/photo_manager.dart'
+    show AssetEntityImageProvider, ThumbnailSize;
 import 'package:photo_view/photo_view.dart';
 
 enum _RemoteImageStatus { empty, thumbnail, preview, full }
 
 class _RemotePhotoViewState extends State<RemotePhotoView> {
-  late CachedNetworkImageProvider _imageProvider;
+  late ImageProvider _imageProvider;
   _RemoteImageStatus _status = _RemoteImageStatus.empty;
   bool _zoomedIn = false;
 
-  static const int swipeThreshold = 100;
-  late CachedNetworkImageProvider fullProvider;
-  late CachedNetworkImageProvider previewProvider;
-  late CachedNetworkImageProvider thumbnailProvider;
+  late ImageProvider _fullProvider;
+  late ImageProvider _previewProvider;
+  late ImageProvider _thumbnailProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -22,34 +24,33 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
     return IgnorePointer(
       ignoring: !allowMoving,
-      child: PhotoView(
-        imageProvider: _imageProvider,
-        minScale: PhotoViewComputedScale.contained,
-        enablePanAlways: true,
-        scaleStateChangedCallback: _scaleStateChanged,
-        onScaleEnd: _onScaleListener,
+      child: Listener(
+        onPointerMove: handleSwipUpDown,
+        child: PhotoView(
+          imageProvider: _imageProvider,
+          minScale: PhotoViewComputedScale.contained,
+          enablePanAlways: false,
+          scaleStateChangedCallback: _scaleStateChanged,
+        ),
       ),
     );
   }
 
-  void _onScaleListener(
-    BuildContext context,
-    ScaleEndDetails details,
-    PhotoViewControllerValue controllerValue,
-  ) {
-    // Disable swipe events when zoomed in
+  void handleSwipUpDown(PointerMoveEvent details) {
+    int sensitivity = 10;
+
     if (_zoomedIn) {
       return;
     }
-    if (controllerValue.position.dy > swipeThreshold) {
+
+    if (details.delta.dy > sensitivity) {
       widget.onSwipeDown();
-    } else if (controllerValue.position.dy < -swipeThreshold) {
+    } else if (details.delta.dy < -sensitivity) {
       widget.onSwipeUp();
     }
   }
 
   void _scaleStateChanged(PhotoViewScaleState state) {
-    // _onScaleListener;
     _zoomedIn = state != PhotoViewScaleState.initial;
     if (_zoomedIn) {
       widget.isZoomedListener.value = true;
@@ -59,30 +60,20 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     widget.isZoomedFunction();
   }
 
-  void _fireStartLoadingEvent() {
-    widget.onLoadingStart();
-  }
-
-  void _fireFinishedLoadingEvent() {
-    widget.onLoadingCompleted();
-  }
-
   CachedNetworkImageProvider _authorizedImageProvider(
     String url,
     String cacheKey,
-    BaseCacheManager? cacheManager,
   ) {
     return CachedNetworkImageProvider(
       url,
       headers: {"Authorization": widget.authToken},
       cacheKey: cacheKey,
-      cacheManager: cacheManager,
     );
   }
 
   void _performStateTransition(
     _RemoteImageStatus newStatus,
-    CachedNetworkImageProvider provider,
+    ImageProvider provider,
   ) {
     if (_status == newStatus) return;
 
@@ -97,12 +88,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
     if (!mounted) return;
 
-    if (newStatus != _RemoteImageStatus.full) {
-      _fireStartLoadingEvent();
-    } else {
-      _fireFinishedLoadingEvent();
-    }
-
     setState(() {
       _status = newStatus;
       _imageProvider = provider;
@@ -110,97 +95,99 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   void _loadImages() {
-    thumbnailProvider = _authorizedImageProvider(
-      widget.thumbnailUrl,
-      widget.cacheKey,
-      widget.thumbnailCacheManager,
-    );
-    _imageProvider = thumbnailProvider;
+    if (widget.asset.isLocal) {
+      _imageProvider = AssetEntityImageProvider(
+        widget.asset.local!,
+        isOriginal: false,
+        thumbnailSize: const ThumbnailSize.square(250),
+      );
+      _fullProvider = AssetEntityImageProvider(widget.asset.local!);
+      _fullProvider.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo image, _) {
+          _performStateTransition(
+            _RemoteImageStatus.full,
+            _fullProvider,
+          );
+        }),
+      );
+      return;
+    }
 
-    thumbnailProvider.resolve(const ImageConfiguration()).addListener(
+    _thumbnailProvider = _authorizedImageProvider(
+      getThumbnailUrl(widget.asset.remote!),
+      widget.asset.id,
+    );
+    _imageProvider = _thumbnailProvider;
+
+    _thumbnailProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
         _performStateTransition(
           _RemoteImageStatus.thumbnail,
-          thumbnailProvider,
+          _thumbnailProvider,
         );
       }),
     );
 
-    if (widget.previewUrl != null) {
-      previewProvider = _authorizedImageProvider(
-        widget.previewUrl!,
-        "${widget.cacheKey}_previewStage",
-        widget.previewCacheManager,
+    if (widget.threeStageLoading) {
+      _previewProvider = _authorizedImageProvider(
+        getThumbnailUrl(widget.asset.remote!, type: ThumbnailFormat.JPEG),
+        "${widget.asset.id}_previewStage",
       );
-      previewProvider.resolve(const ImageConfiguration()).addListener(
+      _previewProvider.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((ImageInfo imageInfo, _) {
-          _performStateTransition(_RemoteImageStatus.preview, previewProvider);
+          _performStateTransition(_RemoteImageStatus.preview, _previewProvider);
         }),
       );
     }
 
-    fullProvider = _authorizedImageProvider(
-      widget.imageUrl,
-      "${widget.cacheKey}_fullStage",
-      widget.fullCacheManager,
+    _fullProvider = _authorizedImageProvider(
+      getImageUrl(widget.asset.remote!),
+      "${widget.asset.id}_fullStage",
     );
-    fullProvider.resolve(const ImageConfiguration()).addListener(
+    _fullProvider.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo imageInfo, _) {
-        _performStateTransition(_RemoteImageStatus.full, fullProvider);
+        _performStateTransition(_RemoteImageStatus.full, _fullProvider);
       }),
     );
   }
 
   @override
   void initState() {
-    _loadImages();
     super.initState();
+    _loadImages();
   }
 
   @override
   void dispose() async {
     super.dispose();
-    await thumbnailProvider.evict();
-    await fullProvider.evict();
 
-    if (widget.previewUrl != null) {
-      await previewProvider.evict();
+    if (_status == _RemoteImageStatus.full) {
+      await _fullProvider.evict();
+    } else if (_status == _RemoteImageStatus.preview) {
+      await _previewProvider.evict();
+    } else if (_status == _RemoteImageStatus.thumbnail) {
+      await _thumbnailProvider.evict();
     }
 
-    _imageProvider.evict();
+    await _imageProvider.evict();
   }
 }
 
 class RemotePhotoView extends StatefulWidget {
   const RemotePhotoView({
     Key? key,
-    required this.thumbnailUrl,
-    required this.imageUrl,
+    required this.asset,
     required this.authToken,
+    required this.threeStageLoading,
     required this.isZoomedFunction,
     required this.isZoomedListener,
     required this.onSwipeDown,
     required this.onSwipeUp,
-    this.previewUrl,
-    required this.onLoadingCompleted,
-    required this.onLoadingStart,
-    this.thumbnailCacheManager,
-    this.previewCacheManager,
-    this.fullCacheManager,
-    required this.cacheKey,
   }) : super(key: key);
 
-  final String thumbnailUrl;
-  final String imageUrl;
+  final Asset asset;
   final String authToken;
-  final String? previewUrl;
-  final Function onLoadingCompleted;
-  final Function onLoadingStart;
-  final BaseCacheManager? thumbnailCacheManager;
-  final BaseCacheManager? previewCacheManager;
-  final BaseCacheManager? fullCacheManager;
-  final String cacheKey;
-
+  final bool threeStageLoading;
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;
   final void Function() isZoomedFunction;

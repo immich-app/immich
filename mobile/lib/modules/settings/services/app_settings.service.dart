@@ -6,11 +6,16 @@ enum AppSettingsEnum<T> {
   themeMode<String>("themeMode", "system"), // "light","dark","system"
   tilesPerRow<int>("tilesPerRow", 4),
   uploadErrorNotificationGracePeriod<int>(
-      "uploadErrorNotificationGracePeriod", 2),
+    "uploadErrorNotificationGracePeriod",
+    2,
+  ),
+  backgroundBackupTotalProgress<bool>("backgroundBackupTotalProgress", true),
+  backgroundBackupSingleProgress<bool>("backgroundBackupSingleProgress", false),
   storageIndicator<bool>("storageIndicator", true),
   thumbnailCacheSize<int>("thumbnailCacheSize", 10000),
   imageCacheSize<int>("imageCacheSize", 350),
-  albumThumbnailCacheSize<int>("albumThumbnailCacheSize", 200);
+  albumThumbnailCacheSize<int>("albumThumbnailCacheSize", 200),
+  useExperimentalAssetGrid<bool>("useExperimentalAssetGrid", false);
 
   const AppSettingsEnum(this.hiveKey, this.defaultValue);
 

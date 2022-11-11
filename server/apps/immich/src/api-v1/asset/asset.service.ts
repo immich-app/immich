@@ -1,6 +1,7 @@
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -36,6 +37,10 @@ import {
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { timeUtils } from '@app/common/utils';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
 
 const fileInfo = promisify(stat);
 
@@ -56,6 +61,18 @@ export class AssetService {
     mimeType: string,
     checksum: Buffer,
   ): Promise<AssetEntity> {
+    // Check valid time.
+    const createdAt = createAssetDto.createdAt;
+    const modifiedAt = createAssetDto.modifiedAt;
+
+    if (!timeUtils.checkValidTimestamp(createdAt)) {
+      createAssetDto.createdAt = await timeUtils.getTimestampFromExif(originalPath);
+    }
+
+    if (!timeUtils.checkValidTimestamp(modifiedAt)) {
+      createAssetDto.modifiedAt = await timeUtils.getTimestampFromExif(originalPath);
+    }
+
     const assetEntity = await this._assetRepository.create(
       createAssetDto,
       authUser.id,
@@ -106,6 +123,21 @@ export class AssetService {
     const asset = await this._assetRepository.getById(assetId);
 
     return mapAsset(asset);
+  }
+
+  public async updateAssetById(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+    const asset = await this._assetRepository.getById(assetId);
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    if (authUser.id !== asset.userId) {
+      throw new ForbiddenException('Not the owner');
+    }
+
+    const updatedAsset = await this._assetRepository.update(asset, dto);
+
+    return mapAsset(updatedAsset);
   }
 
   public async downloadFile(query: ServeFileDto, res: Res) {
@@ -451,6 +483,13 @@ export class AssetService {
     const isDuplicated = res ? true : false;
 
     return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
+  }
+
+  async checkExistingAssets(
+    authUser: AuthUserDto,
+    checkExistingAssetsDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
+    return this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto);
   }
 
   async getAssetCountByTimeBucket(

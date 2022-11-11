@@ -10,6 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
+[**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
@@ -24,6 +25,7 @@ Method | HTTP request | Description
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file | 
+[**updateAssetById**](AssetApi.md#updateassetbyid) | **PUT** /asset/assetById/{assetId} | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
 
@@ -64,6 +66,55 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**CheckDuplicateAssetResponseDto**](CheckDuplicateAssetResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **checkExistingAssets**
+> CheckExistingAssetsResponseDto checkExistingAssets(checkExistingAssetsDto)
+
+
+
+Checks if multiple assets exist on the server and returns all existing - used by background backup
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final checkExistingAssetsDto = CheckExistingAssetsDto(); // CheckExistingAssetsDto | 
+
+try {
+    final result = api_instance.checkExistingAssets(checkExistingAssetsDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->checkExistingAssets: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **checkExistingAssetsDto** | [**CheckExistingAssetsDto**](CheckExistingAssetsDto.md)|  | 
+
+### Return type
+
+[**CheckExistingAssetsResponseDto**](CheckExistingAssetsResponseDto.md)
 
 ### Authorization
 
@@ -730,6 +781,57 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updateAssetById**
+> AssetResponseDto updateAssetById(assetId, updateAssetDto)
+
+
+
+Update an asset
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final assetId = assetId_example; // String | 
+final updateAssetDto = UpdateAssetDto(); // UpdateAssetDto | 
+
+try {
+    final result = api_instance.updateAssetById(assetId, updateAssetDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->updateAssetById: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assetId** | **String**|  | 
+ **updateAssetDto** | [**UpdateAssetDto**](UpdateAssetDto.md)|  | 
+
+### Return type
+
+[**AssetResponseDto**](AssetResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

@@ -72,8 +72,8 @@ ThemeData immichDarkTheme = ThemeData(
   cardColor: Colors.grey[900],
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      onPrimary: Colors.black87,
-      primary: immichDarkThemePrimaryColor,
+      foregroundColor: Colors.black87,
+      backgroundColor: immichDarkThemePrimaryColor,
     ),
   ),
 );
@@ -126,8 +126,8 @@ ThemeData immichLightTheme = ThemeData(
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      primary: Colors.indigo,
-      onPrimary: Colors.white,
+      backgroundColor: Colors.indigo,
+      foregroundColor: Colors.white,
     ),
   ),
 );

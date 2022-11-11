@@ -8,13 +8,13 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **String** |  | [optional] 
+**id** | **int** |  | [optional] 
+**fileSizeInByte** | **int** |  | [optional] 
 **make** | **String** |  | [optional] 
 **model** | **String** |  | [optional] 
 **imageName** | **String** |  | [optional] 
 **exifImageWidth** | **num** |  | [optional] 
 **exifImageHeight** | **num** |  | [optional] 
-**fileSizeInByte** | **num** |  | [optional] 
 **orientation** | **String** |  | [optional] 
 **dateTimeOriginal** | [**DateTime**](DateTime.md) |  | [optional] 
 **modifyDate** | [**DateTime**](DateTime.md) |  | [optional] 

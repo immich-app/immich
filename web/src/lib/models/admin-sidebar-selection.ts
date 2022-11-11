@@ -1,5 +1,8 @@
 export enum AdminSideBarSelection {
-	USER_MANAGEMENT = 'User management'
+	USER_MANAGEMENT = 'User management',
+	JOBS = 'Jobs',
+	SETTINGS = 'Settings',
+	STATS = 'Server Stats'
 }
 
 export enum AppSideBarSelection {

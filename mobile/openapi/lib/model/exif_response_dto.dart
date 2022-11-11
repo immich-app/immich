@@ -14,12 +14,12 @@ class ExifResponseDto {
   /// Returns a new [ExifResponseDto] instance.
   ExifResponseDto({
     this.id,
+    this.fileSizeInByte,
     this.make,
     this.model,
     this.imageName,
     this.exifImageWidth,
     this.exifImageHeight,
-    this.fileSizeInByte,
     this.orientation,
     this.dateTimeOriginal,
     this.modifyDate,
@@ -35,7 +35,9 @@ class ExifResponseDto {
     this.country,
   });
 
-  String? id;
+  int? id;
+
+  int? fileSizeInByte;
 
   String? make;
 
@@ -46,8 +48,6 @@ class ExifResponseDto {
   num? exifImageWidth;
 
   num? exifImageHeight;
-
-  num? fileSizeInByte;
 
   String? orientation;
 
@@ -78,12 +78,12 @@ class ExifResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
      other.id == id &&
+     other.fileSizeInByte == fileSizeInByte &&
      other.make == make &&
      other.model == model &&
      other.imageName == imageName &&
      other.exifImageWidth == exifImageWidth &&
      other.exifImageHeight == exifImageHeight &&
-     other.fileSizeInByte == fileSizeInByte &&
      other.orientation == orientation &&
      other.dateTimeOriginal == dateTimeOriginal &&
      other.modifyDate == modifyDate &&
@@ -102,12 +102,12 @@ class ExifResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (id == null ? 0 : id!.hashCode) +
+    (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
     (imageName == null ? 0 : imageName!.hashCode) +
     (exifImageWidth == null ? 0 : exifImageWidth!.hashCode) +
     (exifImageHeight == null ? 0 : exifImageHeight!.hashCode) +
-    (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
     (orientation == null ? 0 : orientation!.hashCode) +
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
     (modifyDate == null ? 0 : modifyDate!.hashCode) +
@@ -123,7 +123,7 @@ class ExifResponseDto {
     (country == null ? 0 : country!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[id=$id, make=$make, model=$model, imageName=$imageName, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, fileSizeInByte=$fileSizeInByte, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
+  String toString() => 'ExifResponseDto[id=$id, fileSizeInByte=$fileSizeInByte, make=$make, model=$model, imageName=$imageName, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -131,6 +131,11 @@ class ExifResponseDto {
       _json[r'id'] = id;
     } else {
       _json[r'id'] = null;
+    }
+    if (fileSizeInByte != null) {
+      _json[r'fileSizeInByte'] = fileSizeInByte;
+    } else {
+      _json[r'fileSizeInByte'] = null;
     }
     if (make != null) {
       _json[r'make'] = make;
@@ -156,11 +161,6 @@ class ExifResponseDto {
       _json[r'exifImageHeight'] = exifImageHeight;
     } else {
       _json[r'exifImageHeight'] = null;
-    }
-    if (fileSizeInByte != null) {
-      _json[r'fileSizeInByte'] = fileSizeInByte;
-    } else {
-      _json[r'fileSizeInByte'] = null;
     }
     if (orientation != null) {
       _json[r'orientation'] = orientation;
@@ -249,7 +249,8 @@ class ExifResponseDto {
       }());
 
       return ExifResponseDto(
-        id: mapValueOfType<String>(json, r'id'),
+        id: mapValueOfType<int>(json, r'id'),
+        fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         imageName: mapValueOfType<String>(json, r'imageName'),
@@ -259,9 +260,6 @@ class ExifResponseDto {
         exifImageHeight: json[r'exifImageHeight'] == null
             ? null
             : num.parse(json[r'exifImageHeight'].toString()),
-        fileSizeInByte: json[r'fileSizeInByte'] == null
-            ? null
-            : num.parse(json[r'fileSizeInByte'].toString()),
         orientation: mapValueOfType<String>(json, r'orientation'),
         dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', ''),
         modifyDate: mapDateTime(json, r'modifyDate', ''),

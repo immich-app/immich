@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -183,17 +184,21 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
 
-      var assetList =
-          await album.getAssetListRange(start: 0, end: album.assetCount);
+      var assetCountInAlbum = await album.assetCountAsync;
+      if (assetCountInAlbum > 0) {
+        var assetList =
+            await album.getAssetListRange(start: 0, end: assetCountInAlbum);
 
-      if (assetList.isNotEmpty) {
-        var thumbnailAsset = assetList.first;
-        var thumbnailData = await thumbnailAsset
-            .thumbnailDataWithSize(const ThumbnailSize(512, 512));
-        availableAlbum = availableAlbum.copyWith(thumbnailData: thumbnailData);
+        if (assetList.isNotEmpty) {
+          var thumbnailAsset = assetList.first;
+          var thumbnailData = await thumbnailAsset
+              .thumbnailDataWithSize(const ThumbnailSize(512, 512));
+          availableAlbum =
+              availableAlbum.copyWith(thumbnailData: thumbnailData);
+        }
+
+        availableAlbums.add(availableAlbum);
       }
-
-      availableAlbums.add(availableAlbum);
     }
 
     state = state.copyWith(availableAlbums: availableAlbums);
@@ -292,18 +297,23 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Those assets are unique and are used as the total assets
   ///
   Future<void> _updateBackupAssetCount() async {
+    Set<String> duplicatedAssetIds = _backupService.getDuplicatedAssetIds();
     Set<AssetEntity> assetsFromSelectedAlbums = {};
     Set<AssetEntity> assetsFromExcludedAlbums = {};
 
     for (var album in state.selectedBackupAlbums) {
-      var assets = await album.albumEntity
-          .getAssetListRange(start: 0, end: album.assetCount);
+      var assets = await album.albumEntity.getAssetListRange(
+        start: 0,
+        end: await album.albumEntity.assetCountAsync,
+      );
       assetsFromSelectedAlbums.addAll(assets);
     }
 
     for (var album in state.excludedBackupAlbums) {
-      var assets = await album.albumEntity
-          .getAssetListRange(start: 0, end: album.assetCount);
+      var assets = await album.albumEntity.getAssetListRange(
+        start: 0,
+        end: await album.albumEntity.assetCountAsync,
+      );
       assetsFromExcludedAlbums.addAll(assets);
     }
 
@@ -318,8 +328,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     // Find asset that were backup from selected albums
     Set<String> selectedAlbumsBackupAssets =
         Set.from(allUniqueAssets.map((e) => e.id));
+
     selectedAlbumsBackupAssets
         .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
+
+    // Remove duplicated asset from all unique assets
+    allUniqueAssets.removeWhere(
+      (asset) => duplicatedAssetIds.contains(asset.id),
+    );
 
     if (allUniqueAssets.isEmpty) {
       debugPrint("No Asset On Device");
@@ -353,11 +369,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final bool isEnabled = await _backgroundService.isBackgroundBackupEnabled();
     state = state.copyWith(backgroundBackup: isEnabled);
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
-      await Future.wait([
-        _getBackupAlbumsInfo(),
-        _updateServerInfo(),
-      ]);
-
+      await _getBackupAlbumsInfo();
+      await _updateServerInfo();
       await _updateBackupAssetCount();
     }
   }
@@ -450,14 +463,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  void _onAssetUploaded(String deviceAssetId, String deviceId) {
-    state = state.copyWith(
-      selectedAlbumsBackupAssetsIds: {
-        ...state.selectedAlbumsBackupAssetsIds,
-        deviceAssetId
-      },
-      allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
-    );
+  void _onAssetUploaded(
+    String deviceAssetId,
+    String deviceId,
+    bool isDuplicated,
+  ) {
+    if (isDuplicated) {
+      state = state.copyWith(
+        allUniqueAssets: state.allUniqueAssets
+            .where((asset) => asset.id != deviceAssetId)
+            .toSet(),
+      );
+    } else {
+      state = state.copyWith(
+        selectedAlbumsBackupAssetsIds: {
+          ...state.selectedAlbumsBackupAssetsIds,
+          deviceAssetId
+        },
+        allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
+      );
+    }
 
     if (state.allUniqueAssets.length -
             state.selectedAlbumsBackupAssetsIds.length ==
@@ -540,11 +565,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
       final bool hasLock = await _backgroundService.acquireLock();
       if (!hasLock) {
+        debugPrint("WARNING [resumeBackup] failed to acquireLock");
         return;
       }
-      Box<HiveBackupAlbums> box =
-          await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
-      HiveBackupAlbums? albums = box.get(backupInfoKey);
+      await Future.wait([
+        Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+        Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+        Hive.openBox(backgroundBackupInfoBox),
+      ]);
+      final HiveBackupAlbums? albums =
+          Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).get(backupInfoKey);
       Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
       Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
       if (albums != null) {
@@ -559,7 +589,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           albums.lastExcludedBackupTime,
         );
       }
-      final Box backgroundBox = await Hive.openBox(backgroundBackupInfoBox);
+      final Box backgroundBox = Hive.box(backgroundBackupInfoBox);
       state = state.copyWith(
         backupProgress: previous,
         selectedBackupAlbums: selectedAlbums,
@@ -599,6 +629,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       try {
         if (Hive.isBoxOpen(hiveBackupInfoBox)) {
           await Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).close();
+        }
+      } catch (error) {
+        debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");
+      }
+      try {
+        if (Hive.isBoxOpen(duplicatedAssetsBox)) {
+          await Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox).close();
         }
       } catch (error) {
         debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");

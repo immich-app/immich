@@ -8,19 +8,15 @@ import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
-import 'package:immich_mobile/shared/services/cache.service.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 // ignore: must_be_immutable
 class ImageViewerPage extends HookConsumerWidget {
   final String heroTag;
-  final AssetResponseDto asset;
+  final Asset asset;
   final String authToken;
   final ValueNotifier<bool> isZoomedListener;
   final void Function() isZoomedFunction;
-  final void Function() onLoadingCompleted;
-  final void Function() onLoadingStart;
   final bool threeStageLoading;
 
   ImageViewerPage({
@@ -30,22 +26,24 @@ class ImageViewerPage extends HookConsumerWidget {
     required this.authToken,
     required this.isZoomedFunction,
     required this.isZoomedListener,
-    required this.onLoadingCompleted,
-    required this.onLoadingStart,
     required this.threeStageLoading,
   }) : super(key: key);
 
-  AssetResponseDto? assetDetail;
+  Asset? assetDetail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final downloadAssetStatus =
         ref.watch(imageViewerStateProvider).downloadAssetStatus;
-    final cacheService = ref.watch(cacheServiceProvider);
 
     getAssetExif() async {
-      assetDetail =
-          await ref.watch(assetServiceProvider).getAssetById(asset.id);
+      if (asset.isRemote) {
+        assetDetail =
+            await ref.watch(assetServiceProvider).getAssetById(asset.id);
+      } else {
+        // TODO local exif parsing?
+        assetDetail = asset;
+      }
     }
 
     useEffect(
@@ -74,25 +72,13 @@ class ImageViewerPage extends HookConsumerWidget {
           child: Hero(
             tag: heroTag,
             child: RemotePhotoView(
-              thumbnailUrl: getThumbnailUrl(asset),
-              cacheKey: asset.id,
-              imageUrl: getImageUrl(asset),
-              previewUrl: threeStageLoading
-                  ? getThumbnailUrl(asset, type: ThumbnailFormat.JPEG)
-                  : null,
+              asset: asset,
               authToken: authToken,
+              threeStageLoading: threeStageLoading,
               isZoomedFunction: isZoomedFunction,
               isZoomedListener: isZoomedListener,
               onSwipeDown: () => AutoRouter.of(context).pop(),
-              onSwipeUp: () => showInfo(),
-              onLoadingCompleted: onLoadingCompleted,
-              onLoadingStart: onLoadingStart,
-              thumbnailCacheManager:
-                  cacheService.getCache(CacheType.thumbnail),
-              previewCacheManager:
-                  cacheService.getCache(CacheType.imageViewerPreview),
-              fullCacheManager:
-                  cacheService.getCache(CacheType.imageViewerFull),
+              onSwipeUp: asset.isRemote ? showInfo : () {},
             ),
           ),
         ),

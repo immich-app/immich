@@ -10,6 +10,7 @@ class ImmichToast {
     ToastType toastType = ToastType.info,
     ToastGravity gravity = ToastGravity.TOP,
   }) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final fToast = FToast();
     fToast.init(context);
 
@@ -49,7 +50,7 @@ class ImmichToast {
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5.0),
-          color: Colors.grey[50],
+          color: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
           border: Border.all(
             color: Colors.black12,
             width: 1,

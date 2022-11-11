@@ -16,6 +16,8 @@
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
+	import { downloadAssets } from '$lib/stores/download';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
@@ -25,7 +27,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
-	import { browser } from '$app/env';
+	import { browser } from '$app/environment';
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
 
 	export let album: AlbumResponseDto;
@@ -69,9 +71,9 @@
 	$: isMultiSelectionMode = multiSelectAsset.size > 0;
 
 	afterNavigate(({ from }) => {
-		backUrl = from?.pathname ?? '/albums';
+		backUrl = from?.url.pathname ?? '/albums';
 
-		if (from?.pathname === '/sharing') {
+		if (from?.url.pathname === '/sharing') {
 			isCreatingSharedAlbum = true;
 		}
 	});
@@ -215,8 +217,10 @@
 			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
 				assetIds: assets.map((a) => a.id)
 			});
-			album = data;
 
+			if (data.album) {
+				album = data.album;
+			}
 			isShowAssetSelection = false;
 		} catch (e) {
 			console.error('Error [createAlbumHandler] ', e);
@@ -233,7 +237,10 @@
 			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
 				assetIds: assetIds
 			});
-			album = data;
+
+			if (data.album) {
+				album = data.album;
+			}
 		} catch (e) {
 			console.error('Error [assetUploadedToAlbumHandler] ', e);
 			notificationController.show({
@@ -304,6 +311,65 @@
 		}
 	};
 
+	const downloadAlbum = async () => {
+		try {
+			const fileName = album.albumName + '.zip';
+
+			// If assets is already download -> return;
+			if ($downloadAssets[fileName]) {
+				return;
+			}
+
+			$downloadAssets[fileName] = 0;
+
+			let total = 0;
+			const { data, status } = await api.albumApi.downloadArchive(album.id, {
+				responseType: 'blob',
+				onDownloadProgress: function (progressEvent) {
+					const request = this as XMLHttpRequest;
+					if (!total) {
+						total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
+					}
+
+					if (total) {
+						const current = progressEvent.loaded;
+						$downloadAssets[fileName] = Math.floor((current / total) * 100);
+					}
+				}
+			});
+
+			if (!(data instanceof Blob)) {
+				return;
+			}
+
+			if (status === 200) {
+				const fileUrl = URL.createObjectURL(data);
+				const anchor = document.createElement('a');
+				anchor.href = fileUrl;
+				anchor.download = fileName;
+
+				document.body.appendChild(anchor);
+				anchor.click();
+				document.body.removeChild(anchor);
+
+				URL.revokeObjectURL(fileUrl);
+
+				// Remove item from download list
+				setTimeout(() => {
+					const copy = $downloadAssets;
+					delete copy[fileName];
+					$downloadAssets = copy;
+				}, 2000);
+			}
+		} catch (e) {
+			console.error('Error downloading file ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error downloading file, check console for more details.'
+			});
+		}
+	};
+
 	const showAlbumOptionsMenu = (event: CustomEvent) => {
 		contextMenuPosition = {
 			x: event.detail.mouseEvent.x,
@@ -331,7 +397,7 @@
 	};
 </script>
 
-<section class="bg-immich-bg">
+<section class="bg-immich-bg dark:bg-immich-dark-bg">
 	<!-- Multiselection mode app bar -->
 	{#if isMultiSelectionMode}
 		<ControlAppBar
@@ -340,7 +406,9 @@
 			tailwindClasses={'bg-white shadow-md'}
 		>
 			<svelte:fragment slot="leading">
-				<p class="font-medium text-immich-primary">Selected {multiSelectAsset.size}</p>
+				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
+					Selected {multiSelectAsset.size}
+				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
 				{#if isOwned}
@@ -376,6 +444,12 @@
 					{/if}
 
 					<CircleIconButton
+						title="Download"
+						on:click={() => downloadAlbum()}
+						logo={FolderDownloadOutline}
+					/>
+
+					<CircleIconButton
 						title="Album options"
 						on:click={(event) => showAlbumOptionsMenu(event)}
 						logo={DotsVertical}
@@ -386,7 +460,7 @@
 					<button
 						disabled={album.assetCount == 0}
 						on:click={() => (isShowShareUserSelection = true)}
-						class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
+						class="immich-text-button border bg-immich-primary dark:bg-immich-dark-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed dark:text-immich-dark-bg dark:border-immich-dark-gray"
 						><span class="px-2">Share</span></button
 					>
 				{/if}
@@ -404,9 +478,9 @@
 			}}
 			on:focus={() => (isEditingTitle = true)}
 			on:blur={() => (isEditingTitle = false)}
-			class={`transition-all text-6xl text-immich-primary w-[99%] border-b-2 border-transparent outline-none ${
+			class={`transition-all text-6xl text-immich-primary dark:text-immich-dark-primary w-[99%] border-b-2 border-transparent outline-none ${
 				isOwned ? 'hover:border-gray-400' : 'hover:border-transparent'
-			} focus:outline-none focus:border-b-2 focus:border-immich-primary bg-immich-bg`}
+			} focus:outline-none focus:border-b-2 focus:border-immich-primary dark:focus:border-immich-dark-primary bg-immich-bg dark:bg-immich-dark-bg dark:focus:bg-immich-dark-gray`}
 			type="text"
 			bind:value={album.albumName}
 			disabled={!isOwned}
@@ -468,13 +542,15 @@
 			<!-- Album is empty - Show asset selectection buttons -->
 			<section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
 				<div class="w-[300px]">
-					<p class="text-xs">ADD PHOTOS</p>
+					<p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
 					<button
 						on:click={() => (isShowAssetSelection = true)}
-						class="w-full py-8 border bg-white rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-100 hover:text-immich-primary"
+						class="w-full py-8 border bg-immich-bg dark:bg-immich-dark-gray text-immich-fg dark:text-immich-dark-fg dark:hover:text-immich-dark-primary rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none"
 					>
-						<span><Plus color="#4250af" size="24" /> </span>
-						<span class="text-lg text-immich-fg">Select photos</span>
+						<span class="text-text-immich-primary dark:text-immich-dark-primary"
+							><Plus size="24" />
+						</span>
+						<span class="text-lg">Select photos</span>
 					</button>
 				</div>
 			</section>

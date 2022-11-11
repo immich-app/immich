@@ -1,12 +1,11 @@
 import 'package:collection/collection.dart';
-
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 class AssetSelectionState {
   final Set<String> selectedMonths;
-  final Set<AssetResponseDto> selectedNewAssetsForAlbum;
-  final Set<AssetResponseDto> selectedAdditionalAssetsForAlbum;
-  final Set<AssetResponseDto> selectedAssetsInAlbumViewer;
+  final Set<Asset> selectedNewAssetsForAlbum;
+  final Set<Asset> selectedAdditionalAssetsForAlbum;
+  final Set<Asset> selectedAssetsInAlbumViewer;
   final bool isMultiselectEnable;
 
   /// Indicate the asset selection page is navigated from existing album
@@ -22,9 +21,9 @@ class AssetSelectionState {
 
   AssetSelectionState copyWith({
     Set<String>? selectedMonths,
-    Set<AssetResponseDto>? selectedNewAssetsForAlbum,
-    Set<AssetResponseDto>? selectedAdditionalAssetsForAlbum,
-    Set<AssetResponseDto>? selectedAssetsInAlbumViewer,
+    Set<Asset>? selectedNewAssetsForAlbum,
+    Set<Asset>? selectedAdditionalAssetsForAlbum,
+    Set<Asset>? selectedAssetsInAlbumViewer,
     bool? isMultiselectEnable,
     bool? isAlbumExist,
   }) {

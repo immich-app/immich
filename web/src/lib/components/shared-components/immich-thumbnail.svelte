@@ -87,6 +87,10 @@
 
 		isThumbnailVideoPlaying = false;
 		videoProgress = '00:00';
+
+		if (videoPlayerNode) {
+			videoPlayerNode.pause();
+		}
 	};
 
 	const handleCanPlay = (ev: Event) => {
@@ -136,7 +140,7 @@
 	<div
 		style:width={`${thumbnailSize}px`}
 		style:height={`${thumbnailSize}px`}
-		class={`bg-gray-100 relative select-none  ${getSize()} ${
+		class={`bg-gray-100 dark:bg-immich-dark-gray relative select-none ${getSize()} ${
 			disabled ? 'cursor-not-allowed' : 'hover:cursor-pointer'
 		}`}
 		on:mouseenter={handleMouseOverThumbnail}

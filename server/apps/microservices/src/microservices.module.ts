@@ -4,21 +4,16 @@ import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
-import {
-  assetUploadedQueueName,
-  generateChecksumQueueName,
-  metadataExtractionQueueName,
-  thumbnailGeneratorQueueName,
-  videoConversionQueueName,
-} from '@app/job/constants/queue-name.constant';
+import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
 import { MicroservicesService } from './microservices.service';
 import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
 import { GenerateChecksumProcessor } from './processors/generate-checksum.processor';
+import { MachineLearningProcessor } from './processors/machine-learning.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
@@ -40,42 +35,56 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
         },
       }),
     }),
-    BullModule.registerQueue({
-      name: thumbnailGeneratorQueueName,
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
+    BullModule.registerQueue(
+      {
+        name: QueueNameEnum.THUMBNAIL_GENERATION,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
       },
-    }, {
-      name: assetUploadedQueueName,
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
+      {
+        name: QueueNameEnum.ASSET_UPLOADED,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
       },
-    }, {
-      name: metadataExtractionQueueName,
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
+      {
+        name: QueueNameEnum.METADATA_EXTRACTION,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
       },
-    }, {
-      name: videoConversionQueueName,
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
+      {
+        name: QueueNameEnum.VIDEO_CONVERSION,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
       },
-    }, {
-      name: generateChecksumQueueName,
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
+      {
+        name: QueueNameEnum.CHECKSUM_GENERATION,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
       },
-    }),
+      {
+        name: QueueNameEnum.MACHINE_LEARNING,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      },
+    ),
     CommunicationModule,
   ],
   controllers: [],
@@ -86,6 +95,8 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     MetadataExtractionProcessor,
     VideoTranscodeProcessor,
     GenerateChecksumProcessor,
+    MachineLearningProcessor,
+    ConfigService,
   ],
   exports: [],
 })

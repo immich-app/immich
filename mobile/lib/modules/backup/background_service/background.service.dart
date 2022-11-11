@@ -14,6 +14,7 @@ import 'package:immich_mobile/modules/backup/background_service/localization.dar
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -27,11 +28,12 @@ final backgroundServiceProvider = Provider(
 /// Background backup service
 class BackgroundService {
   static const String _portNameLock = "immichLock";
-  BackgroundService();
   static const MethodChannel _foregroundChannel =
       MethodChannel('immich/foregroundChannel');
   static const MethodChannel _backgroundChannel =
       MethodChannel('immich/backgroundChannel');
+  static final NumberFormat numberFormat = NumberFormat("###0.##");
+  static const notifyInterval = Duration(milliseconds: 400);
   bool _isBackgroundInitialized = false;
   CancellationToken? _cancellationToken;
   bool _canceledBySystem = false;
@@ -40,6 +42,19 @@ class BackgroundService {
   SendPort? _waitingIsolate;
   ReceivePort? _rp;
   bool _errorGracePeriodExceeded = true;
+  int _uploadedAssetsCount = 0;
+  int _assetsToUploadCount = 0;
+  String _lastPrintedDetailContent = "";
+  String? _lastPrintedDetailTitle;
+  late final _Throttle _throttledNotifiy =
+      _Throttle(_updateProgress, notifyInterval);
+  late final _Throttle _throttledDetailNotify =
+      _Throttle(_updateDetailProgress, notifyInterval);
+  Completer<bool> _hasAccessCompleter = Completer();
+  late Future<bool> _hasAccess =
+      Platform.isAndroid ? _hasAccessCompleter.future : Future.value(true);
+
+  Future<bool> get hasAccess => _hasAccess;
 
   bool get isBackgroundInitialized {
     return _isBackgroundInitialized;
@@ -125,22 +140,29 @@ class BackgroundService {
   }
 
   /// Updates the notification shown by the background service
-  Future<bool> _updateNotification({
-    required String title,
+  Future<bool?> _updateNotification({
+    String? title,
     String? content,
+    int progress = 0,
+    int max = 0,
+    bool indeterminate = false,
+    bool isDetail = false,
+    bool onlyIfFG = false,
   }) async {
     if (!Platform.isAndroid) {
       return true;
     }
     try {
       if (_isBackgroundInitialized) {
-        return await _backgroundChannel
-            .invokeMethod('updateNotification', [title, content]);
+        return _backgroundChannel.invokeMethod<bool>(
+          'updateNotification',
+          [title, content, progress, max, indeterminate, isDetail, onlyIfFG],
+        );
       }
     } catch (error) {
       debugPrint("[_updateNotification] failed to communicate with plugin");
     }
-    return Future.value(false);
+    return false;
   }
 
   /// Shows a new priority notification
@@ -184,6 +206,15 @@ class BackgroundService {
     if (!Platform.isAndroid) {
       return true;
     }
+    if (_hasLock) {
+      debugPrint("WARNING: [acquireLock] called more than once");
+      return true;
+    }
+    if (_hasAccessCompleter.isCompleted) {
+      debugPrint("WARNING: [acquireLock] _hasAccessCompleter is completed");
+      _hasAccessCompleter = Completer();
+      _hasAccess = _hasAccessCompleter.future;
+    }
     final int lockTime = Timeline.now;
     _wantsLockTime = lockTime;
     final ReceivePort rp = ReceivePort(_portNameLock);
@@ -202,6 +233,7 @@ class BackgroundService {
     }
     _hasLock = true;
     rp.listen(_heartbeatListener);
+    _hasAccessCompleter.complete(true);
     return true;
   }
 
@@ -254,6 +286,8 @@ class BackgroundService {
     }
     _wantsLockTime = 0;
     if (_hasLock) {
+      _hasAccessCompleter = Completer();
+      _hasAccess = _hasAccessCompleter.future;
       IsolateNameServer.removePortNameMapping(_portNameLock);
       _waitingIsolate?.send(true);
       _waitingIsolate = null;
@@ -274,6 +308,7 @@ class BackgroundService {
       case "onAssetsChanged":
         final Future<bool> translationsLoaded = loadTranslations();
         try {
+          _clearErrorNotifications();
           final bool hasAccess = await acquireLock();
           if (!hasAccess) {
             debugPrint("[_callHandler] could not acquire lock, exiting");
@@ -304,28 +339,38 @@ class BackgroundService {
 
     Hive.registerAdapter(HiveSavedLoginInfoAdapter());
     Hive.registerAdapter(HiveBackupAlbumsAdapter());
-    await Hive.openBox(userInfoBox);
-    await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
-    await Hive.openBox(userSettingInfoBox);
-    await Hive.openBox(backgroundBackupInfoBox);
+    Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
+
+    await Future.wait([
+      Hive.openBox(userInfoBox),
+      Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
+      Hive.openBox(userSettingInfoBox),
+      Hive.openBox(backgroundBackupInfoBox),
+      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+      Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+    ]);
 
     ApiService apiService = ApiService();
     apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
     apiService.setAccessToken(Hive.box(userInfoBox).get(accessTokenKey));
     BackupService backupService = BackupService(apiService);
+    AppSettingsService settingsService = AppSettingsService();
 
     final Box<HiveBackupAlbums> box =
-        await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
+        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
     final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
     if (backupAlbumInfo == null) {
-      _clearErrorNotifications();
       return true;
     }
 
     await PhotoManager.setIgnorePermissionCheck(true);
 
     do {
-      final bool backupOk = await _runBackup(backupService, backupAlbumInfo);
+      final bool backupOk = await _runBackup(
+        backupService,
+        settingsService,
+        backupAlbumInfo,
+      );
       if (backupOk) {
         await Hive.box(backgroundBackupInfoBox).delete(backupFailedSince);
         await box.put(
@@ -346,9 +391,14 @@ class BackgroundService {
 
   Future<bool> _runBackup(
     BackupService backupService,
+    AppSettingsService settingsService,
     HiveBackupAlbums backupAlbumInfo,
   ) async {
-    _errorGracePeriodExceeded = _isErrorGracePeriodExceeded();
+    _errorGracePeriodExceeded = _isErrorGracePeriodExceeded(settingsService);
+    final bool notifyTotalProgress = settingsService
+        .getSetting<bool>(AppSettingsEnum.backgroundBackupTotalProgress);
+    final bool notifySingleProgress = settingsService
+        .getSetting<bool>(AppSettingsEnum.backgroundBackupSingleProgress);
 
     if (_canceledBySystem) {
       return false;
@@ -372,22 +422,29 @@ class BackgroundService {
     }
 
     if (toUpload.isEmpty) {
-      _clearErrorNotifications();
       return true;
     }
+    _assetsToUploadCount = toUpload.length;
+    _uploadedAssetsCount = 0;
+    _updateNotification(
+      title: "backup_background_service_in_progress_notification".tr(),
+      content: notifyTotalProgress ? _formatAssetBackupProgress() : null,
+      progress: 0,
+      max: notifyTotalProgress ? _assetsToUploadCount : 0,
+      indeterminate: !notifyTotalProgress,
+      onlyIfFG: !notifyTotalProgress,
+    );
 
     _cancellationToken = CancellationToken();
     final bool ok = await backupService.backupAsset(
       toUpload,
       _cancellationToken!,
-      _onAssetUploaded,
-      _onProgress,
-      _onSetCurrentBackupAsset,
+      notifyTotalProgress ? _onAssetUploaded : (assetId, deviceId, isDup) {},
+      notifySingleProgress ? _onProgress : (sent, total) {},
+      notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
       _onBackupError,
     );
-    if (ok) {
-      _clearErrorNotifications();
-    } else {
+    if (!ok && !_cancellationToken!.isCancelled) {
       _showErrorNotification(
         title: "backup_background_service_error_title".tr(),
         content: "backup_background_service_backup_failed_message".tr(),
@@ -396,31 +453,64 @@ class BackgroundService {
     return ok;
   }
 
-  void _onAssetUploaded(String deviceAssetId, String deviceId) {
-    debugPrint("Uploaded $deviceAssetId from $deviceId");
+  String _formatAssetBackupProgress() {
+    final int percent = (_uploadedAssetsCount * 100) ~/ _assetsToUploadCount;
+    return "$percent% ($_uploadedAssetsCount/$_assetsToUploadCount)";
   }
 
-  void _onProgress(int sent, int total) {}
+  void _onAssetUploaded(String deviceAssetId, String deviceId, bool isDup) {
+    _uploadedAssetsCount++;
+    _throttledNotifiy();
+  }
+
+  void _onProgress(int sent, int total) {
+    _throttledDetailNotify(progress: sent, total: total);
+  }
+
+  void _updateDetailProgress(String? title, int progress, int total) {
+    final String msg =
+        total > 0 ? _humanReadableBytesProgress(progress, total) : "";
+    // only update if message actually differs (to stop many useless notification updates on large assets or slow connections)
+    if (msg != _lastPrintedDetailContent || _lastPrintedDetailTitle != title) {
+      _lastPrintedDetailContent = msg;
+      _lastPrintedDetailTitle = title;
+      _updateNotification(
+        progress: total > 0 ? (progress * 1000) ~/ total : 0,
+        max: 1000,
+        isDetail: true,
+        title: title,
+        content: msg,
+      );
+    }
+  }
+
+  void _updateProgress(String? title, int progress, int total) {
+    _updateNotification(
+      progress: _uploadedAssetsCount,
+      max: _assetsToUploadCount,
+      title: title,
+      content: _formatAssetBackupProgress(),
+    );
+  }
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
     _showErrorNotification(
-      title: "Upload failed",
-      content: "backup_background_service_upload_failure_notification"
+      title: "backup_background_service_upload_failure_notification"
           .tr(args: [errorAssetInfo.fileName]),
       individualTag: errorAssetInfo.id,
     );
   }
 
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
-    _updateNotification(
-      title: "backup_background_service_in_progress_notification".tr(),
-      content: "backup_background_service_current_upload_notification"
-          .tr(args: [currentUploadAsset.fileName]),
-    );
+    _throttledDetailNotify.title =
+        "backup_background_service_current_upload_notification"
+            .tr(args: [currentUploadAsset.fileName]);
+    _throttledDetailNotify.progress = 0;
+    _throttledDetailNotify.total = 0;
   }
 
-  bool _isErrorGracePeriodExceeded() {
-    final int value = AppSettingsService()
+  bool _isErrorGracePeriodExceeded(AppSettingsService appSettingsService) {
+    final int value = appSettingsService
         .getSetting(AppSettingsEnum.uploadErrorNotificationGracePeriod);
     if (value == 0) {
       return true;
@@ -444,6 +534,63 @@ class BackgroundService {
     }
     assert(false, "Invalid value");
     return true;
+  }
+
+  /// prints percentage and absolute progress in useful (kilo/mega/giga)bytes
+  static String _humanReadableBytesProgress(int bytes, int bytesTotal) {
+    String unit = "KB"; // Kilobyte
+    if (bytesTotal >= 0x40000000) {
+      unit = "GB"; // Gigabyte
+      bytes >>= 20;
+      bytesTotal >>= 20;
+    } else if (bytesTotal >= 0x100000) {
+      unit = "MB"; // Megabyte
+      bytes >>= 10;
+      bytesTotal >>= 10;
+    } else if (bytesTotal < 0x400) {
+      return "$bytes / $bytesTotal B";
+    }
+    final int percent = (bytes * 100) ~/ bytesTotal;
+    final String done = numberFormat.format(bytes / 1024.0);
+    final String total = numberFormat.format(bytesTotal / 1024.0);
+    return "$percent% ($done/$total$unit)";
+  }
+}
+
+class _Throttle {
+  _Throttle(this._fun, Duration interval) : _interval = interval.inMicroseconds;
+  final void Function(String?, int, int) _fun;
+  final int _interval;
+  int _invokedAt = 0;
+  Timer? _timer;
+
+  String? title;
+  int progress = 0;
+  int total = 0;
+
+  void call({
+    final String? title,
+    final int progress = 0,
+    final int total = 0,
+  }) {
+    final time = Timeline.now;
+    this.title = title ?? this.title;
+    this.progress = progress;
+    this.total = total;
+    if (time > _invokedAt + _interval) {
+      _timer?.cancel();
+      _onTimeElapsed();
+    } else {
+      _timer ??= Timer(Duration(microseconds: _interval), _onTimeElapsed);
+    }
+  }
+
+  void _onTimeElapsed() {
+    _invokedAt = Timeline.now;
+    _fun(title, progress, total);
+    _timer = null;
+    // clear title to not send/overwrite it next time if unchanged
+    title = null;
   }
 }
 

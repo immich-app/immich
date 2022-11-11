@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   immich-server:
@@ -7,11 +7,13 @@ services:
       context: ../server
       dockerfile: Dockerfile
       target: builder
-    command: npm run start:dev immich
+    command: npm run start:debug immich
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
+    ports:
+      - 9230:9230
     env_file:
       - .env
     environment:
@@ -66,6 +68,9 @@ services:
     command: npm run dev --host
     env_file:
       - .env
+    environment:
+      # Rename these values for svelte public interface
+      - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
     ports:
       - 3000:3000
       - 24678:24678
@@ -98,12 +103,15 @@ services:
   immich-proxy:
     container_name: immich_proxy
     image: immich-proxy-dev:latest
+    environment:
+      # Make sure these values get passed through from the env file
+      - IMMICH_SERVER_URL
+      - IMMICH_WEB_URL
     build:
       context: ../nginx
       dockerfile: Dockerfile
     ports:
-      - 2283:80
-      - 2284:443
+      - 2283:8080
     logging:
       driver: none
     depends_on:

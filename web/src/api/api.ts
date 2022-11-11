@@ -1,9 +1,11 @@
+import { env } from '$env/dynamic/public';
 import {
 	AlbumApi,
 	AssetApi,
 	AuthenticationApi,
 	Configuration,
 	DeviceInfoApi,
+	JobApi,
 	ServerInfoApi,
 	UserApi
 } from './open-api';
@@ -15,6 +17,8 @@ class ImmichApi {
 	public authenticationApi: AuthenticationApi;
 	public deviceInfoApi: DeviceInfoApi;
 	public serverInfoApi: ServerInfoApi;
+	public jobApi: JobApi;
+
 	private config = new Configuration({ basePath: '/api' });
 
 	constructor() {
@@ -24,6 +28,7 @@ class ImmichApi {
 		this.authenticationApi = new AuthenticationApi(this.config);
 		this.deviceInfoApi = new DeviceInfoApi(this.config);
 		this.serverInfoApi = new ServerInfoApi(this.config);
+		this.jobApi = new JobApi(this.config);
 	}
 
 	public setAccessToken(accessToken: string) {
@@ -41,4 +46,5 @@ class ImmichApi {
 
 export const api = new ImmichApi();
 export const serverApi = new ImmichApi();
-serverApi.setBaseUrl('http://immich-server:3001');
+const immich_server_url = env.PUBLIC_IMMICH_SERVER_URL || 'http://immich-server:3001';
+serverApi.setBaseUrl(immich_server_url);
