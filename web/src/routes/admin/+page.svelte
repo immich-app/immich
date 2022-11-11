@@ -137,11 +137,11 @@
 			on:selected={onButtonClicked}
 		/>
 		<SideBarButton
-				title="Settings"
-				logo={Cog}
-				actionType={AdminSideBarSelection.SETTINGS}
-				isSelected={selectedAction === AdminSideBarSelection.SETTINGS}
-				on:selected={onButtonClicked}
+			title="Settings"
+			logo={Cog}
+			actionType={AdminSideBarSelection.SETTINGS}
+			isSelected={selectedAction === AdminSideBarSelection.SETTINGS}
+			on:selected={onButtonClicked}
 		/>
 		<SideBarButton
 			title="Server Stats"
@@ -175,9 +175,7 @@
 					<JobsPanel />
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.SETTINGS}
-					<SettingsPanel
-							settings={data.settings}
-					/>
+					<SettingsPanel />
 				{/if}
 				{#if selectedAction === AdminSideBarSelection.STATS && serverStat}
 					<ServerStatsPanel stats={serverStat} allUsers={data.allUsers} />

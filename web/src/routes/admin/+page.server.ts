@@ -11,15 +11,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 		throw redirect(302, '/photos');
 	}
 
-	const allUsers = serverApi.userApi.getAllUsers(false);
-	const settings = serverApi.configApi.getSystemConfig();
+	const { data: allUsers } = await serverApi.userApi.getAllUsers(false);
 
-	const { data: allUsersData } = await allUsers;
-	const { data: settingsData } = await settings;
-
-	return {
-		user: user,
-		allUsers: allUsersData,
-		settings: settingsData
-	};
+	return { user, allUsers };
 };

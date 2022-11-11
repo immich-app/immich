@@ -10,7 +10,6 @@ import { Job } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'fs';
 import { Repository } from 'typeorm';
-import { SystemConfigEntity } from '@app/database/entities/system-config.entity';
 import { SystemConfigService } from '@app/system-config';
 
 @Processor(QueueNameEnum.VIDEO_CONVERSION)
@@ -18,8 +17,6 @@ export class VideoTranscodeProcessor {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(SystemConfigEntity)
-    private systemConfigRepository: Repository<SystemConfigEntity>,
     private systemConfigService: SystemConfigService,
   ) {}
 
@@ -45,7 +42,8 @@ export class VideoTranscodeProcessor {
   }
 
   async runFFMPEGPipeLine(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
-    const config = await this.systemConfigService.getConfig();
+    const config = await this.systemConfigService.getConfigMap();
+
     return new Promise((resolve, reject) => {
       ffmpeg(asset.originalPath)
         .outputOptions([

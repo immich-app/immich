@@ -1,19 +1,19 @@
-import { Injectable } from '@nestjs/common';
-import { SystemConfigResponseDto } from './response-dto/system-config-response.dto';
 import { SystemConfigService } from '@app/system-config';
-import { SystemConfigEntity } from '@app/database/entities/system-config.entity';
+import { Injectable } from '@nestjs/common';
+import { UpdateSystemConfigDto } from './dto/update-system-config';
+import { SystemConfigResponseDto } from './response-dto/system-config-response.dto';
 
 @Injectable()
 export class ConfigService {
   constructor(private systemConfigService: SystemConfigService) {}
 
-  async getAllConfig(): Promise<SystemConfigResponseDto> {
+  async getSystemConfig(): Promise<SystemConfigResponseDto> {
     const config = await this.systemConfigService.getConfig();
     return { config };
   }
 
-  async setConfigValue(values: SystemConfigEntity[]): Promise<SystemConfigResponseDto> {
-    await this.systemConfigService.setConfigValues(values);
+  async updateSystemConfig(dto: UpdateSystemConfigDto): Promise<SystemConfigResponseDto> {
+    await this.systemConfigService.updateConfig(dto.config);
     const config = await this.systemConfigService.getConfig();
     return { config };
   }

@@ -1,18 +1,32 @@
+import { SystemConfigEntity, SystemConfigKey, SystemConfigValue } from '@app/database/entities/system-config.entity';
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { SystemConfigKey, SystemConfigEntity } from '@app/database/entities/system-config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
+import { SystemConfigResponseItem } from '../../../apps/immich/src/api-v1/config/response-dto/system-config-response.dto';
 
-export type SystemConfig = {
-  [key in SystemConfigKey]: string;
-};
+export type SystemConfigMap = Record<SystemConfigKey, SystemConfigValue>;
 
-const configDefaults: SystemConfig = {
-  [SystemConfigKey.FFMPEG_CRF]: '23',
-  [SystemConfigKey.FFMPEG_PRESET]: 'ultrafast',
-  [SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC]: 'libx264',
-  [SystemConfigKey.FFMPEG_TARGET_AUDIO_CODEC]: 'mp3',
-  [SystemConfigKey.FFMPEG_TARGET_SCALING]: '1280:-2',
+const configDefaults: Record<SystemConfigKey, Omit<SystemConfigResponseItem, 'key' | 'defaultValue'>> = {
+  [SystemConfigKey.FFMPEG_CRF]: {
+    name: 'FFmpeg Constant Rate Factor (-crf)',
+    value: '23',
+  },
+  [SystemConfigKey.FFMPEG_PRESET]: {
+    name: 'FFmpeg preset (-preset)',
+    value: 'ultrafast',
+  },
+  [SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC]: {
+    name: 'FFmpeg target video codec (-vcodec)',
+    value: 'libx264',
+  },
+  [SystemConfigKey.FFMPEG_TARGET_AUDIO_CODEC]: {
+    name: 'FFmpeg target audio codec (-acodec)',
+    value: 'mp3',
+  },
+  [SystemConfigKey.FFMPEG_TARGET_SCALING]: {
+    name: 'FFmpeg target scaling (-vf scale=)',
+    value: '1280:-2',
+  },
 };
 
 @Injectable()
@@ -22,24 +36,63 @@ export class SystemConfigService {
     private systemConfigRepository: Repository<SystemConfigEntity>,
   ) {}
 
-  getConfig = async (): Promise<SystemConfig> => {
-    const config = await this.systemConfigRepository.find();
+  public async getConfig() {
+    const items = this._getDefaults();
 
-    return (Object.keys(SystemConfigKey) as Array<keyof typeof SystemConfigKey>).reduce((previous, current) => {
-      const nextConfigItem = { [SystemConfigKey[current]]: getConfigValue(SystemConfigKey[current], config) };
-      return { ...previous, ...nextConfigItem };
-    }, configDefaults);
-  };
+    // override default values
+    const overrides = await this.systemConfigRepository.find();
+    for (const override of overrides) {
+      const item = items.find((_item) => _item.key === override.key);
+      if (item) {
+        item.value = override.value;
+      }
+    }
 
-  setConfigValues = async (values: SystemConfigEntity[]): Promise<void> => {
-    await this.systemConfigRepository.upsert(values, ['key']);
-  };
+    return items;
+  }
+
+  public async getConfigMap(): Promise<SystemConfigMap> {
+    const items = await this.getConfig();
+    const map: Partial<SystemConfigMap> = {};
+
+    for (const { key, value } of items) {
+      map[key] = value;
+    }
+
+    return map as SystemConfigMap;
+  }
+
+  public async updateConfig(items: SystemConfigEntity[]): Promise<void> {
+    const deletes: SystemConfigEntity[] = [];
+    const updates: SystemConfigEntity[] = [];
+
+    for (const item of items) {
+      if (item.value === null || item.value === this._getDefaultValue(item.key)) {
+        deletes.push(item);
+        continue;
+      }
+
+      updates.push(item);
+    }
+
+    if (updates.length > 0) {
+      await this.systemConfigRepository.save(updates);
+    }
+
+    if (deletes.length > 0) {
+      await this.systemConfigRepository.delete({ key: In(deletes.map((item) => item.key)) });
+    }
+  }
+
+  private _getDefaults(): SystemConfigResponseItem[] {
+    return Object.values(SystemConfigKey).map((key) => ({
+      key,
+      defaultValue: configDefaults[key].value,
+      ...configDefaults[key],
+    }));
+  }
+
+  private _getDefaultValue(key: SystemConfigKey) {
+    return this._getDefaults().find((item) => item.key === key)?.value || null;
+  }
 }
-
-const getConfigValue = (key: SystemConfigKey, config: SystemConfigEntity[]) => {
-  return (
-    config.find((configEntry) => {
-      return configEntry.key === key;
-    })?.value ?? configDefaults[key]
-  );
-};

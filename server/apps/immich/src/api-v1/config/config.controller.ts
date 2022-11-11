@@ -1,12 +1,9 @@
-import { BadRequestException, Body, Controller, Get, Put, UseGuards, ValidationPipe } from '@nestjs/common';
-import { ConfigService } from './config.service';
+import { Body, Controller, Get, Put, ValidationPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
-import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
-import { SystemConfigResponseDto } from './response-dto/system-config-response.dto';
-import { SetSystemConfigDto } from './dto/set-system-config';
-import { SystemConfigKey } from '@app/database/entities/system-config.entity';
 import { Authenticated } from '../../decorators/authenticated.decorator';
+import { ConfigService } from './config.service';
+import { UpdateSystemConfigDto } from './dto/update-system-config';
+import { SystemConfigResponseDto } from './response-dto/system-config-response.dto';
 
 @ApiTags('Config')
 @ApiBearerAuth()
@@ -17,19 +14,12 @@ export class ConfigController {
   @Get('/system')
   @Authenticated({ admin: true })
   getSystemConfig(): Promise<SystemConfigResponseDto> {
-    return this.configService.getAllConfig();
+    return this.configService.getSystemConfig();
   }
 
   @Put('/system')
   @Authenticated({ admin: true })
-  async putSystemConfig(@Body(ValidationPipe) body: SetSystemConfigDto): Promise<SystemConfigResponseDto> {
-    if (
-      body.config.filter((entry) => {
-        return !Object.values(SystemConfigKey).includes(entry.key);
-      }).length !== 0
-    ) {
-      throw new BadRequestException('Incorrect config key provided');
-    }
-    return this.configService.setConfigValue(body.config);
+  async updateSystemConfig(@Body(ValidationPipe) dto: UpdateSystemConfigDto): Promise<SystemConfigResponseDto> {
+    return this.configService.updateSystemConfig(dto);
   }
 }

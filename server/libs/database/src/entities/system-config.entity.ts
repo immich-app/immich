@@ -6,8 +6,10 @@ export class SystemConfigEntity {
   key!: SystemConfigKey;
 
   @Column({ type: 'varchar', nullable: true })
-  value!: string | null;
+  value!: SystemConfigValue;
 }
+
+export type SystemConfig = SystemConfigEntity[];
 
 export enum SystemConfigKey {
   FFMPEG_CRF = 'ffmpeg_crf',
@@ -15,4 +17,11 @@ export enum SystemConfigKey {
   FFMPEG_TARGET_VIDEO_CODEC = 'ffmpeg_target_video_codec',
   FFMPEG_TARGET_AUDIO_CODEC = 'ffmpeg_target_audio_codec',
   FFMPEG_TARGET_SCALING = 'ffmpeg_target_scaling',
+}
+
+export type SystemConfigValue = string | null;
+
+export interface SystemConfigItem {
+  key: SystemConfigKey;
+  value: SystemConfigValue;
 }
