@@ -1,6 +1,6 @@
 import { AlbumService } from './album.service';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { BadRequestException, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
+import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity } from '@app/database/entities/album.entity';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
 import { IAssetRepository } from '../asset/asset-repository';
