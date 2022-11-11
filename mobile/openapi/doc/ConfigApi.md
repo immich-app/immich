@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getSystemConfig**](ConfigApi.md#getsystemconfig) | **GET** /config/system | 
-[**putSystemConfig**](ConfigApi.md#putsystemconfig) | **PUT** /config/system | 
+[**updateSystemConfig**](ConfigApi.md#updatesystemconfig) | **PUT** /config/system | 
 
 
 # **getSystemConfig**
@@ -56,8 +56,8 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **putSystemConfig**
-> SystemConfigResponseDto putSystemConfig(body)
+# **updateSystemConfig**
+> SystemConfigResponseDto updateSystemConfig(body)
 
 
 
@@ -75,10 +75,10 @@ final api_instance = ConfigApi();
 final body = Object(); // Object | 
 
 try {
-    final result = api_instance.putSystemConfig(body);
+    final result = api_instance.updateSystemConfig(body);
     print(result);
 } catch (e) {
-    print('Exception when calling ConfigApi->putSystemConfig: $e\n');
+    print('Exception when calling ConfigApi->updateSystemConfig: $e\n');
 }
 ```
 

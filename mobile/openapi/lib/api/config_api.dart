@@ -61,7 +61,7 @@ class ConfigApi {
   /// Parameters:
   ///
   /// * [Object] body (required):
-  Future<Response> putSystemConfigWithHttpInfo(Object body,) async {
+  Future<Response> updateSystemConfigWithHttpInfo(Object body,) async {
     // ignore: prefer_const_declarations
     final path = r'/config/system';
 
@@ -89,8 +89,8 @@ class ConfigApi {
   /// Parameters:
   ///
   /// * [Object] body (required):
-  Future<SystemConfigResponseDto?> putSystemConfig(Object body,) async {
-    final response = await putSystemConfigWithHttpInfo(body,);
+  Future<SystemConfigResponseDto?> updateSystemConfig(Object body,) async {
+    final response = await updateSystemConfigWithHttpInfo(body,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

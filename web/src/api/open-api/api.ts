@@ -1347,15 +1347,63 @@ export interface SmartInfoResponseDto {
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const SystemConfigKey = {
+    Crf: 'ffmpeg_crf',
+    Preset: 'ffmpeg_preset',
+    TargetVideoCodec: 'ffmpeg_target_video_codec',
+    TargetAudioCodec: 'ffmpeg_target_audio_codec',
+    TargetScaling: 'ffmpeg_target_scaling'
+} as const;
+
+export type SystemConfigKey = typeof SystemConfigKey[keyof typeof SystemConfigKey];
+
+
+/**
+ * 
+ * @export
  * @interface SystemConfigResponseDto
  */
 export interface SystemConfigResponseDto {
     /**
      * 
-     * @type {object}
+     * @type {Array<SystemConfigResponseItem>}
      * @memberof SystemConfigResponseDto
      */
-    'config': object;
+    'config': Array<SystemConfigResponseItem>;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigResponseItem
+ */
+export interface SystemConfigResponseItem {
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigResponseItem
+     */
+    'name': string;
+    /**
+     * 
+     * @type {SystemConfigKey}
+     * @memberof SystemConfigResponseItem
+     */
+    'key': SystemConfigKey;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigResponseItem
+     */
+    'value': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigResponseItem
+     */
+    'defaultValue': string;
 }
 /**
  * 
@@ -4001,9 +4049,9 @@ export const ConfigApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        putSystemConfig: async (body: object, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        updateSystemConfig: async (body: object, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
-            assertParamExists('putSystemConfig', 'body', body)
+            assertParamExists('updateSystemConfig', 'body', body)
             const localVarPath = `/config/system`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4059,8 +4107,8 @@ export const ConfigApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async putSystemConfig(body: object, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.putSystemConfig(body, options);
+        async updateSystemConfig(body: object, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateSystemConfig(body, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -4087,8 +4135,8 @@ export const ConfigApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        putSystemConfig(body: object, options?: any): AxiosPromise<SystemConfigResponseDto> {
-            return localVarFp.putSystemConfig(body, options).then((request) => request(axios, basePath));
+        updateSystemConfig(body: object, options?: any): AxiosPromise<SystemConfigResponseDto> {
+            return localVarFp.updateSystemConfig(body, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -4117,8 +4165,8 @@ export class ConfigApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof ConfigApi
      */
-    public putSystemConfig(body: object, options?: AxiosRequestConfig) {
-        return ConfigApiFp(this.configuration).putSystemConfig(body, options).then((request) => request(this.axios, this.basePath));
+    public updateSystemConfig(body: object, options?: AxiosRequestConfig) {
+        return ConfigApiFp(this.configuration).updateSystemConfig(body, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

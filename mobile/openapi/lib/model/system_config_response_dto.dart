@@ -13,10 +13,10 @@ part of openapi.api;
 class SystemConfigResponseDto {
   /// Returns a new [SystemConfigResponseDto] instance.
   SystemConfigResponseDto({
-    required this.config,
+    this.config = const [],
   });
 
-  Object config;
+  List<SystemConfigResponseItem> config;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigResponseDto &&
@@ -55,7 +55,7 @@ class SystemConfigResponseDto {
       }());
 
       return SystemConfigResponseDto(
-        config: mapValueOfType<Object>(json, r'config')!,
+        config: SystemConfigResponseItem.listFromJson(json[r'config'])!,
       );
     }
     return null;

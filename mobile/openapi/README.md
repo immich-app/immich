@@ -65,118 +65,120 @@ All URIs are relative to */api*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*AlbumApi* | [**addAssetsToAlbum**](doc\/AlbumApi.md#addassetstoalbum) | **PUT** /album/{albumId}/assets | 
-*AlbumApi* | [**addUsersToAlbum**](doc\/AlbumApi.md#adduserstoalbum) | **PUT** /album/{albumId}/users | 
-*AlbumApi* | [**createAlbum**](doc\/AlbumApi.md#createalbum) | **POST** /album | 
-*AlbumApi* | [**deleteAlbum**](doc\/AlbumApi.md#deletealbum) | **DELETE** /album/{albumId} | 
-*AlbumApi* | [**downloadArchive**](doc\/AlbumApi.md#downloadarchive) | **GET** /album/{albumId}/download | 
-*AlbumApi* | [**getAlbumCountByUserId**](doc\/AlbumApi.md#getalbumcountbyuserid) | **GET** /album/count-by-user-id | 
-*AlbumApi* | [**getAlbumInfo**](doc\/AlbumApi.md#getalbuminfo) | **GET** /album/{albumId} | 
-*AlbumApi* | [**getAllAlbums**](doc\/AlbumApi.md#getallalbums) | **GET** /album | 
-*AlbumApi* | [**removeAssetFromAlbum**](doc\/AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{albumId}/assets | 
-*AlbumApi* | [**removeUserFromAlbum**](doc\/AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{albumId}/user/{userId} | 
-*AlbumApi* | [**updateAlbumInfo**](doc\/AlbumApi.md#updatealbuminfo) | **PATCH** /album/{albumId} | 
-*AssetApi* | [**checkDuplicateAsset**](doc\/AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
-*AssetApi* | [**checkExistingAssets**](doc\/AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-*AssetApi* | [**deleteAsset**](doc\/AssetApi.md#deleteasset) | **DELETE** /asset | 
-*AssetApi* | [**downloadFile**](doc\/AssetApi.md#downloadfile) | **GET** /asset/download | 
-*AssetApi* | [**getAllAssets**](doc\/AssetApi.md#getallassets) | **GET** /asset | 
-*AssetApi* | [**getAssetById**](doc\/AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
-*AssetApi* | [**getAssetByTimeBucket**](doc\/AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
-*AssetApi* | [**getAssetCountByTimeBucket**](doc\/AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
-*AssetApi* | [**getAssetCountByUserId**](doc\/AssetApi.md#getassetcountbyuserid) | **GET** /asset/count-by-user-id | 
-*AssetApi* | [**getAssetSearchTerms**](doc\/AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
-*AssetApi* | [**getAssetThumbnail**](doc\/AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
-*AssetApi* | [**getCuratedLocations**](doc\/AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
-*AssetApi* | [**getCuratedObjects**](doc\/AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-*AssetApi* | [**getUserAssetsByDeviceId**](doc\/AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
-*AssetApi* | [**searchAsset**](doc\/AssetApi.md#searchasset) | **POST** /asset/search | 
-*AssetApi* | [**serveFile**](doc\/AssetApi.md#servefile) | **GET** /asset/file | 
-*AssetApi* | [**uploadFile**](doc\/AssetApi.md#uploadfile) | **POST** /asset/upload | 
-*AuthenticationApi* | [**adminSignUp**](doc\/AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
-*AuthenticationApi* | [**login**](doc\/AuthenticationApi.md#login) | **POST** /auth/login | 
-*AuthenticationApi* | [**logout**](doc\/AuthenticationApi.md#logout) | **POST** /auth/logout | 
-*AuthenticationApi* | [**validateAccessToken**](doc\/AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
-*ConfigApi* | [**getSystemConfig**](doc\/ConfigApi.md#getsystemconfig) | **GET** /config/system | 
-*ConfigApi* | [**putSystemConfig**](doc\/ConfigApi.md#putsystemconfig) | **PUT** /config/system | 
-*DeviceInfoApi* | [**createDeviceInfo**](doc\/DeviceInfoApi.md#createdeviceinfo) | **POST** /device-info | 
-*DeviceInfoApi* | [**updateDeviceInfo**](doc\/DeviceInfoApi.md#updatedeviceinfo) | **PATCH** /device-info | 
-*JobApi* | [**getAllJobsStatus**](doc\/JobApi.md#getalljobsstatus) | **GET** /jobs | 
-*JobApi* | [**getJobStatus**](doc\/JobApi.md#getjobstatus) | **GET** /jobs/{jobId} | 
-*JobApi* | [**sendJobCommand**](doc\/JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
-*ServerInfoApi* | [**getServerInfo**](doc\/ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
-*ServerInfoApi* | [**getServerVersion**](doc\/ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
-*ServerInfoApi* | [**getStats**](doc\/ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
-*ServerInfoApi* | [**pingServer**](doc\/ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
-*UserApi* | [**createProfileImage**](doc\/UserApi.md#createprofileimage) | **POST** /user/profile-image | 
-*UserApi* | [**createUser**](doc\/UserApi.md#createuser) | **POST** /user | 
-*UserApi* | [**getAllUsers**](doc\/UserApi.md#getallusers) | **GET** /user | 
-*UserApi* | [**getMyUserInfo**](doc\/UserApi.md#getmyuserinfo) | **GET** /user/me | 
-*UserApi* | [**getProfileImage**](doc\/UserApi.md#getprofileimage) | **GET** /user/profile-image/{userId} | 
-*UserApi* | [**getUserById**](doc\/UserApi.md#getuserbyid) | **GET** /user/info/{userId} | 
-*UserApi* | [**getUserCount**](doc\/UserApi.md#getusercount) | **GET** /user/count | 
-*UserApi* | [**updateUser**](doc\/UserApi.md#updateuser) | **PUT** /user | 
+*AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{albumId}/assets | 
+*AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{albumId}/users | 
+*AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
+*AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /album/{albumId} | 
+*AlbumApi* | [**downloadArchive**](doc//AlbumApi.md#downloadarchive) | **GET** /album/{albumId}/download | 
+*AlbumApi* | [**getAlbumCountByUserId**](doc//AlbumApi.md#getalbumcountbyuserid) | **GET** /album/count-by-user-id | 
+*AlbumApi* | [**getAlbumInfo**](doc//AlbumApi.md#getalbuminfo) | **GET** /album/{albumId} | 
+*AlbumApi* | [**getAllAlbums**](doc//AlbumApi.md#getallalbums) | **GET** /album | 
+*AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{albumId}/assets | 
+*AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{albumId}/user/{userId} | 
+*AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{albumId} | 
+*AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
+*AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
+*AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
+*AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download | 
+*AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
+*AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
+*AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
+*AssetApi* | [**getAssetCountByTimeBucket**](doc//AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
+*AssetApi* | [**getAssetCountByUserId**](doc//AssetApi.md#getassetcountbyuserid) | **GET** /asset/count-by-user-id | 
+*AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
+*AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
+*AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
+*AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
+*AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
+*AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
+*AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file | 
+*AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
+*AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
+*AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
+*AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
+*AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*ConfigApi* | [**getSystemConfig**](doc//ConfigApi.md#getsystemconfig) | **GET** /config/system | 
+*ConfigApi* | [**updateSystemConfig**](doc//ConfigApi.md#updatesystemconfig) | **PUT** /config/system | 
+*DeviceInfoApi* | [**createDeviceInfo**](doc//DeviceInfoApi.md#createdeviceinfo) | **POST** /device-info | 
+*DeviceInfoApi* | [**updateDeviceInfo**](doc//DeviceInfoApi.md#updatedeviceinfo) | **PATCH** /device-info | 
+*JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
+*JobApi* | [**getJobStatus**](doc//JobApi.md#getjobstatus) | **GET** /jobs/{jobId} | 
+*JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
+*ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
+*ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
+*ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
+*ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
+*UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
+*UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
+*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
+*UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
+*UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/profile-image/{userId} | 
+*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{userId} | 
+*UserApi* | [**getUserCount**](doc//UserApi.md#getusercount) | **GET** /user/count | 
+*UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /user | 
 
 
 ## Documentation For Models
 
- - [AddAssetsDto](doc\/AddAssetsDto.md)
- - [AddAssetsResponseDto](doc\/AddAssetsResponseDto.md)
- - [AddUsersDto](doc\/AddUsersDto.md)
- - [AdminSignupResponseDto](doc\/AdminSignupResponseDto.md)
- - [AlbumCountResponseDto](doc\/AlbumCountResponseDto.md)
- - [AlbumResponseDto](doc\/AlbumResponseDto.md)
- - [AllJobStatusResponseDto](doc\/AllJobStatusResponseDto.md)
- - [AssetCountByTimeBucket](doc\/AssetCountByTimeBucket.md)
- - [AssetCountByTimeBucketResponseDto](doc\/AssetCountByTimeBucketResponseDto.md)
- - [AssetCountByUserIdResponseDto](doc\/AssetCountByUserIdResponseDto.md)
- - [AssetFileUploadResponseDto](doc\/AssetFileUploadResponseDto.md)
- - [AssetResponseDto](doc\/AssetResponseDto.md)
- - [AssetTypeEnum](doc\/AssetTypeEnum.md)
- - [CheckDuplicateAssetDto](doc\/CheckDuplicateAssetDto.md)
- - [CheckDuplicateAssetResponseDto](doc\/CheckDuplicateAssetResponseDto.md)
- - [CheckExistingAssetsDto](doc\/CheckExistingAssetsDto.md)
- - [CheckExistingAssetsResponseDto](doc\/CheckExistingAssetsResponseDto.md)
- - [CreateAlbumDto](doc\/CreateAlbumDto.md)
- - [CreateDeviceInfoDto](doc\/CreateDeviceInfoDto.md)
- - [CreateProfileImageResponseDto](doc\/CreateProfileImageResponseDto.md)
- - [CreateUserDto](doc\/CreateUserDto.md)
- - [CuratedLocationsResponseDto](doc\/CuratedLocationsResponseDto.md)
- - [CuratedObjectsResponseDto](doc\/CuratedObjectsResponseDto.md)
- - [DeleteAssetDto](doc\/DeleteAssetDto.md)
- - [DeleteAssetResponseDto](doc\/DeleteAssetResponseDto.md)
- - [DeleteAssetStatus](doc\/DeleteAssetStatus.md)
- - [DeviceInfoResponseDto](doc\/DeviceInfoResponseDto.md)
- - [DeviceTypeEnum](doc\/DeviceTypeEnum.md)
- - [ExifResponseDto](doc\/ExifResponseDto.md)
- - [GetAssetByTimeBucketDto](doc\/GetAssetByTimeBucketDto.md)
- - [GetAssetCountByTimeBucketDto](doc\/GetAssetCountByTimeBucketDto.md)
- - [JobCommand](doc\/JobCommand.md)
- - [JobCommandDto](doc\/JobCommandDto.md)
- - [JobCounts](doc\/JobCounts.md)
- - [JobId](doc\/JobId.md)
- - [JobStatusResponseDto](doc\/JobStatusResponseDto.md)
- - [LoginCredentialDto](doc\/LoginCredentialDto.md)
- - [LoginResponseDto](doc\/LoginResponseDto.md)
- - [LogoutResponseDto](doc\/LogoutResponseDto.md)
- - [RemoveAssetsDto](doc\/RemoveAssetsDto.md)
- - [SearchAssetDto](doc\/SearchAssetDto.md)
- - [ServerInfoResponseDto](doc\/ServerInfoResponseDto.md)
- - [ServerPingResponse](doc\/ServerPingResponse.md)
- - [ServerStatsResponseDto](doc\/ServerStatsResponseDto.md)
- - [ServerVersionReponseDto](doc\/ServerVersionReponseDto.md)
- - [SignUpDto](doc\/SignUpDto.md)
- - [SmartInfoResponseDto](doc\/SmartInfoResponseDto.md)
- - [SystemConfigResponseDto](doc\/SystemConfigResponseDto.md)
- - [ThumbnailFormat](doc\/ThumbnailFormat.md)
- - [TimeGroupEnum](doc\/TimeGroupEnum.md)
- - [UpdateAlbumDto](doc\/UpdateAlbumDto.md)
- - [UpdateDeviceInfoDto](doc\/UpdateDeviceInfoDto.md)
- - [UpdateUserDto](doc\/UpdateUserDto.md)
- - [UsageByUserDto](doc\/UsageByUserDto.md)
- - [UserCountResponseDto](doc\/UserCountResponseDto.md)
- - [UserResponseDto](doc\/UserResponseDto.md)
- - [ValidateAccessTokenResponseDto](doc\/ValidateAccessTokenResponseDto.md)
+ - [AddAssetsDto](doc//AddAssetsDto.md)
+ - [AddAssetsResponseDto](doc//AddAssetsResponseDto.md)
+ - [AddUsersDto](doc//AddUsersDto.md)
+ - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
+ - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
+ - [AlbumResponseDto](doc//AlbumResponseDto.md)
+ - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
+ - [AssetCountByTimeBucket](doc//AssetCountByTimeBucket.md)
+ - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
+ - [AssetCountByUserIdResponseDto](doc//AssetCountByUserIdResponseDto.md)
+ - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
+ - [AssetResponseDto](doc//AssetResponseDto.md)
+ - [AssetTypeEnum](doc//AssetTypeEnum.md)
+ - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
+ - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)
+ - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
+ - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
+ - [CreateAlbumDto](doc//CreateAlbumDto.md)
+ - [CreateDeviceInfoDto](doc//CreateDeviceInfoDto.md)
+ - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
+ - [CreateUserDto](doc//CreateUserDto.md)
+ - [CuratedLocationsResponseDto](doc//CuratedLocationsResponseDto.md)
+ - [CuratedObjectsResponseDto](doc//CuratedObjectsResponseDto.md)
+ - [DeleteAssetDto](doc//DeleteAssetDto.md)
+ - [DeleteAssetResponseDto](doc//DeleteAssetResponseDto.md)
+ - [DeleteAssetStatus](doc//DeleteAssetStatus.md)
+ - [DeviceInfoResponseDto](doc//DeviceInfoResponseDto.md)
+ - [DeviceTypeEnum](doc//DeviceTypeEnum.md)
+ - [ExifResponseDto](doc//ExifResponseDto.md)
+ - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
+ - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
+ - [JobCommand](doc//JobCommand.md)
+ - [JobCommandDto](doc//JobCommandDto.md)
+ - [JobCounts](doc//JobCounts.md)
+ - [JobId](doc//JobId.md)
+ - [JobStatusResponseDto](doc//JobStatusResponseDto.md)
+ - [LoginCredentialDto](doc//LoginCredentialDto.md)
+ - [LoginResponseDto](doc//LoginResponseDto.md)
+ - [LogoutResponseDto](doc//LogoutResponseDto.md)
+ - [RemoveAssetsDto](doc//RemoveAssetsDto.md)
+ - [SearchAssetDto](doc//SearchAssetDto.md)
+ - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
+ - [ServerPingResponse](doc//ServerPingResponse.md)
+ - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
+ - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
+ - [SignUpDto](doc//SignUpDto.md)
+ - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
+ - [SystemConfigKey](doc//SystemConfigKey.md)
+ - [SystemConfigResponseDto](doc//SystemConfigResponseDto.md)
+ - [SystemConfigResponseItem](doc//SystemConfigResponseItem.md)
+ - [ThumbnailFormat](doc//ThumbnailFormat.md)
+ - [TimeGroupEnum](doc//TimeGroupEnum.md)
+ - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
+ - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
+ - [UpdateUserDto](doc//UpdateUserDto.md)
+ - [UsageByUserDto](doc//UsageByUserDto.md)
+ - [UserCountResponseDto](doc//UserCountResponseDto.md)
+ - [UserResponseDto](doc//UserResponseDto.md)
+ - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
 
 
 ## Documentation For Authorization

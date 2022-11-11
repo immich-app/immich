@@ -56,7 +56,9 @@ doc/ServerStatsResponseDto.md
 doc/ServerVersionReponseDto.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
+doc/SystemConfigKey.md
 doc/SystemConfigResponseDto.md
+doc/SystemConfigResponseItem.md
 doc/ThumbnailFormat.md
 doc/TimeGroupEnum.md
 doc/UpdateAlbumDto.md
@@ -132,7 +134,9 @@ lib/model/server_stats_response_dto.dart
 lib/model/server_version_reponse_dto.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
+lib/model/system_config_key.dart
 lib/model/system_config_response_dto.dart
+lib/model/system_config_response_item.dart
 lib/model/thumbnail_format.dart
 lib/model/time_group_enum.dart
 lib/model/update_album_dto.dart
