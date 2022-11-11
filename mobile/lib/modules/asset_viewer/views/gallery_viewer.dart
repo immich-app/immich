@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_swipe_detector/flutter_swipe_detector.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -129,12 +128,16 @@ class GalleryViewerPage extends HookConsumerWidget {
                 threeStageLoading: threeStageLoading.value,
               );
             } else {
-              return SwipeDetector(
-                onSwipeDown: (_) {
-                  AutoRouter.of(context).pop();
-                },
-                onSwipeUp: (_) {
-                  showInfo();
+              return GestureDetector(
+                onVerticalDragUpdate: (details) {
+                  const int sensitivity = 10;
+                  if (details.delta.dy > sensitivity) {
+                    // swipe down
+                    AutoRouter.of(context).pop();
+                  } else if (details.delta.dy < -sensitivity) {
+                    // swipe up
+                    showInfo();
+                  }
                 },
                 child: Hero(
                   tag: assetList[index].id,

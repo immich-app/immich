@@ -4,11 +4,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 // ignore: must_be_immutable
 class ImageViewerPage extends HookConsumerWidget {
@@ -84,7 +84,7 @@ class ImageViewerPage extends HookConsumerWidget {
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
           const Center(
-            child: DownloadLoadingIndicator(),
+            child: ImmichLoadingIndicator(),
           ),
       ],
     );
