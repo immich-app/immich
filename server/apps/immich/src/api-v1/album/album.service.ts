@@ -13,6 +13,7 @@ import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { DownloadService } from '../../modules/download/download.service';
+import { DownloadDto } from '../asset/dto/download-library.dto';
 
 @Injectable()
 export class AlbumService {
@@ -153,7 +154,7 @@ export class AlbumService {
     return this._albumRepository.getCountByUserId(authUser.id);
   }
 
-  async downloadArchive(authUser: AuthUserDto, albumId: string, dto: any) {
+  async downloadArchive(authUser: AuthUserDto, albumId: string, dto: DownloadDto) {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     const assets = (album.assets || []).map((asset) => asset.assetInfo).slice(dto.skip || 0);
 
