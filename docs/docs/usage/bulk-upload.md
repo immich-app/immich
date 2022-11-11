@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Bulk Upload (Using the CLI)
 
-You can use the CLI to upload the existing gallery to the Immich's server
+You can use the CLI to upload an existing gallery to the Immich server
 
 [Immich CLI Repository](https://github.com/immich-app/CLI)
 
@@ -19,7 +19,7 @@ npm i -g immich
 ```
 
 ## Quick Start
-Specify user's credential, Immich's server address and port and the directory you would like to upload videos/photos from.
+Specify user's credentials, Immich's server address and port, and the directory you would like to upload videos/photos from.
 
 ```bash
 immich upload --email testuser@email.com --password password --server http://192.168.1.216:2283/api -d your/target/directory
@@ -42,7 +42,7 @@ immich upload --email testuser@email.com --password password --server http://192
 
 ### Run via Docker
 
-Be aware that as this runs inside a container, it mounts your current directory as a volume and for the -d flag you need to use the path inside the container.
+Be aware that as this runs inside a container it mounts your current directory as a volume, and for the -d flag you need to use the path inside the container.
 
 ```bash
 docker run -it --rm -v $(pwd):/import ghcr.io/immich-app/immich-cli:latest upload --email testuser@email.com --password password --server http://192.168.1.216:2283/api -d /import

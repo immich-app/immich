@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
   const TopControlAppBar({
@@ -13,9 +13,9 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
     this.loading = false,
   }) : super(key: key);
 
-  final AssetResponseDto asset;
+  final Asset asset;
   final Function onMoreInfoPressed;
-  final Function onDownloadPressed;
+  final VoidCallback? onDownloadPressed;
   final Function onSharePressed;
   final bool loading;
 
@@ -47,17 +47,16 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
               child: const CircularProgressIndicator(strokeWidth: 2.0),
             ),
           ),
-        IconButton(
-          iconSize: iconSize,
-          splashRadius: iconSize,
-          onPressed: () {
-            onDownloadPressed();
-          },
-          icon: Icon(
-            Icons.cloud_download_rounded,
-            color: Colors.grey[200],
+        if (!asset.isLocal)
+          IconButton(
+            iconSize: iconSize,
+            splashRadius: iconSize,
+            onPressed: onDownloadPressed,
+            icon: Icon(
+              Icons.cloud_download_rounded,
+              color: Colors.grey[200],
+            ),
           ),
-        ),
         IconButton(
           iconSize: iconSize,
           splashRadius: iconSize,
@@ -69,17 +68,18 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
             color: Colors.grey[200],
           ),
         ),
-        IconButton(
-          iconSize: iconSize,
-          splashRadius: iconSize,
-          onPressed: () {
-            onMoreInfoPressed();
-          },
-          icon: Icon(
-            Icons.more_horiz_rounded,
-            color: Colors.grey[200],
-          ),
-        )
+        if (asset.isRemote)
+          IconButton(
+            iconSize: iconSize,
+            splashRadius: iconSize,
+            onPressed: () {
+              onMoreInfoPressed();
+            },
+            icon: Icon(
+              Icons.more_horiz_rounded,
+              color: Colors.grey[200],
+            ),
+          )
       ],
     );
   }

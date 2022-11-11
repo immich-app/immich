@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 enum RenderAssetGridElementType {
   assetRow,
@@ -9,7 +9,7 @@ enum RenderAssetGridElementType {
 }
 
 class RenderAssetGridRow {
-  final List<AssetResponseDto> assets;
+  final List<Asset> assets;
 
   RenderAssetGridRow(this.assets);
 }
@@ -19,7 +19,7 @@ class RenderAssetGridElement {
   final RenderAssetGridRow? assetRow;
   final String? title;
   final DateTime date;
-  final List<AssetResponseDto>? relatedAssetList;
+  final List<Asset>? relatedAssetList;
 
   RenderAssetGridElement(
     this.type, {
@@ -31,13 +31,15 @@ class RenderAssetGridElement {
 }
 
 List<RenderAssetGridElement> assetsToRenderList(
-    List<AssetResponseDto> assets, int assetsPerRow) {
+  List<Asset> assets,
+  int assetsPerRow,
+) {
   List<RenderAssetGridElement> elements = [];
 
   int cursor = 0;
   while (cursor < assets.length) {
     int rowElements = min(assets.length - cursor, assetsPerRow);
-    final date = DateTime.parse(assets[cursor].createdAt);
+    final date = assets[cursor].createdAt;
 
     final rowElement = RenderAssetGridElement(
       RenderAssetGridElementType.assetRow,
@@ -55,7 +57,9 @@ List<RenderAssetGridElement> assetsToRenderList(
 }
 
 List<RenderAssetGridElement> assetGroupsToRenderList(
-    Map<String, List<AssetResponseDto>> assetGroups, int assetsPerRow) {
+  Map<String, List<Asset>> assetGroups,
+  int assetsPerRow,
+) {
   List<RenderAssetGridElement> elements = [];
   DateTime? lastDate;
 
@@ -64,8 +68,11 @@ List<RenderAssetGridElement> assetGroupsToRenderList(
 
     if (lastDate == null || lastDate!.month != date.month) {
       elements.add(
-        RenderAssetGridElement(RenderAssetGridElementType.monthTitle,
-            title: groupName, date: date),
+        RenderAssetGridElement(
+          RenderAssetGridElementType.monthTitle,
+          title: groupName,
+          date: date,
+        ),
       );
     }
 

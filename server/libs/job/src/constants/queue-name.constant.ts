@@ -5,4 +5,5 @@ export enum QueueNameEnum {
   CHECKSUM_GENERATION = 'generate-checksum-queue',
   ASSET_UPLOADED = 'asset-uploaded-queue',
   MACHINE_LEARNING = 'machine-learning-queue',
+  USER_DELETION = 'user-deletion-queue',
 }

@@ -68,6 +68,9 @@ services:
     command: npm run dev --host
     env_file:
       - .env
+    environment:
+      # Rename these values for svelte public interface
+      - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
     ports:
       - 3000:3000
       - 24678:24678
@@ -100,6 +103,10 @@ services:
   immich-proxy:
     container_name: immich_proxy
     image: immich-proxy-dev:latest
+    environment:
+      # Make sure these values get passed through from the env file
+      - IMMICH_SERVER_URL
+      - IMMICH_WEB_URL
     build:
       context: ../nginx
       dockerfile: Dockerfile

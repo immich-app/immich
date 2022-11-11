@@ -52,7 +52,9 @@
 				{#each stats.usageByUser as user, i}
 					<tr
 						class={`text-center flex place-items-center w-full h-[50px] ${
-							i % 2 == 0 ? 'bg-slate-50 dark:bg-[#e5e5e5]' : 'bg-immich-bg dark:bg-[#eeeeee]'
+							i % 2 == 0
+								? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+								: 'bg-immich-bg dark:bg-immich-dark-gray/50'
 						}`}
 					>
 						<td class="text-sm px-2 w-1/5 text-ellipsis">{getFullName(user.userId)}</td>

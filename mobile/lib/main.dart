@@ -35,10 +35,12 @@ void main() async {
   await Future.wait([
     Hive.openBox(userInfoBox),
     Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
-    Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
     Hive.openBox(hiveGithubReleaseInfoBox),
     Hive.openBox(userSettingInfoBox),
-    Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+    if (!Platform.isAndroid) Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+    if (!Platform.isAndroid)
+      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+    if (!Platform.isAndroid) Hive.openBox(backgroundBackupInfoBox),
     EasyLocalization.ensureInitialized(),
   ]);
 
@@ -86,8 +88,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
 
         if (isAuthenticated) {
+          ref.read(backupProvider.notifier).resumeBackup();
           ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-          ref.watch(backupProvider.notifier).resumeBackup();
           ref.watch(assetProvider.notifier).getAllAsset();
           ref.watch(serverInfoProvider.notifier).getServerVersion();
         }

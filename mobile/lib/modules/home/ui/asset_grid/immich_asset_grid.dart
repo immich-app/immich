@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'asset_grid_data_structure.dart';
 import 'daily_title_text.dart';
@@ -13,7 +13,7 @@ import 'draggable_scrollbar_custom.dart';
 
 typedef ImmichAssetGridSelectionListener = void Function(
   bool,
-  Set<AssetResponseDto>,
+  Set<Asset>,
 );
 
 class ImmichAssetGridState extends State<ImmichAssetGrid> {
@@ -24,20 +24,20 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   bool _scrolling = false;
   final Set<String> _selectedAssets = HashSet();
 
-  List<AssetResponseDto> get _assets {
+  List<Asset> get _assets {
     return widget.renderList
         .map((e) {
           if (e.type == RenderAssetGridElementType.assetRow) {
             return e.assetRow!.assets;
           } else {
-            return List<AssetResponseDto>.empty();
+            return List<Asset>.empty();
           }
         })
         .flattened
         .toList();
   }
 
-  Set<AssetResponseDto> _getSelectedAssets() {
+  Set<Asset> _getSelectedAssets() {
     return _selectedAssets
         .map((e) => _assets.firstWhereOrNull((a) => a.id == e))
         .whereNotNull()
@@ -48,7 +48,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     widget.listener?.call(selectionActive, _getSelectedAssets());
   }
 
-  void _selectAssets(List<AssetResponseDto> assets) {
+  void _selectAssets(List<Asset> assets) {
     setState(() {
       for (var e in assets) {
         _selectedAssets.add(e.id);
@@ -57,7 +57,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     });
   }
 
-  void _deselectAssets(List<AssetResponseDto> assets) {
+  void _deselectAssets(List<Asset> assets) {
     setState(() {
       for (var e in assets) {
         _selectedAssets.remove(e.id);
@@ -74,7 +74,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     _callSelectionListener(false);
   }
 
-  bool _allAssetsSelected(List<AssetResponseDto> assets) {
+  bool _allAssetsSelected(List<Asset> assets) {
     return widget.selectionActive &&
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e.id)) == null;
   }
@@ -85,7 +85,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Widget _buildThumbnailOrPlaceholder(
-    AssetResponseDto asset,
+    Asset asset,
     bool placeholder,
   ) {
     if (placeholder) {
@@ -114,7 +114,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
 
     return Row(
       key: Key("asset-row-${row.assets.first.id}"),
-      children: row.assets.map((AssetResponseDto asset) {
+      children: row.assets.map((Asset asset) {
         bool last = asset == row.assets.last;
 
         return Container(
@@ -134,7 +134,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   Widget _buildTitle(
     BuildContext context,
     String title,
-    List<AssetResponseDto> assets,
+    List<Asset> assets,
   ) {
     return DailyTitleText(
       isoDate: title,

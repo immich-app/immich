@@ -171,5 +171,11 @@
   "version_announcement_overlay_text_3": " and ensure your docker-compose and .env setup is up-to-date to prevent any misconfigurations, especially if you use WatchTower or any mechanism that handles updating your server application automatically.",
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
   "experimental_settings_title": "Experimental",
-  "experimental_settings_subtitle": "Use at your own risk!"
+  "experimental_settings_subtitle": "Use at your own risk!",
+  "control_bottom_app_bar_add_to_album": "Add to album",
+  "home_page_add_to_album_success": "Added {added} assets to album {album}.",
+  "home_page_add_to_album_conflicts": "Added {added} assets to album {album}. {failed} assets are already in the album.",
+  "control_bottom_app_bar_album_info": "{} items",
+  "control_bottom_app_bar_album_info_shared": "{} items · Shared",
+  "control_bottom_app_bar_create_new_album": "Create new album"
 }

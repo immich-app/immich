@@ -166,7 +166,7 @@ class CreateAlbumPage extends HookConsumerWidget {
                 return GestureDetector(
                   onTap: _onBackgroundTapped,
                   child: SharedAlbumThumbnailImage(
-                    asset: selectedAssets.toList()[index],
+                    asset: selectedAssets.elementAt(index),
                   ),
                 );
               },

@@ -97,6 +97,7 @@ describe('AssetService', () => {
   beforeAll(() => {
     assetRepositoryMock = {
       create: jest.fn(),
+      update: jest.fn(),
       getAllByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
       getAssetCountByTimeBucket: jest.fn(),

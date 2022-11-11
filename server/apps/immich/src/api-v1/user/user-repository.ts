@@ -7,12 +7,14 @@ import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 export interface IUserRepository {
-  get(userId: string): Promise<UserEntity | null>;
+  get(userId: string, withDeleted?: boolean): Promise<UserEntity | null>;
   getByEmail(email: string): Promise<UserEntity | null>;
   getList(filter?: { excludeId?: string }): Promise<UserEntity[]>;
   create(createUserDto: CreateUserDto): Promise<UserEntity>;
   update(user: UserEntity, updateUserDto: UpdateUserDto): Promise<UserEntity>;
   createProfileImage(user: UserEntity, fileInfo: Express.Multer.File): Promise<UserEntity>;
+  delete(user: UserEntity): Promise<UserEntity>;
+  restore(user: UserEntity): Promise<UserEntity>;
 }
 
 export const USER_REPOSITORY = 'USER_REPOSITORY';
@@ -27,8 +29,8 @@ export class UserRepository implements IUserRepository {
     return bcrypt.hash(password, salt);
   }
 
-  async get(userId: string): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { id: userId } });
+  async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
+    return this.userRepository.findOne({ where: { id: userId }, withDeleted: withDeleted });
   }
 
   async getByEmail(email: string): Promise<UserEntity | null> {
@@ -40,9 +42,10 @@ export class UserRepository implements IUserRepository {
     if (!excludeId) {
       return this.userRepository.find(); // TODO: this should also be ordered the same as below
     }
-
-    return this.userRepository.find({
+    return this.userRepository
+    .find({
       where: { id: Not(excludeId) },
+      withDeleted: true,
       order: {
         createdAt: 'DESC',
       },
@@ -86,6 +89,17 @@ export class UserRepository implements IUserRepository {
     }
 
     return this.userRepository.save(user);
+  }
+
+  async delete(user: UserEntity): Promise<UserEntity> {
+    if (user.isAdmin) {
+      throw new BadRequestException('Cannot delete admin user! stay sane!');
+    }
+    return this.userRepository.softRemove(user);
+  }
+
+  async restore(user: UserEntity): Promise<UserEntity> {
+    return this.userRepository.recover(user);
   }
 
   async createProfileImage(user: UserEntity, fileInfo: Express.Multer.File): Promise<UserEntity> {

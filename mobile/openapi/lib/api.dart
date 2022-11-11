@@ -89,6 +89,7 @@ part 'model/system_config_response_item.dart';
 part 'model/thumbnail_format.dart';
 part 'model/time_group_enum.dart';
 part 'model/update_album_dto.dart';
+part 'model/update_asset_dto.dart';
 part 'model/update_device_info_dto.dart';
 part 'model/update_user_dto.dart';
 part 'model/usage_by_user_dto.dart';

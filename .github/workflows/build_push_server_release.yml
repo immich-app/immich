@@ -12,12 +12,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: "main"
+          ref: 'main'
           fetch-depth: 0
 
-      - name: "Get Previous tag"
+      - name: 'Get Previous tag'
         id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        uses: 'WyriHaximus/github-action-get-previous-tag@v1'
         with:
           fallback: latest
 
@@ -41,6 +41,8 @@ jobs:
           file: ./server/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             altran1502/immich-server:${{ steps.previoustag.outputs.tag }}
             altran1502/immich-server:release
@@ -52,9 +54,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: "Get Previous tag"
+      - name: 'Get Previous tag'
         id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        uses: 'WyriHaximus/github-action-get-previous-tag@v1'
         with:
           fallback: latest
       - name: Set up QEMU
@@ -74,6 +76,8 @@ jobs:
           file: ./machine-learning/Dockerfile
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             altran1502/immich-machine-learning:${{ steps.previoustag.outputs.tag }}
             altran1502/immich-machine-learning:release
@@ -84,12 +88,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: "main"
+          ref: 'main'
           fetch-depth: 0
 
-      - name: "Get Previous tag"
+      - name: 'Get Previous tag'
         id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        uses: 'WyriHaximus/github-action-get-previous-tag@v1'
         with:
           fallback: latest
 
@@ -124,12 +128,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: "main"
+          ref: 'main'
           fetch-depth: 0
 
-      - name: "Get Previous tag"
+      - name: 'Get Previous tag'
         id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        uses: 'WyriHaximus/github-action-get-previous-tag@v1'
         with:
           fallback: latest
 

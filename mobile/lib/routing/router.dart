@@ -22,6 +22,7 @@ import 'package:immich_mobile/modules/settings/views/settings_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/modules/backup/views/backup_controller_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/views/splash_screen.dart';

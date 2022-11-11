@@ -9,6 +9,14 @@
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+	import Star from 'svelte-material-icons/Star.svelte';
+	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
+	import { page } from '$app/stores';
+	import { AssetResponseDto } from '../../../api';
+
+	export let asset: AssetResponseDto;
+
+	const isOwner = asset.ownerId === $page.data.user.id;
 
 	const dispatch = createEventDispatcher();
 
@@ -38,8 +46,15 @@
 	</div>
 	<div class="text-white flex gap-2">
 		<CircleIconButton logo={CloudDownloadOutline} on:click={() => dispatch('download')} />
-		<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} />
 		<CircleIconButton logo={InformationOutline} on:click={() => dispatch('showDetail')} />
+		{#if isOwner}
+			<CircleIconButton
+				logo={asset.isFavorite ? Star : StarOutline}
+				on:click={() => dispatch('favorite')}
+				title="Favorite"
+			/>
+		{/if}
+		<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} />
 		<CircleIconButton logo={DotsVertical} on:click={(event) => showOptionsMenu(event)} />
 	</div>
 </div>

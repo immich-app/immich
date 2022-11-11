@@ -50,6 +50,11 @@ class BackgroundService {
       _Throttle(_updateProgress, notifyInterval);
   late final _Throttle _throttledDetailNotify =
       _Throttle(_updateDetailProgress, notifyInterval);
+  Completer<bool> _hasAccessCompleter = Completer();
+  late Future<bool> _hasAccess =
+      Platform.isAndroid ? _hasAccessCompleter.future : Future.value(true);
+
+  Future<bool> get hasAccess => _hasAccess;
 
   bool get isBackgroundInitialized {
     return _isBackgroundInitialized;
@@ -201,6 +206,15 @@ class BackgroundService {
     if (!Platform.isAndroid) {
       return true;
     }
+    if (_hasLock) {
+      debugPrint("WARNING: [acquireLock] called more than once");
+      return true;
+    }
+    if (_hasAccessCompleter.isCompleted) {
+      debugPrint("WARNING: [acquireLock] _hasAccessCompleter is completed");
+      _hasAccessCompleter = Completer();
+      _hasAccess = _hasAccessCompleter.future;
+    }
     final int lockTime = Timeline.now;
     _wantsLockTime = lockTime;
     final ReceivePort rp = ReceivePort(_portNameLock);
@@ -219,6 +233,7 @@ class BackgroundService {
     }
     _hasLock = true;
     rp.listen(_heartbeatListener);
+    _hasAccessCompleter.complete(true);
     return true;
   }
 
@@ -271,6 +286,8 @@ class BackgroundService {
     }
     _wantsLockTime = 0;
     if (_hasLock) {
+      _hasAccessCompleter = Completer();
+      _hasAccess = _hasAccessCompleter.future;
       IsolateNameServer.removePortNameMapping(_portNameLock);
       _waitingIsolate?.send(true);
       _waitingIsolate = null;
