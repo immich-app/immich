@@ -268,7 +268,6 @@ class BackupService {
             var livePhotoRawUploadData = await _getLivePhotoFile(entity);
             if (livePhotoRawUploadData != null) {
               req.files.add(livePhotoRawUploadData);
-              req.fields['isLivePhoto'] = "true";
             }
           }
 
