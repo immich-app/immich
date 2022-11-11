@@ -40,6 +40,15 @@ function HomepageHeader() {
               Installation
             </Link>
           </div>
+
+          <div className={styles.buttons}>
+            <Link
+              className={clsx("button button--lg", styles.demoButton)}
+              to="https://demo.immich.app/"
+            >
+              Demo
+            </Link>
+          </div>
         </div>
 
         <img src="/img/immich-screenshots.webp" alt="logo" />

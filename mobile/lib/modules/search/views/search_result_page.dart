@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
@@ -10,6 +9,7 @@ import 'package:immich_mobile/modules/search/providers/search_result_page.provid
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SearchResultPage extends HookConsumerWidget {
   const SearchResultPage({Key? key, required this.searchTerm})
@@ -122,11 +122,7 @@ class SearchResultPage extends HookConsumerWidget {
       }
 
       if (searchResultPageState.isLoading) {
-        return Center(
-          child: SpinKitDancingSquare(
-            color: Theme.of(context).primaryColor,
-          ),
-        );
+        return const Center(child: ImmichLoadingIndicator());
       }
 
       if (searchResultPageState.isSuccess) {

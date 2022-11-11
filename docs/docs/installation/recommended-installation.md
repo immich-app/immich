@@ -69,9 +69,7 @@ LOG_LEVEL=simple
 # This JWT_SECRET is used to sign the authentication keys for user login
 # You should set it to a long randomly generated value
 # You can use this command to generate one: openssl rand -base64 128
-JWT_SECRET=kWPdavjCECB0yoXgUHA/vpwpIKdCi/4ODVLIOe9WIi6AQlFfjWEuIVhWT3DtJE+T
-CTckJnpwGgSK5AoqD+A8DZKsHCRdfVnlQIVqqmyR8isZTcxL5DWYQUSDRzyOO5OA
-ZRUTE63FxiYhrRoe/y1yr5mV1osGy6mm6NZW8T2Tjwc=
+JWT_SECRET=
 
 ###################################################################################
 # Reverse Geocoding
@@ -102,8 +100,8 @@ PUBLIC_LOGIN_PAGE_MESSAGE="My Family Photos and Videos Backup Server"
 </details>
 
 * Populate custom database information if necessary.
-* Populate `UPLOAD_LOCATION` as prefered location for storing backup assets.
-* Populate a secret value for `JWT_SECRET`, you can use the command below to generate a secure key
+* Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
+* Populate a secret value for `JWT_SECRET`. You can use the command below to generate a secure key:
 
 ```bash title="Command to generate secure JWT_SECRET key"
 openssl rand -base64 128

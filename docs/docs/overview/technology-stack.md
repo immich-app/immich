@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Technology stack
 
-The app is built with the following technologies
+The app is built with the following technologies:
 
 ## Frontend
 * [Flutter](https://flutter.dev/) for the mobile app

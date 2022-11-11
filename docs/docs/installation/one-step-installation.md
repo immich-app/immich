@@ -22,7 +22,7 @@ The script will perform the following actions:
 
 The web application will be available at `http://<machine-ip-address>:2283`, and the server URL for the mobile app will be `http://<machine-ip-address>:2283/api`
 
-The directory which is used to store the backup file is `./immich-app/immich-data` relative to the current directory.
+The directory which is used to store the library files is `./immich-data` relative to the current directory.
 
 :::tip
 For more information on how to use the application, please refer to the [Post Installation](/docs/usage/post-installation) guide.

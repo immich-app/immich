@@ -80,3 +80,15 @@ OpenAPI is used to generate the client (Typescript, Dart) SDK. `openapi-generato
 npm run api:generate # Run from the `server` directory
 ```
 You can find the generated client SDK in the `web/src/api` for Typescript SDK and `mobile/openapi` for Dart SDK.
+
+## Database migrations
+
+After making any changes in the `server/libs/database/src/entities`, a database migration need to run in order to register the changes in the database. Follow the steps below to create a new migration.
+
+1. Attached to the server container shell.
+2. Run 
+```bash
+npm run typeorm -- migration:generate ./libs/database/src/<migration-name> -d libs/database/src/config/database.config.ts
+```
+3. Check if the migration file makes sense.
+4. Move the migration file to folder `server/libs/database/src/migrations` in your code editor.

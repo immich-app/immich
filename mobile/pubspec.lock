@@ -239,13 +239,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.3"
-  dio:
-    dependency: "direct main"
-    description:
-      name: dio
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "4.0.6"
   easy_localization:
     dependency: "direct main"
     description:
@@ -260,20 +253,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.2"
-  equatable:
-    dependency: "direct main"
-    description:
-      name: equatable
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.3"
-  exif:
-    dependency: "direct main"
-    description:
-      name: exif
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.1.1"
   fake_async:
     dependency: transitive
     description:
@@ -336,7 +315,7 @@ packages:
     source: hosted
     version: "0.18.4"
   flutter_launcher_icons:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: flutter_launcher_icons
       url: "https://pub.dartlang.org"
@@ -375,20 +354,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0-dev.7"
-  flutter_spinkit:
-    dependency: "direct main"
-    description:
-      name: flutter_spinkit
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "5.1.0"
-  flutter_swipe_detector:
-    dependency: "direct main"
-    description:
-      name: flutter_swipe_detector
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -756,13 +721,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.11.1"
-  percent_indicator:
-    dependency: "direct main"
-    description:
-      name: percent_indicator
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "4.2.2"
   petitparser:
     dependency: transitive
     description:
@@ -1027,13 +985,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.9.0"
-  sprintf:
-    dependency: transitive
-    description:
-      name: sprintf
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "6.0.0"
   sqflite:
     dependency: transitive
     description:
@@ -1112,7 +1063,7 @@ packages:
     source: hosted
     version: "1.0.0"
   transparent_image:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: transparent_image
       url: "https://pub.dartlang.org"
