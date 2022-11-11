@@ -145,14 +145,7 @@ export class AssetService {
   }
 
   public async downloadLibrary(user: AuthUserDto, dto: DownloadDto) {
-    const assets = await this.assetRepository.find({
-      where: { userId: user.id },
-      relations: {
-        exifInfo: true,
-      },
-
-      skip: dto.skip,
-    });
+    const assets = await this._assetRepository.getAllByUserId(user.id, dto.skip);
 
     return this.downloadService.downloadArchive(dto.name || `library`, assets);
   }

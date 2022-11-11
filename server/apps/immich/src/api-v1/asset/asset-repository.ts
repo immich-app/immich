@@ -24,7 +24,7 @@ export interface IAssetRepository {
     checksum?: Buffer,
   ): Promise<AssetEntity>;
   update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
-  getAllByUserId(userId: string): Promise<AssetEntity[]>;
+  getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
@@ -217,12 +217,13 @@ export class AssetRepository implements IAssetRepository {
    * Get all assets belong to the user on the database
    * @param userId
    */
-  async getAllByUserId(userId: string): Promise<AssetEntity[]> {
+  async getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]> {
     const query = this.assetRepository
       .createQueryBuilder('asset')
       .where('asset.userId = :userId', { userId: userId })
       .andWhere('asset.resizePath is not NULL')
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .skip(skip || 0)
       .orderBy('asset.createdAt', 'DESC');
 
     return await query.getMany();
