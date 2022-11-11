@@ -2,11 +2,10 @@ import { SystemConfigEntity, SystemConfigKey, SystemConfigValue } from '@app/dat
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { SystemConfigResponseItem } from '../../../apps/immich/src/api-v1/config/response-dto/system-config-response.dto';
 
-export type SystemConfigMap = Record<SystemConfigKey, SystemConfigValue>;
+type SystemConfigMap = Record<SystemConfigKey, SystemConfigValue>;
 
-const configDefaults: Record<SystemConfigKey, Omit<SystemConfigResponseItem, 'key' | 'defaultValue'>> = {
+const configDefaults: Record<SystemConfigKey, { name: string; value: SystemConfigValue }> = {
   [SystemConfigKey.FFMPEG_CRF]: {
     name: 'FFmpeg Constant Rate Factor (-crf)',
     value: '23',
@@ -84,7 +83,7 @@ export class SystemConfigService {
     }
   }
 
-  private _getDefaults(): SystemConfigResponseItem[] {
+  private _getDefaults() {
     return Object.values(SystemConfigKey).map((key) => ({
       key,
       defaultValue: configDefaults[key].value,

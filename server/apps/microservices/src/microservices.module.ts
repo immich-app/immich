@@ -17,7 +17,6 @@ import { MachineLearningProcessor } from './processors/machine-learning.processo
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
-import { SystemConfigEntity } from '@app/database/entities/system-config.entity';
 import { SystemConfigModule, SystemConfigService } from '@app/system-config';
 
 @Module({
@@ -25,7 +24,7 @@ import { SystemConfigModule, SystemConfigService } from '@app/system-config';
     ConfigModule.forRoot(immichAppConfig),
     DatabaseModule,
     SystemConfigModule,
-    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity, SystemConfigEntity]),
+    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',
