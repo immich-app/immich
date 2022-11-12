@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { LoginResponseDto } from '../../api-v1/auth/response-dto/login-response.dto';
 import { ImmichJwtService } from './immich-jwt.service';
 
 describe('ImmichJwtService', () => {
@@ -16,13 +17,16 @@ describe('ImmichJwtService', () => {
     jest.resetModules();
   });
 
-  describe('generateToken', () => {
-    it('should generate the token', async () => {
+  describe('getCookies', () => {
+    it('should generate the cookie headers', async () => {
       const spy = jest.spyOn(jwtService, 'sign');
       spy.mockImplementation((value) => value as string);
-      const dto = { userId: 'test-user', email: 'test-user@immich.com' };
-      const token = await service.generateToken(dto);
-      expect(token).toEqual(dto);
+      const dto = { accessToken: 'test-user@immich.com', userId: 'test-user' };
+      const cookies = await service.getCookies(dto as LoginResponseDto);
+      expect(cookies).toEqual([
+        'immich_access_token=test-user@immich.com; HttpOnly; Path=/; Max-Age=604800',
+        'immich_is_authenticated=true; Path=/; Max-Age=604800',
+      ]);
     });
   });
 

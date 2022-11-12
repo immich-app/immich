@@ -1,5 +1,6 @@
 import { UserEntity } from '@app/database/entities/user.entity';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { newUserRepositoryMock } from '../../../test/test-utils';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { IUserRepository } from './user-repository';
 import { UserService } from './user.service';
@@ -58,16 +59,7 @@ describe('UserService', () => {
   });
 
   beforeAll(() => {
-    userRepositoryMock = {
-      create: jest.fn(),
-      createProfileImage: jest.fn(),
-      get: jest.fn(),
-      getByEmail: jest.fn(),
-      getList: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      restore: jest.fn(),
-    };
+    userRepositoryMock = newUserRepositoryMock();
 
     sui = new UserService(userRepositoryMock);
   });

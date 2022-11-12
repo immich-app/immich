@@ -31,12 +31,6 @@ export class ImmichJwtService {
     return mapLoginResponse(user, accessToken);
   }
 
-  private async generateToken(payload: JwtPayloadDto) {
-    return this.jwtService.sign({
-      ...payload,
-    });
-  }
-
   public async validateToken(accessToken: string): Promise<JwtValidationResult> {
     try {
       const payload = await this.jwtService.verifyAsync<JwtPayloadDto>(accessToken, { secret: jwtSecret });
@@ -71,5 +65,11 @@ export class ImmichJwtService {
     }
 
     return null;
+  }
+
+  private async generateToken(payload: JwtPayloadDto) {
+    return this.jwtService.sign({
+      ...payload,
+    });
   }
 }
