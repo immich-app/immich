@@ -18,10 +18,10 @@ export class UserEntity {
   email!: string;
 
   @Column({ default: '', select: false })
-  password!: string;
+  password?: string;
 
   @Column({ default: '', select: false })
-  salt!: string;
+  salt?: string;
 
   @Column({ default: '' })
   profileImagePath!: string;

@@ -1,7 +1,8 @@
 import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { UserEntity } from '../../../../../libs/database/src/entities/user.entity';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
-import { UserRepository, USER_REPOSITORY } from '../user/user-repository';
+import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/admin-signup-response.dto';
@@ -11,15 +12,14 @@ import { LoginResponseDto } from './response-dto/login-response.dto';
 export class AuthService {
   constructor(
     private immichJwtService: ImmichJwtService,
-    @Inject(USER_REPOSITORY) private userRepository: UserRepository,
+    @Inject(USER_REPOSITORY) private userRepository: IUserRepository,
   ) {}
 
   public async login(loginCredential: LoginCredentialDto, clientIp: string): Promise<LoginResponseDto> {
-    let user = await this.userRepository.getByEmail(loginCredential.email);
+    let user = await this.userRepository.getByEmail(loginCredential.email, true);
 
     if (user) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const isAuthenticated = await this.validatePassword(user.password!, loginCredential.password, user.salt!);
+      const isAuthenticated = await this.validatePassword(loginCredential.password, user);
       if (!isAuthenticated) {
         user = null;
       }
@@ -56,8 +56,10 @@ export class AuthService {
     }
   }
 
-  private async validatePassword(hashedPassword: string, inputPassword: string, salt: string): Promise<boolean> {
-    const hash = await bcrypt.hash(inputPassword, salt);
-    return hash === hashedPassword;
+  private async validatePassword(inputPassword: string, user: UserEntity): Promise<boolean> {
+    if (!user || !user.password) {
+      return false;
+    }
+    return await bcrypt.compare(inputPassword, user.password);
   }
 }
