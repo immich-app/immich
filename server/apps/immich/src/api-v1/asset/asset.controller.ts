@@ -16,10 +16,11 @@ import {
   UploadedFile,
   Header,
   Put,
+  UploadedFiles,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
@@ -68,7 +69,15 @@ export class AssetController {
   ) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('assetData', assetUploadOption))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'assetData', maxCount: 1 },
+        { name: 'livePhotoData', maxCount: 1 },
+      ],
+      assetUploadOption,
+    ),
+  )
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Asset Upload Information',
@@ -76,10 +85,13 @@ export class AssetController {
   })
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
-    @UploadedFile() file: Express.Multer.File,
+    // @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: { assetData: Express.Multer.File[]; livePhotoData?: Express.Multer.File[] },
     @Body(ValidationPipe) assetInfo: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
+    const file = files.assetData[0];
+    const livePhotoFile = files.livePhotoData?.[0];
     const checksum = await this.assetService.calculateChecksum(file.path);
 
     try {
