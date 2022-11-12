@@ -52,6 +52,9 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true })
   duration!: string | null;
 
+  @Column({ type: 'boolean', nullable: true })
+  isLivePhoto!: boolean | null;
+
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
   exifInfo?: ExifEntity;
 

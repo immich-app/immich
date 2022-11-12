@@ -59,6 +59,7 @@ export class AssetService {
     createAssetDto: CreateAssetDto,
     originalPath: string,
     mimeType: string,
+    isLivePhoto: boolean,
     checksum: Buffer,
   ): Promise<AssetEntity> {
     // Check valid time.
@@ -78,6 +79,7 @@ export class AssetService {
       authUser.id,
       originalPath,
       mimeType,
+      isLivePhoto,
       checksum,
     );
 

@@ -21,6 +21,7 @@ export interface IAssetRepository {
     ownerId: string,
     originalPath: string,
     mimeType: string,
+    isLivePhoto: boolean,
     checksum?: Buffer,
   ): Promise<AssetEntity>;
   update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
@@ -231,6 +232,7 @@ export class AssetRepository implements IAssetRepository {
     ownerId: string,
     originalPath: string,
     mimeType: string,
+    isLivePhoto: boolean,
     checksum?: Buffer,
   ): Promise<AssetEntity> {
     const asset = new AssetEntity();
@@ -245,6 +247,7 @@ export class AssetRepository implements IAssetRepository {
     asset.mimeType = mimeType;
     asset.duration = createAssetDto.duration || null;
     asset.checksum = checksum || null;
+    asset.isLivePhoto = isLivePhoto;
 
     const createdAsset = await this.assetRepository.save(asset);
 

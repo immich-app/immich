@@ -92,7 +92,13 @@ export class AssetController {
   ): Promise<AssetFileUploadResponseDto> {
     const file = files.assetData[0];
     const livePhotoFile = files.livePhotoData?.[0];
+
     const checksum = await this.assetService.calculateChecksum(file.path);
+    let isLivePhoto = false;
+
+    if (livePhotoFile) {
+      isLivePhoto = true;
+    }
 
     try {
       const savedAsset = await this.assetService.createUserAsset(
@@ -100,6 +106,7 @@ export class AssetController {
         assetInfo,
         file.path,
         file.mimetype,
+        isLivePhoto,
         checksum,
       );
 
