@@ -36,7 +36,6 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
     return cb(new UnauthorizedException());
   }
 
-  console.log('Is Live Photo: ', Boolean(req.body['isLivePhoto']), file);
   const basePath = APP_UPLOAD_LOCATION;
   const sanitizedDeviceId = sanitize(String(req.body['deviceId']));
   const originalUploadFolder = join(basePath, req.user.id, 'original', sanitizedDeviceId);
@@ -55,7 +54,12 @@ function filename(req: Request, file: Express.Multer.File, cb: any) {
   }
 
   const fileNameUUID = randomUUID();
+
+  if (file.fieldname === 'livePhotoData') {
+    const livePhotoFileName = `${fileNameUUID}.mov`;
+    return cb(null, sanitize(livePhotoFileName));
+  }
+
   const fileName = `${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`;
-  const sanitizedFileName = sanitize(fileName);
-  cb(null, sanitizedFileName);
+  return cb(null, sanitize(fileName));
 }

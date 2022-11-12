@@ -255,8 +255,7 @@ class BackupService {
 
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
-          req.fields['assetType'] =
-              entity.isLivePhoto ? 'LIVE_PHOTO' : _getAssetType(entity.type);
+          req.fields['assetType'] = _getAssetType(entity.type);
           req.fields['createdAt'] = entity.createDateTime.toIso8601String();
           req.fields['modifiedAt'] = entity.modifiedDateTime.toIso8601String();
           req.fields['isFavorite'] = entity.isFavorite.toString();
