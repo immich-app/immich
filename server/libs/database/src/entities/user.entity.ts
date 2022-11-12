@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('users')
 export class UserEntity {
@@ -17,11 +17,11 @@ export class UserEntity {
   @Column()
   email!: string;
 
-  @Column({ select: false, nullable: true })
-  password?: string;
+  @Column({ default: '', select: false })
+  password!: string;
 
-  @Column({ select: false, nullable: true })
-  salt?: string;
+  @Column({ default: '', select: false })
+  salt!: string;
 
   @Column({ default: '' })
   profileImagePath!: string;

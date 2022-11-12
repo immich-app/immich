@@ -1,11 +1,9 @@
-import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Client, ClientMetadata, generators, Issuer, UserinfoResponse } from 'openid-client';
-import { Repository } from 'typeorm';
-import { AuthService } from '../auth/auth.service';
+import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
+import { UserRepository, USER_REPOSITORY } from '../user/user-repository';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
 import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto';
@@ -18,7 +16,7 @@ type OAuthProfile = UserinfoResponse & {
 export class OAuthService {
   private readonly logger = new Logger(OAuthService.name);
 
-  private _client: Client | null = null;
+  private client: Client | null = null;
 
   private readonly enabled: boolean;
   private readonly autoRegister: boolean;
@@ -28,10 +26,9 @@ export class OAuthService {
   private readonly scope: string;
 
   constructor(
+    private immichJwtService: ImmichJwtService,
     configService: ConfigService,
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
-    private authService: AuthService,
+    @Inject(USER_REPOSITORY) private userRepository: UserRepository,
   ) {
     this.enabled = configService.get('OAUTH_ENABLED', false);
     this.autoRegister = configService.get('OAUTH_AUTO_REGISTER', true);
@@ -40,26 +37,20 @@ export class OAuthService {
     this.buttonText = configService.get<string>('OAUTH_BUTTON_TEXT', '');
 
     this.clientMetadata = {
-      client_id: configService.get('OAUTH_CLIENT_ID'),
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      client_id: configService.get('OAUTH_CLIENT_ID')!,
       client_secret: configService.get('OAUTH_CLIENT_SECRET'),
       id_token_signed_response_alg: configService.get('OAUTH_TOKEN_RESPONSE_ALG'),
       response_types: ['code'],
-    } as ClientMetadata;
+    };
   }
 
-  public async initialize() {
-    if (this.enabled) {
-      const issuer = await Issuer.discover(this.issuerUrl);
-      this._client = new issuer.Client(this.clientMetadata);
-    }
-  }
-
-  public generateConfig(dto: OAuthConfigDto): OAuthConfigResponseDto {
+  public async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
     if (!this.enabled) {
       return { enabled: false };
     }
 
-    const url = this.getClient().authorizationUrl({
+    const url = (await this.getClient()).authorizationUrl({
       redirect_uri: dto.redirectUri,
       scope: this.scope,
       state: generators.state(),
@@ -69,13 +60,13 @@ export class OAuthService {
 
   public async callback(dto: OAuthCallbackDto): Promise<LoginResponseDto> {
     const redirectUri = dto.url.split('?')[0];
-    const client = this.getClient();
+    const client = await this.getClient();
     const params = client.callbackParams(dto.url);
     const tokens = await client.callback(redirectUri, params, { state: params.state });
     const profile = await client.userinfo<OAuthProfile>(tokens.access_token || '');
 
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
-    let user = await this.authService.getUserByEmail(profile.email);
+    let user = await this.userRepository.getByEmail(profile.email);
 
     if (!user) {
       if (!this.autoRegister) {
@@ -86,25 +77,30 @@ export class OAuthService {
       }
 
       this.logger.log(`Registering new user: ${profile.email}`);
-      user = await this.userRepository.save({
+      user = await this.userRepository.create({
         firstName: profile.given_name || '',
         lastName: profile.family_name || '',
         email: profile.email,
       });
     }
 
-    return this.authService.createLoginResponse(user);
+    return this.immichJwtService.createLoginResponse(user);
   }
 
-  private getClient() {
+  private async getClient() {
+    if (this.enabled) {
+      const issuer = await Issuer.discover(this.issuerUrl);
+      this.client = new issuer.Client(this.clientMetadata);
+    }
+
     if (!this.enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
     }
 
-    if (!this._client) {
+    if (!this.client) {
       throw new BadRequestException('OAuth2 is not initialized');
     }
 
-    return this._client;
+    return this.client;
   }
 }

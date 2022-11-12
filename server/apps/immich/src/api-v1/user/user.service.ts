@@ -9,17 +9,17 @@ import {
   StreamableFile,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Response as Res } from 'express';
+import { createReadStream } from 'fs';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { createReadStream } from 'fs';
-import { Response as Res } from 'express';
-import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
-import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
 import {
   CreateProfileImageResponseDto,
   mapCreateProfileImageResponse,
 } from './response-dto/create-profile-image-response.dto';
+import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
+import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
 import { IUserRepository, USER_REPOSITORY } from './user-repository';
 
 @Injectable()
@@ -98,7 +98,7 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
     try {
-      const updatedUser = await this.userRepository.update(user, updateUserDto);
+      const updatedUser = await this.userRepository.update(user.id, updateUserDto);
 
       return mapUser(updatedUser);
     } catch (e) {
@@ -159,7 +159,7 @@ export class UserService {
     }
 
     try {
-      await this.userRepository.createProfileImage(user, fileInfo);
+      await this.userRepository.update(user.id, { profileImagePath: fileInfo.path });
 
       return mapCreateProfileImageResponse(authUser.id, fileInfo.path);
     } catch (e) {

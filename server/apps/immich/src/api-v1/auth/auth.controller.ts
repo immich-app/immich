@@ -1,20 +1,21 @@
 import { Body, Controller, Ip, Post, Res, ValidationPipe } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { Authenticated } from '../../decorators/authenticated.decorator';
+import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { AuthService } from './auth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
-import { LoginResponseDto } from './response-dto/login-response.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto } from './response-dto/admin-signup-response.dto';
-import { ValidateAccessTokenResponseDto } from './response-dto/validate-asset-token-response.dto,';
-import { Response } from 'express';
+import { LoginResponseDto } from './response-dto/login-response.dto';
 import { LogoutResponseDto } from './response-dto/logout-response.dto';
+import { ValidateAccessTokenResponseDto } from './response-dto/validate-asset-token-response.dto,';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService, private readonly immichJwtService: ImmichJwtService) {}
 
   @Post('/login')
   async login(
@@ -23,7 +24,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<LoginResponseDto> {
     const loginResponse = await this.authService.login(loginCredential, clientIp);
-    response.setHeader('Set-Cookie', this.authService.getCookies(loginResponse));
+    response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse));
     return loginResponse;
   }
 
