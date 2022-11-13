@@ -46,8 +46,8 @@ jobs:
           tags: |
             altran1502/immich-server:staging
             altran1502/immich-server:${{ github.event.pull_request.number }}
-            ghcr.io/immch-app/immich-server:staging
-            ghcr.io/immch-app/immich-server:${{ github.event.pull_request.number }}
+            ghcr.io/immich-app/immich-server:staging
+            ghcr.io/immich-app/immich-server:${{ github.event.pull_request.number }}
 
   build_and_push_machine_learning_staging:
     runs-on: ubuntu-latest
@@ -87,8 +87,8 @@ jobs:
           tags: |
             altran1502/immich-machine-learning:staging
             altran1502/immich-machine-learning:${{ github.event.pull_request.number }}
-            ghcr.io/immch-app/immich-machine-learning:staging
-            ghcr.io/immch-app/immich-machine-learning:${{ github.event.pull_request.number }}
+            ghcr.io/immich-app/immich-machine-learning:staging
+            ghcr.io/immich-app/immich-machine-learning:${{ github.event.pull_request.number }}
 
   build_and_push_web_staging:
     runs-on: ubuntu-latest
@@ -126,8 +126,8 @@ jobs:
           tags: |
             altran1502/immich-web:staging
             altran1502/immich-web:${{ github.event.pull_request.number }}
-            ghcr.io/immch-app/immich-web:staging
-            ghcr.io/immch-app/immich-web:${{ github.event.pull_request.number }}
+            ghcr.io/immich-app/immich-web:staging
+            ghcr.io/immich-app/immich-web:${{ github.event.pull_request.number }}
 
   build_and_push_nginx_staging:
     runs-on: ubuntu-latest
@@ -164,5 +164,5 @@ jobs:
           tags: |
             altran1502/immich-proxy:staging
             altran1502/immich-proxy:${{ github.event.pull_request.number }}
-            ghcr.io/immch-app/immich-proxy:staging
-            ghcr.io/immch-app/immich-proxy:${{ github.event.pull_request.number }}
+            ghcr.io/immich-app/immich-proxy:staging
+            ghcr.io/immich-app/immich-proxy:${{ github.event.pull_request.number }}
