@@ -48,7 +48,6 @@ import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { QueryFailedError } from 'typeorm';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
@@ -59,14 +58,7 @@ import { UpdateAssetDto } from './dto/update-asset.dto';
 @ApiTags('Asset')
 @Controller('asset')
 export class AssetController {
-  constructor(
-    private wsCommunicateionGateway: CommunicationGateway,
-    private assetService: AssetService,
-    private backgroundTaskService: BackgroundTaskService,
-
-    @InjectQueue(QueueNameEnum.ASSET_UPLOADED)
-    private assetUploadedQueue: Queue<IAssetUploadedJob>,
-  ) {}
+  constructor(private assetService: AssetService, private backgroundTaskService: BackgroundTaskService) {}
 
   @Post('upload')
   @UseInterceptors(

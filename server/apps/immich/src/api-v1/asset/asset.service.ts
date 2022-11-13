@@ -46,6 +46,7 @@ import { BackgroundTaskService } from '../../modules/background-task/background-
 import { assetUploadedProcessorName, IAssetUploadedJob, QueueNameEnum } from '@app/job';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { LivePhotoEntity } from '@app/database/entities/live-photo.entity';
 
 const fileInfo = promisify(stat);
 
@@ -57,6 +58,9 @@ export class AssetService {
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+
+    @InjectRepository(LivePhotoEntity)
+    private livePhotoRepository: Repository<LivePhotoEntity>,
 
     private backgroundTaskService: BackgroundTaskService,
 
@@ -93,6 +97,15 @@ export class AssetService {
         throw new BadRequestException('Asset not created');
       }
 
+      if (isLivePhoto) {
+        // Save Live Photo Entity
+        const livePhotoEntity = new LivePhotoEntity();
+        livePhotoEntity.assetId = assetEntity.id;
+        livePhotoEntity.originalPath = livePhotoAssetData.path;
+
+        await this.livePhotoRepository.save(livePhotoEntity);
+      }
+
       await this.assetUploadedQueue.add(
         assetUploadedProcessorName,
         { asset: assetEntity, fileName: originalAssetData.originalname },
@@ -106,6 +119,14 @@ export class AssetService {
           originalPath: originalAssetData.path,
         } as any,
       ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
+
+      if (isLivePhoto) {
+        await this.backgroundTaskService.deleteFileOnDisk([
+          {
+            originalPath: livePhotoAssetData.path,
+          } as any,
+        ]);
+      }
 
       if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
         const existedAsset = await this.getAssetByChecksum(authUser.id, checksum);
