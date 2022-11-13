@@ -53,8 +53,8 @@ jobs:
           tags: |
             altran1502/immich-server:${{ steps.previoustag.outputs.tag }}
             altran1502/immich-server:release
-            ghcr.io/immich-app/immich-server:${{ steps.previoustag.outputs.tag }}
-            ghcr.io/immich-app/immich-server:release
+            ghcr.io/${{ github.repository_owner }}/immich-server:${{ steps.previoustag.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/immich-server:release
 
   build_and_push_machine_learning_release:
     runs-on: ubuntu-latest
@@ -96,8 +96,8 @@ jobs:
           tags: |
             altran1502/immich-machine-learning:${{ steps.previoustag.outputs.tag }}
             altran1502/immich-machine-learning:release
-            ghcr.io/immich-app/immich-machine-learning:${{ steps.previoustag.outputs.tag }}
-            ghcr.io/immich-app/immich-machine-learning:release
+            ghcr.io/${{ github.repository_owner }}/immich-machine-learning:${{ steps.previoustag.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/immich-machine-learning:release
 
   build_and_push_web_release:
     runs-on: ubuntu-latest
@@ -145,8 +145,8 @@ jobs:
           tags: |
             altran1502/immich-web:${{ steps.previoustag.outputs.tag }}
             altran1502/immich-web:release
-            ghcr.io/immich-app/immich-web:${{ steps.previoustag.outputs.tag }}
-            ghcr.io/immich-app/immich-web:release
+            ghcr.io/${{ github.repository_owner }}/immich-web:${{ steps.previoustag.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/immich-web:release
 
   build_and_push_nginx_release:
     runs-on: ubuntu-latest
@@ -193,5 +193,5 @@ jobs:
           tags: |
             altran1502/immich-proxy:release
             altran1502/immich-proxy:${{ steps.previoustag.outputs.tag }}
-            ghcr.io/immich-app/immich-proxy:${{ steps.previoustag.outputs.tag }}
-            ghcr.io/immich-app/immich-proxy:release
+            ghcr.io/${{ github.repository_owner }}/immich-proxy:${{ steps.previoustag.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/immich-proxy:release
