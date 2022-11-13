@@ -3,7 +3,7 @@ import { AssetEntity } from './asset.entity';
 
 @Entity('live_photos')
 export class LivePhotoEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Index({ unique: true })
@@ -12,6 +12,9 @@ export class LivePhotoEntity {
 
   @Column()
   originalPath!: string;
+
+  @Column({ type: 'varchar', nullable: true, default: '' })
+  encodedVideoPath!: string;
 
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })

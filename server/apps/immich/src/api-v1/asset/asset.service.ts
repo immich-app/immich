@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'node:crypto';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
@@ -41,6 +41,11 @@ import { timeUtils } from '@app/common/utils';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
+import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
+import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
+import { assetUploadedProcessorName, IAssetUploadedJob, QueueNameEnum } from '@app/job';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 const fileInfo = promisify(stat);
 
@@ -52,7 +57,66 @@ export class AssetService {
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+
+    private backgroundTaskService: BackgroundTaskService,
+
+    @InjectQueue(QueueNameEnum.ASSET_UPLOADED)
+    private assetUploadedQueue: Queue<IAssetUploadedJob>,
   ) {}
+
+  public async handleUploadedAsset(
+    authUser: AuthUserDto,
+    createAssetDto: CreateAssetDto,
+    res: Res,
+    originalAssetData: Express.Multer.File,
+    livePhotoAssetData?: Express.Multer.File,
+  ) {
+    const checksum = await this.calculateChecksum(originalAssetData.path);
+    const isLivePhoto = livePhotoAssetData !== undefined;
+
+    try {
+      const assetEntity = await this.createUserAsset(
+        authUser,
+        createAssetDto,
+        originalAssetData.path,
+        originalAssetData.mimetype,
+        isLivePhoto,
+        checksum,
+      );
+
+      if (!assetEntity) {
+        await this.backgroundTaskService.deleteFileOnDisk([
+          {
+            originalPath: originalAssetData.path,
+          } as any,
+        ]);
+        throw new BadRequestException('Asset not created');
+      }
+
+      await this.assetUploadedQueue.add(
+        assetUploadedProcessorName,
+        { asset: assetEntity, fileName: originalAssetData.originalname },
+        { jobId: assetEntity.id },
+      );
+
+      return new AssetFileUploadResponseDto(assetEntity.id);
+    } catch (err) {
+      await this.backgroundTaskService.deleteFileOnDisk([
+        {
+          originalPath: originalAssetData.path,
+        } as any,
+      ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
+
+      if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
+        const existedAsset = await this.getAssetByChecksum(authUser.id, checksum);
+        res.status(200); // normal POST is 201. we use 200 to indicate the asset already exists
+        return new AssetFileUploadResponseDto(existedAsset.id);
+      }
+
+      Logger.error(`Error uploading file ${err}`);
+      throw new BadRequestException(`Error uploading file`, `${err}`);
+    }
+  }
 
   public async createUserAsset(
     authUser: AuthUserDto,

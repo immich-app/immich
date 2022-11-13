@@ -85,63 +85,14 @@ export class AssetController {
   })
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
-    // @UploadedFile() file: Express.Multer.File,
     @UploadedFiles() files: { assetData: Express.Multer.File[]; livePhotoData?: Express.Multer.File[] },
-    @Body(ValidationPipe) assetInfo: CreateAssetDto,
+    @Body(ValidationPipe) createAssetDto: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
-    const file = files.assetData[0];
-    const livePhotoFile = files.livePhotoData?.[0];
+    const originalAssetData = files.assetData[0];
+    const livePhotoAssetData = files.livePhotoData?.[0];
 
-    const checksum = await this.assetService.calculateChecksum(file.path);
-    let isLivePhoto = false;
-
-    if (livePhotoFile) {
-      isLivePhoto = true;
-    }
-
-    try {
-      const savedAsset = await this.assetService.createUserAsset(
-        authUser,
-        assetInfo,
-        file.path,
-        file.mimetype,
-        isLivePhoto,
-        checksum,
-      );
-
-      if (!savedAsset) {
-        await this.backgroundTaskService.deleteFileOnDisk([
-          {
-            originalPath: file.path,
-          } as any,
-        ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
-        throw new BadRequestException('Asset not created');
-      }
-
-      await this.assetUploadedQueue.add(
-        assetUploadedProcessorName,
-        { asset: savedAsset, fileName: file.originalname },
-        { jobId: savedAsset.id },
-      );
-
-      return new AssetFileUploadResponseDto(savedAsset.id);
-    } catch (err) {
-      await this.backgroundTaskService.deleteFileOnDisk([
-        {
-          originalPath: file.path,
-        } as any,
-      ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
-
-      if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
-        const existedAsset = await this.assetService.getAssetByChecksum(authUser.id, checksum);
-        res.status(200); // normal POST is 201. we use 200 to indicate the asset already exists
-        return new AssetFileUploadResponseDto(existedAsset.id);
-      }
-
-      Logger.error(`Error uploading file ${err}`);
-      throw new BadRequestException(`Error uploading file`, `${err}`);
-    }
+    return this.assetService.handleUploadedAsset(authUser, createAssetDto, res, originalAssetData, livePhotoAssetData);
   }
 
   @Get('/download')
