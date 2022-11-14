@@ -35,7 +35,7 @@ export class DownloadService {
         fileCount++;
 
         // for easier testing, can be changed before merging.
-        if (totalSize > HumanReadableSize.GB * 1) {
+        if (totalSize > HumanReadableSize.GB * 20) {
           complete = false;
           this.logger.log(
             `Archive size exceeded after ${fileCount} files, capping at ${totalSize} bytes (${asHumanReadable(
