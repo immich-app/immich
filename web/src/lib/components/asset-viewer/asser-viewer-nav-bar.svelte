@@ -22,7 +22,8 @@
 			<CircleIconButton
 				logo={ContentCopy}
 				on:click={() => {
-					dispatch('copy');
+					const copyEvent = new CustomEvent('copyImage');
+					window.dispatchEvent(copyEvent);
 				}}
 			/>
 		{/if}

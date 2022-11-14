@@ -54,10 +54,12 @@
 
 	export const doCopy = async () => {
 		await copyImageToClipboard(assetData);
-	}
+	};
 </script>
 
 <Keydown on:combo={handleKeypress} />
+
+<svelte:window on:copyImage={async () => await doCopy()} />
 
 <div
 	transition:fade={{ duration: 150 }}
