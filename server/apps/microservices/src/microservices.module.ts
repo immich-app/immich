@@ -7,8 +7,9 @@ import { UserEntity } from '@app/database/entities/user.entity';
 import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ImmichConfigModule } from 'libs/immich-config/src';
 import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
 import { MicroservicesService } from './microservices.service';
 import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
@@ -17,13 +18,12 @@ import { MachineLearningProcessor } from './processors/machine-learning.processo
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
-import { SystemConfigModule, SystemConfigService } from '@app/system-config';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
     DatabaseModule,
-    SystemConfigModule,
+    ImmichConfigModule,
     TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
     BullModule.forRootAsync({
       useFactory: async () => ({
@@ -98,8 +98,6 @@ import { SystemConfigModule, SystemConfigService } from '@app/system-config';
     VideoTranscodeProcessor,
     GenerateChecksumProcessor,
     MachineLearningProcessor,
-    ConfigService,
-    SystemConfigService,
   ],
   exports: [],
 })

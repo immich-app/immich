@@ -12,7 +12,7 @@ export class SystemConfigItem {
   @IsNotEmpty()
   @IsEnum(SystemConfigKey)
   @ApiProperty({
-    enum: Object.values(SystemConfigKey),
+    enum: SystemConfigKey,
     enumName: 'SystemConfigKey',
   })
   key!: SystemConfigKey;

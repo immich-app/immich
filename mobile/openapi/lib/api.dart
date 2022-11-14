@@ -30,10 +30,10 @@ part 'auth/http_bearer_auth.dart';
 part 'api/album_api.dart';
 part 'api/asset_api.dart';
 part 'api/authentication_api.dart';
-part 'api/config_api.dart';
 part 'api/device_info_api.dart';
 part 'api/job_api.dart';
 part 'api/server_info_api.dart';
+part 'api/system_config_api.dart';
 part 'api/user_api.dart';
 
 part 'model/add_assets_dto.dart';

@@ -1,8 +1,8 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')
 export class SystemConfigEntity {
-  @Column({ primary: true })
+  @PrimaryColumn()
   key!: SystemConfigKey;
 
   @Column({ type: 'varchar', nullable: true })

@@ -11,7 +11,7 @@
 	let items: Array<SystemConfigResponseItem & { originalValue: string }> = [];
 
 	const refreshConfig = async () => {
-		const { data: systemConfig } = await api.configApi.getSystemConfig();
+		const { data: systemConfig } = await api.systemConfigApi.getConfig();
 		items = systemConfig.config.map((item) => ({ ...item, originalValue: item.value }));
 	};
 
@@ -24,7 +24,7 @@
 				.filter((item) => item.value !== item.originalValue)
 				.map(({ key, value }) => ({ key, value: value || null }));
 			if (updates.length > 0) {
-				await api.configApi.updateSystemConfig({ config: updates });
+				await api.systemConfigApi.updateConfig({ config: updates });
 				refreshConfig();
 			}
 

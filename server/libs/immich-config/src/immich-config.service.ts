@@ -29,13 +29,13 @@ const configDefaults: Record<SystemConfigKey, { name: string; value: SystemConfi
 };
 
 @Injectable()
-export class SystemConfigService {
+export class ImmichConfigService {
   constructor(
     @InjectRepository(SystemConfigEntity)
     private systemConfigRepository: Repository<SystemConfigEntity>,
   ) {}
 
-  public async getConfig() {
+  public async getSystemConfig() {
     const items = this._getDefaults();
 
     // override default values
@@ -50,8 +50,8 @@ export class SystemConfigService {
     return items;
   }
 
-  public async getConfigMap(): Promise<SystemConfigMap> {
-    const items = await this.getConfig();
+  public async getSystemConfigMap(): Promise<SystemConfigMap> {
+    const items = await this.getSystemConfig();
     const map: Partial<SystemConfigMap> = {};
 
     for (const { key, value } of items) {
@@ -61,7 +61,7 @@ export class SystemConfigService {
     return map as SystemConfigMap;
   }
 
-  public async updateConfig(items: SystemConfigEntity[]): Promise<void> {
+  public async updateSystemConfig(items: SystemConfigEntity[]): Promise<void> {
     const deletes: SystemConfigEntity[] = [];
     const updates: SystemConfigEntity[] = [];
 

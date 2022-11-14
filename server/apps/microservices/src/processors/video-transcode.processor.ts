@@ -9,15 +9,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'fs';
+import { ImmichConfigService } from 'libs/immich-config/src';
 import { Repository } from 'typeorm';
-import { SystemConfigService } from '@app/system-config';
 
 @Processor(QueueNameEnum.VIDEO_CONVERSION)
 export class VideoTranscodeProcessor {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-    private systemConfigService: SystemConfigService,
+    private immichConfigService: ImmichConfigService,
   ) {}
 
   @Process({ name: mp4ConversionProcessorName, concurrency: 1 })
@@ -42,7 +42,7 @@ export class VideoTranscodeProcessor {
   }
 
   async runFFMPEGPipeLine(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
-    const config = await this.systemConfigService.getConfigMap();
+    const config = await this.immichConfigService.getSystemConfigMap();
 
     return new Promise((resolve, reject) => {
       ffmpeg(asset.originalPath)

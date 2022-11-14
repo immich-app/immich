@@ -22,7 +22,6 @@ doc/CheckDuplicateAssetDto.md
 doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
-doc/ConfigApi.md
 doc/CreateAlbumDto.md
 doc/CreateDeviceInfoDto.md
 doc/CreateProfileImageResponseDto.md
@@ -56,6 +55,7 @@ doc/ServerStatsResponseDto.md
 doc/ServerVersionReponseDto.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
+doc/SystemConfigApi.md
 doc/SystemConfigKey.md
 doc/SystemConfigResponseDto.md
 doc/SystemConfigResponseItem.md
@@ -75,10 +75,10 @@ lib/api.dart
 lib/api/album_api.dart
 lib/api/asset_api.dart
 lib/api/authentication_api.dart
-lib/api/config_api.dart
 lib/api/device_info_api.dart
 lib/api/job_api.dart
 lib/api/server_info_api.dart
+lib/api/system_config_api.dart
 lib/api/user_api.dart
 lib/api_client.dart
 lib/api_exception.dart
