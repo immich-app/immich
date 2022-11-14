@@ -33,6 +33,7 @@ class BackgroundService {
   static const MethodChannel _backgroundChannel =
       MethodChannel('immich/backgroundChannel');
   static final NumberFormat numberFormat = NumberFormat("###0.##");
+  static const notifyInterval = Duration(milliseconds: 400);
   bool _isBackgroundInitialized = false;
   CancellationToken? _cancellationToken;
   bool _canceledBySystem = false;
@@ -43,8 +44,17 @@ class BackgroundService {
   bool _errorGracePeriodExceeded = true;
   int _uploadedAssetsCount = 0;
   int _assetsToUploadCount = 0;
-  int _lastDetailProgressUpdate = 0;
-  String _lastPrintedProgress = "";
+  String _lastPrintedDetailContent = "";
+  String? _lastPrintedDetailTitle;
+  late final _Throttle _throttledNotifiy =
+      _Throttle(_updateProgress, notifyInterval);
+  late final _Throttle _throttledDetailNotify =
+      _Throttle(_updateDetailProgress, notifyInterval);
+  Completer<bool> _hasAccessCompleter = Completer();
+  late Future<bool> _hasAccess =
+      Platform.isAndroid ? _hasAccessCompleter.future : Future.value(true);
+
+  Future<bool> get hasAccess => _hasAccess;
 
   bool get isBackgroundInitialized {
     return _isBackgroundInitialized;
@@ -196,6 +206,15 @@ class BackgroundService {
     if (!Platform.isAndroid) {
       return true;
     }
+    if (_hasLock) {
+      debugPrint("WARNING: [acquireLock] called more than once");
+      return true;
+    }
+    if (_hasAccessCompleter.isCompleted) {
+      debugPrint("WARNING: [acquireLock] _hasAccessCompleter is completed");
+      _hasAccessCompleter = Completer();
+      _hasAccess = _hasAccessCompleter.future;
+    }
     final int lockTime = Timeline.now;
     _wantsLockTime = lockTime;
     final ReceivePort rp = ReceivePort(_portNameLock);
@@ -214,6 +233,7 @@ class BackgroundService {
     }
     _hasLock = true;
     rp.listen(_heartbeatListener);
+    _hasAccessCompleter.complete(true);
     return true;
   }
 
@@ -266,6 +286,8 @@ class BackgroundService {
     }
     _wantsLockTime = 0;
     if (_hasLock) {
+      _hasAccessCompleter = Completer();
+      _hasAccess = _hasAccessCompleter.future;
       IsolateNameServer.removePortNameMapping(_portNameLock);
       _waitingIsolate?.send(true);
       _waitingIsolate = null;
@@ -319,11 +341,14 @@ class BackgroundService {
     Hive.registerAdapter(HiveBackupAlbumsAdapter());
     Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
 
-    await Hive.openBox(userInfoBox);
-    await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
-    await Hive.openBox(userSettingInfoBox);
-    await Hive.openBox(backgroundBackupInfoBox);
-    await Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox);
+    await Future.wait([
+      Hive.openBox(userInfoBox),
+      Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
+      Hive.openBox(userSettingInfoBox),
+      Hive.openBox(backgroundBackupInfoBox),
+      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+      Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+    ]);
 
     ApiService apiService = ApiService();
     apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
@@ -332,7 +357,7 @@ class BackgroundService {
     AppSettingsService settingsService = AppSettingsService();
 
     final Box<HiveBackupAlbums> box =
-        await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
+        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
     final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
     if (backupAlbumInfo == null) {
       return true;
@@ -434,32 +459,38 @@ class BackgroundService {
   }
 
   void _onAssetUploaded(String deviceAssetId, String deviceId, bool isDup) {
-    debugPrint("Uploaded $deviceAssetId from $deviceId");
     _uploadedAssetsCount++;
-    _updateNotification(
-      progress: _uploadedAssetsCount,
-      max: _assetsToUploadCount,
-      content: _formatAssetBackupProgress(),
-    );
+    _throttledNotifiy();
   }
 
   void _onProgress(int sent, int total) {
-    final int now = Timeline.now;
-    // limit updates to 10 per second (or Android drops important notifications)
-    if (now > _lastDetailProgressUpdate + 100000) {
-      final String msg = _humanReadableBytesProgress(sent, total);
-      // only update if message actually differs (to stop many useless notification updates on large assets or slow connections)
-      if (msg != _lastPrintedProgress) {
-        _lastDetailProgressUpdate = now;
-        _lastPrintedProgress = msg;
-        _updateNotification(
-          progress: sent,
-          max: total,
-          isDetail: true,
-          content: msg,
-        );
-      }
+    _throttledDetailNotify(progress: sent, total: total);
+  }
+
+  void _updateDetailProgress(String? title, int progress, int total) {
+    final String msg =
+        total > 0 ? _humanReadableBytesProgress(progress, total) : "";
+    // only update if message actually differs (to stop many useless notification updates on large assets or slow connections)
+    if (msg != _lastPrintedDetailContent || _lastPrintedDetailTitle != title) {
+      _lastPrintedDetailContent = msg;
+      _lastPrintedDetailTitle = title;
+      _updateNotification(
+        progress: total > 0 ? (progress * 1000) ~/ total : 0,
+        max: 1000,
+        isDetail: true,
+        title: title,
+        content: msg,
+      );
     }
+  }
+
+  void _updateProgress(String? title, int progress, int total) {
+    _updateNotification(
+      progress: _uploadedAssetsCount,
+      max: _assetsToUploadCount,
+      title: title,
+      content: _formatAssetBackupProgress(),
+    );
   }
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
@@ -471,14 +502,11 @@ class BackgroundService {
   }
 
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
-    _updateNotification(
-      title: "backup_background_service_current_upload_notification"
-          .tr(args: [currentUploadAsset.fileName]),
-      content: "",
-      isDetail: true,
-      progress: 0,
-      max: 0,
-    );
+    _throttledDetailNotify.title =
+        "backup_background_service_current_upload_notification"
+            .tr(args: [currentUploadAsset.fileName]);
+    _throttledDetailNotify.progress = 0;
+    _throttledDetailNotify.total = 0;
   }
 
   bool _isErrorGracePeriodExceeded(AppSettingsService appSettingsService) {
@@ -526,6 +554,43 @@ class BackgroundService {
     final String done = numberFormat.format(bytes / 1024.0);
     final String total = numberFormat.format(bytesTotal / 1024.0);
     return "$percent% ($done/$total$unit)";
+  }
+}
+
+class _Throttle {
+  _Throttle(this._fun, Duration interval) : _interval = interval.inMicroseconds;
+  final void Function(String?, int, int) _fun;
+  final int _interval;
+  int _invokedAt = 0;
+  Timer? _timer;
+
+  String? title;
+  int progress = 0;
+  int total = 0;
+
+  void call({
+    final String? title,
+    final int progress = 0,
+    final int total = 0,
+  }) {
+    final time = Timeline.now;
+    this.title = title ?? this.title;
+    this.progress = progress;
+    this.total = total;
+    if (time > _invokedAt + _interval) {
+      _timer?.cancel();
+      _onTimeElapsed();
+    } else {
+      _timer ??= Timer(Duration(microseconds: _interval), _onTimeElapsed);
+    }
+  }
+
+  void _onTimeElapsed() {
+    _invokedAt = Timeline.now;
+    _fun(title, progress, total);
+    _timer = null;
+    // clear title to not send/overwrite it next time if unchanged
+    title = null;
   }
 }
 

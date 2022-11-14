@@ -292,6 +292,8 @@ class ApiClient {
           return TimeGroupEnumTypeTransformer().decode(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
+        case 'UpdateAssetDto':
+          return UpdateAssetDto.fromJson(value);
         case 'UpdateDeviceInfoDto':
           return UpdateDeviceInfoDto.fromJson(value);
         case 'UpdateUserDto':

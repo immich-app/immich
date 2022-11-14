@@ -1,18 +1,27 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import AsserViewerNavBar from './asser-viewer-nav-bar.svelte';
+	import AsserViewerNavBar from './asset-viewer-nav-bar.svelte';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import PhotoViewer from './photo-viewer.svelte';
 	import DetailPanel from './detail-panel.svelte';
+	import { goto } from '$app/navigation';
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
-	import { api, AssetResponseDto, AssetTypeEnum, AlbumResponseDto } from '@api';
+	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
+	import {
+		api,
+		AddAssetsResponseDto,
+		AssetResponseDto,
+		AssetTypeEnum,
+		AlbumResponseDto
+	} from '@api';
 	import {
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import { assetStore } from '$lib/stores/assets.store';
 
 	export let asset: AssetResponseDto;
 	$: {
@@ -28,6 +37,8 @@
 	let halfRightHover = false;
 	let isShowDetail = false;
 	let appearsInAlbums: AlbumResponseDto[] = [];
+	let isShowAlbumPicker = false;
+	let addToSharedAlbum = true;
 
 	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
@@ -43,6 +54,9 @@
 		switch (key) {
 			case 'Escape':
 				closeViewer();
+				return;
+			case 'Delete':
+				deleteAsset();
 				return;
 			case 'i':
 				isShowDetail = !isShowDetail;
@@ -135,6 +149,75 @@
 			});
 		}
 	};
+
+	const deleteAsset = async () => {
+		try {
+			if (
+				window.confirm(
+					`Caution! Are you sure you want to delete this asset? This step also deletes this asset in the album(s) to which it belongs. You can not undo this action!`
+				)
+			) {
+				const { data: deletedAssets } = await api.assetApi.deleteAsset({
+					ids: [asset.id]
+				});
+
+				navigateAssetForward();
+
+				for (const asset of deletedAssets) {
+					if (asset.status == 'SUCCESS') {
+						assetStore.removeAsset(asset.id);
+					}
+				}
+			}
+		} catch (e) {
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error deleting this asset, check console for more details'
+			});
+			console.error('Error deleteSelectedAssetHandler', e);
+		}
+	};
+
+	const toggleFavorite = async () => {
+		const { data } = await api.assetApi.updateAssetById(asset.id, {
+			isFavorite: !asset.isFavorite
+		});
+
+		asset.isFavorite = data.isFavorite;
+	};
+
+	const openAlbumPicker = (shared: boolean) => {
+		isShowAlbumPicker = true;
+		addToSharedAlbum = shared;
+	};
+
+	const showAddNotification = (dto: AddAssetsResponseDto) => {
+		notificationController.show({
+			message: `Added ${dto.successfullyAdded} to ${dto.album?.albumName}`,
+			type: NotificationType.Info
+		});
+
+		if (dto.successfullyAdded === 1 && dto.album) {
+			appearsInAlbums = [...appearsInAlbums, dto.album];
+		}
+	};
+
+	const handleAddToNewAlbum = () => {
+		isShowAlbumPicker = false;
+		api.albumApi.createAlbum({ albumName: 'Untitled', assetIds: [asset.id] }).then((response) => {
+			const album = response.data;
+			goto('/albums/' + album.id);
+		});
+	};
+
+	const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
+		isShowAlbumPicker = false;
+		const album = event.detail.album;
+
+		api.albumApi
+			.addAssetsToAlbum(album.id, { assetIds: [asset.id] })
+			.then((response) => showAddNotification(response.data));
+	};
 </script>
 
 <section
@@ -147,6 +230,10 @@
 			on:showDetail={showDetailInfoHandler}
 			on:download={downloadFile}
 			showCopyButton={asset.type === AssetTypeEnum.Image}
+			on:delete={deleteAsset}
+			on:favorite={toggleFavorite}
+			on:addToAlbum={() => openAlbumPicker(false)}
+			on:addToSharedAlbum={() => openAlbumPicker(true)}
 		/>
 	</div>
 
@@ -213,6 +300,16 @@
 		>
 			<DetailPanel {asset} albums={appearsInAlbums} on:close={() => (isShowDetail = false)} />
 		</div>
+	{/if}
+
+	{#if isShowAlbumPicker}
+		<AlbumSelectionModal
+			shared={addToSharedAlbum}
+			on:newAlbum={handleAddToNewAlbum}
+			on:newSharedAlbum={handleAddToNewAlbum}
+			on:album={handleAddToAlbum}
+			on:close={() => (isShowAlbumPicker = false)}
+		/>
 	{/if}
 </section>
 

@@ -4,8 +4,8 @@ import { BadRequestException, NotFoundException, ForbiddenException } from '@nes
 import { AlbumEntity } from '@app/database/entities/album.entity';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
 import { IAssetRepository } from '../asset/asset-repository';
-import {AddAssetsResponseDto} from "./response-dto/add-assets-response.dto";
-import {IAlbumRepository} from "./album-repository";
+import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
+import { IAlbumRepository } from './album-repository';
 
 describe('Album service', () => {
   let sut: AlbumService;
@@ -125,6 +125,7 @@ describe('Album service', () => {
 
     assetRepositoryMock = {
       create: jest.fn(),
+      update: jest.fn(),
       getAllByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
       getAssetCountByTimeBucket: jest.fn(),
@@ -333,7 +334,7 @@ describe('Album service', () => {
 
     const albumResponse: AddAssetsResponseDto = {
       alreadyInAlbum: [],
-      successfullyAdded: 1
+      successfullyAdded: 1,
     };
 
     const albumId = albumEntity.id;
@@ -341,13 +342,13 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
-    const result = await sut.addAssetsToAlbum(
+    const result = (await sut.addAssetsToAlbum(
       authUser,
       {
         assetIds: ['1'],
       },
       albumId,
-    ) as AddAssetsResponseDto;
+    )) as AddAssetsResponseDto;
 
     // TODO: stub and expect album rendered
     expect(result.album?.id).toEqual(albumId);
@@ -358,7 +359,7 @@ describe('Album service', () => {
 
     const albumResponse: AddAssetsResponseDto = {
       alreadyInAlbum: [],
-      successfullyAdded: 1
+      successfullyAdded: 1,
     };
 
     const albumId = albumEntity.id;
@@ -366,13 +367,13 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
-    const result = await sut.addAssetsToAlbum(
+    const result = (await sut.addAssetsToAlbum(
       authUser,
       {
         assetIds: ['1'],
       },
       albumId,
-    ) as AddAssetsResponseDto;
+    )) as AddAssetsResponseDto;
 
     // TODO: stub and expect album rendered
     expect(result.album?.id).toEqual(albumId);
@@ -383,7 +384,7 @@ describe('Album service', () => {
 
     const albumResponse: AddAssetsResponseDto = {
       alreadyInAlbum: [],
-      successfullyAdded: 1
+      successfullyAdded: 1,
     };
 
     const albumId = albumEntity.id;
@@ -447,7 +448,7 @@ describe('Album service', () => {
 
     const albumResponse: AddAssetsResponseDto = {
       alreadyInAlbum: [],
-      successfullyAdded: 1
+      successfullyAdded: 1,
     };
 
     const albumId = albumEntity.id;

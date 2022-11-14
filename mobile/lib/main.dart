@@ -28,25 +28,27 @@ import 'constants/hive_box.dart';
 
 void main() async {
   await Hive.initFlutter();
-
   Hive.registerAdapter(HiveSavedLoginInfoAdapter());
   Hive.registerAdapter(HiveBackupAlbumsAdapter());
   Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
 
-  await Hive.openBox(userInfoBox);
-  await Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox);
-  await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
-  await Hive.openBox(hiveGithubReleaseInfoBox);
-  await Hive.openBox(userSettingInfoBox);
-  await Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox);
+  await Future.wait([
+    Hive.openBox(userInfoBox),
+    Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
+    Hive.openBox(hiveGithubReleaseInfoBox),
+    Hive.openBox(userSettingInfoBox),
+    if (!Platform.isAndroid) Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+    if (!Platform.isAndroid)
+      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+    if (!Platform.isAndroid) Hive.openBox(backgroundBackupInfoBox),
+    EasyLocalization.ensureInitialized(),
+  ]);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarIconBrightness: Brightness.light,
     ),
   );
-
-  await EasyLocalization.ensureInitialized();
 
   if (kReleaseMode && Platform.isAndroid) {
     try {
@@ -86,8 +88,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
 
         if (isAuthenticated) {
+          ref.read(backupProvider.notifier).resumeBackup();
           ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-          ref.watch(backupProvider.notifier).resumeBackup();
           ref.watch(assetProvider.notifier).getAllAsset();
           ref.watch(serverInfoProvider.notifier).getServerVersion();
         }

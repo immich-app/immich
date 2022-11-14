@@ -5,9 +5,12 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "bin": {
+    "immich": "./bin/cli.sh"
+  },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "nest build immich && nest build microservices",
+    "build": "nest build immich && nest build microservices && nest build cli",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -42,6 +45,7 @@
     "@nestjs/typeorm": "^8.1.4",
     "@nestjs/websockets": "^8.4.7",
     "@socket.io/redis-adapter": "^7.1.0",
+    "archiver": "^5.3.1",
     "axios": "^0.26.0",
     "bcrypt": "^5.0.1",
     "bull": "^4.4.0",
@@ -58,6 +62,7 @@
     "local-reverse-geocoder": "^0.12.5",
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
+    "nest-commander": "^3.3.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "pg": "^8.7.1",
@@ -77,6 +82,7 @@
     "@nestjs/schematics": "^8.0.11",
     "@nestjs/testing": "^8.4.7",
     "@openapitools/openapi-generator-cli": "2.5.1",
+    "@types/archiver": "^5.3.1",
     "@types/bcrypt": "^5.0.0",
     "@types/bull": "^3.15.9",
     "@types/cookie-parser": "^1.4.3",

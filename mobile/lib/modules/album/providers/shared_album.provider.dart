@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/services/album_cache.service.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:openapi/api.dart';
 
 class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
-  SharedAlbumNotifier(this._sharedAlbumService, this._sharedAlbumCacheService) : super([]);
+  SharedAlbumNotifier(this._sharedAlbumService, this._sharedAlbumCacheService)
+      : super([]);
 
   final AlbumService _sharedAlbumService;
   final SharedAlbumCacheService _sharedAlbumCacheService;
@@ -16,7 +18,7 @@ class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
 
   Future<AlbumResponseDto?> createSharedAlbum(
     String albumName,
-    Set<AssetResponseDto> assets,
+    Set<Asset> assets,
     List<String> sharedUserIds,
   ) async {
     try {

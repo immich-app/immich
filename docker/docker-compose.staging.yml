@@ -47,6 +47,9 @@ services:
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
       - .env
+    environment:
+      # Rename these values for svelte public interface
+      - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
     restart: always
 
   redis:
@@ -71,6 +74,10 @@ services:
   immich-proxy:
     container_name: immich_proxy
     image: altran1502/immich-proxy:staging
+    environment:
+      # Make sure these values get passed through from the env file
+      - IMMICH_SERVER_URL
+      - IMMICH_WEB_URL
     ports:
       - 2283:8080
     logging:
