@@ -13,8 +13,8 @@ export class ImmichNotification {
 	timeout = 3000;
 }
 
-type DiscardAction = {type: "discard"};
-type LinkAction = {type: "link", target: string};
+type DiscardAction = { type: 'discard' };
+type LinkAction = { type: 'link'; target: string };
 export type NotificationAction = DiscardAction | LinkAction;
 
 export class ImmichNotificationDto {
@@ -48,7 +48,7 @@ function createNotificationList() {
 		newNotification.message = notificationInfo.message;
 		newNotification.type = notificationInfo.type;
 		newNotification.timeout = notificationInfo.timeout || 3000;
-		newNotification.action = notificationInfo.action || {type: "discard"};
+		newNotification.action = notificationInfo.action || { type: 'discard' };
 
 		notificationList.update((currentList) => [...currentList, newNotification]);
 	};

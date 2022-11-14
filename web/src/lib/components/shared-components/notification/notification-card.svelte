@@ -2,7 +2,7 @@
 	import { fade } from 'svelte/transition';
 	import CloseCircleOutline from 'svelte-material-icons/CloseCircleOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-	import WindowClose from 'svelte-material-icons/WindowClose.svelte'
+	import WindowClose from 'svelte-material-icons/WindowClose.svelte';
 
 	import {
 		ImmichNotification,
@@ -58,16 +58,16 @@
 
 	const discard = () => {
 		notificationController.removeNotificationById(notificationInfo.id);
-	}
+	};
 
 	const handleClick = () => {
 		const action = notificationInfo.action;
-		if (action.type == "discard") {
+		if (action.type == 'discard') {
 			discard();
-		} else if (action.type == "link") {
-			window.open(action.target)
+		} else if (action.type == 'link') {
+			window.open(action.target);
 		}
-	}
+	};
 </script>
 
 <div
@@ -77,7 +77,6 @@
 	class="min-h-[80px] w-[300px] rounded-2xl z-[999999] shadow-md p-4 mb-4 hover:cursor-pointer"
 	on:click={handleClick}
 >
-
 	<div class="flex justify-between">
 		<div class="flex gap-2 place-items-center">
 			<svelte:component this={icon} color={primaryColor()} size="20" />
@@ -86,7 +85,7 @@
 			</h2>
 		</div>
 		<button on:click={discard}>
-			<svelte:component this={WindowClose} size="20"/>
+			<svelte:component this={WindowClose} size="20" />
 		</button>
 	</div>
 

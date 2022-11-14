@@ -46,7 +46,7 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 					message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files. 
           Please use the CLI tool if you need to upload more than 50 files. (Click this message to see a guide).`,
 					timeout: 10000,
-					action: {type: "link", target: "https://immich.app/docs/usage/bulk-upload"}
+					action: { type: 'link', target: 'https://immich.app/docs/usage/bulk-upload' }
 				});
 
 				return;
