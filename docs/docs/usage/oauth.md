@@ -36,16 +36,15 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 
 Once you have a new OAuth client application configured, Immich can be configured using the following environment variables:
 
-| Key                      | Type    | Default              | Description                                                               |
-| ------------------------ | ------- | -------------------- | ------------------------------------------------------------------------- |
-| OAUTH_ENABLED            | boolean | false                | Enable/disable OAuth2                                                     |
-| OAUTH_ISSUER_URL         | URL     | (required)           | Required. Self-discovery URL for client (from previous step)              |
-| OAUTH_CLIENT_ID          | string  | (required)           | Required. Client ID (from previous step)                                  |
-| OAUTH_CLIENT_SECRET      | string  | (required)           | Required. Client Secret (previous step                                    |
-| OAUTH_SCOPE              | string  | openid email profile | Full list of scopes to send with the request (space delimited)            |
-| OAUTH_TOKEN_RESPONSE_ALG | string  | RS256                | Algorithm used to sign the returned ID Token                              |
-| OAUTH_AUTO_REGISTER      | boolean | true                 | When true, will automatically register a user the first time they sign in |
-| OAUTH_BUTTON_TEXT        | string  | Login with OAuth     | Text for the OAuth button on the web                                      |
+| Key                 | Type    | Default              | Description                                                               |
+| ------------------- | ------- | -------------------- | ------------------------------------------------------------------------- |
+| OAUTH_ENABLED       | boolean | false                | Enable/disable OAuth2                                                     |
+| OAUTH_ISSUER_URL    | URL     | (required)           | Required. Self-discovery URL for client (from previous step)              |
+| OAUTH_CLIENT_ID     | string  | (required)           | Required. Client ID (from previous step)                                  |
+| OAUTH_CLIENT_SECRET | string  | (required)           | Required. Client Secret (previous step                                    |
+| OAUTH_SCOPE         | string  | openid email profile | Full list of scopes to send with the request (space delimited)            |
+| OAUTH_AUTO_REGISTER | boolean | true                 | When true, will automatically register a user the first time they sign in |
+| OAUTH_BUTTON_TEXT   | string  | Login with OAuth     | Text for the OAuth button on the web                                      |
 
 :::info
 The Issuer URL should look something like the following, and return a valid json document.
@@ -63,7 +62,6 @@ OAUTH_ENABLED=true
 OAUTH_ISSUER_URL=http://192.168.0.187:9000/application/o/immich
 OAUTH_CLIENT_ID=f08f9c5b4f77dcfd3916b1c032336b5544a7b368
 OAUTH_CLIENT_SECRET=6fe2e697644da6ff6aef73387a457d819018189086fa54b151a6067fbb884e75f7e5c90be16d3c688cf902c6974817a85eab93007d76675041eaead8c39cf5a2
-OAUTH_TOKEN_RESPONSE_ALG=HS256
 OAUTH_BUTTON_TEXT=Login with Authentik
 ```
 

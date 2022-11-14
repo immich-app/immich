@@ -40,7 +40,6 @@ export class OAuthService {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       client_id: configService.get('OAUTH_CLIENT_ID')!,
       client_secret: configService.get('OAUTH_CLIENT_SECRET'),
-      id_token_signed_response_alg: configService.get('OAUTH_TOKEN_RESPONSE_ALG'),
       response_types: ['code'],
     };
   }
@@ -90,7 +89,13 @@ export class OAuthService {
   private async getClient() {
     if (this.enabled) {
       const issuer = await Issuer.discover(this.issuerUrl);
-      this.client = new issuer.Client(this.clientMetadata);
+      const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
+      const metadata = { ...this.clientMetadata };
+      if (algorithms[0] === 'HS256') {
+        metadata.id_token_signed_response_alg = algorithms[0];
+      }
+
+      this.client = new issuer.Client(metadata);
     }
 
     if (!this.enabled) {

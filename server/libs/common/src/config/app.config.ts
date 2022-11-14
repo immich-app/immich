@@ -41,6 +41,5 @@ export const immichAppConfig: ConfigModuleOptions = {
     OAUTH_SCOPE: Joi.string().optional().default('openid email profile'),
     OAUTH_CLIENT_ID: WHEN_OAUTH_ENABLED,
     OAUTH_CLIENT_SECRET: WHEN_OAUTH_ENABLED,
-    OAUTH_TOKEN_RESPONSE_ALG: Joi.string().optional().default('RS256'),
   }),
 };
