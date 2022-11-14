@@ -28,7 +28,7 @@ export class ImmichJwtService {
     return [accessTokenCookie, authTypeCookie];
   }
 
-  public async createLoginResponse(user: UserEntity) {
+  public async createLoginResponse(user: UserEntity): Promise<LoginResponseDto> {
     const payload = new JwtPayloadDto(user.id, user.email);
     const accessToken = await this.generateToken(payload);
 

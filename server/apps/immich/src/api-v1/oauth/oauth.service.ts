@@ -1,9 +1,9 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Client, ClientMetadata, generators, Issuer, UserinfoResponse } from 'openid-client';
+import { ClientMetadata, generators, Issuer, UserinfoResponse } from 'openid-client';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
-import { UserRepository, USER_REPOSITORY } from '../user/user-repository';
+import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
 import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto';
@@ -16,8 +16,6 @@ type OAuthProfile = UserinfoResponse & {
 export class OAuthService {
   private readonly logger = new Logger(OAuthService.name);
 
-  private client: Client | null = null;
-
   private readonly enabled: boolean;
   private readonly autoRegister: boolean;
   private readonly buttonText: string;
@@ -28,7 +26,7 @@ export class OAuthService {
   constructor(
     private immichJwtService: ImmichJwtService,
     configService: ConfigService,
-    @Inject(USER_REPOSITORY) private userRepository: UserRepository,
+    @Inject(USER_REPOSITORY) private userRepository: IUserRepository,
   ) {
     this.enabled = configService.get('OAUTH_ENABLED', false);
     this.autoRegister = configService.get('OAUTH_AUTO_REGISTER', true);
@@ -94,25 +92,17 @@ export class OAuthService {
   }
 
   private async getClient() {
-    if (this.enabled) {
-      const issuer = await Issuer.discover(this.issuerUrl);
-      const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
-      const metadata = { ...this.clientMetadata };
-      if (algorithms[0] === 'HS256') {
-        metadata.id_token_signed_response_alg = algorithms[0];
-      }
-
-      this.client = new issuer.Client(metadata);
-    }
-
     if (!this.enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
     }
 
-    if (!this.client) {
-      throw new BadRequestException('OAuth2 is not initialized');
+    const issuer = await Issuer.discover(this.issuerUrl);
+    const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
+    const metadata = { ...this.clientMetadata };
+    if (algorithms[0] === 'HS256') {
+      metadata.id_token_signed_response_alg = algorithms[0];
     }
 
-    return this.client;
+    return new issuer.Client(metadata);
   }
 }
