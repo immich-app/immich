@@ -9,8 +9,13 @@ export class ImmichNotification {
 	id = new Date().getTime();
 	type!: NotificationType;
 	message!: string;
+	action!: NotificationAction;
 	timeout = 3000;
 }
+
+type DiscardAction = {type: "discard"};
+type LinkAction = {type: "link", target: string};
+export type NotificationAction = DiscardAction | LinkAction;
 
 export class ImmichNotificationDto {
 	/**
@@ -28,7 +33,13 @@ export class ImmichNotificationDto {
 	 * Timeout in miliseconds
 	 */
 	timeout?: number;
+
+	/**
+	 * The action to take when the notification is clicked
+	 */
+	action?: NotificationAction;
 }
+
 function createNotificationList() {
 	const notificationList = writable<ImmichNotification[]>([]);
 
@@ -37,6 +48,7 @@ function createNotificationList() {
 		newNotification.message = notificationInfo.message;
 		newNotification.type = notificationInfo.type;
 		newNotification.timeout = notificationInfo.timeout || 3000;
+		newNotification.action = notificationInfo.action || {type: "discard"};
 
 		notificationList.update((currentList) => [...currentList, newNotification]);
 	};

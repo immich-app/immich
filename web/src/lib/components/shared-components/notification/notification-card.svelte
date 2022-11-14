@@ -59,13 +59,23 @@
 	const discard = () => {
 		notificationController.removeNotificationById(notificationInfo.id);
 	}
+
+	const handleClick = () => {
+		const action = notificationInfo.action;
+		if (action.type == "discard") {
+			discard();
+		} else if (action.type == "link") {
+			window.open(action.target)
+		}
+	}
 </script>
 
 <div
 	transition:fade={{ duration: 250 }}
 	style:background-color={backgroundColor()}
 	style:border={borderStyle()}
-	class="min-h-[80px] w-[300px] rounded-2xl z-[999999] shadow-md p-4 mb-4"
+	class="min-h-[80px] w-[300px] rounded-2xl z-[999999] shadow-md p-4 mb-4 hover:cursor-pointer"
+	on:click={handleClick}
 >
 
 	<div class="flex justify-between">
