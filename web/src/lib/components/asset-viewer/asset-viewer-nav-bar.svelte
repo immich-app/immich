@@ -11,10 +11,13 @@
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import Star from 'svelte-material-icons/Star.svelte';
 	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
+	import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
+
 	import { page } from '$app/stores';
 	import { AssetResponseDto } from '../../../api';
 
 	export let asset: AssetResponseDto;
+	export let showCopyButton: boolean;
 
 	const isOwner = asset.ownerId === $page.data.user.id;
 
@@ -45,6 +48,15 @@
 		<CircleIconButton logo={ArrowLeft} on:click={() => dispatch('goBack')} />
 	</div>
 	<div class="text-white flex gap-2">
+		{#if showCopyButton}
+			<CircleIconButton
+				logo={ContentCopy}
+				on:click={() => {
+					const copyEvent = new CustomEvent('copyImage');
+					window.dispatchEvent(copyEvent);
+				}}
+			/>
+		{/if}
 		<CircleIconButton logo={CloudDownloadOutline} on:click={() => dispatch('download')} />
 		<CircleIconButton logo={InformationOutline} on:click={() => dispatch('showDetail')} />
 		{#if isOwner}
