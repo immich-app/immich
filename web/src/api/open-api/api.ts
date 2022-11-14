@@ -1182,12 +1182,6 @@ export interface OAuthConfigResponseDto {
      * @memberof OAuthConfigResponseDto
      */
     'buttonText'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OAuthConfigResponseDto
-     */
-    'endSessionEndpoint'?: string;
 }
 /**
  * 

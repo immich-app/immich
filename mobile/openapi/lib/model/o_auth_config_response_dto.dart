@@ -16,7 +16,6 @@ class OAuthConfigResponseDto {
     required this.enabled,
     this.url,
     this.buttonText,
-    this.endSessionEndpoint,
   });
 
   bool enabled;
@@ -37,31 +36,21 @@ class OAuthConfigResponseDto {
   ///
   String? buttonText;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? endSessionEndpoint;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is OAuthConfigResponseDto &&
      other.enabled == enabled &&
      other.url == url &&
-     other.buttonText == buttonText &&
-     other.endSessionEndpoint == endSessionEndpoint;
+     other.buttonText == buttonText;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (enabled.hashCode) +
     (url == null ? 0 : url!.hashCode) +
-    (buttonText == null ? 0 : buttonText!.hashCode) +
-    (endSessionEndpoint == null ? 0 : endSessionEndpoint!.hashCode);
+    (buttonText == null ? 0 : buttonText!.hashCode);
 
   @override
-  String toString() => 'OAuthConfigResponseDto[enabled=$enabled, url=$url, buttonText=$buttonText, endSessionEndpoint=$endSessionEndpoint]';
+  String toString() => 'OAuthConfigResponseDto[enabled=$enabled, url=$url, buttonText=$buttonText]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -75,11 +64,6 @@ class OAuthConfigResponseDto {
       _json[r'buttonText'] = buttonText;
     } else {
       _json[r'buttonText'] = null;
-    }
-    if (endSessionEndpoint != null) {
-      _json[r'endSessionEndpoint'] = endSessionEndpoint;
-    } else {
-      _json[r'endSessionEndpoint'] = null;
     }
     return _json;
   }
@@ -106,7 +90,6 @@ class OAuthConfigResponseDto {
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         url: mapValueOfType<String>(json, r'url'),
         buttonText: mapValueOfType<String>(json, r'buttonText'),
-        endSessionEndpoint: mapValueOfType<String>(json, r'endSessionEndpoint'),
       );
     }
     return null;
