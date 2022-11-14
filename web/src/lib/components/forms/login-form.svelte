@@ -15,7 +15,7 @@
 
 	onMount(async () => {
 		const search = window.location.search;
-		if (search.startsWith('?code=') || search.startsWith('?error=')) {
+		if (search.includes('code=') || search.includes('error=')) {
 			try {
 				loading = true;
 				await api.oauthApi.callback({ url: window.location.href });
