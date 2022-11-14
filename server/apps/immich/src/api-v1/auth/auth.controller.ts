@@ -46,8 +46,10 @@ export class AuthController {
 
   @Post('/logout')
   async logout(@Res({ passthrough: true }) response: Response): Promise<LogoutResponseDto> {
-    response.clearCookie('immich_access_token');
-    response.clearCookie('immich_is_authenticated');
+    const cookies = this.immichJwtService.getCookieNames();
+    for (const cookie of cookies) {
+      response.clearCookie(cookie);
+    }
     return new LogoutResponseDto(true);
   }
 }

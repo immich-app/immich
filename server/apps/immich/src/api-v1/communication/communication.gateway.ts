@@ -6,6 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { Repository } from 'typeorm';
 import cookieParser from 'cookie';
+import { IMMICH_ACCESS_COOKIE } from '../../constants/jwt.constant';
+
 @WebSocketGateway({ cors: true })
 export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
@@ -30,8 +32,8 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
 
       if (client.handshake.headers.cookie != undefined) {
         const cookies = cookieParser.parse(client.handshake.headers.cookie);
-        if (cookies.immich_access_token) {
-          accessToken = cookies.immich_access_token;
+        if (cookies[IMMICH_ACCESS_COOKIE]) {
+          accessToken = cookies[IMMICH_ACCESS_COOKIE];
         } else {
           client.emit('error', 'unauthorized');
           client.disconnect();
