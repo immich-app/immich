@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { JwtPayloadDto } from '../../api-v1/auth/dto/jwt-payload.dto';
 import { LoginResponseDto, mapLoginResponse } from '../../api-v1/auth/response-dto/login-response.dto';
-import { jwtSecret, IMMICH_ACCESS_COOKIE, IMMICH_AUTHENTICATED_COOKIE } from '../../constants/jwt.constant';
+import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE, jwtSecret } from '../../constants/jwt.constant';
 
 export type JwtValidationResult = {
   status: boolean;
@@ -16,16 +16,16 @@ export class ImmichJwtService {
   constructor(private jwtService: JwtService) {}
 
   public getCookieNames() {
-    return [IMMICH_ACCESS_COOKIE, IMMICH_AUTHENTICATED_COOKIE];
+    return [IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE];
   }
 
-  public getCookies(loginResponse: LoginResponseDto) {
+  public getCookies(loginResponse: LoginResponseDto, authType: AuthType) {
     const maxAge = 7 * 24 * 3600; // 7 days
 
     const accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}`;
-    const isAuthCookie = `${IMMICH_AUTHENTICATED_COOKIE}=true; Path=/; Max-Age=${maxAge}`;
+    const authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; Path=/; Max-Age=${maxAge}`;
 
-    return [accessTokenCookie, isAuthCookie];
+    return [accessTokenCookie, authTypeCookie];
   }
 
   public async createLoginResponse(user: UserEntity) {

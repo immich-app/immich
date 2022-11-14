@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Res, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
@@ -20,7 +21,7 @@ export class OAuthController {
   @Post('/callback')
   public async callback(@Res({ passthrough: true }) response: Response, @Body(ValidationPipe) dto: OAuthCallbackDto) {
     const loginResponse = await this.oauthService.callback(dto);
-    response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse));
+    response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse, AuthType.OAUTH));
     return loginResponse;
   }
 }

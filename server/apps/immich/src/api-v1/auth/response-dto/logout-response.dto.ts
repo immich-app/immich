@@ -7,4 +7,7 @@ export class LogoutResponseDto {
 
   @ApiResponseProperty()
   successful!: boolean;
+
+  @ApiResponseProperty()
+  redirectUri!: string;
 }

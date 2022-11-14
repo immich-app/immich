@@ -1,16 +1,20 @@
 import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from '../../../../../libs/database/src/entities/user.entity';
+import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/admin-signup-response.dto';
 import { LoginResponseDto } from './response-dto/login-response.dto';
+import { LogoutResponseDto } from './response-dto/logout-response.dto';
+import { OAuthService } from '../oauth/oauth.service';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private oauthService: OAuthService,
     private immichJwtService: ImmichJwtService,
     @Inject(USER_REPOSITORY) private userRepository: IUserRepository,
   ) {}
@@ -31,6 +35,17 @@ export class AuthService {
     }
 
     return this.immichJwtService.createLoginResponse(user);
+  }
+
+  public async logout(authType: AuthType): Promise<LogoutResponseDto> {
+    if (authType === AuthType.OAUTH) {
+      const url = await this.oauthService.getLogoutEndpoint();
+      if (url) {
+        return { successful: true, redirectUri: url };
+      }
+    }
+
+    return { successful: true, redirectUri: '/auth/login' };
   }
 
   public async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {

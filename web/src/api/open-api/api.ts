@@ -1125,6 +1125,12 @@ export interface LogoutResponseDto {
      * @memberof LogoutResponseDto
      */
     'successful': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof LogoutResponseDto
+     */
+    'redirectUri': string;
 }
 /**
  * 
@@ -1176,6 +1182,12 @@ export interface OAuthConfigResponseDto {
      * @memberof OAuthConfigResponseDto
      */
     'buttonText'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof OAuthConfigResponseDto
+     */
+    'endSessionEndpoint'?: string;
 }
 /**
  * 

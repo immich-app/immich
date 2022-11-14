@@ -86,6 +86,13 @@ export class OAuthService {
     return this.immichJwtService.createLoginResponse(user);
   }
 
+  public async getLogoutEndpoint(): Promise<string | null> {
+    if (!this.enabled) {
+      return null;
+    }
+    return (await this.getClient()).issuer.metadata.end_session_endpoint || null;
+  }
+
   private async getClient() {
     if (this.enabled) {
       const issuer = await Issuer.discover(this.issuerUrl);

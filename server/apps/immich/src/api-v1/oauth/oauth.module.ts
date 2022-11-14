@@ -10,5 +10,6 @@ import { OAuthService } from './oauth.service';
   imports: [UserModule, ImmichJwtModule, TypeOrmModule.forFeature([UserEntity])],
   controllers: [OAuthController],
   providers: [OAuthService],
+  exports: [OAuthService],
 })
 export class OAuthModule {}

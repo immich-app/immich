@@ -1,6 +1,7 @@
-import { Body, Controller, Ip, Post, Res, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Ip, Post, Req, Res, ValidationPipe } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { AuthType, IMMICH_AUTH_TYPE_COOKIE } from '../../constants/jwt.constant';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
@@ -24,7 +25,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<LoginResponseDto> {
     const loginResponse = await this.authService.login(loginCredential, clientIp);
-    response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse));
+    response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse, AuthType.PASSWORD));
     return loginResponse;
   }
 
@@ -45,11 +46,14 @@ export class AuthController {
   }
 
   @Post('/logout')
-  async logout(@Res({ passthrough: true }) response: Response): Promise<LogoutResponseDto> {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) response: Response): Promise<LogoutResponseDto> {
+    const authType: AuthType = req.cookies[IMMICH_AUTH_TYPE_COOKIE];
+
     const cookies = this.immichJwtService.getCookieNames();
     for (const cookie of cookies) {
       response.clearCookie(cookie);
     }
-    return new LogoutResponseDto(true);
+
+    return this.authService.logout(authType);
   }
 }
