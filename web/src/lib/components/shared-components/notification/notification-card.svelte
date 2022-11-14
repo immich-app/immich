@@ -60,12 +60,13 @@
 		notificationController.removeNotificationById(notificationInfo.id);
 	};
 
-	const handleClick = () => {
+	const handleClick = (event: MouseEvent) => {
 		const action = notificationInfo.action;
 		if (action.type == 'discard') {
 			discard();
 		} else if (action.type == 'link') {
 			window.open(action.target);
+			event.preventDefault();
 		}
 	};
 </script>
@@ -89,5 +90,5 @@
 		</button>
 	</div>
 
-	<p class="text-sm pl-[28px] pr-[16px]" data-testid="message">{notificationInfo.message}</p>
+	<p class="text-sm pl-[28px] pr-[16px]" data-testid="message">{@html notificationInfo.message}</p>
 </div>
