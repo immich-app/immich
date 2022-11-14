@@ -21,8 +21,9 @@ export interface IAssetRepository {
     ownerId: string,
     originalPath: string,
     mimeType: string,
-    isLivePhoto: boolean,
+    isVisible: boolean,
     checksum?: Buffer,
+    livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity>;
   update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
   getAllByUserId(userId: string): Promise<AssetEntity[]>;
@@ -232,8 +233,9 @@ export class AssetRepository implements IAssetRepository {
     ownerId: string,
     originalPath: string,
     mimeType: string,
-    isLivePhoto: boolean,
+    isVisible: boolean,
     checksum?: Buffer,
+    livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity> {
     const asset = new AssetEntity();
     asset.deviceAssetId = createAssetDto.deviceAssetId;
@@ -247,7 +249,8 @@ export class AssetRepository implements IAssetRepository {
     asset.mimeType = mimeType;
     asset.duration = createAssetDto.duration || null;
     asset.checksum = checksum || null;
-    asset.isLivePhoto = isLivePhoto;
+    asset.isVisible = isVisible;
+    asset.livePhotoVideoId = livePhotoAssetEntity ? livePhotoAssetEntity.id : null;
 
     const createdAsset = await this.assetRepository.save(asset);
 

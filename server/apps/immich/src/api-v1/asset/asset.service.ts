@@ -10,7 +10,7 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
@@ -43,10 +43,15 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-import { assetUploadedProcessorName, IAssetUploadedJob, QueueNameEnum } from '@app/job';
+import {
+  assetUploadedProcessorName,
+  IAssetUploadedJob,
+  IVideoTranscodeJob,
+  mp4ConversionProcessorName,
+  QueueNameEnum,
+} from '@app/job';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { LivePhotoEntity } from '@app/database/entities/live-photo.entity';
 
 const fileInfo = promisify(stat);
 
@@ -59,13 +64,13 @@ export class AssetService {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @InjectRepository(LivePhotoEntity)
-    private livePhotoRepository: Repository<LivePhotoEntity>,
-
     private backgroundTaskService: BackgroundTaskService,
 
     @InjectQueue(QueueNameEnum.ASSET_UPLOADED)
     private assetUploadedQueue: Queue<IAssetUploadedJob>,
+
+    @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
+    private videoConversionQueue: Queue<IVideoTranscodeJob>,
   ) {}
 
   public async handleUploadedAsset(
@@ -77,15 +82,44 @@ export class AssetService {
   ) {
     const checksum = await this.calculateChecksum(originalAssetData.path);
     const isLivePhoto = livePhotoAssetData !== undefined;
+    let livePhotoAssetEntity: AssetEntity | undefined = undefined;
 
     try {
+      if (isLivePhoto) {
+        const livePhotoChecksum = await this.calculateChecksum(livePhotoAssetData.path);
+        livePhotoAssetEntity = await this.createUserAsset(
+          authUser,
+          createAssetDto,
+          livePhotoAssetData.path,
+          livePhotoAssetData.mimetype,
+          livePhotoChecksum,
+          false,
+        );
+
+        if (!livePhotoAssetEntity) {
+          await this.backgroundTaskService.deleteFileOnDisk([
+            {
+              originalPath: livePhotoAssetData.path,
+            } as any,
+          ]);
+          throw new BadRequestException('Asset not created');
+        }
+
+        await this.videoConversionQueue.add(
+          mp4ConversionProcessorName,
+          { asset: livePhotoAssetEntity },
+          { jobId: randomUUID() },
+        );
+      }
+
       const assetEntity = await this.createUserAsset(
         authUser,
         createAssetDto,
         originalAssetData.path,
         originalAssetData.mimetype,
-        isLivePhoto,
         checksum,
+        true,
+        livePhotoAssetEntity,
       );
 
       if (!assetEntity) {
@@ -95,15 +129,6 @@ export class AssetService {
           } as any,
         ]);
         throw new BadRequestException('Asset not created');
-      }
-
-      if (isLivePhoto) {
-        // Save Live Photo Entity
-        const livePhotoEntity = new LivePhotoEntity();
-        livePhotoEntity.assetId = assetEntity.id;
-        livePhotoEntity.originalPath = livePhotoAssetData.path;
-
-        await this.livePhotoRepository.save(livePhotoEntity);
       }
 
       await this.assetUploadedQueue.add(
@@ -144,8 +169,9 @@ export class AssetService {
     createAssetDto: CreateAssetDto,
     originalPath: string,
     mimeType: string,
-    isLivePhoto: boolean,
     checksum: Buffer,
+    isVisible: boolean,
+    livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity> {
     // Check valid time.
     const createdAt = createAssetDto.createdAt;
@@ -164,8 +190,9 @@ export class AssetService {
       authUser.id,
       originalPath,
       mimeType,
-      isLivePhoto,
+      isVisible,
       checksum,
+      livePhotoAssetEntity,
     );
 
     return assetEntity;

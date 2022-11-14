@@ -9,15 +9,22 @@ import { BackgroundTaskService } from '../../modules/background-task/background-
 import { CommunicationModule } from '../communication/communication.module';
 import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
-import { LivePhotoEntity } from '@app/database/entities/live-photo.entity';
 
 @Module({
   imports: [
     CommunicationModule,
     BackgroundTaskModule,
-    TypeOrmModule.forFeature([AssetEntity, LivePhotoEntity]),
+    TypeOrmModule.forFeature([AssetEntity]),
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
+    BullModule.registerQueue({
+      name: QueueNameEnum.VIDEO_CONVERSION,
       defaultJobOptions: {
         attempts: 3,
         removeOnComplete: true,

@@ -10,17 +10,14 @@ import {
   Response,
   Headers,
   Delete,
-  Logger,
   HttpCode,
-  BadRequestException,
-  UploadedFile,
   Header,
   Put,
   UploadedFiles,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
-import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
@@ -28,12 +25,6 @@ import { Response as Res } from 'express';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
-import { CommunicationGateway } from '../communication/communication.gateway';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
-import { IAssetUploadedJob } from '@app/job/index';
-import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
-import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';

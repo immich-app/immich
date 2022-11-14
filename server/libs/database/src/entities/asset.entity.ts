@@ -1,6 +1,5 @@
 import { Column, Entity, Index, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { ExifEntity } from './exif.entity';
-import { LivePhotoEntity } from './live-photo.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 
 @Entity('assets')
@@ -52,17 +51,17 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true })
   duration!: string | null;
 
-  @Column({ type: 'boolean', nullable: true })
-  isLivePhoto!: boolean | null;
+  @Column({ type: 'boolean', default: true })
+  isVisible!: boolean;
+
+  @Column({ type: 'uuid', nullable: true })
+  livePhotoVideoId!: string | null;
 
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
   exifInfo?: ExifEntity;
 
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;
-
-  @OneToOne(() => LivePhotoEntity, (livePhotoEntity) => livePhotoEntity.asset)
-  livePhotoInfo?: LivePhotoEntity;
 }
 
 export enum AssetType {
