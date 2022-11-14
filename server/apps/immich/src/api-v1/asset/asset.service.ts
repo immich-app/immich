@@ -82,7 +82,7 @@ export class AssetService {
   ) {
     const checksum = await this.calculateChecksum(originalAssetData.path);
     const isLivePhoto = livePhotoAssetData !== undefined;
-    let livePhotoAssetEntity: AssetEntity | undefined = undefined;
+    let livePhotoAssetEntity: AssetEntity | undefined;
 
     try {
       if (isLivePhoto) {
@@ -220,7 +220,7 @@ export class AssetService {
   // TODO - Refactor this to get asset by its own id
   private async findAssetOfDevice(deviceId: string, assetId: string): Promise<AssetResponseDto> {
     const rows = await this.assetRepository.query(
-      'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."deviceId" = $2',
+      'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."deviceId" = $2 AND a."isVisible" = true',
       [assetId, deviceId],
     );
 

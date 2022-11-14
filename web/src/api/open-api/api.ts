@@ -422,6 +422,12 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'smartInfo'?: SmartInfoResponseDto;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
+    'livePhotoVideoId': string | null;
 }
 /**
  * 

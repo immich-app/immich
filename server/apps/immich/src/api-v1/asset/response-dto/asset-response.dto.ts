@@ -22,6 +22,7 @@ export class AssetResponseDto {
   encodedVideoPath!: string | null;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
+  livePhotoVideoId!: string | null;
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
@@ -42,5 +43,6 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
+    livePhotoVideoId: entity.livePhotoVideoId,
   };
 }
