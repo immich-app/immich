@@ -13,6 +13,7 @@
     "build": "nest build immich && nest build microservices && nest build cli",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
+    "nest": "nest",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug 0.0.0.0:9230 --watch",
     "start:prod": "node dist/main",
@@ -139,7 +140,8 @@
       "@app/database/config/(.*)": "<rootDir>/libs/database/src/config/$1",
       "@app/database/config": "<rootDir>/libs/database/src/config",
       "@app/common": "<rootDir>/libs/common/src",
-      "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1"
+      "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1",
+      "^@app/system-config(|/.*)$": "<rootDir>/libs/system-config/src/$1"
     }
   }
 }

@@ -34,6 +34,7 @@ part 'api/device_info_api.dart';
 part 'api/job_api.dart';
 part 'api/o_auth_api.dart';
 part 'api/server_info_api.dart';
+part 'api/system_config_api.dart';
 part 'api/user_api.dart';
 
 part 'model/add_assets_dto.dart';
@@ -86,6 +87,9 @@ part 'model/server_stats_response_dto.dart';
 part 'model/server_version_reponse_dto.dart';
 part 'model/sign_up_dto.dart';
 part 'model/smart_info_response_dto.dart';
+part 'model/system_config_key.dart';
+part 'model/system_config_response_dto.dart';
+part 'model/system_config_response_item.dart';
 part 'model/thumbnail_format.dart';
 part 'model/time_group_enum.dart';
 part 'model/update_album_dto.dart';

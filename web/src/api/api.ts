@@ -8,6 +8,7 @@ import {
 	JobApi,
 	OAuthApi,
 	ServerInfoApi,
+	SystemConfigApi,
 	UserApi
 } from './open-api';
 
@@ -20,6 +21,7 @@ class ImmichApi {
 	public deviceInfoApi: DeviceInfoApi;
 	public serverInfoApi: ServerInfoApi;
 	public jobApi: JobApi;
+	public systemConfigApi: SystemConfigApi;
 
 	private config = new Configuration({ basePath: '/api' });
 
@@ -32,6 +34,7 @@ class ImmichApi {
 		this.deviceInfoApi = new DeviceInfoApi(this.config);
 		this.serverInfoApi = new ServerInfoApi(this.config);
 		this.jobApi = new JobApi(this.config);
+		this.systemConfigApi = new SystemConfigApi(this.config);
 	}
 
 	public setAccessToken(accessToken: string) {
