@@ -17,6 +17,8 @@ import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.mod
 import { DatabaseModule } from '@app/database';
 import { JobModule } from './api-v1/job/job.module';
 import { SystemConfigModule } from './api-v1/system-config/system-config.module';
+import { OAuthModule } from './api-v1/oauth/oauth.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
@@ -27,6 +29,7 @@ import { SystemConfigModule } from './api-v1/system-config/system-config.module'
     AssetModule,
 
     AuthModule,
+    OAuthModule,
 
     ImmichJwtModule,
 

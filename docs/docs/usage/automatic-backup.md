@@ -31,5 +31,5 @@ A native Android notification shows up when the background upload is in progress
 :::note 
 * The app must be in the background for the backup worker to start running.
 * It is a well-known problem that some Android models are very strict with battery optimization settings, which can cause a problem with the background worker. Please visit [Don't kill my app](https://dontkillmyapp.com/) for a guide on disabling this setting on your phone. 
-* If you reopen the app and the first page you see is the backup page, the counts will reflect the background uploaded result. You have to navigate out of the page and come back to see the updated counts.
+* If you reopen the app and the first page you see is the backup page, the counts will not reflect the background uploaded result. You have to navigate out of the page and come back to see the updated counts.
 :::

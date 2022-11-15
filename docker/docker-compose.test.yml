@@ -7,7 +7,7 @@ services:
       context: ../server
       dockerfile: Dockerfile
       target: builder
-    command: npm ci && npm run test:e2e
+    command: npm run test:e2e
     expose:
       - '3000'
     volumes:
