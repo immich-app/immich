@@ -16,6 +16,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { DatabaseModule } from '@app/database';
 import { JobModule } from './api-v1/job/job.module';
+import { OAuthModule } from './api-v1/oauth/oauth.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { JobModule } from './api-v1/job/job.module';
     AssetModule,
 
     AuthModule,
+    OAuthModule,
 
     ImmichJwtModule,
 

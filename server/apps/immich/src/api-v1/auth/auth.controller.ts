@@ -1,36 +1,31 @@
-import { Body, Controller, Post, Res, ValidationPipe, Ip } from '@nestjs/common';
+import { Body, Controller, Ip, Post, Req, Res, ValidationPipe } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
+import { AuthType, IMMICH_AUTH_TYPE_COOKIE } from '../../constants/jwt.constant';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { Authenticated } from '../../decorators/authenticated.decorator';
+import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { AuthService } from './auth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
-import { LoginResponseDto } from './response-dto/login-response.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto } from './response-dto/admin-signup-response.dto';
-import { ValidateAccessTokenResponseDto } from './response-dto/validate-asset-token-response.dto,';
-import { Response } from 'express';
+import { LoginResponseDto } from './response-dto/login-response.dto';
 import { LogoutResponseDto } from './response-dto/logout-response.dto';
+import { ValidateAccessTokenResponseDto } from './response-dto/validate-asset-token-response.dto,';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService, private readonly immichJwtService: ImmichJwtService) {}
 
   @Post('/login')
   async login(
     @Body(new ValidationPipe({ transform: true })) loginCredential: LoginCredentialDto,
     @Ip() clientIp: string,
-    @Res() response: Response,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<LoginResponseDto> {
     const loginResponse = await this.authService.login(loginCredential, clientIp);
-
-    // Set Cookies
-    const accessTokenCookie = this.authService.getCookieWithJwtToken(loginResponse);
-    const isAuthCookie = `immich_is_authenticated=true; Path=/; Max-Age=${7 * 24 * 3600}`;
-
-    response.setHeader('Set-Cookie', [accessTokenCookie, isAuthCookie]);
-    response.send(loginResponse);
-
+    response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse, AuthType.PASSWORD));
     return loginResponse;
   }
 
@@ -51,13 +46,14 @@ export class AuthController {
   }
 
   @Post('/logout')
-  async logout(@Res() response: Response): Promise<LogoutResponseDto> {
-    response.clearCookie('immich_access_token');
-    response.clearCookie('immich_is_authenticated');
+  async logout(@Req() req: Request, @Res({ passthrough: true }) response: Response): Promise<LogoutResponseDto> {
+    const authType: AuthType = req.cookies[IMMICH_AUTH_TYPE_COOKIE];
 
-    const status = new LogoutResponseDto(true);
+    const cookies = this.immichJwtService.getCookieNames();
+    for (const cookie of cookies) {
+      response.clearCookie(cookie);
+    }
 
-    response.send(status);
-    return status;
+    return this.authService.logout(authType);
   }
 }

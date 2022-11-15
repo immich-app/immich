@@ -32,6 +32,7 @@ part 'api/asset_api.dart';
 part 'api/authentication_api.dart';
 part 'api/device_info_api.dart';
 part 'api/job_api.dart';
+part 'api/o_auth_api.dart';
 part 'api/server_info_api.dart';
 part 'api/user_api.dart';
 
@@ -74,6 +75,9 @@ part 'model/job_status_response_dto.dart';
 part 'model/login_credential_dto.dart';
 part 'model/login_response_dto.dart';
 part 'model/logout_response_dto.dart';
+part 'model/o_auth_callback_dto.dart';
+part 'model/o_auth_config_dto.dart';
+part 'model/o_auth_config_response_dto.dart';
 part 'model/remove_assets_dto.dart';
 part 'model/search_asset_dto.dart';
 part 'model/server_info_response_dto.dart';

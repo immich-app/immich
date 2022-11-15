@@ -10,42 +10,36 @@
 
 part of openapi.api;
 
-class LogoutResponseDto {
-  /// Returns a new [LogoutResponseDto] instance.
-  LogoutResponseDto({
-    required this.successful,
-    required this.redirectUri,
+class OAuthCallbackDto {
+  /// Returns a new [OAuthCallbackDto] instance.
+  OAuthCallbackDto({
+    required this.url,
   });
 
-  bool successful;
-
-  String redirectUri;
+  String url;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LogoutResponseDto &&
-     other.successful == successful &&
-     other.redirectUri == redirectUri;
+  bool operator ==(Object other) => identical(this, other) || other is OAuthCallbackDto &&
+     other.url == url;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (successful.hashCode) +
-    (redirectUri.hashCode);
+    (url.hashCode);
 
   @override
-  String toString() => 'LogoutResponseDto[successful=$successful, redirectUri=$redirectUri]';
+  String toString() => 'OAuthCallbackDto[url=$url]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
-      _json[r'successful'] = successful;
-      _json[r'redirectUri'] = redirectUri;
+      _json[r'url'] = url;
     return _json;
   }
 
-  /// Returns a new [LogoutResponseDto] instance and imports its values from
+  /// Returns a new [OAuthCallbackDto] instance and imports its values from
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
-  static LogoutResponseDto? fromJson(dynamic value) {
+  static OAuthCallbackDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -54,25 +48,24 @@ class LogoutResponseDto {
       // Note 2: this code is stripped in release mode!
       assert(() {
         requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "LogoutResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "LogoutResponseDto[$key]" has a null value in JSON.');
+          assert(json.containsKey(key), 'Required key "OAuthCallbackDto[$key]" is missing from JSON.');
+          assert(json[key] != null, 'Required key "OAuthCallbackDto[$key]" has a null value in JSON.');
         });
         return true;
       }());
 
-      return LogoutResponseDto(
-        successful: mapValueOfType<bool>(json, r'successful')!,
-        redirectUri: mapValueOfType<String>(json, r'redirectUri')!,
+      return OAuthCallbackDto(
+        url: mapValueOfType<String>(json, r'url')!,
       );
     }
     return null;
   }
 
-  static List<LogoutResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <LogoutResponseDto>[];
+  static List<OAuthCallbackDto>? listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <OAuthCallbackDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
-        final value = LogoutResponseDto.fromJson(row);
+        final value = OAuthCallbackDto.fromJson(row);
         if (value != null) {
           result.add(value);
         }
@@ -81,12 +74,12 @@ class LogoutResponseDto {
     return result.toList(growable: growable);
   }
 
-  static Map<String, LogoutResponseDto> mapFromJson(dynamic json) {
-    final map = <String, LogoutResponseDto>{};
+  static Map<String, OAuthCallbackDto> mapFromJson(dynamic json) {
+    final map = <String, OAuthCallbackDto>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = LogoutResponseDto.fromJson(entry.value);
+        final value = OAuthCallbackDto.fromJson(entry.value);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -95,13 +88,13 @@ class LogoutResponseDto {
     return map;
   }
 
-  // maps a json object with a list of LogoutResponseDto-objects as value to a dart map
-  static Map<String, List<LogoutResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<LogoutResponseDto>>{};
+  // maps a json object with a list of OAuthCallbackDto-objects as value to a dart map
+  static Map<String, List<OAuthCallbackDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+    final map = <String, List<OAuthCallbackDto>>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = LogoutResponseDto.listFromJson(entry.value, growable: growable,);
+        final value = OAuthCallbackDto.listFromJson(entry.value, growable: growable,);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -112,8 +105,7 @@ class LogoutResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'successful',
-    'redirectUri',
+    'url',
   };
 }
 
