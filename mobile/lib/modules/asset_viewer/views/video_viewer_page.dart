@@ -7,8 +7,8 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:chewie/chewie.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:video_player/video_player.dart';
 
@@ -52,7 +52,7 @@ class VideoViewerPage extends HookConsumerWidget {
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
           const Center(
-            child: DownloadLoadingIndicator(),
+            child: ImmichLoadingIndicator(),
           ),
       ],
     );

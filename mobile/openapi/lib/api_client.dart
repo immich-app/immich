@@ -270,6 +270,12 @@ class ApiClient {
           return LoginResponseDto.fromJson(value);
         case 'LogoutResponseDto':
           return LogoutResponseDto.fromJson(value);
+        case 'OAuthCallbackDto':
+          return OAuthCallbackDto.fromJson(value);
+        case 'OAuthConfigDto':
+          return OAuthConfigDto.fromJson(value);
+        case 'OAuthConfigResponseDto':
+          return OAuthConfigResponseDto.fromJson(value);
         case 'RemoveAssetsDto':
           return RemoveAssetsDto.fromJson(value);
         case 'SearchAssetDto':

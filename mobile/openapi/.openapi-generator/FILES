@@ -46,6 +46,10 @@ doc/JobStatusResponseDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
+doc/OAuthApi.md
+doc/OAuthCallbackDto.md
+doc/OAuthConfigDto.md
+doc/OAuthConfigResponseDto.md
 doc/RemoveAssetsDto.md
 doc/SearchAssetDto.md
 doc/ServerInfoApi.md
@@ -73,6 +77,7 @@ lib/api/asset_api.dart
 lib/api/authentication_api.dart
 lib/api/device_info_api.dart
 lib/api/job_api.dart
+lib/api/o_auth_api.dart
 lib/api/server_info_api.dart
 lib/api/user_api.dart
 lib/api_client.dart
@@ -122,6 +127,9 @@ lib/model/job_status_response_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
+lib/model/o_auth_callback_dto.dart
+lib/model/o_auth_config_dto.dart
+lib/model/o_auth_config_response_dto.dart
 lib/model/remove_assets_dto.dart
 lib/model/search_asset_dto.dart
 lib/model/server_info_response_dto.dart

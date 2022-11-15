@@ -62,6 +62,7 @@
     "local-reverse-geocoder": "^0.12.5",
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
+    "openid-client": "^5.2.1",
     "nest-commander": "^3.3.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",

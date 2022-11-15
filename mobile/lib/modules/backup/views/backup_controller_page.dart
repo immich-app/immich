@@ -13,7 +13,6 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
@@ -63,14 +62,11 @@ class BackupControllerPage extends HookConsumerWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: LinearPercentIndicator(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                  barRadius: const Radius.circular(2),
-                  lineHeight: 10.0,
-                  percent: backupState.serverInfo.diskUsagePercentage / 100.0,
+                child: LinearProgressIndicator(
+                  minHeight: 10.0,
+                  value: backupState.serverInfo.diskUsagePercentage / 100.0,
                   backgroundColor: Colors.grey,
-                  progressColor: Theme.of(context).primaryColor,
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
               Padding(
@@ -444,17 +440,21 @@ class BackupControllerPage extends HookConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
-              child: LinearPercentIndicator(
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                barRadius: const Radius.circular(2),
-                lineHeight: 10.0,
-                trailing: Text(
-                  " ${backupState.progressInPercentage.toStringAsFixed(0)}%",
-                  style: const TextStyle(fontSize: 12),
-                ),
-                percent: backupState.progressInPercentage / 100.0,
-                backgroundColor: Colors.grey,
-                progressColor: Theme.of(context).primaryColor,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: LinearProgressIndicator(
+                      minHeight: 10.0,
+                      value: backupState.progressInPercentage / 100.0,
+                      backgroundColor: Colors.grey,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  Text(
+                    " ${backupState.progressInPercentage.toStringAsFixed(0)}%",
+                    style: const TextStyle(fontSize: 12),
+                  )
+                ],
               ),
             ),
             Padding(
