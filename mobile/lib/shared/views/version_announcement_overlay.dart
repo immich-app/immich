@@ -14,7 +14,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     void goToReleaseNote() async {
       final Uri url =
-          Uri.parse('https://github.com/alextran1502/immich/releases/latest');
+          Uri.parse('https://github.com/immich-app/immich/releases/latest');
       await launchUrl(url);
     }
 
