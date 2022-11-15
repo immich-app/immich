@@ -299,6 +299,12 @@ export interface AssetCountByUserIdResponseDto {
      * @type {number}
      * @memberof AssetCountByUserIdResponseDto
      */
+    'audio': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByUserIdResponseDto
+     */
     'photos': number;
     /**
      * 
@@ -306,6 +312,18 @@ export interface AssetCountByUserIdResponseDto {
      * @memberof AssetCountByUserIdResponseDto
      */
     'videos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByUserIdResponseDto
+     */
+    'other': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByUserIdResponseDto
+     */
+    'total': number;
 }
 /**
  * 
@@ -1898,10 +1916,11 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {string} albumId 
+         * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadArchive: async (albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        downloadArchive: async (albumId: string, skip?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('downloadArchive', 'albumId', albumId)
             const localVarPath = `/album/{albumId}/download`
@@ -1920,6 +1939,10 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (skip !== undefined) {
+                localVarQueryParameter['skip'] = skip;
+            }
 
 
     
@@ -2227,11 +2250,12 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} albumId 
+         * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async downloadArchive(albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadArchive(albumId, options);
+        async downloadArchive(albumId: string, skip?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadArchive(albumId, skip, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -2348,11 +2372,12 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
         /**
          * 
          * @param {string} albumId 
+         * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadArchive(albumId: string, options?: any): AxiosPromise<object> {
-            return localVarFp.downloadArchive(albumId, options).then((request) => request(axios, basePath));
+        downloadArchive(albumId: string, skip?: number, options?: any): AxiosPromise<object> {
+            return localVarFp.downloadArchive(albumId, skip, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2470,12 +2495,13 @@ export class AlbumApi extends BaseAPI {
     /**
      * 
      * @param {string} albumId 
+     * @param {number} [skip] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public downloadArchive(albumId: string, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).downloadArchive(albumId, options).then((request) => request(this.axios, this.basePath));
+    public downloadArchive(albumId: string, skip?: number, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).downloadArchive(albumId, skip, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2718,6 +2744,44 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (isWeb !== undefined) {
                 localVarQueryParameter['isWeb'] = isWeb;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} [skip] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        downloadLibrary: async (skip?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/asset/download-library`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (skip !== undefined) {
+                localVarQueryParameter['skip'] = skip;
             }
 
 
@@ -3333,6 +3397,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
+         * 
+         * @param {number} [skip] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async downloadLibrary(skip?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadLibrary(skip, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * Get all AssetEntity belong to the user
          * @summary 
          * @param {*} [options] Override http request option.
@@ -3528,6 +3602,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.downloadFile(aid, did, isThumb, isWeb, options).then((request) => request(axios, basePath));
         },
         /**
+         * 
+         * @param {number} [skip] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        downloadLibrary(skip?: number, options?: any): AxiosPromise<object> {
+            return localVarFp.downloadLibrary(skip, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Get all AssetEntity belong to the user
          * @summary 
          * @param {*} [options] Override http request option.
@@ -3714,6 +3797,17 @@ export class AssetApi extends BaseAPI {
      */
     public downloadFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).downloadFile(aid, did, isThumb, isWeb, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} [skip] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public downloadLibrary(skip?: number, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).downloadLibrary(skip, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

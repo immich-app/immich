@@ -214,7 +214,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadArchive**
-> Object downloadArchive(albumId)
+> Object downloadArchive(albumId, skip)
 
 
 
@@ -230,9 +230,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = AlbumApi();
 final albumId = albumId_example; // String | 
+final skip = 8.14; // num | 
 
 try {
-    final result = api_instance.downloadArchive(albumId);
+    final result = api_instance.downloadArchive(albumId, skip);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->downloadArchive: $e\n');
@@ -244,6 +245,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albumId** | **String**|  | 
+ **skip** | **num**|  | [optional] 
 
 ### Return type
 

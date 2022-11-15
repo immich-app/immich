@@ -9,9 +9,13 @@ import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
 import { AlbumRepository, ALBUM_REPOSITORY } from './album-repository';
 import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
+import { DownloadModule } from '../../modules/download/download.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AssetEntity, UserEntity, AlbumEntity, AssetAlbumEntity, UserAlbumEntity])],
+  imports: [
+    TypeOrmModule.forFeature([AssetEntity, UserEntity, AlbumEntity, AssetAlbumEntity, UserAlbumEntity]),
+    DownloadModule,
+  ],
   controllers: [AlbumController],
   providers: [
     AlbumService,

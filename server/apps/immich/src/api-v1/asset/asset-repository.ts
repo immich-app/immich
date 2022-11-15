@@ -24,7 +24,7 @@ export interface IAssetRepository {
     checksum?: Buffer,
   ): Promise<AssetEntity>;
   update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
-  getAllByUserId(userId: string): Promise<AssetEntity[]>;
+  getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
@@ -81,7 +81,7 @@ export class AssetRepository implements IAssetRepository {
 
   async getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {
     // Get asset count by AssetType
-    const res = await this.assetRepository
+    const items = await this.assetRepository
       .createQueryBuilder('asset')
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')
@@ -89,14 +89,24 @@ export class AssetRepository implements IAssetRepository {
       .groupBy('asset.type')
       .getRawMany();
 
-    const assetCountByUserId = new AssetCountByUserIdResponseDto(0, 0);
-    res.map((item) => {
-      if (item.type === 'IMAGE') {
-        assetCountByUserId.photos = item.count;
-      } else if (item.type === 'VIDEO') {
-        assetCountByUserId.videos = item.count;
-      }
-    });
+    const assetCountByUserId = new AssetCountByUserIdResponseDto();
+
+    // asset type to dto property mapping
+    const map: Record<AssetType, keyof AssetCountByUserIdResponseDto> = {
+      [AssetType.AUDIO]: 'audio',
+      [AssetType.IMAGE]: 'photos',
+      [AssetType.VIDEO]: 'videos',
+      [AssetType.OTHER]: 'other',
+    };
+
+    for (const item of items) {
+      const count = Number(item.count) || 0;
+      const assetType = item.type as AssetType;
+      const type = map[assetType];
+
+      assetCountByUserId[type] = count;
+      assetCountByUserId.total += count;
+    }
 
     return assetCountByUserId;
   }
@@ -207,12 +217,13 @@ export class AssetRepository implements IAssetRepository {
    * Get all assets belong to the user on the database
    * @param userId
    */
-  async getAllByUserId(userId: string): Promise<AssetEntity[]> {
+  async getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]> {
     const query = this.assetRepository
       .createQueryBuilder('asset')
       .where('asset.userId = :userId', { userId: userId })
       .andWhere('asset.resizePath is not NULL')
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .skip(skip || 0)
       .orderBy('asset.createdAt', 'DESC');
 
     return await query.getMany();

@@ -211,7 +211,9 @@ class AlbumApi {
   /// Parameters:
   ///
   /// * [String] albumId (required):
-  Future<Response> downloadArchiveWithHttpInfo(String albumId,) async {
+  ///
+  /// * [num] skip:
+  Future<Response> downloadArchiveWithHttpInfo(String albumId, { num? skip, }) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{albumId}/download'
       .replaceAll('{albumId}', albumId);
@@ -222,6 +224,10 @@ class AlbumApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (skip != null) {
+      queryParams.addAll(_queryParams('', 'skip', skip));
+    }
 
     const contentTypes = <String>[];
 
@@ -240,8 +246,10 @@ class AlbumApi {
   /// Parameters:
   ///
   /// * [String] albumId (required):
-  Future<Object?> downloadArchive(String albumId,) async {
-    final response = await downloadArchiveWithHttpInfo(albumId,);
+  ///
+  /// * [num] skip:
+  Future<Object?> downloadArchive(String albumId, { num? skip, }) async {
+    final response = await downloadArchiveWithHttpInfo(albumId,  skip: skip, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

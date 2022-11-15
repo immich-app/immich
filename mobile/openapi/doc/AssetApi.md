@@ -13,6 +13,7 @@ Method | HTTP request | Description
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download | 
+[**downloadLibrary**](AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 [**getAssetByTimeBucket**](AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
@@ -211,6 +212,53 @@ Name | Type | Description  | Notes
  **did** | **String**|  | 
  **isThumb** | **bool**|  | [optional] 
  **isWeb** | **bool**|  | [optional] 
+
+### Return type
+
+[**Object**](Object.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **downloadLibrary**
+> Object downloadLibrary(skip)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final skip = 8.14; // num | 
+
+try {
+    final result = api_instance.downloadLibrary(skip);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->downloadLibrary: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **skip** | **num**|  | [optional] 
 
 ### Return type
 

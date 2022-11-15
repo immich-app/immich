@@ -6,11 +6,13 @@ import { AlbumResponseDto } from './response-dto/album-response.dto';
 import { IAssetRepository } from '../asset/asset-repository';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
+import { DownloadService } from '../../modules/download/download.service';
 
 describe('Album service', () => {
   let sut: AlbumService;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
+  let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
 
   const authUser: AuthUserDto = Object.freeze({
     id: '1111',
@@ -142,7 +144,11 @@ describe('Album service', () => {
       getExistingAssets: jest.fn(),
     };
 
-    sut = new AlbumService(albumRepositoryMock, assetRepositoryMock);
+    downloadServiceMock = {
+      downloadArchive: jest.fn(),
+    };
+
+    sut = new AlbumService(albumRepositoryMock, assetRepositoryMock, downloadServiceMock as DownloadService);
   });
 
   it('creates album', async () => {

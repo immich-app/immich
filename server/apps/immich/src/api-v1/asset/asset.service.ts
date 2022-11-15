@@ -41,6 +41,8 @@ import { timeUtils } from '@app/common/utils';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
+import { DownloadService } from '../../modules/download/download.service';
+import { DownloadDto } from './dto/download-library.dto';
 
 const fileInfo = promisify(stat);
 
@@ -52,6 +54,8 @@ export class AssetService {
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+
+    private downloadService: DownloadService,
   ) {}
 
   public async createUserAsset(
@@ -138,6 +142,12 @@ export class AssetService {
     const updatedAsset = await this._assetRepository.update(asset, dto);
 
     return mapAsset(updatedAsset);
+  }
+
+  public async downloadLibrary(user: AuthUserDto, dto: DownloadDto) {
+    const assets = await this._assetRepository.getAllByUserId(user.id, dto.skip);
+
+    return this.downloadService.downloadArchive(dto.name || `library`, assets);
   }
 
   public async downloadFile(query: ServeFileDto, res: Res) {

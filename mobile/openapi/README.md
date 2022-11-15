@@ -80,6 +80,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download | 
+*AssetApi* | [**downloadLibrary**](doc//AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 *AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
