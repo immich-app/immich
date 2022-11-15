@@ -70,6 +70,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/job/tsconfig.lib.json"
       }
+    },
+    "system-config": {
+      "type": "library",
+      "root": "libs/system-config",
+      "entryFile": "index",
+      "sourceRoot": "libs/system-config/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/system-config/tsconfig.lib.json"
+      }
     }
   }
 }

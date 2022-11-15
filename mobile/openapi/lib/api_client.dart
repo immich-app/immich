@@ -292,6 +292,12 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
+        case 'SystemConfigKey':
+          return SystemConfigKeyTypeTransformer().decode(value);
+        case 'SystemConfigResponseDto':
+          return SystemConfigResponseDto.fromJson(value);
+        case 'SystemConfigResponseItem':
+          return SystemConfigResponseItem.fromJson(value);
         case 'ThumbnailFormat':
           return ThumbnailFormatTypeTransformer().decode(value);
         case 'TimeGroupEnum':
