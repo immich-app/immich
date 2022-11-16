@@ -7,7 +7,6 @@
 	import Keydown from 'svelte-keydown';
 
 	export let assetId: string;
-	export let deviceId: string;
 
 	let assetInfo: AssetResponseDto;
 	let assetData: string;

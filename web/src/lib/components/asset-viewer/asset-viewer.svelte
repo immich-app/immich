@@ -256,7 +256,7 @@
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
 			{#if asset.type === AssetTypeEnum.Image}
-				<PhotoViewer assetId={asset.id} deviceId={asset.deviceId} on:close={closeViewer} />
+				<PhotoViewer assetId={asset.id} on:close={closeViewer} />
 			{:else}
 				<VideoViewer assetId={asset.id} on:close={closeViewer} />
 			{/if}
