@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import AsserViewerNavBar from './asset-viewer-nav-bar.svelte';
+	import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import PhotoViewer from './photo-viewer.svelte';
@@ -219,11 +219,12 @@
 	class="fixed h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4"
 >
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
-		<AsserViewerNavBar
+		<AssetViewerNavBar
 			{asset}
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
 			on:download={downloadFile}
+			showCopyButton={asset.type === AssetTypeEnum.Image}
 			on:delete={deleteAsset}
 			on:favorite={toggleFavorite}
 			on:addToAlbum={() => openAlbumPicker(false)}
