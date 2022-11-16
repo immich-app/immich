@@ -8,17 +8,19 @@ You can use the CLI to upload an existing gallery to the Immich server
 
 [Immich CLI Repository](https://github.com/immich-app/CLI)
 
-
 ## Requirements
-* Node.js 16 or above
-* Npm
+
+- Node.js 16 or above
+- Npm
 
 ## Installation
+
 ```bash
 npm i -g immich
 ```
 
 ## Quick Start
+
 Specify user's credentials, Immich's server address and port, and the directory you would like to upload videos/photos from.
 
 ```bash
@@ -58,9 +60,8 @@ immich upload --email testuser@email.com --password password --server http://192
 ### Run from source
 
 ```bash title="Clone Repository"
-git clone https://github.com/alextran1502/immich-cli
+git clone https://github.com/immich-app/CLI
 ```
-
 
 ```bash title="Install dependencies"
 npm install
