@@ -5,6 +5,7 @@
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import { api, AssetResponseDto } from '@api';
 	import Keydown from 'svelte-keydown';
+	import { notificationController, NotificationType } from '../shared-components/notification/notification';
 
 	export let assetId: string;
 	export let deviceId: string;
@@ -54,6 +55,11 @@
 
 	export const doCopy = async () => {
 		await copyImageToClipboard(assetData);
+		notificationController.show({
+			type: NotificationType.Info,
+			message: 'Copied image to clipboard.',
+			timeout: 3000
+		})
 	};
 </script>
 
