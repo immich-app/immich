@@ -25,15 +25,9 @@
 
 	const loadAssetData = async () => {
 		try {
-			const { data } = await api.assetApi.serveFile(
-				assetInfo.deviceAssetId,
-				deviceId,
-				false,
-				true,
-				{
-					responseType: 'blob'
-				}
-			);
+			const { data } = await api.assetApi.serveFile(assetInfo.id, false, true, {
+				responseType: 'blob'
+			});
 
 			if (!(data instanceof Blob)) {
 				return;
