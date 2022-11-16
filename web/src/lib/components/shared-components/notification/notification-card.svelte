@@ -66,7 +66,6 @@
 			discard();
 		} else if (action.type == 'link') {
 			window.open(action.target);
-			event.preventDefault();
 		}
 	};
 </script>

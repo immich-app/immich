@@ -44,7 +44,7 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 				notificationController.show({
 					type: NotificationType.Error,
 					message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files. 
-          Please check out <a href="https://immich.app/docs/usage/bulk-upload" class="underline" target="_blank">the bulk upload documentation</a> if you need to upload more than 50 files.`,
+          Please check out <u>the bulk upload documentation</u> if you need to upload more than 50 files.`,
 					timeout: 10000,
 					action: { type: 'link', target: 'https://immich.app/docs/usage/bulk-upload' }
 				});
