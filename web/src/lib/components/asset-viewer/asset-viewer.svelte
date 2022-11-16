@@ -101,22 +101,16 @@
 
 			$downloadAssets[imageFileName] = 0;
 
-			const { data, status } = await api.assetApi.downloadFile(
-				asset.deviceAssetId,
-				asset.deviceId,
-				false,
-				false,
-				{
-					responseType: 'blob',
-					onDownloadProgress: (progressEvent) => {
-						if (progressEvent.lengthComputable) {
-							const total = progressEvent.total;
-							const current = progressEvent.loaded;
-							$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
-						}
+			const { data, status } = await api.assetApi.downloadFile(asset.id, false, false, {
+				responseType: 'blob',
+				onDownloadProgress: (progressEvent) => {
+					if (progressEvent.lengthComputable) {
+						const total = progressEvent.total;
+						const current = progressEvent.loaded;
+						$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
 					}
 				}
-			);
+			});
 
 			if (!(data instanceof Blob)) {
 				return;
@@ -262,7 +256,7 @@
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
 			{#if asset.type === AssetTypeEnum.Image}
-				<PhotoViewer assetId={asset.id} deviceId={asset.deviceId} on:close={closeViewer} />
+				<PhotoViewer assetId={asset.id} on:close={closeViewer} />
 			{:else}
 				<VideoViewer assetId={asset.id} on:close={closeViewer} />
 			{/if}

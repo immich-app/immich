@@ -7,7 +7,6 @@
 	import Keydown from 'svelte-keydown';
 
 	export let assetId: string;
-	export let deviceId: string;
 
 	let assetInfo: AssetResponseDto;
 	let assetData: string;
@@ -25,15 +24,9 @@
 
 	const loadAssetData = async () => {
 		try {
-			const { data } = await api.assetApi.serveFile(
-				assetInfo.deviceAssetId,
-				deviceId,
-				false,
-				true,
-				{
-					responseType: 'blob'
-				}
-			);
+			const { data } = await api.assetApi.serveFile(assetInfo.id, false, true, {
+				responseType: 'blob'
+			});
 
 			if (!(data instanceof Blob)) {
 				return;

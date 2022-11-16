@@ -131,13 +131,13 @@ export class AssetController {
     }
   }
 
-  @Get('/download')
+  @Get('/download/:assetId')
   async downloadFile(
-    @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
+    @Param('assetId') assetId: string,
   ): Promise<any> {
-    return this.assetService.downloadFile(query, res);
+    return this.assetService.downloadFile(query, assetId, res);
   }
 
   @Get('/download-library')
@@ -154,14 +154,15 @@ export class AssetController {
     return stream;
   }
 
-  @Get('/file')
+  @Get('/file/:assetId')
+  @Header('Cache-Control', 'max-age=300')
   async serveFile(
     @Headers() headers: Record<string, string>,
-    @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
+    @Param('assetId') assetId: string,
   ): Promise<any> {
-    return this.assetService.serveFile(authUser, query, res, headers);
+    return this.assetService.serveFile(assetId, query, res, headers);
   }
 
   @Get('/thumbnail/:assetId')

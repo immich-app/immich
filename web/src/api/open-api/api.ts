@@ -2702,19 +2702,17 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadFile: async (aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'aid' is not null or undefined
-            assertParamExists('downloadFile', 'aid', aid)
-            // verify required parameter 'did' is not null or undefined
-            assertParamExists('downloadFile', 'did', did)
-            const localVarPath = `/asset/download`;
+        downloadFile: async (assetId: string, isThumb?: boolean, isWeb?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetId' is not null or undefined
+            assertParamExists('downloadFile', 'assetId', assetId)
+            const localVarPath = `/asset/download/{assetId}`
+                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2729,14 +2727,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (aid !== undefined) {
-                localVarQueryParameter['aid'] = aid;
-            }
-
-            if (did !== undefined) {
-                localVarQueryParameter['did'] = did;
-            }
 
             if (isThumb !== undefined) {
                 localVarQueryParameter['isThumb'] = isThumb;
@@ -3198,19 +3188,17 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        serveFile: async (aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'aid' is not null or undefined
-            assertParamExists('serveFile', 'aid', aid)
-            // verify required parameter 'did' is not null or undefined
-            assertParamExists('serveFile', 'did', did)
-            const localVarPath = `/asset/file`;
+        serveFile: async (assetId: string, isThumb?: boolean, isWeb?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetId' is not null or undefined
+            assertParamExists('serveFile', 'assetId', assetId)
+            const localVarPath = `/asset/file/{assetId}`
+                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3225,14 +3213,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (aid !== undefined) {
-                localVarQueryParameter['aid'] = aid;
-            }
-
-            if (did !== undefined) {
-                localVarQueryParameter['did'] = did;
-            }
 
             if (isThumb !== undefined) {
                 localVarQueryParameter['isThumb'] = isThumb;
@@ -3385,15 +3365,14 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async downloadFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadFile(aid, did, isThumb, isWeb, options);
+        async downloadFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadFile(assetId, isThumb, isWeb, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -3517,15 +3496,14 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async serveFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.serveFile(aid, did, isThumb, isWeb, options);
+        async serveFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.serveFile(assetId, isThumb, isWeb, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -3591,15 +3569,14 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: any): AxiosPromise<object> {
-            return localVarFp.downloadFile(aid, did, isThumb, isWeb, options).then((request) => request(axios, basePath));
+        downloadFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: any): AxiosPromise<object> {
+            return localVarFp.downloadFile(assetId, isThumb, isWeb, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3710,15 +3687,14 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        serveFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: any): AxiosPromise<object> {
-            return localVarFp.serveFile(aid, did, isThumb, isWeb, options).then((request) => request(axios, basePath));
+        serveFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: any): AxiosPromise<object> {
+            return localVarFp.serveFile(assetId, isThumb, isWeb, options).then((request) => request(axios, basePath));
         },
         /**
          * Update an asset
@@ -3787,16 +3763,15 @@ export class AssetApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} aid 
-     * @param {string} did 
+     * @param {string} assetId 
      * @param {boolean} [isThumb] 
      * @param {boolean} [isWeb] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public downloadFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).downloadFile(aid, did, isThumb, isWeb, options).then((request) => request(this.axios, this.basePath));
+    public downloadFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).downloadFile(assetId, isThumb, isWeb, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3932,16 +3907,15 @@ export class AssetApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} aid 
-     * @param {string} did 
+     * @param {string} assetId 
      * @param {boolean} [isThumb] 
      * @param {boolean} [isWeb] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public serveFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).serveFile(aid, did, isThumb, isWeb, options).then((request) => request(this.axios, this.basePath));
+    public serveFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).serveFile(assetId, isThumb, isWeb, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

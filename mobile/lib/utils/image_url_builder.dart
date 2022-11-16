@@ -22,7 +22,7 @@ String getAlbumThumbnailUrl(
 
 String getImageUrl(final AssetResponseDto asset) {
   final box = Hive.box(userInfoBox);
-  return '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false';
+  return '${box.get(serverEndpointKey)}/asset/file/${asset.id}?isThumb=false';
 }
 
 String _getThumbnailUrl(

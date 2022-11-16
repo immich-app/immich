@@ -79,7 +79,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
-*AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download | 
+*AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
 *AssetApi* | [**downloadLibrary**](doc//AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
@@ -92,7 +92,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
-*AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file | 
+*AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
 *AssetApi* | [**updateAssetById**](doc//AssetApi.md#updateassetbyid) | **PUT** /asset/assetById/{assetId} | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 

@@ -24,7 +24,7 @@
 	const loadVideoData = async (assetInfo: AssetResponseDto) => {
 		isVideoLoading = true;
 
-		videoUrl = getFileUrl(assetInfo.deviceAssetId, assetInfo.deviceId, false, true);
+		videoUrl = getFileUrl(assetInfo.id, false, true);
 
 		return assetInfo;
 	};
