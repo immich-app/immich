@@ -150,10 +150,10 @@ export class AssetService {
     return this.downloadService.downloadArchive(dto.name || `library`, assets);
   }
 
-  public async downloadFile(query: ServeFileDto, res: Res) {
+  public async downloadFile(query: ServeFileDto, assetId: string, res: Res) {
     try {
       let fileReadStream = null;
-      const asset = await this.findAssetOfDevice(query.did, query.aid);
+      const asset = await this._assetRepository.getById(assetId);
 
       // Download Video
       if (asset.type === AssetType.VIDEO) {
@@ -251,9 +251,9 @@ export class AssetService {
     }
   }
 
-  public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
+  public async serveFile(assetId: string, query: ServeFileDto, res: Res, headers: any) {
     let fileReadStream: ReadStream;
-    const asset = await this.findAssetOfDevice(query.did, query.aid);
+    const asset = await this._assetRepository.getById(assetId);
 
     if (!asset) {
       throw new NotFoundException('Asset does not exist');

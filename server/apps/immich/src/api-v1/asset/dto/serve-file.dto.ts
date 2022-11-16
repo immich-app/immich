@@ -3,14 +3,6 @@ import { Transform } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class ServeFileDto {
-  @IsNotEmpty()
-  @ApiProperty({ type: String, title: 'Device Asset ID' })
-  aid!: string;
-
-  @IsNotEmpty()
-  @ApiProperty({ type: String, title: 'Device ID' })
-  did!: string;
-
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => {
