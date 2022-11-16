@@ -9,3 +9,11 @@ declare namespace App {
 
 	// interface Platform {}
 }
+
+// Source: https://stackoverflow.com/questions/63814432/typescript-typing-of-non-standard-window-event-in-svelte
+// To fix the <svelte:window... in components/asset-viewer/photo-viewer.svelte
+declare namespace svelte.JSX {
+	interface HTMLAttributes<T> {
+		oncopyImage?: () => void;
+	}
+}
