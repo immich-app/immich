@@ -107,22 +107,6 @@ export class AssetService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  // TODO - Refactor this to get asset by its own id
-  private async findAssetOfDevice(deviceId: string, assetId: string): Promise<AssetResponseDto> {
-    const rows = await this.assetRepository.query(
-      'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."deviceId" = $2',
-      [assetId, deviceId],
-    );
-
-    if (rows.lengh == 0) {
-      throw new NotFoundException('Not Found');
-    }
-
-    const assetOnDevice = rows[0] as AssetEntity;
-
-    return mapAsset(assetOnDevice);
-  }
-
   public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
     const asset = await this._assetRepository.getById(assetId);
 
