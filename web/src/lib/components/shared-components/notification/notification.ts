@@ -14,8 +14,9 @@ export class ImmichNotification {
 }
 
 type DiscardAction = { type: 'discard' };
+type NoopAction = { type: 'noop' };
 type LinkAction = { type: 'link'; target: string };
-export type NotificationAction = DiscardAction | LinkAction;
+export type NotificationAction = DiscardAction | NoopAction | LinkAction;
 
 export class ImmichNotificationDto {
 	/**
