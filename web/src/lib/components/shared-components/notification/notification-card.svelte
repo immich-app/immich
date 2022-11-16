@@ -60,7 +60,7 @@
 		notificationController.removeNotificationById(notificationInfo.id);
 	};
 
-	const handleClick = (event: MouseEvent) => {
+	const handleClick = () => {
 		const action = notificationInfo.action;
 		if (action.type == 'discard') {
 			discard();
