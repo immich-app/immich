@@ -84,7 +84,7 @@
 				{notificationInfo.type.toString()}
 			</h2>
 		</div>
-		<button on:click={discard}>
+		<button on:click|stopPropagation={discard}>
 			<svelte:component this={WindowClose} size="20" />
 		</button>
 	</div>
