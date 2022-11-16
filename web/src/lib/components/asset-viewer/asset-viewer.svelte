@@ -101,22 +101,16 @@
 
 			$downloadAssets[imageFileName] = 0;
 
-			const { data, status } = await api.assetApi.downloadFile(
-				asset.deviceAssetId,
-				asset.deviceId,
-				false,
-				false,
-				{
-					responseType: 'blob',
-					onDownloadProgress: (progressEvent) => {
-						if (progressEvent.lengthComputable) {
-							const total = progressEvent.total;
-							const current = progressEvent.loaded;
-							$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
-						}
+			const { data, status } = await api.assetApi.downloadFile(asset.id, false, false, {
+				responseType: 'blob',
+				onDownloadProgress: (progressEvent) => {
+					if (progressEvent.lengthComputable) {
+						const total = progressEvent.total;
+						const current = progressEvent.loaded;
+						$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
 					}
 				}
-			);
+			});
 
 			if (!(data instanceof Blob)) {
 				return;
