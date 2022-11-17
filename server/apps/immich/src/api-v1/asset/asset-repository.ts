@@ -263,7 +263,7 @@ export class AssetRepository implements IAssetRepository {
     asset.deviceAssetId = createAssetDto.deviceAssetId;
     asset.userId = ownerId;
     asset.deviceId = createAssetDto.deviceId;
-    asset.type = createAssetDto.assetType || AssetType.OTHER;
+    asset.type = !isVisible ? AssetType.VIDEO : createAssetDto.assetType || AssetType.OTHER; // If an asset is not visible, it is a LivePhotos video portion, therefore we can confidently assign the type as VIDEO here
     asset.originalPath = originalPath;
     asset.createdAt = createAssetDto.createdAt;
     asset.modifiedAt = createAssetDto.modifiedAt;

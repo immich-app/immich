@@ -5,6 +5,8 @@
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
+	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
+	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
 	import LoadingSpinner from './loading-spinner.svelte';
 	import { AssetResponseDto, AssetTypeEnum, getFileUrl, ThumbnailFormat } from '@api';
 
@@ -28,10 +30,14 @@
 	let videoProgress = '00:00';
 	let videoUrl: string;
 
-	const loadVideoData = async () => {
+	const loadVideoData = async (isLivePhoto: boolean) => {
 		isThumbnailVideoPlaying = false;
 
-		videoUrl = getFileUrl(asset.id, false, true);
+		if (isLivePhoto && asset.livePhotoVideoId) {
+			videoUrl = getFileUrl(asset.livePhotoVideoId, false, true);
+		} else {
+			videoUrl = getFileUrl(asset.id, false, true);
+		}
 	};
 
 	const getVideoDurationInString = (currentTime: number) => {
@@ -202,6 +208,28 @@
 			</div>
 		{/if}
 
+		{#if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
+			<div
+				class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10"
+			>
+				{#if mouseOver}
+					{#if isThumbnailVideoPlaying}
+						<span in:fly={{ x: 25, duration: 500 }}>
+							<MotionPauseOutline size="24" />
+						</span>
+					{:else}
+						<span in:fade={{ duration: 250 }}>
+							<LoadingSpinner />
+						</span>
+					{/if}
+				{:else}
+					<span in:fade={{ duration: 500 }}>
+						<MotionPlayOutline size="24" />
+					</span>
+				{/if}
+			</div>
+		{/if}
+
 		<!-- Thumbnail -->
 		{#if intersecting}
 			<img
@@ -217,7 +245,27 @@
 		{/if}
 
 		{#if mouseOver && asset.type === AssetTypeEnum.Video}
-			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
+			<div class="absolute w-full h-full top-0" on:mouseenter={() => loadVideoData(false)}>
+				{#if videoUrl}
+					<video
+						muted
+						autoplay
+						preload="none"
+						class="h-full object-cover"
+						width="250px"
+						style:width={`${thumbnailSize}px`}
+						on:canplay={handleCanPlay}
+						bind:this={videoPlayerNode}
+					>
+						<source src={videoUrl} type="video/mp4" />
+						<track kind="captions" />
+					</video>
+				{/if}
+			</div>
+		{/if}
+
+		{#if mouseOver && asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
+			<div class="absolute w-full h-full top-0" on:mouseenter={() => loadVideoData(true)}>
 				{#if videoUrl}
 					<video
 						muted
