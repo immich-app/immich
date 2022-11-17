@@ -214,7 +214,7 @@
 			>
 				{#if mouseOver}
 					{#if isThumbnailVideoPlaying}
-						<span in:fly={{ x: 25, duration: 500 }}>
+						<span in:fade={{ duration: 500 }}>
 							<MotionPauseOutline size="24" />
 						</span>
 					{:else}

@@ -39,7 +39,7 @@
 	let appearsInAlbums: AlbumResponseDto[] = [];
 	let isShowAlbumPicker = false;
 	let addToSharedAlbum = true;
-
+	let shouldPlayMotionPhoto = false;
 	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
 	onMount(() => {
@@ -221,14 +221,18 @@
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
 		<AssetViewerNavBar
 			{asset}
+			isMotionPhotoPlaying={shouldPlayMotionPhoto}
+			showCopyButton={asset.type === AssetTypeEnum.Image}
+			showMotionPlayButton={!!asset.livePhotoVideoId}
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
 			on:download={downloadFile}
-			showCopyButton={asset.type === AssetTypeEnum.Image}
 			on:delete={deleteAsset}
 			on:favorite={toggleFavorite}
 			on:addToAlbum={() => openAlbumPicker(false)}
 			on:addToSharedAlbum={() => openAlbumPicker(true)}
+			on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
+			on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
 		/>
 	</div>
 
@@ -257,7 +261,15 @@
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
 			{#if asset.type === AssetTypeEnum.Image}
-				<PhotoViewer assetId={asset.id} on:close={closeViewer} />
+				{#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+					<VideoViewer
+						assetId={asset.livePhotoVideoId}
+						on:close={closeViewer}
+						on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+					/>
+				{:else}
+					<PhotoViewer assetId={asset.id} on:close={closeViewer} />
+				{/if}
 			{:else}
 				<VideoViewer assetId={asset.id} on:close={closeViewer} />
 			{/if}
