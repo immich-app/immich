@@ -21,6 +21,7 @@
 	let imageData: string;
 
 	let mouseOver = false;
+	let playMotionVideo = false;
 	$: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
 	let mouseOverIcon = false;
@@ -34,6 +35,7 @@
 		isThumbnailVideoPlaying = false;
 
 		if (isLivePhoto && asset.livePhotoVideoId) {
+			console.log('get file url');
 			videoUrl = getFileUrl(asset.livePhotoVideoId, false, true);
 		} else {
 			videoUrl = getFileUrl(asset.id, false, true);
@@ -212,21 +214,25 @@
 			<div
 				class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10"
 			>
-				{#if mouseOver}
-					{#if isThumbnailVideoPlaying}
+				<span
+					in:fade={{ duration: 500 }}
+					on:mouseenter={() => {
+						playMotionVideo = true;
+						loadVideoData(true);
+					}}
+					on:mouseleave={() => (playMotionVideo = false)}
+				>
+					{#if playMotionVideo}
 						<span in:fade={{ duration: 500 }}>
 							<MotionPauseOutline size="24" />
 						</span>
 					{:else}
-						<span in:fade={{ duration: 250 }}>
-							<LoadingSpinner />
+						<span in:fade={{ duration: 500 }}>
+							<MotionPlayOutline size="24" />
 						</span>
 					{/if}
-				{:else}
-					<span in:fade={{ duration: 500 }}>
-						<MotionPlayOutline size="24" />
-					</span>
-				{/if}
+				</span>
+				<!-- {/if} -->
 			</div>
 		{/if}
 
@@ -264,8 +270,8 @@
 			</div>
 		{/if}
 
-		{#if mouseOver && asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
-			<div class="absolute w-full h-full top-0" on:mouseenter={() => loadVideoData(true)}>
+		{#if playMotionVideo && asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
+			<div class="absolute w-full h-full top-0">
 				{#if videoUrl}
 					<video
 						muted
