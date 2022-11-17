@@ -42,7 +42,7 @@ class VideoViewerPage extends HookConsumerWidget {
     final box = Hive.box(userInfoBox);
     final String jwtToken = box.get(accessTokenKey);
     final String videoUrl =
-        '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}';
+        '${box.get(serverEndpointKey)}/asset/file/${asset.id}';
 
     return Stack(
       children: [

@@ -43,6 +43,12 @@ import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-use
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
+import { DownloadDto } from './dto/download-library.dto';
+import {
+  IMMICH_ARCHIVE_COMPLETE,
+  IMMICH_ARCHIVE_FILE_COUNT,
+  IMMICH_CONTENT_LENGTH_HINT,
+} from '../../constants/download.constant';
 
 @Authenticated()
 @ApiBearerAuth()
@@ -78,23 +84,38 @@ export class AssetController {
     return this.assetService.handleUploadedAsset(authUser, createAssetDto, res, originalAssetData, livePhotoAssetData);
   }
 
-  @Get('/download')
+  @Get('/download/:assetId')
   async downloadFile(
-    @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
+    @Param('assetId') assetId: string,
   ): Promise<any> {
-    return this.assetService.downloadFile(query, res);
+    return this.assetService.downloadFile(query, assetId, res);
   }
 
-  @Get('/file')
+  @Get('/download-library')
+  async downloadLibrary(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
+    @Response({ passthrough: true }) res: Res,
+  ): Promise<any> {
+    const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadLibrary(authUser, dto);
+    res.attachment(fileName);
+    res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
+    res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
+    res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
+    return stream;
+  }
+
+  @Get('/file/:assetId')
+  @Header('Cache-Control', 'max-age=300')
   async serveFile(
     @Headers() headers: Record<string, string>,
-    @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
+    @Param('assetId') assetId: string,
   ): Promise<any> {
-    return this.assetService.serveFile(authUser, query, res, headers);
+    return this.assetService.serveFile(assetId, query, res, headers);
   }
 
   @Get('/thumbnail/:assetId')

@@ -52,6 +52,8 @@ import {
 } from '@app/job';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { DownloadService } from '../../modules/download/download.service';
+import { DownloadDto } from './dto/download-library.dto';
 
 const fileInfo = promisify(stat);
 
@@ -71,6 +73,8 @@ export class AssetService {
 
     @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
+
+    private downloadService: DownloadService,
   ) {}
 
   public async handleUploadedAsset(
@@ -217,22 +221,6 @@ export class AssetService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  // TODO - Refactor this to get asset by its own id
-  private async findAssetOfDevice(deviceId: string, assetId: string): Promise<AssetResponseDto> {
-    const rows = await this.assetRepository.query(
-      'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."deviceId" = $2 AND a."isVisible" = true',
-      [assetId, deviceId],
-    );
-
-    if (rows.lengh == 0) {
-      throw new NotFoundException('Not Found');
-    }
-
-    const assetOnDevice = rows[0] as AssetEntity;
-
-    return mapAsset(assetOnDevice);
-  }
-
   public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
     const asset = await this._assetRepository.getById(assetId);
 
@@ -254,10 +242,16 @@ export class AssetService {
     return mapAsset(updatedAsset);
   }
 
-  public async downloadFile(query: ServeFileDto, res: Res) {
+  public async downloadLibrary(user: AuthUserDto, dto: DownloadDto) {
+    const assets = await this._assetRepository.getAllByUserId(user.id, dto.skip);
+
+    return this.downloadService.downloadArchive(dto.name || `library`, assets);
+  }
+
+  public async downloadFile(query: ServeFileDto, assetId: string, res: Res) {
     try {
       let fileReadStream = null;
-      const asset = await this.findAssetOfDevice(query.did, query.aid);
+      const asset = await this._assetRepository.getById(assetId);
 
       // Download Video
       if (asset.type === AssetType.VIDEO) {
@@ -355,9 +349,9 @@ export class AssetService {
     }
   }
 
-  public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
+  public async serveFile(assetId: string, query: ServeFileDto, res: Res, headers: any) {
     let fileReadStream: ReadStream;
-    const asset = await this.findAssetOfDevice(query.did, query.aid);
+    const asset = await this._assetRepository.getById(assetId);
 
     if (!asset) {
       throw new NotFoundException('Asset does not exist');

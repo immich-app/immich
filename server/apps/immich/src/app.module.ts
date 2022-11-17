@@ -16,6 +16,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { DatabaseModule } from '@app/database';
 import { JobModule } from './api-v1/job/job.module';
+import { SystemConfigModule } from './api-v1/system-config/system-config.module';
+import { OAuthModule } from './api-v1/oauth/oauth.module';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { JobModule } from './api-v1/job/job.module';
     AssetModule,
 
     AuthModule,
+    OAuthModule,
 
     ImmichJwtModule,
 
@@ -58,6 +61,8 @@ import { JobModule } from './api-v1/job/job.module';
     ScheduleTasksModule,
 
     JobModule,
+
+    SystemConfigModule,
   ],
   controllers: [AppController],
   providers: [],

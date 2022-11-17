@@ -10,7 +10,7 @@ export const POST: RequestHandler = async () => {
 
 	headers.append(
 		'set-cookie',
-		'immich_is_authenticated=deleted; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
+		'immich_auth_type=deleted; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
 	);
 	headers.append(
 		'set-cookie',

@@ -313,53 +313,69 @@
 
 	const downloadAlbum = async () => {
 		try {
-			const fileName = album.albumName + '.zip';
+			let skip = 0;
+			let count = 0;
+			let done = false;
 
-			// If assets is already download -> return;
-			if ($downloadAssets[fileName]) {
-				return;
-			}
+			while (!done) {
+				count++;
 
-			$downloadAssets[fileName] = 0;
+				const fileName = album.albumName + `${count === 1 ? '' : count}.zip`;
 
-			let total = 0;
-			const { data, status } = await api.albumApi.downloadArchive(album.id, {
-				responseType: 'blob',
-				onDownloadProgress: function (progressEvent) {
-					const request = this as XMLHttpRequest;
-					if (!total) {
-						total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
+				$downloadAssets[fileName] = 0;
+
+				let total = 0;
+
+				const { data, status, headers } = await api.albumApi.downloadArchive(
+					album.id,
+					skip || undefined,
+					{
+						responseType: 'blob',
+						onDownloadProgress: function (progressEvent) {
+							const request = this as XMLHttpRequest;
+							if (!total) {
+								total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
+							}
+
+							if (total) {
+								const current = progressEvent.loaded;
+								$downloadAssets[fileName] = Math.floor((current / total) * 100);
+							}
+						}
 					}
+				);
 
-					if (total) {
-						const current = progressEvent.loaded;
-						$downloadAssets[fileName] = Math.floor((current / total) * 100);
-					}
+				const isNotComplete = headers['x-immich-archive-complete'] === 'false';
+				const fileCount = Number(headers['x-immich-archive-file-count']) || 0;
+				if (isNotComplete && fileCount > 0) {
+					skip += fileCount;
+				} else {
+					done = true;
 				}
-			});
 
-			if (!(data instanceof Blob)) {
-				return;
-			}
+				if (!(data instanceof Blob)) {
+					return;
+				}
 
-			if (status === 200) {
-				const fileUrl = URL.createObjectURL(data);
-				const anchor = document.createElement('a');
-				anchor.href = fileUrl;
-				anchor.download = fileName;
+				if (status === 200) {
+					const fileUrl = URL.createObjectURL(data);
+					const anchor = document.createElement('a');
+					anchor.href = fileUrl;
+					anchor.download = fileName;
 
-				document.body.appendChild(anchor);
-				anchor.click();
-				document.body.removeChild(anchor);
+					document.body.appendChild(anchor);
+					anchor.click();
+					document.body.removeChild(anchor);
 
-				URL.revokeObjectURL(fileUrl);
+					URL.revokeObjectURL(fileUrl);
 
-				// Remove item from download list
-				setTimeout(() => {
-					const copy = $downloadAssets;
-					delete copy[fileName];
-					$downloadAssets = copy;
-				}, 2000);
+					// Remove item from download list
+					setTimeout(() => {
+						const copy = $downloadAssets;
+						delete copy[fileName];
+						$downloadAssets = copy;
+					}, 2000);
+				}
 			}
 		} catch (e) {
 			console.error('Error downloading file ', e);

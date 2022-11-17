@@ -31,7 +31,7 @@
 	const loadVideoData = async () => {
 		isThumbnailVideoPlaying = false;
 
-		videoUrl = getFileUrl(asset.deviceAssetId, asset.deviceId, false, true);
+		videoUrl = getFileUrl(asset.id, false, true);
 	};
 
 	const getVideoDurationInString = (currentTime: number) => {

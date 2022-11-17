@@ -23,8 +23,7 @@ class ImageViewerService {
       String fileName = p.basename(asset.originalPath);
 
       var res = await _apiService.assetApi.downloadFileWithHttpInfo(
-        asset.deviceAssetId,
-        asset.deviceId,
+        asset.id,
         isThumb: false,
         isWeb: false,
       );

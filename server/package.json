@@ -13,6 +13,7 @@
     "build": "nest build immich && nest build microservices && nest build cli",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
+    "nest": "nest",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug 0.0.0.0:9230 --watch",
     "start:prod": "node dist/main",
@@ -55,6 +56,7 @@
     "diskusage": "^1.1.3",
     "dotenv": "^14.2.0",
     "exifr": "^7.1.3",
+    "fdir": "^5.3.0",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^7.0.2",
     "i18n-iso-countries": "^7.5.0",
@@ -63,6 +65,7 @@
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
     "nest-commander": "^3.3.0",
+    "openid-client": "^5.2.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "pg": "^8.7.1",
@@ -138,7 +141,8 @@
       "@app/database/config/(.*)": "<rootDir>/libs/database/src/config/$1",
       "@app/database/config": "<rootDir>/libs/database/src/config",
       "@app/common": "<rootDir>/libs/common/src",
-      "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1"
+      "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1",
+      "^@app/system-config(|/.*)$": "<rootDir>/libs/system-config/src/$1"
     }
   }
 }

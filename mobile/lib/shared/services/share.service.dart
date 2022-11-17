@@ -28,8 +28,7 @@ class ShareService {
         final fileName = basename(asset.remote!.originalPath);
         final tempFile = await File('${tempDir.path}/$fileName').create();
         final res = await _apiService.assetApi.downloadFileWithHttpInfo(
-          asset.remote!.deviceAssetId,
-          asset.remote!.deviceId,
+          asset.remote!.id,
           isThumb: false,
           isWeb: false,
         );

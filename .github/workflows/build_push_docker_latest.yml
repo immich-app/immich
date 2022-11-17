@@ -26,6 +26,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push Immich Mono Repo
         uses: docker/build-push-action@v3.2.0
         with:
@@ -37,6 +43,7 @@ jobs:
           cache-to: type=gha,mode=max
           tags: |
             altran1502/immich-server:latest
+            ghcr.io/${{ github.repository_owner }}/immich-server:latest
 
   build_and_push_machine_learning_latest:
     runs-on: ubuntu-latest
@@ -56,6 +63,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and Push Machine Learning
         uses: docker/build-push-action@v3.2.0
         with:
@@ -67,6 +80,7 @@ jobs:
           cache-to: type=gha,mode=max
           tags: |
             altran1502/immich-machine-learning:latest
+            ghcr.io/${{ github.repository_owner }}/immich-machine-learning:latest
 
   build_and_push_web_latest:
     runs-on: ubuntu-latest
@@ -85,6 +99,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and Push Web
         uses: docker/build-push-action@v3.2.0
         with:
@@ -95,6 +115,7 @@ jobs:
           push: true
           tags: |
             altran1502/immich-web:latest
+            ghcr.io/${{ github.repository_owner }}/immich-web:latest
 
   build_and_push_nginx_latest:
     runs-on: ubuntu-latest
@@ -113,6 +134,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and Push Proxy
         uses: docker/build-push-action@v3.2.0
         with:
@@ -122,3 +149,4 @@ jobs:
           push: true
           tags: |
             altran1502/immich-proxy:latest
+            ghcr.io/${{ github.repository_owner }}/immich-proxy:latest

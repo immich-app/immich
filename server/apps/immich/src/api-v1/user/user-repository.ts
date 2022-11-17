@@ -1,18 +1,16 @@
 import { UserEntity } from '@app/database/entities/user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Not, Repository } from 'typeorm';
 
 export interface IUserRepository {
-  get(userId: string, withDeleted?: boolean): Promise<UserEntity | null>;
-  getByEmail(email: string): Promise<UserEntity | null>;
+  get(id: string, withDeleted?: boolean): Promise<UserEntity | null>;
+  getAdmin(): Promise<UserEntity | null>;
+  getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null>;
   getList(filter?: { excludeId?: string }): Promise<UserEntity[]>;
-  create(createUserDto: CreateUserDto): Promise<UserEntity>;
-  update(user: UserEntity, updateUserDto: UpdateUserDto): Promise<UserEntity>;
-  createProfileImage(user: UserEntity, fileInfo: Express.Multer.File): Promise<UserEntity>;
+  create(user: Partial<UserEntity>): Promise<UserEntity>;
+  update(id: string, user: Partial<UserEntity>): Promise<UserEntity>;
   delete(user: UserEntity): Promise<UserEntity>;
   restore(user: UserEntity): Promise<UserEntity>;
 }
@@ -25,25 +23,29 @@ export class UserRepository implements IUserRepository {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  private async hashPassword(password: string, salt: string): Promise<string> {
-    return bcrypt.hash(password, salt);
-  }
-
-  async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
+  public async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { id: userId }, withDeleted: withDeleted });
   }
 
-  async getByEmail(email: string): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { email } });
+  public async getAdmin(): Promise<UserEntity | null> {
+    return this.userRepository.findOne({ where: { isAdmin: true } });
   }
 
-  // TODO add DTO for filtering
-  async getList({ excludeId }: { excludeId?: string } = {}): Promise<UserEntity[]> {
+  public async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
+    let builder = this.userRepository.createQueryBuilder('user').where({ email });
+
+    if (withPassword) {
+      builder = builder.addSelect('user.password');
+    }
+
+    return builder.getOne();
+  }
+
+  public async getList({ excludeId }: { excludeId?: string } = {}): Promise<UserEntity[]> {
     if (!excludeId) {
       return this.userRepository.find(); // TODO: this should also be ordered the same as below
     }
-    return this.userRepository
-    .find({
+    return this.userRepository.find({
       where: { id: Not(excludeId) },
       withDeleted: true,
       order: {
@@ -52,33 +54,27 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  async create(createUserDto: CreateUserDto): Promise<UserEntity> {
-    const newUser = new UserEntity();
-    newUser.email = createUserDto.email;
-    newUser.salt = await bcrypt.genSalt();
-    newUser.password = await this.hashPassword(createUserDto.password, newUser.salt);
-    newUser.firstName = createUserDto.firstName;
-    newUser.lastName = createUserDto.lastName;
-    newUser.isAdmin = false;
+  public async create(user: Partial<UserEntity>): Promise<UserEntity> {
+    if (user.password) {
+      user.salt = await bcrypt.genSalt();
+      user.password = await this.hashPassword(user.password, user.salt);
+    }
+    user.isAdmin = false;
 
-    return this.userRepository.save(newUser);
+    return this.userRepository.save(user);
   }
 
-  async update(user: UserEntity, updateUserDto: UpdateUserDto): Promise<UserEntity> {
-    user.lastName = updateUserDto.lastName || user.lastName;
-    user.firstName = updateUserDto.firstName || user.firstName;
-    user.profileImagePath = updateUserDto.profileImagePath || user.profileImagePath;
-    user.shouldChangePassword =
-      updateUserDto.shouldChangePassword != undefined ? updateUserDto.shouldChangePassword : user.shouldChangePassword;
+  public async update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
+    user.id = id;
 
     // If payload includes password - Create new password for user
-    if (updateUserDto.password) {
+    if (user.password) {
       user.salt = await bcrypt.genSalt();
-      user.password = await this.hashPassword(updateUserDto.password, user.salt);
+      user.password = await this.hashPassword(user.password, user.salt);
     }
 
     // TODO: can this happen? If so we can move it to the service, otherwise remove it (also from DTO)
-    if (updateUserDto.isAdmin) {
+    if (user.isAdmin) {
       const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
 
       if (adminUser) {
@@ -91,19 +87,18 @@ export class UserRepository implements IUserRepository {
     return this.userRepository.save(user);
   }
 
-  async delete(user: UserEntity): Promise<UserEntity> {
+  public async delete(user: UserEntity): Promise<UserEntity> {
     if (user.isAdmin) {
       throw new BadRequestException('Cannot delete admin user! stay sane!');
     }
     return this.userRepository.softRemove(user);
   }
 
-  async restore(user: UserEntity): Promise<UserEntity> {
+  public async restore(user: UserEntity): Promise<UserEntity> {
     return this.userRepository.recover(user);
   }
 
-  async createProfileImage(user: UserEntity, fileInfo: Express.Multer.File): Promise<UserEntity> {
-    user.profileImagePath = fileInfo.path;
-    return this.userRepository.save(user);
+  private async hashPassword(password: string, salt: string): Promise<string> {
+    return bcrypt.hash(password, salt);
   }
 }

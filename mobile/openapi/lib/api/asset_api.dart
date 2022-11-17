@@ -178,19 +178,18 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/download' operation and returns the [Response].
+  /// Performs an HTTP 'GET /asset/download/{assetId}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] aid (required):
-  ///
-  /// * [String] did (required):
+  /// * [String] assetId (required):
   ///
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  Future<Response> downloadFileWithHttpInfo(String aid, String did, { bool? isThumb, bool? isWeb, }) async {
+  Future<Response> downloadFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/download';
+    final path = r'/asset/download/{assetId}'
+      .replaceAll('{assetId}', assetId);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -199,8 +198,6 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'aid', aid));
-      queryParams.addAll(_queryParams('', 'did', did));
     if (isThumb != null) {
       queryParams.addAll(_queryParams('', 'isThumb', isThumb));
     }
@@ -224,15 +221,64 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [String] aid (required):
-  ///
-  /// * [String] did (required):
+  /// * [String] assetId (required):
   ///
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  Future<Object?> downloadFile(String aid, String did, { bool? isThumb, bool? isWeb, }) async {
-    final response = await downloadFileWithHttpInfo(aid, did,  isThumb: isThumb, isWeb: isWeb, );
+  Future<Object?> downloadFile(String assetId, { bool? isThumb, bool? isWeb, }) async {
+    final response = await downloadFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /asset/download-library' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [num] skip:
+  Future<Response> downloadLibraryWithHttpInfo({ num? skip, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/download-library';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (skip != null) {
+      queryParams.addAll(_queryParams('', 'skip', skip));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [num] skip:
+  Future<Object?> downloadLibrary({ num? skip, }) async {
+    final response = await downloadLibraryWithHttpInfo( skip: skip, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -790,19 +836,18 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/file' operation and returns the [Response].
+  /// Performs an HTTP 'GET /asset/file/{assetId}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] aid (required):
-  ///
-  /// * [String] did (required):
+  /// * [String] assetId (required):
   ///
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  Future<Response> serveFileWithHttpInfo(String aid, String did, { bool? isThumb, bool? isWeb, }) async {
+  Future<Response> serveFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/file';
+    final path = r'/asset/file/{assetId}'
+      .replaceAll('{assetId}', assetId);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -811,8 +856,6 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'aid', aid));
-      queryParams.addAll(_queryParams('', 'did', did));
     if (isThumb != null) {
       queryParams.addAll(_queryParams('', 'isThumb', isThumb));
     }
@@ -836,15 +879,13 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [String] aid (required):
-  ///
-  /// * [String] did (required):
+  /// * [String] assetId (required):
   ///
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  Future<Object?> serveFile(String aid, String did, { bool? isThumb, bool? isWeb, }) async {
-    final response = await serveFileWithHttpInfo(aid, did,  isThumb: isThumb, isWeb: isWeb, );
+  Future<Object?> serveFile(String assetId, { bool? isThumb, bool? isWeb, }) async {
+    final response = await serveFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

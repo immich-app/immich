@@ -9,11 +9,13 @@ import { BackgroundTaskService } from '../../modules/background-task/background-
 import { CommunicationModule } from '../communication/communication.module';
 import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
+import { DownloadModule } from '../../modules/download/download.module';
 
 @Module({
   imports: [
     CommunicationModule,
     BackgroundTaskModule,
+    DownloadModule,
     TypeOrmModule.forFeature([AssetEntity]),
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,

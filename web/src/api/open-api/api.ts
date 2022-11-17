@@ -299,6 +299,12 @@ export interface AssetCountByUserIdResponseDto {
      * @type {number}
      * @memberof AssetCountByUserIdResponseDto
      */
+    'audio': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByUserIdResponseDto
+     */
     'photos': number;
     /**
      * 
@@ -306,6 +312,18 @@ export interface AssetCountByUserIdResponseDto {
      * @memberof AssetCountByUserIdResponseDto
      */
     'videos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByUserIdResponseDto
+     */
+    'other': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByUserIdResponseDto
+     */
+    'total': number;
 }
 /**
  * 
@@ -422,12 +440,6 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'smartInfo'?: SmartInfoResponseDto;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetResponseDto
-     */
-    'livePhotoVideoId': string | null;
 }
 /**
  * 
@@ -1131,6 +1143,63 @@ export interface LogoutResponseDto {
      * @memberof LogoutResponseDto
      */
     'successful': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof LogoutResponseDto
+     */
+    'redirectUri': string;
+}
+/**
+ * 
+ * @export
+ * @interface OAuthCallbackDto
+ */
+export interface OAuthCallbackDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof OAuthCallbackDto
+     */
+    'url': string;
+}
+/**
+ * 
+ * @export
+ * @interface OAuthConfigDto
+ */
+export interface OAuthConfigDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof OAuthConfigDto
+     */
+    'redirectUri': string;
+}
+/**
+ * 
+ * @export
+ * @interface OAuthConfigResponseDto
+ */
+export interface OAuthConfigResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof OAuthConfigResponseDto
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof OAuthConfigResponseDto
+     */
+    'url'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof OAuthConfigResponseDto
+     */
+    'buttonText'?: string;
 }
 /**
  * 
@@ -1349,6 +1418,67 @@ export interface SmartInfoResponseDto {
      * @memberof SmartInfoResponseDto
      */
     'objects'?: Array<string> | null;
+}
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const SystemConfigKey = {
+    Crf: 'ffmpeg_crf',
+    Preset: 'ffmpeg_preset',
+    TargetVideoCodec: 'ffmpeg_target_video_codec',
+    TargetAudioCodec: 'ffmpeg_target_audio_codec',
+    TargetScaling: 'ffmpeg_target_scaling'
+} as const;
+
+export type SystemConfigKey = typeof SystemConfigKey[keyof typeof SystemConfigKey];
+
+
+/**
+ * 
+ * @export
+ * @interface SystemConfigResponseDto
+ */
+export interface SystemConfigResponseDto {
+    /**
+     * 
+     * @type {Array<SystemConfigResponseItem>}
+     * @memberof SystemConfigResponseDto
+     */
+    'config': Array<SystemConfigResponseItem>;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigResponseItem
+ */
+export interface SystemConfigResponseItem {
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigResponseItem
+     */
+    'name': string;
+    /**
+     * 
+     * @type {SystemConfigKey}
+     * @memberof SystemConfigResponseItem
+     */
+    'key': SystemConfigKey;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigResponseItem
+     */
+    'value': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigResponseItem
+     */
+    'defaultValue': string;
 }
 /**
  * 
@@ -1786,10 +1916,11 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {string} albumId 
+         * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadArchive: async (albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        downloadArchive: async (albumId: string, skip?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('downloadArchive', 'albumId', albumId)
             const localVarPath = `/album/{albumId}/download`
@@ -1808,6 +1939,10 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (skip !== undefined) {
+                localVarQueryParameter['skip'] = skip;
+            }
 
 
     
@@ -2115,11 +2250,12 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} albumId 
+         * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async downloadArchive(albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadArchive(albumId, options);
+        async downloadArchive(albumId: string, skip?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadArchive(albumId, skip, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -2236,11 +2372,12 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
         /**
          * 
          * @param {string} albumId 
+         * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadArchive(albumId: string, options?: any): AxiosPromise<object> {
-            return localVarFp.downloadArchive(albumId, options).then((request) => request(axios, basePath));
+        downloadArchive(albumId: string, skip?: number, options?: any): AxiosPromise<object> {
+            return localVarFp.downloadArchive(albumId, skip, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2358,12 +2495,13 @@ export class AlbumApi extends BaseAPI {
     /**
      * 
      * @param {string} albumId 
+     * @param {number} [skip] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public downloadArchive(albumId: string, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).downloadArchive(albumId, options).then((request) => request(this.axios, this.basePath));
+    public downloadArchive(albumId: string, skip?: number, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).downloadArchive(albumId, skip, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2564,19 +2702,17 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadFile: async (aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'aid' is not null or undefined
-            assertParamExists('downloadFile', 'aid', aid)
-            // verify required parameter 'did' is not null or undefined
-            assertParamExists('downloadFile', 'did', did)
-            const localVarPath = `/asset/download`;
+        downloadFile: async (assetId: string, isThumb?: boolean, isWeb?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetId' is not null or undefined
+            assertParamExists('downloadFile', 'assetId', assetId)
+            const localVarPath = `/asset/download/{assetId}`
+                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2592,20 +2728,50 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (aid !== undefined) {
-                localVarQueryParameter['aid'] = aid;
-            }
-
-            if (did !== undefined) {
-                localVarQueryParameter['did'] = did;
-            }
-
             if (isThumb !== undefined) {
                 localVarQueryParameter['isThumb'] = isThumb;
             }
 
             if (isWeb !== undefined) {
                 localVarQueryParameter['isWeb'] = isWeb;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} [skip] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        downloadLibrary: async (skip?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/asset/download-library`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (skip !== undefined) {
+                localVarQueryParameter['skip'] = skip;
             }
 
 
@@ -3022,19 +3188,17 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        serveFile: async (aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'aid' is not null or undefined
-            assertParamExists('serveFile', 'aid', aid)
-            // verify required parameter 'did' is not null or undefined
-            assertParamExists('serveFile', 'did', did)
-            const localVarPath = `/asset/file`;
+        serveFile: async (assetId: string, isThumb?: boolean, isWeb?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetId' is not null or undefined
+            assertParamExists('serveFile', 'assetId', assetId)
+            const localVarPath = `/asset/file/{assetId}`
+                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3049,14 +3213,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (aid !== undefined) {
-                localVarQueryParameter['aid'] = aid;
-            }
-
-            if (did !== undefined) {
-                localVarQueryParameter['did'] = did;
-            }
 
             if (isThumb !== undefined) {
                 localVarQueryParameter['isThumb'] = isThumb;
@@ -3209,15 +3365,24 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async downloadFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadFile(aid, did, isThumb, isWeb, options);
+        async downloadFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadFile(assetId, isThumb, isWeb, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {number} [skip] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async downloadLibrary(skip?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadLibrary(skip, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -3331,15 +3496,14 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async serveFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.serveFile(aid, did, isThumb, isWeb, options);
+        async serveFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.serveFile(assetId, isThumb, isWeb, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -3405,15 +3569,23 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: any): AxiosPromise<object> {
-            return localVarFp.downloadFile(aid, did, isThumb, isWeb, options).then((request) => request(axios, basePath));
+        downloadFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: any): AxiosPromise<object> {
+            return localVarFp.downloadFile(assetId, isThumb, isWeb, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} [skip] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        downloadLibrary(skip?: number, options?: any): AxiosPromise<object> {
+            return localVarFp.downloadLibrary(skip, options).then((request) => request(axios, basePath));
         },
         /**
          * Get all AssetEntity belong to the user
@@ -3515,15 +3687,14 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} aid 
-         * @param {string} did 
+         * @param {string} assetId 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        serveFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: any): AxiosPromise<object> {
-            return localVarFp.serveFile(aid, did, isThumb, isWeb, options).then((request) => request(axios, basePath));
+        serveFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: any): AxiosPromise<object> {
+            return localVarFp.serveFile(assetId, isThumb, isWeb, options).then((request) => request(axios, basePath));
         },
         /**
          * Update an asset
@@ -3592,16 +3763,26 @@ export class AssetApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} aid 
-     * @param {string} did 
+     * @param {string} assetId 
      * @param {boolean} [isThumb] 
      * @param {boolean} [isWeb] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public downloadFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).downloadFile(aid, did, isThumb, isWeb, options).then((request) => request(this.axios, this.basePath));
+    public downloadFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).downloadFile(assetId, isThumb, isWeb, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} [skip] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public downloadLibrary(skip?: number, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).downloadLibrary(skip, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3726,16 +3907,15 @@ export class AssetApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} aid 
-     * @param {string} did 
+     * @param {string} assetId 
      * @param {boolean} [isThumb] 
      * @param {boolean} [isWeb] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public serveFile(aid: string, did: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).serveFile(aid, did, isThumb, isWeb, options).then((request) => request(this.axios, this.basePath));
+    public serveFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).serveFile(assetId, isThumb, isWeb, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4466,6 +4646,174 @@ export class JobApi extends BaseAPI {
 
 
 /**
+ * OAuthApi - axios parameter creator
+ * @export
+ */
+export const OAuthApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {OAuthCallbackDto} oAuthCallbackDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        callback: async (oAuthCallbackDto: OAuthCallbackDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'oAuthCallbackDto' is not null or undefined
+            assertParamExists('callback', 'oAuthCallbackDto', oAuthCallbackDto)
+            const localVarPath = `/oauth/callback`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(oAuthCallbackDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {OAuthConfigDto} oAuthConfigDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        generateConfig: async (oAuthConfigDto: OAuthConfigDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'oAuthConfigDto' is not null or undefined
+            assertParamExists('generateConfig', 'oAuthConfigDto', oAuthConfigDto)
+            const localVarPath = `/oauth/config`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(oAuthConfigDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * OAuthApi - functional programming interface
+ * @export
+ */
+export const OAuthApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = OAuthApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {OAuthCallbackDto} oAuthCallbackDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async callback(oAuthCallbackDto: OAuthCallbackDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.callback(oAuthCallbackDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {OAuthConfigDto} oAuthConfigDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async generateConfig(oAuthConfigDto: OAuthConfigDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OAuthConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.generateConfig(oAuthConfigDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * OAuthApi - factory interface
+ * @export
+ */
+export const OAuthApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = OAuthApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {OAuthCallbackDto} oAuthCallbackDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        callback(oAuthCallbackDto: OAuthCallbackDto, options?: any): AxiosPromise<LoginResponseDto> {
+            return localVarFp.callback(oAuthCallbackDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {OAuthConfigDto} oAuthConfigDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        generateConfig(oAuthConfigDto: OAuthConfigDto, options?: any): AxiosPromise<OAuthConfigResponseDto> {
+            return localVarFp.generateConfig(oAuthConfigDto, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * OAuthApi - object-oriented interface
+ * @export
+ * @class OAuthApi
+ * @extends {BaseAPI}
+ */
+export class OAuthApi extends BaseAPI {
+    /**
+     * 
+     * @param {OAuthCallbackDto} oAuthCallbackDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OAuthApi
+     */
+    public callback(oAuthCallbackDto: OAuthCallbackDto, options?: AxiosRequestConfig) {
+        return OAuthApiFp(this.configuration).callback(oAuthCallbackDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {OAuthConfigDto} oAuthConfigDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OAuthApi
+     */
+    public generateConfig(oAuthConfigDto: OAuthConfigDto, options?: AxiosRequestConfig) {
+        return OAuthApiFp(this.configuration).generateConfig(oAuthConfigDto, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
  * ServerInfoApi - axios parameter creator
  * @export
  */
@@ -4723,6 +5071,173 @@ export class ServerInfoApi extends BaseAPI {
      */
     public pingServer(options?: AxiosRequestConfig) {
         return ServerInfoApiFp(this.configuration).pingServer(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * SystemConfigApi - axios parameter creator
+ * @export
+ */
+export const SystemConfigApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/system-config`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {object} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateConfig: async (body: object, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'body' is not null or undefined
+            assertParamExists('updateConfig', 'body', body)
+            const localVarPath = `/system-config`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(body, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * SystemConfigApi - functional programming interface
+ * @export
+ */
+export const SystemConfigApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = SystemConfigApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getConfig(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {object} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updateConfig(body: object, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateConfig(body, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * SystemConfigApi - factory interface
+ * @export
+ */
+export const SystemConfigApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = SystemConfigApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getConfig(options?: any): AxiosPromise<SystemConfigResponseDto> {
+            return localVarFp.getConfig(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {object} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateConfig(body: object, options?: any): AxiosPromise<SystemConfigResponseDto> {
+            return localVarFp.updateConfig(body, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * SystemConfigApi - object-oriented interface
+ * @export
+ * @class SystemConfigApi
+ * @extends {BaseAPI}
+ */
+export class SystemConfigApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SystemConfigApi
+     */
+    public getConfig(options?: AxiosRequestConfig) {
+        return SystemConfigApiFp(this.configuration).getConfig(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {object} body 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SystemConfigApi
+     */
+    public updateConfig(body: object, options?: AxiosRequestConfig) {
+        return SystemConfigApiFp(this.configuration).updateConfig(body, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

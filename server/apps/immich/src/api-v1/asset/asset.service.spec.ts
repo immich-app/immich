@@ -7,11 +7,13 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { DownloadService } from '../../modules/download/download.service';
 
 describe('AssetService', () => {
   let sui: AssetService;
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
+  let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
 
   const authUser: AuthUserDto = Object.freeze({
     id: 'user_id_1',
@@ -89,7 +91,10 @@ describe('AssetService', () => {
   };
 
   const _getAssetCountByUserId = (): AssetCountByUserIdResponseDto => {
-    const result = new AssetCountByUserIdResponseDto(2, 2);
+    const result = new AssetCountByUserIdResponseDto();
+
+    result.videos = 2;
+    result.photos = 2;
 
     return result;
   };
@@ -114,7 +119,11 @@ describe('AssetService', () => {
       getExistingAssets: jest.fn(),
     };
 
-    sui = new AssetService(assetRepositoryMock, a);
+    downloadServiceMock = {
+      downloadArchive: jest.fn(),
+    };
+
+    sui = new AssetService(assetRepositoryMock, a, downloadServiceMock as DownloadService);
   });
 
   // Currently failing due to calculate checksum from a file

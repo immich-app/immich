@@ -26,7 +26,7 @@
 					>, please take your time to visit the
 					<span class="underline font-medium"
 						><a
-							href="https://github.com/alextran1502/immich/releases/latest"
+							href="https://github.com/immich-app/immich/releases/latest"
 							target="_blank"
 							rel="noopener noreferrer">release note</a
 						></span

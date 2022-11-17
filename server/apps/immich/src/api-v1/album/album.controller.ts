@@ -27,6 +27,12 @@ import { AlbumResponseDto } from './response-dto/album-response.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { Response as Res } from 'express';
+import {
+  IMMICH_ARCHIVE_COMPLETE,
+  IMMICH_ARCHIVE_FILE_COUNT,
+  IMMICH_CONTENT_LENGTH_HINT,
+} from '../../constants/download.constant';
+import { DownloadDto } from '../asset/dto/download-library.dto';
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
 @Authenticated()
@@ -119,11 +125,18 @@ export class AlbumController {
   async downloadArchive(
     @GetAuthUser() authUser: AuthUserDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
+    @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<any> {
-    const { stream, filename, filesize } = await this.albumService.downloadArchive(authUser, albumId);
-    res.attachment(filename);
-    res.setHeader('X-Immich-Content-Length-Hint', filesize);
+    const { stream, fileName, fileSize, fileCount, complete } = await this.albumService.downloadArchive(
+      authUser,
+      albumId,
+      dto,
+    );
+    res.attachment(fileName);
+    res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
+    res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
+    res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
     return stream;
   }
 }
