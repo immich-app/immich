@@ -20,11 +20,18 @@ This environment includes the following services:
 
 All the services are packaged to run as with single Docker Compose command.
 
-After cloning the project, from the root directory run
+### Instructions
+
+1. Clone the project repo.
+2. Run `cp docker/.env.example docker/.env`.
+3. Edit `docker/.env` to provide values for the required variables `UPLOAD_LOCATION` and `JWT_SECRET`.
+4. From the root directory, run:
 
 ```bash title="Start development server"
 make dev # required Makefile installed on the system.
 ```
+
+5. Access the dev instance in your browser at http://localhost:2283, or connect via the mobile app.
 
 All the services will be started with hot-reloading enabled for a quick feedback loop.
 
