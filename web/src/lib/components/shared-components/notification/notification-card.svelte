@@ -2,6 +2,7 @@
 	import { fade } from 'svelte/transition';
 	import CloseCircleOutline from 'svelte-material-icons/CloseCircleOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
+	import WindowClose from 'svelte-material-icons/WindowClose.svelte';
 
 	import {
 		ImmichNotification,
@@ -51,26 +52,42 @@
 	let removeNotificationTimeout: NodeJS.Timeout | undefined = undefined;
 
 	onMount(() => {
-		removeNotificationTimeout = setTimeout(() => {
-			notificationController.removeNotificationById(notificationInfo.id);
-		}, notificationInfo.timeout);
-
+		removeNotificationTimeout = setTimeout(discard, notificationInfo.timeout);
 		return () => clearTimeout(removeNotificationTimeout);
 	});
+
+	const discard = () => {
+		notificationController.removeNotificationById(notificationInfo.id);
+	};
+
+	const handleClick = () => {
+		const action = notificationInfo.action;
+		if (action.type == 'discard') {
+			discard();
+		} else if (action.type == 'link') {
+			window.open(action.target);
+		}
+	};
 </script>
 
 <div
 	transition:fade={{ duration: 250 }}
 	style:background-color={backgroundColor()}
 	style:border={borderStyle()}
-	class="min-h-[80px] w-[300px] rounded-2xl z-[999999] shadow-md p-4 mb-4"
+	class="min-h-[80px] w-[300px] rounded-2xl z-[999999] shadow-md p-4 mb-4 hover:cursor-pointer"
+	on:click={handleClick}
 >
-	<div class="flex gap-2 place-items-center">
-		<svelte:component this={icon} color={primaryColor()} size="20" />
-		<h2 style:color={primaryColor()} class="font-medium" data-testid="title">
-			{notificationInfo.type.toString()}
-		</h2>
+	<div class="flex justify-between">
+		<div class="flex gap-2 place-items-center">
+			<svelte:component this={icon} color={primaryColor()} size="20" />
+			<h2 style:color={primaryColor()} class="font-medium" data-testid="title">
+				{notificationInfo.type.toString()}
+			</h2>
+		</div>
+		<button on:click|stopPropagation={discard}>
+			<svelte:component this={WindowClose} size="20" />
+		</button>
 	</div>
 
-	<p class="text-sm pl-[28px] pr-[16px]" data-testid="message">{notificationInfo.message}</p>
+	<p class="text-sm pl-[28px] pr-[16px]" data-testid="message">{@html notificationInfo.message}</p>
 </div>
