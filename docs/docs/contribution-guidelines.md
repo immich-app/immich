@@ -28,6 +28,8 @@ make dev # required Makefile installed on the system.
 
 All the services will be started with hot-reloading enabled for a quick feedback loop.
 
+You can access the web from `http://your-machine-ip:2283` or `http://localhost:2283` and access the server from the mobile app at `http://your-machine-ip:2283/api`
+
 ### Mobile app
 
 The mobile app `(/mobile)` will required Flutter toolchain to be installed on your system.
