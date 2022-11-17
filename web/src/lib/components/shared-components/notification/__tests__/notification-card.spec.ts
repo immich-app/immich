@@ -15,7 +15,8 @@ describe('NotificationCard component', () => {
 				id: 1234,
 				message: 'Notification message',
 				timeout: 1000,
-				type: NotificationType.Info
+				type: NotificationType.Info,
+				action: { type: 'discard' }
 			}
 		});
 
@@ -29,7 +30,8 @@ describe('NotificationCard component', () => {
 				id: 1234,
 				message: 'Notification message',
 				timeout: 1000,
-				type: NotificationType.Info
+				type: NotificationType.Info,
+				action: { type: 'discard' }
 			}
 		});
 
