@@ -88,10 +88,20 @@
 		isShowDetail = !isShowDetail;
 	};
 
-	const downloadFile = async () => {
+	const handleDownload = () => {
+		if (asset.livePhotoVideoId) {
+			downloadFile(asset.livePhotoVideoId, true);
+			downloadFile(asset.id, false);
+			return;
+		}
+
+		downloadFile(asset.id, false);
+	};
+
+	const downloadFile = async (assetId: string, isLivePhoto: boolean) => {
 		try {
 			const imageName = asset.exifInfo?.imageName ? asset.exifInfo?.imageName : asset.id;
-			const imageExtension = asset.originalPath.split('.')[1];
+			const imageExtension = isLivePhoto ? 'mov' : asset.originalPath.split('.')[1];
 			const imageFileName = imageName + '.' + imageExtension;
 
 			// If assets is already download -> return;
@@ -101,7 +111,7 @@
 
 			$downloadAssets[imageFileName] = 0;
 
-			const { data, status } = await api.assetApi.downloadFile(asset.id, false, false, {
+			const { data, status } = await api.assetApi.downloadFile(assetId, false, false, {
 				responseType: 'blob',
 				onDownloadProgress: (progressEvent) => {
 					if (progressEvent.lengthComputable) {
@@ -226,7 +236,7 @@
 			showMotionPlayButton={!!asset.livePhotoVideoId}
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
-			on:download={downloadFile}
+			on:download={handleDownload}
 			on:delete={deleteAsset}
 			on:favorite={toggleFavorite}
 			on:addToAlbum={() => openAlbumPicker(false)}
