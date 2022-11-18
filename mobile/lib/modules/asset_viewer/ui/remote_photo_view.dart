@@ -37,7 +37,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   void handleSwipUpDown(PointerMoveEvent details) {
-    int sensitivity = 10;
+    int sensitivity = 15;
 
     if (_zoomedIn) {
       return;

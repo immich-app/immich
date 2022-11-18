@@ -38,7 +38,6 @@ class ImageViewerService {
 
         final AssetEntity? entity;
 
-        print(fileName);
         final tempDir = await getTemporaryDirectory();
         File videoFile = await File('${tempDir.path}/livephoto.mov').create();
         File imageFile = await File('${tempDir.path}/livephoto.heic').create();
@@ -48,7 +47,7 @@ class ImageViewerService {
         entity = await PhotoManager.editor.darwin.saveLivePhoto(
           imageFile: imageFile,
           videoFile: videoFile,
-          title: p.basename(asset.exifInfo!.imageName!),
+          title: p.basename(asset.originalPath),
         );
 
         return entity != null;
