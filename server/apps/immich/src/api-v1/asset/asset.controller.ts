@@ -223,6 +223,14 @@ export class AssetController {
         continue;
       }
       deleteAssetList.push(assets);
+
+      if (assets.livePhotoVideoId) {
+        const livePhotoVideo = await this.assetService.getAssetById(authUser, assets.livePhotoVideoId);
+        if (livePhotoVideo) {
+          deleteAssetList.push(livePhotoVideo);
+          assetIds.ids = [...assetIds.ids, livePhotoVideo.id];
+        }
+      }
     }
 
     const result = await this.assetService.deleteAssetById(authUser, assetIds);
