@@ -145,7 +145,6 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
       autoInitialize: true,
       allowFullScreen: true,
       showControls: !widget.isMotionVideo,
-      looping: widget.isMotionVideo,
       hideControlsTimer: const Duration(seconds: 5),
     );
   }
