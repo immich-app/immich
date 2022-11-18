@@ -29,6 +29,7 @@ void main() {
           duration: '',
           webpPath: '',
           encodedVideoPath: '',
+          livePhotoVideoId: '',
         ),
       ),
     );

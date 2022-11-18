@@ -94,7 +94,9 @@ class GalleryViewerPage extends HookConsumerWidget {
             ? null
             : () {
                 ref.watch(imageViewerStateProvider.notifier).downloadAsset(
-                    assetList[indexOfAsset.value].remote!, context);
+                      assetList[indexOfAsset.value].remote!,
+                      context,
+                    );
               },
         onSharePressed: () {
           ref
