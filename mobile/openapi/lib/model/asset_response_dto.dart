@@ -29,6 +29,7 @@ class AssetResponseDto {
     required this.encodedVideoPath,
     this.exifInfo,
     this.smartInfo,
+    required this.livePhotoVideoId,
   });
 
   AssetTypeEnum type;
@@ -75,70 +76,77 @@ class AssetResponseDto {
   ///
   SmartInfoResponseDto? smartInfo;
 
+  String? livePhotoVideoId;
+
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
-     other.type == type &&
-     other.id == id &&
-     other.deviceAssetId == deviceAssetId &&
-     other.ownerId == ownerId &&
-     other.deviceId == deviceId &&
-     other.originalPath == originalPath &&
-     other.resizePath == resizePath &&
-     other.createdAt == createdAt &&
-     other.modifiedAt == modifiedAt &&
-     other.isFavorite == isFavorite &&
-     other.mimeType == mimeType &&
-     other.duration == duration &&
-     other.webpPath == webpPath &&
-     other.encodedVideoPath == encodedVideoPath &&
-     other.exifInfo == exifInfo &&
-     other.smartInfo == smartInfo;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AssetResponseDto &&
+          other.type == type &&
+          other.id == id &&
+          other.deviceAssetId == deviceAssetId &&
+          other.ownerId == ownerId &&
+          other.deviceId == deviceId &&
+          other.originalPath == originalPath &&
+          other.resizePath == resizePath &&
+          other.createdAt == createdAt &&
+          other.modifiedAt == modifiedAt &&
+          other.isFavorite == isFavorite &&
+          other.mimeType == mimeType &&
+          other.duration == duration &&
+          other.webpPath == webpPath &&
+          other.encodedVideoPath == encodedVideoPath &&
+          other.exifInfo == exifInfo &&
+          other.smartInfo == smartInfo &&
+          other.livePhotoVideoId == livePhotoVideoId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (type.hashCode) +
-    (id.hashCode) +
-    (deviceAssetId.hashCode) +
-    (ownerId.hashCode) +
-    (deviceId.hashCode) +
-    (originalPath.hashCode) +
-    (resizePath == null ? 0 : resizePath!.hashCode) +
-    (createdAt.hashCode) +
-    (modifiedAt.hashCode) +
-    (isFavorite.hashCode) +
-    (mimeType == null ? 0 : mimeType!.hashCode) +
-    (duration.hashCode) +
-    (webpPath == null ? 0 : webpPath!.hashCode) +
-    (encodedVideoPath == null ? 0 : encodedVideoPath!.hashCode) +
-    (exifInfo == null ? 0 : exifInfo!.hashCode) +
-    (smartInfo == null ? 0 : smartInfo!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (type.hashCode) +
+      (id.hashCode) +
+      (deviceAssetId.hashCode) +
+      (ownerId.hashCode) +
+      (deviceId.hashCode) +
+      (originalPath.hashCode) +
+      (resizePath == null ? 0 : resizePath!.hashCode) +
+      (createdAt.hashCode) +
+      (modifiedAt.hashCode) +
+      (isFavorite.hashCode) +
+      (mimeType == null ? 0 : mimeType!.hashCode) +
+      (duration.hashCode) +
+      (webpPath == null ? 0 : webpPath!.hashCode) +
+      (encodedVideoPath == null ? 0 : encodedVideoPath!.hashCode) +
+      (exifInfo == null ? 0 : exifInfo!.hashCode) +
+      (smartInfo == null ? 0 : smartInfo!.hashCode) +
+      (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, createdAt=$createdAt, modifiedAt=$modifiedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo]';
+  String toString() =>
+      'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, createdAt=$createdAt, modifiedAt=$modifiedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
-      _json[r'type'] = type;
-      _json[r'id'] = id;
-      _json[r'deviceAssetId'] = deviceAssetId;
-      _json[r'ownerId'] = ownerId;
-      _json[r'deviceId'] = deviceId;
-      _json[r'originalPath'] = originalPath;
+    _json[r'type'] = type;
+    _json[r'id'] = id;
+    _json[r'deviceAssetId'] = deviceAssetId;
+    _json[r'ownerId'] = ownerId;
+    _json[r'deviceId'] = deviceId;
+    _json[r'originalPath'] = originalPath;
     if (resizePath != null) {
       _json[r'resizePath'] = resizePath;
     } else {
       _json[r'resizePath'] = null;
     }
-      _json[r'createdAt'] = createdAt;
-      _json[r'modifiedAt'] = modifiedAt;
-      _json[r'isFavorite'] = isFavorite;
+    _json[r'createdAt'] = createdAt;
+    _json[r'modifiedAt'] = modifiedAt;
+    _json[r'isFavorite'] = isFavorite;
     if (mimeType != null) {
       _json[r'mimeType'] = mimeType;
     } else {
       _json[r'mimeType'] = null;
     }
-      _json[r'duration'] = duration;
+    _json[r'duration'] = duration;
     if (webpPath != null) {
       _json[r'webpPath'] = webpPath;
     } else {
@@ -159,6 +167,11 @@ class AssetResponseDto {
     } else {
       _json[r'smartInfo'] = null;
     }
+    if (livePhotoVideoId != null) {
+      _json[r'livePhotoVideoId'] = livePhotoVideoId;
+    } else {
+      _json[r'livePhotoVideoId'] = null;
+    }
     return _json;
   }
 
@@ -172,13 +185,13 @@ class AssetResponseDto {
       // Ensure that the map contains the required keys.
       // Note 1: the values aren't checked for validity beyond being non-null.
       // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "AssetResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "AssetResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
+      // assert(() {
+      //   requiredKeys.forEach((key) {
+      //     assert(json.containsKey(key), 'Required key "AssetResponseDto[$key]" is missing from JSON.');
+      //     assert(json[key] != null, 'Required key "AssetResponseDto[$key]" has a null value in JSON.');
+      //   });
+      //   return true;
+      // }());
 
       return AssetResponseDto(
         type: AssetTypeEnum.fromJson(json[r'type'])!,
@@ -197,12 +210,16 @@ class AssetResponseDto {
         encodedVideoPath: mapValueOfType<String>(json, r'encodedVideoPath'),
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
+        livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
       );
     }
     return null;
   }
 
-  static List<AssetResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetResponseDto>? listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -230,12 +247,18 @@ class AssetResponseDto {
   }
 
   // maps a json object with a list of AssetResponseDto-objects as value to a dart map
-  static Map<String, List<AssetResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = AssetResponseDto.listFromJson(entry.value, growable: growable,);
+        final value = AssetResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
         if (value != null) {
           map[entry.key] = value;
         }
@@ -260,6 +283,6 @@ class AssetResponseDto {
     'duration',
     'webpPath',
     'encodedVideoPath',
+    'livePhotoVideoId',
   };
 }
-

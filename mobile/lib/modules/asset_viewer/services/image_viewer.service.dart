@@ -22,27 +22,58 @@ class ImageViewerService {
     try {
       String fileName = p.basename(asset.originalPath);
 
-      var res = await _apiService.assetApi.downloadFileWithHttpInfo(
-        asset.id,
-        isThumb: false,
-        isWeb: false,
-      );
+      // Download LivePhotos image and motion part
+      if (asset.type == AssetTypeEnum.IMAGE && asset.livePhotoVideoId != null) {
+        var imageResponse = await _apiService.assetApi.downloadFileWithHttpInfo(
+          asset.id,
+          isThumb: false,
+          isWeb: false,
+        );
 
-      final AssetEntity? entity;
+        var motionReponse = await _apiService.assetApi.downloadFileWithHttpInfo(
+          asset.livePhotoVideoId!,
+          isThumb: false,
+          isWeb: false,
+        );
 
-      if (asset.type == AssetTypeEnum.IMAGE) {
-        entity = await PhotoManager.editor.saveImage(
-          res.bodyBytes,
+        final AssetEntity? entity;
+
+        final tempDir = await getTemporaryDirectory();
+        File videoFile = await File('${tempDir.path}/livephoto.mov').create();
+        File imageFile = await File('${tempDir.path}/livephoto.heic').create();
+        videoFile.writeAsBytesSync(motionReponse.bodyBytes);
+        imageFile.writeAsBytesSync(imageResponse.bodyBytes);
+
+        entity = await PhotoManager.editor.darwin.saveLivePhoto(
+          imageFile: imageFile,
+          videoFile: videoFile,
           title: p.basename(asset.originalPath),
         );
-      } else {
-        final tempDir = await getTemporaryDirectory();
-        File tempFile = await File('${tempDir.path}/$fileName').create();
-        tempFile.writeAsBytesSync(res.bodyBytes);
-        entity = await PhotoManager.editor.saveVideo(tempFile, title: fileName);
-      }
 
-      return entity != null;
+        return entity != null;
+      } else {
+        var res = await _apiService.assetApi.downloadFileWithHttpInfo(
+          asset.id,
+          isThumb: false,
+          isWeb: false,
+        );
+
+        final AssetEntity? entity;
+
+        if (asset.type == AssetTypeEnum.IMAGE) {
+          entity = await PhotoManager.editor.saveImage(
+            res.bodyBytes,
+            title: p.basename(asset.originalPath),
+          );
+        } else {
+          final tempDir = await getTemporaryDirectory();
+          File tempFile = await File('${tempDir.path}/$fileName').create();
+          tempFile.writeAsBytesSync(res.bodyBytes);
+          entity =
+              await PhotoManager.editor.saveVideo(tempFile, title: fileName);
+        }
+        return entity != null;
+      }
     } catch (e) {
       debugPrint("Error saving file $e");
       return false;

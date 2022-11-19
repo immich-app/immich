@@ -25,6 +25,14 @@ import { DownloadModule } from '../../modules/download/download.module';
         removeOnFail: false,
       },
     }),
+    BullModule.registerQueue({
+      name: QueueNameEnum.VIDEO_CONVERSION,
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
   ],
   controllers: [AssetController],
   providers: [

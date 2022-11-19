@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 
-	import { onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import { api, AssetResponseDto, getFileUrl } from '@api';
 
@@ -12,6 +12,7 @@
 	let videoPlayerNode: HTMLVideoElement;
 	let isVideoLoading = true;
 	let videoUrl: string;
+	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
 		const { data: assetInfo } = await api.assetApi.getAssetById(assetId);
@@ -49,6 +50,7 @@
 			controls
 			class="h-full object-contain"
 			on:canplay={handleCanPlay}
+			on:ended={() => dispatch('onVideoEnded')}
 			bind:this={videoPlayerNode}
 		>
 			<source src={videoUrl} type="video/mp4" />

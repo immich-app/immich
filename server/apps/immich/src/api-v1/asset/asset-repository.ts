@@ -21,7 +21,9 @@ export interface IAssetRepository {
     ownerId: string,
     originalPath: string,
     mimeType: string,
+    isVisible: boolean,
     checksum?: Buffer,
+    livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity>;
   update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
   getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]>;
@@ -58,6 +60,7 @@ export class AssetRepository implements IAssetRepository {
       .leftJoinAndSelect('asset.smartInfo', 'si')
       .where('asset.resizePath IS NOT NULL')
       .andWhere('si.id IS NULL')
+      .andWhere('asset.isVisible = true')
       .getMany();
   }
 
@@ -65,6 +68,7 @@ export class AssetRepository implements IAssetRepository {
     return await this.assetRepository
       .createQueryBuilder('asset')
       .where('asset.resizePath IS NULL')
+      .andWhere('asset.isVisible = true')
       .orWhere('asset.resizePath = :resizePath', { resizePath: '' })
       .orWhere('asset.webpPath IS NULL')
       .orWhere('asset.webpPath = :webpPath', { webpPath: '' })
@@ -76,6 +80,7 @@ export class AssetRepository implements IAssetRepository {
       .createQueryBuilder('asset')
       .leftJoinAndSelect('asset.exifInfo', 'ei')
       .where('ei."assetId" IS NULL')
+      .andWhere('asset.isVisible = true')
       .getMany();
   }
 
@@ -86,6 +91,7 @@ export class AssetRepository implements IAssetRepository {
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')
       .where('"userId" = :userId', { userId: userId })
+      .andWhere('asset.isVisible = true')
       .groupBy('asset.type')
       .getRawMany();
 
@@ -120,6 +126,7 @@ export class AssetRepository implements IAssetRepository {
         buckets: [...getAssetByTimeBucketDto.timeBucket],
       })
       .andWhere('asset.resizePath is not NULL')
+      .andWhere('asset.isVisible = true')
       .orderBy('asset.createdAt', 'DESC')
       .getMany();
   }
@@ -134,6 +141,7 @@ export class AssetRepository implements IAssetRepository {
         .addSelect(`date_trunc('month', "createdAt")`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
         .andWhere('asset.resizePath is not NULL')
+        .andWhere('asset.isVisible = true')
         .groupBy(`date_trunc('month', "createdAt")`)
         .orderBy(`date_trunc('month', "createdAt")`, 'DESC')
         .getRawMany();
@@ -144,6 +152,7 @@ export class AssetRepository implements IAssetRepository {
         .addSelect(`date_trunc('day', "createdAt")`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
         .andWhere('asset.resizePath is not NULL')
+        .andWhere('asset.isVisible = true')
         .groupBy(`date_trunc('day', "createdAt")`)
         .orderBy(`date_trunc('day', "createdAt")`, 'DESC')
         .getRawMany();
@@ -156,6 +165,7 @@ export class AssetRepository implements IAssetRepository {
     return await this.assetRepository
       .createQueryBuilder('asset')
       .where('asset.userId = :userId', { userId: userId })
+      .andWhere('asset.isVisible = true')
       .leftJoin('asset.exifInfo', 'ei')
       .leftJoin('asset.smartInfo', 'si')
       .select('si.tags', 'tags')
@@ -179,6 +189,7 @@ export class AssetRepository implements IAssetRepository {
         FROM assets a
         LEFT JOIN smart_info si ON a.id = si."assetId"
         WHERE a."userId" = $1
+        AND a."isVisible" = true
         AND si.objects IS NOT NULL
       `,
       [userId],
@@ -192,6 +203,7 @@ export class AssetRepository implements IAssetRepository {
         FROM assets a
         LEFT JOIN exif e ON a.id = e."assetId"
         WHERE a."userId" = $1
+        AND a."isVisible" = true
         AND e.city IS NOT NULL
         AND a.type = 'IMAGE';
       `,
@@ -222,6 +234,7 @@ export class AssetRepository implements IAssetRepository {
       .createQueryBuilder('asset')
       .where('asset.userId = :userId', { userId: userId })
       .andWhere('asset.resizePath is not NULL')
+      .andWhere('asset.isVisible = true')
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
       .skip(skip || 0)
       .orderBy('asset.createdAt', 'DESC');
@@ -242,13 +255,15 @@ export class AssetRepository implements IAssetRepository {
     ownerId: string,
     originalPath: string,
     mimeType: string,
+    isVisible: boolean,
     checksum?: Buffer,
+    livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity> {
     const asset = new AssetEntity();
     asset.deviceAssetId = createAssetDto.deviceAssetId;
     asset.userId = ownerId;
     asset.deviceId = createAssetDto.deviceId;
-    asset.type = createAssetDto.assetType || AssetType.OTHER;
+    asset.type = !isVisible ? AssetType.VIDEO : createAssetDto.assetType || AssetType.OTHER; // If an asset is not visible, it is a LivePhotos video portion, therefore we can confidently assign the type as VIDEO here
     asset.originalPath = originalPath;
     asset.createdAt = createAssetDto.createdAt;
     asset.modifiedAt = createAssetDto.modifiedAt;
@@ -256,6 +271,8 @@ export class AssetRepository implements IAssetRepository {
     asset.mimeType = mimeType;
     asset.duration = createAssetDto.duration || null;
     asset.checksum = checksum || null;
+    asset.isVisible = isVisible;
+    asset.livePhotoVideoId = livePhotoAssetEntity ? livePhotoAssetEntity.id : null;
 
     const createdAsset = await this.assetRepository.save(asset);
 
@@ -286,6 +303,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         userId: userId,
         deviceId: deviceId,
+        isVisible: true,
       },
       select: ['deviceAssetId'],
     });

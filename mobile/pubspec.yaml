@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  photo_manager: ^2.2.1
+  photo_manager: ^2.5.0
   flutter_hooks: ^0.18.0
   hooks_riverpod: ^2.0.0-dev.0
   hive: ^2.2.1
@@ -46,7 +46,6 @@ dependencies:
 
   # easy to remove packages:
   image_picker: ^0.8.5+3 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
-
 
 dev_dependencies:
   flutter_test:

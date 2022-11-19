@@ -10,8 +10,8 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createHash } from 'node:crypto';
-import { Repository } from 'typeorm';
+import { createHash, randomUUID } from 'node:crypto';
+import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
@@ -41,6 +41,17 @@ import { timeUtils } from '@app/common/utils';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
+import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
+import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
+import {
+  assetUploadedProcessorName,
+  IAssetUploadedJob,
+  IVideoTranscodeJob,
+  mp4ConversionProcessorName,
+  QueueNameEnum,
+} from '@app/job';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 
@@ -55,8 +66,107 @@ export class AssetService {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
+    private backgroundTaskService: BackgroundTaskService,
+
+    @InjectQueue(QueueNameEnum.ASSET_UPLOADED)
+    private assetUploadedQueue: Queue<IAssetUploadedJob>,
+
+    @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
+    private videoConversionQueue: Queue<IVideoTranscodeJob>,
+
     private downloadService: DownloadService,
   ) {}
+
+  public async handleUploadedAsset(
+    authUser: AuthUserDto,
+    createAssetDto: CreateAssetDto,
+    res: Res,
+    originalAssetData: Express.Multer.File,
+    livePhotoAssetData?: Express.Multer.File,
+  ) {
+    const checksum = await this.calculateChecksum(originalAssetData.path);
+    const isLivePhoto = livePhotoAssetData !== undefined;
+    let livePhotoAssetEntity: AssetEntity | undefined;
+
+    try {
+      if (isLivePhoto) {
+        const livePhotoChecksum = await this.calculateChecksum(livePhotoAssetData.path);
+        livePhotoAssetEntity = await this.createUserAsset(
+          authUser,
+          createAssetDto,
+          livePhotoAssetData.path,
+          livePhotoAssetData.mimetype,
+          livePhotoChecksum,
+          false,
+        );
+
+        if (!livePhotoAssetEntity) {
+          await this.backgroundTaskService.deleteFileOnDisk([
+            {
+              originalPath: livePhotoAssetData.path,
+            } as any,
+          ]);
+          throw new BadRequestException('Asset not created');
+        }
+
+        await this.videoConversionQueue.add(
+          mp4ConversionProcessorName,
+          { asset: livePhotoAssetEntity },
+          { jobId: randomUUID() },
+        );
+      }
+
+      const assetEntity = await this.createUserAsset(
+        authUser,
+        createAssetDto,
+        originalAssetData.path,
+        originalAssetData.mimetype,
+        checksum,
+        true,
+        livePhotoAssetEntity,
+      );
+
+      if (!assetEntity) {
+        await this.backgroundTaskService.deleteFileOnDisk([
+          {
+            originalPath: originalAssetData.path,
+          } as any,
+        ]);
+        throw new BadRequestException('Asset not created');
+      }
+
+      await this.assetUploadedQueue.add(
+        assetUploadedProcessorName,
+        { asset: assetEntity, fileName: originalAssetData.originalname },
+        { jobId: assetEntity.id },
+      );
+
+      return new AssetFileUploadResponseDto(assetEntity.id);
+    } catch (err) {
+      await this.backgroundTaskService.deleteFileOnDisk([
+        {
+          originalPath: originalAssetData.path,
+        } as any,
+      ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
+
+      if (isLivePhoto) {
+        await this.backgroundTaskService.deleteFileOnDisk([
+          {
+            originalPath: livePhotoAssetData.path,
+          } as any,
+        ]);
+      }
+
+      if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
+        const existedAsset = await this.getAssetByChecksum(authUser.id, checksum);
+        res.status(200); // normal POST is 201. we use 200 to indicate the asset already exists
+        return new AssetFileUploadResponseDto(existedAsset.id);
+      }
+
+      Logger.error(`Error uploading file ${err}`);
+      throw new BadRequestException(`Error uploading file`, `${err}`);
+    }
+  }
 
   public async createUserAsset(
     authUser: AuthUserDto,
@@ -64,6 +174,8 @@ export class AssetService {
     originalPath: string,
     mimeType: string,
     checksum: Buffer,
+    isVisible: boolean,
+    livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity> {
     // Check valid time.
     const createdAt = createAssetDto.createdAt;
@@ -82,7 +194,9 @@ export class AssetService {
       authUser.id,
       originalPath,
       mimeType,
+      isVisible,
       checksum,
+      livePhotoAssetEntity,
     );
 
     return assetEntity;

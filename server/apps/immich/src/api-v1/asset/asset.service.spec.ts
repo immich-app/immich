@@ -8,13 +8,18 @@ import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { DownloadService } from '../../modules/download/download.service';
+import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
+import { IAssetUploadedJob, IVideoTranscodeJob } from '@app/job';
+import { Queue } from 'bull';
 
 describe('AssetService', () => {
   let sui: AssetService;
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
-
+  let backgroundTaskServiceMock: jest.Mocked<BackgroundTaskService>;
+  let assetUploadedQueueMock: jest.Mocked<Queue<IAssetUploadedJob>>;
+  let videoConversionQueueMock: jest.Mocked<Queue<IVideoTranscodeJob>>;
   const authUser: AuthUserDto = Object.freeze({
     id: 'user_id_1',
     email: 'auth@test.com',
@@ -123,7 +128,14 @@ describe('AssetService', () => {
       downloadArchive: jest.fn(),
     };
 
-    sui = new AssetService(assetRepositoryMock, a, downloadServiceMock as DownloadService);
+    sui = new AssetService(
+      assetRepositoryMock,
+      a,
+      backgroundTaskServiceMock,
+      assetUploadedQueueMock,
+      videoConversionQueueMock,
+      downloadServiceMock as DownloadService,
+    );
   });
 
   // Currently failing due to calculate checksum from a file
@@ -141,6 +153,7 @@ describe('AssetService', () => {
       originalPath,
       mimeType,
       Buffer.from('0x5041E6328F7DF8AFF650BEDAED9251897D9A6241', 'hex'),
+      true,
     );
 
     expect(result.userId).toEqual(authUser.id);

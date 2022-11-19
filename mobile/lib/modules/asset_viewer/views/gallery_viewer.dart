@@ -33,10 +33,10 @@ class GalleryViewerPage extends HookConsumerWidget {
     final Box<dynamic> box = Hive.box(userInfoBox);
     final appSettingService = ref.watch(appSettingsServiceProvider);
     final threeStageLoading = useState(false);
-    final loading = useState(false);
     final isZoomed = useState<bool>(false);
-    ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
     final indexOfAsset = useState(assetList.indexOf(asset));
+    final isPlayingMotionVideo = useState(false);
+    ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
 
     PageController controller =
         PageController(initialPage: assetList.indexOf(asset));
@@ -45,6 +45,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       () {
         threeStageLoading.value = appSettingService
             .getSetting<bool>(AppSettingsEnum.threeStageLoading);
+        isPlayingMotionVideo.value = false;
         return null;
       },
       [],
@@ -85,7 +86,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: TopControlAppBar(
-        loading: loading.value,
+        isPlayingMotionVideo: isPlayingMotionVideo.value,
         asset: assetList[indexOfAsset.value],
         onMoreInfoPressed: () {
           showInfo();
@@ -94,13 +95,18 @@ class GalleryViewerPage extends HookConsumerWidget {
             ? null
             : () {
                 ref.watch(imageViewerStateProvider.notifier).downloadAsset(
-                    assetList[indexOfAsset.value].remote!, context);
+                      assetList[indexOfAsset.value].remote!,
+                      context,
+                    );
               },
         onSharePressed: () {
           ref
               .watch(imageViewerStateProvider.notifier)
               .shareAsset(assetList[indexOfAsset.value], context);
         },
+        onToggleMotionVideo: (() {
+          isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
+        }),
       ),
       body: SafeArea(
         child: PageView.builder(
@@ -119,18 +125,28 @@ class GalleryViewerPage extends HookConsumerWidget {
             getAssetExif();
 
             if (assetList[index].isImage) {
-              return ImageViewerPage(
-                authToken: 'Bearer ${box.get(accessTokenKey)}',
-                isZoomedFunction: isZoomedMethod,
-                isZoomedListener: isZoomedListener,
-                asset: assetList[index],
-                heroTag: assetList[index].id,
-                threeStageLoading: threeStageLoading.value,
-              );
+              if (isPlayingMotionVideo.value) {
+                return VideoViewerPage(
+                  asset: assetList[index],
+                  isMotionVideo: true,
+                  onVideoEnded: () {
+                    isPlayingMotionVideo.value = false;
+                  },
+                );
+              } else {
+                return ImageViewerPage(
+                  authToken: 'Bearer ${box.get(accessTokenKey)}',
+                  isZoomedFunction: isZoomedMethod,
+                  isZoomedListener: isZoomedListener,
+                  asset: assetList[index],
+                  heroTag: assetList[index].id,
+                  threeStageLoading: threeStageLoading.value,
+                );
+              }
             } else {
               return GestureDetector(
                 onVerticalDragUpdate: (details) {
-                  const int sensitivity = 10;
+                  const int sensitivity = 15;
                   if (details.delta.dy > sensitivity) {
                     // swipe down
                     AutoRouter.of(context).pop();
@@ -141,7 +157,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                 },
                 child: Hero(
                   tag: assetList[index].id,
-                  child: VideoViewerPage(asset: assetList[index]),
+                  child: VideoViewerPage(
+                    asset: assetList[index],
+                    isMotionVideo: false,
+                    onVideoEnded: () {},
+                  ),
                 ),
               );
             }

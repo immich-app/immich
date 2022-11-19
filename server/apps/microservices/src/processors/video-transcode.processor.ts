@@ -20,7 +20,7 @@ export class VideoTranscodeProcessor {
     private immichConfigService: ImmichConfigService,
   ) {}
 
-  @Process({ name: mp4ConversionProcessorName, concurrency: 1 })
+  @Process({ name: mp4ConversionProcessorName, concurrency: 2 })
   async mp4Conversion(job: Job<IMp4ConversionProcessor>) {
     const { asset } = job.data;
 

@@ -65,7 +65,11 @@ class _$AppRouter extends RootStackRouter {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
       return MaterialPageX<dynamic>(
           routeData: routeData,
-          child: VideoViewerPage(key: args.key, asset: args.asset));
+          child: VideoViewerPage(
+              key: args.key,
+              asset: args.asset,
+              isMotionVideo: args.isMotionVideo,
+              onVideoEnded: args.onVideoEnded));
     },
     BackupControllerRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
@@ -340,24 +344,40 @@ class ImageViewerRouteArgs {
 /// generated route for
 /// [VideoViewerPage]
 class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
-  VideoViewerRoute({Key? key, required Asset asset})
+  VideoViewerRoute(
+      {Key? key,
+      required Asset asset,
+      required bool isMotionVideo,
+      required void Function() onVideoEnded})
       : super(VideoViewerRoute.name,
             path: '/video-viewer-page',
-            args: VideoViewerRouteArgs(key: key, asset: asset));
+            args: VideoViewerRouteArgs(
+                key: key,
+                asset: asset,
+                isMotionVideo: isMotionVideo,
+                onVideoEnded: onVideoEnded));
 
   static const String name = 'VideoViewerRoute';
 }
 
 class VideoViewerRouteArgs {
-  const VideoViewerRouteArgs({this.key, required this.asset});
+  const VideoViewerRouteArgs(
+      {this.key,
+      required this.asset,
+      required this.isMotionVideo,
+      required this.onVideoEnded});
 
   final Key? key;
 
   final Asset asset;
 
+  final bool isMotionVideo;
+
+  final void Function() onVideoEnded;
+
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded}';
   }
 }
 

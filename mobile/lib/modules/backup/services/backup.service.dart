@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -263,6 +264,13 @@ class BackupService {
 
           req.files.add(assetRawUploadData);
 
+          if (entity.isLivePhoto) {
+            var livePhotoRawUploadData = await _getLivePhotoFile(entity);
+            if (livePhotoRawUploadData != null) {
+              req.files.add(livePhotoRawUploadData);
+            }
+          }
+
           setCurrentUploadAssetCb(
             CurrentUploadAsset(
               id: entity.id,
@@ -320,6 +328,33 @@ class BackupService {
       _saveDuplicatedAssetIdToLocalStorage(duplicatedAssetIds);
     }
     return !anyErrors;
+  }
+
+  Future<MultipartFile?> _getLivePhotoFile(AssetEntity entity) async {
+    var motionFilePath = await entity.getMediaUrl();
+    // var motionFilePath = '/var/mobile/Media/DCIM/103APPLE/IMG_3371.MOV'
+
+    if (motionFilePath != null) {
+      var validPath = motionFilePath.replaceAll('file://', '');
+      var motionFile = File(validPath);
+      var fileStream = motionFile.openRead();
+      String originalFileName = await entity.titleAsync;
+      String fileNameWithoutPath = originalFileName.toString().split(".")[0];
+      var mimeType = FileHelper.getMimeType(validPath);
+
+      return http.MultipartFile(
+        "livePhotoData",
+        fileStream,
+        motionFile.lengthSync(),
+        filename: fileNameWithoutPath,
+        contentType: MediaType(
+          mimeType["type"],
+          mimeType["subType"],
+        ),
+      );
+    }
+
+    return null;
   }
 
   String _getAssetType(AssetType assetType) {

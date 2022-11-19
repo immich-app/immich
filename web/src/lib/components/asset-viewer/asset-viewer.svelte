@@ -39,7 +39,7 @@
 	let appearsInAlbums: AlbumResponseDto[] = [];
 	let isShowAlbumPicker = false;
 	let addToSharedAlbum = true;
-
+	let shouldPlayMotionPhoto = false;
 	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
 	onMount(() => {
@@ -88,10 +88,20 @@
 		isShowDetail = !isShowDetail;
 	};
 
-	const downloadFile = async () => {
+	const handleDownload = () => {
+		if (asset.livePhotoVideoId) {
+			downloadFile(asset.livePhotoVideoId, true);
+			downloadFile(asset.id, false);
+			return;
+		}
+
+		downloadFile(asset.id, false);
+	};
+
+	const downloadFile = async (assetId: string, isLivePhoto: boolean) => {
 		try {
 			const imageName = asset.exifInfo?.imageName ? asset.exifInfo?.imageName : asset.id;
-			const imageExtension = asset.originalPath.split('.')[1];
+			const imageExtension = isLivePhoto ? 'mov' : asset.originalPath.split('.')[1];
 			const imageFileName = imageName + '.' + imageExtension;
 
 			// If assets is already download -> return;
@@ -101,7 +111,7 @@
 
 			$downloadAssets[imageFileName] = 0;
 
-			const { data, status } = await api.assetApi.downloadFile(asset.id, false, false, {
+			const { data, status } = await api.assetApi.downloadFile(assetId, false, false, {
 				responseType: 'blob',
 				onDownloadProgress: (progressEvent) => {
 					if (progressEvent.lengthComputable) {
@@ -221,14 +231,18 @@
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
 		<AssetViewerNavBar
 			{asset}
+			isMotionPhotoPlaying={shouldPlayMotionPhoto}
+			showCopyButton={asset.type === AssetTypeEnum.Image}
+			showMotionPlayButton={!!asset.livePhotoVideoId}
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
-			on:download={downloadFile}
-			showCopyButton={asset.type === AssetTypeEnum.Image}
+			on:download={handleDownload}
 			on:delete={deleteAsset}
 			on:favorite={toggleFavorite}
 			on:addToAlbum={() => openAlbumPicker(false)}
 			on:addToSharedAlbum={() => openAlbumPicker(true)}
+			on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
+			on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
 		/>
 	</div>
 
@@ -257,7 +271,15 @@
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
 			{#if asset.type === AssetTypeEnum.Image}
-				<PhotoViewer assetId={asset.id} on:close={closeViewer} />
+				{#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+					<VideoViewer
+						assetId={asset.livePhotoVideoId}
+						on:close={closeViewer}
+						on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+					/>
+				{:else}
+					<PhotoViewer assetId={asset.id} on:close={closeViewer} />
+				{/if}
 			{:else}
 				<VideoViewer assetId={asset.id} on:close={closeViewer} />
 			{/if}
