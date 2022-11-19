@@ -15,8 +15,6 @@
 
 	onMount(async () => {
 		const search = window.location.search;
-		console.log('Callback url', window.location.href);
-
 		if (search.includes('code=') || search.includes('error=')) {
 			try {
 				loading = true;
