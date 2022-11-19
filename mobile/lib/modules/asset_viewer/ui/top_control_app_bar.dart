@@ -48,8 +48,14 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
               onToggleMotionVideo();
             },
             icon: isPlayingMotionVideo
-                ? const Icon(Icons.motion_photos_pause_outlined)
-                : const Icon(Icons.play_circle_outline_rounded),
+                ? Icon(
+                    Icons.motion_photos_pause_outlined,
+                    color: Colors.grey[200],
+                  )
+                : Icon(
+                    Icons.play_circle_outline_rounded,
+                    color: Colors.grey[200],
+                  ),
           ),
         if (!asset.isLocal)
           IconButton(
