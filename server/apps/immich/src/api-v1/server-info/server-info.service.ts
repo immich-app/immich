@@ -7,8 +7,6 @@ import { UsageByUserDto } from './response-dto/usage-by-user-response.dto';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import path from 'path';
-import { readdirSync, statSync } from 'fs';
 import { asHumanReadable } from '../../utils/human-readable.util';
 
 @Injectable()
