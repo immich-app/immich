@@ -102,6 +102,7 @@
   "library_page_albums": "Albums",
   "library_page_new_album": "New album",
   "login_form_button_text": "Login",
+  "oauth_login_form_button_text": "OAuth",
   "login_form_email_hint": "youremail@email.com",
   "login_form_endpoint_hint": "http://your-server-ip:port/api",
   "login_form_endpoint_url": "Server Endpoint URL",

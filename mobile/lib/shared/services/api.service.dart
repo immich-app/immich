@@ -5,6 +5,7 @@ class ApiService {
 
   late UserApi userApi;
   late AuthenticationApi authenticationApi;
+  late OAuthApi oAuthApi;
   late AlbumApi albumApi;
   late AssetApi assetApi;
   late ServerInfoApi serverInfoApi;
@@ -14,6 +15,7 @@ class ApiService {
     _apiClient = ApiClient(basePath: endpoint);
     userApi = UserApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
+    oAuthApi = OAuthApi(_apiClient);
     albumApi = AlbumApi(_apiClient);
     assetApi = AssetApi(_apiClient);
     serverInfoApi = ServerInfoApi(_apiClient);

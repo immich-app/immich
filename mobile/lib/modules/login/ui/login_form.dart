@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
+import 'package:immich_mobile/modules/login/providers/oauth.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -92,12 +93,20 @@ class LoginForm extends HookConsumerWidget {
                   }
                 },
               ),
-              LoginButton(
-                emailController: usernameController,
-                passwordController: passwordController,
-                serverEndpointController: serverEndpointController,
-                isSavedLoginInfo: isSaveLoginInfo.value,
-              ),
+              Row(
+                children: [
+                  OAuthLoginButton(
+                    serverEndpointController: serverEndpointController,
+                    isSavedLoginInfo: isSaveLoginInfo.value,
+                  ),
+                  LoginButton(
+                    emailController: usernameController,
+                    passwordController: passwordController,
+                    serverEndpointController: serverEndpointController,
+                    isSavedLoginInfo: isSaveLoginInfo.value,
+                  ),
+                ],
+              )
             ],
           ),
         ),
@@ -200,48 +209,84 @@ class LoginButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        visualDensity: VisualDensity.standard,
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.grey[50],
-        elevation: 2,
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8.0),
+        child: ElevatedButton.icon(
+          onPressed: () async {
+            // This will remove current cache asset state of previous user login.
+            ref.watch(assetProvider.notifier).clearAllAsset();
+
+            var isAuthenticated =
+                await ref.watch(authenticationProvider.notifier).login(
+                      emailController.text,
+                      passwordController.text,
+                      serverEndpointController.text,
+                      isSavedLoginInfo,
+                    );
+
+            if (isAuthenticated) {
+              // Resume backup (if enable) then navigate
+
+              if (ref.watch(authenticationProvider).shouldChangePassword &&
+                  !ref.watch(authenticationProvider).isAdmin) {
+                AutoRouter.of(context).push(const ChangePasswordRoute());
+              } else {
+                ref.watch(backupProvider.notifier).resumeBackup();
+                AutoRouter.of(context).replace(const TabControllerRoute());
+              }
+            } else {
+              ImmichToast.show(
+                context: context,
+                msg: "login_form_failed_login".tr(),
+                toastType: ToastType.error,
+              );
+            }
+          },
+          icon: const Icon(Icons.login_rounded),
+          label: const Text(
+            "login_form_button_text",
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ).tr(),
+        ),
       ),
-      onPressed: () async {
-        // This will remove current cache asset state of previous user login.
-        ref.watch(assetProvider.notifier).clearAllAsset();
+    );
+  }
+}
 
-        var isAuthenticated =
-            await ref.watch(authenticationProvider.notifier).login(
-                  emailController.text,
-                  passwordController.text,
-                  serverEndpointController.text,
-                  isSavedLoginInfo,
-                );
+class OAuthLoginButton extends ConsumerWidget {
+  final TextEditingController serverEndpointController;
+  final bool isSavedLoginInfo;
 
-        if (isAuthenticated) {
-          // Resume backup (if enable) then navigate
+  const OAuthLoginButton({
+    Key? key,
+    required this.serverEndpointController,
+    required this.isSavedLoginInfo,
+  }) : super(key: key);
 
-          if (ref.watch(authenticationProvider).shouldChangePassword &&
-              !ref.watch(authenticationProvider).isAdmin) {
-            AutoRouter.of(context).push(const ChangePasswordRoute());
-          } else {
-            ref.watch(backupProvider.notifier).resumeBackup();
-            AutoRouter.of(context).replace(const TabControllerRoute());
-          }
-        } else {
-          ImmichToast.show(
-            context: context,
-            msg: "login_form_failed_login".tr(),
-            toastType: ToastType.error,
-          );
-        }
-      },
-      child: const Text(
-        "login_form_button_text",
-        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-      ).tr(),
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var oAuthService = ref.watch(OAuthServiceProvider);
+
+    void performOAuthLogin() async {
+      var oAuthServerConfig = await oAuthService
+          .getOAuthServerConfig(serverEndpointController.text);
+      print("oAuthServerConfig $oAuthServerConfig");
+      await oAuthService.oAuthLogin(oAuthServerConfig!.url!);
+    }
+
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(right: 8.0),
+        child: ElevatedButton.icon(
+          onPressed: () async => performOAuthLogin(),
+          icon: const Icon(Icons.pin_rounded),
+          label: const Text(
+            "oauth_login_form_button_text",
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ).tr(),
+        ),
+      ),
     );
   }
 }
