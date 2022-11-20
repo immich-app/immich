@@ -8,30 +8,34 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/providers/api.provider.dart';
 
 class SplashScreenPage extends HookConsumerWidget {
   const SplashScreenPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final apiService = ref.watch(apiServiceProvider);
     HiveSavedLoginInfo? loginInfo =
         Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
 
     void performLoggingIn() async {
-      var isAuthenticated =
-          await ref.read(authenticationProvider.notifier).login(
-                loginInfo!.email,
-                loginInfo.password,
-                loginInfo.serverUrl,
-                true,
-              );
+      if (loginInfo != null) {
+        // Make sure API service is initialized
+        apiService.setEndpoint(loginInfo.serverUrl);
 
-      if (isAuthenticated) {
-        // Resume backup (if enable) then navigate
-        ref.watch(backupProvider.notifier).resumeBackup();
-        AutoRouter.of(context).replace(const TabControllerRoute());
-      } else {
-        AutoRouter.of(context).replace(const LoginRoute());
+        var isSuccess =
+            await ref.read(authenticationProvider.notifier).setSuccessLoginInfo(
+                  accessToken: loginInfo.accessToken,
+                  isSavedLoginInfo: true,
+                );
+        if (isSuccess) {
+          // Resume backup (if enable) then navigate
+          ref.watch(backupProvider.notifier).resumeBackup();
+          AutoRouter.of(context).replace(const TabControllerRoute());
+        } else {
+          AutoRouter.of(context).replace(const LoginRoute());
+        }
       }
     }
 

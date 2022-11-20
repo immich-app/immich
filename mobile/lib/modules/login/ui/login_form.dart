@@ -106,19 +106,24 @@ class LoginForm extends HookConsumerWidget {
                         strokeWidth: 2,
                       ),
                     ),
-                  if (!isLoading.value)
+                  if (!isLoading.value) ...[
                     OAuthLoginButton(
                       serverEndpointController: serverEndpointController,
                       isSavedLoginInfo: isSaveLoginInfo.value,
                       isLoading: isLoading,
+                      onLoginSuccess: () {
+                        ref.watch(backupProvider.notifier).resumeBackup();
+                        AutoRouter.of(context)
+                            .replace(const TabControllerRoute());
+                      },
                     ),
-                  if (!isLoading.value)
                     LoginButton(
                       emailController: usernameController,
                       passwordController: passwordController,
                       serverEndpointController: serverEndpointController,
                       isSavedLoginInfo: isSaveLoginInfo.value,
                     ),
+                  ],
                 ],
               )
             ],
@@ -272,12 +277,14 @@ class OAuthLoginButton extends ConsumerWidget {
   final TextEditingController serverEndpointController;
   final bool isSavedLoginInfo;
   final ValueNotifier<bool> isLoading;
+  final VoidCallback onLoginSuccess;
 
   const OAuthLoginButton({
     Key? key,
     required this.serverEndpointController,
     required this.isSavedLoginInfo,
     required this.isLoading,
+    required this.onLoginSuccess,
   }) : super(key: key);
 
   @override
@@ -285,6 +292,7 @@ class OAuthLoginButton extends ConsumerWidget {
     var oAuthService = ref.watch(OAuthServiceProvider);
 
     void performOAuthLogin() async {
+      ref.watch(assetProvider.notifier).clearAllAsset();
       OAuthConfigResponseDto? oAuthServerConfig;
 
       try {
@@ -304,12 +312,35 @@ class OAuthLoginButton extends ConsumerWidget {
 
       if (oAuthServerConfig != null && oAuthServerConfig.enabled) {
         debugPrint("OauthEnabled");
-        // var oAuthLoginResponse =
-        //     await oAuthService.oAuthLogin(oAuthServerConfig.url!);
+        var loginResponseDto =
+            await oAuthService.oAuthLogin(oAuthServerConfig.url!);
 
-        // print(oAuthLoginResponse);
+        if (loginResponseDto != null) {
+          var isSuccess = await ref
+              .watch(authenticationProvider.notifier)
+              .setSuccessLoginInfo(
+                accessToken: loginResponseDto.accessToken,
+                isSavedLoginInfo: isSavedLoginInfo,
+              );
 
-        // isLoading.value = true;
+          if (isSuccess) {
+            isLoading.value = false;
+            onLoginSuccess();
+          } else {
+            ImmichToast.show(
+              context: context,
+              msg: "login_form_failed_login".tr(),
+              toastType: ToastType.error,
+            );
+          }
+        } else {
+          ImmichToast.show(
+            context: context,
+            msg: "login_form_failed_login".tr(),
+            toastType: ToastType.error,
+          );
+        }
+        isLoading.value = false;
       } else {
         ImmichToast.show(
           context: context,
@@ -319,7 +350,6 @@ class OAuthLoginButton extends ConsumerWidget {
         isLoading.value = false;
         return;
       }
-      // await oAuthService.oAuthLogin(oAuthServerConfig!.url!);
     }
 
     return Expanded(
