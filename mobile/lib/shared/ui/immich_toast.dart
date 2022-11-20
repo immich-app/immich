@@ -9,6 +9,7 @@ class ImmichToast {
     required String msg,
     ToastType toastType = ToastType.info,
     ToastGravity gravity = ToastGravity.TOP,
+    int durationInSecond = 3,
   }) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final fToast = FToast();
@@ -77,7 +78,7 @@ class ImmichToast {
         ),
       ),
       gravity: gravity,
-      toastDuration: const Duration(seconds: 2),
+      toastDuration: Duration(seconds: durationInSecond),
     );
   }
 }

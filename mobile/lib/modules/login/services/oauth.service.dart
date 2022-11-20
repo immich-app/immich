@@ -20,26 +20,20 @@ class OAuthService {
     );
   }
 
-  oAuthLogin(String oauthUrl) async {
+  Future<LoginResponseDto?> oAuthLogin(String oauthUrl) async {
     try {
-      // await launchUrl(Uri.parse(oauthUrl));
       var result = await FlutterWebAuth.authenticate(
         url: oauthUrl,
         callbackUrlScheme: callbackUrlScheme,
       );
-      print("oAuthLogin Result URL $result");
 
-      var loginResult = await _apiService.oAuthApi.callback(
+      return await _apiService.oAuthApi.callback(
         OAuthCallbackDto(
           url: result,
         ),
       );
-
-      print("oAuthLogin Login Result $loginResult");
     } catch (e) {
-      print("Error: $e");
+      return null;
     }
   }
 }
-
-// Redirect URL = app.immich:/

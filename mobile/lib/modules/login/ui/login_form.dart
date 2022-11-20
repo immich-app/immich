@@ -12,6 +12,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:openapi/api.dart';
 
 class LoginForm extends HookConsumerWidget {
   const LoginForm({Key? key}) : super(key: key);
@@ -25,6 +26,7 @@ class LoginForm extends HookConsumerWidget {
     final serverEndpointController =
         useTextEditingController(text: 'login_form_endpoint_hint'.tr());
     final isSaveLoginInfo = useState<bool>(false);
+    final isLoading = useState<bool>(false);
 
     useEffect(
       () {
@@ -94,17 +96,29 @@ class LoginForm extends HookConsumerWidget {
                 },
               ),
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  OAuthLoginButton(
-                    serverEndpointController: serverEndpointController,
-                    isSavedLoginInfo: isSaveLoginInfo.value,
-                  ),
-                  LoginButton(
-                    emailController: usernameController,
-                    passwordController: passwordController,
-                    serverEndpointController: serverEndpointController,
-                    isSavedLoginInfo: isSaveLoginInfo.value,
-                  ),
+                  if (isLoading.value)
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  if (!isLoading.value)
+                    OAuthLoginButton(
+                      serverEndpointController: serverEndpointController,
+                      isSavedLoginInfo: isSaveLoginInfo.value,
+                      isLoading: isLoading,
+                    ),
+                  if (!isLoading.value)
+                    LoginButton(
+                      emailController: usernameController,
+                      passwordController: passwordController,
+                      serverEndpointController: serverEndpointController,
+                      isSavedLoginInfo: isSaveLoginInfo.value,
+                    ),
                 ],
               )
             ],
@@ -257,11 +271,13 @@ class LoginButton extends ConsumerWidget {
 class OAuthLoginButton extends ConsumerWidget {
   final TextEditingController serverEndpointController;
   final bool isSavedLoginInfo;
+  final ValueNotifier<bool> isLoading;
 
   const OAuthLoginButton({
     Key? key,
     required this.serverEndpointController,
     required this.isSavedLoginInfo,
+    required this.isLoading,
   }) : super(key: key);
 
   @override
@@ -269,17 +285,48 @@ class OAuthLoginButton extends ConsumerWidget {
     var oAuthService = ref.watch(OAuthServiceProvider);
 
     void performOAuthLogin() async {
-      var oAuthServerConfig = await oAuthService
-          .getOAuthServerConfig(serverEndpointController.text);
-      print("oAuthServerConfig $oAuthServerConfig");
-      await oAuthService.oAuthLogin(oAuthServerConfig!.url!);
+      OAuthConfigResponseDto? oAuthServerConfig;
+
+      try {
+        oAuthServerConfig = await oAuthService
+            .getOAuthServerConfig(serverEndpointController.text);
+
+        isLoading.value = true;
+      } catch (e) {
+        ImmichToast.show(
+          context: context,
+          msg: "login_form_failed_get_oauth_server_config".tr(),
+          toastType: ToastType.error,
+        );
+        isLoading.value = false;
+        return;
+      }
+
+      if (oAuthServerConfig != null && oAuthServerConfig.enabled) {
+        debugPrint("OauthEnabled");
+        // var oAuthLoginResponse =
+        //     await oAuthService.oAuthLogin(oAuthServerConfig.url!);
+
+        // print(oAuthLoginResponse);
+
+        // isLoading.value = true;
+      } else {
+        ImmichToast.show(
+          context: context,
+          msg: "login_form_failed_get_oauth_server_disable".tr(),
+          toastType: ToastType.info,
+        );
+        isLoading.value = false;
+        return;
+      }
+      // await oAuthService.oAuthLogin(oAuthServerConfig!.url!);
     }
 
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.only(right: 8.0),
         child: ElevatedButton.icon(
-          onPressed: () async => performOAuthLogin(),
+          onPressed: performOAuthLogin,
           icon: const Icon(Icons.pin_rounded),
           label: const Text(
             "oauth_login_form_button_text",
