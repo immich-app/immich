@@ -221,20 +221,16 @@ export class AssetService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
+  public async getAssetById(assetId: string): Promise<AssetResponseDto> {
     const asset = await this._assetRepository.getById(assetId);
 
     return mapAsset(asset);
   }
 
-  public async updateAssetById(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+  public async updateAssetById(assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
       throw new BadRequestException('Asset not found');
-    }
-
-    if (authUser.id !== asset.userId) {
-      throw new ForbiddenException('Not the owner');
     }
 
     const updatedAsset = await this._assetRepository.update(asset, dto);
@@ -485,14 +481,13 @@ export class AssetService {
     }
   }
 
-  public async deleteAssetById(authUser: AuthUserDto, assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+  public async deleteAssetById(assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
     const result: DeleteAssetResponseDto[] = [];
 
     const target = assetIds.ids;
     for (const assetId of target) {
       const res = await this.assetRepository.delete({
         id: assetId,
-        userId: authUser.id,
       });
 
       if (res.affected) {
@@ -630,5 +625,21 @@ export class AssetService {
 
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this._assetRepository.getAssetCountByUserId(authUser.id);
+  }
+
+  async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner: boolean = false) {
+    for (let assetId of assetIds) {
+      // Step 1: Check if user owns asset
+      if (await this._assetRepository.countByIdAndUser(assetId, authUser.id) == 1) {
+        continue;
+      }
+
+      // Avoid additional checks if ownership is required
+      if (!mustBeOwner) {
+
+      }
+
+      throw new ForbiddenException();
+    }
   }
 }

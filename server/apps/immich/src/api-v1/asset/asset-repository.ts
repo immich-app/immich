@@ -43,6 +43,7 @@ export interface IAssetRepository {
     userId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto>;
+  countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
 
 export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
@@ -342,5 +343,14 @@ export class AssetRepository implements IAssetRepository {
       },
     });
     return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
+  }
+
+  async countByIdAndUser(assetId: string, userId: string): Promise<number> {
+    return await this.assetRepository.count({
+        where: {
+          id: assetId,
+          userId
+      }
+    });
   }
 }
