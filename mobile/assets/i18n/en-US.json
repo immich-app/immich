@@ -112,7 +112,7 @@
   "login_form_err_trailing_whitespace": "Trailing whitespace",
   "login_form_failed_login": "Error logging you in, check server URL, email and password",
   "login_form_failed_get_oauth_server_config": "Error logging using OAuth, check server URL",
-  "login_form_failed_get_oauth_server_disable": "OAuth feature not available on this server",
+  "login_form_failed_get_oauth_server_disable": "OAuth feature is not available on this server",
   "login_form_label_email": "Email",
   "login_form_label_password": "Password",
   "login_form_password_hint": "password",
