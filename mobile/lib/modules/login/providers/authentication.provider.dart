@@ -88,7 +88,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         return false;
       }
 
-      setSuccessLoginInfo(
+      return setSuccessLoginInfo(
         accessToken: loginResponse.accessToken,
         isSavedLoginInfo: isSavedLoginInfo,
       );
@@ -97,8 +97,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       debugPrint("Error logging in $e");
       return false;
     }
-
-    return true;
   }
 
   Future<bool> logout() async {
