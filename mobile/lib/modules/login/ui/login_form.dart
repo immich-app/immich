@@ -8,6 +8,7 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/oauth.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
@@ -25,11 +26,47 @@ class LoginForm extends HookConsumerWidget {
         useTextEditingController.fromValue(TextEditingValue.empty);
     final serverEndpointController =
         useTextEditingController(text: 'login_form_endpoint_hint'.tr());
+    final apiService = ref.watch(apiServiceProvider);
+    final serverEndpointFocusNode = useFocusNode();
     final isSaveLoginInfo = useState<bool>(false);
     final isLoading = useState<bool>(false);
+    final isOauthEnable = useState<bool>(false);
+    final oAuthButtonLabel = useState<String>('OAuth');
+
+    getServeLoginConfig() async {
+      if (!serverEndpointFocusNode.hasFocus) {
+        var urlText = serverEndpointController.text.trim();
+
+        try {
+          var endpointUrl = Uri.tryParse(urlText);
+
+          if (endpointUrl != null) {
+            isLoading.value = true;
+            apiService.setEndpoint(endpointUrl.toString());
+            var loginConfig = await apiService.oAuthApi.generateConfig(
+              OAuthConfigDto(redirectUri: endpointUrl.toString()),
+            );
+
+            if (loginConfig != null) {
+              isOauthEnable.value = loginConfig.enabled;
+              oAuthButtonLabel.value = loginConfig.buttonText ?? 'OAuth';
+            } else {
+              isOauthEnable.value = false;
+            }
+
+            isLoading.value = false;
+          }
+        } catch (_) {
+          isLoading.value = false;
+          isOauthEnable.value = false;
+        }
+      }
+    }
 
     useEffect(
       () {
+        serverEndpointFocusNode.addListener(getServeLoginConfig);
+
         var loginInfo = Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
             .get(savedLoginInfoKey);
 
@@ -40,6 +77,7 @@ class LoginForm extends HookConsumerWidget {
           isSaveLoginInfo.value = loginInfo.isSaveLogin;
         }
 
+        getServeLoginConfig();
         return null;
       },
       [],
@@ -70,7 +108,10 @@ class LoginForm extends HookConsumerWidget {
               ),
               EmailInput(controller: usernameController),
               PasswordInput(controller: passwordController),
-              ServerEndpointInput(controller: serverEndpointController),
+              ServerEndpointInput(
+                controller: serverEndpointController,
+                focusNode: serverEndpointFocusNode,
+              ),
               CheckboxListTile(
                 activeColor: Theme.of(context).primaryColor,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8),
@@ -95,37 +136,52 @@ class LoginForm extends HookConsumerWidget {
                   }
                 },
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (isLoading.value)
-                    const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
-                    ),
-                  if (!isLoading.value) ...[
-                    OAuthLoginButton(
-                      serverEndpointController: serverEndpointController,
-                      isSavedLoginInfo: isSaveLoginInfo.value,
-                      isLoading: isLoading,
-                      onLoginSuccess: () {
-                        ref.watch(backupProvider.notifier).resumeBackup();
-                        AutoRouter.of(context)
-                            .replace(const TabControllerRoute());
-                      },
-                    ),
+              if (isLoading.value)
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                  ),
+                ),
+              if (!isLoading.value)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
                     LoginButton(
                       emailController: usernameController,
                       passwordController: passwordController,
                       serverEndpointController: serverEndpointController,
                       isSavedLoginInfo: isSaveLoginInfo.value,
                     ),
+                    if (isOauthEnable.value) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                        ),
+                        child: Divider(
+                          color: Brightness.dark == Theme.of(context).brightness
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                      OAuthLoginButton(
+                        serverEndpointController: serverEndpointController,
+                        isSavedLoginInfo: isSaveLoginInfo.value,
+                        buttonLabel: oAuthButtonLabel.value,
+                        isLoading: isLoading,
+                        onLoginSuccess: () {
+                          isLoading.value = false;
+                          ref.watch(backupProvider.notifier).resumeBackup();
+                          AutoRouter.of(context).replace(
+                            const TabControllerRoute(),
+                          );
+                        },
+                      ),
+                    ],
                   ],
-                ],
-              )
+                )
             ],
           ),
         ),
@@ -136,9 +192,12 @@ class LoginForm extends HookConsumerWidget {
 
 class ServerEndpointInput extends StatelessWidget {
   final TextEditingController controller;
-
-  const ServerEndpointInput({Key? key, required this.controller})
-      : super(key: key);
+  final FocusNode focusNode;
+  const ServerEndpointInput({
+    Key? key,
+    required this.controller,
+    required this.focusNode,
+  }) : super(key: key);
 
   String? _validateInput(String? url) {
     if (url?.startsWith(RegExp(r'https?://')) == true) {
@@ -159,6 +218,7 @@ class ServerEndpointInput extends StatelessWidget {
       ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
+      focusNode: focusNode,
     );
   }
 }
@@ -228,47 +288,45 @@ class LoginButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 8.0),
-        child: ElevatedButton.icon(
-          onPressed: () async {
-            // This will remove current cache asset state of previous user login.
-            ref.watch(assetProvider.notifier).clearAllAsset();
-
-            var isAuthenticated =
-                await ref.watch(authenticationProvider.notifier).login(
-                      emailController.text,
-                      passwordController.text,
-                      serverEndpointController.text,
-                      isSavedLoginInfo,
-                    );
-
-            if (isAuthenticated) {
-              // Resume backup (if enable) then navigate
-
-              if (ref.watch(authenticationProvider).shouldChangePassword &&
-                  !ref.watch(authenticationProvider).isAdmin) {
-                AutoRouter.of(context).push(const ChangePasswordRoute());
-              } else {
-                ref.watch(backupProvider.notifier).resumeBackup();
-                AutoRouter.of(context).replace(const TabControllerRoute());
-              }
-            } else {
-              ImmichToast.show(
-                context: context,
-                msg: "login_form_failed_login".tr(),
-                toastType: ToastType.error,
-              );
-            }
-          },
-          icon: const Icon(Icons.login_rounded),
-          label: const Text(
-            "login_form_button_text",
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ).tr(),
-        ),
+    return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12),
       ),
+      onPressed: () async {
+        // This will remove current cache asset state of previous user login.
+        ref.watch(assetProvider.notifier).clearAllAsset();
+
+        var isAuthenticated =
+            await ref.watch(authenticationProvider.notifier).login(
+                  emailController.text,
+                  passwordController.text,
+                  serverEndpointController.text,
+                  isSavedLoginInfo,
+                );
+
+        if (isAuthenticated) {
+          // Resume backup (if enable) then navigate
+
+          if (ref.watch(authenticationProvider).shouldChangePassword &&
+              !ref.watch(authenticationProvider).isAdmin) {
+            AutoRouter.of(context).push(const ChangePasswordRoute());
+          } else {
+            ref.watch(backupProvider.notifier).resumeBackup();
+            AutoRouter.of(context).replace(const TabControllerRoute());
+          }
+        } else {
+          ImmichToast.show(
+            context: context,
+            msg: "login_form_failed_login".tr(),
+            toastType: ToastType.error,
+          );
+        }
+      },
+      icon: const Icon(Icons.login_rounded),
+      label: const Text(
+        "login_form_button_text",
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      ).tr(),
     );
   }
 }
@@ -278,6 +336,7 @@ class OAuthLoginButton extends ConsumerWidget {
   final bool isSavedLoginInfo;
   final ValueNotifier<bool> isLoading;
   final VoidCallback onLoginSuccess;
+  final String buttonLabel;
 
   const OAuthLoginButton({
     Key? key,
@@ -285,6 +344,7 @@ class OAuthLoginButton extends ConsumerWidget {
     required this.isSavedLoginInfo,
     required this.isLoading,
     required this.onLoginSuccess,
+    required this.buttonLabel,
   }) : super(key: key);
 
   @override
@@ -311,7 +371,6 @@ class OAuthLoginButton extends ConsumerWidget {
       }
 
       if (oAuthServerConfig != null && oAuthServerConfig.enabled) {
-        debugPrint("OauthEnabled");
         var loginResponseDto =
             await oAuthService.oAuthLogin(oAuthServerConfig.url!);
 
@@ -333,13 +392,8 @@ class OAuthLoginButton extends ConsumerWidget {
               toastType: ToastType.error,
             );
           }
-        } else {
-          ImmichToast.show(
-            context: context,
-            msg: "login_form_failed_login".tr(),
-            toastType: ToastType.error,
-          );
         }
+
         isLoading.value = false;
       } else {
         ImmichToast.show(
@@ -352,17 +406,16 @@ class OAuthLoginButton extends ConsumerWidget {
       }
     }
 
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(right: 8.0),
-        child: ElevatedButton.icon(
-          onPressed: performOAuthLogin,
-          icon: const Icon(Icons.pin_rounded),
-          label: const Text(
-            "oauth_login_form_button_text",
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ).tr(),
-        ),
+    return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).primaryColor.withAlpha(230),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+      ),
+      onPressed: performOAuthLogin,
+      icon: const Icon(Icons.pin_rounded),
+      label: Text(
+        buttonLabel,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
       ),
     );
   }
