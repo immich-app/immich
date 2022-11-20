@@ -17,11 +17,11 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.34.0</string>
+    <string>1.36.0</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>68</string>
+    <string>71</string>
     <key>LSRequiresIPhoneOS</key>
     <true />
     <key>MGLMapboxMetricsEnabledSettingShownInApp</key>
