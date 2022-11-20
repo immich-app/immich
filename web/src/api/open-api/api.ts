@@ -1637,12 +1637,6 @@ export interface UsageByUserDto {
      * @type {number}
      * @memberof UsageByUserDto
      */
-    'objects': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UsageByUserDto
-     */
     'videos': number;
     /**
      * 
