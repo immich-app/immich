@@ -43,43 +43,46 @@ class UserResponseDto {
   DateTime? deletedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
-     other.id == id &&
-     other.email == email &&
-     other.firstName == firstName &&
-     other.lastName == lastName &&
-     other.createdAt == createdAt &&
-     other.profileImagePath == profileImagePath &&
-     other.shouldChangePassword == shouldChangePassword &&
-     other.isAdmin == isAdmin &&
-     other.deletedAt == deletedAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserResponseDto &&
+          other.id == id &&
+          other.email == email &&
+          other.firstName == firstName &&
+          other.lastName == lastName &&
+          other.createdAt == createdAt &&
+          other.profileImagePath == profileImagePath &&
+          other.shouldChangePassword == shouldChangePassword &&
+          other.isAdmin == isAdmin &&
+          other.deletedAt == deletedAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (id.hashCode) +
-    (email.hashCode) +
-    (firstName.hashCode) +
-    (lastName.hashCode) +
-    (createdAt.hashCode) +
-    (profileImagePath.hashCode) +
-    (shouldChangePassword.hashCode) +
-    (isAdmin.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (id.hashCode) +
+      (email.hashCode) +
+      (firstName.hashCode) +
+      (lastName.hashCode) +
+      (createdAt.hashCode) +
+      (profileImagePath.hashCode) +
+      (shouldChangePassword.hashCode) +
+      (isAdmin.hashCode) +
+      (deletedAt == null ? 0 : deletedAt!.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt]';
+  String toString() =>
+      'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
-      _json[r'id'] = id;
-      _json[r'email'] = email;
-      _json[r'firstName'] = firstName;
-      _json[r'lastName'] = lastName;
-      _json[r'createdAt'] = createdAt;
-      _json[r'profileImagePath'] = profileImagePath;
-      _json[r'shouldChangePassword'] = shouldChangePassword;
-      _json[r'isAdmin'] = isAdmin;
+    _json[r'id'] = id;
+    _json[r'email'] = email;
+    _json[r'firstName'] = firstName;
+    _json[r'lastName'] = lastName;
+    _json[r'createdAt'] = createdAt;
+    _json[r'profileImagePath'] = profileImagePath;
+    _json[r'shouldChangePassword'] = shouldChangePassword;
+    _json[r'isAdmin'] = isAdmin;
     if (deletedAt != null) {
       _json[r'deletedAt'] = deletedAt!.toUtc().toIso8601String();
     } else {
@@ -98,13 +101,13 @@ class UserResponseDto {
       // Ensure that the map contains the required keys.
       // Note 1: the values aren't checked for validity beyond being non-null.
       // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "UserResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "UserResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
+      // assert(() {
+      //   requiredKeys.forEach((key) {
+      //     assert(json.containsKey(key), 'Required key "UserResponseDto[$key]" is missing from JSON.');
+      //     assert(json[key] != null, 'Required key "UserResponseDto[$key]" has a null value in JSON.');
+      //   });
+      //   return true;
+      // }());
 
       return UserResponseDto(
         id: mapValueOfType<String>(json, r'id')!,
@@ -113,7 +116,8 @@ class UserResponseDto {
         lastName: mapValueOfType<String>(json, r'lastName')!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
-        shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
+        shouldChangePassword:
+            mapValueOfType<bool>(json, r'shouldChangePassword')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         deletedAt: mapDateTime(json, r'deletedAt', ''),
       );
@@ -121,7 +125,10 @@ class UserResponseDto {
     return null;
   }
 
-  static List<UserResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UserResponseDto>? listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <UserResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -149,12 +156,18 @@ class UserResponseDto {
   }
 
   // maps a json object with a list of UserResponseDto-objects as value to a dart map
-  static Map<String, List<UserResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<UserResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<UserResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = UserResponseDto.listFromJson(entry.value, growable: growable,);
+        final value = UserResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
         if (value != null) {
           map[entry.key] = value;
         }
@@ -176,4 +189,3 @@ class UserResponseDto {
     'deletedAt',
   };
 }
-

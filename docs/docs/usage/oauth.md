@@ -28,9 +28,17 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 
 2. Configure Redirect URIs/Origins
 
-   1. The **Sign-in redirect URIs** should include:
+  The **Sign-in redirect URIs** should include:
 
-      - All URLs that will be used to access the login page of the Immich web client (eg. `http://localhost:2283/auth/login`, `http://192.168.0.200:2283/auth/login`, `https://immich.example.com/auth/login`)
+  * All URLs that will be used to access the login page of the Immich web client (eg. `http://localhost:2283/auth/login`, `http://192.168.0.200:2283/auth/login`, `https://immich.example.com/auth/login`)
+  * Mobile app redirect URL `app.immich:/`
+  
+:::caution
+You **MUST** include `app.immich:/` as the redirect URI for iOS and Android mobile app to work properly. 
+
+**Authentik example**
+<img src={require('./img/authentik-redirect.png').default} title="Authentik Redirection URL" width="80%" />
+:::
 
 ## Enable OAuth
 

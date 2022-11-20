@@ -40,6 +40,7 @@ dependencies:
   latlong2: ^0.8.1
   collection: ^1.16.0
   http_parser: ^4.0.1
+  flutter_web_auth: ^0.5.0
 
   openapi:
     path: openapi
