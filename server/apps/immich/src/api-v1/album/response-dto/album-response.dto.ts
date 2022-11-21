@@ -18,7 +18,14 @@ export class AlbumResponseDto {
 }
 
 export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
-  const sharedUsers = entity.sharedUsers?.map((userAlbum) => mapUser(userAlbum.userInfo)) || [];
+  const sharedUsers: UserResponseDto[] = [];
+
+  entity.sharedUsers?.forEach((userAlbum) => {
+    if (userAlbum.userInfo) {
+      const user = mapUser(userAlbum.userInfo);
+      sharedUsers.push(user);
+    }
+  });
   return {
     albumName: entity.albumName,
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
@@ -33,7 +40,14 @@ export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
 }
 
 export function mapAlbumExcludeAssetInfo(entity: AlbumEntity): AlbumResponseDto {
-  const sharedUsers = entity.sharedUsers?.map((userAlbum) => mapUser(userAlbum.userInfo)) || [];
+  const sharedUsers: UserResponseDto[] = [];
+
+  entity.sharedUsers?.forEach((userAlbum) => {
+    if (userAlbum.userInfo) {
+      const user = mapUser(userAlbum.userInfo);
+      sharedUsers.push(user);
+    }
+  });
   return {
     albumName: entity.albumName,
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
