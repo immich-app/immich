@@ -49,7 +49,7 @@ Once you have a new OAuth client application configured, Immich can be configure
 | OAUTH_ENABLED       | boolean | false                | Enable/disable OAuth2                                                     |
 | OAUTH_ISSUER_URL    | URL     | (required)           | Required. Self-discovery URL for client (from previous step)              |
 | OAUTH_CLIENT_ID     | string  | (required)           | Required. Client ID (from previous step)                                  |
-| OAUTH_CLIENT_SECRET | string  | (required)           | Required. Client Secret (previous step                                    |
+| OAUTH_CLIENT_SECRET | string  | (required)           | Required. Client Secret (previous step)                                    |
 | OAUTH_SCOPE         | string  | openid email profile | Full list of scopes to send with the request (space delimited)            |
 | OAUTH_AUTO_REGISTER | boolean | true                 | When true, will automatically register a user the first time they sign in |
 | OAUTH_BUTTON_TEXT   | string  | Login with OAuth     | Text for the OAuth button on the web                                      |

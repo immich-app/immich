@@ -1,0 +1,114 @@
+---
+slug: release-1-36
+title: Release v1.36.0
+authors: [alextran]
+tags: [release]
+date: 2022-11-10
+---
+
+Hello everyone, it is my pleasure to deliver the new release of Immich to you. The team has been working hard to bring you the new features and improvements. This release includes some big features that the community has been asking since the beginning of Immich. We hope you will enjoy it.
+
+Some notable features are:
+
+- [OAuth integration](#livephoto-ios-support-)
+- [LivePhoto support on iOS](#oauth-integration-)
+- User config system
+
+<!--truncate-->
+
+## LivePhoto iOS Support 🎉
+
+LivePhoto on iOS is now supported in Immich.
+
+The motion part will now be uploaded and can be played on the mobile app and the web.
+
+:::caution
+
+- The server and the app has to be on version **1.36.x** for the application to work correctly.
+- Previous uploaded photos will not be updated automatically, you will have to remove and reupload them if you want to keep the LivePhoto functionality.
+
+:::
+
+<img
+  src="https://media.giphy.com/media/fTrGceZd7t1ewi8ESc/giphy.gif"
+  width="100%"
+  style={{
+    borderRadius: "10px",
+    boxShadow:
+      "rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px",
+  }}
+  title="LivePhoto playback on the web"
+/>
+
+## OAuth Integration 🎉
+
+I want to borrow this chance to express my gratitude to [@EnricoBilla](https://github.com/EnricoBilla), who has been the trailblazer for this feature since the beginning days of Immich. His PR has sparked ideas, suggestions, and discussion among the team member on how to integrate this feature successfully into the app. Thank you so much for your work and your time.
+
+OAuth is now integrated into the system. Please follow the guide [here](https://immich.app/docs/usage/oauth) to set up your OAuth integration
+
+After setting up the correct environment variables in the `.env` file, as shown below
+
+| Key                 | Type    | Default              | Description                                                               |
+| ------------------- | ------- | -------------------- | ------------------------------------------------------------------------- |
+| OAUTH_ENABLED       | boolean | false                | Enable/disable OAuth2                                                     |
+| OAUTH_ISSUER_URL    | URL     | (required)           | Required. Self-discovery URL for client                                   |
+| OAUTH_CLIENT_ID     | string  | (required)           | Required. Client ID                                                       |
+| OAUTH_CLIENT_SECRET | string  | (required)           | Required. Client Secret                                                   |
+| OAUTH_SCOPE         | string  | openid email profile | Full list of scopes to send with the request (space delimited)            |
+| OAUTH_AUTO_REGISTER | boolean | true                 | When true, will automatically register a user the first time they sign in |
+| OAUTH_BUTTON_TEXT   | string  | Login with OAuth     | Text for the OAuth button on the web                                      |
+
+```bash title="Authentik Example"
+OAUTH_ENABLED=true
+OAUTH_ISSUER_URL=http://10.1.15.216:9000/application/o/immich-test/
+OAUTH_CLIENT_ID=30596v8f78a4b6a97d5985c3076b6b4c4d12ddc33
+OAUTH_CLIENT_SECRET=50f1eafdec353b95b1c638db390db4ab67ef035a51212dbec2f56175e2eb272b5d572c099176e6fe116ecf47ffdd544bgdb9e2edc588307ee0339d25eeccd88
+OAUTH_BUTTON_TEXT=Login with Authentik
+```
+
+The web will have the option to sign in with OAuth.
+
+<img
+  src="https://user-images.githubusercontent.com/27055614/202923726-f43fa148-47f5-4182-8f29-b0b87e4586fa.png"
+  width="50%"
+  title="Web Sign in with OAuth"
+  style={{
+    borderRadius: "10px",
+    boxShadow:
+      "rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px",
+  }}
+/>
+
+The mobile app will check if the server has OAuth enabled before displaying the OAuth
+sign-in button.
+
+<img
+  src="https://media.giphy.com/media/3iy3SaNkVYtlkEiw06/giphy.gif"
+  title="Mobile sign in with OAuth"
+  style={{
+    borderRadius: "10px",
+    boxShadow:
+      "rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px",
+  }}
+/>
+
+## Support
+
+<img
+  src="https://media.giphy.com/media/LStqgGESXW8XnuCv5y/giphy.gif"
+  width="300"
+  style={{
+    borderRadius: "10px",
+    boxShadow:
+      "rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px",
+  }}
+  title="Support the project"
+/>
+
+If you find the project helpful and it helps you in some ways, you can support the project [one time](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) or [monthly](https://github.com/sponsors/alextran1502) from GitHub Sponsor
+
+It is a great way to let me know that you want me to continue developing and working on this project for years to come.
+
+## Details
+
+For more details, please check out the [release note](https://github.com/immich-app/immich/releases/tag/v1.36.0_55-dev)
