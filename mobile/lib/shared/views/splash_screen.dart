@@ -20,22 +20,28 @@ class SplashScreenPage extends HookConsumerWidget {
         Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
 
     void performLoggingIn() async {
-      if (loginInfo != null) {
-        // Make sure API service is initialized
-        apiService.setEndpoint(loginInfo.serverUrl);
+      try {
+        if (loginInfo != null) {
+          // Make sure API service is initialized
+          apiService.setEndpoint(loginInfo.serverUrl);
 
-        var isSuccess =
-            await ref.read(authenticationProvider.notifier).setSuccessLoginInfo(
-                  accessToken: loginInfo.accessToken,
-                  isSavedLoginInfo: true,
-                );
-        if (isSuccess) {
-          // Resume backup (if enable) then navigate
-          ref.watch(backupProvider.notifier).resumeBackup();
-          AutoRouter.of(context).replace(const TabControllerRoute());
-        } else {
-          AutoRouter.of(context).replace(const LoginRoute());
+          var isSuccess = await ref
+              .read(authenticationProvider.notifier)
+              .setSuccessLoginInfo(
+                accessToken: loginInfo.accessToken,
+                isSavedLoginInfo: true,
+                serverUrl: loginInfo.serverUrl,
+              );
+          if (isSuccess) {
+            // Resume backup (if enable) then navigate
+            ref.watch(backupProvider.notifier).resumeBackup();
+            AutoRouter.of(context).replace(const TabControllerRoute());
+          } else {
+            AutoRouter.of(context).replace(const LoginRoute());
+          }
         }
+      } catch (_) {
+        AutoRouter.of(context).replace(const LoginRoute());
       }
     }
 
