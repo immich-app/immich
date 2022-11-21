@@ -15,7 +15,7 @@ class ImmichToast {
     final fToast = FToast();
     fToast.init(context);
 
-    Color _getColor(ToastType type, BuildContext context) {
+    Color getColor(ToastType type, BuildContext context) {
       switch (type) {
         case ToastType.info:
           return Theme.of(context).primaryColor;
@@ -26,7 +26,7 @@ class ImmichToast {
       }
     }
 
-    Icon _getIcon(ToastType type) {
+    Icon getIcon(ToastType type) {
       switch (type) {
         case ToastType.info:
           return Icon(
@@ -60,7 +60,7 @@ class ImmichToast {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _getIcon(toastType),
+            getIcon(toastType),
             const SizedBox(
               width: 12.0,
             ),
@@ -68,7 +68,7 @@ class ImmichToast {
               child: Text(
                 msg,
                 style: TextStyle(
-                  color: _getColor(toastType, context),
+                  color: getColor(toastType, context),
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
                 ),

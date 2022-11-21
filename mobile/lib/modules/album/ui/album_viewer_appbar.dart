@@ -34,7 +34,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
     final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
 
-    void _onDeleteAlbumPressed(String albumId) async {
+    void onDeleteAlbumPressed(String albumId) async {
       ImmichLoadingOverlayController.appLoader.show();
 
       bool isSuccess =
@@ -62,7 +62,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       ImmichLoadingOverlayController.appLoader.hide();
     }
 
-    void _onLeaveAlbumPressed(String albumId) async {
+    void onLeaveAlbumPressed(String albumId) async {
       ImmichLoadingOverlayController.appLoader.show();
 
       bool isSuccess =
@@ -84,7 +84,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       ImmichLoadingOverlayController.appLoader.hide();
     }
 
-    void _onRemoveFromAlbumPressed(String albumId) async {
+    void onRemoveFromAlbumPressed(String albumId) async {
       ImmichLoadingOverlayController.appLoader.show();
 
       bool isSuccess =
@@ -110,7 +110,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       ImmichLoadingOverlayController.appLoader.hide();
     }
 
-    _buildBottomSheetActionButton() {
+    buildBottomSheetActionButton() {
       if (isMultiSelectionEnable) {
         if (albumInfo.ownerId == userId) {
           return ListTile(
@@ -119,7 +119,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
               'album_viewer_appbar_share_remove',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
-            onTap: () => _onRemoveFromAlbumPressed(albumId),
+            onTap: () => onRemoveFromAlbumPressed(albumId),
           );
         } else {
           return const SizedBox();
@@ -132,7 +132,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
               'album_viewer_appbar_share_delete',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
-            onTap: () => _onDeleteAlbumPressed(albumId),
+            onTap: () => onDeleteAlbumPressed(albumId),
           );
         } else {
           return ListTile(
@@ -141,13 +141,13 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
               'album_viewer_appbar_share_leave',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
-            onTap: () => _onLeaveAlbumPressed(albumId),
+            onTap: () => onLeaveAlbumPressed(albumId),
           );
         }
       }
     }
 
-    void _buildBottomSheet() {
+    void buildBottomSheet() {
       showModalBottomSheet(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         isScrollControlled: false,
@@ -157,7 +157,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildBottomSheetActionButton(),
+                buildBottomSheetActionButton(),
               ],
             ),
           );
@@ -165,7 +165,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       );
     }
 
-    _buildLeadingButton() {
+    buildLeadingButton() {
       if (isMultiSelectionEnable) {
         return IconButton(
           onPressed: () => ref
@@ -204,7 +204,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
 
     return AppBar(
       elevation: 0,
-      leading: _buildLeadingButton(),
+      leading: buildLeadingButton(),
       title: isMultiSelectionEnable
           ? Text('${selectedAssetsInAlbum.length}')
           : null,
@@ -212,7 +212,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       actions: [
         IconButton(
           splashRadius: 25,
-          onPressed: _buildBottomSheet,
+          onPressed: buildBottomSheet,
           icon: const Icon(Icons.more_horiz_rounded),
         ),
       ],

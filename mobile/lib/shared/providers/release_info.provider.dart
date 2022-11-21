@@ -17,10 +17,11 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
     try {
       String? localReleaseVersion = box.get(githubReleaseInfoKey);
       final res = await client.get(
-          Uri.parse(
-            "https://api.github.com/repos/immich-app/immich/releases/latest",
-          ),
-          headers: {"Accept": "application/vnd.github.v3+json"});
+        Uri.parse(
+          "https://api.github.com/repos/immich-app/immich/releases/latest",
+        ),
+        headers: {"Accept": "application/vnd.github.v3+json"},
+      );
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);

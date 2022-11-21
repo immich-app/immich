@@ -20,7 +20,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
     AsyncValue<List<UserResponseDto>> suggestedShareUsers =
         ref.watch(suggestedSharedUsersProvider);
 
-    _createSharedAlbum() async {
+    createSharedAlbum() async {
       var newAlbum =
           await ref.watch(sharedAlbumProvider.notifier).createSharedAlbum(
                 ref.watch(albumTitleProvider),
@@ -44,7 +44,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       );
     }
 
-    _buildTileIcon(UserResponseDto user) {
+    buildTileIcon(UserResponseDto user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
@@ -62,7 +62,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       }
     }
 
-    _buildUserList(List<UserResponseDto> users) {
+    buildUserList(List<UserResponseDto> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
@@ -104,7 +104,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
             shrinkWrap: true,
             itemBuilder: ((context, index) {
               return ListTile(
-                leading: _buildTileIcon(users[index]),
+                leading: buildTileIcon(users[index]),
                 title: Text(
                   users[index].email,
                   style: const TextStyle(
@@ -153,8 +153,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).primaryColor,
             ),
-            onPressed:
-                sharedUsersList.value.isEmpty ? null : _createSharedAlbum,
+            onPressed: sharedUsersList.value.isEmpty ? null : createSharedAlbum,
             child: const Text(
               "share_create_album",
               style: TextStyle(
@@ -168,7 +167,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       ),
       body: suggestedShareUsers.when(
         data: (users) {
-          return _buildUserList(users);
+          return buildUserList(users);
         },
         error: (e, _) => Text("Error loading suggested users $e"),
         loading: () => const Center(

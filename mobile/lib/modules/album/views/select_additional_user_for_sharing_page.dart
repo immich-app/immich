@@ -19,12 +19,12 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         ref.watch(suggestedSharedUsersProvider);
     final sharedUsersList = useState<Set<UserResponseDto>>({});
 
-    _addNewUsersHandler() {
+    addNewUsersHandler() {
       AutoRouter.of(context)
           .pop(sharedUsersList.value.map((e) => e.id).toList());
     }
 
-    _buildTileIcon(UserResponseDto user) {
+    buildTileIcon(UserResponseDto user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
@@ -42,7 +42,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
       }
     }
 
-    _buildUserList(List<UserResponseDto> users) {
+    buildUserList(List<UserResponseDto> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
@@ -84,7 +84,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
             shrinkWrap: true,
             itemBuilder: ((context, index) {
               return ListTile(
-                leading: _buildTileIcon(users[index]),
+                leading: buildTileIcon(users[index]),
                 title: Text(
                   users[index].email,
                   style: const TextStyle(
@@ -131,7 +131,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         actions: [
           TextButton(
             onPressed:
-                sharedUsersList.value.isEmpty ? null : _addNewUsersHandler,
+                sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
             child: const Text(
               "share_add",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
@@ -147,7 +147,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
             );
           }
 
-          return _buildUserList(users);
+          return buildUserList(users);
         },
         error: (e, _) => Text("Error loading suggested users $e"),
         loading: () => const Center(

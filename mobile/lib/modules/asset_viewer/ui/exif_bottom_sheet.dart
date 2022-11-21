@@ -15,7 +15,7 @@ class ExifBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    _buildMap() {
+    buildMap() {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: Container(
@@ -66,7 +66,7 @@ class ExifBottomSheet extends ConsumerWidget {
 
     ExifResponseDto? exifInfo = assetDetail.remote?.exifInfo;
 
-    _buildLocationText() {
+    buildLocationText() {
       return Text(
         "${exifInfo?.city}, ${exifInfo?.state}",
         style: TextStyle(
@@ -120,11 +120,11 @@ class ExifBottomSheet extends ConsumerWidget {
                   ).tr(),
                   if (assetDetail.latitude != null &&
                       assetDetail.longitude != null)
-                    _buildMap(),
+                    buildMap(),
                   if (exifInfo != null &&
                       exifInfo.city != null &&
                       exifInfo.state != null)
-                    _buildLocationText(),
+                    buildLocationText(),
                   Text(
                     "${assetDetail.latitude?.toStringAsFixed(4)}, ${assetDetail.longitude?.toStringAsFixed(4)}",
                     style: TextStyle(fontSize: 12, color: Colors.grey[400]),

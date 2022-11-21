@@ -25,7 +25,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     var dummmy = Random().nextInt(1024);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    _buildUserProfileImage() {
+    buildUserProfileImage() {
       if (authState.profileImagePath.isEmpty) {
         return const CircleAvatar(
           radius: 35,
@@ -77,7 +77,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
       return const SizedBox();
     }
 
-    _pickUserProfileImage() async {
+    pickUserProfileImage() async {
       final XFile? image = await ImagePicker().pickImage(
         source: ImageSource.gallery,
         maxHeight: 1024,
@@ -98,7 +98,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
 
     useEffect(
       () {
-        _buildUserProfileImage();
+        buildUserProfileImage();
         return null;
       },
       [],
@@ -129,12 +129,12 @@ class ProfileDrawerHeader extends HookConsumerWidget {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              _buildUserProfileImage(),
+              buildUserProfileImage(),
               Positioned(
                 bottom: 0,
                 right: -5,
                 child: GestureDetector(
-                  onTap: _pickUserProfileImage,
+                  onTap: pickUserProfileImage,
                   child: Material(
                     color: Colors.grey[100],
                     elevation: 3,

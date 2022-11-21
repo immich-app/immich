@@ -15,14 +15,16 @@ class AlbumPreviewPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assets = useState<List<AssetEntity>>([]);
 
-    _getAssetsInAlbum() async {
+    getAssetsInAlbum() async {
       assets.value = await album.getAssetListRange(
-          start: 0, end: await album.assetCountAsync);
+        start: 0,
+        end: await album.assetCountAsync,
+      );
     }
 
     useEffect(
       () {
-        _getAssetsInAlbum();
+        getAssetsInAlbum();
         return null;
       },
       [],

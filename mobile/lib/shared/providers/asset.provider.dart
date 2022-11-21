@@ -39,7 +39,8 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
         stopwatch.start();
         state = await _assetCacheService.get();
         debugPrint(
-            "Reading assets from cache: ${stopwatch.elapsedMilliseconds}ms");
+          "Reading assets from cache: ${stopwatch.elapsedMilliseconds}ms",
+        );
         stopwatch.reset();
       }
 
@@ -145,7 +146,9 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
 
 final assetProvider = StateNotifierProvider<AssetNotifier, List<Asset>>((ref) {
   return AssetNotifier(
-      ref.watch(assetServiceProvider), ref.watch(assetCacheServiceProvider));
+    ref.watch(assetServiceProvider),
+    ref.watch(assetCacheServiceProvider),
+  );
 });
 
 final assetGroupByDateTimeProvider = StateProvider((ref) {
