@@ -59,7 +59,6 @@ export class UserRepository implements IUserRepository {
       user.salt = await bcrypt.genSalt();
       user.password = await this.hashPassword(user.password, user.salt);
     }
-    user.isAdmin = false;
 
     return this.userRepository.save(user);
   }
