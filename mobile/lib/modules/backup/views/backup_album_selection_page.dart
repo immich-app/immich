@@ -27,7 +27,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       [],
     );
 
-    _buildAlbumSelectionList() {
+    buildAlbumSelectionList() {
       if (availableAlbums.isEmpty) {
         return const Center(
           child: ImmichLoadingIndicator(),
@@ -56,7 +56,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       );
     }
 
-    _buildSelectedAlbumNameChip() {
+    buildSelectedAlbumNameChip() {
       return selectedBackupAlbums.map((album) {
         void removeSelection() {
           if (ref.watch(backupProvider).selectedBackupAlbums.length == 1) {
@@ -104,7 +104,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       }).toSet();
     }
 
-    _buildExcludedAlbumNameChip() {
+    buildExcludedAlbumNameChip() {
       return excludedBackupAlbums.map((album) {
         void removeSelection() {
           ref
@@ -177,8 +177,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Wrap(
               children: [
-                ..._buildSelectedAlbumNameChip(),
-                ..._buildExcludedAlbumNameChip()
+                ...buildSelectedAlbumNameChip(),
+                ...buildExcludedAlbumNameChip()
               ],
             ),
           ),
@@ -286,7 +286,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
           Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
-            child: _buildAlbumSelectionList(),
+            child: buildAlbumSelectionList(),
           ),
         ],
       ),

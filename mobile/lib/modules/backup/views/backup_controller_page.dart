@@ -45,7 +45,7 @@ class BackupControllerPage extends HookConsumerWidget {
       [],
     );
 
-    Widget _buildStorageInformation() {
+    Widget buildStorageInformation() {
       return ListTile(
         leading: Icon(
           Icons.storage_rounded,
@@ -84,7 +84,7 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    ListTile _buildAutoBackupController() {
+    ListTile buildAutoBackupController() {
       var backUpOption = authenticationState.deviceInfo.isAutoBackup
           ? "backup_controller_page_status_on".tr()
           : "backup_controller_page_status_off".tr();
@@ -143,7 +143,7 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    void _showErrorToUser(String msg) {
+    void showErrorToUser(String msg) {
       final snackBar = SnackBar(
         content: Text(
           msg.tr(),
@@ -153,7 +153,7 @@ class BackupControllerPage extends HookConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
 
-    void _showBatteryOptimizationInfoToUser() {
+    void showBatteryOptimizationInfoToUser() {
       showDialog<void>(
         context: context,
         barrierDismissible: false,
@@ -193,7 +193,7 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    ListTile _buildBackgroundBackupController() {
+    ListTile buildBackgroundBackupController() {
       final bool isBackgroundEnabled = backupState.backgroundBackup;
       final bool isWifiRequired = backupState.backupRequireWifi;
       final bool isChargingRequired = backupState.backupRequireCharging;
@@ -238,8 +238,8 @@ class BackupControllerPage extends HookConsumerWidget {
                         .read(backupProvider.notifier)
                         .configureBackgroundBackup(
                           requireWifi: isChecked,
-                          onError: _showErrorToUser,
-                          onBatteryInfo: _showBatteryOptimizationInfoToUser,
+                          onError: showErrorToUser,
+                          onBatteryInfo: showBatteryOptimizationInfoToUser,
                         )
                     : null,
               ),
@@ -259,8 +259,8 @@ class BackupControllerPage extends HookConsumerWidget {
                         .read(backupProvider.notifier)
                         .configureBackgroundBackup(
                           requireCharging: isChecked,
-                          onError: _showErrorToUser,
-                          onBatteryInfo: _showBatteryOptimizationInfoToUser,
+                          onError: showErrorToUser,
+                          onBatteryInfo: showBatteryOptimizationInfoToUser,
                         )
                     : null,
               ),
@@ -268,8 +268,8 @@ class BackupControllerPage extends HookConsumerWidget {
               onPressed: () =>
                   ref.read(backupProvider.notifier).configureBackgroundBackup(
                         enabled: !isBackgroundEnabled,
-                        onError: _showErrorToUser,
-                        onBatteryInfo: _showBatteryOptimizationInfoToUser,
+                        onError: showErrorToUser,
+                        onBatteryInfo: showBatteryOptimizationInfoToUser,
                       ),
               child: Text(
                 isBackgroundEnabled
@@ -284,7 +284,7 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    Widget _buildSelectedAlbumName() {
+    Widget buildSelectedAlbumName() {
       var text = "backup_controller_page_backup_selected".tr();
       var albums = ref.watch(backupProvider).selectedBackupAlbums;
 
@@ -323,7 +323,7 @@ class BackupControllerPage extends HookConsumerWidget {
       }
     }
 
-    Widget _buildExcludedAlbumName() {
+    Widget buildExcludedAlbumName() {
       var text = "backup_controller_page_excluded".tr();
       var albums = ref.watch(backupProvider).excludedBackupAlbums;
 
@@ -348,7 +348,7 @@ class BackupControllerPage extends HookConsumerWidget {
       }
     }
 
-    _buildFolderSelectionTile() {
+    buildFolderSelectionTile() {
       return Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5), // if you need this
@@ -374,8 +374,8 @@ class BackupControllerPage extends HookConsumerWidget {
                   "backup_controller_page_to_backup",
                   style: TextStyle(fontSize: 12),
                 ).tr(),
-                _buildSelectedAlbumName(),
-                _buildExcludedAlbumName()
+                buildSelectedAlbumName(),
+                buildExcludedAlbumName()
               ],
             ),
           ),
@@ -398,7 +398,7 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    _buildCurrentBackupAssetInfoCard() {
+    buildCurrentBackupAssetInfoCard() {
       return ListTile(
         leading: Icon(
           Icons.info_outline_rounded,
@@ -606,7 +606,7 @@ class BackupControllerPage extends HookConsumerWidget {
                       ),
                     ),
                   ),
-            _buildFolderSelectionTile(),
+            buildFolderSelectionTile(),
             BackupInfoCard(
               title: "backup_controller_page_total".tr(),
               subtitle: "backup_controller_page_total_sub".tr(),
@@ -624,13 +624,13 @@ class BackupControllerPage extends HookConsumerWidget {
                   "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             const Divider(),
-            _buildAutoBackupController(),
+            buildAutoBackupController(),
             if (Platform.isAndroid) const Divider(),
-            if (Platform.isAndroid) _buildBackgroundBackupController(),
+            if (Platform.isAndroid) buildBackgroundBackupController(),
             const Divider(),
-            _buildStorageInformation(),
+            buildStorageInformation(),
             const Divider(),
-            _buildCurrentBackupAssetInfoCard(),
+            buildCurrentBackupAssetInfoCard(),
             Padding(
               padding: const EdgeInsets.only(
                 top: 24,

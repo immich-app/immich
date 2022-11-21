@@ -38,7 +38,7 @@ class SearchResultPage extends HookConsumerWidget {
       [],
     );
 
-    _onSearchSubmitted(String newSearchTerm) {
+    onSearchSubmitted(String newSearchTerm) {
       debugPrint("Re-Search with $newSearchTerm");
       searchFocusNode?.unfocus();
       isNewSearch.value = false;
@@ -46,7 +46,7 @@ class SearchResultPage extends HookConsumerWidget {
       ref.watch(searchResultPageProvider.notifier).search(newSearchTerm);
     }
 
-    _buildTextField() {
+    buildTextField() {
       return TextField(
         controller: searchTermController,
         focusNode: searchFocusNode,
@@ -60,7 +60,7 @@ class SearchResultPage extends HookConsumerWidget {
         onSubmitted: (searchTerm) {
           if (searchTerm.isNotEmpty) {
             searchTermController.clear();
-            _onSearchSubmitted(searchTerm);
+            onSearchSubmitted(searchTerm);
           } else {
             isNewSearch.value = false;
           }
@@ -80,7 +80,7 @@ class SearchResultPage extends HookConsumerWidget {
       );
     }
 
-    _buildChip() {
+    buildChip() {
       return Chip(
         label: Wrap(
           spacing: 5,
@@ -108,7 +108,7 @@ class SearchResultPage extends HookConsumerWidget {
       );
     }
 
-    _buildSearchResult() {
+    buildSearchResult() {
       var searchResultPageState = ref.watch(searchResultPageProvider);
       var searchResultRenderList = ref.watch(searchRenderListProvider);
 
@@ -154,7 +154,7 @@ class SearchResultPage extends HookConsumerWidget {
             isNewSearch.value = true;
             searchFocusNode?.requestFocus();
           },
-          child: isNewSearch.value ? _buildTextField() : _buildChip(),
+          child: isNewSearch.value ? buildTextField() : buildChip(),
         ),
         centerTitle: false,
       ),
@@ -168,9 +168,9 @@ class SearchResultPage extends HookConsumerWidget {
         },
         child: Stack(
           children: [
-            _buildSearchResult(),
+            buildSearchResult(),
             if (isNewSearch.value)
-              SearchSuggestionList(onSubmitted: _onSearchSubmitted),
+              SearchSuggestionList(onSubmitted: onSearchSubmitted),
           ],
         ),
       ),

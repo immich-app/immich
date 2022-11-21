@@ -18,7 +18,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
     var isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
-    Widget _buildSelectionIcon(Asset asset) {
+    Widget buildSelectionIcon(Asset asset) {
       var isSelected = selectedAsset.map((item) => item.id).contains(asset.id);
       var isNewlySelected =
           newAssetsForAlbum.map((item) => item.id).contains(asset.id);
@@ -111,7 +111,7 @@ class SelectionThumbnailImage extends HookConsumerWidget {
             padding: const EdgeInsets.all(3.0),
             child: Align(
               alignment: Alignment.topLeft,
-              child: _buildSelectionIcon(asset),
+              child: buildSelectionIcon(asset),
             ),
           ),
           if (!asset.isImage)

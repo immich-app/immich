@@ -69,7 +69,10 @@ class AlbumService {
     Iterable<Asset> assets,
   ) async {
     return createAlbum(
-        _getNextAlbumName(await getAlbums(isShared: false)), assets, []);
+      _getNextAlbumName(await getAlbums(isShared: false)),
+      assets,
+      [],
+    );
   }
 
   Future<AlbumResponseDto?> getAlbumDetail(String albumId) async {

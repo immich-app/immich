@@ -11,7 +11,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
-import 'package:photo_manager/src/types/entity.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 final assetServiceProvider = Provider(
   (ref) => AssetService(

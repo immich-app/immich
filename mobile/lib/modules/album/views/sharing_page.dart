@@ -28,7 +28,7 @@ class SharingPage extends HookConsumerWidget {
       [],
     );
 
-    _buildAlbumList() {
+    buildAlbumList() {
       return SliverList(
         delegate: SliverChildBuilderDelegate(
           (BuildContext context, int index) {
@@ -71,7 +71,7 @@ class SharingPage extends HookConsumerWidget {
       );
     }
 
-    _buildEmptyListIndication() {
+    buildEmptyListIndication() {
       return SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -136,8 +136,8 @@ class SharingPage extends HookConsumerWidget {
             ),
           ),
           sharedAlbums.isNotEmpty
-              ? _buildAlbumList()
-              : _buildEmptyListIndication()
+              ? buildAlbumList()
+              : buildEmptyListIndication()
         ],
       ),
     );

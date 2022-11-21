@@ -349,7 +349,7 @@ class OAuthLoginButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var oAuthService = ref.watch(OAuthServiceProvider);
+    var oAuthService = ref.watch(oAuthServiceProvider);
 
     void performOAuthLogin() async {
       ref.watch(assetProvider.notifier).clearAllAsset();
