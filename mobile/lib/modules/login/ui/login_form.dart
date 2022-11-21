@@ -380,6 +380,7 @@ class OAuthLoginButton extends ConsumerWidget {
               .setSuccessLoginInfo(
                 accessToken: loginResponseDto.accessToken,
                 isSavedLoginInfo: isSavedLoginInfo,
+                serverUrl: serverEndpointController.text,
               );
 
           if (isSuccess) {

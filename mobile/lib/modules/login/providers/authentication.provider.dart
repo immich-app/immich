@@ -90,6 +90,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       return setSuccessLoginInfo(
         accessToken: loginResponse.accessToken,
+        serverUrl: serverEndpoint,
         isSavedLoginInfo: isSavedLoginInfo,
       );
     } catch (e) {
@@ -159,16 +160,18 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   Future<bool> setSuccessLoginInfo({
     required String accessToken,
+    required String serverUrl,
     required bool isSavedLoginInfo,
   }) async {
-    Hive.box(userInfoBox).put(accessTokenKey, accessToken);
-
     _apiService.setAccessToken(accessToken);
     var userResponseDto = await _apiService.userApi.getMyUserInfo();
 
     if (userResponseDto != null) {
+      var userInfoHiveBox = await Hive.openBox(userInfoBox);
       var deviceInfo = await _deviceInfoService.getDeviceInfo();
-      Hive.box(userInfoBox).put(deviceIdKey, deviceInfo["deviceId"]);
+      userInfoHiveBox.put(deviceIdKey, deviceInfo["deviceId"]);
+      userInfoHiveBox.put(accessTokenKey, accessToken);
+      userInfoHiveBox.put(serverEndpointKey, serverUrl);
 
       state = state.copyWith(
         isAuthenticated: true,
@@ -191,7 +194,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
             email: "",
             password: "",
             isSaveLogin: true,
-            serverUrl: Hive.box(userInfoBox).get(serverEndpointKey),
+            serverUrl: serverUrl,
             accessToken: accessToken,
           ),
         );
