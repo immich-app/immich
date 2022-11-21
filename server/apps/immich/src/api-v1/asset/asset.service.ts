@@ -54,7 +54,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
-import { ALBUM_REPOSITORY, IAlbumRepository } from "../album/album-repository";
+import { ALBUM_REPOSITORY, IAlbumRepository } from '../album/album-repository';
 
 const fileInfo = promisify(stat);
 
@@ -634,14 +634,14 @@ export class AssetService {
   async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
     for (const assetId of assetIds) {
       // Step 1: Check if user owns asset
-      if (await this._assetRepository.countByIdAndUser(assetId, authUser.id) == 1) {
+      if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
         continue;
       }
 
       // Avoid additional checks if ownership is required
       if (!mustBeOwner) {
         // Step 2: Check if asset is part of an album shared with me
-        if (await this._albumRepository.getSharedAlbumCount(authUser.id, assetId) > 0) {
+        if ((await this._albumRepository.getSharedAlbumCount(authUser.id, assetId)) > 0) {
           continue;
         }
 

@@ -14,8 +14,6 @@ import {
   Header,
   Put,
   UploadedFiles,
-  HttpException,
-  HttpStatus
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
