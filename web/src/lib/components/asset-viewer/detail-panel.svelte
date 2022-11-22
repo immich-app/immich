@@ -163,7 +163,7 @@
 				<div>
 					<p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
 					<div class="flex text-sm gap-2">
-						<p>{`f/${asset.exifInfo.fNumber}` || ''}</p>
+						<p>{`ƒ/${asset.exifInfo.fNumber}` || ''}</p>
 
 						{#if asset.exifInfo.exposureTime}
 							<p>{`1/${Math.floor(1 / asset.exifInfo.exposureTime)}`}</p>
