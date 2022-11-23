@@ -31,29 +31,30 @@
 	};
 
 	function getSizeInHumanReadableFormat(sizeInByte: number) {
-		const pepibyte = 1.126 * Math.pow(10, 15);
-		const tebibyte = 1.1 * Math.pow(10, 12);
-		const gibibyte = 1.074 * Math.pow(10, 9);
-		const mebibyte = 1.049 * Math.pow(10, 6);
-		const kibibyte = 1024;
-		// Pebibyte
-		if (sizeInByte >= pepibyte) {
-			// Pe
-			return `${(sizeInByte / pepibyte).toFixed(1)}PB`;
-		} else if (tebibyte <= sizeInByte && sizeInByte < pepibyte) {
-			// Te
-			return `${(sizeInByte / tebibyte).toFixed(1)}TB`;
-		} else if (gibibyte <= sizeInByte && sizeInByte < tebibyte) {
-			// Gi
-			return `${(sizeInByte / gibibyte).toFixed(1)}GB`;
-		} else if (mebibyte <= sizeInByte && sizeInByte < gibibyte) {
-			// Mega
-			return `${(sizeInByte / mebibyte).toFixed(1)}MB`;
-		} else if (kibibyte <= sizeInByte && sizeInByte < mebibyte) {
-			// Kibi
-			return `${(sizeInByte / kibibyte).toFixed(1)}KB`;
+		const pebibyte = Math.pow(1024, 5);
+		const tebibyte = Math.pow(1024, 4);
+		const gibibyte = Math.pow(1024, 3);
+		const mebibyte = Math.pow(1024, 2);
+		const kibibyte = Math.pow(1024, 1);
+
+		if (sizeInByte >= pebibyte) {
+			// Pebibyte
+			return `${(sizeInByte / pebibyte).toFixed(1)} PiB`;
+		} else if (sizeInByte >= tebibyte) {
+			// Tebibyte
+			return `${(sizeInByte / tebibyte).toFixed(1)} TiB`;
+		} else if (sizeInByte >= gibibyte) {
+			// Gibibyte
+			return `${(sizeInByte / gibibyte).toFixed(1)} GiB`;
+		} else if (sizeInByte >= mebibyte) {
+			// Mebibyte
+			return `${(sizeInByte / mebibyte).toFixed(1)} MiB`;
+		} else if (sizeInByte >= kibibyte) {
+			// Kibibyte
+			return `${(sizeInByte / kibibyte).toFixed(1)} KiB`;
 		} else {
-			return `${sizeInByte}B`;
+			// Byte
+			return `${sizeInByte} B`;
 		}
 	}
 
