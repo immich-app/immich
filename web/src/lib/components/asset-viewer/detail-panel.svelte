@@ -8,6 +8,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
+	import { getHumanReadableBytes } from '../../utils/byte-units';
 
 	type Leaflet = typeof import('leaflet');
 	type LeafletMap = import('leaflet').Map;
@@ -59,33 +60,6 @@
 	}
 
 	const dispatch = createEventDispatcher();
-	const getHumanReadableString = (sizeInByte: number) => {
-		const pebibyte = Math.pow(1024, 5);
-		const tebibyte = Math.pow(1024, 4);
-		const gibibyte = Math.pow(1024, 3);
-		const mebibyte = Math.pow(1024, 2);
-		const kibibyte = Math.pow(1024, 1);
-
-		if (sizeInByte >= pebibyte) {
-			// Pebibyte
-			return `${(sizeInByte / pebibyte).toFixed(1)} PiB`;
-		} else if (sizeInByte >= tebibyte) {
-			// Tebibyte
-			return `${(sizeInByte / tebibyte).toFixed(1)} TiB`;
-		} else if (sizeInByte >= gibibyte) {
-			// Gibibyte
-			return `${(sizeInByte / gibibyte).toFixed(1)} GiB`;
-		} else if (sizeInByte >= mebibyte) {
-			// Mebibyte
-			return `${(sizeInByte / mebibyte).toFixed(1)} MiB`;
-		} else if (sizeInByte >= kibibyte) {
-			// Kibibyte
-			return `${(sizeInByte / kibibyte).toFixed(1)} KiB`;
-		} else {
-			// Byte
-			return `${sizeInByte} B`;
-		}
-	};
 
 	const getMegapixel = (width: number, height: number): number | undefined => {
 		const megapixel = Math.round((height * width) / 1_000_000);
@@ -150,7 +124,7 @@
 
 							<p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
 						{/if}
-						<p>{getHumanReadableString(asset.exifInfo.fileSizeInByte)}</p>
+						<p>{getHumanReadableBytes(asset.exifInfo.fileSizeInByte)}</p>
 					</div>
 				</div>
 			</div>

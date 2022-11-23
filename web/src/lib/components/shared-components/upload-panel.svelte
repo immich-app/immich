@@ -6,6 +6,8 @@
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
 	import type { UploadAsset } from '$lib/models/upload-asset';
 	import { notificationController, NotificationType } from './notification/notification';
+	import { getHumanReadableBytes } from '../../utils/byte-units';
+
 	let showDetail = true;
 
 	let uploadLength = 0;
@@ -29,34 +31,6 @@
 			}
 		}
 	};
-
-	function getSizeInHumanReadableFormat(sizeInByte: number) {
-		const pebibyte = Math.pow(1024, 5);
-		const tebibyte = Math.pow(1024, 4);
-		const gibibyte = Math.pow(1024, 3);
-		const mebibyte = Math.pow(1024, 2);
-		const kibibyte = Math.pow(1024, 1);
-
-		if (sizeInByte >= pebibyte) {
-			// Pebibyte
-			return `${(sizeInByte / pebibyte).toFixed(1)} PiB`;
-		} else if (sizeInByte >= tebibyte) {
-			// Tebibyte
-			return `${(sizeInByte / tebibyte).toFixed(1)} TiB`;
-		} else if (sizeInByte >= gibibyte) {
-			// Gibibyte
-			return `${(sizeInByte / gibibyte).toFixed(1)} GiB`;
-		} else if (sizeInByte >= mebibyte) {
-			// Mebibyte
-			return `${(sizeInByte / mebibyte).toFixed(1)} MiB`;
-		} else if (sizeInByte >= kibibyte) {
-			// Kibibyte
-			return `${(sizeInByte / kibibyte).toFixed(1)} KiB`;
-		} else {
-			// Byte
-			return `${sizeInByte} B`;
-		}
-	}
 
 	// Reactive action to get thumbnail image of upload asset whenever there is a new one added to the list
 	$: {
@@ -141,7 +115,7 @@
 									<input
 										disabled
 										class="bg-gray-100 border w-full p-1 rounded-md text-[10px] px-2"
-										value={`[${getSizeInHumanReadableFormat(uploadAsset.file.size)}] ${
+										value={`[${getHumanReadableBytes(uploadAsset.file.size)}] ${
 											uploadAsset.file.name
 										}`}
 									/>
