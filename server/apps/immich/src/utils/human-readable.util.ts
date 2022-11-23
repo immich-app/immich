@@ -21,5 +21,5 @@ export function asHumanReadable(bytes: number, precision = 1): string {
 		}
 	}
 
-	return `${remainder.toFixed( magnitude == 0 ? 0 : 1 )} ${units[magnitude]}`;
+	return `${remainder.toFixed( magnitude == 0 ? 0 : precision )} ${units[magnitude]}`;
 }
