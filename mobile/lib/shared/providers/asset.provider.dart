@@ -1,7 +1,9 @@
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -33,10 +35,11 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
     final stopwatch = Stopwatch();
     try {
       _getAllAssetInProgress = true;
-
       final bool isCacheValid = await _assetCacheService.isValid();
+      stopwatch.start();
+      final localTask = _assetService.getLocalAssets(urgent: !isCacheValid);
+      final remoteTask = _assetService.getRemoteAssets();
       if (isCacheValid && state.isEmpty) {
-        stopwatch.start();
         state = await _assetCacheService.get();
         debugPrint(
           "Reading assets from cache: ${stopwatch.elapsedMilliseconds}ms",
@@ -44,21 +47,49 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
         stopwatch.reset();
       }
 
-      stopwatch.start();
-      var allAssets = await _assetService.getAllAsset(urgent: !isCacheValid);
-      debugPrint("Query assets from API: ${stopwatch.elapsedMilliseconds}ms");
+      int remoteBegin = state.indexWhere((a) => a.isRemote);
+      remoteBegin = remoteBegin == -1 ? state.length : remoteBegin;
+      final List<Asset> currentLocal = state.slice(0, remoteBegin);
+      List<Asset>? newRemote = await remoteTask;
+      List<Asset>? newLocal = await localTask;
+      debugPrint("Load assets: ${stopwatch.elapsedMilliseconds}ms");
       stopwatch.reset();
-
-      state = allAssets;
+      if (newRemote == null &&
+          (newLocal == null || currentLocal.equals(newLocal))) {
+        debugPrint("state is already up-to-date");
+        return;
+      }
+      newRemote ??= state.slice(remoteBegin);
+      newLocal ??= [];
+      state = _combineLocalAndRemoteAssets(local: newLocal, remote: newRemote);
+      debugPrint("Combining assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
     }
     debugPrint("[getAllAsset] setting new asset state");
 
-    stopwatch.start();
+    stopwatch.reset();
     _cacheState();
     debugPrint("Store assets in cache: ${stopwatch.elapsedMilliseconds}ms");
-    stopwatch.reset();
+  }
+
+  List<Asset> _combineLocalAndRemoteAssets({
+    required Iterable<Asset> local,
+    required List<Asset> remote,
+  }) {
+    final List<Asset> assets = [];
+    if (remote.isNotEmpty && local.isNotEmpty) {
+      final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+      final Set<String> existingIds = remote
+          .where((e) => e.deviceId == deviceId)
+          .map((e) => e.deviceAssetId)
+          .toSet();
+      local = local.where((e) => !existingIds.contains(e.id));
+    }
+    assets.addAll(local);
+    // the order (first all local, then remote assets) is important!
+    assets.addAll(remote);
+    return assets;
   }
 
   clearAllAsset() {
