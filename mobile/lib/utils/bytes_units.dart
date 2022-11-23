@@ -1,15 +1,17 @@
+import 'dart:math' as math;
 
 String formatBytes(int bytes) {
-  if (bytes < 1000) {
-    return "$bytes B";
-  } else if (bytes < 1000000) {
-    final kb = (bytes / 1000).toStringAsFixed(1);
-    return "$kb kB";
-  } else if (bytes < 1000000000) {
-    final mb = (bytes / 1000000).toStringAsFixed(1);
-    return "$mb MB";
+  if (bytes >= math.pow(1024, 5)) {
+    return "${(bytes / math.pow(1024, 5)).toStringAsFixed(1)} PiB";
+  } else if (bytes >= math.pow(1024, 4)) {
+    return "${(bytes / math.pow(1024, 4)).toStringAsFixed(1)} TiB";
+  } else if (bytes >= math.pow(1024, 3)) {
+    return "${(bytes / math.pow(1024, 3)).toStringAsFixed(1)} GiB";
+  } else if (bytes >= math.pow(1024, 2)) {
+    return "${(bytes / math.pow(1024, 2)).toStringAsFixed(1)} MiB";
+  } else if (bytes >= 1024) {
+    return "${(bytes / 1024).toStringAsFixed(1)} KiB";
   } else {
-    final gb = (bytes / 1000000000).toStringAsFixed(1);
-    return "$gb GB";
+    return "$bytes B";
   }
 }
