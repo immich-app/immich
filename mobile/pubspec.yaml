@@ -47,6 +47,8 @@ dependencies:
 
   # easy to remove packages:
   image_picker: ^0.8.5+3 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
+  immich_logger:
+    path: immich_logger
 
 dev_dependencies:
   flutter_test:
