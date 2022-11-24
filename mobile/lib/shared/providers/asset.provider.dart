@@ -7,7 +7,7 @@ import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:collection/collection.dart';
-import 'package:immich_mobile/shared/services/in_app_logger.service.dart';
+import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:intl/intl.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -15,7 +15,7 @@ import 'package:photo_manager/photo_manager.dart';
 class AssetNotifier extends StateNotifier<List<Asset>> {
   final AssetService _assetService;
   final AssetCacheService _assetCacheService;
-  final inAppLog = InAppLoggerService("AssetNotifier");
+  final iLog = ImmichLogger("AssetProvider");
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
   bool _getAllAssetInProgress = false;
   bool _deleteInProgress = false;
@@ -47,20 +47,22 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
 
       stopwatch.start();
       var allAssets = await _assetService.getAllAsset(urgent: !isCacheValid);
-      debugPrint("Query assets from API: ${stopwatch.elapsedMilliseconds}ms");
+      iLog.log(
+        "Query assets from API: ${stopwatch.elapsedMilliseconds}ms",
+        additionalContext: "getAllAsset",
+      );
       stopwatch.reset();
 
       state = allAssets;
     } finally {
       _getAllAssetInProgress = false;
     }
-    debugPrint("[getAllAsset] setting new asset state");
-
+    iLog.log("Setting new cache asset state", additionalContext: "getAllAsset");
     stopwatch.start();
     _cacheState();
-    debugPrint("Store assets in cache: ${stopwatch.elapsedMilliseconds}ms");
-    inAppLog.addMessage(
+    iLog.log(
       "Store assets in cache: ${stopwatch.elapsedMilliseconds}ms",
+      additionalContext: "getAllAsset",
     );
     stopwatch.reset();
   }

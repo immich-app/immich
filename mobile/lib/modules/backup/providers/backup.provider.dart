@@ -17,6 +17,7 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
+import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -62,6 +63,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     getBackupInfo();
   }
 
+  final iLog = ImmichLogger('BackupProvider');
   final BackupService _backupService;
   final ServerInfoService _serverInfoService;
   final AuthenticationState _authState;
@@ -218,7 +220,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
 
     if (backupAlbumInfo == null) {
-      debugPrint("[ERROR] getting Hive backup album infomation");
+      debugPrint("[ERROR] getting Hive backup album information");
       return;
     }
 
@@ -338,7 +340,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
 
     if (allUniqueAssets.isEmpty) {
-      debugPrint("No Asset On Device");
+      iLog.log(
+        "Found albums or assets on the device to backup",
+        additionalContext: "_UpdateBackupAssetCount",
+      );
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
         allAssetsInDatabase: allAssetsInDatabase,
