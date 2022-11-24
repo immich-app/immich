@@ -7,7 +7,8 @@ class ImmichLogger {
   String logContext = "";
   final Box<InAppLoggerMessage> _box = Hive.box(inAppLoggerBox);
 
-  List<InAppLoggerMessage> get messages => _box.values.toList();
+  List<InAppLoggerMessage> get messages =>
+      _box.values.toList().reversed.toList();
 
   ImmichLogger(this.logContext) {
     if (_box.length > 100) {
@@ -19,7 +20,8 @@ class ImmichLogger {
   }
 
   void log(message, {String type = "info", String? additionalContext}) {
-    var formattedMessage = "[$logContext] ${additionalContext != null ? '[$additionalContext]' : ""}: $message";
+    var formattedMessage =
+        "[$logContext] ${additionalContext != null ? '[$additionalContext]' : ""}: $message";
     debugPrint(formattedMessage);
     var log = InAppLoggerMessage(
       message: formattedMessage,
