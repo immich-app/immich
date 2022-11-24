@@ -7,6 +7,7 @@ import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/shared/services/in_app_logger.service.dart';
 import 'package:intl/intl.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -14,7 +15,7 @@ import 'package:photo_manager/photo_manager.dart';
 class AssetNotifier extends StateNotifier<List<Asset>> {
   final AssetService _assetService;
   final AssetCacheService _assetCacheService;
-
+  final inAppLog = InAppLoggerService("AssetNotifier");
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
   bool _getAllAssetInProgress = false;
   bool _deleteInProgress = false;
@@ -58,6 +59,9 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
     stopwatch.start();
     _cacheState();
     debugPrint("Store assets in cache: ${stopwatch.elapsedMilliseconds}ms");
+    inAppLog.addMessage(
+      "Store assets in cache: ${stopwatch.elapsedMilliseconds}ms",
+    );
     stopwatch.reset();
   }
 

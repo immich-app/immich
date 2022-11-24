@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_logger/immich_logger.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
@@ -17,6 +16,7 @@ import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.d
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
+import 'package:immich_mobile/shared/models/in_app_logger_message.model.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
@@ -32,8 +32,10 @@ void main() async {
   Hive.registerAdapter(HiveSavedLoginInfoAdapter());
   Hive.registerAdapter(HiveBackupAlbumsAdapter());
   Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
+  Hive.registerAdapter(InAppLoggerMessageAdapter());
 
   await Future.wait([
+    Hive.openBox<InAppLoggerMessage>(inAppLoggerBox),
     Hive.openBox(userInfoBox),
     Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
     Hive.openBox(hiveGithubReleaseInfoBox),
@@ -133,7 +135,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       // needs to be delayed so that EasyLocalization is working
       ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
     });
-    ImmichLogger().init();
   }
 
   @override

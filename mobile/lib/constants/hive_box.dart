@@ -29,3 +29,7 @@ const String backupRequireCharging = "immichBackupRequireCharging"; // Key 3
 // Duplicate asset
 const String duplicatedAssetsBox = "immichDuplicatedAssetsBox"; // Box
 const String duplicatedAssetsKey = "immichDuplicatedAssetsKey"; // Key 1
+
+// In app logger
+const String inAppLoggerBox = "immichInAppLogger"; // Box
+const String inAppLoggerKey = "immichInAppLoggerKey"; // Key 1
