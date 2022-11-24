@@ -6,6 +6,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:latlong2/latlong.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 
 class ExifBottomSheet extends ConsumerWidget {
   final Asset assetDetail;
@@ -162,7 +163,7 @@ class ExifBottomSheet extends ConsumerWidget {
                     ),
                     subtitle: exifInfo.exifImageHeight != null
                         ? Text(
-                            "${exifInfo.exifImageHeight} x ${exifInfo.exifImageWidth}  ${exifInfo.fileSizeInByte!}B ",
+                            "${exifInfo.exifImageHeight} x ${exifInfo.exifImageWidth}  ${formatBytes(exifInfo.fileSizeInByte!)} ",
                           )
                         : null,
                   ),
@@ -178,7 +179,7 @@ class ExifBottomSheet extends ConsumerWidget {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                        "ƒ/${exifInfo.fNumber}   1/${(1 / (exifInfo.exposureTime ?? 1)).toStringAsFixed(0)}   ${exifInfo.focalLength}mm   ISO${exifInfo.iso} ",
+                        "ƒ/${exifInfo.fNumber}   1/${(1 / (exifInfo.exposureTime ?? 1)).toStringAsFixed(0)}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
                       ),
                     ),
                 ],
