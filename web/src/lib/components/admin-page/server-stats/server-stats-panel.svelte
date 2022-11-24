@@ -15,8 +15,8 @@
 		return name;
 	};
 
-	$: spaceUnit = stats.usage.slice(stats.usage.length - 2, stats.usage.length);
-	$: spaceUsage = stats.usage.slice(0, stats.usage.length - 2);
+	$: spaceUnit = stats.usage.split(' ')[1];
+	$: spaceUsage = stats.usage.split(' ')[0];
 </script>
 
 <div class="flex flex-col gap-5">
