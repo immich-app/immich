@@ -8,6 +8,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
+	import { getHumanReadableBytes } from '../../utils/byte-units';
 
 	type Leaflet = typeof import('leaflet');
 	type LeafletMap = import('leaflet').Map;
@@ -59,32 +60,6 @@
 	}
 
 	const dispatch = createEventDispatcher();
-	const getHumanReadableString = (sizeInByte: number) => {
-		const pepibyte = 1.126 * Math.pow(10, 15);
-		const tebibyte = 1.1 * Math.pow(10, 12);
-		const gibibyte = 1.074 * Math.pow(10, 9);
-		const mebibyte = 1.049 * Math.pow(10, 6);
-		const kibibyte = 1024;
-		// Pebibyte
-		if (sizeInByte >= pepibyte) {
-			// Pe
-			return `${(sizeInByte / pepibyte).toFixed(1)}PB`;
-		} else if (tebibyte <= sizeInByte && sizeInByte < pepibyte) {
-			// Te
-			return `${(sizeInByte / tebibyte).toFixed(1)}TB`;
-		} else if (gibibyte <= sizeInByte && sizeInByte < tebibyte) {
-			// Gi
-			return `${(sizeInByte / gibibyte).toFixed(1)}GB`;
-		} else if (mebibyte <= sizeInByte && sizeInByte < gibibyte) {
-			// Mega
-			return `${(sizeInByte / mebibyte).toFixed(1)}MB`;
-		} else if (kibibyte <= sizeInByte && sizeInByte < mebibyte) {
-			// Kibi
-			return `${(sizeInByte / kibibyte).toFixed(1)}KB`;
-		} else {
-			return `${sizeInByte}B`;
-		}
-	};
 
 	const getMegapixel = (width: number, height: number): number | undefined => {
 		const megapixel = Math.round((height * width) / 1_000_000);
@@ -143,13 +118,13 @@
 						{#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
 							{#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
 								<p>
-									{getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}MP
+									{getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
 								</p>
 							{/if}
 
 							<p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
 						{/if}
-						<p>{getHumanReadableString(asset.exifInfo.fileSizeInByte)}</p>
+						<p>{getHumanReadableBytes(asset.exifInfo.fileSizeInByte)}</p>
 					</div>
 				</div>
 			</div>
@@ -162,7 +137,7 @@
 				<div>
 					<p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
 					<div class="flex text-sm gap-2">
-						<p>{`f/${asset.exifInfo.fNumber}` || ''}</p>
+						<p>{`ƒ/${asset.exifInfo.fNumber}` || ''}</p>
 
 						{#if asset.exifInfo.exposureTime}
 							<p>{`1/${Math.floor(1 / asset.exifInfo.exposureTime)}`}</p>

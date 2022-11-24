@@ -6,6 +6,8 @@
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
 	import type { UploadAsset } from '$lib/models/upload-asset';
 	import { notificationController, NotificationType } from './notification/notification';
+	import { getHumanReadableBytes } from '../../utils/byte-units';
+
 	let showDetail = true;
 
 	let uploadLength = 0;
@@ -29,33 +31,6 @@
 			}
 		}
 	};
-
-	function getSizeInHumanReadableFormat(sizeInByte: number) {
-		const pepibyte = 1.126 * Math.pow(10, 15);
-		const tebibyte = 1.1 * Math.pow(10, 12);
-		const gibibyte = 1.074 * Math.pow(10, 9);
-		const mebibyte = 1.049 * Math.pow(10, 6);
-		const kibibyte = 1024;
-		// Pebibyte
-		if (sizeInByte >= pepibyte) {
-			// Pe
-			return `${(sizeInByte / pepibyte).toFixed(1)}PB`;
-		} else if (tebibyte <= sizeInByte && sizeInByte < pepibyte) {
-			// Te
-			return `${(sizeInByte / tebibyte).toFixed(1)}TB`;
-		} else if (gibibyte <= sizeInByte && sizeInByte < tebibyte) {
-			// Gi
-			return `${(sizeInByte / gibibyte).toFixed(1)}GB`;
-		} else if (mebibyte <= sizeInByte && sizeInByte < gibibyte) {
-			// Mega
-			return `${(sizeInByte / mebibyte).toFixed(1)}MB`;
-		} else if (kibibyte <= sizeInByte && sizeInByte < mebibyte) {
-			// Kibi
-			return `${(sizeInByte / kibibyte).toFixed(1)}KB`;
-		} else {
-			return `${sizeInByte}B`;
-		}
-	}
 
 	// Reactive action to get thumbnail image of upload asset whenever there is a new one added to the list
 	$: {
@@ -140,7 +115,7 @@
 									<input
 										disabled
 										class="bg-gray-100 border w-full p-1 rounded-md text-[10px] px-2"
-										value={`[${getSizeInHumanReadableFormat(uploadAsset.file.size)}] ${
+										value={`[${getHumanReadableBytes(uploadAsset.file.size)}] ${
 											uploadAsset.file.name
 										}`}
 									/>
