@@ -18,9 +18,9 @@ class ImmichLogger {
 
   ImmichLogger(this.logContext) {
     if (_box.length > maxLogEntries) {
-      var indexesToBeDeleted = _box.length - maxLogEntries;
-      for (var i = 0; i < indexesToBeDeleted; i++) {
-        _box.deleteAt(indexesToBeDeleted);
+      var numberOfEntryToBeDeleted = _box.length - maxLogEntries;
+      for (var i = 0; i < numberOfEntryToBeDeleted; i++) {
+        _box.deleteAt(0);
       }
     }
   }
@@ -40,7 +40,7 @@ class ImmichLogger {
     _box.add(log);
   }
 
-  void clearMessages() {
+  void clearLogs() {
     _box.clear();
   }
 
