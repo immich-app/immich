@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
+import 'package:intl/intl.dart';
 
 class AppLogPage extends ConsumerWidget {
   const AppLogPage({
@@ -53,6 +54,19 @@ class AppLogPage extends ConsumerWidget {
             fontSize: 16.0,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.ios_share_rounded,
+              color: Theme.of(context).primaryColor,
+              semanticLabel: "Share logs",
+              size: 24.0,
+            ),
+            onPressed: () {
+              logService.shareLogs();
+            },
+          ),
+        ],
         leading: IconButton(
           onPressed: () {
             AutoRouter.of(context).pop();
@@ -66,21 +80,24 @@ class AppLogPage extends ConsumerWidget {
       ),
       body: ListView.separated(
         separatorBuilder: (context, index) {
-          return const Divider();
+          return Divider(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white70
+                : Colors.grey[500],
+          );
         },
         itemCount: logService.messages.length,
         itemBuilder: (context, index) {
           var logMessage = logService.messages[index];
           return ListTile(
-            visualDensity: VisualDensity.compact,
-            minVerticalPadding: 8,
             minLeadingWidth: 10,
             title: Text(
               logMessage.message,
-              style: const TextStyle(fontSize: 14.0),
+              style: const TextStyle(fontSize: 13.0),
             ),
             subtitle: Text(
-              logMessage.createdAt.toIso8601String(),
+              "Created at ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)}",
+              style: const TextStyle(fontSize: 12.0, color: Colors.grey),
             ),
             leading: buildLeadingIcon(logMessage.type),
           );

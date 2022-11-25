@@ -13,10 +13,18 @@ class InAppLoggerMessage {
   @HiveField(2)
   DateTime createdAt;
 
+  @HiveField(3)
+  String? context1;
+
+  @HiveField(4)
+  String? context2;
+
   InAppLoggerMessage({
     required this.message,
     required this.type,
     required this.createdAt,
+    required this.context1,
+    required this.context2,
   });
 
   @override

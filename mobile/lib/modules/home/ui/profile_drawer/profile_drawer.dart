@@ -104,8 +104,8 @@ class ProfileDrawer extends HookConsumerWidget {
             children: [
               const ProfileDrawerHeader(),
               buildSettingButton(),
+              buildAppLogButton(),
               buildSignoutButton(),
-              buildAppLogButton()
             ],
           ),
           const ServerInfoBox()

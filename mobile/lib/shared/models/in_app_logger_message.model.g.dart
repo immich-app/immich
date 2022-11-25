@@ -20,19 +20,25 @@ class InAppLoggerMessageAdapter extends TypeAdapter<InAppLoggerMessage> {
       message: fields[0] as String,
       type: fields[1] == null ? 'info' : fields[1] as String,
       createdAt: fields[2] as DateTime,
+      context1: fields[3] as String?,
+      context2: fields[4] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, InAppLoggerMessage obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.message)
       ..writeByte(1)
       ..write(obj.type)
       ..writeByte(2)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(3)
+      ..write(obj.context1)
+      ..writeByte(4)
+      ..write(obj.context2);
   }
 
   @override
