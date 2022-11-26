@@ -94,7 +94,7 @@
 
 <div
 	id="immich-scrubbable-scrollbar"
-	class="fixed right-0 bg-immich-bg z-[50] hover:cursor-row-resize select-none "
+	class="fixed right-0 bg-immich-bg z-[100] hover:cursor-row-resize select-none "
 	style:width={isDragging ? '100vw' : '60px'}
 	style:background-color={isDragging ? 'transparent' : 'transparent'}
 	on:mouseenter={() => (isHover = true)}
@@ -109,7 +109,7 @@
 >
 	{#if isHover}
 		<div
-			class="border-b-2 border-immich-primary dark:border-immich-dark-primary w-[100px] right-0 pr-6 py-1 text-sm pl-1 font-medium absolute bg-immich-bg dark:bg-immich-dark-gray z-50 pointer-events-none rounded-tl-md shadow-lg dark:text-immich-dark-fg"
+			class="border-b-2 border-immich-primary dark:border-immich-dark-primary w-[100px] right-0 pr-6 py-1 text-sm pl-1 font-medium absolute bg-immich-bg dark:bg-immich-dark-gray z-[100] pointer-events-none rounded-tl-md shadow-lg dark:text-immich-dark-fg"
 			style:top={currentMouseYLocation + 'px'}
 		>
 			{hoveredDate?.toLocaleString('default', { month: 'short' })}
