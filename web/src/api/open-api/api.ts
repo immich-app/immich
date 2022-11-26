@@ -427,7 +427,7 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'encodedVideoPath': string | null;
+    'encodedVideoPath'?: string | null;
     /**
      * 
      * @type {ExifResponseDto}
@@ -445,7 +445,7 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'livePhotoVideoId': string | null;
+    'livePhotoVideoId'?: string | null;
 }
 /**
  * 
@@ -1729,7 +1729,7 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
-    'deletedAt': string | null;
+    'deletedAt'?: string;
 }
 /**
  * 
@@ -2788,10 +2788,11 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * Get all AssetEntity belong to the user
          * @summary 
+         * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAssets: async (ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2807,6 +2808,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (ifNoneMatch !== undefined && ifNoneMatch !== null) {
+                localVarHeaderParameter['if-none-match'] = String(ifNoneMatch);
+            }
 
 
     
@@ -3388,11 +3393,12 @@ export const AssetApiFp = function(configuration?: Configuration) {
         /**
          * Get all AssetEntity belong to the user
          * @summary 
+         * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAssets(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(options);
+        async getAllAssets(ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(ifNoneMatch, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -3590,11 +3596,12 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         /**
          * Get all AssetEntity belong to the user
          * @summary 
+         * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets(options?: any): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllAssets(options).then((request) => request(axios, basePath));
+        getAllAssets(ifNoneMatch?: string, options?: any): AxiosPromise<Array<AssetResponseDto>> {
+            return localVarFp.getAllAssets(ifNoneMatch, options).then((request) => request(axios, basePath));
         },
         /**
          * Get a single asset\'s information
@@ -3788,12 +3795,13 @@ export class AssetApi extends BaseAPI {
     /**
      * Get all AssetEntity belong to the user
      * @summary 
+     * @param {string} [ifNoneMatch] ETag of data already cached on the client
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public getAllAssets(options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllAssets(options).then((request) => request(this.axios, this.basePath));
+    public getAllAssets(ifNoneMatch?: string, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getAllAssets(ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
