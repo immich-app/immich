@@ -186,13 +186,12 @@ export class AssetController {
     const clientEtag = request.headers['if-none-match'];
     const json = JSON.stringify(assets);
     const serverEtag = await etag(json);
+    response.setHeader('ETag', serverEtag);
     if (clientEtag === serverEtag) {
       response.status(304).end();
-      return;
+    } else {
+      response.contentType('application/json').status(200).send(json);
     }
-    response.setHeader('ETag', serverEtag);
-    response.contentType('application/json');
-    response.status(200).send(json);
   }
 
   @Post('/time-bucket')

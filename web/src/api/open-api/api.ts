@@ -427,7 +427,7 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'encodedVideoPath': string | null;
+    'encodedVideoPath'?: string | null;
     /**
      * 
      * @type {ExifResponseDto}
@@ -445,7 +445,7 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'livePhotoVideoId': string | null;
+    'livePhotoVideoId'?: string | null;
 }
 /**
  * 
@@ -1729,7 +1729,7 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
-    'deletedAt': string | null;
+    'deletedAt'?: string;
 }
 /**
  * 
