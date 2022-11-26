@@ -1,5 +1,5 @@
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { newUserRepositoryMock } from '../../../test/test-utils';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { IUserRepository } from './user-repository';
@@ -126,6 +126,17 @@ describe('UserService', () => {
         shouldChangePassword: true,
       });
       expect(result).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('cannot delete admin user', () => {
+      const requestor = adminAuthUser;
+
+      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(adminUser));
+      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(adminUser));
+
+      const result = sui.deleteUser(requestor, adminAuthUser.id);
+
+      expect(result).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 });

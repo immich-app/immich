@@ -119,6 +119,11 @@ export class UserService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
+
+    if (user.isAdmin) {
+      throw new BadRequestException('Cannot delete admin user');
+    }
+
     try {
       const deletedUser = await this.userRepository.delete(user);
       return mapUser(deletedUser);

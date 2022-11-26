@@ -9,7 +9,7 @@ export class UserResponseDto {
   profileImagePath!: string;
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
-  deletedAt!: Date | null;
+  deletedAt?: Date;
 }
 
 export function mapUser(entity: UserEntity): UserResponseDto {
@@ -22,6 +22,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
-    deletedAt: entity.deletedAt || null,
+    deletedAt: entity.deletedAt,
   };
 }

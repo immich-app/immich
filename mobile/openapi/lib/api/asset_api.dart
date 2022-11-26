@@ -297,7 +297,12 @@ class AssetApi {
   /// Get all AssetEntity belong to the user
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getAllAssetsWithHttpInfo() async {
+  ///
+  /// Parameters:
+  ///
+  /// * [String] ifNoneMatch:
+  ///   ETag of data already cached on the client
+  Future<Response> getAllAssetsWithHttpInfo({ String? ifNoneMatch, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
@@ -307,6 +312,10 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (ifNoneMatch != null) {
+      headerParams[r'if-none-match'] = parameterToString(ifNoneMatch);
+    }
 
     const contentTypes = <String>[];
 
@@ -325,8 +334,13 @@ class AssetApi {
   /// 
   ///
   /// Get all AssetEntity belong to the user
-  Future<List<AssetResponseDto>?> getAllAssets() async {
-    final response = await getAllAssetsWithHttpInfo();
+  ///
+  /// Parameters:
+  ///
+  /// * [String] ifNoneMatch:
+  ///   ETag of data already cached on the client
+  Future<List<AssetResponseDto>?> getAllAssets({ String? ifNoneMatch, }) async {
+    final response = await getAllAssetsWithHttpInfo( ifNoneMatch: ifNoneMatch, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

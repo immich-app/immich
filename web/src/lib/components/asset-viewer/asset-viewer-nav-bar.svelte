@@ -46,7 +46,7 @@
 </script>
 
 <div
-	class="h-16 bg-black/5 flex justify-between place-items-center px-3 transition-transform duration-200 z-[9999]"
+	class="h-16 flex justify-between place-items-center px-3 transition-transform duration-200 z-[9999]"
 >
 	<div>
 		<CircleIconButton logo={ArrowLeft} on:click={() => dispatch('goBack')} />
