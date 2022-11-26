@@ -32,8 +32,10 @@ void main() async {
   Hive.registerAdapter(HiveSavedLoginInfoAdapter());
   Hive.registerAdapter(HiveBackupAlbumsAdapter());
   Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
+  Hive.registerAdapter(ImmichLogLevelAdapter());
   Hive.registerAdapter(InAppLoggerMessageAdapter());
 
+  // Hive.deleteBoxFromDisk(inAppLoggerBox);
   await Future.wait([
     Hive.openBox<InAppLoggerMessage>(inAppLoggerBox),
     Hive.openBox(userInfoBox),

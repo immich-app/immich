@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/in_app_logger_message.model.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:intl/intl.dart';
 
@@ -13,9 +14,9 @@ class AppLogPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final logService = ImmichLogger('AppLogPage');
 
-    Widget buildLeadingIcon(String type) {
+    Widget buildLeadingIcon(ImmichLogLevel type) {
       switch (type) {
-        case "info":
+        case ImmichLogLevel.info:
           return Container(
             width: 10,
             height: 10,
@@ -24,7 +25,7 @@ class AppLogPage extends ConsumerWidget {
               borderRadius: BorderRadius.circular(5),
             ),
           );
-        case "error":
+        case ImmichLogLevel.error:
           return Container(
             width: 10,
             height: 10,
@@ -99,7 +100,7 @@ class AppLogPage extends ConsumerWidget {
               "Created at ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)}",
               style: const TextStyle(fontSize: 12.0, color: Colors.grey),
             ),
-            leading: buildLeadingIcon(logMessage.type),
+            leading: buildLeadingIcon(logMessage.level),
           );
         },
       ),

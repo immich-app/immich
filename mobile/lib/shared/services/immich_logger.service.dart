@@ -25,13 +25,17 @@ class ImmichLogger {
     }
   }
 
-  void log(message, {String type = "info", String? additionalContext}) {
+  void log(
+    message, {
+    ImmichLogLevel level = ImmichLogLevel.info,
+    String? additionalContext,
+  }) {
     var formattedMessage =
         "[$logContext] ${additionalContext != null ? '[$additionalContext]' : ""}: $message";
     debugPrint(formattedMessage);
     var log = InAppLoggerMessage(
       message: formattedMessage,
-      type: type,
+      level: level,
       createdAt: DateTime.now(),
       context1: logContext,
       context2: additionalContext ?? "",
@@ -54,7 +58,7 @@ class ImmichLogger {
     // Write messages
     for (var message in messages) {
       logFile.writeAsStringSync(
-        "${message.createdAt},${message.context1 ?? ""},${message.context2 ?? ""},${message.message},${message.type}\n",
+        "${message.createdAt},${message.context1 ?? ""},${message.context2 ?? ""},${message.message},${message.level.toString()}\n",
         mode: FileMode.append,
       );
     }

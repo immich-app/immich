@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/shared/models/in_app_logger_message.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:openapi/api.dart';
@@ -99,7 +100,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('error', (errorMessage) {
           iLog.log(
             "Websocket Error - $errorMessage",
-            type: 'error',
+            level: ImmichLogLevel.error,
             additionalContext: 'WEBSOCKET',
           );
           state = WebsocketState(isConnected: false, socket: null);

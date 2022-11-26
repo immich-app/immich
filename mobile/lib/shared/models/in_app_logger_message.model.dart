@@ -7,8 +7,8 @@ class InAppLoggerMessage {
   @HiveField(0)
   String message;
 
-  @HiveField(1, defaultValue: "info")
-  String type;
+  @HiveField(1, defaultValue: ImmichLogLevel.info)
+  ImmichLogLevel level;
 
   @HiveField(2)
   DateTime createdAt;
@@ -21,7 +21,7 @@ class InAppLoggerMessage {
 
   InAppLoggerMessage({
     required this.message,
-    required this.type,
+    required this.level,
     required this.createdAt,
     required this.context1,
     required this.context2,
@@ -29,6 +29,18 @@ class InAppLoggerMessage {
 
   @override
   String toString() {
-    return 'InAppLoggerMessage(message: $message, type: $type, createdAt: $createdAt)';
+    return 'InAppLoggerMessage(message: $message, level: $level, createdAt: $createdAt)';
   }
+}
+
+@HiveType(typeId: 4)
+enum ImmichLogLevel {
+  @HiveField(0)
+  info,
+
+  @HiveField(1)
+  warning,
+
+  @HiveField(2)
+  error,
 }
