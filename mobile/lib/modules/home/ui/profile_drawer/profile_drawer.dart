@@ -2,12 +2,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer_header.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/server_info_box.dart';
+import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 
 class ProfileDrawer extends HookConsumerWidget {
@@ -70,6 +70,30 @@ class ProfileDrawer extends HookConsumerWidget {
       );
     }
 
+    buildAppLogButton() {
+      return ListTile(
+        horizontalTitleGap: 0,
+        leading: SizedBox(
+          height: double.infinity,
+          child: Icon(
+            Icons.assignment_outlined,
+            color: Theme.of(context).textTheme.labelMedium?.color,
+            size: 20,
+          ),
+        ),
+        title: Text(
+          "profile_drawer_app_logs",
+          style: Theme.of(context)
+              .textTheme
+              .labelLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ).tr(),
+        onTap: () {
+          AutoRouter.of(context).push(const AppLogRoute());
+        },
+      );
+    }
+
     return Drawer(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -80,6 +104,7 @@ class ProfileDrawer extends HookConsumerWidget {
             children: [
               const ProfileDrawerHeader(),
               buildSettingButton(),
+              buildAppLogButton(),
               buildSignoutButton(),
             ],
           ),

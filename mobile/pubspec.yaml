@@ -47,6 +47,7 @@ dependencies:
 
   # easy to remove packages:
   image_picker: ^0.8.5+3 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
+  logging: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -71,7 +72,9 @@ flutter:
     - family: SnowburstOne
       fonts:
         - asset: fonts/SnowburstOne.ttf
-
+    - family: Inconsolata
+      fonts:
+        - asset: fonts/Inconsolata-Regular.ttf
 flutter_icons:
   image_path_android: "assets/immich-logo-no-outline.png"
   image_path_ios: "assets/immich-logo-no-outline.png"

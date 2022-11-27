@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -10,13 +9,14 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AssetNotifier extends StateNotifier<List<Asset>> {
   final AssetService _assetService;
   final AssetCacheService _assetCacheService;
-
+  final log = Logger('AssetNotifier');
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
   bool _getAllAssetInProgress = false;
   bool _deleteInProgress = false;
@@ -41,7 +41,7 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
       final remoteTask = _assetService.getRemoteAssets();
       if (isCacheValid && state.isEmpty) {
         state = await _assetCacheService.get();
-        debugPrint(
+        log.info(
           "Reading assets from cache: ${stopwatch.elapsedMilliseconds}ms",
         );
         stopwatch.reset();
@@ -52,25 +52,25 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
       final List<Asset> currentLocal = state.slice(0, remoteBegin);
       List<Asset>? newRemote = await remoteTask;
       List<Asset>? newLocal = await localTask;
-      debugPrint("Load assets: ${stopwatch.elapsedMilliseconds}ms");
+      log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
       stopwatch.reset();
       if (newRemote == null &&
           (newLocal == null || currentLocal.equals(newLocal))) {
-        debugPrint("state is already up-to-date");
+        log.info("state is already up-to-date");
         return;
       }
       newRemote ??= state.slice(remoteBegin);
       newLocal ??= [];
       state = _combineLocalAndRemoteAssets(local: newLocal, remote: newRemote);
-      debugPrint("Combining assets: ${stopwatch.elapsedMilliseconds}ms");
+      log.info("Combining assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
     }
-    debugPrint("[getAllAsset] setting new asset state");
+    log.info("setting new asset state");
 
     stopwatch.reset();
     _cacheState();
-    debugPrint("Store assets in cache: ${stopwatch.elapsedMilliseconds}ms");
+    log.info("Store assets in cache: ${stopwatch.elapsedMilliseconds}ms");
   }
 
   List<Asset> _combineLocalAndRemoteAssets({
@@ -155,8 +155,8 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
     if (local.isNotEmpty) {
       try {
         return await PhotoManager.editor.deleteWithIds(local);
-      } catch (e) {
-        debugPrint("Delete asset from device failed: $e");
+      } catch (e, stack) {
+        log.severe("Failed to delete asset from device", e, stack);
       }
     }
     return [];

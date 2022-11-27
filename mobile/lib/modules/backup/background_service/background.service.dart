@@ -349,7 +349,6 @@ class BackgroundService {
       Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
       Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
     ]);
-
     ApiService apiService = ApiService();
     apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
     apiService.setAccessToken(Hive.box(userInfoBox).get(accessTokenKey));

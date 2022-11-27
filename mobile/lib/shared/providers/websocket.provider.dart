@@ -6,23 +6,24 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
-class WebscoketState {
+class WebsocketState {
   final Socket? socket;
   final bool isConnected;
 
-  WebscoketState({
+  WebsocketState({
     this.socket,
     required this.isConnected,
   });
 
-  WebscoketState copyWith({
+  WebsocketState copyWith({
     Socket? socket,
     bool? isConnected,
   }) {
-    return WebscoketState(
+    return WebsocketState(
       socket: socket ?? this.socket,
       isConnected: isConnected ?? this.isConnected,
     );
@@ -30,13 +31,13 @@ class WebscoketState {
 
   @override
   String toString() =>
-      'WebscoketState(socket: $socket, isConnected: $isConnected)';
+      'WebsocketState(socket: $socket, isConnected: $isConnected)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is WebscoketState &&
+    return other is WebsocketState &&
         other.socket == socket &&
         other.isConnected == isConnected;
   }
@@ -45,12 +46,11 @@ class WebscoketState {
   int get hashCode => socket.hashCode ^ isConnected.hashCode;
 }
 
-class WebsocketNotifier extends StateNotifier<WebscoketState> {
+class WebsocketNotifier extends StateNotifier<WebsocketState> {
   WebsocketNotifier(this.ref)
-      : super(WebscoketState(socket: null, isConnected: false)) {
-    debugPrint("Init websocket instance");
-  }
+      : super(WebsocketState(socket: null, isConnected: false));
 
+  final log = Logger('WebsocketNotifier');
   final Ref ref;
 
   connect() {
@@ -60,8 +60,8 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
       var accessToken = Hive.box(userInfoBox).get(accessTokenKey);
       var endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       try {
-        debugPrint("[WEBSOCKET] Attempting to connect to ws");
-        // Configure socket transports must be sepecified
+        log.info("Attempting to connect to websocket");
+        // Configure socket transports must be specified
         Socket socket = io(
           endpoint.toString().replaceAll('/api', ''),
           OptionBuilder()
@@ -76,18 +76,18 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
         );
 
         socket.onConnect((_) {
-          debugPrint("[WEBSOCKET] Established Websocket Connection");
-          state = WebscoketState(isConnected: true, socket: socket);
+          log.info("Established Websocket Connection");
+          state = WebsocketState(isConnected: true, socket: socket);
         });
 
         socket.onDisconnect((_) {
-          debugPrint("[WEBSOCKET] Disconnect to Websocket Connection");
-          state = WebscoketState(isConnected: false, socket: null);
+          log.info("Disconnect to Websocket Connection");
+          state = WebsocketState(isConnected: false, socket: null);
         });
 
         socket.on('error', (errorMessage) {
-          debugPrint("Webcoket Error - $errorMessage");
-          state = WebscoketState(isConnected: false, socket: null);
+          log.severe("Websocket Error - $errorMessage");
+          state = WebsocketState(isConnected: false, socket: null);
         });
 
         socket.on('on_upload_success', (data) {
@@ -105,21 +105,22 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
   }
 
   disconnect() {
-    debugPrint("[WEBSOCKET] Attempting to disconnect");
+    log.info("Attempting to disconnect from websocket");
+
     var socket = state.socket?.disconnect();
 
     if (socket?.disconnected == true) {
-      state = WebscoketState(isConnected: false, socket: null);
+      state = WebsocketState(isConnected: false, socket: null);
     }
   }
 
   stopListenToEvent(String eventName) {
-    debugPrint("[Websocket] Stop listening to event $eventName");
+    log.info("Stop listening to event $eventName");
     state.socket?.off(eventName);
   }
 
   listenUploadEvent() {
-    debugPrint("[Websocket] Start listening to event on_upload_success");
+    log.info("Start listening to event on_upload_success");
     state.socket?.on('on_upload_success', (data) {
       var jsonString = jsonDecode(data.toString());
       AssetResponseDto? newAsset = AssetResponseDto.fromJson(jsonString);
@@ -132,6 +133,6 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
 }
 
 final websocketProvider =
-    StateNotifierProvider<WebsocketNotifier, WebscoketState>((ref) {
+    StateNotifierProvider<WebsocketNotifier, WebsocketState>((ref) {
   return WebsocketNotifier(ref);
 });
