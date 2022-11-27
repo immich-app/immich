@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/models/in_app_logger_message.model.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:intl/intl.dart';
 
@@ -12,11 +11,11 @@ class AppLogPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final logService = ImmichLogger('AppLogPage');
+    final immichLogger = ImmichLogger();
 
-    Widget buildLeadingIcon(ImmichLogLevel type) {
-      switch (type) {
-        case ImmichLogLevel.info:
+    Widget buildLeadingIcon(String level) {
+      switch (level) {
+        case "info":
           return Container(
             width: 10,
             height: 10,
@@ -25,7 +24,7 @@ class AppLogPage extends ConsumerWidget {
               borderRadius: BorderRadius.circular(5),
             ),
           );
-        case ImmichLogLevel.error:
+        case "severe":
           return Container(
             width: 10,
             height: 10,
@@ -64,7 +63,7 @@ class AppLogPage extends ConsumerWidget {
               size: 24.0,
             ),
             onPressed: () {
-              logService.shareLogs();
+              immichLogger.shareLogs();
             },
           ),
         ],
@@ -87,9 +86,9 @@ class AppLogPage extends ConsumerWidget {
                 : Colors.grey[500],
           );
         },
-        itemCount: logService.messages.length,
+        itemCount: immichLogger.messages.length,
         itemBuilder: (context, index) {
-          var logMessage = logService.messages[index];
+          var logMessage = immichLogger.messages[index];
           return ListTile(
             minLeadingWidth: 10,
             title: Text(

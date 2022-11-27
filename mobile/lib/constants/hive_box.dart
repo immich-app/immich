@@ -32,5 +32,5 @@ const String duplicatedAssetsBox = "immichDuplicatedAssetsBox"; // Box
 const String duplicatedAssetsKey = "immichDuplicatedAssetsKey"; // Key 1
 
 // In app logger
-const String inAppLoggerBox = "immichInAppLogger"; // Box
+const String immichLoggerBox = "immichInAppLogger"; // Box
 const String inAppLoggerKey = "immichInAppLoggerKey"; // Key 1

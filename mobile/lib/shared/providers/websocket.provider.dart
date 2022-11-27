@@ -5,9 +5,8 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/models/in_app_logger_message.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/services/immich_logger.service.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
@@ -49,11 +48,9 @@ class WebsocketState {
 
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
   WebsocketNotifier(this.ref)
-      : super(WebsocketState(socket: null, isConnected: false)) {
-    debugPrint("Init websocket instance");
-  }
+      : super(WebsocketState(socket: null, isConnected: false));
 
-  final iLog = ImmichLogger('WebsocketNotifier');
+  final log = Logger('WebsocketNotifier');
   final Ref ref;
 
   connect() {
@@ -63,10 +60,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       var accessToken = Hive.box(userInfoBox).get(accessTokenKey);
       var endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       try {
-        iLog.log(
-          "Attempting to connect to ws",
-          additionalContext: 'connect',
-        );
+        log.info("Attempting to connect to websocket");
         // Configure socket transports must be specified
         Socket socket = io(
           endpoint.toString().replaceAll('/api', ''),
@@ -82,27 +76,17 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         );
 
         socket.onConnect((_) {
-          iLog.log(
-            "Established Websocket Connection",
-            additionalContext: 'WEBSOCKET',
-          );
+          log.info("Established Websocket Connection");
           state = WebsocketState(isConnected: true, socket: socket);
         });
 
         socket.onDisconnect((_) {
-          iLog.log(
-            "Disconnect to Websocket Connection",
-            additionalContext: 'WEBSOCKET',
-          );
+          log.info("Disconnect to Websocket Connection");
           state = WebsocketState(isConnected: false, socket: null);
         });
 
         socket.on('error', (errorMessage) {
-          iLog.log(
-            "Websocket Error - $errorMessage",
-            level: ImmichLogLevel.error,
-            additionalContext: 'WEBSOCKET',
-          );
+          log.severe("Websocket Error - $errorMessage");
           state = WebsocketState(isConnected: false, socket: null);
         });
 
@@ -121,10 +105,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   disconnect() {
-    iLog.log(
-      "Attempting to disconnect",
-      additionalContext: 'WEBSOCKET',
-    );
+    log.info("Attempting to disconnect from websocket");
 
     var socket = state.socket?.disconnect();
 
@@ -134,18 +115,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   stopListenToEvent(String eventName) {
-    iLog.log(
-      "Stop listening to event $eventName",
-      additionalContext: 'WEBSOCKET - stopListenToEvent',
-    );
+    log.info("Stop listening to event $eventName");
     state.socket?.off(eventName);
   }
 
   listenUploadEvent() {
-    iLog.log(
-      "Start listening to event on_upload_success",
-      additionalContext: 'WEBSOCKET - listenUploadEvent',
-    );
+    log.info("Start listening to event on_upload_success");
     state.socket?.on('on_upload_success', (data) {
       var jsonString = jsonDecode(data.toString());
       AssetResponseDto? newAsset = AssetResponseDto.fromJson(jsonString);

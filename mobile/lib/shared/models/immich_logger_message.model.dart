@@ -1,14 +1,14 @@
 import 'package:hive/hive.dart';
 
-part 'in_app_logger_message.model.g.dart';
+part 'immich_logger_message.model.g.dart';
 
 @HiveType(typeId: 3)
-class InAppLoggerMessage {
+class ImmichLoggerMessage {
   @HiveField(0)
   String message;
 
-  @HiveField(1, defaultValue: ImmichLogLevel.info)
-  ImmichLogLevel level;
+  @HiveField(1, defaultValue: "INFO")
+  String level;
 
   @HiveField(2)
   DateTime createdAt;
@@ -19,7 +19,7 @@ class InAppLoggerMessage {
   @HiveField(4)
   String? context2;
 
-  InAppLoggerMessage({
+  ImmichLoggerMessage({
     required this.message,
     required this.level,
     required this.createdAt,
@@ -31,16 +31,4 @@ class InAppLoggerMessage {
   String toString() {
     return 'InAppLoggerMessage(message: $message, level: $level, createdAt: $createdAt)';
   }
-}
-
-@HiveType(typeId: 4)
-enum ImmichLogLevel {
-  @HiveField(0)
-  info,
-
-  @HiveField(1)
-  warning,
-
-  @HiveField(2)
-  error,
 }
