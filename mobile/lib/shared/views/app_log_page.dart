@@ -134,11 +134,11 @@ class AppLogPage extends HookConsumerWidget {
             tileColor: getTileColor(logMessage.level),
             minLeadingWidth: 10,
             title: Text(
-              " ${logMessage.message}",
+              logMessage.message,
               style: const TextStyle(fontSize: 14.0, fontFamily: "Inconsolata"),
             ),
             subtitle: Text(
-              "Logged on ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)}",
+              "[${logMessage.context1}] Logged on ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)}",
               style: TextStyle(
                 fontSize: 12.0,
                 color: Colors.grey[600],
