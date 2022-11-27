@@ -18,9 +18,7 @@ import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 final backgroundServiceProvider = Provider(
@@ -342,10 +340,8 @@ class BackgroundService {
     Hive.registerAdapter(HiveSavedLoginInfoAdapter());
     Hive.registerAdapter(HiveBackupAlbumsAdapter());
     Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
-    Hive.registerAdapter(ImmichLoggerMessageAdapter());
 
     await Future.wait([
-      Hive.openBox<ImmichLoggerMessage>(immichLoggerBox),
       Hive.openBox(userInfoBox),
       Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
       Hive.openBox(userSettingInfoBox),
@@ -353,13 +349,11 @@ class BackgroundService {
       Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
       Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
     ]);
-
     ApiService apiService = ApiService();
     apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
     apiService.setAccessToken(Hive.box(userInfoBox).get(accessTokenKey));
     BackupService backupService = BackupService(apiService);
     AppSettingsService settingsService = AppSettingsService();
-    ImmichLogger().init();
 
     final Box<HiveBackupAlbums> box =
         Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
