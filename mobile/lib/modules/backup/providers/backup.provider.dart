@@ -342,10 +342,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
 
     if (allUniqueAssets.isEmpty) {
-      // iLog.info(
-      //   "Not found albums or assets on the device to backup",
-      //   additionalContext: "_UpdateBackupAssetCount",
-      // );
+      log.info("Not found albums or assets on the device to backup");
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
         allAssetsInDatabase: allAssetsInDatabase,
