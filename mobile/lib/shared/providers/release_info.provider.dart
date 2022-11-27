@@ -29,9 +29,6 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
         String latestTagVersion = data["tag_name"];
         state = latestTagVersion;
 
-        log.info("Local release version $localReleaseVersion");
-        log.info("Remote release veresion $latestTagVersion");
-
         if (localReleaseVersion == null && latestTagVersion.isNotEmpty) {
           VersionAnnouncementOverlayController.appLoader.show();
           return;

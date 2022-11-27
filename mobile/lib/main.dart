@@ -16,7 +16,7 @@ import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.d
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
-import 'package:immich_mobile/shared/models/in_app_logger_message.model.dart';
+import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';

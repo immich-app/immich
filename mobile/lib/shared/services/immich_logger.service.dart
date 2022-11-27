@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/shared/models/in_app_logger_message.model.dart';
+import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -46,14 +46,14 @@ class ImmichLogger {
     var formattedMessage = record.message;
 
     debugPrint('[${record.level.name}] [${record.time}] ${record.message}');
-
     box.add(
       ImmichLoggerMessage(
         message: formattedMessage,
         level: record.level.name,
         createdAt: record.time,
         context1: record.loggerName,
-        context2: record.error?.toString(),
+        context2: record.stackTrace
+            ?.toString(), // Something more useful here? (e.g. stacktrace - I cannot get it to format nicely though)
       ),
     );
   }
