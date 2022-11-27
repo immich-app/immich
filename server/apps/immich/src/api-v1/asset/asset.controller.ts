@@ -14,7 +14,6 @@ import {
   Header,
   Put,
   UploadedFiles,
-  Request,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
@@ -22,12 +21,12 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { Response as Res, Request as Req } from 'express';
+import { Response as Res} from 'express';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetResponseDto } from './response-dto/asset-response.dto';
@@ -50,7 +49,6 @@ import {
   IMMICH_ARCHIVE_FILE_COUNT,
   IMMICH_CONTENT_LENGTH_HINT,
 } from '../../constants/download.constant';
-import { etag } from '../../utils/etag';
 
 @Authenticated()
 @ApiBearerAuth()
@@ -110,7 +108,7 @@ export class AssetController {
   }
 
   @Get('/file/:assetId')
-  @Header('Cache-Control', 'max-age=300')
+  @Header('Cache-Control', 'max-age=3600')
   async serveFile(
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
@@ -121,13 +119,14 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
-  @Header('Cache-Control', 'max-age=300')
+  @Header('Cache-Control', 'max-age=3600')
   async getAssetThumbnail(
+    @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Param('assetId') assetId: string,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ): Promise<any> {
-    return this.assetService.getAssetThumbnail(assetId, query, res);
+    return this.assetService.getAssetThumbnail(assetId, query, res, headers);
   }
 
   @Get('/curated-objects')
@@ -176,22 +175,9 @@ export class AssetController {
     required: false,
     schema: { type: 'string' },
   })
-  @ApiResponse({
-    status: 200,
-    headers: { ETag: { required: true, schema: { type: 'string' } } },
-    type: [AssetResponseDto],
-  })
-  async getAllAssets(@GetAuthUser() authUser: AuthUserDto, @Response() response: Res, @Request() request: Req) {
+  async getAllAssets(@GetAuthUser() authUser: AuthUserDto): Promise<AssetResponseDto[]> {
     const assets = await this.assetService.getAllAssets(authUser);
-    const clientEtag = request.headers['if-none-match'];
-    const json = JSON.stringify(assets);
-    const serverEtag = await etag(json);
-    response.setHeader('ETag', serverEtag);
-    if (clientEtag === serverEtag) {
-      response.status(304).end();
-    } else {
-      response.contentType('application/json').status(200).send(json);
-    }
+    return assets;
   }
 
   @Post('/time-bucket')
