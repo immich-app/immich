@@ -663,6 +663,18 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           stackTrace,
         );
       }
+      try {
+        if (Hive.isBoxOpen(immichLoggerBox)) {
+          await Hive.box(immichLoggerBox).close();
+        }
+      } catch (error, stackTrace) {
+        log.severe(
+          "[_notifyBackgroundServiceCanRun] failed to close immichLoggerBox box",
+          error,
+          stackTrace,
+        );
+      }
+
       _backgroundService.releaseLock();
     }
   }

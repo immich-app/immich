@@ -35,7 +35,6 @@ void main() async {
   Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
   Hive.registerAdapter(ImmichLoggerMessageAdapter());
 
-  // Hive.deleteBoxFromDisk(immichLoggerBox);
   await Future.wait([
     Hive.openBox<ImmichLoggerMessage>(immichLoggerBox),
     Hive.openBox(userInfoBox),
