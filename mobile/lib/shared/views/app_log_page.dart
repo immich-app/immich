@@ -13,32 +13,44 @@ class AppLogPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final logMessages = ref.watch(immichLoggerProvider);
 
-    Widget colorStatus(Color color) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(5),
-            ),
-          ),
-        ],
-      );
-    }
-
     Widget buildLeadingIcon(String level) {
       switch (level) {
         case "INFO":
-          return colorStatus(Theme.of(context).primaryColor);
+          return Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(5),
+            ),
+          );
         case "SEVERE":
-          return colorStatus(Colors.redAccent);
+          return Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: Colors.redAccent,
+              borderRadius: BorderRadius.circular(5),
+            ),
+          );
         case "WARNING":
-          return colorStatus(Colors.orangeAccent);
+          return Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: Colors.orangeAccent,
+              borderRadius: BorderRadius.circular(5),
+            ),
+          );
         default:
-          return colorStatus(Colors.grey);
+          return Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(5),
+            ),
+          );
       }
     }
 
@@ -47,13 +59,9 @@ class AppLogPage extends HookConsumerWidget {
         case "INFO":
           return Colors.transparent;
         case "SEVERE":
-          return Theme.of(context).brightness == Brightness.dark
-              ? Colors.redAccent.withOpacity(0.2)
-              : Colors.redAccent.withOpacity(0.075);
+          return Colors.redAccent.withOpacity(0.075);
         case "WARNING":
-          return Theme.of(context).brightness == Brightness.dark
-              ? Colors.orangeAccent.withOpacity(0.2)
-              : Colors.orangeAccent.withOpacity(0.075);
+          return Colors.orangeAccent.withOpacity(0.075);
         default:
           return Theme.of(context).primaryColor.withOpacity(0.1);
       }
@@ -122,26 +130,9 @@ class AppLogPage extends HookConsumerWidget {
             dense: true,
             tileColor: getTileColor(logMessage.level),
             minLeadingWidth: 10,
-            title: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: "#$index ",
-                    style: TextStyle(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white70
-                          : Colors.grey[500],
-                    ),
-                  ),
-                  TextSpan(
-                    text: logMessage.message,
-                  ),
-                ],
-              ),
-              style: const TextStyle(
-                fontSize: 14.0,
-                fontFamily: "Inconsolata",
-              ),
+            title: Text(
+              logMessage.message,
+              style: const TextStyle(fontSize: 14.0, fontFamily: "Inconsolata"),
             ),
             subtitle: Text(
               "[${logMessage.context1}] Logged on ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)}",
