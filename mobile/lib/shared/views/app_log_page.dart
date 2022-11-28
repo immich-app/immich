@@ -15,44 +15,33 @@ class AppLogPage extends HookConsumerWidget {
     final immichLogger = ImmichLogger();
     final logMessages = useState(immichLogger.messages);
 
+    Widget colorStatusIndicator(Color color) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ],
+      );
+    }
+
     Widget buildLeadingIcon(String level) {
       switch (level) {
         case "INFO":
-          return Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-              borderRadius: BorderRadius.circular(5),
-            ),
-          );
+          return colorStatusIndicator(Theme.of(context).primaryColor);
         case "SEVERE":
-          return Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              color: Colors.redAccent,
-              borderRadius: BorderRadius.circular(5),
-            ),
-          );
+          return colorStatusIndicator(Colors.redAccent);
+
         case "WARNING":
-          return Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              color: Colors.orangeAccent,
-              borderRadius: BorderRadius.circular(5),
-            ),
-          );
+          return colorStatusIndicator(Colors.orangeAccent);
         default:
-          return Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-              borderRadius: BorderRadius.circular(5),
-            ),
-          );
+          return colorStatusIndicator(Colors.grey);
       }
     }
 
@@ -61,9 +50,13 @@ class AppLogPage extends HookConsumerWidget {
         case "INFO":
           return Colors.transparent;
         case "SEVERE":
-          return Colors.redAccent.withOpacity(0.075);
+          return Theme.of(context).brightness == Brightness.dark
+              ? Colors.redAccent.withOpacity(0.25)
+              : Colors.redAccent.withOpacity(0.075);
         case "WARNING":
-          return Colors.orangeAccent.withOpacity(0.075);
+          return Theme.of(context).brightness == Brightness.dark
+              ? Colors.orangeAccent.withOpacity(0.25)
+              : Colors.orangeAccent.withOpacity(0.075);
         default:
           return Theme.of(context).primaryColor.withOpacity(0.1);
       }
@@ -122,7 +115,7 @@ class AppLogPage extends HookConsumerWidget {
             height: 0,
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.white70
-                : Colors.grey[500],
+                : Colors.grey[600],
           );
         },
         itemCount: logMessages.value.length,
@@ -133,8 +126,27 @@ class AppLogPage extends HookConsumerWidget {
             dense: true,
             tileColor: getTileColor(logMessage.level),
             minLeadingWidth: 10,
-            title: Text(
-              logMessage.message,
+            title: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: "#$index ",
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.grey[600],
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextSpan(
+                    text: logMessage.message,
+                    style: const TextStyle(
+                      fontSize: 14.0,
+                    ),
+                  ),
+                ],
+              ),
               style: const TextStyle(fontSize: 14.0, fontFamily: "Inconsolata"),
             ),
             subtitle: Text(
