@@ -70,11 +70,14 @@ void main() {
       // Day 1
       // 15 Assets => 5 Rows
       expect(renderList.elements.length, 18);
-      expect(renderList.elements[0].type, RenderAssetGridElementType.monthTitle);
+      expect(
+          renderList.elements[0].type, RenderAssetGridElementType.monthTitle);
       expect(renderList.elements[0].date.month, 1);
-      expect(renderList.elements[7].type, RenderAssetGridElementType.monthTitle);
+      expect(
+          renderList.elements[7].type, RenderAssetGridElementType.monthTitle);
       expect(renderList.elements[7].date.month, 2);
-      expect(renderList.elements[11].type, RenderAssetGridElementType.monthTitle);
+      expect(
+          renderList.elements[11].type, RenderAssetGridElementType.monthTitle);
       expect(renderList.elements[11].date.month, 10);
     });
 

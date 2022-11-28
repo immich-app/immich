@@ -249,11 +249,13 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     await this.userAlbumRepository.save([...newRecords]);
+    await this.albumRepository.save(album);
     return this.get(album.id) as Promise<AlbumEntity>; // There is an album for sure
   }
 
   async removeUser(album: AlbumEntity, userId: string): Promise<void> {
     await this.userAlbumRepository.delete({ albumId: album.id, sharedUserId: userId });
+    await this.albumRepository.save(album);
   }
 
   async removeAssets(album: AlbumEntity, removeAssetsDto: RemoveAssetsDto): Promise<number> {
@@ -261,6 +263,9 @@ export class AlbumRepository implements IAlbumRepository {
       albumId: album.id,
       assetId: In(removeAssetsDto.assetIds),
     });
+    if (res.affected) {
+      await this.albumRepository.save(album);
+    }
 
     return res.affected || 0;
   }
@@ -285,9 +290,9 @@ export class AlbumRepository implements IAlbumRepository {
     // Add album thumbnail if not exist.
     if (!album.albumThumbnailAssetId && newRecords.length > 0) {
       album.albumThumbnailAssetId = newRecords[0].assetId;
-      await this.albumRepository.save(album);
     }
-
+    
+    await this.albumRepository.save(album);
     await this.assetAlbumRepository.save([...newRecords]);
 
     return {

@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **ownerId** | **String** |  | 
 **albumName** | **String** |  | 
 **createdAt** | **String** |  | 
+**modifiedAt** | **String** |  | 
 **albumThumbnailAssetId** | **String** |  | 
 **shared** | **bool** |  | 
 **sharedUsers** | [**List<UserResponseDto>**](UserResponseDto.md) |  | [default to const []]

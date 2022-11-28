@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
@@ -32,4 +34,26 @@ class ServerInfoService {
       return null;
     }
   }
+
+  Future<ServerStatus> checkServerStatus() async {
+    ServerPingResponse? ping;
+    try {
+      ping = await _apiService.serverInfoApi.pingServer();
+    } catch (e) {
+      if (e is ApiException &&
+          e.code == HttpStatus.badRequest &&
+          e.innerException is SocketException) {
+        return ServerStatus.networkError;
+      }
+      return ServerStatus.serverError;
+    }
+
+    return ping != null ? ServerStatus.okay : ServerStatus.serverError;
+  }
+}
+
+enum ServerStatus {
+  okay,
+  serverError,
+  networkError,
 }

@@ -75,7 +75,7 @@ void main() {
 
     // 
     //
-    //Future<List<AlbumResponseDto>> getAllAlbums({ bool shared, String assetId }) async
+    //Future<List<AlbumResponseDto>> getAllAlbums({ bool shared, String assetId, bool details }) async
     test('test getAllAlbums', () async {
       // TODO
     });

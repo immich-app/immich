@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // String modifiedAt
+    test('to test the property `modifiedAt`', () async {
+      // TODO
+    });
+
     // String albumThumbnailAssetId
     test('to test the property `albumThumbnailAssetId`', () async {
       // TODO

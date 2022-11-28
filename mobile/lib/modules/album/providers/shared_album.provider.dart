@@ -1,71 +1,67 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/modules/album/services/album_cache.service.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:isar/isar.dart';
 
-class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
-  SharedAlbumNotifier(this._albumService, this._sharedAlbumCacheService)
-      : super([]);
+class SharedAlbumNotifier extends StateNotifier<List<Album>> {
+  SharedAlbumNotifier(
+    this._albumService,
+    this._db,
+  ) : super([]);
 
   final AlbumService _albumService;
-  final SharedAlbumCacheService _sharedAlbumCacheService;
+  final Isar _db;
 
-  _cacheState() {
-    _sharedAlbumCacheService.put(state);
-  }
-
-  Future<AlbumResponseDto?> createSharedAlbum(
+  Future<Album?> createSharedAlbum(
     String albumName,
     Set<Asset> assets,
-    List<String> sharedUserIds,
+    Iterable<User> sharedUsers,
   ) async {
     try {
-      var newAlbum = await _albumService.createAlbum(
+      Album? newAlbum = await _albumService.createAlbum(
         albumName,
         assets,
-        sharedUserIds,
+        sharedUsers,
       );
 
       if (newAlbum != null) {
         state = [...state, newAlbum];
-        _cacheState();
+        return newAlbum;
       }
-
-      return newAlbum;
     } catch (e) {
       debugPrint("Error createSharedAlbum  ${e.toString()}");
+    }
+    return null;
+  }
 
-      return null;
+  Future<void> getAllSharedAlbums() async {
+    if (0 < await _db.albums.filter().sharedEqualTo(true).count() &&
+        state.isEmpty) {
+      state = await _db.albums.filter().sharedEqualTo(true).findAll();
+    }
+    await _albumService.refreshRemoteAlbums(isShared: true);
+
+    final albums = await _db.albums.filter().sharedEqualTo(true).findAll();
+    if (!const ListEquality().equals(albums, state)) {
+      state = albums;
     }
   }
 
-  getAllSharedAlbums() async {
-    if (await _sharedAlbumCacheService.isValid() && state.isEmpty) {
-      state = await _sharedAlbumCacheService.get();
-    }
-
-    List<AlbumResponseDto>? sharedAlbums =
-        await _albumService.getAlbums(isShared: true);
-
-    if (sharedAlbums != null) {
-      state = sharedAlbums;
-      _cacheState();
-    }
+  Future<bool> deleteAlbum(Album albumId) {
+    state = state.where((album) => album.id != albumId.id).toList();
+    return _albumService.deleteAlbum(albumId);
   }
 
-  deleteAlbum(String albumId) async {
-    state = state.where((album) => album.id != albumId).toList();
-    _cacheState();
-  }
-
-  Future<bool> leaveAlbum(String albumId) async {
-    var res = await _albumService.leaveAlbum(albumId);
+  Future<bool> leaveAlbum(Album album) async {
+    var res = await _albumService.leaveAlbum(album);
 
     if (res) {
-      state = state.where((album) => album.id != albumId).toList();
-      _cacheState();
+      await deleteAlbum(album);
       return true;
     } else {
       return false;
@@ -73,29 +69,23 @@ class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
   }
 
   Future<bool> removeAssetFromAlbum(
-    String albumId,
-    List<String> assetIds,
+    Album album,
+    Set<Asset> assets,
   ) async {
-    var res = await _albumService.removeAssetFromAlbum(albumId, assetIds);
-
-    if (res) {
-      return true;
-    } else {
-      return false;
-    }
+    return _albumService.removeAssetFromAlbum(album, assets);
   }
 }
 
 final sharedAlbumProvider =
-    StateNotifierProvider<SharedAlbumNotifier, List<AlbumResponseDto>>((ref) {
+    StateNotifierProvider<SharedAlbumNotifier, List<Album>>((ref) {
   return SharedAlbumNotifier(
     ref.watch(albumServiceProvider),
-    ref.watch(sharedAlbumCacheServiceProvider),
+    ref.watch(dbProvider),
   );
 });
 
-final sharedAlbumDetailProvider = FutureProvider.autoDispose
-    .family<AlbumResponseDto?, String>((ref, albumId) async {
+final sharedAlbumDetailProvider =
+    FutureProvider.autoDispose.family<Album?, int>((ref, albumId) async {
   final AlbumService sharedAlbumService = ref.watch(albumServiceProvider);
 
   return await sharedAlbumService.getAlbumDetail(albumId);

@@ -417,7 +417,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllAlbums**
-> List<AlbumResponseDto> getAllAlbums(shared, assetId)
+> List<AlbumResponseDto> getAllAlbums(shared, assetId, details)
 
 
 
@@ -436,9 +436,10 @@ import 'package:openapi/api.dart';
 final api_instance = AlbumApi();
 final shared = true; // bool | 
 final assetId = assetId_example; // String | Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+final details = true; // bool | 
 
 try {
-    final result = api_instance.getAllAlbums(shared, assetId);
+    final result = api_instance.getAllAlbums(shared, assetId, details);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->getAllAlbums: $e\n');
@@ -451,6 +452,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **shared** | **bool**|  | [optional] 
  **assetId** | **String**| Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums | [optional] 
+ **details** | **bool**|  | [optional] 
 
 ### Return type
 

@@ -22,7 +22,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       ItemPositionsListener.create();
 
   bool _scrolling = false;
-  final Set<String> _selectedAssets = HashSet();
+  final Set<int> _selectedAssets = HashSet();
 
 
   Set<Asset> _getSelectedAssets() {
@@ -103,7 +103,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     return Row(
       key: Key("asset-row-${row.assets.first.id}"),
       children: row.assets.map((Asset asset) {
-        bool last = asset == row.assets.last;
+        bool last = asset.id == row.assets.last.id;
 
         return Container(
           key: Key("asset-${asset.id}"),

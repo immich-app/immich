@@ -22,6 +22,24 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   final ServerInfoService _serverInfoService;
 
   getServerVersion() async {
+    final ServerStatus status = await _serverInfoService.checkServerStatus();
+
+    if (status == ServerStatus.networkError) {
+      state = state.copyWith(
+        isVersionMismatch: true,
+        versionMismatchErrorMessage:
+            "Network connection to the server failed, running in offline mode (beta).",
+      );
+      return;
+    } else if (status == ServerStatus.serverError) {
+      state = state.copyWith(
+        isVersionMismatch: true,
+        versionMismatchErrorMessage:
+            "Server is unavailable. Please contact your administrator to resolve the issue.",
+      );
+      return;
+    }
+
     ServerVersionReponseDto? serverVersion =
         await _serverInfoService.getServerVersion();
 

@@ -4,27 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/suggested_shared_users.provider.dart';
+import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:openapi/api.dart';
 
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
-  final AlbumResponseDto albumInfo;
+  final Album albumInfo;
 
   const SelectAdditionalUserForSharingPage({Key? key, required this.albumInfo})
       : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<UserResponseDto>> suggestedShareUsers =
+    AsyncValue<List<User>> suggestedShareUsers =
         ref.watch(suggestedSharedUsersProvider);
-    final sharedUsersList = useState<Set<UserResponseDto>>({});
+    final sharedUsersList = useState<Set<User>>({});
 
     addNewUsersHandler() {
       AutoRouter.of(context)
           .pop(sharedUsersList.value.map((e) => e.id).toList());
     }
 
-    buildTileIcon(UserResponseDto user) {
+    buildTileIcon(User user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
@@ -42,7 +43,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
       }
     }
 
-    buildUserList(List<UserResponseDto> users) {
+    buildUserList(List<User> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
@@ -143,7 +144,8 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         data: (users) {
           for (var sharedUsers in albumInfo.sharedUsers) {
             users.removeWhere(
-              (u) => u.id == sharedUsers.id || u.id == albumInfo.ownerId,
+              (u) =>
+                  u.id == sharedUsers.id || u.id == albumInfo.owner.value!.id,
             );
           }
 

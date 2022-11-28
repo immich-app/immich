@@ -54,7 +54,6 @@ class _$AppRouter extends RootStackRouter {
           routeData: routeData,
           child: ImageViewerPage(
               key: args.key,
-              heroTag: args.heroTag,
               asset: args.asset,
               authToken: args.authToken,
               isZoomedFunction: args.isZoomedFunction,
@@ -304,7 +303,6 @@ class GalleryViewerRouteArgs {
 class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
   ImageViewerRoute(
       {Key? key,
-      required String heroTag,
       required Asset asset,
       required String authToken,
       required void Function() isZoomedFunction,
@@ -316,7 +314,6 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
             path: '/image-viewer-page',
             args: ImageViewerRouteArgs(
                 key: key,
-                heroTag: heroTag,
                 asset: asset,
                 authToken: authToken,
                 isZoomedFunction: isZoomedFunction,
@@ -331,7 +328,6 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
 class ImageViewerRouteArgs {
   const ImageViewerRouteArgs(
       {this.key,
-      required this.heroTag,
       required this.asset,
       required this.authToken,
       required this.isZoomedFunction,
@@ -341,8 +337,6 @@ class ImageViewerRouteArgs {
       this.showExifSheet});
 
   final Key? key;
-
-  final String heroTag;
 
   final Asset asset;
 
@@ -360,7 +354,7 @@ class ImageViewerRouteArgs {
 
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, loadPreview: $loadPreview, loadOriginal: $loadOriginal, showExifSheet: $showExifSheet}';
+    return 'ImageViewerRouteArgs{key: $key, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, loadPreview: $loadPreview, loadOriginal: $loadOriginal, showExifSheet: $showExifSheet}';
   }
 }
 
@@ -490,7 +484,7 @@ class SelectUserForSharingRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [AlbumViewerPage]
 class AlbumViewerRoute extends PageRouteInfo<AlbumViewerRouteArgs> {
-  AlbumViewerRoute({Key? key, required String albumId})
+  AlbumViewerRoute({Key? key, required int albumId})
       : super(AlbumViewerRoute.name,
             path: '/album-viewer-page',
             args: AlbumViewerRouteArgs(key: key, albumId: albumId));
@@ -503,7 +497,7 @@ class AlbumViewerRouteArgs {
 
   final Key? key;
 
-  final String albumId;
+  final int albumId;
 
   @override
   String toString() {
@@ -515,8 +509,7 @@ class AlbumViewerRouteArgs {
 /// [SelectAdditionalUserForSharingPage]
 class SelectAdditionalUserForSharingRoute
     extends PageRouteInfo<SelectAdditionalUserForSharingRouteArgs> {
-  SelectAdditionalUserForSharingRoute(
-      {Key? key, required AlbumResponseDto albumInfo})
+  SelectAdditionalUserForSharingRoute({Key? key, required Album albumInfo})
       : super(SelectAdditionalUserForSharingRoute.name,
             path: '/select-additional-user-for-sharing-page',
             args: SelectAdditionalUserForSharingRouteArgs(
@@ -531,7 +524,7 @@ class SelectAdditionalUserForSharingRouteArgs {
 
   final Key? key;
 
-  final AlbumResponseDto albumInfo;
+  final Album albumInfo;
 
   @override
   String toString() {

@@ -1,12 +1,9 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class AlbumThumbnailCard extends StatelessWidget {
   const AlbumThumbnailCard({
@@ -14,11 +11,10 @@ class AlbumThumbnailCard extends StatelessWidget {
     required this.album,
   }) : super(key: key);
 
-  final AlbumResponseDto album;
+  final Album album;
 
   @override
   Widget build(BuildContext context) {
-    var box = Hive.box(userInfoBox);
     var cardSize = MediaQuery.of(context).size.width / 2 - 18;
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
@@ -38,17 +34,10 @@ class AlbumThumbnailCard extends StatelessWidget {
     }
 
     buildAlbumThumbnail() {
-      return CachedNetworkImage(
+      return ImmichImage(
+        album.albumThumbnailAsset.value!,
         width: cardSize,
         height: cardSize,
-        fit: BoxFit.cover,
-        fadeInDuration: const Duration(milliseconds: 200),
-        imageUrl: getAlbumThumbnailUrl(
-          album,
-          type: ThumbnailFormat.JPEG,
-        ),
-        httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-        cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
       );
     }
 
@@ -63,7 +52,7 @@ class AlbumThumbnailCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: album.albumThumbnailAssetId == null
+              child: album.albumThumbnailAsset.value == null
                   ? buildEmptyThumbnail()
                   : buildAlbumThumbnail(),
             ),
@@ -72,7 +61,7 @@ class AlbumThumbnailCard extends StatelessWidget {
               child: SizedBox(
                 width: cardSize,
                 child: Text(
-                  album.albumName,
+                  album.name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                   ),

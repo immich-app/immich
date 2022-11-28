@@ -11,7 +11,7 @@ import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
-import 'package:immich_mobile/modules/home/services/asset.service.dart';
+import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -58,14 +58,9 @@ class GalleryViewerPage extends HookConsumerWidget {
     );
 
     getAssetExif() async {
-      if (assetList[indexOfAsset.value].isRemote) {
-        assetDetail = await ref
-            .watch(assetServiceProvider)
-            .getAssetById(assetList[indexOfAsset.value].id);
-      } else {
-        // TODO local exif parsing?
-        assetDetail = assetList[indexOfAsset.value];
-      }
+      assetDetail = await ref
+          .watch(assetServiceProvider)
+          .loadExif(assetList[indexOfAsset.value]);
     }
 
     void showInfo() {
@@ -134,7 +129,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             ? null
             : () {
                 ref.watch(imageViewerStateProvider.notifier).downloadAsset(
-                      assetList[indexOfAsset.value].remote!,
+                      assetList[indexOfAsset.value],
                       context,
                     );
               },
@@ -180,7 +175,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                   isZoomedFunction: isZoomedMethod,
                   isZoomedListener: isZoomedListener,
                   asset: assetList[index],
-                  heroTag: assetList[index].id,
                   loadPreview: isLoadPreview.value,
                   loadOriginal: isLoadOriginal.value,
                   showExifSheet: showInfo,

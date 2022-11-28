@@ -46,7 +46,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
-    tags: entity.tags?.map(mapTag),
+    tags: entity.tags? entity.tags.map(mapTag) : [],
   };
 }
 

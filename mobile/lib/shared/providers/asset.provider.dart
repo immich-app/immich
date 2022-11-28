@@ -1,19 +1,20 @@
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/home/services/asset.service.dart';
-import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:collection/collection.dart';
-import 'package:immich_mobile/utils/tuple.dart';
+import 'package:immich_mobile/shared/services/user.service.dart';
 import 'package:intl/intl.dart';
+import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -36,7 +37,7 @@ class AssetsState {
     return AssetsState([...allAssets, ...toAdd]);
   }
 
-  _groupByDate() async {
+  Future<Map<String, List<Asset>>> _groupByDate() async {
     sortCompare(List<Asset> assets) {
       assets.sortByCompare<DateTime>(
         (e) => e.createdAt,
@@ -50,27 +51,21 @@ class AssetsState {
     return await compute(sortCompare, allAssets.toList());
   }
 
-  static fromAssetList(List<Asset> assets) {
+  static AssetsState fromAssetList(List<Asset> assets) {
     return AssetsState(assets);
   }
 
-  static empty() {
+  static AssetsState empty() {
     return AssetsState([]);
   }
 }
 
-class _CombineAssetsComputeParameters {
-  final Iterable<Asset> local;
-  final Iterable<Asset> remote;
-  final String deviceId;
-
-  _CombineAssetsComputeParameters(this.local, this.remote, this.deviceId);
-}
-
 class AssetNotifier extends StateNotifier<AssetsState> {
   final AssetService _assetService;
-  final AssetCacheService _assetCacheService;
   final AppSettingsService _settingsService;
+  final UserService _userService;
+  final AlbumService _albumService;
+  final Isar _db;
   final log = Logger('AssetNotifier');
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
   bool _getAllAssetInProgress = false;
@@ -78,19 +73,38 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
   AssetNotifier(
     this._assetService,
-    this._assetCacheService,
     this._settingsService,
+    this._userService,
+    this._albumService,
+    this._db,
   ) : super(AssetsState.fromAssetList([]));
 
-  _updateAssetsState(List<Asset> newAssetList, {bool cache = true}) async {
-    if (cache) {
-      _assetCacheService.put(newAssetList);
-    }
-
+  Future<void> _updateAssetsState(List<Asset> newAssetList) async {
     state =
         await AssetsState.fromAssetList(newAssetList).withRenderDataStructure(
       _settingsService.getSetting(AppSettingsEnum.tilesPerRow),
     );
+  }
+
+  Future<void> _fetchAllUsers() async {
+    final dtos = await _userService.getAllUsersInfo(isAll: true);
+    if (dtos == null) {
+      return;
+    }
+    final HashSet<String> existingUsers = HashSet.from(
+      await _db.users.where().idProperty().findAll(),
+    );
+    final HashSet<String> currentUsers = HashSet.from(
+      dtos.map((e) => e.id),
+    );
+    final List<String> deletedUsers =
+        existingUsers.difference(currentUsers).toList(growable: false);
+    final users = dtos.map((e) => User.fromDto(e)).toList(growable: false);
+    await _db.writeTxn(() async {
+      // note: cannot clearAll and putAll because this invalidates the links from Asset/Ablum to User
+      await _db.users.deleteAllById(deletedUsers);
+      await _db.users.putAll(users);
+    });
   }
 
   getAllAsset() async {
@@ -101,108 +115,76 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     final stopwatch = Stopwatch();
     try {
       _getAllAssetInProgress = true;
-      final bool isCacheValid = await _assetCacheService.isValid();
+      // await clearAllAsset();
+      await _fetchAllUsers();
+      final User? me = await _userService.getLoggedInUser();
+      final int cachedCount =
+          await _db.assets.filter().ownerIdEqualTo(me!.id).count();
       stopwatch.start();
-      final Box box = Hive.box(userInfoBox);
-      final localTask = _assetService.getLocalAssets(urgent: !isCacheValid);
-      final remoteTask = _assetService.getRemoteAssets(
-        etag: isCacheValid ? box.get(assetEtagKey) : null,
-      );
-      if (isCacheValid && state.allAssets.isEmpty) {
-        await _updateAssetsState(await _assetCacheService.get(), cache: false);
+      // final bool isCacheValid = await _assetCacheService.isValid();
+      if (cachedCount > 0 && state.allAssets.isEmpty ||
+          cachedCount != state.allAssets.length) {
+        await _updateAssetsState(
+          await _db.assets.filter().ownerIdEqualTo(me.id).findAll(),
+        );
         log.info(
           "Reading assets ${state.allAssets.length} from cache: ${stopwatch.elapsedMilliseconds}ms",
         );
         stopwatch.reset();
       }
-
-      int remoteBegin = state.allAssets.indexWhere((a) => a.isRemote);
-      remoteBegin = remoteBegin == -1 ? state.allAssets.length : remoteBegin;
-
-      final List<Asset> currentLocal = state.allAssets.slice(0, remoteBegin);
-
-      final Pair<List<Asset>?, String?> remoteResult = await remoteTask;
-      List<Asset>? newRemote = remoteResult.first;
-      List<Asset>? newLocal = await localTask;
+      final bool newRemote = await _assetService.fetchRemoteAssets();
+      final bool newLocal = await _albumService.refreshDeviceAlbums();
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
       stopwatch.reset();
-      if (newRemote == null &&
-          (newLocal == null || currentLocal.equals(newLocal))) {
+      if (!newRemote && !newLocal) {
         log.info("state is already up-to-date");
         return;
       }
-      newRemote ??= state.allAssets.slice(remoteBegin);
-      newLocal ??= [];
-
-      final combinedAssets = await _combineLocalAndRemoteAssets(
-        local: newLocal,
-        remote: newRemote,
-      );
-      await _updateAssetsState(combinedAssets);
-
-      log.info("Combining assets: ${stopwatch.elapsedMilliseconds}ms");
-
-      box.put(assetEtagKey, remoteResult.second);
+      stopwatch.reset();
+      final assets = await _db.assets.filter().ownerIdEqualTo(me.id).findAll();
+      log.info("setting new asset state");
+      await _updateAssetsState(assets);
     } finally {
       _getAllAssetInProgress = false;
     }
   }
 
-  static Future<List<Asset>> _computeCombine(
-    _CombineAssetsComputeParameters data,
-  ) async {
-    var local = data.local;
-    var remote = data.remote;
-    final deviceId = data.deviceId;
-
-    final List<Asset> assets = [];
-    if (remote.isNotEmpty && local.isNotEmpty) {
-      final Set<String> existingIds = remote
-          .where((e) => e.deviceId == deviceId)
-          .map((e) => e.deviceAssetId)
-          .toSet();
-      local = local.where((e) => !existingIds.contains(e.id));
-    }
-    assets.addAll(local);
-    // the order (first all local, then remote assets) is important!
-    assets.addAll(remote);
-    return assets;
+  Future<void> clearAllAsset() {
+    state = AssetsState.empty();
+    return _db.writeTxn(() async => _db.assets.clear());
   }
 
-  Future<List<Asset>> _combineLocalAndRemoteAssets({
-    required Iterable<Asset> local,
-    required List<Asset> remote,
-  }) async {
-    final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
-    return await compute(
-      _computeCombine,
-      _CombineAssetsComputeParameters(local, remote, deviceId),
-    );
-  }
-
-  clearAllAsset() {
-    _updateAssetsState([]);
-  }
-
-  onNewAssetUploaded(AssetResponseDto newAsset) {
+  Future<void> onNewAssetUploaded(AssetResponseDto newAsset) async {
     final int i = state.allAssets.indexWhere(
       (a) =>
           a.isRemote ||
-          (a.id == newAsset.deviceAssetId && a.deviceId == newAsset.deviceId),
+          (a.localId == newAsset.deviceAssetId.asLocalId &&
+              a.deviceId == newAsset.deviceId),
     );
 
-    if (i == -1 || state.allAssets[i].deviceAssetId != newAsset.deviceAssetId) {
-      _updateAssetsState([...state.allAssets, Asset.remote(newAsset)]);
+    final Asset a = Asset.remote(newAsset);
+    if (i == -1 ||
+        state.allAssets[i].deviceAssetId != newAsset.deviceAssetId ||
+        state.allAssets[i].deviceId != newAsset.deviceId) {
+      await _updateAssetsState([...state.allAssets, a]);
     } else {
       // order is important to keep all local-only assets at the beginning!
-      _updateAssetsState([
+      await _updateAssetsState([
         ...state.allAssets.slice(0, i),
         ...state.allAssets.slice(i + 1),
-        Asset.remote(newAsset),
+        a,
       ]);
-      // TODO here is a place to unify local/remote assets by replacing the
-      // local-only asset in the state with a local&remote asset
+
+      // unify local/remote assets by replacing the
+      // local-only asset in the DB with a local&remote asset
+      final Asset? inDb =
+          await _db.assets.where().localIdEqualTo(a.localId).findFirst();
+      if (inDb != null) {
+        a.id = inDb.id;
+        a.localId = inDb.localId;
+      }
     }
+    return _db.writeTxn(() => _db.assets.put(a));
   }
 
   deleteAssets(Set<Asset> deleteAssets) async {
@@ -210,27 +192,35 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     try {
       final localDeleted = await _deleteLocalAssets(deleteAssets);
       final remoteDeleted = await _deleteRemoteAssets(deleteAssets);
-      final Set<String> deleted = HashSet();
+      final Set<Object> deleted = HashSet();
       deleted.addAll(localDeleted);
       deleted.addAll(remoteDeleted);
       if (deleted.isNotEmpty) {
-        _updateAssetsState(
-          state.allAssets.where((a) => !deleted.contains(a.id)).toList(),
+        await _updateAssetsState(
+          state.allAssets
+              .where(
+                (a) => !deleted.contains(a.isLocal ? a.localId! : a.remoteId!),
+              )
+              .toList(),
         );
+        await _db.writeTxn(() async {
+          await _db.assets.deleteAllByLocalId(localDeleted);
+          await _db.assets.deleteAllByRemoteId(remoteDeleted);
+        });
       }
     } finally {
       _deleteInProgress = false;
     }
   }
 
-  Future<List<String>> _deleteLocalAssets(Set<Asset> assetsToDelete) async {
+  Future<List<LocalId>> _deleteLocalAssets(Set<Asset> assetsToDelete) async {
     var deviceInfo = await _deviceInfoService.getDeviceInfo();
     var deviceId = deviceInfo["deviceId"];
     final List<String> local = [];
     // Delete asset from device
     for (final Asset asset in assetsToDelete) {
       if (asset.isLocal) {
-        local.add(asset.id);
+        local.add(asset.localId!.toString());
       } else if (asset.deviceId == deviceId) {
         // Delete asset on device if it is still present
         var localAsset = await AssetEntity.fromId(asset.deviceAssetId);
@@ -241,7 +231,9 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     }
     if (local.isNotEmpty) {
       try {
-        return await PhotoManager.editor.deleteWithIds(local);
+        return (await PhotoManager.editor.deleteWithIds(local))
+            .map((e) => e.asLocalId)
+            .toList();
       } catch (e, stack) {
         log.severe("Failed to delete asset from device", e, stack);
       }
@@ -249,24 +241,26 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     return [];
   }
 
-  Future<Iterable<String>> _deleteRemoteAssets(
+  Future<List<String>> _deleteRemoteAssets(
     Set<Asset> assetsToDelete,
   ) async {
-    final Iterable<AssetResponseDto> remote =
-        assetsToDelete.where((e) => e.isRemote).map((e) => e.remote!);
+    final Iterable<Asset> remote = assetsToDelete.where((e) => e.isRemote);
     final List<DeleteAssetResponseDto> deleteAssetResult =
         await _assetService.deleteAssets(remote) ?? [];
     return deleteAssetResult
         .where((a) => a.status == DeleteAssetStatus.SUCCESS)
-        .map((a) => a.id);
+        .map((a) => a.id)
+        .toList(growable: false);
   }
 }
 
 final assetProvider = StateNotifierProvider<AssetNotifier, AssetsState>((ref) {
   return AssetNotifier(
     ref.watch(assetServiceProvider),
-    ref.watch(assetCacheServiceProvider),
     ref.watch(appSettingsServiceProvider),
+    ref.watch(userServiceProvider),
+    ref.watch(albumServiceProvider),
+    ref.watch(dbProvider),
   );
 });
 

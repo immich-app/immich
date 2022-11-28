@@ -114,6 +114,7 @@
   "home_page_first_time_notice": "If this is your first time using the app, please make sure to choose a backup album(s) so that the timeline can populate photos and videos in the album(s).",
   "library_page_albums": "Albums",
   "library_page_new_album": "New album",
+  "library_page_device_albums": "Device Albums",
   "login_form_button_text": "Login",
   "login_form_email_hint": "youremail@email.com",
   "login_form_endpoint_hint": "http://your-server-ip:port/api",

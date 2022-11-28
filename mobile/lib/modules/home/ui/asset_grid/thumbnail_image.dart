@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
@@ -31,8 +30,6 @@ class ThumbnailImage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var deviceId = ref.watch(authenticationProvider).deviceId;
-
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
         return Icon(
@@ -102,7 +99,7 @@ class ThumbnailImage extends HookConsumerWidget {
                 bottom: 5,
                 child: Icon(
                   asset.isRemote
-                      ? (deviceId == asset.deviceId
+                      ? (asset.isLocal
                           ? Icons.cloud_done_outlined
                           : Icons.cloud_outlined)
                       : Icons.cloud_off_outlined,

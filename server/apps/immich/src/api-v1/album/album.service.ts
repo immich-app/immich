@@ -83,7 +83,7 @@ export class AlbumService {
       await this._checkValidThumbnail(album);
     }
 
-    return albums.map((album) => mapAlbumExcludeAssetInfo(album));
+    return albums.map(getAlbumsDto.details ? mapAlbum : mapAlbumExcludeAssetInfo);
   }
 
   async getAlbumInfo(authUser: AuthUserDto, albumId: string): Promise<AlbumResponseDto> {

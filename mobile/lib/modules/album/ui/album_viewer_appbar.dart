@@ -9,21 +9,19 @@ import 'package:immich_mobile/modules/album/providers/asset_selection.provider.d
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
-import 'package:openapi/api.dart';
 
 class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
   const AlbumViewerAppbar({
     Key? key,
     required this.albumInfo,
     required this.userId,
-    required this.albumId,
   }) : super(key: key);
 
-  final AlbumResponseDto albumInfo;
+  final Album albumInfo;
   final String userId;
-  final String albumId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,7 +32,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
     final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
 
-    void onDeleteAlbumPressed(String albumId) async {
+    void onDeleteAlbumPressed(Album albumId) async {
       ImmichLoadingOverlayController.appLoader.show();
 
       bool isSuccess =
@@ -62,7 +60,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       ImmichLoadingOverlayController.appLoader.hide();
     }
 
-    void onLeaveAlbumPressed(String albumId) async {
+    void onLeaveAlbumPressed(Album albumId) async {
       ImmichLoadingOverlayController.appLoader.show();
 
       bool isSuccess =
@@ -84,20 +82,20 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       ImmichLoadingOverlayController.appLoader.hide();
     }
 
-    void onRemoveFromAlbumPressed(String albumId) async {
+    void onRemoveFromAlbumPressed(Album albumId) async {
       ImmichLoadingOverlayController.appLoader.show();
 
       bool isSuccess =
           await ref.watch(sharedAlbumProvider.notifier).removeAssetFromAlbum(
-                albumId,
-                selectedAssetsInAlbum.map((a) => a.id).toList(),
+                albumInfo,
+                selectedAssetsInAlbum,
               );
 
       if (isSuccess) {
         Navigator.pop(context);
         ref.watch(assetSelectionProvider.notifier).disableMultiselection();
         ref.watch(albumProvider.notifier).getAllAlbums();
-        ref.invalidate(sharedAlbumDetailProvider(albumId));
+        ref.invalidate(sharedAlbumDetailProvider(albumInfo.id));
       } else {
         Navigator.pop(context);
         ImmichToast.show(
@@ -113,27 +111,27 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
 
     buildBottomSheetActionButton() {
       if (isMultiSelectionEnable) {
-        if (albumInfo.ownerId == userId) {
+        if (albumInfo.owner.value!.id == userId) {
           return ListTile(
             leading: const Icon(Icons.delete_sweep_rounded),
             title: const Text(
               'album_viewer_appbar_share_remove',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
-            onTap: () => onRemoveFromAlbumPressed(albumId),
+            onTap: () => onRemoveFromAlbumPressed(albumInfo),
           );
         } else {
           return const SizedBox();
         }
       } else {
-        if (albumInfo.ownerId == userId) {
+        if (albumInfo.owner.value!.id == userId) {
           return ListTile(
             leading: const Icon(Icons.delete_forever_rounded),
             title: const Text(
               'album_viewer_appbar_share_delete',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
-            onTap: () => onDeleteAlbumPressed(albumId),
+            onTap: () => onDeleteAlbumPressed(albumInfo),
           );
         } else {
           return ListTile(
@@ -142,7 +140,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
               'album_viewer_appbar_share_leave',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
-            onTap: () => onLeaveAlbumPressed(albumId),
+            onTap: () => onLeaveAlbumPressed(albumInfo),
           );
         }
       }
@@ -180,7 +178,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           onPressed: () async {
             bool isSuccess = await ref
                 .watch(albumViewerProvider.notifier)
-                .changeAlbumTitle(albumId, userId, newAlbumTitle);
+                .changeAlbumTitle(albumInfo, newAlbumTitle);
 
             if (!isSuccess) {
               ImmichToast.show(
@@ -211,11 +209,12 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           : null,
       centerTitle: false,
       actions: [
-        IconButton(
-          splashRadius: 25,
-          onPressed: buildBottomSheet,
-          icon: const Icon(Icons.more_horiz_rounded),
-        ),
+        if (!albumInfo.isLocal)
+          IconButton(
+            splashRadius: 25,
+            onPressed: buildBottomSheet,
+            icon: const Icon(Icons.more_horiz_rounded),
+          ),
       ],
     );
   }

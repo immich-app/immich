@@ -19,4 +19,20 @@ export class GetAlbumsDto {
    * undefined: get all albums
    */
   assetId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value == 'true') {
+      return true;
+    } else if (value == 'false') {
+      return false;
+    }
+    return value;
+  })
+  /**
+   * true: also return assets of each album
+   * false: leave out assets in response
+   */
+  details?: boolean;
 }

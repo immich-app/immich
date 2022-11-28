@@ -35,7 +35,7 @@ class ImmichTestHelper {
     await Hive.deleteFromDisk();
     await app.openBoxes();
     // Load main Widget
-    await tester.pumpWidget(app.getMainWidget());
+    await tester.pumpWidget(app.getMainWidget(await app.loadDb()));
     // Post run tasks
     await tester.pumpAndSettle();
     await EasyLocalization.ensureInitialized();

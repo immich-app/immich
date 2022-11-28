@@ -4,8 +4,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
-import 'package:openapi/api.dart';
-import 'package:path/path.dart' as p;
 import 'package:latlong2/latlong.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 
@@ -68,7 +66,7 @@ class ExifBottomSheet extends HookConsumerWidget {
 
     final textColor = Theme.of(context).primaryColor;
 
-    ExifResponseDto? exifInfo = assetDetail.remote?.exifInfo;
+    ExifInfo? exifInfo = assetDetail.exifInfo;
 
     buildLocationText() {
       return Text(
@@ -101,16 +99,15 @@ class ExifBottomSheet extends HookConsumerWidget {
                 child: CustomDraggingHandle(),
               ),
               const SizedBox(height: 12),
-              if (exifInfo?.dateTimeOriginal != null)
-                Text(
-                  DateFormat('date_format'.tr()).format(
-                    exifInfo!.dateTimeOriginal!.toLocal(),
-                  ),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+              Text(
+                DateFormat('date_format'.tr()).format(
+                  assetDetail.createdAt.toLocal(),
                 ),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
 
               // Location
               if (assetDetail.latitude != null)
@@ -163,15 +160,15 @@ class ExifBottomSheet extends HookConsumerWidget {
                         dense: true,
                         leading: const Icon(Icons.image),
                         title: Text(
-                          "${exifInfo.imageName!}${p.extension(assetDetail.remote!.originalPath)}",
+                          "${assetDetail.name}${assetDetail.originalExtension}",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: textColor,
                           ),
                         ),
-                        subtitle: exifInfo.exifImageHeight != null
+                        subtitle: exifInfo.fileSize != null
                             ? Text(
-                                "${exifInfo.exifImageHeight} x ${exifInfo.exifImageWidth}  ${formatBytes(exifInfo.fileSizeInByte ?? 0)} ",
+                                "${assetDetail.height} x ${assetDetail.width}  ${formatBytes(exifInfo.fileSize!)} ",
                               )
                             : null,
                       ),

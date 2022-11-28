@@ -1,16 +1,22 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/album/services/album_cache.service.dart';
-import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
+import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/value.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
+import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
@@ -18,9 +24,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     this._deviceInfoService,
     this._backupService,
     this._apiService,
-    this._assetCacheService,
-    this._albumCacheService,
-    this._sharedAlbumCacheService,
+    this._db,
   ) : super(
           AuthenticationState(
             deviceId: "",
@@ -47,9 +51,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   final DeviceInfoService _deviceInfoService;
   final BackupService _backupService;
   final ApiService _apiService;
-  final AssetCacheService _assetCacheService;
-  final AlbumCacheService _albumCacheService;
-  final SharedAlbumCacheService _sharedAlbumCacheService;
+  final Isar _db;
 
   Future<bool> login(
     String email,
@@ -97,10 +99,13 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     await Future.wait([
       Hive.box(userInfoBox).delete(accessTokenKey),
       Hive.box(userInfoBox).delete(assetEtagKey),
-      _assetCacheService.invalidate(),
-      _albumCacheService.invalidate(),
-      _sharedAlbumCacheService.invalidate(),
     ]);
+    await _db.writeTxn(() async {
+      await _db.assets.clear();
+      await _db.albums.clear();
+      await _db.users.clear();
+      await _db.values.clear();
+    });
 
     // Remove login info from local storage
     var loginInfo =
@@ -159,23 +164,45 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     required bool isSavedLoginInfo,
   }) async {
     _apiService.setAccessToken(accessToken);
-    var userResponseDto = await _apiService.userApi.getMyUserInfo();
+    final Id loggedInUserId = await _db.values.getInt(DbKey.loggedInUser);
+    final User? loggedInUser = await _db.users.get(loggedInUserId);
+    User? user;
+    bool shouldChangePassword = false;
+    try {
+      final dto = await _apiService.userApi.getMyUserInfo();
+      user = dto == null ? null : User.fromDto(dto);
+      shouldChangePassword = dto?.shouldChangePassword ?? false;
+    } catch (e) {
+      if (e is ApiException &&
+          e.code == HttpStatus.badRequest &&
+          e.innerException is SocketException) {
+        // offline? use cached info
+        user = loggedInUser;
+      }
+    }
 
-    if (userResponseDto != null) {
-      var userInfoHiveBox = await Hive.openBox(userInfoBox);
+    if (user != null) {
+      if (user != loggedInUser) {
+        await _db.writeTxn(() async {
+          await _db.users.put(user!);
+          await _db.values.setInt(DbKey.loggedInUser, user.isarId);
+        });
+      }
       var deviceInfo = await _deviceInfoService.getDeviceInfo();
-      userInfoHiveBox.put(deviceIdKey, deviceInfo["deviceId"]);
-      userInfoHiveBox.put(accessTokenKey, accessToken);
+      final box = await Hive.openBox(userInfoBox);
+      box.put(deviceIdKey, deviceInfo["deviceId"]);
+      box.put(accessTokenKey, accessToken);
+      box.put(serverEndpointKey, serverUrl);
 
       state = state.copyWith(
         isAuthenticated: true,
-        userId: userResponseDto.id,
-        userEmail: userResponseDto.email,
-        firstName: userResponseDto.firstName,
-        lastName: userResponseDto.lastName,
-        profileImagePath: userResponseDto.profileImagePath,
-        isAdmin: userResponseDto.isAdmin,
-        shouldChangePassword: userResponseDto.shouldChangePassword,
+        userId: user.id,
+        userEmail: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImagePath: user.profileImagePath,
+        isAdmin: user.isAdmin,
+        shouldChangePassword: shouldChangePassword,
         deviceId: deviceInfo["deviceId"],
         deviceType: deviceInfo["deviceType"],
       );
@@ -196,12 +223,14 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
             .delete(savedLoginInfoKey);
       }
+    } else {
+      return false;
     }
 
     // Register device info
+    DeviceInfoResponseDto? deviceInfo;
     try {
-      DeviceInfoResponseDto? deviceInfo =
-          await _apiService.deviceInfoApi.upsertDeviceInfo(
+      deviceInfo = await _apiService.deviceInfoApi.upsertDeviceInfo(
         UpsertDeviceInfoDto(
           deviceId: state.deviceId,
           deviceType: state.deviceType,
@@ -212,12 +241,21 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         debugPrint('Device Info Response is null');
         return false;
       }
-
-      state = state.copyWith(deviceInfo: deviceInfo);
+      final json = deviceInfo.toJson();
+      await _db.writeTxn(() => _db.values.setJson(DbKey.deviceInfo, json));
     } catch (e) {
-      debugPrint("ERROR Register Device Info: $e");
-      return false;
+      if (e is ApiException &&
+          e.code == HttpStatus.badRequest &&
+          e.innerException is SocketException) {
+        // offline? use cached info
+        deviceInfo = await _db.values.getJson(DbKey.deviceInfo);
+      }
+      if (deviceInfo == null) {
+        debugPrint("ERROR Register Device Info: $e");
+        return false;
+      }
     }
+    state = state.copyWith(deviceInfo: deviceInfo);
 
     return true;
   }
@@ -229,8 +267,6 @@ final authenticationProvider =
     ref.watch(deviceInfoServiceProvider),
     ref.watch(backupServiceProvider),
     ref.watch(apiServiceProvider),
-    ref.watch(assetCacheServiceProvider),
-    ref.watch(albumCacheServiceProvider),
-    ref.watch(sharedAlbumCacheServiceProvider),
+    ref.watch(dbProvider),
   );
 });

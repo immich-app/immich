@@ -8,6 +8,7 @@ export class AlbumResponseDto {
   ownerId!: string;
   albumName!: string;
   createdAt!: string;
+  modifiedAt!: string;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
   sharedUsers!: UserResponseDto[];
@@ -30,6 +31,7 @@ export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
     albumName: entity.albumName,
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
     createdAt: entity.createdAt,
+    modifiedAt: entity.modifiedAt,
     id: entity.id,
     ownerId: entity.ownerId,
     sharedUsers,
@@ -52,6 +54,7 @@ export function mapAlbumExcludeAssetInfo(entity: AlbumEntity): AlbumResponseDto 
     albumName: entity.albumName,
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
     createdAt: entity.createdAt,
+    modifiedAt: entity.modifiedAt,
     id: entity.id,
     ownerId: entity.ownerId,
     sharedUsers,

@@ -114,8 +114,8 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     }
 
     _thumbnailProvider = _authorizedImageProvider(
-      getThumbnailUrl(widget.asset.remote!),
-      getThumbnailCacheKey(widget.asset.remote!),
+      getThumbnailUrl(widget.asset),
+      getThumbnailCacheKey(widget.asset),
     );
     _imageProvider = _thumbnailProvider;
 
@@ -130,8 +130,8 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
     if (widget.loadPreview) {
       _previewProvider = _authorizedImageProvider(
-        getThumbnailUrl(widget.asset.remote!, type: ThumbnailFormat.JPEG),
-        getThumbnailCacheKey(widget.asset.remote!, type: ThumbnailFormat.JPEG),
+        getThumbnailUrl(widget.asset, type: ThumbnailFormat.JPEG),
+        getThumbnailCacheKey(widget.asset, type: ThumbnailFormat.JPEG),
       );
       _previewProvider.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((ImageInfo imageInfo, _) {
@@ -142,8 +142,8 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
     if (widget.loadOriginal) {
       _fullProvider = _authorizedImageProvider(
-        getImageUrl(widget.asset.remote!),
-        getImageCacheKey(widget.asset.remote!),
+        getImageUrl(widget.asset),
+        getImageCacheKey(widget.asset),
       );
       _fullProvider.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((ImageInfo imageInfo, _) {

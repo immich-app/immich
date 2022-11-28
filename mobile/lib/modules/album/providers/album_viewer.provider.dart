@@ -2,6 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/models/album_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 
 class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   AlbumViewerNotifier(this.ref)
@@ -30,14 +31,12 @@ class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   }
 
   Future<bool> changeAlbumTitle(
-    String albumId,
-    String ownerId,
+    Album album,
     String newAlbumTitle,
   ) async {
     AlbumService service = ref.watch(albumServiceProvider);
 
-    bool isSuccess =
-        await service.changeTitleAlbum(albumId, ownerId, newAlbumTitle);
+    bool isSuccess = await service.changeTitleAlbum(album, newAlbumTitle);
 
     if (isSuccess) {
       state = state.copyWith(editTitleText: "", isEditAlbum: false);

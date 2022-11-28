@@ -100,7 +100,30 @@ class LibraryPage extends HookConsumerWidget {
                 spacing: 12,
                 children: [
                   buildCreateAlbumButton(),
-                  for (var album in albums)
+                  for (final album in albums.where((a) => !a.isLocal))
+                    AlbumThumbnailCard(
+                      album: album,
+                    ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: const Text(
+                'library_page_device_albums',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ).tr(),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.only(left: 12.0, right: 12, bottom: 50),
+            sliver: SliverToBoxAdapter(
+              child: Wrap(
+                spacing: 12,
+                children: [
+                  for (final album in albums.where((a) => a.isLocal))
                     AlbumThumbnailCard(
                       album: album,
                     ),

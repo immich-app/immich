@@ -1,58 +1,60 @@
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/modules/album/services/album_cache.service.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/shared/services/user.service.dart';
+import 'package:isar/isar.dart';
 
-class AlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
-  AlbumNotifier(this._albumService, this._albumCacheService) : super([]);
+class AlbumNotifier extends StateNotifier<List<Album>> {
+  AlbumNotifier(this._albumService, this._userService, this._db) : super([]);
   final AlbumService _albumService;
-  final AlbumCacheService _albumCacheService;
+  final UserService _userService;
+  final Isar _db;
 
-  _cacheState() {
-    _albumCacheService.put(state);
-  }
-
-  getAllAlbums() async {
-    if (await _albumCacheService.isValid() && state.isEmpty) {
-      state = await _albumCacheService.get();
+  Future<void> getAllAlbums() async {
+    if (state.isEmpty && 0 < await _db.albums.count()) {
+      state = await _db.albums.where().findAll();
     }
-
-    List<AlbumResponseDto>? albums =
-        await _albumService.getAlbums(isShared: false);
-
-    if (albums != null) {
+    await Future.wait([
+      _albumService.refreshDeviceAlbums(),
+      _albumService.refreshRemoteAlbums(isShared: false),
+    ]);
+    final User? me = await _userService.getLoggedInUser();
+    final albums = await _db.albums
+        .filter()
+        .owner((q) => q.isarIdEqualTo(me!.isarId))
+        .findAll();
+    if (!const ListEquality().equals(albums, state)) {
       state = albums;
-      _cacheState();
     }
   }
 
-  deleteAlbum(String albumId) {
-    state = state.where((album) => album.id != albumId).toList();
-    _cacheState();
+  Future<void> deleteAlbum(Album album) async {
+    _albumService.deleteAlbum(album);
+    state = state.where((album) => album.id != album.id).toList();
   }
 
-  Future<AlbumResponseDto?> createAlbum(
+  Future<Album?> createAlbum(
     String albumTitle,
     Set<Asset> assets,
   ) async {
-    AlbumResponseDto? album =
-        await _albumService.createAlbum(albumTitle, assets, []);
+    Album? album = await _albumService.createAlbum(albumTitle, assets, []);
 
     if (album != null) {
       state = [...state, album];
-      _cacheState();
-
       return album;
     }
     return null;
   }
 }
 
-final albumProvider =
-    StateNotifierProvider<AlbumNotifier, List<AlbumResponseDto>>((ref) {
+final albumProvider = StateNotifierProvider<AlbumNotifier, List<Album>>((ref) {
   return AlbumNotifier(
     ref.watch(albumServiceProvider),
-    ref.watch(albumCacheServiceProvider),
+    ref.watch(userServiceProvider),
+    ref.watch(dbProvider),
   );
 });
