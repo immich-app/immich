@@ -38,7 +38,7 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
       final bool isCacheValid = await _assetCacheService.isValid();
       stopwatch.start();
       final localTask = _assetService.getLocalAssets(urgent: !isCacheValid);
-      final remoteTask = _assetService.getRemoteAssets();
+      final remoteTask = _assetService.getRemoteAssets(hasCache: isCacheValid);
       if (isCacheValid && state.isEmpty) {
         state = await _assetCacheService.get();
         log.info(
