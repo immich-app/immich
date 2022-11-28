@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
 import 'package:logging/logging.dart';
@@ -16,14 +17,12 @@ import 'package:share_plus/share_plus.dart';
 ///
 /// Logs can be shared by calling the `shareLogs` method, which will open a share dialog
 /// and generate a csv file.
-class ImmichLogger {
+class ImmichLogger extends StateNotifier<List<ImmichLoggerMessage>> {
   final maxLogEntries = 200;
   final Box<ImmichLoggerMessage> _box = Hive.box(immichLoggerBox);
 
-  List<ImmichLoggerMessage> get messages =>
-      _box.values.toList().reversed.toList();
-
-  ImmichLogger() {
+  ImmichLogger() : super([]) {
+    debugPrint("INIT LOGGER");
     _removeOverflowMessages();
   }
 
@@ -39,6 +38,8 @@ class ImmichLogger {
         _box.deleteAt(0);
       }
     }
+
+    state = _box.values.toList().reversed.toList();
   }
 
   _writeLogToHiveBox(LogRecord record) {
@@ -56,10 +57,13 @@ class ImmichLogger {
             ?.toString(), // Something more useful here? (e.g. stacktrace - I cannot get it to format nicely though)
       ),
     );
+
+    state = _box.values.toList().reversed.toList();
   }
 
   void clearLogs() {
     _box.clear();
+    state = [];
   }
 
   shareLogs() async {
@@ -70,7 +74,7 @@ class ImmichLogger {
     logFile.writeAsStringSync("created_at,context_1,context_2,message,type\n");
 
     // Write messages
-    for (var message in messages) {
+    for (var message in _box.values.toList().reversed.toList()) {
       logFile.writeAsStringSync(
         "${message.createdAt},${message.context1 ?? ""},${message.context2 ?? ""},${message.message},${message.level.toString()}\n",
         mode: FileMode.append,
@@ -85,3 +89,8 @@ class ImmichLogger {
     );
   }
 }
+
+final immichLoggerProvider =
+    StateNotifierProvider<ImmichLogger, List<ImmichLoggerMessage>>((ref) {
+  return ImmichLogger();
+});

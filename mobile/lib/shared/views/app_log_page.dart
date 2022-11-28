@@ -1,8 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/services/immich_logger.service.dart';
+import 'package:immich_mobile/shared/providers/immich_logger.provider.dart';
 import 'package:intl/intl.dart';
 
 class AppLogPage extends HookConsumerWidget {
@@ -12,8 +11,7 @@ class AppLogPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final immichLogger = ImmichLogger();
-    final logMessages = useState(immichLogger.messages);
+    final logMessages = ref.watch(immichLoggerProvider);
 
     Widget buildLeadingIcon(String level) {
       switch (level) {
@@ -72,7 +70,7 @@ class AppLogPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Logs - ${logMessages.value.length}",
+          "Logs - ${logMessages.length}",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16.0,
@@ -89,8 +87,7 @@ class AppLogPage extends HookConsumerWidget {
               size: 20.0,
             ),
             onPressed: () {
-              immichLogger.clearLogs();
-              logMessages.value = [];
+              ref.watch(immichLoggerProvider.notifier).clearLogs();
             },
           ),
           IconButton(
@@ -101,7 +98,7 @@ class AppLogPage extends HookConsumerWidget {
               size: 20.0,
             ),
             onPressed: () {
-              immichLogger.shareLogs();
+              ref.watch(immichLoggerProvider.notifier).shareLogs();
             },
           ),
         ],
@@ -125,9 +122,9 @@ class AppLogPage extends HookConsumerWidget {
                 : Colors.grey[500],
           );
         },
-        itemCount: logMessages.value.length,
+        itemCount: logMessages.length,
         itemBuilder: (context, index) {
-          var logMessage = logMessages.value[index];
+          var logMessage = logMessages[index];
           return ListTile(
             visualDensity: VisualDensity.compact,
             dense: true,
