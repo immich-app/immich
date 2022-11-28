@@ -52,8 +52,7 @@ class ImmichLogger {
         level: record.level.name,
         createdAt: record.time,
         context1: record.loggerName,
-        context2: record.stackTrace
-            ?.toString(), // Something more useful here? (e.g. stacktrace - I cannot get it to format nicely though)
+        context2: record.stackTrace?.toString(),
       ),
     );
   }
@@ -62,26 +61,35 @@ class ImmichLogger {
     _box.clear();
   }
 
-  shareLogs() async {
-    var tempDir = await getTemporaryDirectory();
-    var filePath = '${tempDir.path}/${DateTime.now().toIso8601String()}.csv';
-    var logFile = await File(filePath).create();
-    // Write header
-    logFile.writeAsStringSync("created_at,context_1,context_2,message,type\n");
+  Future<void> shareLogs() async {
+    final tempDir = await getTemporaryDirectory();
+    final dateTime = DateTime.now().toIso8601String();
+    final filePath = '${tempDir.path}/Immich_log_$dateTime.csv';
+    final logFile = await File(filePath).create();
+    final io = logFile.openWrite();
+    try {
+      // Write header
+      io.write("created_at,level,context,message,stacktrace\n");
 
-    // Write messages
-    for (var message in messages) {
-      logFile.writeAsStringSync(
-        "${message.createdAt},${message.context1 ?? ""},${message.context2 ?? ""},${message.message},${message.level.toString()}\n",
-        mode: FileMode.append,
-      );
+      // Write messages
+      for (final m in messages) {
+        io.write(
+          '${m.createdAt},${m.level},"${m.context1 ?? ""}","${m.message}","${m.context2 ?? ""}"\n',
+        );
+      }
+    } finally {
+      await io.flush();
+      await io.close();
     }
 
     // Share file
-    Share.shareFiles(
+    await Share.shareFiles(
       [filePath],
-      subject: "Immich logs ${DateTime.now().toIso8601String()}",
+      subject: "Immich logs $dateTime",
       sharePositionOrigin: Rect.zero,
     );
+
+    // Clean up temp file
+    await logFile.delete();
   }
 }
