@@ -60,7 +60,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       var accessToken = Hive.box(userInfoBox).get(accessTokenKey);
       var endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       try {
-        log.info("Attempting to connect to websocket");
+        debugPrint("Attempting to connect to websocket");
         // Configure socket transports must be specified
         Socket socket = io(
           endpoint.toString().replaceAll('/api', ''),
@@ -76,12 +76,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         );
 
         socket.onConnect((_) {
-          log.info("Established Websocket Connection");
+          debugPrint("Established Websocket Connection");
           state = WebsocketState(isConnected: true, socket: socket);
         });
 
         socket.onDisconnect((_) {
-          log.info("Disconnect to Websocket Connection");
+          debugPrint("Disconnect to Websocket Connection");
           state = WebsocketState(isConnected: false, socket: null);
         });
 
@@ -105,7 +105,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   disconnect() {
-    log.info("Attempting to disconnect from websocket");
+    debugPrint("Attempting to disconnect from websocket");
 
     var socket = state.socket?.disconnect();
 
@@ -115,12 +115,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   stopListenToEvent(String eventName) {
-    log.info("Stop listening to event $eventName");
+    debugPrint("Stop listening to event $eventName");
     state.socket?.off(eventName);
   }
 
   listenUploadEvent() {
-    log.info("Start listening to event on_upload_success");
+    debugPrint("Start listening to event on_upload_success");
     state.socket?.on('on_upload_success', (data) {
       var jsonString = jsonDecode(data.toString());
       AssetResponseDto? newAsset = AssetResponseDto.fromJson(jsonString);
