@@ -22,7 +22,6 @@ class ImmichLogger extends StateNotifier<List<ImmichLoggerMessage>> {
   final Box<ImmichLoggerMessage> _box = Hive.box(immichLoggerBox);
 
   ImmichLogger() : super([]) {
-    debugPrint("INIT LOGGER");
     _removeOverflowMessages();
   }
 
