@@ -21,6 +21,9 @@ class ImmichLogger extends StateNotifier<List<ImmichLoggerMessage>> {
   final maxLogEntries = 200;
   final Box<ImmichLoggerMessage> _box = Hive.box(immichLoggerBox);
 
+  List<ImmichLoggerMessage> get messages =>
+      _box.values.toList().reversed.toList();
+
   ImmichLogger() : super([]) {
     _removeOverflowMessages();
   }
@@ -38,7 +41,7 @@ class ImmichLogger extends StateNotifier<List<ImmichLoggerMessage>> {
       }
     }
 
-    state = _box.values.toList().reversed.toList();
+    state = messages;
   }
 
   _writeLogToHiveBox(LogRecord record) {
@@ -57,7 +60,7 @@ class ImmichLogger extends StateNotifier<List<ImmichLoggerMessage>> {
       ),
     );
 
-    state = _box.values.toList().reversed.toList();
+    state = messages;
   }
 
   void clearLogs() {
@@ -73,7 +76,7 @@ class ImmichLogger extends StateNotifier<List<ImmichLoggerMessage>> {
     logFile.writeAsStringSync("created_at,context_1,context_2,message,type\n");
 
     // Write messages
-    for (var message in _box.values.toList().reversed.toList()) {
+    for (var message in messages) {
       logFile.writeAsStringSync(
         "${message.createdAt},${message.context1 ?? ""},${message.context2 ?? ""},${message.message},${message.level.toString()}\n",
         mode: FileMode.append,
