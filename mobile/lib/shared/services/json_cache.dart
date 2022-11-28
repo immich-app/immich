@@ -23,8 +23,12 @@ abstract class JsonCache<T> {
   }
 
   Future<void> invalidate() async {
-    final file = await _getCacheFile();
-    await file.delete();
+    try {
+      final file = await _getCacheFile();
+      await file.delete();
+    } on FileSystemException {
+      // file is already deleted
+    }
   }
 
   Future<void> putRawData(dynamic data) async {

@@ -30,11 +30,11 @@ class AssetService {
   AssetService(this._apiService, this._backupService, this._backgroundService);
 
   /// Returns `null` if the server state did not change, else list of assets
-  Future<List<Asset>?> getRemoteAssets() async {
+  Future<List<Asset>?> getRemoteAssets({required bool hasCache}) async {
     final Box box = Hive.box(userInfoBox);
     final Pair<List<AssetResponseDto>, String?>? remote = await _apiService
         .assetApi
-        .getAllAssetsWithETag(eTag: box.get(assetEtagKey));
+        .getAllAssetsWithETag(eTag: hasCache ? box.get(assetEtagKey) : null);
     if (remote == null) {
       return null;
     }
