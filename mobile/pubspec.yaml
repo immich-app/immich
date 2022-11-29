@@ -73,12 +73,6 @@ flutter:
         - asset: fonts/SnowburstOne.ttf
 
 flutter_icons:
-  web:
-    generate: false
-  windows:
-    generate: false
-  macos:
-    generate: false
 
 analyzer:
   exclude:
