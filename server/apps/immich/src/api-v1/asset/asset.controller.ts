@@ -21,12 +21,12 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { Response as Res } from 'express';
+import { Response as Res} from 'express';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetResponseDto } from './response-dto/asset-response.dto';
@@ -108,7 +108,7 @@ export class AssetController {
   }
 
   @Get('/file/:assetId')
-  @Header('Cache-Control', 'max-age=300')
+  @Header('Cache-Control', 'max-age=3600')
   async serveFile(
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
@@ -119,13 +119,14 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
-  @Header('Cache-Control', 'max-age=300')
+  @Header('Cache-Control', 'max-age=3600')
   async getAssetThumbnail(
+    @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Param('assetId') assetId: string,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ): Promise<any> {
-    return this.assetService.getAssetThumbnail(assetId, query, res);
+    return this.assetService.getAssetThumbnail(assetId, query, res, headers);
   }
 
   @Get('/curated-objects')
@@ -168,8 +169,15 @@ export class AssetController {
    * Get all AssetEntity belong to the user
    */
   @Get('/')
+  @ApiHeader({
+    name: 'if-none-match',
+    description: 'ETag of data already cached on the client',
+    required: false,
+    schema: { type: 'string' },
+  })
   async getAllAssets(@GetAuthUser() authUser: AuthUserDto): Promise<AssetResponseDto[]> {
-    return await this.assetService.getAllAssets(authUser);
+    const assets = await this.assetService.getAllAssets(authUser);
+    return assets;
   }
 
   @Post('/time-bucket')

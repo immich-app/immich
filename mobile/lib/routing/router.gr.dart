@@ -142,6 +142,14 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const SettingsPage());
     },
+    AppLogRoute.name: (routeData) {
+      return CustomPage<dynamic>(
+          routeData: routeData,
+          child: const AppLogPage(),
+          transitionsBuilder: TransitionsBuilders.slideBottom,
+          opaque: true,
+          barrierDismissible: false);
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const HomePage());
@@ -218,7 +226,8 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(FailedBackupStatusRoute.name,
             path: '/failed-backup-status-page', guards: [authGuard]),
         RouteConfig(SettingsRoute.name,
-            path: '/settings-page', guards: [authGuard])
+            path: '/settings-page', guards: [authGuard]),
+        RouteConfig(AppLogRoute.name, path: '/app-log-page')
       ];
 }
 
@@ -558,6 +567,14 @@ class SettingsRoute extends PageRouteInfo<void> {
   const SettingsRoute() : super(SettingsRoute.name, path: '/settings-page');
 
   static const String name = 'SettingsRoute';
+}
+
+/// generated route for
+/// [AppLogPage]
+class AppLogRoute extends PageRouteInfo<void> {
+  const AppLogRoute() : super(AppLogRoute.name, path: '/app-log-page');
+
+  static const String name = 'AppLogRoute';
 }
 
 /// generated route for

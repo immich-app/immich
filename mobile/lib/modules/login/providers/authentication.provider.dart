@@ -101,11 +101,14 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   }
 
   Future<bool> logout() async {
-    Hive.box(userInfoBox).delete(accessTokenKey);
     state = state.copyWith(isAuthenticated: false);
-    _assetCacheService.invalidate();
-    _albumCacheService.invalidate();
-    _sharedAlbumCacheService.invalidate();
+    await Future.wait([
+      Hive.box(userInfoBox).delete(accessTokenKey),
+      Hive.box(userInfoBox).delete(assetEtagKey),
+      _assetCacheService.invalidate(),
+      _albumCacheService.invalidate(),
+      _sharedAlbumCacheService.invalidate(),
+    ]);
 
     // Remove login info from local storage
     var loginInfo =
@@ -115,7 +118,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       loginInfo.password = "";
       loginInfo.isSaveLogin = false;
 
-      Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
+      await Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
         savedLoginInfoKey,
         loginInfo,
       );

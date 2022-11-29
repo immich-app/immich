@@ -19,10 +19,10 @@ export class AssetResponseDto {
   mimeType!: string | null;
   duration!: string;
   webpPath!: string | null;
-  encodedVideoPath!: string | null;
+  encodedVideoPath?: string | null;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
-  livePhotoVideoId!: string | null;
+  livePhotoVideoId?: string | null;
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
