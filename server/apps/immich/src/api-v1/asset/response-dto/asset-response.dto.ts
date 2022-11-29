@@ -1,5 +1,6 @@
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { mapTag, TagResponseDto } from '../../tag/response-dto/tag-response.dto';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
 import { SmartInfoResponseDto, mapSmartInfo } from './smart-info-response.dto';
 
@@ -23,6 +24,7 @@ export class AssetResponseDto {
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   livePhotoVideoId?: string | null;
+  tags!: TagResponseDto[];
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
@@ -44,5 +46,6 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
+    tags: entity.tags?.map(mapTag),
   };
 }

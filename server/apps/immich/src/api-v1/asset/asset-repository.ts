@@ -221,7 +221,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         id: assetId,
       },
-      relations: ['exifInfo'],
+      relations: ['exifInfo', 'tags'],
     });
   }
 
@@ -236,9 +236,9 @@ export class AssetRepository implements IAssetRepository {
       .andWhere('asset.resizePath is not NULL')
       .andWhere('asset.isVisible = true')
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.tags', 'tags')
       .skip(skip || 0)
       .orderBy('asset.createdAt', 'DESC');
-
     return await query.getMany();
   }
 

@@ -27,3 +27,6 @@ prod-scale:
 
 api:
 	cd ./server && npm run api:generate
+
+attach-server:
+	docker exec -it docker_immich-server_1 sh

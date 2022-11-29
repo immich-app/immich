@@ -1,6 +1,7 @@
-import { Column, Entity, Index, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Column, Entity, Index, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { ExifEntity } from './exif.entity';
 import { SmartInfoEntity } from './smart-info.entity';
+import { TagEntity } from './tag.entity';
 
 @Entity('assets')
 @Unique('UQ_userid_checksum', ['userId', 'checksum'])
@@ -62,6 +63,9 @@ export class AssetEntity {
 
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;
+
+  @OneToMany(() => TagEntity, (tags) => tags.assetInfo)
+  tags!: TagEntity[];
 }
 
 export enum AssetType {
