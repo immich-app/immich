@@ -14,6 +14,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.set('trust proxy');
+  app.set('etag', 'strong');
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   if (process.env.NODE_ENV === 'development') {
