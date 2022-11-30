@@ -22,6 +22,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:openapi/api.dart';
 
@@ -159,10 +160,7 @@ class HomePage extends HookConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator.adaptive(
-                strokeWidth: 2,
-                backgroundColor: Colors.grey,
-              ),
+              const ImmichLoadingIndicator(),
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
                 child: Text(
@@ -186,7 +184,6 @@ class HomePage extends HookConsumerWidget {
                       textAlign: TextAlign.justify,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey,
                       ),
                     ),
                   ),

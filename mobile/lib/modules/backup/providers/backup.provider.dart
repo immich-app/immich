@@ -69,6 +69,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final AuthenticationState _authState;
   final BackgroundService _backgroundService;
   final Ref ref;
+  var isGettingBackupInfo = false;
 
   ///
   /// UI INTERACTION
@@ -370,25 +371,29 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     return;
   }
 
-  ///
   /// Get all necessary information for calculating the available albums,
   /// which albums are selected or excluded
   /// and then update the UI according to those information
-  ///
   Future<void> getBackupInfo() async {
-    final bool isEnabled = await _backgroundService.isBackgroundBackupEnabled();
-    state = state.copyWith(backgroundBackup: isEnabled);
-    if (state.backupProgress != BackUpProgressEnum.inBackground) {
-      await _getBackupAlbumsInfo();
-      await _updateServerInfo();
-      await _updateBackupAssetCount();
+    if (!isGettingBackupInfo) {
+      isGettingBackupInfo = true;
+
+      var isEnabled = await _backgroundService.isBackgroundBackupEnabled();
+
+      state = state.copyWith(backgroundBackup: isEnabled);
+
+      if (state.backupProgress != BackUpProgressEnum.inBackground) {
+        await _getBackupAlbumsInfo();
+        await _updateServerInfo();
+        await _updateBackupAssetCount();
+      }
+
+      isGettingBackupInfo = false;
     }
   }
 
-  ///
   /// Save user selection of selected albums and excluded albums to
   /// Hive database
-  ///
   void _updatePersistentAlbumsSelection() {
     final epoch = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
     Box<HiveBackupAlbums> backupAlbumInfoBox =
@@ -408,9 +413,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  ///
   /// Invoke backup process
-  ///
   Future<void> startBackupProcess() async {
     assert(state.backupProgress == BackUpProgressEnum.idle);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);

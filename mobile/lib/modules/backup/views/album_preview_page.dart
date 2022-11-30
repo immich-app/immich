@@ -36,7 +36,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
         title: Column(
           children: [
             Text(
-              "${album.name} (${album.assetCountAsync})",
+              album.name,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             Padding(
