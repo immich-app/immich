@@ -182,7 +182,7 @@ class HomePage extends HookConsumerWidget {
                   child: Padding(
                     padding: EdgeInsets.only(top: 8.0),
                     child: Text(
-                      'If this is your first time using the app, please make sure to choose a backup album/folder so that the timeline can be populated based on the files in your backup album/folder.',
+                      'If this is your first time using the app, please make sure to choose a backup album(s) so that the timeline can populate photos and videos in the album(s).',
                       textAlign: TextAlign.justify,
                       style: TextStyle(
                         fontSize: 12,
