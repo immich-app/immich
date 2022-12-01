@@ -72,7 +72,9 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Search by metadata, objects and image tags  | Yes     | No  |
 | Administrative functions (user management)  | N/A     | Yes |
 | Background backup                           | Android | N/A |
-| Virtual scroll                              | N/A     | Yes |
+| Virtual scroll                              | Yes     | Yes |
+| OAuth Support                               | Yes     | Yes |
+| LivePhotos Backup and Playback (iOS only)   | Yes     | Yes |
 
 # Support the project
 

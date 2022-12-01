@@ -7,7 +7,7 @@
 
 	$: zeros = () => {
 		let result = '';
-		const maxLength = 9;
+		const maxLength = 13;
 		const valueLength = parseInt(value).toString().length;
 		const zeroLength = maxLength - valueLength;
 		for (let i = 0; i < zeroLength; i++) {
@@ -18,7 +18,7 @@
 </script>
 
 <div
-	class="w-[180px] h-[140px] bg-immich-gray dark:bg-immich-dark-gray rounded-3xl p-5 flex flex-col justify-between"
+	class="w-[250px] h-[140px] bg-immich-gray dark:bg-immich-dark-gray rounded-3xl p-5 flex flex-col justify-between"
 >
 	<div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
 		<svelte:component this={logo} size="40" />

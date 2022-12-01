@@ -6,6 +6,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:latlong2/latlong.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 
 class ExifBottomSheet extends ConsumerWidget {
   final Asset assetDetail;
@@ -15,7 +16,7 @@ class ExifBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    _buildMap() {
+    buildMap() {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: Container(
@@ -66,7 +67,7 @@ class ExifBottomSheet extends ConsumerWidget {
 
     ExifResponseDto? exifInfo = assetDetail.remote?.exifInfo;
 
-    _buildLocationText() {
+    buildLocationText() {
       return Text(
         "${exifInfo?.city}, ${exifInfo?.state}",
         style: TextStyle(
@@ -120,11 +121,11 @@ class ExifBottomSheet extends ConsumerWidget {
                   ).tr(),
                   if (assetDetail.latitude != null &&
                       assetDetail.longitude != null)
-                    _buildMap(),
+                    buildMap(),
                   if (exifInfo != null &&
                       exifInfo.city != null &&
                       exifInfo.state != null)
-                    _buildLocationText(),
+                    buildLocationText(),
                   Text(
                     "${assetDetail.latitude?.toStringAsFixed(4)}, ${assetDetail.longitude?.toStringAsFixed(4)}",
                     style: TextStyle(fontSize: 12, color: Colors.grey[400]),
@@ -162,7 +163,7 @@ class ExifBottomSheet extends ConsumerWidget {
                     ),
                     subtitle: exifInfo.exifImageHeight != null
                         ? Text(
-                            "${exifInfo.exifImageHeight} x ${exifInfo.exifImageWidth}  ${exifInfo.fileSizeInByte!}B ",
+                            "${exifInfo.exifImageHeight} x ${exifInfo.exifImageWidth}  ${formatBytes(exifInfo.fileSizeInByte!)} ",
                           )
                         : null,
                   ),
@@ -178,7 +179,7 @@ class ExifBottomSheet extends ConsumerWidget {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                        "ƒ/${exifInfo.fNumber}   1/${(1 / (exifInfo.exposureTime ?? 1)).toStringAsFixed(0)}   ${exifInfo.focalLength}mm   ISO${exifInfo.iso} ",
+                        "ƒ/${exifInfo.fNumber}   1/${(1 / (exifInfo.exposureTime ?? 1)).toStringAsFixed(0)}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
                       ),
                     ),
                 ],

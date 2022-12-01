@@ -20,14 +20,15 @@ class HiveSavedLoginInfoAdapter extends TypeAdapter<HiveSavedLoginInfo> {
       email: fields[0] as String,
       password: fields[1] as String,
       serverUrl: fields[2] as String,
-      isSaveLogin: fields[3] as bool,
+      isSaveLogin: fields[3] == null ? false : fields[3] as bool,
+      accessToken: fields[4] == null ? '' : fields[4] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, HiveSavedLoginInfo obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.email)
       ..writeByte(1)
@@ -35,7 +36,9 @@ class HiveSavedLoginInfoAdapter extends TypeAdapter<HiveSavedLoginInfo> {
       ..writeByte(2)
       ..write(obj.serverUrl)
       ..writeByte(3)
-      ..write(obj.isSaveLogin);
+      ..write(obj.isSaveLogin)
+      ..writeByte(4)
+      ..write(obj.accessToken);
   }
 
   @override

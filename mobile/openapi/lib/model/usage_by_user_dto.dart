@@ -14,7 +14,6 @@ class UsageByUserDto {
   /// Returns a new [UsageByUserDto] instance.
   UsageByUserDto({
     required this.userId,
-    required this.objects,
     required this.videos,
     required this.photos,
     required this.usageRaw,
@@ -22,8 +21,6 @@ class UsageByUserDto {
   });
 
   String userId;
-
-  int objects;
 
   int videos;
 
@@ -36,7 +33,6 @@ class UsageByUserDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is UsageByUserDto &&
      other.userId == userId &&
-     other.objects == objects &&
      other.videos == videos &&
      other.photos == photos &&
      other.usageRaw == usageRaw &&
@@ -46,19 +42,17 @@ class UsageByUserDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (userId.hashCode) +
-    (objects.hashCode) +
     (videos.hashCode) +
     (photos.hashCode) +
     (usageRaw.hashCode) +
     (usage.hashCode);
 
   @override
-  String toString() => 'UsageByUserDto[userId=$userId, objects=$objects, videos=$videos, photos=$photos, usageRaw=$usageRaw, usage=$usage]';
+  String toString() => 'UsageByUserDto[userId=$userId, videos=$videos, photos=$photos, usageRaw=$usageRaw, usage=$usage]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'userId'] = userId;
-      _json[r'objects'] = objects;
       _json[r'videos'] = videos;
       _json[r'photos'] = photos;
       _json[r'usageRaw'] = usageRaw;
@@ -86,7 +80,6 @@ class UsageByUserDto {
 
       return UsageByUserDto(
         userId: mapValueOfType<String>(json, r'userId')!,
-        objects: mapValueOfType<int>(json, r'objects')!,
         videos: mapValueOfType<int>(json, r'videos')!,
         photos: mapValueOfType<int>(json, r'photos')!,
         usageRaw: mapValueOfType<int>(json, r'usageRaw')!,
@@ -141,7 +134,6 @@ class UsageByUserDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'userId',
-    'objects',
     'videos',
     'photos',
     'usageRaw',

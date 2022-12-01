@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.35.0+54
+version: 1.37.0+58
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
@@ -40,12 +40,14 @@ dependencies:
   latlong2: ^0.8.1
   collection: ^1.16.0
   http_parser: ^4.0.1
+  flutter_web_auth: ^0.5.0
 
   openapi:
     path: openapi
 
   # easy to remove packages:
   image_picker: ^0.8.5+3 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
+  logging: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -70,7 +72,9 @@ flutter:
     - family: SnowburstOne
       fonts:
         - asset: fonts/SnowburstOne.ttf
-
+    - family: Inconsolata
+      fonts:
+        - asset: fonts/Inconsolata-Regular.ttf
 flutter_icons:
   image_path_android: "assets/immich-logo-no-outline.png"
   image_path_ios: "assets/immich-logo-no-outline.png"

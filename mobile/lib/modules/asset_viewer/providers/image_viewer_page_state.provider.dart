@@ -64,5 +64,7 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
 final imageViewerStateProvider =
     StateNotifierProvider<ImageViewerStateNotifier, ImageViewerPageState>(
   ((ref) => ImageViewerStateNotifier(
-      ref.watch(imageViewerServiceProvider), ref.watch(shareServiceProvider))),
+        ref.watch(imageViewerServiceProvider),
+        ref.watch(shareServiceProvider),
+      )),
 );

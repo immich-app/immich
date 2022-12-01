@@ -28,9 +28,17 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 
 2. Configure Redirect URIs/Origins
 
-   1. The **Sign-in redirect URIs** should include:
+  The **Sign-in redirect URIs** should include:
 
-      - All URLs that will be used to access the login page of the Immich web client (eg. `http://localhost:2283/auth/login`, `http://192.168.0.200:2283/auth/login`, `https://immich.example.com/auth/login`)
+  * All URLs that will be used to access the login page of the Immich web client (eg. `http://localhost:2283/auth/login`, `http://192.168.0.200:2283/auth/login`, `https://immich.example.com/auth/login`)
+  * Mobile app redirect URL `app.immich:/`
+  
+:::caution
+You **MUST** include `app.immich:/` as the redirect URI for iOS and Android mobile app to work properly. 
+
+**Authentik example**
+<img src={require('./img/authentik-redirect.png').default} title="Authentik Redirection URL" width="80%" />
+:::
 
 ## Enable OAuth
 
@@ -41,7 +49,7 @@ Once you have a new OAuth client application configured, Immich can be configure
 | OAUTH_ENABLED       | boolean | false                | Enable/disable OAuth2                                                     |
 | OAUTH_ISSUER_URL    | URL     | (required)           | Required. Self-discovery URL for client (from previous step)              |
 | OAUTH_CLIENT_ID     | string  | (required)           | Required. Client ID (from previous step)                                  |
-| OAUTH_CLIENT_SECRET | string  | (required)           | Required. Client Secret (previous step                                    |
+| OAUTH_CLIENT_SECRET | string  | (required)           | Required. Client Secret (previous step)                                    |
 | OAUTH_SCOPE         | string  | openid email profile | Full list of scopes to send with the request (space delimited)            |
 | OAUTH_AUTO_REGISTER | boolean | true                 | When true, will automatically register a user the first time they sign in |
 | OAUTH_BUTTON_TEXT   | string  | Login with OAuth     | Text for the OAuth button on the web                                      |

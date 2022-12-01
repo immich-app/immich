@@ -80,7 +80,7 @@ const config = {
             position: "right",
             label: "Documentation",
           },
-          // { to: "/blog", label: "Blog", position: "right" },
+          { to: "/blog", label: "Blog", position: "right" },
           {
             href: "https://github.com/immich-app/immich",
             label: "GitHub",

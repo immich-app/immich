@@ -21,7 +21,7 @@ class UserResponseDto {
     required this.profileImagePath,
     required this.shouldChangePassword,
     required this.isAdmin,
-    required this.deletedAt,
+    this.deletedAt,
   });
 
   String id;
@@ -40,6 +40,12 @@ class UserResponseDto {
 
   bool isAdmin;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   DateTime? deletedAt;
 
   @override
@@ -173,7 +179,6 @@ class UserResponseDto {
     'profileImagePath',
     'shouldChangePassword',
     'isAdmin',
-    'deletedAt',
   };
 }
 

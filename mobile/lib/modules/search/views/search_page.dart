@@ -39,14 +39,14 @@ class SearchPage extends HookConsumerWidget {
       [],
     );
 
-    _onSearchSubmitted(String searchTerm) async {
+    onSearchSubmitted(String searchTerm) async {
       searchFocusNode.unfocus();
       ref.watch(searchPageStateProvider.notifier).disableSearch();
 
       AutoRouter.of(context).push(SearchResultRoute(searchTerm: searchTerm));
     }
 
-    _buildPlaces() {
+    buildPlaces() {
       return curatedLocation.when(
         loading: () => SizedBox(
           height: imageSize,
@@ -97,7 +97,7 @@ class SearchPage extends HookConsumerWidget {
       );
     }
 
-    _buildThings() {
+    buildThings() {
       return curatedObjects.when(
         loading: () => SizedBox(
           height: imageSize,
@@ -155,7 +155,7 @@ class SearchPage extends HookConsumerWidget {
     return Scaffold(
       appBar: SearchBar(
         searchFocusNode: searchFocusNode,
-        onSubmitted: _onSearchSubmitted,
+        onSubmitted: onSearchSubmitted,
       ),
       body: GestureDetector(
         onTap: () {
@@ -174,7 +174,7 @@ class SearchPage extends HookConsumerWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ).tr(),
                 ),
-                _buildPlaces(),
+                buildPlaces(),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: const Text(
@@ -182,11 +182,11 @@ class SearchPage extends HookConsumerWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ).tr(),
                 ),
-                _buildThings()
+                buildThings()
               ],
             ),
             if (isSearchEnabled)
-              SearchSuggestionList(onSubmitted: _onSearchSubmitted),
+              SearchSuggestionList(onSubmitted: onSearchSubmitted),
           ],
         ),
       ),

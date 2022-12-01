@@ -37,7 +37,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     /// Find out if the assets in album exist on the device
     /// If they exist, add to selected asset state to show they are already selected.
-    void _onAddPhotosPressed(AlbumResponseDto albumInfo) async {
+    void onAddPhotosPressed(AlbumResponseDto albumInfo) async {
       if (albumInfo.assets.isNotEmpty == true) {
         ref.watch(assetSelectionProvider.notifier).addNewAssets(
               albumInfo.assets.map((e) => Asset.remote(e)).toList(),
@@ -60,7 +60,8 @@ class AlbumViewerPage extends HookConsumerWidget {
                     albumId,
                   );
 
-          if (addAssetsResult != null && addAssetsResult.successfullyAdded > 0) {
+          if (addAssetsResult != null &&
+              addAssetsResult.successfullyAdded > 0) {
             ref.refresh(sharedAlbumDetailProvider(albumId));
           }
 
@@ -73,7 +74,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       }
     }
 
-    void _onAddUsersPressed(AlbumResponseDto albumInfo) async {
+    void onAddUsersPressed(AlbumResponseDto albumInfo) async {
       List<String>? sharedUserIds =
           await AutoRouter.of(context).push<List<String>?>(
         SelectAdditionalUserForSharingRoute(albumInfo: albumInfo),
@@ -94,7 +95,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       }
     }
 
-    Widget _buildTitle(AlbumResponseDto albumInfo) {
+    Widget buildTitle(AlbumResponseDto albumInfo) {
       return Padding(
         padding: const EdgeInsets.only(left: 8, right: 8, top: 16),
         child: userId == albumInfo.ownerId
@@ -115,7 +116,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget _buildAlbumDateRange(AlbumResponseDto albumInfo) {
+    Widget buildAlbumDateRange(AlbumResponseDto albumInfo) {
       String startDate = "";
       DateTime parsedStartDate =
           DateTime.parse(albumInfo.assets.first.createdAt);
@@ -148,14 +149,14 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget _buildHeader(AlbumResponseDto albumInfo) {
+    Widget buildHeader(AlbumResponseDto albumInfo) {
       return SliverToBoxAdapter(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTitle(albumInfo),
+            buildTitle(albumInfo),
             if (albumInfo.assets.isNotEmpty == true)
-              _buildAlbumDateRange(albumInfo),
+              buildAlbumDateRange(albumInfo),
             if (albumInfo.shared)
               SizedBox(
                 height: 60,
@@ -188,7 +189,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget _buildImageGrid(AlbumResponseDto albumInfo) {
+    Widget buildImageGrid(AlbumResponseDto albumInfo) {
       final appSettingService = ref.watch(appSettingsServiceProvider);
       final bool showStorageIndicator =
           appSettingService.getSetting(AppSettingsEnum.storageIndicator);
@@ -220,7 +221,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       return const SliverToBoxAdapter();
     }
 
-    Widget _buildControlButton(AlbumResponseDto albumInfo) {
+    Widget buildControlButton(AlbumResponseDto albumInfo) {
       return Padding(
         padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
         child: SizedBox(
@@ -230,13 +231,13 @@ class AlbumViewerPage extends HookConsumerWidget {
             children: [
               AlbumActionOutlinedButton(
                 iconData: Icons.add_photo_alternate_outlined,
-                onPressed: () => _onAddPhotosPressed(albumInfo),
+                onPressed: () => onAddPhotosPressed(albumInfo),
                 labelText: "share_add_photos".tr(),
               ),
               if (userId == albumInfo.ownerId)
                 AlbumActionOutlinedButton(
                   iconData: Icons.person_add_alt_rounded,
-                  onPressed: () => _onAddUsersPressed(albumInfo),
+                  onPressed: () => onAddUsersPressed(albumInfo),
                   labelText: "album_viewer_page_share_add_users".tr(),
                 ),
             ],
@@ -245,7 +246,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Widget _buildBody(AlbumResponseDto albumInfo) {
+    Widget buildBody(AlbumResponseDto albumInfo) {
       return GestureDetector(
         onTap: () {
           titleFocusNode.unfocus();
@@ -257,7 +258,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           child: CustomScrollView(
             controller: scrollController,
             slivers: [
-              _buildHeader(albumInfo),
+              buildHeader(albumInfo),
               SliverPersistentHeader(
                 pinned: true,
                 delegate: ImmichSliverPersistentAppBarDelegate(
@@ -265,11 +266,11 @@ class AlbumViewerPage extends HookConsumerWidget {
                   maxHeight: 50,
                   child: Container(
                     color: Theme.of(context).scaffoldBackgroundColor,
-                    child: _buildControlButton(albumInfo),
+                    child: buildControlButton(albumInfo),
                   ),
                 ),
               ),
-              _buildImageGrid(albumInfo)
+              buildImageGrid(albumInfo)
             ],
           ),
         ),
@@ -293,7 +294,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       ),
       body: albumInfo.when(
         data: (albumInfo) => albumInfo != null
-            ? _buildBody(albumInfo)
+            ? buildBody(albumInfo)
             : const Center(
                 child: CircularProgressIndicator(),
               ),

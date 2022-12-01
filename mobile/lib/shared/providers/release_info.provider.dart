@@ -6,10 +6,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
+import 'package:logging/logging.dart';
 
 class ReleaseInfoNotifier extends StateNotifier<String> {
   ReleaseInfoNotifier() : super("");
-
+  final log = Logger('ReleaseInfoNotifier');
   void checkGithubReleaseInfo() async {
     final Client client = Client();
     var box = Hive.box(hiveGithubReleaseInfoBox);
@@ -17,18 +18,16 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
     try {
       String? localReleaseVersion = box.get(githubReleaseInfoKey);
       final res = await client.get(
-          Uri.parse(
-            "https://api.github.com/repos/immich-app/immich/releases/latest",
-          ),
-          headers: {"Accept": "application/vnd.github.v3+json"});
+        Uri.parse(
+          "https://api.github.com/repos/immich-app/immich/releases/latest",
+        ),
+        headers: {"Accept": "application/vnd.github.v3+json"},
+      );
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         String latestTagVersion = data["tag_name"];
         state = latestTagVersion;
-
-        debugPrint("Local release version $localReleaseVersion");
-        debugPrint("Remote release veresion $latestTagVersion");
 
         if (localReleaseVersion == null && latestTagVersion.isNotEmpty) {
           VersionAnnouncementOverlayController.appLoader.show();
