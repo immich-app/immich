@@ -644,21 +644,27 @@ export class AssetService {
 
   async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
     for (const assetId of assetIds) {
+      // Default: DENY
+      let accessAllowed = false;
+
       // Step 1: Check if user owns asset
       if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
-        continue;
+        accessAllowed = true;
       }
 
       // Avoid additional checks if ownership is required
       if (!mustBeOwner) {
         // Step 2: Check if asset is part of an album shared with me
         if ((await this._albumRepository.getSharedWithUserAlbumCount(authUser.id, assetId)) > 0) {
-          continue;
+          accessAllowed = true;
         }
 
         //TODO: Step 3: Check if asset is part of a public album
       }
-      throw new ForbiddenException();
+
+      if (!accessAllowed) {
+        throw new ForbiddenException();
+      }
     }
   }
 }
