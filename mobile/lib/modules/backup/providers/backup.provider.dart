@@ -69,7 +69,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final AuthenticationState _authState;
   final BackgroundService _backgroundService;
   final Ref ref;
-  var isGettingBackupInfo = false;
 
   ///
   /// UI INTERACTION
@@ -375,20 +374,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// which albums are selected or excluded
   /// and then update the UI according to those information
   Future<void> getBackupInfo() async {
-    if (!isGettingBackupInfo) {
-      isGettingBackupInfo = true;
+    var isEnabled = await _backgroundService.isBackgroundBackupEnabled();
 
-      var isEnabled = await _backgroundService.isBackgroundBackupEnabled();
+    state = state.copyWith(backgroundBackup: isEnabled);
 
-      state = state.copyWith(backgroundBackup: isEnabled);
-
-      if (state.backupProgress != BackUpProgressEnum.inBackground) {
-        await _getBackupAlbumsInfo();
-        await _updateServerInfo();
-        await _updateBackupAssetCount();
-      }
-
-      isGettingBackupInfo = false;
+    if (state.backupProgress != BackUpProgressEnum.inBackground) {
+      await _getBackupAlbumsInfo();
+      await _updateServerInfo();
+      await _updateBackupAssetCount();
     }
   }
 
@@ -415,6 +408,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   /// Invoke backup process
   Future<void> startBackupProcess() async {
+    debugPrint("Start backup process");
     assert(state.backupProgress == BackUpProgressEnum.idle);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
@@ -431,7 +425,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
 
       Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
-
       // Remove item that has already been backed up
       for (var assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);
