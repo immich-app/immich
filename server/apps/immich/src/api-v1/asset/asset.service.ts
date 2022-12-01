@@ -641,7 +641,7 @@ export class AssetService {
       // Avoid additional checks if ownership is required
       if (!mustBeOwner) {
         // Step 2: Check if asset is part of an album shared with me
-        if ((await this._albumRepository.getSharedAlbumCount(authUser.id, assetId)) > 0) {
+        if ((await this._albumRepository.getSharedWithUserAlbumCount(authUser.id, assetId)) > 0) {
           continue;
         }
 

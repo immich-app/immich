@@ -25,7 +25,7 @@ export interface IAlbumRepository {
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
   getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]>;
   getCountByUserId(userId: string): Promise<AlbumCountResponseDto>;
-  getSharedAlbumCount(userId: string, assetId: string): Promise<number>;
+  getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
 }
 
 export const ALBUM_REPOSITORY = 'ALBUM_REPOSITORY';
@@ -285,7 +285,7 @@ export class AlbumRepository implements IAlbumRepository {
     return this.albumRepository.save(album);
   }
 
-  async getSharedAlbumCount(userId: string, assetId: string): Promise<number> {
+  async getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number> {
     const result = await this
         .userAlbumRepository
         .createQueryBuilder('usa')

@@ -123,7 +123,7 @@ describe('Album service', () => {
       updateAlbum: jest.fn(),
       getListByAssetId: jest.fn(),
       getCountByUserId: jest.fn(),
-      getSharedAlbumCount: jest.fn(),
+      getSharedWithUserAlbumCount: jest.fn(),
     };
 
     assetRepositoryMock = {
