@@ -1,25 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe } from '@nestjs/common';
 import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
+import { Authenticated } from '../../decorators/authenticated.decorator';
+import { ApiTags } from '@nestjs/swagger';
+import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
+import { TagEntity } from '@app/database/entities/tag.entity';
 
+@Authenticated()
+@ApiTags('Tag')
 @Controller('tag')
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 
   @Post()
-  create(@Body() createTagDto: CreateTagDto) {
-    return this.tagService.create(createTagDto);
+  create(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createTagDto: CreateTagDto): Promise<TagEntity> {
+    return this.tagService.create(authUser, createTagDto);
   }
 
   @Get()
-  findAll() {
-    return this.tagService.findAll();
+  findAll(@GetAuthUser() authUser: AuthUserDto) {
+    return this.tagService.findAll(authUser);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.tagService.findOne(+id);
+    return this.tagService.findOne(id);
   }
 
   @Patch(':id')

@@ -1,36 +1,45 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { AssetEntity } from './asset.entity';
+import { UserEntity } from './user.entity';
 
 @Entity('tags')
-@Unique('UQ_unique_tag', ['assetId', 'type', 'tag'])
 export class TagEntity {
-  @PrimaryGeneratedColumn('increment')
-  id!: number;
-
-  @Column({ type: 'uuid' })
-  assetId!: string;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column()
   type!: TagType;
 
   @Column()
-  tag!: string;
+  name!: string;
 
-  @ManyToOne(() => AssetEntity, (asset) => asset.tags, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinColumn({ name: 'assetId' })
-  assetInfo!: AssetEntity;
+  @Column({ type: 'uuid', comment: 'The new renamed tagId', nullable: true })
+  renameTagId!: string;
+
+  @ManyToMany(() => AssetEntity, (asset) => asset.tags)
+  assets!: AssetEntity[];
+
+  @ManyToOne(() => UserEntity, (user) => user.tags)
+  user!: UserEntity;
 }
 
 export enum TagType {
-  // System generated
+  /**
+   * System generated tag, when renaming, the old tag will be kept
+   * and the new tag will be created.
+   * The old tag will have the `renameTagId` field set to the new tag i
+   */
   OBJECT = 'OBJECT',
 
-  // System generated
+  /**
+   * System generated tag, when renaming, the old tag will be kept
+   * and the new tag will be created.
+   * The old tag will have the `renameTagId` field set to the new tag i
+   */
   FACE = 'FACES',
 
-  // User defined
+  /**
+   * User defined tag
+   */
   CUSTOM = 'CUSTOM',
 }

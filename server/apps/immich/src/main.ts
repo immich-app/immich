@@ -55,7 +55,7 @@ async function bootstrap() {
     if (process.env.NODE_ENV == 'development') {
       // Generate API Documentation only in development mode
       const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
-      writeFileSync(outputPath, JSON.stringify(apiDocument), { encoding: 'utf8' });
+      writeFileSync(outputPath, JSON.stringify(apiDocument, null, 2), { encoding: 'utf8' });
       Logger.log(
         `Running Immich Server in DEVELOPMENT environment - version ${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`,
         'ImmichServer',

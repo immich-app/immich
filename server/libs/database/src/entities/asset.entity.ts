@@ -1,4 +1,14 @@
-import { Column, Entity, Index, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 import { ExifEntity } from './exif.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { TagEntity } from './tag.entity';
@@ -64,7 +74,9 @@ export class AssetEntity {
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;
 
-  @OneToMany(() => TagEntity, (tags) => tags.assetInfo)
+  // https://github.com/typeorm/typeorm/blob/master/docs/many-to-many-relations.md
+  @ManyToMany(() => TagEntity, (tag) => tag.assets, { onDelete: 'CASCADE' })
+  @JoinTable({ name: 'tag_asset' })
   tags!: TagEntity[];
 }
 
