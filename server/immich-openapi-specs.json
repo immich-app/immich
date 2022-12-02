@@ -3942,7 +3942,14 @@
       },
       "UpdateTagDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "renameTagId": {
+            "type": "string"
+          }
+        }
       }
     }
   }
