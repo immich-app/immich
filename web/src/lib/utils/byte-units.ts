@@ -1,4 +1,15 @@
-export function getHumanReadableBytes(bytes: number): string {
+/**
+ * Localized number of bytes with a unit.
+ *
+ * For `1536` bytes:
+ * * en: `1.5 KiB`
+ * * de: `1,5 KiB`
+ *
+ * @param bytes number of bytes
+ * @param precision maximum number of decimal places, default is `1`
+ * @returns localized bytes with unit as string
+ */
+export function getBytesWithUnit(bytes: number, precision = 1): string {
 	const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB'];
 
 	let magnitude = 0;
@@ -12,5 +23,7 @@ export function getHumanReadableBytes(bytes: number): string {
 		}
 	}
 
-	return `${remainder.toFixed(magnitude == 0 ? 0 : 1)} ${units[magnitude]}`;
+	remainder = parseFloat(remainder.toFixed(precision));
+
+	return `${remainder.toLocaleString(navigator.language)} ${units[magnitude]}`;
 }

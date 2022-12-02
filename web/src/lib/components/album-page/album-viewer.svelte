@@ -86,6 +86,8 @@
 		}
 	}
 
+	const locale = navigator.language;
+
 	const getDateRange = () => {
 		const startDate = new Date(album.assets[0].createdAt);
 		const endDate = new Date(album.assets[album.assetCount - 1].createdAt);
@@ -96,8 +98,8 @@
 			year: 'numeric'
 		};
 
-		const startDateString = startDate.toLocaleDateString('us-EN', timeFormatOption);
-		const endDateString = endDate.toLocaleDateString('us-EN', timeFormatOption);
+		const startDateString = startDate.toLocaleDateString(locale, timeFormatOption);
+		const endDateString = endDate.toLocaleDateString(locale, timeFormatOption);
 		return `${startDateString} - ${endDateString}`;
 	};
 
