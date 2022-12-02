@@ -1,0 +1,2 @@
+src/api/open-api/* -diff -merge
+src/api/open-api/* linguist-generated=true
