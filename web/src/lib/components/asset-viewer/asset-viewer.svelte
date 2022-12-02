@@ -183,7 +183,7 @@
 	};
 
 	const toggleFavorite = async () => {
-		const { data } = await api.assetApi.updateAssetById(asset.id, {
+		const { data } = await api.assetApi.updateAsset(asset.id, {
 			isFavorite: !asset.isFavorite
 		});
 

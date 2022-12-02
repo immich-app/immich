@@ -21,7 +21,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { Response as Res} from 'express';
+import { Response as Res } from 'express';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
@@ -209,13 +209,13 @@ export class AssetController {
   /**
    * Update an asset
    */
-  @Put('/assetById/:assetId')
-  async updateAssetById(
+  @Put('/:assetId')
+  async updateAsset(
     @GetAuthUser() authUser: AuthUserDto,
     @Param('assetId') assetId: string,
     @Body() dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
-    return await this.assetService.updateAssetById(authUser, assetId, dto);
+    return await this.assetService.updateAsset(authUser, assetId, dto);
   }
 
   @Delete('/')

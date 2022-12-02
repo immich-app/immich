@@ -10,10 +10,11 @@ import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
 import { AlbumRepository, ALBUM_REPOSITORY } from './album-repository';
 import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
+import { TagEntity } from '@app/database/entities/tag.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AssetEntity, UserEntity, AlbumEntity, AssetAlbumEntity, UserAlbumEntity]),
+    TypeOrmModule.forFeature([AssetEntity, UserEntity, AlbumEntity, AssetAlbumEntity, UserAlbumEntity, TagEntity]),
     DownloadModule,
   ],
   controllers: [AlbumController],

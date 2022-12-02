@@ -30,6 +30,7 @@ class AssetResponseDto {
     this.exifInfo,
     this.smartInfo,
     this.livePhotoVideoId,
+    this.tags = const [],
   });
 
   AssetTypeEnum type;
@@ -78,6 +79,8 @@ class AssetResponseDto {
 
   String? livePhotoVideoId;
 
+  List<TagResponseDto> tags;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
      other.type == type &&
@@ -96,7 +99,8 @@ class AssetResponseDto {
      other.encodedVideoPath == encodedVideoPath &&
      other.exifInfo == exifInfo &&
      other.smartInfo == smartInfo &&
-     other.livePhotoVideoId == livePhotoVideoId;
+     other.livePhotoVideoId == livePhotoVideoId &&
+     other.tags == tags;
 
   @override
   int get hashCode =>
@@ -117,10 +121,11 @@ class AssetResponseDto {
     (encodedVideoPath == null ? 0 : encodedVideoPath!.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
     (smartInfo == null ? 0 : smartInfo!.hashCode) +
-    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode);
+    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
+    (tags.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, createdAt=$createdAt, modifiedAt=$modifiedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, createdAt=$createdAt, modifiedAt=$modifiedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -169,6 +174,7 @@ class AssetResponseDto {
     } else {
       _json[r'livePhotoVideoId'] = null;
     }
+      _json[r'tags'] = tags;
     return _json;
   }
 
@@ -208,6 +214,7 @@ class AssetResponseDto {
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
+        tags: TagResponseDto.listFromJson(json[r'tags'])!,
       );
     }
     return null;
@@ -270,6 +277,7 @@ class AssetResponseDto {
     'mimeType',
     'duration',
     'webpPath',
+    'tags',
   };
 }
 

@@ -25,6 +25,7 @@ Name | Type | Description | Notes
 **exifInfo** | [**ExifResponseDto**](ExifResponseDto.md) |  | [optional] 
 **smartInfo** | [**SmartInfoResponseDto**](SmartInfoResponseDto.md) |  | [optional] 
 **livePhotoVideoId** | **String** |  | [optional] 
+**tags** | [**List<TagResponseDto>**](TagResponseDto.md) |  | [default to const []]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

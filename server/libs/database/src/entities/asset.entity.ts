@@ -1,14 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinTable,
-  ManyToMany,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  Unique,
-} from 'typeorm';
+import { Column, Entity, Index, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { ExifEntity } from './exif.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { TagEntity } from './tag.entity';

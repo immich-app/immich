@@ -12,10 +12,11 @@ import { QueueNameEnum } from '@app/job';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
+import { TagEntity } from '@app/database/entities/tag.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, AssetEntity, ExifEntity]),
+    TypeOrmModule.forFeature([UserEntity, AssetEntity, ExifEntity, TagEntity]),
     ImmichJwtModule,
     JwtModule.register(jwtConfig),
     BullModule.registerQueue(

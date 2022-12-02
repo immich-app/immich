@@ -1,7 +1,7 @@
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -14,6 +14,7 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
+import { TagEntity } from '@app/database/entities/tag.entity';
 
 export interface IAssetRepository {
   create(
@@ -52,6 +53,9 @@ export class AssetRepository implements IAssetRepository {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+
+    @InjectRepository(TagEntity)
+    private tagRepository: Repository<TagEntity>,
   ) {}
 
   async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
@@ -287,6 +291,18 @@ export class AssetRepository implements IAssetRepository {
    */
   async update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
     asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
+    const tags: TagEntity[] = [];
+
+    if (dto.tagIds && dto.tagIds.length > 0) {
+      for (const tagId of dto.tagIds) {
+        const tag = await this.tagRepository.findOne({ where: { id: tagId } });
+        if (tag) {
+          tags.push(tag);
+        }
+      }
+
+      asset.tags = tags;
+    }
 
     return await this.assetRepository.save(asset);
   }

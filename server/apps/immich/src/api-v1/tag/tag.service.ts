@@ -50,7 +50,7 @@ export class TagService {
   }
 
   update(id: number, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} tag`;
+    return `This action updates a #${id} ${updateTagDto} tag`;
   }
 
   remove(id: number) {

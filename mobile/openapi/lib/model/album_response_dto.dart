@@ -43,51 +43,48 @@ class AlbumResponseDto {
   List<AssetResponseDto> assets;
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is AlbumResponseDto &&
-          other.assetCount == assetCount &&
-          other.id == id &&
-          other.ownerId == ownerId &&
-          other.albumName == albumName &&
-          other.createdAt == createdAt &&
-          other.albumThumbnailAssetId == albumThumbnailAssetId &&
-          other.shared == shared &&
-          other.sharedUsers == sharedUsers &&
-          other.assets == assets;
+  bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
+     other.assetCount == assetCount &&
+     other.id == id &&
+     other.ownerId == ownerId &&
+     other.albumName == albumName &&
+     other.createdAt == createdAt &&
+     other.albumThumbnailAssetId == albumThumbnailAssetId &&
+     other.shared == shared &&
+     other.sharedUsers == sharedUsers &&
+     other.assets == assets;
 
   @override
   int get hashCode =>
-      // ignore: unnecessary_parenthesis
-      (assetCount.hashCode) +
-      (id.hashCode) +
-      (ownerId.hashCode) +
-      (albumName.hashCode) +
-      (createdAt.hashCode) +
-      (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
-      (shared.hashCode) +
-      (sharedUsers.hashCode) +
-      (assets.hashCode);
+    // ignore: unnecessary_parenthesis
+    (assetCount.hashCode) +
+    (id.hashCode) +
+    (ownerId.hashCode) +
+    (albumName.hashCode) +
+    (createdAt.hashCode) +
+    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
+    (shared.hashCode) +
+    (sharedUsers.hashCode) +
+    (assets.hashCode);
 
   @override
-  String toString() =>
-      'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets]';
+  String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
-    _json[r'assetCount'] = assetCount;
-    _json[r'id'] = id;
-    _json[r'ownerId'] = ownerId;
-    _json[r'albumName'] = albumName;
-    _json[r'createdAt'] = createdAt;
+      _json[r'assetCount'] = assetCount;
+      _json[r'id'] = id;
+      _json[r'ownerId'] = ownerId;
+      _json[r'albumName'] = albumName;
+      _json[r'createdAt'] = createdAt;
     if (albumThumbnailAssetId != null) {
       _json[r'albumThumbnailAssetId'] = albumThumbnailAssetId;
     } else {
       _json[r'albumThumbnailAssetId'] = null;
     }
-    _json[r'shared'] = shared;
-    _json[r'sharedUsers'] = sharedUsers;
-    _json[r'assets'] = assets;
+      _json[r'shared'] = shared;
+      _json[r'sharedUsers'] = sharedUsers;
+      _json[r'assets'] = assets;
     return _json;
   }
 
@@ -101,13 +98,13 @@ class AlbumResponseDto {
       // Ensure that the map contains the required keys.
       // Note 1: the values aren't checked for validity beyond being non-null.
       // Note 2: this code is stripped in release mode!
-      // assert(() {
-      //   requiredKeys.forEach((key) {
-      //     assert(json.containsKey(key), 'Required key "AlbumResponseDto[$key]" is missing from JSON.');
-      //     assert(json[key] != null, 'Required key "AlbumResponseDto[$key]" has a null value in JSON.');
-      //   });
-      //   return true;
-      // }());
+      assert(() {
+        requiredKeys.forEach((key) {
+          assert(json.containsKey(key), 'Required key "AlbumResponseDto[$key]" is missing from JSON.');
+          assert(json[key] != null, 'Required key "AlbumResponseDto[$key]" has a null value in JSON.');
+        });
+        return true;
+      }());
 
       return AlbumResponseDto(
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
@@ -115,8 +112,7 @@ class AlbumResponseDto {
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         albumName: mapValueOfType<String>(json, r'albumName')!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
-        albumThumbnailAssetId:
-            mapValueOfType<String>(json, r'albumThumbnailAssetId'),
+        albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers'])!,
         assets: AssetResponseDto.listFromJson(json[r'assets'])!,
@@ -125,10 +121,7 @@ class AlbumResponseDto {
     return null;
   }
 
-  static List<AlbumResponseDto>? listFromJson(
-    dynamic json, {
-    bool growable = false,
-  }) {
+  static List<AlbumResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AlbumResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -156,18 +149,12 @@ class AlbumResponseDto {
   }
 
   // maps a json object with a list of AlbumResponseDto-objects as value to a dart map
-  static Map<String, List<AlbumResponseDto>> mapListFromJson(
-    dynamic json, {
-    bool growable = false,
-  }) {
+  static Map<String, List<AlbumResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<AlbumResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = AlbumResponseDto.listFromJson(
-          entry.value,
-          growable: growable,
-        );
+        final value = AlbumResponseDto.listFromJson(entry.value, growable: growable,);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -189,3 +176,4 @@ class AlbumResponseDto {
     'assets',
   };
 }
+

@@ -26,7 +26,7 @@ Method | HTTP request | Description
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
-[**updateAssetById**](AssetApi.md#updateassetbyid) | **PUT** /asset/assetById/{assetId} | 
+[**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{assetId} | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
 
@@ -833,8 +833,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **updateAssetById**
-> AssetResponseDto updateAssetById(assetId, updateAssetDto)
+# **updateAsset**
+> AssetResponseDto updateAsset(assetId, updateAssetDto)
 
 
 
@@ -855,10 +855,10 @@ final assetId = assetId_example; // String |
 final updateAssetDto = UpdateAssetDto(); // UpdateAssetDto | 
 
 try {
-    final result = api_instance.updateAssetById(assetId, updateAssetDto);
+    final result = api_instance.updateAsset(assetId, updateAssetDto);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->updateAssetById: $e\n');
+    print('Exception when calling AssetApi->updateAsset: $e\n');
 }
 ```
 

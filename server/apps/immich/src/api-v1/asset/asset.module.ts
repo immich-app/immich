@@ -10,13 +10,14 @@ import { CommunicationModule } from '../communication/communication.module';
 import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
+import { TagEntity } from '@app/database/entities/tag.entity';
 
 @Module({
   imports: [
     CommunicationModule,
     BackgroundTaskModule,
     DownloadModule,
-    TypeOrmModule.forFeature([AssetEntity]),
+    TypeOrmModule.forFeature([AssetEntity, TagEntity]),
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,
       defaultJobOptions: {
