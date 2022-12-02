@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/utils/tuple.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -37,8 +38,11 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
       _getAllAssetInProgress = true;
       final bool isCacheValid = await _assetCacheService.isValid();
       stopwatch.start();
+      final Box box = Hive.box(userInfoBox);
       final localTask = _assetService.getLocalAssets(urgent: !isCacheValid);
-      final remoteTask = _assetService.getRemoteAssets(hasCache: isCacheValid);
+      final remoteTask = _assetService.getRemoteAssets(
+        etag: isCacheValid ? box.get(assetEtagKey) : null,
+      );
       if (isCacheValid && state.isEmpty) {
         state = await _assetCacheService.get();
         log.info(
@@ -50,7 +54,8 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
       int remoteBegin = state.indexWhere((a) => a.isRemote);
       remoteBegin = remoteBegin == -1 ? state.length : remoteBegin;
       final List<Asset> currentLocal = state.slice(0, remoteBegin);
-      List<Asset>? newRemote = await remoteTask;
+      final Pair<List<Asset>?, String?> remoteResult = await remoteTask;
+      List<Asset>? newRemote = remoteResult.first;
       List<Asset>? newLocal = await localTask;
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
       stopwatch.reset();
@@ -63,14 +68,14 @@ class AssetNotifier extends StateNotifier<List<Asset>> {
       newLocal ??= [];
       state = _combineLocalAndRemoteAssets(local: newLocal, remote: newRemote);
       log.info("Combining assets: ${stopwatch.elapsedMilliseconds}ms");
+
+      stopwatch.reset();
+      _cacheState();
+      box.put(assetEtagKey, remoteResult.second);
+      log.info("Store assets in cache: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
     }
-    log.info("setting new asset state");
-
-    stopwatch.reset();
-    _cacheState();
-    log.info("Store assets in cache: ${stopwatch.elapsedMilliseconds}ms");
   }
 
   List<Asset> _combineLocalAndRemoteAssets({
