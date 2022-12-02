@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cancellation_token_http/http.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -172,15 +173,18 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Get all album on the device
   /// Get all selected and excluded album from the user's persistent storage
   /// If this is the first time performing backup - set the default selected album to be
-  /// the one that has all assets (Recent on Android, Recents on iOS)
+  /// the one that has all assets (`Recent` on Android, `Recents` on iOS)
   ///
   Future<void> _getBackupAlbumsInfo() async {
+    Stopwatch stopwatch = Stopwatch()..start();
     // Get all albums on the device
     List<AvailableAlbum> availableAlbums = [];
     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
       hasAll: true,
       type: RequestType.common,
     );
+
+    log.info('Found ${albums.length} local albums');
 
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
@@ -293,6 +297,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     } catch (e, stackTrace) {
       log.severe("Failed to generate album from id", e, stackTrace);
     }
+
+    debugPrint("_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
   }
 
   ///
@@ -364,14 +370,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     return;
   }
 
-  ///
   /// Get all necessary information for calculating the available albums,
   /// which albums are selected or excluded
   /// and then update the UI according to those information
-  ///
   Future<void> getBackupInfo() async {
-    final bool isEnabled = await _backgroundService.isBackgroundBackupEnabled();
+    var isEnabled = await _backgroundService.isBackgroundBackupEnabled();
+
     state = state.copyWith(backgroundBackup: isEnabled);
+
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
       await _getBackupAlbumsInfo();
       await _updateServerInfo();
@@ -379,10 +385,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
   }
 
-  ///
   /// Save user selection of selected albums and excluded albums to
   /// Hive database
-  ///
   void _updatePersistentAlbumsSelection() {
     final epoch = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
     Box<HiveBackupAlbums> backupAlbumInfoBox =
@@ -402,10 +406,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  ///
   /// Invoke backup process
-  ///
   Future<void> startBackupProcess() async {
+    debugPrint("Start backup process");
     assert(state.backupProgress == BackUpProgressEnum.idle);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
@@ -422,7 +425,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
 
       Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
-
       // Remove item that has already been backed up
       for (var assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);

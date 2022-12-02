@@ -83,6 +83,13 @@ class LoginForm extends HookConsumerWidget {
       [],
     );
 
+    populateTestLoginInfo() {
+      usernameController.text = 'testuser@email.com';
+      passwordController.text = 'password';
+      serverEndpointController.text = 'http://10.1.15.216:2283/api';
+      isSaveLoginInfo.value = true;
+    }
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 300),
@@ -92,10 +99,13 @@ class LoginForm extends HookConsumerWidget {
             runSpacing: 16,
             alignment: WrapAlignment.center,
             children: [
-              const Image(
-                image: AssetImage('assets/immich-logo-no-outline.png'),
-                width: 100,
-                filterQuality: FilterQuality.high,
+              GestureDetector(
+                onDoubleTap: () => populateTestLoginInfo(),
+                child: const Image(
+                  image: AssetImage('assets/immich-logo-no-outline.png'),
+                  width: 100,
+                  filterQuality: FilterQuality.high,
+                ),
               ),
               Text(
                 'IMMICH',

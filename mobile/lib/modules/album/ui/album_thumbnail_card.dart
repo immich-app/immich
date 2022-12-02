@@ -21,8 +21,39 @@ class AlbumThumbnailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var box = Hive.box(userInfoBox);
+    var cardSize = MediaQuery.of(context).size.width / 2 - 18;
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    final cardSize = MediaQuery.of(context).size.width / 2 - 18;
+    buildEmptyThumbnail() {
+      return Container(
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+        ),
+        child: SizedBox(
+          height: cardSize,
+          width: cardSize,
+          child: const Center(
+            child: Icon(Icons.no_photography),
+          ),
+        ),
+      );
+    }
+
+    buildAlbumThumbnail() {
+      return CachedNetworkImage(
+        memCacheHeight: max(400, cardSize.toInt() * 3),
+        width: cardSize,
+        height: cardSize,
+        fit: BoxFit.cover,
+        fadeInDuration: const Duration(milliseconds: 200),
+        imageUrl: getAlbumThumbnailUrl(
+          album,
+          type: ThumbnailFormat.JPEG,
+        ),
+        httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+        cacheKey: "${album.albumThumbnailAssetId}",
+      );
+    }
 
     return GestureDetector(
       onTap: () {
@@ -35,19 +66,9 @@ class AlbumThumbnailCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: CachedNetworkImage(
-                memCacheHeight: max(400, cardSize.toInt() * 3),
-                width: cardSize,
-                height: cardSize,
-                fit: BoxFit.cover,
-                fadeInDuration: const Duration(milliseconds: 200),
-                imageUrl:
-                    getAlbumThumbnailUrl(album, type: ThumbnailFormat.JPEG),
-                httpHeaders: {
-                  "Authorization": "Bearer ${box.get(accessTokenKey)}"
-                },
-                cacheKey: "${album.albumThumbnailAssetId}",
-              ),
+              child: album.albumThumbnailAssetId == null
+                  ? buildEmptyThumbnail()
+                  : buildAlbumThumbnail(),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
