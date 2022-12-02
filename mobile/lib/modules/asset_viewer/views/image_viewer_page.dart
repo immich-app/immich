@@ -17,7 +17,8 @@ class ImageViewerPage extends HookConsumerWidget {
   final String authToken;
   final ValueNotifier<bool> isZoomedListener;
   final void Function() isZoomedFunction;
-  final bool threeStageLoading;
+  final bool loadPreview;
+  final bool loadOriginal;
 
   ImageViewerPage({
     Key? key,
@@ -26,7 +27,8 @@ class ImageViewerPage extends HookConsumerWidget {
     required this.authToken,
     required this.isZoomedFunction,
     required this.isZoomedListener,
-    required this.threeStageLoading,
+    required this.loadPreview,
+    required this.loadOriginal,
   }) : super(key: key);
 
   Asset? assetDetail;
@@ -74,7 +76,8 @@ class ImageViewerPage extends HookConsumerWidget {
             child: RemotePhotoView(
               asset: asset,
               authToken: authToken,
-              threeStageLoading: threeStageLoading,
+              loadPreview: loadPreview,
+              loadOriginal: loadOriginal,
               isZoomedFunction: isZoomedFunction,
               isZoomedListener: isZoomedListener,
               onSwipeDown: () => AutoRouter.of(context).pop(),

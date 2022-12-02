@@ -59,7 +59,8 @@ class _$AppRouter extends RootStackRouter {
               authToken: args.authToken,
               isZoomedFunction: args.isZoomedFunction,
               isZoomedListener: args.isZoomedListener,
-              threeStageLoading: args.threeStageLoading));
+              loadPreview: args.loadPreview,
+              loadOriginal: args.loadOriginal));
     },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
@@ -305,7 +306,8 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
       required String authToken,
       required void Function() isZoomedFunction,
       required ValueNotifier<bool> isZoomedListener,
-      required bool threeStageLoading})
+      required bool loadPreview,
+      required bool loadOriginal})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
             args: ImageViewerRouteArgs(
@@ -315,7 +317,8 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
                 authToken: authToken,
                 isZoomedFunction: isZoomedFunction,
                 isZoomedListener: isZoomedListener,
-                threeStageLoading: threeStageLoading));
+                loadPreview: loadPreview,
+                loadOriginal: loadOriginal));
 
   static const String name = 'ImageViewerRoute';
 }
@@ -328,7 +331,8 @@ class ImageViewerRouteArgs {
       required this.authToken,
       required this.isZoomedFunction,
       required this.isZoomedListener,
-      required this.threeStageLoading});
+      required this.loadPreview,
+      required this.loadOriginal});
 
   final Key? key;
 
@@ -342,11 +346,13 @@ class ImageViewerRouteArgs {
 
   final ValueNotifier<bool> isZoomedListener;
 
-  final bool threeStageLoading;
+  final bool loadPreview;
+
+  final bool loadOriginal;
 
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, threeStageLoading: $threeStageLoading}';
+    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, loadPreview: $loadPreview, loadOriginal: $loadOriginal}';
   }
 }
 

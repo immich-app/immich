@@ -31,8 +31,9 @@ class GalleryViewerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final Box<dynamic> box = Hive.box(userInfoBox);
-    final appSettingService = ref.watch(appSettingsServiceProvider);
-    final threeStageLoading = useState(false);
+    final settings = ref.watch(appSettingsServiceProvider);
+    final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
+    final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final isZoomed = useState<bool>(false);
     final indexOfAsset = useState(assetList.indexOf(asset));
     final isPlayingMotionVideo = useState(false);
@@ -43,8 +44,10 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        threeStageLoading.value = appSettingService
-            .getSetting<bool>(AppSettingsEnum.threeStageLoading);
+        isLoadPreview.value =
+            settings.getSetting<bool>(AppSettingsEnum.loadPreview);
+        isLoadOriginal.value =
+            settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
         isPlayingMotionVideo.value = false;
         return null;
       },
@@ -140,7 +143,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                   isZoomedListener: isZoomedListener,
                   asset: assetList[index],
                   heroTag: assetList[index].id,
-                  threeStageLoading: threeStageLoading.value,
+                  loadPreview: isLoadPreview.value,
+                  loadOriginal: isLoadOriginal.value,
                 );
               }
             } else {

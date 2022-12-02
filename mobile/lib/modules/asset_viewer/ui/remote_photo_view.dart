@@ -128,7 +128,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       }),
     );
 
-    if (widget.threeStageLoading) {
+    if (widget.loadPreview) {
       _previewProvider = _authorizedImageProvider(
         getThumbnailUrl(widget.asset.remote!, type: ThumbnailFormat.JPEG),
         "${widget.asset.id}_previewStage",
@@ -140,15 +140,17 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
       );
     }
 
-    _fullProvider = _authorizedImageProvider(
-      getImageUrl(widget.asset.remote!),
-      "${widget.asset.id}_fullStage",
-    );
-    _fullProvider.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener((ImageInfo imageInfo, _) {
-        _performStateTransition(_RemoteImageStatus.full, _fullProvider);
-      }),
-    );
+    if (widget.loadOriginal) {
+      _fullProvider = _authorizedImageProvider(
+        getImageUrl(widget.asset.remote!),
+        "${widget.asset.id}_fullStage",
+      );
+      _fullProvider.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo imageInfo, _) {
+          _performStateTransition(_RemoteImageStatus.full, _fullProvider);
+        }),
+      );
+    }
   }
 
   @override
@@ -178,7 +180,8 @@ class RemotePhotoView extends StatefulWidget {
     Key? key,
     required this.asset,
     required this.authToken,
-    required this.threeStageLoading,
+    required this.loadPreview,
+    required this.loadOriginal,
     required this.isZoomedFunction,
     required this.isZoomedListener,
     required this.onSwipeDown,
@@ -187,7 +190,8 @@ class RemotePhotoView extends StatefulWidget {
 
   final Asset asset;
   final String authToken;
-  final bool threeStageLoading;
+  final bool loadPreview;
+  final bool loadOriginal;
   final void Function() onSwipeDown;
   final void Function() onSwipeUp;
   final void Function() isZoomedFunction;
