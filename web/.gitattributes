@@ -1,5 +1,0 @@
-src/api/open-api/**/*.md -diff -merge
-src/api/open-api/**/*.md linguist-generated=true
-
-src/api/open-api/**/*.ts -diff -merge
-src/api/open-api/**/*.ts linguist-generated=true

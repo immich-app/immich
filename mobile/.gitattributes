@@ -1,5 +1,0 @@
-openapi/**/*.md -diff -merge
-openapi/**/*.md linguist-generated=true
-
-openapi/**/*.dart -diff -merge
-openapi/**/*.dart linguist-generated=true

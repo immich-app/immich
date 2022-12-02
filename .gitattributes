@@ -1,0 +1,10 @@
+mobile/openapi/**/*.md -diff -merge
+mobile/openapi/**/*.md linguist-generated=true
+mobile/openapi/**/*.dart -diff -merge
+mobile/openapi/**/*.dart linguist-generated=true
+
+web/src/api/open-api/**/*.md -diff -merge
+web/src/api/open-api/**/*.md linguist-generated=true
+
+web/src/api/open-api/**/*.ts -diff -merge
+web/src/api/open-api/**/*.ts linguist-generated=true
