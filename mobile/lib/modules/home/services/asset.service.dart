@@ -12,6 +12,7 @@ import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/utils/openapi_extensions.dart';
 import 'package:immich_mobile/utils/tuple.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 final assetServiceProvider = Provider(
@@ -26,20 +27,26 @@ class AssetService {
   final ApiService _apiService;
   final BackupService _backupService;
   final BackgroundService _backgroundService;
+  final log = Logger('AssetService');
 
   AssetService(this._apiService, this._backupService, this._backgroundService);
 
   /// Returns `null` if the server state did not change, else list of assets
   Future<List<Asset>?> getRemoteAssets({required bool hasCache}) async {
-    final Box box = Hive.box(userInfoBox);
-    final Pair<List<AssetResponseDto>, String?>? remote = await _apiService
-        .assetApi
-        .getAllAssetsWithETag(eTag: hasCache ? box.get(assetEtagKey) : null);
-    if (remote == null) {
+    try {
+      final Box box = Hive.box(userInfoBox);
+      final Pair<List<AssetResponseDto>, String?>? remote = await _apiService
+          .assetApi
+          .getAllAssetsWithETag(eTag: hasCache ? box.get(assetEtagKey) : null);
+      if (remote == null) {
+        return null;
+      }
+      box.put(assetEtagKey, remote.second);
+      return remote.first.map(Asset.remote).toList(growable: false);
+    } catch (e, stack) {
+      log.severe('Error while getting remote assets', e, stack);
       return null;
     }
-    box.put(assetEtagKey, remote.second);
-    return remote.first.map(Asset.remote).toList(growable: false);
   }
 
   /// if [urgent] is `true`, do not block by waiting on the background service

@@ -306,7 +306,12 @@ export class AssetService {
     }
   }
 
-  public async getAssetThumbnail(assetId: string, query: GetAssetThumbnailDto, res: Res) {
+  public async getAssetThumbnail(
+    assetId: string,
+    query: GetAssetThumbnailDto,
+    res: Res,
+    headers: Record<string, string>,
+  ) {
     let fileReadStream: ReadStream;
 
     const asset = await this.assetRepository.findOne({ where: { id: assetId } });
@@ -316,28 +321,22 @@ export class AssetService {
     }
 
     try {
-      if (query.format == GetAssetThumbnailFormatEnum.JPEG) {
+      if (query.format == GetAssetThumbnailFormatEnum.WEBP && asset.webpPath && asset.webpPath.length > 0) {
+        if (await processETag(asset.webpPath, res, headers)) {
+          return;
+        }
+        await fs.access(asset.webpPath, constants.R_OK);
+        fileReadStream = createReadStream(asset.webpPath);
+      } else {
         if (!asset.resizePath) {
           throw new NotFoundException('resizePath not set');
         }
-
-        await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
-        fileReadStream = createReadStream(asset.resizePath);
-      } else {
-        if (asset.webpPath && asset.webpPath.length > 0) {
-          await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
-          fileReadStream = createReadStream(asset.webpPath);
-        } else {
-          if (!asset.resizePath) {
-            throw new NotFoundException('resizePath not set');
-          }
-
-          await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
-          fileReadStream = createReadStream(asset.resizePath);
+        if (await processETag(asset.resizePath, res, headers)) {
+          return;
         }
+        await fs.access(asset.resizePath, constants.R_OK);
+        fileReadStream = createReadStream(asset.resizePath);
       }
-
-      res.header('Cache-Control', 'max-age=300');
       return new StreamableFile(fileReadStream);
     } catch (e) {
       res.header('Cache-Control', 'none');
@@ -349,7 +348,7 @@ export class AssetService {
     }
   }
 
-  public async serveFile(assetId: string, query: ServeFileDto, res: Res, headers: any) {
+  public async serveFile(assetId: string, query: ServeFileDto, res: Res, headers: Record<string, string>) {
     let fileReadStream: ReadStream;
     const asset = await this._assetRepository.getById(assetId);
 
@@ -371,6 +370,9 @@ export class AssetService {
             Logger.error('Error serving IMAGE asset for web', 'ServeFile');
             throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
           }
+          if (await processETag(asset.resizePath, res, headers)) {
+            return;
+          }
           await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
           fileReadStream = createReadStream(asset.resizePath);
 
@@ -384,7 +386,9 @@ export class AssetService {
           res.set({
             'Content-Type': asset.mimeType,
           });
-
+          if (await processETag(asset.originalPath, res, headers)) {
+            return;
+          }
           await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
           fileReadStream = createReadStream(asset.originalPath);
         } else {
@@ -392,7 +396,9 @@ export class AssetService {
             res.set({
               'Content-Type': 'image/webp',
             });
-
+            if (await processETag(asset.webpPath, res, headers)) {
+              return;
+            }
             await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
             fileReadStream = createReadStream(asset.webpPath);
           } else {
@@ -402,6 +408,9 @@ export class AssetService {
 
             if (!asset.resizePath) {
               throw new Error('resizePath not set');
+            }
+            if (await processETag(asset.resizePath, res, headers)) {
+              return;
             }
 
             await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
@@ -436,9 +445,9 @@ export class AssetService {
 
         if (range) {
           /** Extracting Start and End value from Range Header */
-          let [start, end] = range.replace(/bytes=/, '').split('-');
-          start = parseInt(start, 10);
-          end = end ? parseInt(end, 10) : size - 1;
+          const [startStr, endStr] = range.replace(/bytes=/, '').split('-');
+          let start = parseInt(startStr, 10);
+          let end = endStr ? parseInt(endStr, 10) : size - 1;
 
           if (!isNaN(start) && isNaN(end)) {
             start = start;
@@ -475,7 +484,9 @@ export class AssetService {
           res.set({
             'Content-Type': mimeType,
           });
-
+          if (await processETag(asset.originalPath, res, headers)) {
+            return;
+          }
           return new StreamableFile(createReadStream(videoPath));
         }
       } catch (e) {
@@ -631,4 +642,15 @@ export class AssetService {
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this._assetRepository.getAssetCountByUserId(authUser.id);
   }
+}
+
+async function processETag(path: string, res: Res, headers: Record<string, string>): Promise<boolean> {
+  const { size, mtimeNs } = await fs.stat(path, { bigint: true });
+  const etag = `W/"${size}-${mtimeNs}"`;
+  res.setHeader('ETag', etag);
+  if (etag === headers['if-none-match']) {
+    res.status(304);
+    return true;
+  }
+  return false;
 }
