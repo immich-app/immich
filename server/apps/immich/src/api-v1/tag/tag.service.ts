@@ -1,4 +1,5 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { TagEntity } from '@app/database/entities/tag.entity';
+import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
 import { CreateTagDto } from './dto/create-tag.dto';
@@ -34,8 +35,18 @@ export class TagService {
     return this._tagRepository.getAllTagsByUserId(authUser.id);
   }
 
-  findOne(id: string) {
-    return this._tagRepository.getById(id);
+  async findOne(authUser: AuthUserDto, id: string): Promise<TagEntity | null> {
+    const tag = await this._tagRepository.getById(id);
+
+    if (!tag) {
+      return null;
+    }
+
+    if (tag.user.id !== authUser.id) {
+      throw new ForbiddenException('User do not have access to this tag');
+    }
+
+    return tag;
   }
 
   update(id: number, updateTagDto: UpdateTagDto) {

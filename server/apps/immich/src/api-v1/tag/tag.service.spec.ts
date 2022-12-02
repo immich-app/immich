@@ -12,12 +12,12 @@ describe('TagService', () => {
   let tagRepositoryMock: jest.Mocked<ITagRepository>;
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
 
-  const authUser: AuthUserDto = Object.freeze({
+  const user1AuthUser: AuthUserDto = Object.freeze({
     id: '1111',
     email: 'testuser@email.com',
   });
 
-  const validUser: UserEntity = Object.freeze({
+  const user1: UserEntity = Object.freeze({
     id: '1111',
     firstName: 'Alex',
     lastName: 'Tran',
@@ -30,8 +30,21 @@ describe('TagService', () => {
     tags: [],
   });
 
-  const validTag1: TagEntity = Object.freeze({
-    name: 'tag 1',
+  const user2: UserEntity = Object.freeze({
+    id: '2222',
+    firstName: 'Alex',
+    lastName: 'Tran',
+    isAdmin: true,
+    email: 'testuser2@email.com',
+    profileImagePath: '',
+    shouldChangePassword: true,
+    createdAt: '2022-12-02T19:29:23.603Z',
+    deletedAt: undefined,
+    tags: [],
+  });
+
+  const user1Tag1: TagEntity = Object.freeze({
+    name: 'user 1 tag 1',
     type: TagType.CUSTOM,
     user: {
       id: '1111',
@@ -46,12 +59,12 @@ describe('TagService', () => {
       tags: [],
     },
     renameTagId: '',
-    id: 'tag-1-id',
+    id: 'user1-tag-1-id',
     assets: [],
   });
 
-  const validTag2: TagEntity = Object.freeze({
-    name: 'tag 2',
+  const user1Tag2: TagEntity = Object.freeze({
+    name: 'user 1 tag 2',
     type: TagType.CUSTOM,
     user: {
       id: '1111',
@@ -66,7 +79,27 @@ describe('TagService', () => {
       tags: [],
     },
     renameTagId: '',
-    id: 'tag-2-id',
+    id: 'user1-tag-2-id',
+    assets: [],
+  });
+
+  const user2Tag1: TagEntity = Object.freeze({
+    name: 'user 2 tag 1',
+    type: TagType.CUSTOM,
+    user: {
+      id: '2222',
+      firstName: 'Alex',
+      lastName: 'Tran',
+      isAdmin: true,
+      email: 'testuser2@email.com',
+      profileImagePath: '',
+      shouldChangePassword: true,
+      createdAt: '2022-12-02T19:29:23.603Z',
+      deletedAt: undefined,
+      tags: [],
+    },
+    renameTagId: '',
+    id: 'user2-tag-1-id',
     assets: [],
   });
 
@@ -112,31 +145,37 @@ describe('TagService', () => {
 
   it('creates tag', async () => {
     const createTagDto = {
-      name: 'tag 1',
+      name: 'user 1 tag 1',
       type: TagType.CUSTOM,
     };
 
-    userRepositoryMock.get.mockResolvedValue(validUser);
-    tagRepositoryMock.getAllTagsByUserId.mockResolvedValue([validTag2]);
-    tagRepositoryMock.create.mockResolvedValue(validTag1);
+    userRepositoryMock.get.mockResolvedValue(user1);
+    tagRepositoryMock.getAllTagsByUserId.mockResolvedValue([user1Tag2]);
+    tagRepositoryMock.create.mockResolvedValue(user1Tag1);
 
-    const result = await sut.create(authUser, createTagDto);
+    const result = await sut.create(user1AuthUser, createTagDto);
 
-    expect(result.user.id).toEqual(authUser.id);
+    expect(result.user.id).toEqual(user1AuthUser.id);
     expect(result.name).toEqual(createTagDto.name);
     expect(result.type).toEqual(createTagDto.type);
   });
 
   it('throws error when creating tag with duplicate name and type by the same user', async () => {
     const createTagDto = {
-      name: 'tag 1',
+      name: 'user 1 tag 1',
       type: TagType.CUSTOM,
     };
 
-    userRepositoryMock.get.mockResolvedValue(validUser);
-    tagRepositoryMock.create.mockResolvedValue(validTag1);
-    tagRepositoryMock.getAllTagsByUserId.mockResolvedValue([validTag1]);
+    userRepositoryMock.get.mockResolvedValue(user1);
+    tagRepositoryMock.create.mockResolvedValue(user1Tag1);
+    tagRepositoryMock.getAllTagsByUserId.mockResolvedValue([user1Tag1]);
 
-    await expect(sut.create(authUser, createTagDto)).rejects.toThrow();
+    await expect(sut.create(user1AuthUser, createTagDto)).rejects.toThrow();
+  });
+
+  it('throw error when accessing tag of different user', async () => {
+    tagRepositoryMock.getById.mockResolvedValue(user2Tag1);
+
+    await expect(sut.findOne(user1AuthUser, user2Tag1.id)).rejects.toThrow();
   });
 });
