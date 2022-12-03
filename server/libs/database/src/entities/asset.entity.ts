@@ -65,7 +65,7 @@ export class AssetEntity {
   smartInfo?: SmartInfoEntity;
 
   // https://github.com/typeorm/typeorm/blob/master/docs/many-to-many-relations.md
-  @ManyToMany(() => TagEntity, (tag) => tag.assets)
+  @ManyToMany(() => TagEntity, (tag) => tag.assets, { cascade: true })
   @JoinTable({ name: 'tag_asset' })
   tags!: TagEntity[];
 }

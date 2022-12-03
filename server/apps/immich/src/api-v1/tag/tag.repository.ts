@@ -1,7 +1,7 @@
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { TagEntity, TagType } from '@app/database/entities/tag.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateTagDto } from './dto/update-tag.dto';
@@ -54,6 +54,6 @@ export class TagRepository implements ITagRepository {
   }
 
   async delete(tag: TagEntity): Promise<void> {
-    await this.tagRepository.delete({ id: tag.id });
+    await this.tagRepository.remove(tag);
   }
 }
