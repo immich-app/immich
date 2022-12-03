@@ -1,14 +1,17 @@
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { TagEntity, TagType } from '@app/database/entities/tag.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UpdateTagDto } from './dto/update-tag.dto';
 
 export interface ITagRepository {
   create(userId: UserEntity, tagType: TagType, tagName: string): Promise<TagEntity>;
   getById(tagId: string): Promise<TagEntity | null>;
   getAllTagsByUserId(userId: string): Promise<TagEntity[]>;
+  update(tag: TagEntity, updateTagDto: UpdateTagDto): Promise<TagEntity | null>;
+  delete(tag: TagEntity): Promise<void>;
 }
 
 export const TAG_REPOSITORY = 'TAG_REPOSITORY';
@@ -41,5 +44,16 @@ export class TagRepository implements ITagRepository {
 
   async getAllTagsByUserId(userId: string): Promise<TagEntity[]> {
     return await this.tagRepository.find({ where: { user: { id: userId } } });
+  }
+
+  async update(tag: TagEntity, updateTagDto: UpdateTagDto): Promise<TagEntity> {
+    tag.name = updateTagDto.name ?? tag.name;
+    tag.renameTagId = updateTagDto.renameTagId ?? tag.renameTagId;
+
+    return this.tagRepository.save(tag);
+  }
+
+  async delete(tag: TagEntity): Promise<void> {
+    await this.tagRepository.delete({ id: tag.id });
   }
 }

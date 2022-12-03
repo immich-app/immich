@@ -119,6 +119,8 @@ describe('TagService', () => {
       create: jest.fn(),
       getById: jest.fn(),
       getAllTagsByUserId: jest.fn(),
+      delete: jest.fn(),
+      update: jest.fn(),
     };
 
     assetRepositoryMock = {

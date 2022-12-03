@@ -29,12 +29,16 @@ export class TagController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto) {
-    return this.tagService.update(+id, updateTagDto);
+  update(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param('id') id: string,
+    @Body(ValidationPipe) updateTagDto: UpdateTagDto,
+  ) {
+    return this.tagService.update(authUser, id, updateTagDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tagService.remove(+id);
+  delete(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string) {
+    return this.tagService.delete(authUser, id);
   }
 }

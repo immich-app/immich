@@ -39,21 +39,41 @@ export class TagService {
     const tag = await this._tagRepository.getById(id);
 
     if (!tag) {
-      return null;
+      throw new BadRequestException('Tag not found');
     }
 
-    if (tag.user.id !== authUser.id) {
-      throw new ForbiddenException('User do not have access to this tag');
-    }
+    this.checkTagOwnerShip(authUser, tag);
 
     return tag;
   }
 
-  update(id: number, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} ${updateTagDto} tag`;
+  async update(authUser: AuthUserDto, id: string, updateTagDto: UpdateTagDto) {
+    const tag = await this._tagRepository.getById(id);
+
+    if (!tag) {
+      throw new BadRequestException('Tag not found');
+    }
+
+    this.checkTagOwnerShip(authUser, tag);
+
+    return this._tagRepository.update(tag, updateTagDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} tag`;
+  async delete(authUser: AuthUserDto, id: string) {
+    const tag = await this._tagRepository.getById(id);
+
+    if (!tag) {
+      throw new BadRequestException('Tag not found');
+    }
+
+    this.checkTagOwnerShip(authUser, tag);
+
+    return this._tagRepository.delete(tag);
+  }
+
+  private checkTagOwnerShip(authUser: AuthUserDto, tag: TagEntity) {
+    if (tag.user.id !== authUser.id) {
+      throw new ForbiddenException('User do not have access to this tag');
+    }
   }
 }

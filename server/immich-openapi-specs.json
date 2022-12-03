@@ -2072,7 +2072,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "object"
                 }
               }
             }
@@ -2083,7 +2083,7 @@
         ]
       },
       "delete": {
-        "operationId": "remove",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "id",
@@ -2096,14 +2096,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
