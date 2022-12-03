@@ -39,6 +39,7 @@ describe('AuthService', () => {
     userRepositoryMock = {
       get: jest.fn(),
       getAdmin: jest.fn(),
+      getByOAuthId: jest.fn(),
       getByEmail: jest.fn(),
       getList: jest.fn(),
       create: jest.fn(),

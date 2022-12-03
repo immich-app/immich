@@ -63,8 +63,17 @@ export class OAuthService {
     const profile = await client.userinfo<OAuthProfile>(tokens.access_token || '');
 
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
-    let user = await this.userRepository.getByEmail(profile.email);
+    let user = await this.userRepository.getByOAuthId(profile.sub);
 
+    // link existing user
+    if (!user) {
+      const emailUser = await this.userRepository.getByEmail(profile.email);
+      if (emailUser) {
+        user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
+      }
+    }
+
+    // register new user
     if (!user) {
       if (!this.autoRegister) {
         this.logger.warn(
@@ -73,11 +82,12 @@ export class OAuthService {
         throw new BadRequestException(`User does not exist and auto registering is disabled.`);
       }
 
-      this.logger.log(`Registering new user: ${profile.email}`);
+      this.logger.log(`Registering new user: ${profile.email}/${profile.sub}`);
       user = await this.userRepository.create({
         firstName: profile.given_name || '',
         lastName: profile.family_name || '',
         email: profile.email,
+        oauthId: profile.sub,
       });
     }
 

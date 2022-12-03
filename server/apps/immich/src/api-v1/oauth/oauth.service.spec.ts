@@ -20,12 +20,14 @@ const mockConfig = (config: Partial<OAuthConfig>) => {
 };
 
 const email = 'user@immich.com';
+const sub = 'my-auth-user-sub';
 
 const user = {
   id: 'user',
   email,
   firstName: 'user',
   lastName: 'imimch',
+  oauthId: '',
 } as UserEntity;
 
 const loginResponse = {
@@ -53,13 +55,14 @@ describe('OAuthService', () => {
         authorizationUrl: jest.fn().mockReturnValue('http://authorization-url'),
         callbackParams: jest.fn().mockReturnValue({ state: 'state' }),
         callback: jest.fn().mockReturnValue({ access_token: 'access-token' }),
-        userinfo: jest.fn().mockResolvedValue({ email }),
+        userinfo: jest.fn().mockResolvedValue({ sub, email }),
       }),
     } as any);
 
     userRepositoryMock = {
       get: jest.fn(),
       getAdmin: jest.fn(),
+      getByOAuthId: jest.fn(),
       getByEmail: jest.fn(),
       getList: jest.fn(),
       create: jest.fn(),
@@ -130,6 +133,26 @@ describe('OAuthService', () => {
         BadRequestException,
       );
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it('should link an existing user', async () => {
+      configServiceMock.get.mockImplementation(
+        mockConfig({
+          OAUTH_ENABLED: true,
+          OAUTH_AUTO_REGISTER: false,
+        }),
+      );
+      sut = new OAuthService(immichJwtServiceMock, configServiceMock, userRepositoryMock);
+      jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
+      jest.spyOn(sut['logger'], 'warn').mockImplementation(() => null);
+      userRepositoryMock.getByEmail.mockResolvedValue(user);
+      userRepositoryMock.update.mockResolvedValue(user);
+      immichJwtServiceMock.createLoginResponse.mockResolvedValue(loginResponse);
+
+      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(loginResponse);
+
+      expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
+      expect(userRepositoryMock.update).toHaveBeenCalledWith(user.id, { oauthId: sub });
     });
 
     it('should allow auto registering by default', async () => {
