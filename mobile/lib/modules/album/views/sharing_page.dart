@@ -42,10 +42,9 @@ class SharingPage extends HookConsumerWidget {
                 child: CachedNetworkImage(
                   width: 60,
                   height: 60,
-                  memCacheHeight: 200,
                   fit: BoxFit.cover,
                   imageUrl: getAlbumThumbnailUrl(album),
-                  cacheKey: album.albumThumbnailAssetId,
+                  cacheKey: getAlbumThumbNailCacheKey(album),
                   httpHeaders: {
                     "Authorization": "Bearer ${box.get(accessTokenKey)}"
                   },

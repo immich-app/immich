@@ -75,14 +75,11 @@ class ControlBottomAppBar extends ConsumerWidget {
                       width: 100,
                       height: 100,
                       fit: BoxFit.cover,
-                      imageUrl: getAlbumThumbnailUrl(
-                        album,
-                        type: ThumbnailFormat.JPEG,
-                      ),
+                      imageUrl: getAlbumThumbnailUrl(album),
                       httpHeaders: {
                         "Authorization": "Bearer ${box.get(accessTokenKey)}"
                       },
-                      cacheKey: "${album.albumThumbnailAssetId}",
+                      cacheKey: getAlbumThumbNailCacheKey(album),
                     ),
                   ),
                   Padding(
