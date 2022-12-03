@@ -10,6 +10,7 @@
  * @returns localized bytes with unit as string
  */
 export function getBytesWithUnit(bytes: number, precision = 1): string {
+	const locale = Array.from(navigator.languages);
 	const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB'];
 
 	let magnitude = 0;
@@ -25,5 +26,5 @@ export function getBytesWithUnit(bytes: number, precision = 1): string {
 
 	remainder = parseFloat(remainder.toFixed(precision));
 
-	return `${remainder.toLocaleString(navigator.language)} ${units[magnitude]}`;
+	return `${remainder.toLocaleString(locale)} ${units[magnitude]}`;
 }

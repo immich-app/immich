@@ -86,7 +86,7 @@
 		}
 	}
 
-	const locale = navigator.language;
+	const locale = navigator.languages;
 
 	const getDateRange = () => {
 		const startDate = new Date(album.assets[0].createdAt);
