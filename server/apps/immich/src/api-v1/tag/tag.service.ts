@@ -42,7 +42,7 @@ export class TagService {
       throw new BadRequestException('Tag not found');
     }
 
-    this.checkTagOwnerShip(authUser, tag);
+    this.checkTagOwnership(authUser, tag);
 
     return tag;
   }
@@ -54,7 +54,7 @@ export class TagService {
       throw new BadRequestException('Tag not found');
     }
 
-    this.checkTagOwnerShip(authUser, tag);
+    this.checkTagOwnership(authUser, tag);
 
     return this._tagRepository.update(tag, updateTagDto);
   }
@@ -66,12 +66,12 @@ export class TagService {
       throw new BadRequestException('Tag not found');
     }
 
-    this.checkTagOwnerShip(authUser, tag);
+    this.checkTagOwnership(authUser, tag);
 
     return this._tagRepository.delete(tag);
   }
 
-  private checkTagOwnerShip(authUser: AuthUserDto, tag: TagEntity) {
+  private checkTagOwnership(authUser: AuthUserDto, tag: TagEntity) {
     if (tag.user.id !== authUser.id) {
       throw new ForbiddenException('User do not have access to this tag');
     }
