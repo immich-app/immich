@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **email** | **String** |  | 
 **password** | **String** |  | [optional] 
 **salt** | **String** |  | [optional] 
+**oauthId** | **String** |  | 
 **profileImagePath** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 
 **createdAt** | **String** |  | 

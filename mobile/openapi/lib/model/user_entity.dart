@@ -20,6 +20,7 @@ class UserEntity {
     required this.email,
     this.password,
     this.salt,
+    required this.oauthId,
     required this.profileImagePath,
     required this.shouldChangePassword,
     required this.createdAt,
@@ -53,6 +54,8 @@ class UserEntity {
   ///
   String? salt;
 
+  String oauthId;
+
   String profileImagePath;
 
   bool shouldChangePassword;
@@ -78,6 +81,7 @@ class UserEntity {
      other.email == email &&
      other.password == password &&
      other.salt == salt &&
+     other.oauthId == oauthId &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
      other.createdAt == createdAt &&
@@ -94,6 +98,7 @@ class UserEntity {
     (email.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (salt == null ? 0 : salt!.hashCode) +
+    (oauthId.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
     (createdAt.hashCode) +
@@ -101,7 +106,7 @@ class UserEntity {
     (tags.hashCode);
 
   @override
-  String toString() => 'UserEntity[id=$id, firstName=$firstName, lastName=$lastName, isAdmin=$isAdmin, email=$email, password=$password, salt=$salt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, createdAt=$createdAt, deletedAt=$deletedAt, tags=$tags]';
+  String toString() => 'UserEntity[id=$id, firstName=$firstName, lastName=$lastName, isAdmin=$isAdmin, email=$email, password=$password, salt=$salt, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, createdAt=$createdAt, deletedAt=$deletedAt, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -120,6 +125,7 @@ class UserEntity {
     } else {
       _json[r'salt'] = null;
     }
+      _json[r'oauthId'] = oauthId;
       _json[r'profileImagePath'] = profileImagePath;
       _json[r'shouldChangePassword'] = shouldChangePassword;
       _json[r'createdAt'] = createdAt;
@@ -158,6 +164,7 @@ class UserEntity {
         email: mapValueOfType<String>(json, r'email')!,
         password: mapValueOfType<String>(json, r'password'),
         salt: mapValueOfType<String>(json, r'salt'),
+        oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
@@ -217,6 +224,7 @@ class UserEntity {
     'lastName',
     'isAdmin',
     'email',
+    'oauthId',
     'profileImagePath',
     'shouldChangePassword',
     'createdAt',

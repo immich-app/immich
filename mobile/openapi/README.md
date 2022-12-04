@@ -113,9 +113,9 @@ Class | Method | HTTP request | Description
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 *TagApi* | [**create**](doc//TagApi.md#create) | **POST** /tag | 
+*TagApi* | [**delete**](doc//TagApi.md#delete) | **DELETE** /tag/{id} | 
 *TagApi* | [**findAll**](doc//TagApi.md#findall) | **GET** /tag | 
 *TagApi* | [**findOne**](doc//TagApi.md#findone) | **GET** /tag/{id} | 
-*TagApi* | [**remove**](doc//TagApi.md#remove) | **DELETE** /tag/{id} | 
 *TagApi* | [**update**](doc//TagApi.md#update) | **PATCH** /tag/{id} | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 

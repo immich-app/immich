@@ -10,9 +10,9 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**create**](TagApi.md#create) | **POST** /tag | 
+[**delete**](TagApi.md#delete) | **DELETE** /tag/{id} | 
 [**findAll**](TagApi.md#findall) | **GET** /tag | 
 [**findOne**](TagApi.md#findone) | **GET** /tag/{id} | 
-[**remove**](TagApi.md#remove) | **DELETE** /tag/{id} | 
 [**update**](TagApi.md#update) | **PATCH** /tag/{id} | 
 
 
@@ -54,6 +54,46 @@ No authorization required
 
  - **Content-Type**: application/json
  - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **delete**
+> delete(id)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = TagApi();
+final id = id_example; // String | 
+
+try {
+    api_instance.delete(id);
+} catch (e) {
+    print('Exception when calling TagApi->delete: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -135,49 +175,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **remove**
-> String remove(id)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-
-final api_instance = TagApi();
-final id = id_example; // String | 
-
-try {
-    final result = api_instance.remove(id);
-    print(result);
-} catch (e) {
-    print('Exception when calling TagApi->remove: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
-
-### Return type
-
-**String**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **update**
-> String update(id, updateTagDto)
+> Object update(id, updateTagDto)
 
 
 
@@ -206,7 +205,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**String**
+[**Object**](Object.md)
 
 ### Authorization
 
