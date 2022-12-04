@@ -14,7 +14,6 @@ This feature implements a tagging system for Immich. The goal is to achieve the 
 ## Implementation
 
 - Tags are stored in a separate table.
-- Tags are associated with assets through a one-to-many relationship.
 - Tags type are defined as an enum (i.e Objects, Faces, Custom (User Defined)...etc).
 - Migrate the current `smart_info` album to the tags table - How to do this undisruptively? - add then delete entry?
 - Search interface for tags
@@ -23,15 +22,6 @@ This feature implements a tagging system for Immich. The goal is to achieve the 
 - Tags are displayed in the asset view
 - Smart album creation from tags?
 - Tags can only be added by the owner
-
-## Tags table
-
-| Column  | Type                        | Description     |
-| ------- | --------------------------- | --------------- |
-| id      | int                         | Primary key     |
-| assetId | string                      | Name of the tag |
-| type    | string (enum defined in TS) | Type of the tag |
-| tag     | string                      | List of tags    |
 
 ## Tag types (extensible)
 

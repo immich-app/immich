@@ -1,7 +1,7 @@
 import { TagEntity, TagType } from '@app/database/entities/tag.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { IAssetRepository } from '../asset/asset-repository';
+// import { IAssetRepository } from '../asset/asset-repository';
 import { IUserRepository } from '../user/user-repository';
 import { ITagRepository } from './tag.repository';
 import { TagService } from './tag.service';
@@ -10,7 +10,7 @@ describe('TagService', () => {
   let sut: TagService;
   let userRepositoryMock: jest.Mocked<IUserRepository>;
   let tagRepositoryMock: jest.Mocked<ITagRepository>;
-  let assetRepositoryMock: jest.Mocked<IAssetRepository>;
+  // let assetRepositoryMock: jest.Mocked<IAssetRepository>;
 
   const user1AuthUser: AuthUserDto = Object.freeze({
     id: '1111',
@@ -30,18 +30,18 @@ describe('TagService', () => {
     tags: [],
   });
 
-  const user2: UserEntity = Object.freeze({
-    id: '2222',
-    firstName: 'Alex',
-    lastName: 'Tran',
-    isAdmin: true,
-    email: 'testuser2@email.com',
-    profileImagePath: '',
-    shouldChangePassword: true,
-    createdAt: '2022-12-02T19:29:23.603Z',
-    deletedAt: undefined,
-    tags: [],
-  });
+  // const user2: UserEntity = Object.freeze({
+  //   id: '2222',
+  //   firstName: 'Alex',
+  //   lastName: 'Tran',
+  //   isAdmin: true,
+  //   email: 'testuser2@email.com',
+  //   profileImagePath: '',
+  //   shouldChangePassword: true,
+  //   createdAt: '2022-12-02T19:29:23.603Z',
+  //   deletedAt: undefined,
+  //   tags: [],
+  // });
 
   const user1Tag1: TagEntity = Object.freeze({
     name: 'user 1 tag 1',
