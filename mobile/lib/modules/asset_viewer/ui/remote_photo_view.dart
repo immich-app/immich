@@ -20,10 +20,10 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
   @override
   Widget build(BuildContext context) {
-    bool allowMoving = _status == _RemoteImageStatus.full;
+    final bool forbidZoom = _status == _RemoteImageStatus.thumbnail;
 
     return IgnorePointer(
-      ignoring: !allowMoving,
+      ignoring: forbidZoom,
       child: Listener(
         onPointerMove: handleSwipUpDown,
         child: PhotoView(
@@ -115,7 +115,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
     _thumbnailProvider = _authorizedImageProvider(
       getThumbnailUrl(widget.asset.remote!),
-      widget.asset.id,
+      getThumbnailCacheKey(widget.asset.remote!),
     );
     _imageProvider = _thumbnailProvider;
 
@@ -131,7 +131,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     if (widget.loadPreview) {
       _previewProvider = _authorizedImageProvider(
         getThumbnailUrl(widget.asset.remote!, type: ThumbnailFormat.JPEG),
-        "${widget.asset.id}_previewStage",
+        getThumbnailCacheKey(widget.asset.remote!, type: ThumbnailFormat.JPEG),
       );
       _previewProvider.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((ImageInfo imageInfo, _) {
@@ -143,7 +143,7 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     if (widget.loadOriginal) {
       _fullProvider = _authorizedImageProvider(
         getImageUrl(widget.asset.remote!),
-        "${widget.asset.id}_fullStage",
+        getImageCacheKey(widget.asset.remote!),
       );
       _fullProvider.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((ImageInfo imageInfo, _) {
