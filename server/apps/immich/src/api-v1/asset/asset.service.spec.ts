@@ -11,11 +11,13 @@ import { DownloadService } from '../../modules/download/download.service';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { IAssetUploadedJob, IVideoTranscodeJob } from '@app/job';
 import { Queue } from 'bull';
+import { IAlbumRepository } from "../album/album-repository";
 
 describe('AssetService', () => {
   let sui: AssetService;
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
+  let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
   let backgroundTaskServiceMock: jest.Mocked<BackgroundTaskService>;
   let assetUploadedQueueMock: jest.Mocked<Queue<IAssetUploadedJob>>;
@@ -122,6 +124,7 @@ describe('AssetService', () => {
       getAssetWithNoThumbnail: jest.fn(),
       getAssetWithNoSmartInfo: jest.fn(),
       getExistingAssets: jest.fn(),
+      countByIdAndUser: jest.fn(),
     };
 
     downloadServiceMock = {
@@ -130,6 +133,7 @@ describe('AssetService', () => {
 
     sui = new AssetService(
       assetRepositoryMock,
+      albumRepositoryMock,
       a,
       backgroundTaskServiceMock,
       assetUploadedQueueMock,

@@ -10,13 +10,18 @@ import { CommunicationModule } from '../communication/communication.module';
 import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
+import { ALBUM_REPOSITORY, AlbumRepository } from '../album/album-repository';
+import { AlbumEntity } from '@app/database/entities/album.entity';
+import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
+import { UserEntity } from '@app/database/entities/user.entity';
+import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 
 @Module({
   imports: [
     CommunicationModule,
     BackgroundTaskModule,
     DownloadModule,
-    TypeOrmModule.forFeature([AssetEntity]),
+    TypeOrmModule.forFeature([AssetEntity, AlbumEntity, UserAlbumEntity, UserEntity, AssetAlbumEntity]),
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,
       defaultJobOptions: {
@@ -41,6 +46,10 @@ import { DownloadModule } from '../../modules/download/download.module';
     {
       provide: ASSET_REPOSITORY,
       useClass: AssetRepository,
+    },
+    {
+      provide: ALBUM_REPOSITORY,
+      useClass: AlbumRepository,
     },
   ],
   exports: [AssetService],

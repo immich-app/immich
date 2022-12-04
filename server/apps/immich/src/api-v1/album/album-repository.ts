@@ -25,6 +25,7 @@ export interface IAlbumRepository {
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
   getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]>;
   getCountByUserId(userId: string): Promise<AlbumCountResponseDto>;
+  getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
 }
 
 export const ALBUM_REPOSITORY = 'ALBUM_REPOSITORY';
@@ -282,5 +283,18 @@ export class AlbumRepository implements IAlbumRepository {
     album.albumThumbnailAssetId = updateAlbumDto.albumThumbnailAssetId || album.albumThumbnailAssetId;
 
     return this.albumRepository.save(album);
+  }
+
+  async getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number> {
+    const result = await this
+        .userAlbumRepository
+        .createQueryBuilder('usa')
+        .select('count(aa)', 'count')
+        .innerJoin('asset_album', 'aa', 'aa.albumId = usa.albumId')
+        .where('aa.assetId = :assetId', { assetId })
+        .andWhere('usa.sharedUserId = :userId', { userId })
+        .getRawOne();
+
+    return result.count;
   }
 }

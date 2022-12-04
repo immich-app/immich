@@ -21,7 +21,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { Response as Res} from 'express';
+import { Response as Res } from 'express';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
@@ -86,10 +86,12 @@ export class AssetController {
 
   @Get('/download/:assetId')
   async downloadFile(
+    @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
+    await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.downloadFile(query, assetId, res);
   }
 
@@ -110,22 +112,26 @@ export class AssetController {
   @Get('/file/:assetId')
   @Header('Cache-Control', 'max-age=3600')
   async serveFile(
+    @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
+    await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.serveFile(assetId, query, res, headers);
   }
 
   @Get('/thumbnail/:assetId')
   @Header('Cache-Control', 'max-age=3600')
   async getAssetThumbnail(
+    @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Param('assetId') assetId: string,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ): Promise<any> {
+    await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.getAssetThumbnail(assetId, query, res, headers);
   }
 
@@ -203,7 +209,8 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Param('assetId') assetId: string,
   ): Promise<AssetResponseDto> {
-    return await this.assetService.getAssetById(authUser, assetId);
+    await this.assetService.checkAssetsAccess(authUser, [assetId]);
+    return await this.assetService.getAssetById(assetId);
   }
 
   /**
@@ -215,7 +222,8 @@ export class AssetController {
     @Param('assetId') assetId: string,
     @Body() dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
-    return await this.assetService.updateAssetById(authUser, assetId, dto);
+    await this.assetService.checkAssetsAccess(authUser, [assetId], true);
+    return await this.assetService.updateAssetById(assetId, dto);
   }
 
   @Delete('/')
@@ -223,17 +231,19 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) assetIds: DeleteAssetDto,
   ): Promise<DeleteAssetResponseDto[]> {
+    await this.assetService.checkAssetsAccess(authUser, assetIds.ids, true);
+
     const deleteAssetList: AssetResponseDto[] = [];
 
     for (const id of assetIds.ids) {
-      const assets = await this.assetService.getAssetById(authUser, id);
+      const assets = await this.assetService.getAssetById(id);
       if (!assets) {
         continue;
       }
       deleteAssetList.push(assets);
 
       if (assets.livePhotoVideoId) {
-        const livePhotoVideo = await this.assetService.getAssetById(authUser, assets.livePhotoVideoId);
+        const livePhotoVideo = await this.assetService.getAssetById(assets.livePhotoVideoId);
         if (livePhotoVideo) {
           deleteAssetList.push(livePhotoVideo);
           assetIds.ids = [...assetIds.ids, livePhotoVideo.id];
@@ -241,7 +251,7 @@ export class AssetController {
       }
     }
 
-    const result = await this.assetService.deleteAssetById(authUser, assetIds);
+    const result = await this.assetService.deleteAssetById(assetIds);
 
     result.forEach((res) => {
       deleteAssetList.filter((a) => a.id == res.id && res.status == DeleteAssetStatusEnum.SUCCESS);

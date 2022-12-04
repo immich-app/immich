@@ -54,6 +54,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
+import { ALBUM_REPOSITORY, IAlbumRepository } from '../album/album-repository';
 
 const fileInfo = promisify(stat);
 
@@ -62,6 +63,9 @@ export class AssetService {
   constructor(
     @Inject(ASSET_REPOSITORY)
     private _assetRepository: IAssetRepository,
+
+    @Inject(ALBUM_REPOSITORY)
+    private _albumRepository: IAlbumRepository,
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
@@ -221,20 +225,16 @@ export class AssetService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
+  public async getAssetById(assetId: string): Promise<AssetResponseDto> {
     const asset = await this._assetRepository.getById(assetId);
 
     return mapAsset(asset);
   }
 
-  public async updateAssetById(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+  public async updateAssetById(assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
       throw new BadRequestException('Asset not found');
-    }
-
-    if (authUser.id !== asset.userId) {
-      throw new ForbiddenException('Not the owner');
     }
 
     const updatedAsset = await this._assetRepository.update(asset, dto);
@@ -496,14 +496,13 @@ export class AssetService {
     }
   }
 
-  public async deleteAssetById(authUser: AuthUserDto, assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+  public async deleteAssetById(assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
     const result: DeleteAssetResponseDto[] = [];
 
     const target = assetIds.ids;
     for (const assetId of target) {
       const res = await this.assetRepository.delete({
         id: assetId,
-        userId: authUser.id,
       });
 
       if (res.affected) {
@@ -641,6 +640,26 @@ export class AssetService {
 
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this._assetRepository.getAssetCountByUserId(authUser.id);
+  }
+
+  async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
+    for (const assetId of assetIds) {
+      // Step 1: Check if user owns asset
+      if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
+        continue;
+      }
+
+      // Avoid additional checks if ownership is required
+      if (!mustBeOwner) {
+        // Step 2: Check if asset is part of an album shared with me
+        if ((await this._albumRepository.getSharedWithUserAlbumCount(authUser.id, assetId)) > 0) {
+          continue;
+        }
+
+        //TODO: Step 3: Check if asset is part of a public album
+      }
+      throw new ForbiddenException();
+    }
   }
 }
 

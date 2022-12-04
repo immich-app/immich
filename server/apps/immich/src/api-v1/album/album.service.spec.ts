@@ -123,6 +123,7 @@ describe('Album service', () => {
       updateAlbum: jest.fn(),
       getListByAssetId: jest.fn(),
       getCountByUserId: jest.fn(),
+      getSharedWithUserAlbumCount: jest.fn(),
     };
 
     assetRepositoryMock = {
@@ -142,6 +143,7 @@ describe('Album service', () => {
       getAssetWithNoThumbnail: jest.fn(),
       getAssetWithNoSmartInfo: jest.fn(),
       getExistingAssets: jest.fn(),
+      countByIdAndUser: jest.fn(),
     };
 
     downloadServiceMock = {
