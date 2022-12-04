@@ -87,20 +87,21 @@
 	}
 
 	const locale = navigator.languages;
-
-	const getDateRange = () => {
-		const startDate = new Date(album.assets[0].createdAt);
-		const endDate = new Date(album.assets[album.assetCount - 1].createdAt);
-
-		const timeFormatOption: Intl.DateTimeFormatOptions = {
+	const albumDateFormat: Intl.DateTimeFormatOptions = {
 			month: 'short',
 			day: 'numeric',
 			year: 'numeric'
 		};
 
-		const startDateString = startDate.toLocaleDateString(locale, timeFormatOption);
-		const endDateString = endDate.toLocaleDateString(locale, timeFormatOption);
-		return `${startDateString} - ${endDateString}`;
+	const getDateRange = () => {
+		const startDate = new Date(album.assets[0].createdAt);
+		const endDate = new Date(album.assets[album.assetCount - 1].createdAt);
+
+		const startDateString = startDate.toLocaleDateString(locale, albumDateFormat);
+		const endDateString = endDate.toLocaleDateString(locale, albumDateFormat);
+
+		// If the start and end date are the same, only show one date
+		return startDateString === endDateString ? startDateString : `${startDateString} - ${endDateString}`;
 	};
 
 	onMount(async () => {
