@@ -5,7 +5,6 @@
 	import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
 	import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
 	import DeleteRestore from 'svelte-material-icons/DeleteRestore.svelte';
-	import moment from 'moment';
 
 	export let allUsers: Array<UserResponseDto>;
 
@@ -15,8 +14,15 @@
 		return user.deletedAt != null;
 	};
 
+	const locale = navigator.languages;
+	const deleteDateFormat: Intl.DateTimeFormatOptions = {
+		month: 'long', day: 'numeric', year: 'numeric'
+	};
+
 	const getDeleteDate = (user: UserResponseDto): string => {
-		return moment(user.deletedAt).add(7, 'days').format('LL');
+		let deletedAt = new Date(user.deletedAt ? user.deletedAt : Date.now());
+		deletedAt.setDate(deletedAt.getDate() + 7);
+		return deletedAt.toLocaleString(locale, deleteDateFormat);
 	};
 </script>
 

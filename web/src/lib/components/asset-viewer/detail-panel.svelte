@@ -4,11 +4,10 @@
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
 	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
-	import moment from 'moment';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
-	import { getHumanReadableBytes } from '../../utils/byte-units';
+	import { asByteUnitString } from '../../utils/byte-units';
 
 	type Leaflet = typeof import('leaflet');
 	type LeafletMap = import('leaflet').Map;
@@ -70,6 +69,8 @@
 
 		return undefined;
 	};
+
+	const locale = navigator.languages;
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -92,18 +93,18 @@
 		{/if}
 
 		{#if asset.exifInfo?.dateTimeOriginal}
+			{@const assetDateTimeOriginal = new Date(asset.exifInfo.dateTimeOriginal)}
 			<div class="flex gap-4 py-4">
 				<div>
 					<Calendar size="24" />
 				</div>
 
 				<div>
-					<p>{moment(asset.exifInfo.dateTimeOriginal).format('MMM DD, YYYY')}</p>
+					<p>{assetDateTimeOriginal.toLocaleDateString(locale, {month:'short', day:'numeric', year: 'numeric'})}</p>
 					<div class="flex gap-2 text-sm">
 						<p>
-							{moment(asset.exifInfo.dateTimeOriginal).format('ddd, hh:mm A')}
+							{assetDateTimeOriginal.toLocaleString(locale, {weekday:'short', hour: 'numeric', minute: '2-digit', timeZoneName:'longOffset'})}
 						</p>
-						<p>GMT{moment(asset.exifInfo.dateTimeOriginal).format('Z')}</p>
 					</div>
 				</div>
 			</div>{/if}
@@ -124,7 +125,7 @@
 
 							<p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
 						{/if}
-						<p>{getHumanReadableBytes(asset.exifInfo.fileSizeInByte)}</p>
+						<p>{asByteUnitString(asset.exifInfo.fileSizeInByte)}</p>
 					</div>
 				</div>
 			</div>
@@ -137,14 +138,14 @@
 				<div>
 					<p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
 					<div class="flex text-sm gap-2">
-						<p>{`ƒ/${asset.exifInfo.fNumber}` || ''}</p>
+						<p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString(locale)}` || ''}</p>
 
 						{#if asset.exifInfo.exposureTime}
 							<p>{`1/${Math.floor(1 / asset.exifInfo.exposureTime)}`}</p>
 						{/if}
 
 						{#if asset.exifInfo.focalLength}
-							<p>{`${asset.exifInfo.focalLength} mm`}</p>
+							<p>{`${asset.exifInfo.focalLength.toLocaleString(locale)} mm`}</p>
 						{/if}
 
 						{#if asset.exifInfo.iso}
@@ -164,7 +165,9 @@
 				<div>
 					<p>{asset.exifInfo.city}</p>
 					<div class="flex text-sm gap-2">
-						<p>{asset.exifInfo.state},</p>
+						<p>{asset.exifInfo.state}</p>
+					</div>
+					<div class="flex text-sm gap-2">
 						<p>{asset.exifInfo.country}</p>
 					</div>
 				</div>

@@ -53,6 +53,8 @@
 	onMount(async () => {
 		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || NO_THUMBNAIL;
 	});
+
+	const locale = navigator.languages;
 </script>
 
 <div
@@ -87,7 +89,7 @@
 		</p>
 
 		<span class="text-xs flex gap-2 dark:text-immich-dark-fg" data-testid="album-details">
-			<p>{album.assetCount} items</p>
+			<p>{album.assetCount.toLocaleString(locale)} {album.assetCount == 1 ? `item` : `items`}</p>
 
 			{#if album.shared}
 				<p>·</p>
