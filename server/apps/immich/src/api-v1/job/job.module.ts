@@ -13,6 +13,7 @@ import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
 import { TagEntity } from '@app/database/entities/tag.entity';
+import { TAG_REPOSITORY, TagRepository } from '../tag/tag.repository';
 
 @Module({
   imports: [
@@ -77,6 +78,10 @@ import { TagEntity } from '@app/database/entities/tag.entity';
     {
       provide: ASSET_REPOSITORY,
       useClass: AssetRepository,
+    },
+    {
+      provide: TAG_REPOSITORY,
+      useClass: TagRepository,
     },
   ],
 })

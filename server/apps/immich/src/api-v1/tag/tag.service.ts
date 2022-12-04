@@ -20,7 +20,7 @@ export class TagService {
       throw new BadRequestException('User not found');
     }
 
-    const existingTags = await this._tagRepository.getAllTagsByUserId(authUser.id);
+    const existingTags = await this._tagRepository.getByUserId(authUser.id);
 
     const existingTag = existingTags.find((tag) => tag.name === createTagDto.name && tag.type === createTagDto.type);
 
@@ -32,7 +32,7 @@ export class TagService {
   }
 
   findAll(authUser: AuthUserDto) {
-    return this._tagRepository.getAllTagsByUserId(authUser.id);
+    return this._tagRepository.getByUserId(authUser.id);
   }
 
   async findOne(authUser: AuthUserDto, id: string): Promise<TagEntity | null> {

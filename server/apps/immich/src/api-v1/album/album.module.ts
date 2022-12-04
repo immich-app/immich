@@ -11,6 +11,7 @@ import { AlbumRepository, ALBUM_REPOSITORY } from './album-repository';
 import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { TagEntity } from '@app/database/entities/tag.entity';
+import { TagRepository, TAG_REPOSITORY } from '../tag/tag.repository';
 
 @Module({
   imports: [
@@ -27,6 +28,10 @@ import { TagEntity } from '@app/database/entities/tag.entity';
     {
       provide: ASSET_REPOSITORY,
       useClass: AssetRepository,
+    },
+    {
+      provide: TAG_REPOSITORY,
+      useClass: TagRepository,
     },
   ],
 })

@@ -14,7 +14,7 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
-import { TagEntity } from '@app/database/entities/tag.entity';
+import { ITagRepository, TAG_REPOSITORY } from '../tag/tag.repository';
 
 export interface IAssetRepository {
   create(
@@ -54,8 +54,7 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @InjectRepository(TagEntity)
-    private tagRepository: Repository<TagEntity>,
+    @Inject(TAG_REPOSITORY) private _tagRepository: ITagRepository,
   ) {}
 
   async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
@@ -291,16 +290,9 @@ export class AssetRepository implements IAssetRepository {
    */
   async update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
     asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
-    const tags: TagEntity[] = [];
 
-    if (dto.tagIds && dto.tagIds.length > 0) {
-      for (const tagId of dto.tagIds) {
-        const tag = await this.tagRepository.findOne({ where: { id: tagId } });
-        if (tag) {
-          tags.push(tag);
-        }
-      }
-
+    if (dto.tagIds) {
+      const tags = await this._tagRepository.getByIds(dto.tagIds);
       asset.tags = tags;
     }
 

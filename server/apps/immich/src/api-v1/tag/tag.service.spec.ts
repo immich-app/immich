@@ -117,30 +117,31 @@ describe('TagService', () => {
 
     tagRepositoryMock = {
       create: jest.fn(),
+      getByIds: jest.fn(),
       getById: jest.fn(),
-      getAllTagsByUserId: jest.fn(),
+      getByUserId: jest.fn(),
       delete: jest.fn(),
       update: jest.fn(),
     };
 
-    assetRepositoryMock = {
-      create: jest.fn(),
-      update: jest.fn(),
-      getAllByUserId: jest.fn(),
-      getAllByDeviceId: jest.fn(),
-      getAssetCountByTimeBucket: jest.fn(),
-      getById: jest.fn(),
-      getDetectedObjectsByUserId: jest.fn(),
-      getLocationsByUserId: jest.fn(),
-      getSearchPropertiesByUserId: jest.fn(),
-      getAssetByTimeBucket: jest.fn(),
-      getAssetByChecksum: jest.fn(),
-      getAssetCountByUserId: jest.fn(),
-      getAssetWithNoEXIF: jest.fn(),
-      getAssetWithNoThumbnail: jest.fn(),
-      getAssetWithNoSmartInfo: jest.fn(),
-      getExistingAssets: jest.fn(),
-    };
+    // assetRepositoryMock = {
+    //   create: jest.fn(),
+    //   update: jest.fn(),
+    //   getAllByUserId: jest.fn(),
+    //   getAllByDeviceId: jest.fn(),
+    //   getAssetCountByTimeBucket: jest.fn(),
+    //   getById: jest.fn(),
+    //   getDetectedObjectsByUserId: jest.fn(),
+    //   getLocationsByUserId: jest.fn(),
+    //   getSearchPropertiesByUserId: jest.fn(),
+    //   getAssetByTimeBucket: jest.fn(),
+    //   getAssetByChecksum: jest.fn(),
+    //   getAssetCountByUserId: jest.fn(),
+    //   getAssetWithNoEXIF: jest.fn(),
+    //   getAssetWithNoThumbnail: jest.fn(),
+    //   getAssetWithNoSmartInfo: jest.fn(),
+    //   getExistingAssets: jest.fn(),
+    // };
 
     sut = new TagService(tagRepositoryMock, userRepositoryMock);
   });
@@ -152,7 +153,7 @@ describe('TagService', () => {
     };
 
     userRepositoryMock.get.mockResolvedValue(user1);
-    tagRepositoryMock.getAllTagsByUserId.mockResolvedValue([user1Tag2]);
+    tagRepositoryMock.getByUserId.mockResolvedValue([user1Tag2]);
     tagRepositoryMock.create.mockResolvedValue(user1Tag1);
 
     const result = await sut.create(user1AuthUser, createTagDto);
@@ -170,7 +171,7 @@ describe('TagService', () => {
 
     userRepositoryMock.get.mockResolvedValue(user1);
     tagRepositoryMock.create.mockResolvedValue(user1Tag1);
-    tagRepositoryMock.getAllTagsByUserId.mockResolvedValue([user1Tag1]);
+    tagRepositoryMock.getByUserId.mockResolvedValue([user1Tag1]);
 
     await expect(sut.create(user1AuthUser, createTagDto)).rejects.toThrow();
   });

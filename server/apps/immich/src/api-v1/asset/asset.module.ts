@@ -11,13 +11,15 @@ import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { TagEntity } from '@app/database/entities/tag.entity';
+import { TagRepository, TAG_REPOSITORY } from '../tag/tag.repository';
+import { UserEntity } from '@app/database/entities/user.entity';
 
 @Module({
   imports: [
     CommunicationModule,
     BackgroundTaskModule,
     DownloadModule,
-    TypeOrmModule.forFeature([AssetEntity, TagEntity]),
+    TypeOrmModule.forFeature([AssetEntity, TagEntity, UserEntity]),
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,
       defaultJobOptions: {
@@ -42,6 +44,10 @@ import { TagEntity } from '@app/database/entities/tag.entity';
     {
       provide: ASSET_REPOSITORY,
       useClass: AssetRepository,
+    },
+    {
+      provide: TAG_REPOSITORY,
+      useClass: TagRepository,
     },
   ],
   exports: [AssetService],

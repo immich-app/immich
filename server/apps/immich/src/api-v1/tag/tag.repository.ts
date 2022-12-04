@@ -8,8 +8,9 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 
 export interface ITagRepository {
   create(userId: UserEntity, tagType: TagType, tagName: string): Promise<TagEntity>;
+  getByIds(ids: string[]): Promise<TagEntity[]>;
   getById(tagId: string): Promise<TagEntity | null>;
-  getAllTagsByUserId(userId: string): Promise<TagEntity[]>;
+  getByUserId(userId: string): Promise<TagEntity[]>;
   update(tag: TagEntity, updateTagDto: UpdateTagDto): Promise<TagEntity | null>;
   delete(tag: TagEntity): Promise<void>;
 }
@@ -42,7 +43,21 @@ export class TagRepository implements ITagRepository {
     return await this.tagRepository.findOne({ where: { id: tagId }, relations: ['user'] });
   }
 
-  async getAllTagsByUserId(userId: string): Promise<TagEntity[]> {
+  async getByIds(ids: string[]): Promise<TagEntity[]> {
+    const tags: TagEntity[] = [];
+
+    for (const id of ids) {
+      const tag = await this.getById(id);
+
+      if (tag) {
+        tags.push(tag);
+      }
+    }
+
+    return tags;
+  }
+
+  async getByUserId(userId: string): Promise<TagEntity[]> {
     return await this.tagRepository.find({ where: { user: { id: userId } } });
   }
 
