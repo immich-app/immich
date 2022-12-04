@@ -4,6 +4,7 @@
 	import Dns from 'svelte-material-icons/Dns.svelte';
 	import LoadingSpinner from './loading-spinner.svelte';
 	import { api, ServerInfoResponseDto } from '@api';
+	import { asByteUnitString } from '../../utils/byte-units';
 
 	let isServerOk = true;
 	let serverVersion = '';
@@ -61,7 +62,7 @@
 						style={`width: ${getStorageUsagePercentage()}%`}
 					/>
 				</div>
-				<p class="text-xs">{serverInfo?.diskUse} of {serverInfo?.diskSize} used</p>
+				<p class="text-xs">{asByteUnitString(serverInfo?.diskUseRaw)} of {asByteUnitString(serverInfo?.diskSizeRaw)} used</p>
 			{:else}
 				<div class="mt-2">
 					<LoadingSpinner />

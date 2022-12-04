@@ -7,7 +7,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
-	import { getBytesWithUnit } from '../../utils/byte-units';
+	import { asByteUnitString } from '../../utils/byte-units';
 
 	type Leaflet = typeof import('leaflet');
 	type LeafletMap = import('leaflet').Map;
@@ -125,7 +125,7 @@
 
 							<p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
 						{/if}
-						<p>{getBytesWithUnit(asset.exifInfo.fileSizeInByte)}</p>
+						<p>{asByteUnitString(asset.exifInfo.fileSizeInByte)}</p>
 					</div>
 				</div>
 			</div>

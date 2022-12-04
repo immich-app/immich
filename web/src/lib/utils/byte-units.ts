@@ -1,16 +1,14 @@
 /**
- * Localized number of bytes with a unit.
+ * Convert bytes to best human readable unit and number of that unit.
  *
- * For `1536` bytes:
- * * en: `1.5 KiB`
- * * de: `1,5 KiB`
+ * * For `1024` bytes, returns `1` and `KiB`.
+ * * For `1536` bytes, returns `1.5` and `KiB`.
  *
  * @param bytes number of bytes
- * @param precision maximum number of decimal places, default is `1`
- * @returns localized bytes with unit as string
+ * @param maxPrecision maximum number of decimal places, default is `1`
+ * @returns size (number) and unit (string)
  */
-export function getBytesWithUnit(bytes: number, precision = 1): string {
-	const locale = Array.from(navigator.languages);
+export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, string] {
 	const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB'];
 
 	let magnitude = 0;
@@ -24,7 +22,24 @@ export function getBytesWithUnit(bytes: number, precision = 1): string {
 		}
 	}
 
-	remainder = parseFloat(remainder.toFixed(precision));
+	remainder = parseFloat(remainder.toFixed(maxPrecision));
 
-	return `${remainder.toLocaleString(locale)} ${units[magnitude]}`;
+	return [remainder, units[magnitude]];
+}
+
+/**
+ * Localized number of bytes with a unit.
+ *
+ * For `1536` bytes:
+ * * en: `1.5 KiB`
+ * * de: `1,5 KiB`
+ *
+ * @param bytes number of bytes
+ * @param maxPrecision maximum number of decimal places, default is `1`
+ * @returns localized bytes with unit as string
+ */
+export function asByteUnitString(bytes: number, maxPrecision = 1): string {
+	const locale = Array.from(navigator.languages);
+	const bytesWithUnit = getBytesWithUnit(bytes, maxPrecision);
+	return `${bytesWithUnit[0].toLocaleString(locale)} ${bytesWithUnit[1]}`;
 }
