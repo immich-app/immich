@@ -3,7 +3,7 @@ import { TagEntity, TagType } from '@app/database/entities/tag.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { UpdateTagDto } from './dto/update-tag.dto';
 
 export interface ITagRepository {
@@ -44,17 +44,12 @@ export class TagRepository implements ITagRepository {
   }
 
   async getByIds(ids: string[]): Promise<TagEntity[]> {
-    const tags: TagEntity[] = [];
-
-    for (const id of ids) {
-      const tag = await this.getById(id);
-
-      if (tag) {
-        tags.push(tag);
-      }
-    }
-
-    return tags;
+    return await this.tagRepository.find({
+      where: { id: In(ids) },
+      relations: {
+        user: true,
+      },
+    });
   }
 
   async getByUserId(userId: string): Promise<TagEntity[]> {
