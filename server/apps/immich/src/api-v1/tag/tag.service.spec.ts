@@ -28,36 +28,27 @@ describe('TagService', () => {
     createdAt: '2022-12-02T19:29:23.603Z',
     deletedAt: undefined,
     tags: [],
+    oauthId: 'oauth-id-1',
   });
 
-  // const user2: UserEntity = Object.freeze({
-  //   id: '2222',
-  //   firstName: 'Alex',
-  //   lastName: 'Tran',
-  //   isAdmin: true,
-  //   email: 'testuser2@email.com',
-  //   profileImagePath: '',
-  //   shouldChangePassword: true,
-  //   createdAt: '2022-12-02T19:29:23.603Z',
-  //   deletedAt: undefined,
-  //   tags: [],
-  // });
+  const user2: UserEntity = Object.freeze({
+    id: '2222',
+    firstName: 'Alex',
+    lastName: 'Tran',
+    isAdmin: true,
+    email: 'testuser2@email.com',
+    profileImagePath: '',
+    shouldChangePassword: true,
+    createdAt: '2022-12-02T19:29:23.603Z',
+    deletedAt: undefined,
+    tags: [],
+    oauthId: 'oauth-id-2',
+  });
 
   const user1Tag1: TagEntity = Object.freeze({
     name: 'user 1 tag 1',
     type: TagType.CUSTOM,
-    user: {
-      id: '1111',
-      firstName: 'Alex',
-      lastName: 'Tran',
-      isAdmin: true,
-      email: 'testuser@email.com',
-      profileImagePath: '',
-      shouldChangePassword: true,
-      createdAt: '2022-12-02T19:29:23.603Z',
-      deletedAt: undefined,
-      tags: [],
-    },
+    user: user1,
     renameTagId: '',
     id: 'user1-tag-1-id',
     assets: [],
@@ -66,18 +57,7 @@ describe('TagService', () => {
   const user1Tag2: TagEntity = Object.freeze({
     name: 'user 1 tag 2',
     type: TagType.CUSTOM,
-    user: {
-      id: '1111',
-      firstName: 'Alex',
-      lastName: 'Tran',
-      isAdmin: true,
-      email: 'testuser@email.com',
-      profileImagePath: '',
-      shouldChangePassword: true,
-      createdAt: '2022-12-02T19:29:23.603Z',
-      deletedAt: undefined,
-      tags: [],
-    },
+    user: user1,
     renameTagId: '',
     id: 'user1-tag-2-id',
     assets: [],
@@ -86,18 +66,7 @@ describe('TagService', () => {
   const user2Tag1: TagEntity = Object.freeze({
     name: 'user 2 tag 1',
     type: TagType.CUSTOM,
-    user: {
-      id: '2222',
-      firstName: 'Alex',
-      lastName: 'Tran',
-      isAdmin: true,
-      email: 'testuser2@email.com',
-      profileImagePath: '',
-      shouldChangePassword: true,
-      createdAt: '2022-12-02T19:29:23.603Z',
-      deletedAt: undefined,
-      tags: [],
-    },
+    user: user2,
     renameTagId: '',
     id: 'user2-tag-1-id',
     assets: [],
@@ -113,6 +82,7 @@ describe('TagService', () => {
       getByEmail: jest.fn(),
       getList: jest.fn(),
       restore: jest.fn(),
+      getByOAuthId: jest.fn(),
     };
 
     tagRepositoryMock = {
