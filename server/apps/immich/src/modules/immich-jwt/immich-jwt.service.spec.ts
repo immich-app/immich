@@ -52,6 +52,7 @@ describe('ImmichJwtService', () => {
         email: 'test@immich.com',
         password: 'changeme',
         salt: '123',
+        oauthId: '',
         profileImagePath: '',
         shouldChangePassword: false,
         createdAt: 'today',
