@@ -1047,16 +1047,16 @@
         ]
       }
     },
-    "/auth/login": {
+    "/tag": {
       "post": {
-        "operationId": "login",
+        "operationId": "create",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginCredentialDto"
+                "$ref": "#/components/schemas/CreateTagDto"
               }
             }
           }
@@ -1067,204 +1067,86 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDto"
+                  "$ref": "#/components/schemas/TagEntity"
                 }
               }
             }
           }
         },
         "tags": [
-          "Authentication"
+          "Tag"
+        ]
+      },
+      "get": {
+        "operationId": "findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagEntity"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
         ]
       }
     },
-    "/auth/admin-sign-up": {
-      "post": {
-        "operationId": "adminSignUp",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SignUpDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminSignupResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The server already has an admin"
-          }
-        },
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/auth/validateToken": {
-      "post": {
-        "operationId": "validateAccessToken",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidateAccessTokenResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Authentication"
-        ],
-        "security": [
+    "/tag/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "parameters": [
           {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/auth/logout": {
-      "post": {
-        "operationId": "logout",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LogoutResponseDto"
-                }
-              }
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
             }
           }
-        },
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/oauth/config": {
-      "post": {
-        "operationId": "generateConfig",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthConfigDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OAuthConfigResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "OAuth"
-        ]
-      }
-    },
-    "/oauth/callback": {
-      "post": {
-        "operationId": "callback",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthCallbackDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "OAuth"
-        ]
-      }
-    },
-    "/device-info": {
-      "post": {
-        "operationId": "createDeviceInfo",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateDeviceInfoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Device Info"
         ],
-        "security": [
-          {
-            "bearer": []
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
           }
+        },
+        "tags": [
+          "Tag"
         ]
       },
       "patch": {
-        "operationId": "updateDeviceInfo",
-        "parameters": [],
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateDeviceInfoDto"
+                "$ref": "#/components/schemas/UpdateTagDto"
               }
             }
           }
@@ -1275,103 +1157,35 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
+                  "type": "object"
                 }
               }
             }
           }
         },
         "tags": [
-          "Device Info"
-        ],
-        "security": [
+          "Tag"
+        ]
+      },
+      "delete": {
+        "operationId": "delete",
+        "parameters": [
           {
-            "bearer": []
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        ]
-      }
-    },
-    "/server-info": {
-      "get": {
-        "operationId": "getServerInfo",
-        "parameters": [],
+        ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerInfoResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/ping": {
-      "get": {
-        "operationId": "pingServer",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerPingResponse"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/version": {
-      "get": {
-        "operationId": "getServerVersion",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerVersionReponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/stats": {
-      "get": {
-        "operationId": "getStats",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerStatsResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
+          "Tag"
         ]
       }
     },
@@ -1798,6 +1612,334 @@
         ]
       }
     },
+    "/auth/login": {
+      "post": {
+        "operationId": "login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginCredentialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/admin-sign-up": {
+      "post": {
+        "operationId": "adminSignUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSignupResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The server already has an admin"
+          }
+        },
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/validateToken": {
+      "post": {
+        "operationId": "validateAccessToken",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateAccessTokenResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/oauth/config": {
+      "post": {
+        "operationId": "generateConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthConfigResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
+    "/oauth/callback": {
+      "post": {
+        "operationId": "callback",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthCallbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
+    "/device-info": {
+      "post": {
+        "operationId": "createDeviceInfo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDeviceInfoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Device Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateDeviceInfo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeviceInfoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Device Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/server-info": {
+      "get": {
+        "operationId": "getServerInfo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/ping": {
+      "get": {
+        "operationId": "pingServer",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerPingResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/version": {
+      "get": {
+        "operationId": "getServerVersion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerVersionReponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/stats": {
+      "get": {
+        "operationId": "getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStatsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/jobs": {
       "get": {
         "operationId": "getAllJobsStatus",
@@ -1959,148 +2101,6 @@
           {
             "bearer": []
           }
-        ]
-      }
-    },
-    "/tag": {
-      "post": {
-        "operationId": "create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTagDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagEntity"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "get": {
-        "operationId": "findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TagEntity"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      }
-    },
-    "/tag/{id}": {
-      "get": {
-        "operationId": "findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "patch": {
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTagDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "delete": {
-        "operationId": "delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Tag"
         ]
       }
     }
@@ -2837,6 +2837,560 @@
           "existingIds"
         ]
       },
+      "CreateTagDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/TagTypeEnum"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "name"
+        ]
+      },
+      "ExifEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "description": "General info"
+          },
+          "exifImageWidth": {
+            "type": "number",
+            "nullable": true
+          },
+          "exifImageHeight": {
+            "type": "number",
+            "nullable": true
+          },
+          "fileSizeInByte": {
+            "type": "number",
+            "nullable": true
+          },
+          "orientation": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateTimeOriginal": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "modifyDate": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "make": {
+            "type": "string",
+            "nullable": true,
+            "description": "Image info"
+          },
+          "model": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lensModel": {
+            "type": "string",
+            "nullable": true
+          },
+          "fNumber": {
+            "type": "number",
+            "nullable": true
+          },
+          "focalLength": {
+            "type": "number",
+            "nullable": true
+          },
+          "iso": {
+            "type": "number",
+            "nullable": true
+          },
+          "exposureTime": {
+            "type": "number",
+            "nullable": true
+          },
+          "fps": {
+            "type": "number",
+            "nullable": true,
+            "description": "Video info"
+          },
+          "asset": {
+            "$ref": "#/components/schemas/AssetEntity"
+          },
+          "exifTextSearchableColumn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "assetId",
+          "description",
+          "exifImageWidth",
+          "exifImageHeight",
+          "fileSizeInByte",
+          "orientation",
+          "dateTimeOriginal",
+          "modifyDate",
+          "latitude",
+          "longitude",
+          "city",
+          "state",
+          "country",
+          "make",
+          "model",
+          "imageName",
+          "lensModel",
+          "fNumber",
+          "focalLength",
+          "iso",
+          "exposureTime",
+          "exifTextSearchableColumn"
+        ]
+      },
+      "SmartInfoEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "tags": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "objects": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "asset": {
+            "$ref": "#/components/schemas/AssetEntity"
+          }
+        },
+        "required": [
+          "id",
+          "assetId",
+          "tags",
+          "objects"
+        ]
+      },
+      "UserEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "salt": {
+            "type": "string"
+          },
+          "oauthId": {
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagEntity"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "isAdmin",
+          "email",
+          "oauthId",
+          "profileImagePath",
+          "shouldChangePassword",
+          "createdAt",
+          "tags"
+        ]
+      },
+      "TagEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "OBJECT",
+              "FACES",
+              "CUSTOM"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "renameTagId": {
+            "type": "string"
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetEntity"
+            }
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserEntity"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "renameTagId",
+          "assets",
+          "user"
+        ]
+      },
+      "AssetEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "IMAGE",
+              "VIDEO",
+              "AUDIO",
+              "OTHER"
+            ]
+          },
+          "originalPath": {
+            "type": "string"
+          },
+          "resizePath": {
+            "type": "string",
+            "nullable": true
+          },
+          "webpPath": {
+            "type": "string",
+            "nullable": true
+          },
+          "encodedVideoPath": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "modifiedAt": {
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "mimeType": {
+            "type": "string",
+            "nullable": true
+          },
+          "checksum": {
+            "type": "object",
+            "nullable": true
+          },
+          "duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "livePhotoVideoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "exifInfo": {
+            "$ref": "#/components/schemas/ExifEntity"
+          },
+          "smartInfo": {
+            "$ref": "#/components/schemas/SmartInfoEntity"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagEntity"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "deviceAssetId",
+          "userId",
+          "deviceId",
+          "type",
+          "originalPath",
+          "resizePath",
+          "webpPath",
+          "encodedVideoPath",
+          "createdAt",
+          "modifiedAt",
+          "isFavorite",
+          "mimeType",
+          "duration",
+          "isVisible",
+          "livePhotoVideoId",
+          "tags"
+        ]
+      },
+      "UpdateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "renameTagId": {
+            "type": "string"
+          }
+        }
+      },
+      "AlbumCountResponseDto": {
+        "type": "object",
+        "properties": {
+          "owned": {
+            "type": "integer"
+          },
+          "shared": {
+            "type": "integer"
+          },
+          "sharing": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "owned",
+          "shared",
+          "sharing"
+        ]
+      },
+      "CreateAlbumDto": {
+        "type": "object",
+        "properties": {
+          "albumName": {
+            "type": "string"
+          },
+          "sharedWithUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "albumName"
+        ]
+      },
+      "AlbumResponseDto": {
+        "type": "object",
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "albumName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "albumThumbnailAssetId": {
+            "type": "string",
+            "nullable": true
+          },
+          "shared": {
+            "type": "boolean"
+          },
+          "sharedUsers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponseDto"
+            }
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          }
+        },
+        "required": [
+          "assetCount",
+          "id",
+          "ownerId",
+          "albumName",
+          "createdAt",
+          "albumThumbnailAssetId",
+          "shared",
+          "sharedUsers",
+          "assets"
+        ]
+      },
+      "AddUsersDto": {
+        "type": "object",
+        "properties": {
+          "sharedUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "sharedUserIds"
+        ]
+      },
+      "AddAssetsDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
+        ]
+      },
+      "AddAssetsResponseDto": {
+        "type": "object",
+        "properties": {
+          "successfullyAdded": {
+            "type": "integer"
+          },
+          "alreadyInAlbum": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "album": {
+            "$ref": "#/components/schemas/AlbumResponseDto"
+          }
+        },
+        "required": [
+          "successfullyAdded",
+          "alreadyInAlbum"
+        ]
+      },
+      "RemoveAssetsDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
+        ]
+      },
+      "UpdateAlbumDto": {
+        "type": "object",
+        "properties": {
+          "albumName": {
+            "type": "string"
+          },
+          "albumThumbnailAssetId": {
+            "type": "string"
+          }
+        }
+      },
       "LoginCredentialDto": {
         "type": "object",
         "properties": {
@@ -3246,172 +3800,6 @@
           "usageByUser"
         ]
       },
-      "AlbumCountResponseDto": {
-        "type": "object",
-        "properties": {
-          "owned": {
-            "type": "integer"
-          },
-          "shared": {
-            "type": "integer"
-          },
-          "sharing": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "owned",
-          "shared",
-          "sharing"
-        ]
-      },
-      "CreateAlbumDto": {
-        "type": "object",
-        "properties": {
-          "albumName": {
-            "type": "string"
-          },
-          "sharedWithUserIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "albumName"
-        ]
-      },
-      "AlbumResponseDto": {
-        "type": "object",
-        "properties": {
-          "assetCount": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "string"
-          },
-          "ownerId": {
-            "type": "string"
-          },
-          "albumName": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "albumThumbnailAssetId": {
-            "type": "string",
-            "nullable": true
-          },
-          "shared": {
-            "type": "boolean"
-          },
-          "sharedUsers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserResponseDto"
-            }
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            }
-          }
-        },
-        "required": [
-          "assetCount",
-          "id",
-          "ownerId",
-          "albumName",
-          "createdAt",
-          "albumThumbnailAssetId",
-          "shared",
-          "sharedUsers",
-          "assets"
-        ]
-      },
-      "AddUsersDto": {
-        "type": "object",
-        "properties": {
-          "sharedUserIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "sharedUserIds"
-        ]
-      },
-      "AddAssetsDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
-        ]
-      },
-      "AddAssetsResponseDto": {
-        "type": "object",
-        "properties": {
-          "successfullyAdded": {
-            "type": "integer"
-          },
-          "alreadyInAlbum": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "album": {
-            "$ref": "#/components/schemas/AlbumResponseDto"
-          }
-        },
-        "required": [
-          "successfullyAdded",
-          "alreadyInAlbum"
-        ]
-      },
-      "RemoveAssetsDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
-        ]
-      },
-      "UpdateAlbumDto": {
-        "type": "object",
-        "properties": {
-          "albumName": {
-            "type": "string"
-          },
-          "albumThumbnailAssetId": {
-            "type": "string"
-          }
-        }
-      },
       "JobCounts": {
         "type": "object",
         "properties": {
@@ -3570,394 +3958,6 @@
       "UpdateSystemConfigDto": {
         "type": "object",
         "properties": {}
-      },
-      "CreateTagDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "name"
-        ]
-      },
-      "ExifEntity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "assetId": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "description": "General info"
-          },
-          "exifImageWidth": {
-            "type": "number",
-            "nullable": true
-          },
-          "exifImageHeight": {
-            "type": "number",
-            "nullable": true
-          },
-          "fileSizeInByte": {
-            "type": "number",
-            "nullable": true
-          },
-          "orientation": {
-            "type": "string",
-            "nullable": true
-          },
-          "dateTimeOriginal": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "modifyDate": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "latitude": {
-            "type": "number",
-            "nullable": true
-          },
-          "longitude": {
-            "type": "number",
-            "nullable": true
-          },
-          "city": {
-            "type": "string",
-            "nullable": true
-          },
-          "state": {
-            "type": "string",
-            "nullable": true
-          },
-          "country": {
-            "type": "string",
-            "nullable": true
-          },
-          "make": {
-            "type": "string",
-            "nullable": true,
-            "description": "Image info"
-          },
-          "model": {
-            "type": "string",
-            "nullable": true
-          },
-          "imageName": {
-            "type": "string",
-            "nullable": true
-          },
-          "lensModel": {
-            "type": "string",
-            "nullable": true
-          },
-          "fNumber": {
-            "type": "number",
-            "nullable": true
-          },
-          "focalLength": {
-            "type": "number",
-            "nullable": true
-          },
-          "iso": {
-            "type": "number",
-            "nullable": true
-          },
-          "exposureTime": {
-            "type": "number",
-            "nullable": true
-          },
-          "fps": {
-            "type": "number",
-            "nullable": true,
-            "description": "Video info"
-          },
-          "asset": {
-            "$ref": "#/components/schemas/AssetEntity"
-          },
-          "exifTextSearchableColumn": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "assetId",
-          "description",
-          "exifImageWidth",
-          "exifImageHeight",
-          "fileSizeInByte",
-          "orientation",
-          "dateTimeOriginal",
-          "modifyDate",
-          "latitude",
-          "longitude",
-          "city",
-          "state",
-          "country",
-          "make",
-          "model",
-          "imageName",
-          "lensModel",
-          "fNumber",
-          "focalLength",
-          "iso",
-          "exposureTime",
-          "exifTextSearchableColumn"
-        ]
-      },
-      "SmartInfoEntity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "assetId": {
-            "type": "string"
-          },
-          "tags": {
-            "nullable": true,
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "objects": {
-            "nullable": true,
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "asset": {
-            "$ref": "#/components/schemas/AssetEntity"
-          }
-        },
-        "required": [
-          "id",
-          "assetId",
-          "tags",
-          "objects"
-        ]
-      },
-      "UserEntity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "isAdmin": {
-            "type": "boolean"
-          },
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "salt": {
-            "type": "string"
-          },
-          "oauthId": {
-            "type": "string"
-          },
-          "profileImagePath": {
-            "type": "string"
-          },
-          "shouldChangePassword": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "deletedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TagEntity"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "firstName",
-          "lastName",
-          "isAdmin",
-          "email",
-          "oauthId",
-          "profileImagePath",
-          "shouldChangePassword",
-          "createdAt",
-          "tags"
-        ]
-      },
-      "TagEntity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "type": {
-            "enum": [
-              "OBJECT",
-              "FACES",
-              "CUSTOM"
-            ],
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "renameTagId": {
-            "type": "string"
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssetEntity"
-            }
-          },
-          "user": {
-            "$ref": "#/components/schemas/UserEntity"
-          }
-        },
-        "required": [
-          "id",
-          "type",
-          "name",
-          "renameTagId",
-          "assets",
-          "user"
-        ]
-      },
-      "AssetEntity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "IMAGE",
-              "VIDEO",
-              "AUDIO",
-              "OTHER"
-            ]
-          },
-          "originalPath": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string",
-            "nullable": true
-          },
-          "webpPath": {
-            "type": "string",
-            "nullable": true
-          },
-          "encodedVideoPath": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "modifiedAt": {
-            "type": "string"
-          },
-          "isFavorite": {
-            "type": "boolean"
-          },
-          "mimeType": {
-            "type": "string",
-            "nullable": true
-          },
-          "checksum": {
-            "type": "object",
-            "nullable": true
-          },
-          "duration": {
-            "type": "string",
-            "nullable": true
-          },
-          "isVisible": {
-            "type": "boolean"
-          },
-          "livePhotoVideoId": {
-            "type": "string",
-            "nullable": true
-          },
-          "exifInfo": {
-            "$ref": "#/components/schemas/ExifEntity"
-          },
-          "smartInfo": {
-            "$ref": "#/components/schemas/SmartInfoEntity"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TagEntity"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "deviceAssetId",
-          "userId",
-          "deviceId",
-          "type",
-          "originalPath",
-          "resizePath",
-          "webpPath",
-          "encodedVideoPath",
-          "createdAt",
-          "modifiedAt",
-          "isFavorite",
-          "mimeType",
-          "duration",
-          "isVisible",
-          "livePhotoVideoId",
-          "tags"
-        ]
-      },
-      "UpdateTagDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "renameTagId": {
-            "type": "string"
-          }
-        }
       }
     }
   }

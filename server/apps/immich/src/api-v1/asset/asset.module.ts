@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AssetService } from './asset.service';
 import { AssetController } from './asset.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,12 +11,17 @@ import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { TagEntity } from '@app/database/entities/tag.entity';
-import { TagRepository, TAG_REPOSITORY } from '../tag/tag.repository';
-import { ALBUM_REPOSITORY, AlbumRepository } from '../album/album-repository';
 import { AlbumEntity } from '@app/database/entities/album.entity';
 import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
+import { TagModule } from '../tag/tag.module';
+import { AlbumModule } from '../album/album.module';
+
+const ASSET_REPOSITORY_PROVIDER = {
+  provide: ASSET_REPOSITORY,
+  useClass: AssetRepository,
+};
 
 @Module({
   imports: [
@@ -24,6 +29,8 @@ import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
     BackgroundTaskModule,
     DownloadModule,
     TypeOrmModule.forFeature([AssetEntity, TagEntity, UserEntity, AlbumEntity, UserAlbumEntity, AssetAlbumEntity]),
+    TagModule,
+    forwardRef(() => AlbumModule),
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,
       defaultJobOptions: {
@@ -42,22 +49,7 @@ import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
     }),
   ],
   controllers: [AssetController],
-  providers: [
-    AssetService,
-    BackgroundTaskService,
-    {
-      provide: ASSET_REPOSITORY,
-      useClass: AssetRepository,
-    },
-    {
-      provide: TAG_REPOSITORY,
-      useClass: TagRepository,
-    },
-    {
-      provide: ALBUM_REPOSITORY,
-      useClass: AlbumRepository,
-    },
-  ],
-  exports: [AssetService],
+  providers: [AssetService, BackgroundTaskService, ASSET_REPOSITORY_PROVIDER],
+  exports: [ASSET_REPOSITORY_PROVIDER],
 })
 export class AssetModule {}
