@@ -16,7 +16,9 @@
 
 	const locale = navigator.languages;
 	const deleteDateFormat: Intl.DateTimeFormatOptions = {
-		month: 'long', day: 'numeric', year: 'numeric'
+		month: 'long',
+		day: 'numeric',
+		year: 'numeric'
 	};
 
 	const getDeleteDate = (user: UserResponseDto): string => {

@@ -62,7 +62,9 @@
 						style={`width: ${getStorageUsagePercentage()}%`}
 					/>
 				</div>
-				<p class="text-xs">{asByteUnitString(serverInfo?.diskUseRaw)} of {asByteUnitString(serverInfo?.diskSizeRaw)} used</p>
+				<p class="text-xs">
+					{asByteUnitString(serverInfo?.diskUseRaw)} of {asByteUnitString(serverInfo?.diskSizeRaw)} used
+				</p>
 			{:else}
 				<div class="mt-2">
 					<LoadingSpinner />
