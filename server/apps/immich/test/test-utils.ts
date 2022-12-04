@@ -20,6 +20,7 @@ export function newUserRepositoryMock(): jest.Mocked<IUserRepository> {
     get: jest.fn(),
     getAdmin: jest.fn(),
     getByEmail: jest.fn(),
+    getByOAuthId: jest.fn(),
     getList: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),

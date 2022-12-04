@@ -6,7 +6,7 @@
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
 	import type { UploadAsset } from '$lib/models/upload-asset';
 	import { notificationController, NotificationType } from './notification/notification';
-	import { getHumanReadableBytes } from '../../utils/byte-units';
+	import { getBytesWithUnit } from '../../utils/byte-units';
 
 	let showDetail = true;
 
@@ -115,7 +115,7 @@
 									<input
 										disabled
 										class="bg-gray-100 border w-full p-1 rounded-md text-[10px] px-2"
-										value={`[${getHumanReadableBytes(uploadAsset.file.size)}] ${
+										value={`[${getBytesWithUnit(uploadAsset.file.size)}] ${
 											uploadAsset.file.name
 										}`}
 									/>

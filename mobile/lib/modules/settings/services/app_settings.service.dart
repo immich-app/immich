@@ -2,7 +2,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 
 enum AppSettingsEnum<T> {
-  threeStageLoading<bool>("threeStageLoading", false),
+  loadPreview<bool>("loadPreview", true),
+  loadOriginal<bool>("loadOriginal", false),
   themeMode<String>("themeMode", "system"), // "light","dark","system"
   tilesPerRow<int>("tilesPerRow", 4),
   uploadErrorNotificationGracePeriod<int>(

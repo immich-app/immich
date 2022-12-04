@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -41,7 +39,6 @@ class AlbumThumbnailCard extends StatelessWidget {
 
     buildAlbumThumbnail() {
       return CachedNetworkImage(
-        memCacheHeight: max(400, cardSize.toInt() * 3),
         width: cardSize,
         height: cardSize,
         fit: BoxFit.cover,
@@ -51,7 +48,7 @@ class AlbumThumbnailCard extends StatelessWidget {
           type: ThumbnailFormat.JPEG,
         ),
         httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-        cacheKey: "${album.albumThumbnailAssetId}",
+        cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
       );
     }
 

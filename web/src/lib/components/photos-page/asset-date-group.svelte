@@ -5,7 +5,6 @@
 	import { fly } from 'svelte/transition';
 	import { AssetResponseDto } from '@api';
 	import lodash from 'lodash-es';
-	import moment from 'moment';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import {
 		assetInteractionStore,
@@ -19,12 +18,20 @@
 	export let bucketHeight: number;
 	export let isAlbumSelectionMode = false;
 
+	const locale = navigator.languages;
+	const groupDateFormat: Intl.DateTimeFormatOptions = {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric'
+	};
+
 	let isMouseOverGroup = false;
 	let actualBucketHeight: number;
 	let hoveredDateGroup = '';
 	$: assetsGroupByDate = lodash
 		.chain(assets)
-		.groupBy((a) => moment(a.createdAt).format('ddd, MMM DD YYYY'))
+		.groupBy((a) => new Date(a.createdAt).toLocaleDateString(locale, groupDateFormat))
 		.sortBy((group) => assets.indexOf(group[0]))
 		.value();
 
@@ -107,7 +114,7 @@
 	bind:clientHeight={actualBucketHeight}
 >
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
-		{@const dateGroupTitle = moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
+		{@const dateGroupTitle = new Date(assetsInDateGroup[0].createdAt).toLocaleDateString(locale, groupDateFormat)}
 		<!-- Asset Group By Date -->
 
 		<div

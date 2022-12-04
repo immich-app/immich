@@ -8,6 +8,7 @@ export interface IUserRepository {
   get(id: string, withDeleted?: boolean): Promise<UserEntity | null>;
   getAdmin(): Promise<UserEntity | null>;
   getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null>;
+  getByOAuthId(oauthId: string): Promise<UserEntity | null>;
   getList(filter?: { excludeId?: string }): Promise<UserEntity[]>;
   create(user: Partial<UserEntity>): Promise<UserEntity>;
   update(id: string, user: Partial<UserEntity>): Promise<UserEntity>;
@@ -39,6 +40,10 @@ export class UserRepository implements IUserRepository {
     }
 
     return builder.getOne();
+  }
+
+  public async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({ where: { oauthId } });
   }
 
   public async getList({ excludeId }: { excludeId?: string } = {}): Promise<UserEntity[]> {

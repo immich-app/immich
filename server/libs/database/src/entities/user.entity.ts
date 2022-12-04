@@ -24,6 +24,9 @@ export class UserEntity {
   @Column({ default: '', select: false })
   salt?: string;
 
+  @Column({ default: '', select: false })
+  oauthId!: string;
+
   @Column({ default: '' })
   profileImagePath!: string;
 

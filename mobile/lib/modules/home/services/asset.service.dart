@@ -32,20 +32,20 @@ class AssetService {
   AssetService(this._apiService, this._backupService, this._backgroundService);
 
   /// Returns `null` if the server state did not change, else list of assets
-  Future<List<Asset>?> getRemoteAssets({required bool hasCache}) async {
+  Future<Pair<List<Asset>?, String?>> getRemoteAssets({String? etag}) async {
     try {
-      final Box box = Hive.box(userInfoBox);
-      final Pair<List<AssetResponseDto>, String?>? remote = await _apiService
-          .assetApi
-          .getAllAssetsWithETag(eTag: hasCache ? box.get(assetEtagKey) : null);
+      final Pair<List<AssetResponseDto>, String?>? remote =
+          await _apiService.assetApi.getAllAssetsWithETag(eTag: etag);
       if (remote == null) {
-        return null;
+        return const Pair(null, null);
       }
-      box.put(assetEtagKey, remote.second);
-      return remote.first.map(Asset.remote).toList(growable: false);
+      return Pair(
+        remote.first.map(Asset.remote).toList(growable: false),
+        remote.second,
+      );
     } catch (e, stack) {
       log.severe('Error while getting remote assets', e, stack);
-      return null;
+      return const Pair(null, null);
     }
   }
 

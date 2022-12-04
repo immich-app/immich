@@ -65,7 +65,6 @@
 		"leaflet": "^1.8.0",
 		"lodash": "^4.17.21",
 		"lodash-es": "^4.17.21",
-		"moment": "^2.29.3",
 		"socket.io-client": "^4.5.1",
 		"svelte-keydown": "^0.5.0",
 		"svelte-material-icons": "^2.0.2"
