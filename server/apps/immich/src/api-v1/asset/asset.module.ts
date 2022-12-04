@@ -12,14 +12,18 @@ import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { TagEntity } from '@app/database/entities/tag.entity';
 import { TagRepository, TAG_REPOSITORY } from '../tag/tag.repository';
+import { ALBUM_REPOSITORY, AlbumRepository } from '../album/album-repository';
+import { AlbumEntity } from '@app/database/entities/album.entity';
+import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
+import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 
 @Module({
   imports: [
     CommunicationModule,
     BackgroundTaskModule,
     DownloadModule,
-    TypeOrmModule.forFeature([AssetEntity, TagEntity, UserEntity]),
+    TypeOrmModule.forFeature([AssetEntity, TagEntity, UserEntity, AlbumEntity, UserAlbumEntity, AssetAlbumEntity]),
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,
       defaultJobOptions: {
@@ -48,6 +52,10 @@ import { UserEntity } from '@app/database/entities/user.entity';
     {
       provide: TAG_REPOSITORY,
       useClass: TagRepository,
+    },
+    {
+      provide: ALBUM_REPOSITORY,
+      useClass: AlbumRepository,
     },
   ],
   exports: [AssetService],
