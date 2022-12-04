@@ -17,6 +17,8 @@
 	};
 
 	$: [spaceUsage, spaceUnit] = getBytesWithUnit(stats.usageRaw);
+
+	const locale = navigator.languages;
 </script>
 
 <div class="flex flex-col gap-5">
@@ -55,8 +57,8 @@
 						}`}
 					>
 						<td class="text-sm px-2 w-1/4 text-ellipsis">{getFullName(user.userId)}</td>
-						<td class="text-sm px-2 w-1/4 text-ellipsis">{user.photos}</td>
-						<td class="text-sm px-2 w-1/4 text-ellipsis">{user.videos}</td>
+						<td class="text-sm px-2 w-1/4 text-ellipsis">{user.photos.toLocaleString(locale)}</td>
+						<td class="text-sm px-2 w-1/4 text-ellipsis">{user.videos.toLocaleString(locale)}</td>
 						<td class="text-sm px-2 w-1/4 text-ellipsis">{asByteUnitString(user.usageRaw)}</td>
 					</tr>
 				{/each}
