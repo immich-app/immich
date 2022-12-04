@@ -30,6 +30,7 @@ describe('UserService', () => {
     shouldChangePassword: false,
     profileImagePath: '',
     createdAt: '2021-01-01',
+    tags: [],
   });
 
   const immichUser: UserEntity = Object.freeze({
@@ -43,6 +44,7 @@ describe('UserService', () => {
     shouldChangePassword: false,
     profileImagePath: '',
     createdAt: '2021-01-01',
+    tags: [],
   });
 
   const updatedImmichUser: UserEntity = Object.freeze({
@@ -56,6 +58,7 @@ describe('UserService', () => {
     shouldChangePassword: true,
     profileImagePath: '',
     createdAt: '2021-01-01',
+    tags: [],
   });
 
   beforeAll(() => {
