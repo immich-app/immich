@@ -3774,6 +3774,9 @@
           "salt": {
             "type": "string"
           },
+          "oauthId": {
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -3800,6 +3803,7 @@
           "lastName",
           "isAdmin",
           "email",
+          "oauthId",
           "profileImagePath",
           "shouldChangePassword",
           "createdAt",
