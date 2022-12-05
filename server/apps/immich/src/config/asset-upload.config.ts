@@ -23,7 +23,9 @@ function fileFilter(req: Request, file: any, cb: any) {
     return cb(new UnauthorizedException());
   }
   if (
-    file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef)$/)
+    file.mimetype.match(
+      /\/(jpg|jpeg|png|gif|mp4|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef)$/,
+    )
   ) {
     cb(null, true);
   } else {
