@@ -2505,7 +2505,7 @@
         "type": "string",
         "enum": [
           "OBJECT",
-          "FACES",
+          "FACE",
           "CUSTOM"
         ]
       },
@@ -3251,7 +3251,7 @@
           "type": {
             "enum": [
               "OBJECT",
-              "FACES",
+              "FACE",
               "CUSTOM"
             ],
             "type": "string"

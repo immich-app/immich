@@ -25,21 +25,17 @@ export class TagEntity {
 
 export enum TagType {
   /**
-   * System generated tag, when renaming, the old tag will be kept
-   * and the new tag will be created.
-   * The old tag will have the `renameTagId` field set to the new tag i
+   * Tag that is detected by the ML model for object detection will use this type
    */
   OBJECT = 'OBJECT',
 
   /**
-   * System generated tag, when renaming, the old tag will be kept
-   * and the new tag will be created.
-   * The old tag will have the `renameTagId` field set to the new tag i
+   * Face that is detected by the ML model for facial detection (TBD/NOT YET IMPLEMENTED) will use this type
    */
-  FACE = 'FACES',
+  FACE = 'FACE',
 
   /**
-   * User defined tag
+   * Tag that is created by the user will use this type
    */
   CUSTOM = 'CUSTOM',
 }
