@@ -24,13 +24,13 @@ class TagTypeEnum {
   String toJson() => value;
 
   static const OBJECT = TagTypeEnum._(r'OBJECT');
-  static const FACES = TagTypeEnum._(r'FACES');
+  static const FACE = TagTypeEnum._(r'FACE');
   static const CUSTOM = TagTypeEnum._(r'CUSTOM');
 
   /// List of all possible values in this [enum][TagTypeEnum].
   static const values = <TagTypeEnum>[
     OBJECT,
-    FACES,
+    FACE,
     CUSTOM,
   ];
 
@@ -71,7 +71,7 @@ class TagTypeEnumTypeTransformer {
     if (data != null) {
       switch (data.toString()) {
         case r'OBJECT': return TagTypeEnum.OBJECT;
-        case r'FACES': return TagTypeEnum.FACES;
+        case r'FACE': return TagTypeEnum.FACE;
         case r'CUSTOM': return TagTypeEnum.CUSTOM;
         default:
           if (!allowNull) {

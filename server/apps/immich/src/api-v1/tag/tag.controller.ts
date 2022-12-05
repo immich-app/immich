@@ -39,6 +39,6 @@ export class TagController {
 
   @Delete(':id')
   delete(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string) {
-    return this.tagService.delete(authUser, id);
+    return this.tagService.remove(authUser, id);
   }
 }

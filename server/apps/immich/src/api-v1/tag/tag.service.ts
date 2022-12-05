@@ -15,7 +15,7 @@ export class TagService {
     try {
       return await this._tagRepository.create(authUser.id, createTagDto.type, createTagDto.name);
     } catch (e: any) {
-      this.log.error(e);
+      this.log.error(e, e.stack);
       throw new BadRequestException(`Failed to create tag: ${e.detail}`);
     }
   }
@@ -44,13 +44,13 @@ export class TagService {
     return this._tagRepository.update(tag, updateTagDto);
   }
 
-  async delete(authUser: AuthUserDto, id: string) {
+  async remove(authUser: AuthUserDto, id: string) {
     const tag = await this._tagRepository.getById(id, authUser.id);
 
     if (!tag) {
       throw new BadRequestException('Tag not found');
     }
 
-    return this._tagRepository.delete(tag);
+    return this._tagRepository.remove(tag);
   }
 }

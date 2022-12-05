@@ -16,6 +16,7 @@ class TagEntity {
     required this.id,
     required this.type,
     required this.name,
+    required this.userId,
     required this.renameTagId,
     this.assets = const [],
     required this.user,
@@ -26,6 +27,8 @@ class TagEntity {
   TagEntityTypeEnum type;
 
   String name;
+
+  String userId;
 
   String renameTagId;
 
@@ -38,6 +41,7 @@ class TagEntity {
      other.id == id &&
      other.type == type &&
      other.name == name &&
+     other.userId == userId &&
      other.renameTagId == renameTagId &&
      other.assets == assets &&
      other.user == user;
@@ -48,18 +52,20 @@ class TagEntity {
     (id.hashCode) +
     (type.hashCode) +
     (name.hashCode) +
+    (userId.hashCode) +
     (renameTagId.hashCode) +
     (assets.hashCode) +
     (user.hashCode);
 
   @override
-  String toString() => 'TagEntity[id=$id, type=$type, name=$name, renameTagId=$renameTagId, assets=$assets, user=$user]';
+  String toString() => 'TagEntity[id=$id, type=$type, name=$name, userId=$userId, renameTagId=$renameTagId, assets=$assets, user=$user]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'id'] = id;
       _json[r'type'] = type;
       _json[r'name'] = name;
+      _json[r'userId'] = userId;
       _json[r'renameTagId'] = renameTagId;
       _json[r'assets'] = assets;
       _json[r'user'] = user;
@@ -88,6 +94,7 @@ class TagEntity {
         id: mapValueOfType<String>(json, r'id')!,
         type: TagEntityTypeEnum.fromJson(json[r'type'])!,
         name: mapValueOfType<String>(json, r'name')!,
+        userId: mapValueOfType<String>(json, r'userId')!,
         renameTagId: mapValueOfType<String>(json, r'renameTagId')!,
         assets: AssetEntity.listFromJson(json[r'assets'])!,
         user: UserEntity.fromJson(json[r'user'])!,
@@ -143,6 +150,7 @@ class TagEntity {
     'id',
     'type',
     'name',
+    'userId',
     'renameTagId',
     'assets',
     'user',
@@ -163,13 +171,13 @@ class TagEntityTypeEnum {
   String toJson() => value;
 
   static const OBJECT = TagEntityTypeEnum._(r'OBJECT');
-  static const FACES = TagEntityTypeEnum._(r'FACES');
+  static const FACE = TagEntityTypeEnum._(r'FACE');
   static const CUSTOM = TagEntityTypeEnum._(r'CUSTOM');
 
   /// List of all possible values in this [enum][TagEntityTypeEnum].
   static const values = <TagEntityTypeEnum>[
     OBJECT,
-    FACES,
+    FACE,
     CUSTOM,
   ];
 
@@ -210,7 +218,7 @@ class TagEntityTypeEnumTypeTransformer {
     if (data != null) {
       switch (data.toString()) {
         case r'OBJECT': return TagEntityTypeEnum.OBJECT;
-        case r'FACES': return TagEntityTypeEnum.FACES;
+        case r'FACE': return TagEntityTypeEnum.FACE;
         case r'CUSTOM': return TagEntityTypeEnum.CUSTOM;
         default:
           if (!allowNull) {

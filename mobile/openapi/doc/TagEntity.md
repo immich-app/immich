@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **id** | **String** |  | 
 **type** | **String** |  | 
 **name** | **String** |  | 
+**userId** | **String** |  | 
 **renameTagId** | **String** |  | 
 **assets** | [**List<AssetEntity>**](AssetEntity.md) |  | [default to const []]
 **user** | [**UserEntity**](UserEntity.md) |  | 

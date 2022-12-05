@@ -1871,6 +1871,12 @@ export interface TagEntity {
      * @type {string}
      * @memberof TagEntity
      */
+    'userId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TagEntity
+     */
     'renameTagId': string;
     /**
      * 
@@ -1888,7 +1894,7 @@ export interface TagEntity {
 
 export const TagEntityTypeEnum = {
     Object: 'OBJECT',
-    Faces: 'FACES',
+    Face: 'FACE',
     Custom: 'CUSTOM'
 } as const;
 
@@ -1927,7 +1933,7 @@ export interface TagResponseDto {
 
 export const TagTypeEnum = {
     Object: 'OBJECT',
-    Faces: 'FACES',
+    Face: 'FACE',
     Custom: 'CUSTOM'
 } as const;
 

@@ -12,7 +12,7 @@ export interface ITagRepository {
   getById(tagId: string, userId: string): Promise<TagEntity | null>;
   getByUserId(userId: string): Promise<TagEntity[]>;
   update(tag: TagEntity, updateTagDto: UpdateTagDto): Promise<TagEntity | null>;
-  delete(tag: TagEntity): Promise<void>;
+  remove(tag: TagEntity): Promise<void>;
 }
 
 export const TAG_REPOSITORY = 'TAG_REPOSITORY';
@@ -63,7 +63,7 @@ export class TagRepository implements ITagRepository {
     return this.tagRepository.save(tag);
   }
 
-  async delete(tag: TagEntity): Promise<void> {
+  async remove(tag: TagEntity): Promise<void> {
     await this.tagRepository.remove(tag);
   }
 }
