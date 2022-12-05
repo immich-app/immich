@@ -17,6 +17,7 @@ class SystemConfigResponseItem {
     required this.key,
     required this.value,
     required this.defaultValue,
+    this.choices = const [],
   });
 
   String name;
@@ -27,12 +28,15 @@ class SystemConfigResponseItem {
 
   String defaultValue;
 
+  List<String> choices;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigResponseItem &&
      other.name == name &&
      other.key == key &&
      other.value == value &&
-     other.defaultValue == defaultValue;
+     other.defaultValue == defaultValue &&
+     other.choices == choices;
 
   @override
   int get hashCode =>
@@ -40,10 +44,11 @@ class SystemConfigResponseItem {
     (name.hashCode) +
     (key.hashCode) +
     (value.hashCode) +
-    (defaultValue.hashCode);
+    (defaultValue.hashCode) +
+    (choices.hashCode);
 
   @override
-  String toString() => 'SystemConfigResponseItem[name=$name, key=$key, value=$value, defaultValue=$defaultValue]';
+  String toString() => 'SystemConfigResponseItem[name=$name, key=$key, value=$value, defaultValue=$defaultValue, choices=$choices]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -51,6 +56,7 @@ class SystemConfigResponseItem {
       _json[r'key'] = key;
       _json[r'value'] = value;
       _json[r'defaultValue'] = defaultValue;
+      _json[r'choices'] = choices;
     return _json;
   }
 
@@ -77,6 +83,9 @@ class SystemConfigResponseItem {
         key: SystemConfigKey.fromJson(json[r'key'])!,
         value: mapValueOfType<String>(json, r'value')!,
         defaultValue: mapValueOfType<String>(json, r'defaultValue')!,
+        choices: json[r'choices'] is List
+            ? (json[r'choices'] as List).cast<String>()
+            : const [],
       );
     }
     return null;

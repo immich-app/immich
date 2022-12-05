@@ -71,13 +71,13 @@
         "tsConfigPath": "libs/job/tsconfig.lib.json"
       }
     },
-    "system-config": {
+    "immich-config": {
       "type": "library",
-      "root": "libs/system-config",
+      "root": "libs/immich-config",
       "entryFile": "index",
-      "sourceRoot": "libs/system-config/src",
+      "sourceRoot": "libs/immich-config/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/system-config/tsconfig.lib.json"
+        "tsConfigPath": "libs/immich-config/tsconfig.lib.json"
       }
     }
   }

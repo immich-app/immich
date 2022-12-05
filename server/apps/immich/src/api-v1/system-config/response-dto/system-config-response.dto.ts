@@ -17,4 +17,7 @@ export class SystemConfigResponseItem {
 
   @ApiProperty({ type: 'string' })
   defaultValue!: SystemConfigValue;
+
+  @ApiProperty({ isArray: true, type: 'string' })
+  choices?: string[];
 }

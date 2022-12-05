@@ -1,31 +1,36 @@
-import { SystemConfigEntity, SystemConfigKey, SystemConfigValue } from '@app/database/entities/system-config.entity';
+import {
+  SystemConfigEntity,
+  SystemConfigKey,
+  SystemConfigMap,
+  SystemConfigValue,
+} from '@app/database/entities/system-config.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
-type SystemConfigMap = Record<SystemConfigKey, SystemConfigValue>;
+const configDefaults: Record<
+  SystemConfigKey,
+  {
+    name: string;
+    value: SystemConfigValue;
+    choices?: string[];
+  }
+> = {
+  // FFmpeg
+  [SystemConfigKey.FFMPEG_CRF]: { name: 'FFmpeg Constant Rate Factor (-crf)', value: '23' },
+  [SystemConfigKey.FFMPEG_PRESET]: { name: 'FFmpeg preset (-preset)', value: 'ultrafast' },
+  [SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC]: { name: 'FFmpeg target video codec (-vcodec)', value: 'libx264' },
+  [SystemConfigKey.FFMPEG_TARGET_AUDIO_CODEC]: { name: 'FFmpeg target audio codec (-acodec)', value: 'mp3' },
+  [SystemConfigKey.FFMPEG_TARGET_SCALING]: { name: 'FFmpeg target scaling (-vf scale=)', value: '1280:-2' },
 
-const configDefaults: Record<SystemConfigKey, { name: string; value: SystemConfigValue }> = {
-  [SystemConfigKey.FFMPEG_CRF]: {
-    name: 'FFmpeg Constant Rate Factor (-crf)',
-    value: '23',
-  },
-  [SystemConfigKey.FFMPEG_PRESET]: {
-    name: 'FFmpeg preset (-preset)',
-    value: 'ultrafast',
-  },
-  [SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC]: {
-    name: 'FFmpeg target video codec (-vcodec)',
-    value: 'libx264',
-  },
-  [SystemConfigKey.FFMPEG_TARGET_AUDIO_CODEC]: {
-    name: 'FFmpeg target audio codec (-acodec)',
-    value: 'mp3',
-  },
-  [SystemConfigKey.FFMPEG_TARGET_SCALING]: {
-    name: 'FFmpeg target scaling (-vf scale=)',
-    value: '1280:-2',
-  },
+  // OAuth
+  [SystemConfigKey.OAUTH_ENABLED]: { name: 'OAuth enabled', value: 'false', choices: ['true', 'false'] },
+  [SystemConfigKey.OAUTH_BUTTON_TEXT]: { name: 'OAuth button text', value: 'Login with OAuth' },
+  [SystemConfigKey.OAUTH_AUTO_REGISTER]: { name: 'OAuth auto register', value: 'true', choices: ['true', 'false'] },
+  [SystemConfigKey.OAUTH_ISSUER_URL]: { name: 'OAuth issuer URL', value: '' },
+  [SystemConfigKey.OAUTH_SCOPE]: { name: 'OAuth scope', value: 'openid email profile' },
+  [SystemConfigKey.OAUTH_CLIENT_ID]: { name: 'OAuth client id', value: '' },
+  [SystemConfigKey.OAUTH_CLIENT_SECRET]: { name: 'OAuth client secret', value: '' },
 };
 
 @Injectable()
@@ -38,7 +43,7 @@ export class ImmichConfigService {
   public async getSystemConfig() {
     const items = this._getDefaults();
 
-    // override default values
+    // override with database values
     const overrides = await this.systemConfigRepository.find();
     for (const override of overrides) {
       const item = items.find((_item) => _item.key === override.key);
@@ -66,7 +71,7 @@ export class ImmichConfigService {
     const updates: SystemConfigEntity[] = [];
 
     for (const item of items) {
-      if (item.value === null || item.value === this._getDefaultValue(item.key)) {
+      if (item.value === null || item.value === configDefaults[item.key].value) {
         deletes.push(item);
         continue;
       }
@@ -89,9 +94,5 @@ export class ImmichConfigService {
       defaultValue: configDefaults[key].value,
       ...configDefaults[key],
     }));
-  }
-
-  private _getDefaultValue(key: SystemConfigKey) {
-    return this._getDefaults().find((item) => item.key === key)?.value || null;
   }
 }

@@ -1788,11 +1788,18 @@ export interface SmartInfoResponseDto {
  */
 
 export const SystemConfigKey = {
-    Crf: 'ffmpeg_crf',
-    Preset: 'ffmpeg_preset',
-    TargetVideoCodec: 'ffmpeg_target_video_codec',
-    TargetAudioCodec: 'ffmpeg_target_audio_codec',
-    TargetScaling: 'ffmpeg_target_scaling'
+    FfmpegCrf: 'ffmpeg_crf',
+    FfmpegPreset: 'ffmpeg_preset',
+    FfmpegTargetVideoCodec: 'ffmpeg_target_video_codec',
+    FfmpegTargetAudioCodec: 'ffmpeg_target_audio_codec',
+    FfmpegTargetScaling: 'ffmpeg_target_scaling',
+    OauthEnabled: 'OAUTH_ENABLED',
+    OauthAutoRegister: 'OAUTH_AUTO_REGISTER',
+    OauthIssuerUrl: 'OAUTH_ISSUER_URL',
+    OauthScope: 'OAUTH_SCOPE',
+    OauthButtonText: 'OAUTH_BUTTON_TEXT',
+    OauthClientId: 'OAUTH_CLIENT_ID',
+    OauthClientSecret: 'OAUTH_CLIENT_SECRET'
 } as const;
 
 export type SystemConfigKey = typeof SystemConfigKey[keyof typeof SystemConfigKey];
@@ -1841,6 +1848,12 @@ export interface SystemConfigResponseItem {
      * @memberof SystemConfigResponseItem
      */
     'defaultValue': string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SystemConfigResponseItem
+     */
+    'choices'?: Array<string>;
 }
 /**
  * 

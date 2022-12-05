@@ -65,16 +65,29 @@
 						{item.name}
 					</td>
 					<td class="text-sm px-4 w-1/2 text-ellipsis">
-						<input
-							style="text-align: center"
-							class="immich-form-input"
-							id={item.key}
-							disabled={isSaving}
-							name={item.key}
-							type="text"
-							bind:value={item.value}
-							placeholder={item.defaultValue + ''}
-						/>
+						{#if item.choices}
+							<select
+								class="w-full text-center immich-form-input"
+								bind:value={item.value}
+								disabled={isSaving}
+								name={item.key}
+							>
+								{#each item.choices as choice}
+									<option value={choice}>{choice}</option>
+								{/each}
+							</select>
+						{:else}
+							<input
+								style="text-align: center"
+								class="w-full immich-form-input"
+								id={item.key}
+								disabled={isSaving}
+								name={item.key}
+								type="text"
+								bind:value={item.value}
+								placeholder={item.defaultValue + ''}
+							/>
+						{/if}
 					</td>
 				</tr>
 			{/each}

@@ -3926,7 +3926,14 @@
           "ffmpeg_preset",
           "ffmpeg_target_video_codec",
           "ffmpeg_target_audio_codec",
-          "ffmpeg_target_scaling"
+          "ffmpeg_target_scaling",
+          "OAUTH_ENABLED",
+          "OAUTH_ISSUER_URL",
+          "OAUTH_CLIENT_ID",
+          "OAUTH_CLIENT_SECRET",
+          "OAUTH_SCOPE",
+          "OAUTH_BUTTON_TEXT",
+          "OAUTH_AUTO_REGISTER"
         ]
       },
       "SystemConfigResponseItem": {
@@ -3943,6 +3950,12 @@
           },
           "defaultValue": {
             "type": "string"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [

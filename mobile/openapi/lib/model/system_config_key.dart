@@ -23,19 +23,33 @@ class SystemConfigKey {
 
   String toJson() => value;
 
-  static const crf = SystemConfigKey._(r'ffmpeg_crf');
-  static const preset = SystemConfigKey._(r'ffmpeg_preset');
-  static const targetVideoCodec = SystemConfigKey._(r'ffmpeg_target_video_codec');
-  static const targetAudioCodec = SystemConfigKey._(r'ffmpeg_target_audio_codec');
-  static const targetScaling = SystemConfigKey._(r'ffmpeg_target_scaling');
+  static const ffmpegCrf = SystemConfigKey._(r'ffmpeg_crf');
+  static const ffmpegPreset = SystemConfigKey._(r'ffmpeg_preset');
+  static const ffmpegTargetVideoCodec = SystemConfigKey._(r'ffmpeg_target_video_codec');
+  static const ffmpegTargetAudioCodec = SystemConfigKey._(r'ffmpeg_target_audio_codec');
+  static const ffmpegTargetScaling = SystemConfigKey._(r'ffmpeg_target_scaling');
+  static const OAUTH_ENABLED = SystemConfigKey._(r'OAUTH_ENABLED');
+  static const OAUTH_AUTO_REGISTER = SystemConfigKey._(r'OAUTH_AUTO_REGISTER');
+  static const OAUTH_ISSUER_URL = SystemConfigKey._(r'OAUTH_ISSUER_URL');
+  static const OAUTH_SCOPE = SystemConfigKey._(r'OAUTH_SCOPE');
+  static const OAUTH_BUTTON_TEXT = SystemConfigKey._(r'OAUTH_BUTTON_TEXT');
+  static const OAUTH_CLIENT_ID = SystemConfigKey._(r'OAUTH_CLIENT_ID');
+  static const OAUTH_CLIENT_SECRET = SystemConfigKey._(r'OAUTH_CLIENT_SECRET');
 
   /// List of all possible values in this [enum][SystemConfigKey].
   static const values = <SystemConfigKey>[
-    crf,
-    preset,
-    targetVideoCodec,
-    targetAudioCodec,
-    targetScaling,
+    ffmpegCrf,
+    ffmpegPreset,
+    ffmpegTargetVideoCodec,
+    ffmpegTargetAudioCodec,
+    ffmpegTargetScaling,
+    OAUTH_ENABLED,
+    OAUTH_AUTO_REGISTER,
+    OAUTH_ISSUER_URL,
+    OAUTH_SCOPE,
+    OAUTH_BUTTON_TEXT,
+    OAUTH_CLIENT_ID,
+    OAUTH_CLIENT_SECRET,
   ];
 
   static SystemConfigKey? fromJson(dynamic value) => SystemConfigKeyTypeTransformer().decode(value);
@@ -74,11 +88,18 @@ class SystemConfigKeyTypeTransformer {
   SystemConfigKey? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data.toString()) {
-        case r'ffmpeg_crf': return SystemConfigKey.crf;
-        case r'ffmpeg_preset': return SystemConfigKey.preset;
-        case r'ffmpeg_target_video_codec': return SystemConfigKey.targetVideoCodec;
-        case r'ffmpeg_target_audio_codec': return SystemConfigKey.targetAudioCodec;
-        case r'ffmpeg_target_scaling': return SystemConfigKey.targetScaling;
+        case r'ffmpeg_crf': return SystemConfigKey.ffmpegCrf;
+        case r'ffmpeg_preset': return SystemConfigKey.ffmpegPreset;
+        case r'ffmpeg_target_video_codec': return SystemConfigKey.ffmpegTargetVideoCodec;
+        case r'ffmpeg_target_audio_codec': return SystemConfigKey.ffmpegTargetAudioCodec;
+        case r'ffmpeg_target_scaling': return SystemConfigKey.ffmpegTargetScaling;
+        case r'OAUTH_ENABLED': return SystemConfigKey.OAUTH_ENABLED;
+        case r'OAUTH_AUTO_REGISTER': return SystemConfigKey.OAUTH_AUTO_REGISTER;
+        case r'OAUTH_ISSUER_URL': return SystemConfigKey.OAUTH_ISSUER_URL;
+        case r'OAUTH_SCOPE': return SystemConfigKey.OAUTH_SCOPE;
+        case r'OAUTH_BUTTON_TEXT': return SystemConfigKey.OAUTH_BUTTON_TEXT;
+        case r'OAUTH_CLIENT_ID': return SystemConfigKey.OAUTH_CLIENT_ID;
+        case r'OAUTH_CLIENT_SECRET': return SystemConfigKey.OAUTH_CLIENT_SECRET;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
