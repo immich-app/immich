@@ -22,12 +22,6 @@ export class TagRepository implements ITagRepository {
   constructor(
     @InjectRepository(TagEntity)
     private tagRepository: Repository<TagEntity>,
-
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
-
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
   ) {}
 
   async create(userId: string, tagType: TagType, tagName: string): Promise<TagEntity> {
