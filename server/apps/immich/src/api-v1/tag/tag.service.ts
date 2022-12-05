@@ -7,7 +7,7 @@ import { ITagRepository, TAG_REPOSITORY } from './tag.repository';
 
 @Injectable()
 export class TagService {
-  readonly log = new Logger(TagService.name);
+  readonly logger = new Logger(TagService.name);
 
   constructor(@Inject(TAG_REPOSITORY) private _tagRepository: ITagRepository) {}
 
@@ -15,7 +15,7 @@ export class TagService {
     try {
       return await this._tagRepository.create(authUser.id, createTagDto.type, createTagDto.name);
     } catch (e: any) {
-      this.log.error(e, e.stack);
+      this.logger.error(e, e.stack);
       throw new BadRequestException(`Failed to create tag: ${e.detail}`);
     }
   }
