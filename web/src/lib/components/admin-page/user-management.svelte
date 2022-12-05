@@ -14,9 +14,11 @@
 		return user.deletedAt != null;
 	};
 
-	const locale = navigator.languages;
+	const locale = navigator.language;
 	const deleteDateFormat: Intl.DateTimeFormatOptions = {
-		month: 'long', day: 'numeric', year: 'numeric'
+		month: 'long',
+		day: 'numeric',
+		year: 'numeric'
 	};
 
 	const getDeleteDate = (user: UserResponseDto): string => {

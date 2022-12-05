@@ -70,7 +70,7 @@
 		return undefined;
 	};
 
-	const locale = navigator.languages;
+	const locale = navigator.language;
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -100,10 +100,21 @@
 				</div>
 
 				<div>
-					<p>{assetDateTimeOriginal.toLocaleDateString(locale, {month:'short', day:'numeric', year: 'numeric'})}</p>
+					<p>
+						{assetDateTimeOriginal.toLocaleDateString(locale, {
+							month: 'short',
+							day: 'numeric',
+							year: 'numeric'
+						})}
+					</p>
 					<div class="flex gap-2 text-sm">
 						<p>
-							{assetDateTimeOriginal.toLocaleString(locale, {weekday:'short', hour: 'numeric', minute: '2-digit', timeZoneName:'longOffset'})}
+							{assetDateTimeOriginal.toLocaleString(locale, {
+								weekday: 'short',
+								hour: 'numeric',
+								minute: '2-digit',
+								timeZoneName: 'longOffset'
+							})}
 						</p>
 					</div>
 				</div>

@@ -54,7 +54,7 @@
 		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || NO_THUMBNAIL;
 	});
 
-	const locale = navigator.languages;
+	const locale = navigator.language;
 </script>
 
 <div
