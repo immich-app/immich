@@ -18,6 +18,6 @@ const USER_REPOSITORY_PROVIDER = {
   imports: [TypeOrmModule.forFeature([UserEntity]), ImmichJwtModule, JwtModule.register(jwtConfig)],
   controllers: [UserController],
   providers: [UserService, ImmichJwtService, USER_REPOSITORY_PROVIDER],
-  exports: [USER_REPOSITORY_PROVIDER, TypeOrmModule],
+  exports: [USER_REPOSITORY_PROVIDER],
 })
 export class UserModule {}
