@@ -86,12 +86,12 @@
 		}
 	}
 
-	const locale = navigator.languages;
+	const locale = navigator.language;
 	const albumDateFormat: Intl.DateTimeFormatOptions = {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		};
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric'
+	};
 
 	const getDateRange = () => {
 		const startDate = new Date(album.assets[0].createdAt);
@@ -101,7 +101,9 @@
 		const endDateString = endDate.toLocaleDateString(locale, albumDateFormat);
 
 		// If the start and end date are the same, only show one date
-		return startDateString === endDateString ? startDateString : `${startDateString} - ${endDateString}`;
+		return startDateString === endDateString
+			? startDateString
+			: `${startDateString} - ${endDateString}`;
 	};
 
 	onMount(async () => {

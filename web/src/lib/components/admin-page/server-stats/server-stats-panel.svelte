@@ -18,7 +18,7 @@
 
 	$: [spaceUsage, spaceUnit] = getBytesWithUnit(stats.usageRaw);
 
-	const locale = navigator.languages;
+	const locale = navigator.language;
 </script>
 
 <div class="flex flex-col gap-5">
@@ -28,7 +28,7 @@
 		<div class="flex mt-5 justify-between">
 			<StatsCard logo={CameraIris} title={'PHOTOS'} value={stats.photos.toString()} />
 			<StatsCard logo={PlayCircle} title={'VIDEOS'} value={stats.videos.toString()} />
-			<StatsCard logo={Memory} title={'STORAGE'} value={spaceUsage} unit={spaceUnit} />
+			<StatsCard logo={Memory} title={'STORAGE'} value={spaceUsage.toString()} unit={spaceUnit} />
 		</div>
 	</div>
 

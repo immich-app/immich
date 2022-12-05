@@ -18,7 +18,7 @@
 	export let bucketHeight: number;
 	export let isAlbumSelectionMode = false;
 
-	const locale = navigator.languages;
+	const locale = navigator.language;
 	const groupDateFormat: Intl.DateTimeFormatOptions = {
 		weekday: 'short',
 		month: 'short',
@@ -114,7 +114,10 @@
 	bind:clientHeight={actualBucketHeight}
 >
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
-		{@const dateGroupTitle = new Date(assetsInDateGroup[0].createdAt).toLocaleDateString(locale, groupDateFormat)}
+		{@const dateGroupTitle = new Date(assetsInDateGroup[0].createdAt).toLocaleDateString(
+			locale,
+			groupDateFormat
+		)}
 		<!-- Asset Group By Date -->
 
 		<div
