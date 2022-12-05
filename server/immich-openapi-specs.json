@@ -1047,148 +1047,6 @@
         ]
       }
     },
-    "/tag": {
-      "post": {
-        "operationId": "create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTagDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagEntity"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "get": {
-        "operationId": "findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TagEntity"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      }
-    },
-    "/tag/{id}": {
-      "get": {
-        "operationId": "findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "patch": {
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTagDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "delete": {
-        "operationId": "delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      }
-    },
     "/album/count-by-user-id": {
       "get": {
         "operationId": "getAlbumCountByUserId",
@@ -1609,6 +1467,148 @@
           {
             "bearer": []
           }
+        ]
+      }
+    },
+    "/tag": {
+      "post": {
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagEntity"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      },
+      "get": {
+        "operationId": "findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagEntity"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      }
+    },
+    "/tag/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      },
+      "patch": {
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      },
+      "delete": {
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tag"
         ]
       }
     },
@@ -2837,6 +2837,172 @@
           "existingIds"
         ]
       },
+      "AlbumCountResponseDto": {
+        "type": "object",
+        "properties": {
+          "owned": {
+            "type": "integer"
+          },
+          "shared": {
+            "type": "integer"
+          },
+          "sharing": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "owned",
+          "shared",
+          "sharing"
+        ]
+      },
+      "CreateAlbumDto": {
+        "type": "object",
+        "properties": {
+          "albumName": {
+            "type": "string"
+          },
+          "sharedWithUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "albumName"
+        ]
+      },
+      "AlbumResponseDto": {
+        "type": "object",
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "albumName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "albumThumbnailAssetId": {
+            "type": "string",
+            "nullable": true
+          },
+          "shared": {
+            "type": "boolean"
+          },
+          "sharedUsers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponseDto"
+            }
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          }
+        },
+        "required": [
+          "assetCount",
+          "id",
+          "ownerId",
+          "albumName",
+          "createdAt",
+          "albumThumbnailAssetId",
+          "shared",
+          "sharedUsers",
+          "assets"
+        ]
+      },
+      "AddUsersDto": {
+        "type": "object",
+        "properties": {
+          "sharedUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "sharedUserIds"
+        ]
+      },
+      "AddAssetsDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
+        ]
+      },
+      "AddAssetsResponseDto": {
+        "type": "object",
+        "properties": {
+          "successfullyAdded": {
+            "type": "integer"
+          },
+          "alreadyInAlbum": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "album": {
+            "$ref": "#/components/schemas/AlbumResponseDto"
+          }
+        },
+        "required": [
+          "successfullyAdded",
+          "alreadyInAlbum"
+        ]
+      },
+      "RemoveAssetsDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
+        ]
+      },
+      "UpdateAlbumDto": {
+        "type": "object",
+        "properties": {
+          "albumName": {
+            "type": "string"
+          },
+          "albumThumbnailAssetId": {
+            "type": "string"
+          }
+        }
+      },
       "CreateTagDto": {
         "type": "object",
         "properties": {
@@ -3221,172 +3387,6 @@
             "type": "string"
           },
           "renameTagId": {
-            "type": "string"
-          }
-        }
-      },
-      "AlbumCountResponseDto": {
-        "type": "object",
-        "properties": {
-          "owned": {
-            "type": "integer"
-          },
-          "shared": {
-            "type": "integer"
-          },
-          "sharing": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "owned",
-          "shared",
-          "sharing"
-        ]
-      },
-      "CreateAlbumDto": {
-        "type": "object",
-        "properties": {
-          "albumName": {
-            "type": "string"
-          },
-          "sharedWithUserIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "albumName"
-        ]
-      },
-      "AlbumResponseDto": {
-        "type": "object",
-        "properties": {
-          "assetCount": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "string"
-          },
-          "ownerId": {
-            "type": "string"
-          },
-          "albumName": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "albumThumbnailAssetId": {
-            "type": "string",
-            "nullable": true
-          },
-          "shared": {
-            "type": "boolean"
-          },
-          "sharedUsers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserResponseDto"
-            }
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            }
-          }
-        },
-        "required": [
-          "assetCount",
-          "id",
-          "ownerId",
-          "albumName",
-          "createdAt",
-          "albumThumbnailAssetId",
-          "shared",
-          "sharedUsers",
-          "assets"
-        ]
-      },
-      "AddUsersDto": {
-        "type": "object",
-        "properties": {
-          "sharedUserIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "sharedUserIds"
-        ]
-      },
-      "AddAssetsDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
-        ]
-      },
-      "AddAssetsResponseDto": {
-        "type": "object",
-        "properties": {
-          "successfullyAdded": {
-            "type": "integer"
-          },
-          "alreadyInAlbum": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "album": {
-            "$ref": "#/components/schemas/AlbumResponseDto"
-          }
-        },
-        "required": [
-          "successfullyAdded",
-          "alreadyInAlbum"
-        ]
-      },
-      "RemoveAssetsDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
-        ]
-      },
-      "UpdateAlbumDto": {
-        "type": "object",
-        "properties": {
-          "albumName": {
-            "type": "string"
-          },
-          "albumThumbnailAssetId": {
             "type": "string"
           }
         }

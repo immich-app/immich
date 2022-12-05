@@ -10,13 +10,9 @@ import { CommunicationModule } from '../communication/communication.module';
 import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
-import { TagEntity } from '@app/database/entities/tag.entity';
-import { AlbumEntity } from '@app/database/entities/album.entity';
-import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
-import { UserEntity } from '@app/database/entities/user.entity';
-import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 import { TagModule } from '../tag/tag.module';
 import { AlbumModule } from '../album/album.module';
+import { UserModule } from '../user/user.module';
 
 const ASSET_REPOSITORY_PROVIDER = {
   provide: ASSET_REPOSITORY,
@@ -25,11 +21,13 @@ const ASSET_REPOSITORY_PROVIDER = {
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([AssetEntity]),
     CommunicationModule,
     BackgroundTaskModule,
     DownloadModule,
-    TypeOrmModule.forFeature([AssetEntity, TagEntity, UserEntity, AlbumEntity, UserAlbumEntity, AssetAlbumEntity]),
-    TagModule,
+    UserModule,
+    AlbumModule,
+    forwardRef(() => TagModule),
     forwardRef(() => AlbumModule),
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,
@@ -50,6 +48,6 @@ const ASSET_REPOSITORY_PROVIDER = {
   ],
   controllers: [AssetController],
   providers: [AssetService, BackgroundTaskService, ASSET_REPOSITORY_PROVIDER],
-  exports: [ASSET_REPOSITORY_PROVIDER],
+  exports: [ASSET_REPOSITORY_PROVIDER, TypeOrmModule],
 })
 export class AssetModule {}
