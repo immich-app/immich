@@ -220,7 +220,7 @@ export class AssetController {
   async updateAsset(
     @GetAuthUser() authUser: AuthUserDto,
     @Param('assetId') assetId: string,
-    @Body() dto: UpdateAssetDto,
+    @Body(ValidationPipe) dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
     await this.assetService.checkAssetsAccess(authUser, [assetId], true);
     return await this.assetService.updateAsset(authUser, assetId, dto);

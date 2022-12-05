@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateAssetDto {
   @IsOptional()
@@ -7,6 +7,9 @@ export class UpdateAssetDto {
   isFavorite?: boolean;
 
   @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   @ApiProperty({
     isArray: true,
     type: String,
