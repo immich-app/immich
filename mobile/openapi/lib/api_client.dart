@@ -212,6 +212,8 @@ class ApiClient {
           return AssetCountByTimeBucketResponseDto.fromJson(value);
         case 'AssetCountByUserIdResponseDto':
           return AssetCountByUserIdResponseDto.fromJson(value);
+        case 'AssetEntity':
+          return AssetEntity.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetResponseDto':
@@ -232,6 +234,8 @@ class ApiClient {
           return CreateDeviceInfoDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
+        case 'CreateTagDto':
+          return CreateTagDto.fromJson(value);
         case 'CreateUserDto':
           return CreateUserDto.fromJson(value);
         case 'CuratedLocationsResponseDto':
@@ -248,6 +252,8 @@ class ApiClient {
           return DeviceInfoResponseDto.fromJson(value);
         case 'DeviceTypeEnum':
           return DeviceTypeEnumTypeTransformer().decode(value);
+        case 'ExifEntity':
+          return ExifEntity.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'GetAssetByTimeBucketDto':
@@ -290,6 +296,8 @@ class ApiClient {
           return ServerVersionReponseDto.fromJson(value);
         case 'SignUpDto':
           return SignUpDto.fromJson(value);
+        case 'SmartInfoEntity':
+          return SmartInfoEntity.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
         case 'SystemConfigKey':
@@ -298,6 +306,12 @@ class ApiClient {
           return SystemConfigResponseDto.fromJson(value);
         case 'SystemConfigResponseItem':
           return SystemConfigResponseItem.fromJson(value);
+        case 'TagEntity':
+          return TagEntity.fromJson(value);
+        case 'TagResponseDto':
+          return TagResponseDto.fromJson(value);
+        case 'TagTypeEnum':
+          return TagTypeEnumTypeTransformer().decode(value);
         case 'ThumbnailFormat':
           return ThumbnailFormatTypeTransformer().decode(value);
         case 'TimeGroupEnum':
@@ -308,12 +322,16 @@ class ApiClient {
           return UpdateAssetDto.fromJson(value);
         case 'UpdateDeviceInfoDto':
           return UpdateDeviceInfoDto.fromJson(value);
+        case 'UpdateTagDto':
+          return UpdateTagDto.fromJson(value);
         case 'UpdateUserDto':
           return UpdateUserDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
         case 'UserCountResponseDto':
           return UserCountResponseDto.fromJson(value);
+        case 'UserEntity':
+          return UserEntity.fromJson(value);
         case 'UserResponseDto':
           return UserResponseDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':

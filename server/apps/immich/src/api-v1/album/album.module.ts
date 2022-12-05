@@ -1,32 +1,29 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { AlbumController } from './album.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { UserEntity } from '@app/database/entities/user.entity';
 import { AlbumEntity } from '../../../../../libs/database/src/entities/album.entity';
 import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
 import { AlbumRepository, ALBUM_REPOSITORY } from './album-repository';
-import { AssetRepository, ASSET_REPOSITORY } from '../asset/asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
+import { AssetModule } from '../asset/asset.module';
+import { UserModule } from '../user/user.module';
+
+const ALBUM_REPOSITORY_PROVIDER = {
+  provide: ALBUM_REPOSITORY,
+  useClass: AlbumRepository,
+};
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AssetEntity, UserEntity, AlbumEntity, AssetAlbumEntity, UserAlbumEntity]),
+    TypeOrmModule.forFeature([AlbumEntity, AssetAlbumEntity, UserAlbumEntity]),
     DownloadModule,
+    UserModule,
+    forwardRef(() => AssetModule),
   ],
   controllers: [AlbumController],
-  providers: [
-    AlbumService,
-    {
-      provide: ALBUM_REPOSITORY,
-      useClass: AlbumRepository,
-    },
-    {
-      provide: ASSET_REPOSITORY,
-      useClass: AssetRepository,
-    },
-  ],
+  providers: [AlbumService, ALBUM_REPOSITORY_PROVIDER],
+  exports: [ALBUM_REPOSITORY_PROVIDER],
 })
 export class AlbumModule {}

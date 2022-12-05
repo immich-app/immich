@@ -216,14 +216,14 @@ export class AssetController {
   /**
    * Update an asset
    */
-  @Put('/assetById/:assetId')
-  async updateAssetById(
+  @Put('/:assetId')
+  async updateAsset(
     @GetAuthUser() authUser: AuthUserDto,
     @Param('assetId') assetId: string,
-    @Body() dto: UpdateAssetDto,
+    @Body(ValidationPipe) dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
     await this.assetService.checkAssetsAccess(authUser, [assetId], true);
-    return await this.assetService.updateAssetById(assetId, dto);
+    return await this.assetService.updateAsset(authUser, assetId, dto);
   }
 
   @Delete('/')

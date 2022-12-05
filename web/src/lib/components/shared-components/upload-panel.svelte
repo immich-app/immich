@@ -115,9 +115,7 @@
 									<input
 										disabled
 										class="bg-gray-100 border w-full p-1 rounded-md text-[10px] px-2"
-										value={`[${getBytesWithUnit(uploadAsset.file.size)}] ${
-											uploadAsset.file.name
-										}`}
+										value={`[${getBytesWithUnit(uploadAsset.file.size)}] ${uploadAsset.file.name}`}
 									/>
 
 									<div class="w-full bg-gray-300 h-[15px] rounded-md mt-[5px] text-white relative">

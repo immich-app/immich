@@ -924,9 +924,9 @@ class AssetApi {
   /// * [String] assetId (required):
   ///
   /// * [UpdateAssetDto] updateAssetDto (required):
-  Future<Response> updateAssetByIdWithHttpInfo(String assetId, UpdateAssetDto updateAssetDto,) async {
+  Future<Response> updateAssetWithHttpInfo(String assetId, UpdateAssetDto updateAssetDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/assetById/{assetId}'
+    final path = r'/asset/{assetId}'
       .replaceAll('{assetId}', assetId);
 
     // ignore: prefer_final_locals
@@ -959,8 +959,8 @@ class AssetApi {
   /// * [String] assetId (required):
   ///
   /// * [UpdateAssetDto] updateAssetDto (required):
-  Future<AssetResponseDto?> updateAssetById(String assetId, UpdateAssetDto updateAssetDto,) async {
-    final response = await updateAssetByIdWithHttpInfo(assetId, updateAssetDto,);
+  Future<AssetResponseDto?> updateAsset(String assetId, UpdateAssetDto updateAssetDto,) async {
+    final response = await updateAssetWithHttpInfo(assetId, updateAssetDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

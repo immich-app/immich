@@ -56,6 +56,7 @@ describe('ImmichJwtService', () => {
         profileImagePath: '',
         shouldChangePassword: false,
         createdAt: 'today',
+        tags: [],
       };
 
       const dto: LoginResponseDto = {

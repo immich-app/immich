@@ -328,6 +328,143 @@ export interface AssetCountByUserIdResponseDto {
 /**
  * 
  * @export
+ * @interface AssetEntity
+ */
+export interface AssetEntity {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'deviceAssetId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'userId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'deviceId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'type': AssetEntityTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'originalPath': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'resizePath': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'webpPath': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'encodedVideoPath': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'modifiedAt': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetEntity
+     */
+    'isFavorite': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'mimeType': string | null;
+    /**
+     * 
+     * @type {object}
+     * @memberof AssetEntity
+     */
+    'checksum'?: object | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'duration': string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetEntity
+     */
+    'isVisible': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetEntity
+     */
+    'livePhotoVideoId': string | null;
+    /**
+     * 
+     * @type {ExifEntity}
+     * @memberof AssetEntity
+     */
+    'exifInfo'?: ExifEntity;
+    /**
+     * 
+     * @type {SmartInfoEntity}
+     * @memberof AssetEntity
+     */
+    'smartInfo'?: SmartInfoEntity;
+    /**
+     * 
+     * @type {Array<TagEntity>}
+     * @memberof AssetEntity
+     */
+    'tags': Array<TagEntity>;
+}
+
+export const AssetEntityTypeEnum = {
+    Image: 'IMAGE',
+    Video: 'VIDEO',
+    Audio: 'AUDIO',
+    Other: 'OTHER'
+} as const;
+
+export type AssetEntityTypeEnum = typeof AssetEntityTypeEnum[keyof typeof AssetEntityTypeEnum];
+
+/**
+ * 
+ * @export
  * @interface AssetFileUploadResponseDto
  */
 export interface AssetFileUploadResponseDto {
@@ -446,6 +583,12 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'livePhotoVideoId'?: string | null;
+    /**
+     * 
+     * @type {Array<TagResponseDto>}
+     * @memberof AssetResponseDto
+     */
+    'tags': Array<TagResponseDto>;
 }
 /**
  * 
@@ -601,6 +744,25 @@ export interface CreateProfileImageResponseDto {
      * @memberof CreateProfileImageResponseDto
      */
     'profileImagePath': string;
+}
+/**
+ * 
+ * @export
+ * @interface CreateTagDto
+ */
+export interface CreateTagDto {
+    /**
+     * 
+     * @type {TagTypeEnum}
+     * @memberof CreateTagDto
+     */
+    'type': TagTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateTagDto
+     */
+    'name': string;
 }
 /**
  * 
@@ -811,6 +973,163 @@ export const DeviceTypeEnum = {
 export type DeviceTypeEnum = typeof DeviceTypeEnum[keyof typeof DeviceTypeEnum];
 
 
+/**
+ * 
+ * @export
+ * @interface ExifEntity
+ */
+export interface ExifEntity {
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'assetId': string;
+    /**
+     * General info
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'description': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifEntity
+     */
+    'exifImageWidth': number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifEntity
+     */
+    'exifImageHeight': number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifEntity
+     */
+    'fileSizeInByte': number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'orientation': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'dateTimeOriginal': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'modifyDate': string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifEntity
+     */
+    'latitude': number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifEntity
+     */
+    'longitude': number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'city': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'state': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'country': string | null;
+    /**
+     * Image info
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'make': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'model': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'imageName': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'lensModel': string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifEntity
+     */
+    'fNumber': number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifEntity
+     */
+    'focalLength': number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifEntity
+     */
+    'iso': number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifEntity
+     */
+    'exposureTime': number | null;
+    /**
+     * Video info
+     * @type {number}
+     * @memberof ExifEntity
+     */
+    'fps'?: number | null;
+    /**
+     * 
+     * @type {AssetEntity}
+     * @memberof ExifEntity
+     */
+    'asset'?: AssetEntity;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifEntity
+     */
+    'exifTextSearchableColumn': string;
+}
 /**
  * 
  * @export
@@ -1403,6 +1722,43 @@ export interface SignUpDto {
 /**
  * 
  * @export
+ * @interface SmartInfoEntity
+ */
+export interface SmartInfoEntity {
+    /**
+     * 
+     * @type {string}
+     * @memberof SmartInfoEntity
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SmartInfoEntity
+     */
+    'assetId': string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SmartInfoEntity
+     */
+    'tags': Array<string> | null;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SmartInfoEntity
+     */
+    'objects': Array<string> | null;
+    /**
+     * 
+     * @type {AssetEntity}
+     * @memberof SmartInfoEntity
+     */
+    'asset'?: AssetEntity;
+}
+/**
+ * 
+ * @export
  * @interface SmartInfoResponseDto
  */
 export interface SmartInfoResponseDto {
@@ -1489,6 +1845,104 @@ export interface SystemConfigResponseItem {
 /**
  * 
  * @export
+ * @interface TagEntity
+ */
+export interface TagEntity {
+    /**
+     * 
+     * @type {string}
+     * @memberof TagEntity
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TagEntity
+     */
+    'type': TagEntityTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof TagEntity
+     */
+    'name': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TagEntity
+     */
+    'userId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TagEntity
+     */
+    'renameTagId': string;
+    /**
+     * 
+     * @type {Array<AssetEntity>}
+     * @memberof TagEntity
+     */
+    'assets': Array<AssetEntity>;
+    /**
+     * 
+     * @type {UserEntity}
+     * @memberof TagEntity
+     */
+    'user': UserEntity;
+}
+
+export const TagEntityTypeEnum = {
+    Object: 'OBJECT',
+    Face: 'FACE',
+    Custom: 'CUSTOM'
+} as const;
+
+export type TagEntityTypeEnum = typeof TagEntityTypeEnum[keyof typeof TagEntityTypeEnum];
+
+/**
+ * 
+ * @export
+ * @interface TagResponseDto
+ */
+export interface TagResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof TagResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {TagTypeEnum}
+     * @memberof TagResponseDto
+     */
+    'type': TagTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof TagResponseDto
+     */
+    'name': string;
+}
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const TagTypeEnum = {
+    Object: 'OBJECT',
+    Face: 'FACE',
+    Custom: 'CUSTOM'
+} as const;
+
+export type TagTypeEnum = typeof TagTypeEnum[keyof typeof TagTypeEnum];
+
+
+/**
+ * 
+ * @export
  * @enum {string}
  */
 
@@ -1541,10 +1995,16 @@ export interface UpdateAlbumDto {
 export interface UpdateAssetDto {
     /**
      * 
+     * @type {Array<string>}
+     * @memberof UpdateAssetDto
+     */
+    'tagIds'?: Array<string>;
+    /**
+     * 
      * @type {boolean}
      * @memberof UpdateAssetDto
      */
-    'isFavorite': boolean;
+    'isFavorite'?: boolean;
 }
 /**
  * 
@@ -1570,6 +2030,25 @@ export interface UpdateDeviceInfoDto {
      * @memberof UpdateDeviceInfoDto
      */
     'isAutoBackup'?: boolean;
+}
+/**
+ * 
+ * @export
+ * @interface UpdateTagDto
+ */
+export interface UpdateTagDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateTagDto
+     */
+    'name'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateTagDto
+     */
+    'renameTagId'?: string;
 }
 /**
  * 
@@ -1669,6 +2148,91 @@ export interface UserCountResponseDto {
      * @memberof UserCountResponseDto
      */
     'userCount': number;
+}
+/**
+ * 
+ * @export
+ * @interface UserEntity
+ */
+export interface UserEntity {
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEntity
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEntity
+     */
+    'firstName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEntity
+     */
+    'lastName': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserEntity
+     */
+    'isAdmin': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEntity
+     */
+    'email': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEntity
+     */
+    'password'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEntity
+     */
+    'salt'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEntity
+     */
+    'oauthId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEntity
+     */
+    'profileImagePath': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserEntity
+     */
+    'shouldChangePassword': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEntity
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserEntity
+     */
+    'deletedAt'?: string;
+    /**
+     * 
+     * @type {Array<TagEntity>}
+     * @memberof UserEntity
+     */
+    'tags': Array<TagEntity>;
 }
 /**
  * 
@@ -3246,12 +3810,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateAssetById: async (assetId: string, updateAssetDto: UpdateAssetDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        updateAsset: async (assetId: string, updateAssetDto: UpdateAssetDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('updateAssetById', 'assetId', assetId)
+            assertParamExists('updateAsset', 'assetId', assetId)
             // verify required parameter 'updateAssetDto' is not null or undefined
-            assertParamExists('updateAssetById', 'updateAssetDto', updateAssetDto)
-            const localVarPath = `/asset/assetById/{assetId}`
+            assertParamExists('updateAsset', 'updateAssetDto', updateAssetDto)
+            const localVarPath = `/asset/{assetId}`
                 .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3520,8 +4084,8 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateAssetById(assetId: string, updateAssetDto: UpdateAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateAssetById(assetId, updateAssetDto, options);
+        async updateAsset(assetId: string, updateAssetDto: UpdateAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateAsset(assetId, updateAssetDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -3711,8 +4275,8 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateAssetById(assetId: string, updateAssetDto: UpdateAssetDto, options?: any): AxiosPromise<AssetResponseDto> {
-            return localVarFp.updateAssetById(assetId, updateAssetDto, options).then((request) => request(axios, basePath));
+        updateAsset(assetId: string, updateAssetDto: UpdateAssetDto, options?: any): AxiosPromise<AssetResponseDto> {
+            return localVarFp.updateAsset(assetId, updateAssetDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3935,8 +4499,8 @@ export class AssetApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public updateAssetById(assetId: string, updateAssetDto: UpdateAssetDto, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).updateAssetById(assetId, updateAssetDto, options).then((request) => request(this.axios, this.basePath));
+    public updateAsset(assetId: string, updateAssetDto: UpdateAssetDto, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).updateAsset(assetId, updateAssetDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5246,6 +5810,363 @@ export class SystemConfigApi extends BaseAPI {
      */
     public updateConfig(body: object, options?: AxiosRequestConfig) {
         return SystemConfigApiFp(this.configuration).updateConfig(body, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * TagApi - axios parameter creator
+ * @export
+ */
+export const TagApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        _delete: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('_delete', 'id', id)
+            const localVarPath = `/tag/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {CreateTagDto} createTagDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create: async (createTagDto: CreateTagDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'createTagDto' is not null or undefined
+            assertParamExists('create', 'createTagDto', createTagDto)
+            const localVarPath = `/tag`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(createTagDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        findAll: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/tag`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        findOne: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('findOne', 'id', id)
+            const localVarPath = `/tag/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {UpdateTagDto} updateTagDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update: async (id: string, updateTagDto: UpdateTagDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('update', 'id', id)
+            // verify required parameter 'updateTagDto' is not null or undefined
+            assertParamExists('update', 'updateTagDto', updateTagDto)
+            const localVarPath = `/tag/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(updateTagDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * TagApi - functional programming interface
+ * @export
+ */
+export const TagApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = TagApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async _delete(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagEntity>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator._delete(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {CreateTagDto} createTagDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async create(createTagDto: CreateTagDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagEntity>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create(createTagDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async findAll(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TagEntity>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.findAll(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async findOne(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagEntity>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.findOne(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {UpdateTagDto} updateTagDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async update(id: string, updateTagDto: UpdateTagDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.update(id, updateTagDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * TagApi - factory interface
+ * @export
+ */
+export const TagApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = TagApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        _delete(id: string, options?: any): AxiosPromise<TagEntity> {
+            return localVarFp._delete(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {CreateTagDto} createTagDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create(createTagDto: CreateTagDto, options?: any): AxiosPromise<TagEntity> {
+            return localVarFp.create(createTagDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        findAll(options?: any): AxiosPromise<Array<TagEntity>> {
+            return localVarFp.findAll(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        findOne(id: string, options?: any): AxiosPromise<TagEntity> {
+            return localVarFp.findOne(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {UpdateTagDto} updateTagDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update(id: string, updateTagDto: UpdateTagDto, options?: any): AxiosPromise<object> {
+            return localVarFp.update(id, updateTagDto, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * TagApi - object-oriented interface
+ * @export
+ * @class TagApi
+ * @extends {BaseAPI}
+ */
+export class TagApi extends BaseAPI {
+    /**
+     * 
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public _delete(id: string, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration)._delete(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {CreateTagDto} createTagDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public create(createTagDto: CreateTagDto, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).create(createTagDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public findAll(options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).findAll(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public findOne(id: string, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).findOne(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {UpdateTagDto} updateTagDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public update(id: string, updateTagDto: UpdateTagDto, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).update(id, updateTagDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

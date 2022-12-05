@@ -231,13 +231,13 @@ export class AssetService {
     return mapAsset(asset);
   }
 
-  public async updateAssetById(assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+  public async updateAsset(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
       throw new BadRequestException('Asset not found');
     }
 
-    const updatedAsset = await this._assetRepository.update(asset, dto);
+    const updatedAsset = await this._assetRepository.update(authUser.id, asset, dto);
 
     return mapAsset(updatedAsset);
   }

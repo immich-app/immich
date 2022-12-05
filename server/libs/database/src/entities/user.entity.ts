@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { TagEntity } from './tag.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -37,4 +38,7 @@ export class UserEntity {
 
   @DeleteDateColumn()
   deletedAt?: Date;
+
+  @OneToMany(() => TagEntity, (tag) => tag.user)
+  tags!: TagEntity[];
 }

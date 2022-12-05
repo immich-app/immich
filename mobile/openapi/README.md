@@ -93,7 +93,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
-*AssetApi* | [**updateAssetById**](doc//AssetApi.md#updateassetbyid) | **PUT** /asset/assetById/{assetId} | 
+*AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{assetId} | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
@@ -112,6 +112,11 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
+*TagApi* | [**create**](doc//TagApi.md#create) | **POST** /tag | 
+*TagApi* | [**delete**](doc//TagApi.md#delete) | **DELETE** /tag/{id} | 
+*TagApi* | [**findAll**](doc//TagApi.md#findall) | **GET** /tag | 
+*TagApi* | [**findOne**](doc//TagApi.md#findone) | **GET** /tag/{id} | 
+*TagApi* | [**update**](doc//TagApi.md#update) | **PATCH** /tag/{id} | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
 *UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{userId} | 
@@ -136,6 +141,7 @@ Class | Method | HTTP request | Description
  - [AssetCountByTimeBucket](doc//AssetCountByTimeBucket.md)
  - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
  - [AssetCountByUserIdResponseDto](doc//AssetCountByUserIdResponseDto.md)
+ - [AssetEntity](doc//AssetEntity.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
@@ -146,6 +152,7 @@ Class | Method | HTTP request | Description
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
  - [CreateDeviceInfoDto](doc//CreateDeviceInfoDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
+ - [CreateTagDto](doc//CreateTagDto.md)
  - [CreateUserDto](doc//CreateUserDto.md)
  - [CuratedLocationsResponseDto](doc//CuratedLocationsResponseDto.md)
  - [CuratedObjectsResponseDto](doc//CuratedObjectsResponseDto.md)
@@ -154,6 +161,7 @@ Class | Method | HTTP request | Description
  - [DeleteAssetStatus](doc//DeleteAssetStatus.md)
  - [DeviceInfoResponseDto](doc//DeviceInfoResponseDto.md)
  - [DeviceTypeEnum](doc//DeviceTypeEnum.md)
+ - [ExifEntity](doc//ExifEntity.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
@@ -175,18 +183,24 @@ Class | Method | HTTP request | Description
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
  - [SignUpDto](doc//SignUpDto.md)
+ - [SmartInfoEntity](doc//SmartInfoEntity.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [SystemConfigKey](doc//SystemConfigKey.md)
  - [SystemConfigResponseDto](doc//SystemConfigResponseDto.md)
  - [SystemConfigResponseItem](doc//SystemConfigResponseItem.md)
+ - [TagEntity](doc//TagEntity.md)
+ - [TagResponseDto](doc//TagResponseDto.md)
+ - [TagTypeEnum](doc//TagTypeEnum.md)
  - [ThumbnailFormat](doc//ThumbnailFormat.md)
  - [TimeGroupEnum](doc//TimeGroupEnum.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
+ - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserCountResponseDto](doc//UserCountResponseDto.md)
+ - [UserEntity](doc//UserEntity.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
 

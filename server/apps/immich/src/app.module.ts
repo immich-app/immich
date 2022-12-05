@@ -18,6 +18,7 @@ import { DatabaseModule } from '@app/database';
 import { JobModule } from './api-v1/job/job.module';
 import { SystemConfigModule } from './api-v1/system-config/system-config.module';
 import { OAuthModule } from './api-v1/oauth/oauth.module';
+import { TagModule } from './api-v1/tag/tag.module';
 
 @Module({
   imports: [
@@ -63,6 +64,8 @@ import { OAuthModule } from './api-v1/oauth/oauth.module';
     JobModule,
 
     SystemConfigModule,
+
+    TagModule,
   ],
   controllers: [AppController],
   providers: [],

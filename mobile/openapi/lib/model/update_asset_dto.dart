@@ -13,26 +13,42 @@ part of openapi.api;
 class UpdateAssetDto {
   /// Returns a new [UpdateAssetDto] instance.
   UpdateAssetDto({
-    required this.isFavorite,
+    this.tagIds = const [],
+    this.isFavorite,
   });
 
-  bool isFavorite;
+  List<String> tagIds;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isFavorite;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
+     other.tagIds == tagIds &&
      other.isFavorite == isFavorite;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (isFavorite.hashCode);
+    (tagIds.hashCode) +
+    (isFavorite == null ? 0 : isFavorite!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[isFavorite=$isFavorite]';
+  String toString() => 'UpdateAssetDto[tagIds=$tagIds, isFavorite=$isFavorite]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
+      _json[r'tagIds'] = tagIds;
+    if (isFavorite != null) {
       _json[r'isFavorite'] = isFavorite;
+    } else {
+      _json[r'isFavorite'] = null;
+    }
     return _json;
   }
 
@@ -55,7 +71,10 @@ class UpdateAssetDto {
       }());
 
       return UpdateAssetDto(
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        tagIds: json[r'tagIds'] is List
+            ? (json[r'tagIds'] as List).cast<String>()
+            : const [],
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
       );
     }
     return null;
@@ -105,7 +124,6 @@ class UpdateAssetDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'isFavorite',
   };
 }
 
