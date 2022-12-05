@@ -58,7 +58,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **delete**
-> delete(id)
+> TagEntity delete(id)
 
 
 
@@ -70,7 +70,8 @@ final api_instance = TagApi();
 final id = id_example; // String | 
 
 try {
-    api_instance.delete(id);
+    final result = api_instance.delete(id);
+    print(result);
 } catch (e) {
     print('Exception when calling TagApi->delete: $e\n');
 }
@@ -84,7 +85,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**TagEntity**](TagEntity.md)
 
 ### Authorization
 
@@ -93,7 +94,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -135,7 +136,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **findOne**
-> Object findOne(id)
+> TagEntity findOne(id)
 
 
 
@@ -162,7 +163,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Object**](Object.md)
+[**TagEntity**](TagEntity.md)
 
 ### Authorization
 

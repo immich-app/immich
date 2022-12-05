@@ -1,6 +1,4 @@
-import { AssetEntity } from '@app/database/entities/asset.entity';
 import { TagEntity, TagType } from '@app/database/entities/tag.entity';
-import { UserEntity } from '@app/database/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -12,7 +10,7 @@ export interface ITagRepository {
   getById(tagId: string, userId: string): Promise<TagEntity | null>;
   getByUserId(userId: string): Promise<TagEntity[]>;
   update(tag: TagEntity, updateTagDto: UpdateTagDto): Promise<TagEntity | null>;
-  remove(tag: TagEntity): Promise<void>;
+  remove(tag: TagEntity): Promise<TagEntity>;
 }
 
 export const TAG_REPOSITORY = 'TAG_REPOSITORY';
@@ -57,7 +55,7 @@ export class TagRepository implements ITagRepository {
     return this.tagRepository.save(tag);
   }
 
-  async remove(tag: TagEntity): Promise<void> {
-    await this.tagRepository.remove(tag);
+  async remove(tag: TagEntity): Promise<TagEntity> {
+    return await this.tagRepository.remove(tag);
   }
 }

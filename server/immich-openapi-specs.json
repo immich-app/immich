@@ -1542,7 +1542,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/TagEntity"
                 }
               }
             }
@@ -1604,7 +1604,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagEntity"
+                }
+              }
+            }
           }
         },
         "tags": [

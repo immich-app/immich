@@ -24,7 +24,7 @@ export class TagService {
     return await this._tagRepository.getByUserId(authUser.id);
   }
 
-  async findOne(authUser: AuthUserDto, id: string): Promise<TagEntity | null> {
+  async findOne(authUser: AuthUserDto, id: string): Promise<TagEntity> {
     const tag = await this._tagRepository.getById(id, authUser.id);
 
     if (!tag) {
@@ -35,21 +35,13 @@ export class TagService {
   }
 
   async update(authUser: AuthUserDto, id: string, updateTagDto: UpdateTagDto) {
-    const tag = await this._tagRepository.getById(id, authUser.id);
-
-    if (!tag) {
-      throw new BadRequestException('Tag not found');
-    }
+    const tag = await this.findOne(authUser, id);
 
     return this._tagRepository.update(tag, updateTagDto);
   }
 
   async remove(authUser: AuthUserDto, id: string) {
-    const tag = await this._tagRepository.getById(id, authUser.id);
-
-    if (!tag) {
-      throw new BadRequestException('Tag not found');
-    }
+    const tag = await this.findOne(authUser, id);
 
     return this._tagRepository.remove(tag);
   }

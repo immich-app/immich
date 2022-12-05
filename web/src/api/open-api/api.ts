@@ -6005,7 +6005,7 @@ export const TagApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async _delete(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async _delete(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagEntity>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator._delete(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6034,7 +6034,7 @@ export const TagApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async findOne(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async findOne(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagEntity>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.findOne(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6065,7 +6065,7 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        _delete(id: string, options?: any): AxiosPromise<void> {
+        _delete(id: string, options?: any): AxiosPromise<TagEntity> {
             return localVarFp._delete(id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -6091,7 +6091,7 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        findOne(id: string, options?: any): AxiosPromise<object> {
+        findOne(id: string, options?: any): AxiosPromise<TagEntity> {
             return localVarFp.findOne(id, options).then((request) => request(axios, basePath));
         },
         /**
