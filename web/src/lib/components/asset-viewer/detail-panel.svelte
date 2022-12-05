@@ -70,7 +70,7 @@
 		return undefined;
 	};
 
-	const locale = navigator.languages;
+	const locale = navigator.language;
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">

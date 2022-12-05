@@ -14,7 +14,7 @@
 		return user.deletedAt != null;
 	};
 
-	const locale = navigator.languages;
+	const locale = navigator.language;
 	const deleteDateFormat: Intl.DateTimeFormatOptions = {
 		month: 'long',
 		day: 'numeric',

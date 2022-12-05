@@ -86,7 +86,7 @@
 		}
 	}
 
-	const locale = navigator.languages;
+	const locale = navigator.language;
 	const albumDateFormat: Intl.DateTimeFormatOptions = {
 		month: 'short',
 		day: 'numeric',

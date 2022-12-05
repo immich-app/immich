@@ -12,6 +12,9 @@
 <img src="design/immich-logo.svg" width="150" title="Login With Custom URL">
 </p>
 <h3 align="center">Immich - 高性能的自托管照片和视频备份方案</h3>
+<p align="center">  
+请注意: 此README不是由Immich团队维护, 这意味着它在某一时间点不会被更新，因为我们是依靠贡献者来更新的。感谢理解。
+</p>
 <br/>
 <a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Main Screenshot">
@@ -21,6 +24,7 @@
 <p align="center">
   <a href="README.md">English</a>
 </p>
+
 
 ## 免责声明
 

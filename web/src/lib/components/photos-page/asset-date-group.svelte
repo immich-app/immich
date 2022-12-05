@@ -18,7 +18,7 @@
 	export let bucketHeight: number;
 	export let isAlbumSelectionMode = false;
 
-	const locale = navigator.languages;
+	const locale = navigator.language;
 	const groupDateFormat: Intl.DateTimeFormatOptions = {
 		weekday: 'short',
 		month: 'short',
