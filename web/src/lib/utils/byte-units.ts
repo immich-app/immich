@@ -39,7 +39,7 @@ export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, stri
  * @returns localized bytes with unit as string
  */
 export function asByteUnitString(bytes: number, maxPrecision = 1): string {
-	const locale = Array.from(navigator.language);
+	const locale = Array.from(navigator.languages);
 	const [size, unit] = getBytesWithUnit(bytes, maxPrecision);
 	return `${size.toLocaleString(locale)} ${unit}`;
 }
