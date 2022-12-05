@@ -237,7 +237,7 @@ export class AssetService {
       throw new BadRequestException('Asset not found');
     }
 
-    const updatedAsset = await this._assetRepository.update(asset, dto);
+    const updatedAsset = await this._assetRepository.update(authUser.id, asset, dto);
 
     return mapAsset(updatedAsset);
   }

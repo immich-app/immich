@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateTagTables1670044557433 implements MigrationInterface {
-    name = 'CreateTagTables1670044557433'
+export class CreateTagsTable1670257571385 implements MigrationInterface {
+    name = 'CreateTagsTable1670257571385'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE "tags" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" character varying NOT NULL, "name" character varying NOT NULL, "renameTagId" uuid, "userId" uuid, CONSTRAINT "PK_e7dc17249a1148a1970748eda99" PRIMARY KEY ("id")); COMMENT ON COLUMN "tags"."renameTagId" IS 'The new renamed tagId'`);
+        await queryRunner.query(`CREATE TABLE "tags" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" character varying NOT NULL, "name" character varying NOT NULL, "userId" uuid NOT NULL, "renameTagId" uuid, CONSTRAINT "UQ_tag_name_userId" UNIQUE ("name", "userId"), CONSTRAINT "PK_e7dc17249a1148a1970748eda99" PRIMARY KEY ("id")); COMMENT ON COLUMN "tags"."renameTagId" IS 'The new renamed tagId'`);
         await queryRunner.query(`CREATE TABLE "tag_asset" ("assetsId" uuid NOT NULL, "tagsId" uuid NOT NULL, CONSTRAINT "PK_ef5346fe522b5fb3bc96454747e" PRIMARY KEY ("assetsId", "tagsId"))`);
         await queryRunner.query(`CREATE INDEX "IDX_f8e8a9e893cb5c54907f1b798e" ON "tag_asset" ("assetsId") `);
         await queryRunner.query(`CREATE INDEX "IDX_e99f31ea4cdf3a2c35c7287eb4" ON "tag_asset" ("tagsId") `);

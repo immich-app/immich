@@ -7,9 +7,9 @@ import { In, Repository } from 'typeorm';
 import { UpdateTagDto } from './dto/update-tag.dto';
 
 export interface ITagRepository {
-  create(userId: UserEntity, tagType: TagType, tagName: string): Promise<TagEntity>;
-  getByIds(ids: string[]): Promise<TagEntity[]>;
-  getById(tagId: string): Promise<TagEntity | null>;
+  create(userId: string, tagType: TagType, tagName: string): Promise<TagEntity>;
+  getByIds(userId: string, tagIds: string[]): Promise<TagEntity[]>;
+  getById(tagId: string, userId: string): Promise<TagEntity | null>;
   getByUserId(userId: string): Promise<TagEntity[]>;
   update(tag: TagEntity, updateTagDto: UpdateTagDto): Promise<TagEntity | null>;
   delete(tag: TagEntity): Promise<void>;
@@ -30,22 +30,22 @@ export class TagRepository implements ITagRepository {
     private assetRepository: Repository<AssetEntity>,
   ) {}
 
-  async create(user: UserEntity, tagType: TagType, tagName: string): Promise<TagEntity> {
+  async create(userId: string, tagType: TagType, tagName: string): Promise<TagEntity> {
     const tag = new TagEntity();
     tag.name = tagName;
     tag.type = tagType;
-    tag.user = user;
+    tag.userId = userId;
 
     return this.tagRepository.save(tag);
   }
 
-  async getById(tagId: string): Promise<TagEntity | null> {
-    return await this.tagRepository.findOne({ where: { id: tagId }, relations: ['user'] });
+  async getById(tagId: string, userId: string): Promise<TagEntity | null> {
+    return await this.tagRepository.findOne({ where: { id: tagId, userId }, relations: ['user'] });
   }
 
-  async getByIds(ids: string[]): Promise<TagEntity[]> {
+  async getByIds(userId: string, tagIds: string[]): Promise<TagEntity[]> {
     return await this.tagRepository.find({
-      where: { id: In(ids) },
+      where: { id: In(tagIds), userId },
       relations: {
         user: true,
       },
@@ -53,7 +53,7 @@ export class TagRepository implements ITagRepository {
   }
 
   async getByUserId(userId: string): Promise<TagEntity[]> {
-    return await this.tagRepository.find({ where: { user: { id: userId } } });
+    return await this.tagRepository.find({ where: { userId } });
   }
 
   async update(tag: TagEntity, updateTagDto: UpdateTagDto): Promise<TagEntity> {

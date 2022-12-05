@@ -1,8 +1,9 @@
-import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('tags')
+@Unique('UQ_tag_name_userId', ['name', 'userId'])
 export class TagEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -12,6 +13,9 @@ export class TagEntity {
 
   @Column()
   name!: string;
+
+  @Column()
+  userId!: string;
 
   @Column({ type: 'uuid', comment: 'The new renamed tagId', nullable: true })
   renameTagId!: string;

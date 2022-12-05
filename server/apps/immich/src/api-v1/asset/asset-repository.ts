@@ -26,7 +26,7 @@ export interface IAssetRepository {
     checksum?: Buffer,
     livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity>;
-  update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
+  update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
   getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -289,11 +289,11 @@ export class AssetRepository implements IAssetRepository {
   /**
    * Update asset
    */
-  async update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
+  async update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
     asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
 
     if (dto.tagIds) {
-      const tags = await this._tagRepository.getByIds(dto.tagIds);
+      const tags = await this._tagRepository.getByIds(userId, dto.tagIds);
       asset.tags = tags;
     }
 
@@ -355,10 +355,10 @@ export class AssetRepository implements IAssetRepository {
 
   async countByIdAndUser(assetId: string, userId: string): Promise<number> {
     return await this.assetRepository.count({
-        where: {
-          id: assetId,
-          userId
-      }
+      where: {
+        id: assetId,
+        userId,
+      },
     });
   }
 }

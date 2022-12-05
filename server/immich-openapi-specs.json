@@ -3259,6 +3259,9 @@
           "name": {
             "type": "string"
           },
+          "userId": {
+            "type": "string"
+          },
           "renameTagId": {
             "type": "string"
           },
@@ -3276,6 +3279,7 @@
           "id",
           "type",
           "name",
+          "userId",
           "renameTagId",
           "assets",
           "user"
