@@ -3,6 +3,7 @@ import { DatabaseModule } from '@app/database';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
+import { TagEntity } from '@app/database/entities/tag.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { BullModule } from '@nestjs/bull';
@@ -24,7 +25,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     ConfigModule.forRoot(immichAppConfig),
     DatabaseModule,
     ImmichConfigModule,
-    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
+    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity, TagEntity, AssetEntity]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',
