@@ -61,6 +61,12 @@ export class MachineLearningProcessor {
     try {
       const immichTags: TagEntity[] = [];
 
+      const assetEntity = await this.assetRepository.findOne({ where: { id: asset.id } });
+
+      if (!assetEntity) {
+        return;
+      }
+
       for (const tag of tagNames) {
         let immichTag: TagEntity | null;
 
@@ -71,19 +77,13 @@ export class MachineLearningProcessor {
           immichTag.name = tag;
           immichTag.type = TagType.OBJECT;
           immichTag.userId = asset.userId;
-
-          immichTag = await this.tagRepository.save(immichTag);
         }
 
         immichTags.push(immichTag);
       }
 
-      const assetEntity = await this.assetRepository.findOne({ where: { id: asset.id } });
-
-      if (assetEntity) {
-        assetEntity.tags = assetEntity.tags ? Array.from(new Set([...assetEntity.tags, ...immichTags])) : immichTags;
-        await this.assetRepository.save(assetEntity);
-      }
+      assetEntity.tags = assetEntity.tags ? Array.from(new Set([...assetEntity.tags, ...immichTags])) : immichTags;
+      await this.assetRepository.save(assetEntity);
     } catch (e) {
       this.logger.error(e);
     }
