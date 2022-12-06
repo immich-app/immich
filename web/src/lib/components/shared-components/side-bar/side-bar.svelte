@@ -54,7 +54,7 @@
 
 <section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg">
 	<a
-		data-sveltekit-prefetch-data="hover"
+		data-sveltekit-preload-data="hover"
 		data-sveltekit-noscroll
 		href={$page.route.id !== 'photos' ? `/photos` : null}
 		class="relative"
@@ -92,7 +92,7 @@
 	</a>
 
 	<a
-		data-sveltekit-prefetch-data="hover"
+		data-sveltekit-preload-data="hover"
 		href={$page.route.id !== 'sharing' ? `/sharing` : null}
 		class="relative"
 	>
@@ -130,7 +130,7 @@
 		<p>LIBRARY</p>
 	</div>
 	<a
-		data-sveltekit-prefetch-data="hover"
+		data-sveltekit-preload-data="hover"
 		href={$page.route.id !== 'albums' ? `/albums` : null}
 		class="relative"
 	>

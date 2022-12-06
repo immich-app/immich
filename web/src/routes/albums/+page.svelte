@@ -80,7 +80,7 @@
 			<div class="flex flex-wrap gap-8">
 				{#each $albums as album}
 					{#key album.id}
-						<a data-sveltekit-prefetch-data="hover" href={`albums/${album.id}`}>
+						<a data-sveltekit-preload-data="hover" href={`albums/${album.id}`}>
 							<AlbumCard
 								{album}
 								on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
