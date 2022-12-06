@@ -4,6 +4,7 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { ITagRepository, TAG_REPOSITORY } from './tag.repository';
+import { mapTag, TagResponseDto } from "./response-dto/tag-response.dto";
 
 @Injectable()
 export class TagService {
@@ -13,7 +14,8 @@ export class TagService {
 
   async create(authUser: AuthUserDto, createTagDto: CreateTagDto) {
     try {
-      return await this._tagRepository.create(authUser.id, createTagDto.type, createTagDto.name);
+      const newTag = await this._tagRepository.create(authUser.id, createTagDto.type, createTagDto.name);
+      return mapTag(newTag);
     } catch (e: any) {
       this.logger.error(e, e.stack);
       throw new BadRequestException(`Failed to create tag: ${e.detail}`);
@@ -21,7 +23,8 @@ export class TagService {
   }
 
   async findAll(authUser: AuthUserDto) {
-    return await this._tagRepository.getByUserId(authUser.id);
+    const tags = await this._tagRepository.getByUserId(authUser.id);
+    return tags.map(mapTag);
   }
 
   async findOne(authUser: AuthUserDto, id: string): Promise<TagEntity> {
@@ -34,15 +37,16 @@ export class TagService {
     return tag;
   }
 
-  async update(authUser: AuthUserDto, id: string, updateTagDto: UpdateTagDto) {
+  async update(authUser: AuthUserDto, id: string, updateTagDto: UpdateTagDto): Promise<TagResponseDto>  {
     const tag = await this.findOne(authUser, id);
 
-    return this._tagRepository.update(tag, updateTagDto);
+    await this._tagRepository.update(tag, updateTagDto);
+
+    return mapTag(tag);
   }
 
-  async remove(authUser: AuthUserDto, id: string) {
+  async remove(authUser: AuthUserDto, id: string): Promise<void> {
     const tag = await this.findOne(authUser, id);
-
-    return this._tagRepository.remove(tag);
+    await this._tagRepository.remove(tag);
   }
 }
