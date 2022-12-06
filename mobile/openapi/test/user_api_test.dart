@@ -27,6 +27,11 @@ void main() {
       // TODO
     });
 
+    //Future<UserResponseDto> deleteUser(String userId) async
+    test('test deleteUser', () async {
+      // TODO
+    });
+
     //Future<List<UserResponseDto>> getAllUsers(bool isAll) async
     test('test getAllUsers', () async {
       // TODO
@@ -42,8 +47,18 @@ void main() {
       // TODO
     });
 
+    //Future<UserResponseDto> getUserById(String userId) async
+    test('test getUserById', () async {
+      // TODO
+    });
+
     //Future<UserCountResponseDto> getUserCount() async
     test('test getUserCount', () async {
+      // TODO
+    });
+
+    //Future<UserResponseDto> restoreUser(String userId) async
+    test('test restoreUser', () async {
       // TODO
     });
 

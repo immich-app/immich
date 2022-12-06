@@ -21,13 +21,18 @@ void main() {
       // TODO
     });
 
-    // String key
+    // SystemConfigKey key
     test('to test the property `key`', () async {
       // TODO
     });
 
-    // Object value
+    // String value
     test('to test the property `value`', () async {
+      // TODO
+    });
+
+    // String defaultValue
+    test('to test the property `defaultValue`', () async {
       // TODO
     });
 

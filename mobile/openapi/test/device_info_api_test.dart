@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future<DeviceInfoResponseDto> updateDeviceInfo(Object body) async
+    //Future<DeviceInfoResponseDto> updateDeviceInfo(UpdateDeviceInfoDto updateDeviceInfoDto) async
     test('test updateDeviceInfo', () async {
       // TODO
     });

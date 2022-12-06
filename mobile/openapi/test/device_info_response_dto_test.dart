@@ -16,8 +16,13 @@ void main() {
   // final instance = DeviceInfoResponseDto();
 
   group('test DeviceInfoResponseDto', () {
-    // num id
+    // int id
     test('to test the property `id`', () async {
+      // TODO
+    });
+
+    // DeviceTypeEnum deviceType
+    test('to test the property `deviceType`', () async {
       // TODO
     });
 
@@ -28,16 +33,6 @@ void main() {
 
     // String deviceId
     test('to test the property `deviceId`', () async {
-      // TODO
-    });
-
-    // String deviceType
-    test('to test the property `deviceType`', () async {
-      // TODO
-    });
-
-    // String notificationToken
-    test('to test the property `notificationToken`', () async {
       // TODO
     });
 

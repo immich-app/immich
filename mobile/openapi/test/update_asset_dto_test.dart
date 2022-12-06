@@ -16,6 +16,11 @@ void main() {
   // final instance = UpdateAssetDto();
 
   group('test UpdateAssetDto', () {
+    // List<String> tagIds (default value: const [])
+    test('to test the property `tagIds`', () async {
+      // TODO
+    });
+
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
       // TODO

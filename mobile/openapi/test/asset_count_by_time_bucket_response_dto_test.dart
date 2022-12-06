@@ -16,13 +16,13 @@ void main() {
   // final instance = AssetCountByTimeBucketResponseDto();
 
   group('test AssetCountByTimeBucketResponseDto', () {
-    // String timeGroup
-    test('to test the property `timeGroup`', () async {
+    // int totalCount
+    test('to test the property `totalCount`', () async {
       // TODO
     });
 
-    // int count
-    test('to test the property `count`', () async {
+    // List<AssetCountByTimeBucket> buckets (default value: const [])
+    test('to test the property `buckets`', () async {
       // TODO
     });
 

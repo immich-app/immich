@@ -16,6 +16,11 @@ void main() {
   // final instance = AlbumResponseDto();
 
   group('test AlbumResponseDto', () {
+    // int assetCount
+    test('to test the property `assetCount`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO

@@ -31,8 +31,18 @@ void main() {
       // TODO
     });
 
-    // UsagePerUser diskUsagesByUser
-    test('to test the property `diskUsagesByUser`', () async {
+    // int usageRaw
+    test('to test the property `usageRaw`', () async {
+      // TODO
+    });
+
+    // String usage
+    test('to test the property `usage`', () async {
+      // TODO
+    });
+
+    // List<UsageByUserDto> usageByUser (default value: const [])
+    test('to test the property `usageByUser`', () async {
       // TODO
     });
 
