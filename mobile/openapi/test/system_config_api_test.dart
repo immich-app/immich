@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future<SystemConfigResponseDto> updateConfig(Object body) async
+    //Future<SystemConfigResponseDto> updateConfig(SystemConfigUpdateDto systemConfigUpdateDto) async
     test('test updateConfig', () async {
       // TODO
     });

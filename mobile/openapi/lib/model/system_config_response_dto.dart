@@ -13,26 +13,32 @@ part of openapi.api;
 class SystemConfigResponseDto {
   /// Returns a new [SystemConfigResponseDto] instance.
   SystemConfigResponseDto({
-    this.config = const [],
+    required this.oauth,
+    required this.ffmpeg,
   });
 
-  List<SystemConfigResponseItem> config;
+  SystemOAuthConfigResponseDto oauth;
+
+  SystemFFmpegConfigResponseDto ffmpeg;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigResponseDto &&
-     other.config == config;
+     other.oauth == oauth &&
+     other.ffmpeg == ffmpeg;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (config.hashCode);
+    (oauth.hashCode) +
+    (ffmpeg.hashCode);
 
   @override
-  String toString() => 'SystemConfigResponseDto[config=$config]';
+  String toString() => 'SystemConfigResponseDto[oauth=$oauth, ffmpeg=$ffmpeg]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
-      _json[r'config'] = config;
+      _json[r'oauth'] = oauth;
+      _json[r'ffmpeg'] = ffmpeg;
     return _json;
   }
 
@@ -55,7 +61,8 @@ class SystemConfigResponseDto {
       }());
 
       return SystemConfigResponseDto(
-        config: SystemConfigResponseItem.listFromJson(json[r'config'])!,
+        oauth: SystemOAuthConfigResponseDto.fromJson(json[r'oauth'])!,
+        ffmpeg: SystemFFmpegConfigResponseDto.fromJson(json[r'ffmpeg'])!,
       );
     }
     return null;
@@ -105,7 +112,8 @@ class SystemConfigResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'config',
+    'oauth',
+    'ffmpeg',
   };
 }
 

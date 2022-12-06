@@ -110,10 +110,8 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
-*SystemConfigApi* | [**getFFmpegConfig**](doc//SystemConfigApi.md#getffmpegconfig) | **GET** /system-config/ffmpeg | 
-*SystemConfigApi* | [**getOAuthConfig**](doc//SystemConfigApi.md#getoauthconfig) | **GET** /system-config/oauth | 
-*SystemConfigApi* | [**updateFFmpegConfig**](doc//SystemConfigApi.md#updateffmpegconfig) | **PUT** /system-config/ffmpeg | 
-*SystemConfigApi* | [**updateOAuthConfig**](doc//SystemConfigApi.md#updateoauthconfig) | **PUT** /system-config/oauth | 
+*SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
+*SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 *TagApi* | [**create**](doc//TagApi.md#create) | **POST** /tag | 
 *TagApi* | [**delete**](doc//TagApi.md#delete) | **DELETE** /tag/{id} | 
 *TagApi* | [**findAll**](doc//TagApi.md#findall) | **GET** /tag | 
@@ -163,7 +161,6 @@ Class | Method | HTTP request | Description
  - [DeviceInfoResponseDto](doc//DeviceInfoResponseDto.md)
  - [DeviceTypeEnum](doc//DeviceTypeEnum.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
- - [FFmpegSystemConfigResponseDto](doc//FFmpegSystemConfigResponseDto.md)
  - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
  - [JobCommand](doc//JobCommand.md)
@@ -177,7 +174,6 @@ Class | Method | HTTP request | Description
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
- - [OAuthSystemConfigResponseDto](doc//OAuthSystemConfigResponseDto.md)
  - [RemoveAssetsDto](doc//RemoveAssetsDto.md)
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
@@ -186,7 +182,12 @@ Class | Method | HTTP request | Description
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
- - [TagEntity](doc//TagEntity.md)
+ - [SystemConfigResponseDto](doc//SystemConfigResponseDto.md)
+ - [SystemConfigUpdateDto](doc//SystemConfigUpdateDto.md)
+ - [SystemConfigUpdateFFmpegDto](doc//SystemConfigUpdateFFmpegDto.md)
+ - [SystemConfigUpdateOAuthDto](doc//SystemConfigUpdateOAuthDto.md)
+ - [SystemFFmpegConfigResponseDto](doc//SystemFFmpegConfigResponseDto.md)
+ - [SystemOAuthConfigResponseDto](doc//SystemOAuthConfigResponseDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagTypeEnum](doc//TagTypeEnum.md)
  - [ThumbnailFormat](doc//ThumbnailFormat.md)
@@ -194,8 +195,6 @@ Class | Method | HTTP request | Description
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
- - [UpdateFFmpegSystemConfigDto](doc//UpdateFFmpegSystemConfigDto.md)
- - [UpdateOAuthSystemConfigDto](doc//UpdateOAuthSystemConfigDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)

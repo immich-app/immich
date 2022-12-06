@@ -16,10 +16,10 @@ class SystemConfigApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /system-config/ffmpeg' operation and returns the [Response].
-  Future<Response> getFFmpegConfigWithHttpInfo() async {
+  /// Performs an HTTP 'GET /system-config' operation and returns the [Response].
+  Future<Response> getConfigWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/system-config/ffmpeg';
+    final path = r'/system-config';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -42,8 +42,8 @@ class SystemConfigApi {
     );
   }
 
-  Future<FFmpegSystemConfigResponseDto?> getFFmpegConfig() async {
-    final response = await getFFmpegConfigWithHttpInfo();
+  Future<SystemConfigResponseDto?> getConfig() async {
+    final response = await getConfigWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -51,63 +51,22 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'FFmpegSystemConfigResponseDto',) as FFmpegSystemConfigResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigResponseDto',) as SystemConfigResponseDto;
     
     }
     return null;
   }
 
-  /// Performs an HTTP 'GET /system-config/oauth' operation and returns the [Response].
-  Future<Response> getOAuthConfigWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/system-config/oauth';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  Future<OAuthSystemConfigResponseDto?> getOAuthConfig() async {
-    final response = await getOAuthConfigWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'OAuthSystemConfigResponseDto',) as OAuthSystemConfigResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'PUT /system-config/ffmpeg' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /system-config' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [UpdateFFmpegSystemConfigDto] updateFFmpegSystemConfigDto (required):
-  Future<Response> updateFFmpegConfigWithHttpInfo(UpdateFFmpegSystemConfigDto updateFFmpegSystemConfigDto,) async {
+  /// * [SystemConfigUpdateDto] systemConfigUpdateDto (required):
+  Future<Response> updateConfigWithHttpInfo(SystemConfigUpdateDto systemConfigUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/system-config/ffmpeg';
+    final path = r'/system-config';
 
     // ignore: prefer_final_locals
-    Object? postBody = updateFFmpegSystemConfigDto;
+    Object? postBody = systemConfigUpdateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -129,9 +88,9 @@ class SystemConfigApi {
 
   /// Parameters:
   ///
-  /// * [UpdateFFmpegSystemConfigDto] updateFFmpegSystemConfigDto (required):
-  Future<FFmpegSystemConfigResponseDto?> updateFFmpegConfig(UpdateFFmpegSystemConfigDto updateFFmpegSystemConfigDto,) async {
-    final response = await updateFFmpegConfigWithHttpInfo(updateFFmpegSystemConfigDto,);
+  /// * [SystemConfigUpdateDto] systemConfigUpdateDto (required):
+  Future<SystemConfigResponseDto?> updateConfig(SystemConfigUpdateDto systemConfigUpdateDto,) async {
+    final response = await updateConfigWithHttpInfo(systemConfigUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -139,54 +98,7 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'FFmpegSystemConfigResponseDto',) as FFmpegSystemConfigResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'PUT /system-config/oauth' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [UpdateOAuthSystemConfigDto] updateOAuthSystemConfigDto (required):
-  Future<Response> updateOAuthConfigWithHttpInfo(UpdateOAuthSystemConfigDto updateOAuthSystemConfigDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/system-config/oauth';
-
-    // ignore: prefer_final_locals
-    Object? postBody = updateOAuthSystemConfigDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [UpdateOAuthSystemConfigDto] updateOAuthSystemConfigDto (required):
-  Future<OAuthSystemConfigResponseDto?> updateOAuthConfig(UpdateOAuthSystemConfigDto updateOAuthSystemConfigDto,) async {
-    final response = await updateOAuthConfigWithHttpInfo(updateOAuthSystemConfigDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'OAuthSystemConfigResponseDto',) as OAuthSystemConfigResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigResponseDto',) as SystemConfigResponseDto;
     
     }
     return null;

@@ -16,8 +16,13 @@ void main() {
   // final instance = SystemConfigResponseDto();
 
   group('test SystemConfigResponseDto', () {
-    // List<SystemConfigResponseItem> config (default value: const [])
-    test('to test the property `config`', () async {
+    // SystemOAuthConfigResponseDto oauth
+    test('to test the property `oauth`', () async {
+      // TODO
+    });
+
+    // SystemFFmpegConfigResponseDto ffmpeg
+    test('to test the property `ffmpeg`', () async {
       // TODO
     });
 

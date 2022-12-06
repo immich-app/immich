@@ -212,8 +212,6 @@ class ApiClient {
           return AssetCountByTimeBucketResponseDto.fromJson(value);
         case 'AssetCountByUserIdResponseDto':
           return AssetCountByUserIdResponseDto.fromJson(value);
-        case 'AssetEntity':
-          return AssetEntity.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetResponseDto':
@@ -252,12 +250,8 @@ class ApiClient {
           return DeviceInfoResponseDto.fromJson(value);
         case 'DeviceTypeEnum':
           return DeviceTypeEnumTypeTransformer().decode(value);
-        case 'ExifEntity':
-          return ExifEntity.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
-        case 'FFmpegSystemConfigResponseDto':
-          return FFmpegSystemConfigResponseDto.fromJson(value);
         case 'GetAssetByTimeBucketDto':
           return GetAssetByTimeBucketDto.fromJson(value);
         case 'GetAssetCountByTimeBucketDto':
@@ -284,8 +278,6 @@ class ApiClient {
           return OAuthConfigDto.fromJson(value);
         case 'OAuthConfigResponseDto':
           return OAuthConfigResponseDto.fromJson(value);
-        case 'OAuthSystemConfigResponseDto':
-          return OAuthSystemConfigResponseDto.fromJson(value);
         case 'RemoveAssetsDto':
           return RemoveAssetsDto.fromJson(value);
         case 'SearchAssetDto':
@@ -300,12 +292,20 @@ class ApiClient {
           return ServerVersionReponseDto.fromJson(value);
         case 'SignUpDto':
           return SignUpDto.fromJson(value);
-        case 'SmartInfoEntity':
-          return SmartInfoEntity.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
-        case 'TagEntity':
-          return TagEntity.fromJson(value);
+        case 'SystemConfigResponseDto':
+          return SystemConfigResponseDto.fromJson(value);
+        case 'SystemConfigUpdateDto':
+          return SystemConfigUpdateDto.fromJson(value);
+        case 'SystemConfigUpdateFFmpegDto':
+          return SystemConfigUpdateFFmpegDto.fromJson(value);
+        case 'SystemConfigUpdateOAuthDto':
+          return SystemConfigUpdateOAuthDto.fromJson(value);
+        case 'SystemFFmpegConfigResponseDto':
+          return SystemFFmpegConfigResponseDto.fromJson(value);
+        case 'SystemOAuthConfigResponseDto':
+          return SystemOAuthConfigResponseDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':
@@ -320,10 +320,6 @@ class ApiClient {
           return UpdateAssetDto.fromJson(value);
         case 'UpdateDeviceInfoDto':
           return UpdateDeviceInfoDto.fromJson(value);
-        case 'UpdateFFmpegSystemConfigDto':
-          return UpdateFFmpegSystemConfigDto.fromJson(value);
-        case 'UpdateOAuthSystemConfigDto':
-          return UpdateOAuthSystemConfigDto.fromJson(value);
         case 'UpdateTagDto':
           return UpdateTagDto.fromJson(value);
         case 'UpdateUserDto':
@@ -332,8 +328,6 @@ class ApiClient {
           return UsageByUserDto.fromJson(value);
         case 'UserCountResponseDto':
           return UserCountResponseDto.fromJson(value);
-        case 'UserEntity':
-          return UserEntity.fromJson(value);
         case 'UserResponseDto':
           return UserResponseDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':
