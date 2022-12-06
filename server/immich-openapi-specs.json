@@ -1490,7 +1490,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TagEntity"
+                  "$ref": "#/components/schemas/TagResponseDto"
                 }
               }
             }
@@ -1511,7 +1511,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/TagEntity"
+                    "$ref": "#/components/schemas/TagResponseDto"
                   }
                 }
               }
@@ -1542,7 +1542,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TagEntity"
+                  "$ref": "#/components/schemas/TagResponseDto"
                 }
               }
             }
@@ -1580,7 +1580,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/TagResponseDto"
                 }
               }
             }
@@ -1604,14 +1604,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagEntity"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2527,12 +2520,20 @@
           },
           "name": {
             "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "renameTagId": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
           "id",
           "type",
-          "name"
+          "name",
+          "userId"
         ]
       },
       "AssetResponseDto": {
@@ -3023,372 +3024,6 @@
         "required": [
           "type",
           "name"
-        ]
-      },
-      "ExifEntity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "assetId": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "description": "General info"
-          },
-          "exifImageWidth": {
-            "type": "number",
-            "nullable": true
-          },
-          "exifImageHeight": {
-            "type": "number",
-            "nullable": true
-          },
-          "fileSizeInByte": {
-            "type": "number",
-            "nullable": true
-          },
-          "orientation": {
-            "type": "string",
-            "nullable": true
-          },
-          "dateTimeOriginal": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "modifyDate": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "latitude": {
-            "type": "number",
-            "nullable": true
-          },
-          "longitude": {
-            "type": "number",
-            "nullable": true
-          },
-          "city": {
-            "type": "string",
-            "nullable": true
-          },
-          "state": {
-            "type": "string",
-            "nullable": true
-          },
-          "country": {
-            "type": "string",
-            "nullable": true
-          },
-          "make": {
-            "type": "string",
-            "nullable": true,
-            "description": "Image info"
-          },
-          "model": {
-            "type": "string",
-            "nullable": true
-          },
-          "imageName": {
-            "type": "string",
-            "nullable": true
-          },
-          "lensModel": {
-            "type": "string",
-            "nullable": true
-          },
-          "fNumber": {
-            "type": "number",
-            "nullable": true
-          },
-          "focalLength": {
-            "type": "number",
-            "nullable": true
-          },
-          "iso": {
-            "type": "number",
-            "nullable": true
-          },
-          "exposureTime": {
-            "type": "number",
-            "nullable": true
-          },
-          "fps": {
-            "type": "number",
-            "nullable": true,
-            "description": "Video info"
-          },
-          "asset": {
-            "$ref": "#/components/schemas/AssetEntity"
-          },
-          "exifTextSearchableColumn": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "assetId",
-          "description",
-          "exifImageWidth",
-          "exifImageHeight",
-          "fileSizeInByte",
-          "orientation",
-          "dateTimeOriginal",
-          "modifyDate",
-          "latitude",
-          "longitude",
-          "city",
-          "state",
-          "country",
-          "make",
-          "model",
-          "imageName",
-          "lensModel",
-          "fNumber",
-          "focalLength",
-          "iso",
-          "exposureTime",
-          "exifTextSearchableColumn"
-        ]
-      },
-      "SmartInfoEntity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "assetId": {
-            "type": "string"
-          },
-          "tags": {
-            "nullable": true,
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "objects": {
-            "nullable": true,
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "asset": {
-            "$ref": "#/components/schemas/AssetEntity"
-          }
-        },
-        "required": [
-          "id",
-          "assetId",
-          "tags",
-          "objects"
-        ]
-      },
-      "UserEntity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "isAdmin": {
-            "type": "boolean"
-          },
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "salt": {
-            "type": "string"
-          },
-          "oauthId": {
-            "type": "string"
-          },
-          "profileImagePath": {
-            "type": "string"
-          },
-          "shouldChangePassword": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "deletedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TagEntity"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "firstName",
-          "lastName",
-          "isAdmin",
-          "email",
-          "oauthId",
-          "profileImagePath",
-          "shouldChangePassword",
-          "createdAt",
-          "tags"
-        ]
-      },
-      "TagEntity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "type": {
-            "enum": [
-              "OBJECT",
-              "FACE",
-              "CUSTOM"
-            ],
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "renameTagId": {
-            "type": "string"
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssetEntity"
-            }
-          },
-          "user": {
-            "$ref": "#/components/schemas/UserEntity"
-          }
-        },
-        "required": [
-          "id",
-          "type",
-          "name",
-          "userId",
-          "renameTagId",
-          "assets",
-          "user"
-        ]
-      },
-      "AssetEntity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "IMAGE",
-              "VIDEO",
-              "AUDIO",
-              "OTHER"
-            ]
-          },
-          "originalPath": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string",
-            "nullable": true
-          },
-          "webpPath": {
-            "type": "string",
-            "nullable": true
-          },
-          "encodedVideoPath": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "modifiedAt": {
-            "type": "string"
-          },
-          "isFavorite": {
-            "type": "boolean"
-          },
-          "mimeType": {
-            "type": "string",
-            "nullable": true
-          },
-          "checksum": {
-            "type": "object",
-            "nullable": true
-          },
-          "duration": {
-            "type": "string",
-            "nullable": true
-          },
-          "isVisible": {
-            "type": "boolean"
-          },
-          "livePhotoVideoId": {
-            "type": "string",
-            "nullable": true
-          },
-          "exifInfo": {
-            "$ref": "#/components/schemas/ExifEntity"
-          },
-          "smartInfo": {
-            "$ref": "#/components/schemas/SmartInfoEntity"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TagEntity"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "deviceAssetId",
-          "userId",
-          "deviceId",
-          "type",
-          "originalPath",
-          "resizePath",
-          "webpPath",
-          "encodedVideoPath",
-          "createdAt",
-          "modifiedAt",
-          "isFavorite",
-          "mimeType",
-          "duration",
-          "isVisible",
-          "livePhotoVideoId",
-          "tags"
         ]
       },
       "UpdateTagDto": {
