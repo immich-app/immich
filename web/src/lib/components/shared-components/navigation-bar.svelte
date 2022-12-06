@@ -52,7 +52,7 @@
 >
 	<div class="flex border-b dark:border-b-immich-dark-gray place-items-center px-6 py-2 ">
 		<a
-			data-sveltekit-prefetch
+			data-sveltekit-prefetch-data="hover"
 			class="flex gap-2 place-items-center hover:cursor-pointer"
 			href="/photos"
 		>
