@@ -4,15 +4,19 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import { api, SystemConfigResponseItem } from '@api';
+	import { api, UpdateFFmpegSystemConfigDto } from '@api';
 	import { onMount } from 'svelte';
 
 	let isSaving = false;
-	let items: Array<SystemConfigResponseItem & { originalValue: string }> = [];
+	let items: Array<{ key: string; value: string; originalValue: string }> = [];
 
 	const refreshConfig = async () => {
-		const { data: systemConfig } = await api.systemConfigApi.getConfig();
-		items = systemConfig.config.map((item) => ({ ...item, originalValue: item.value }));
+		const { data: ffmpegConfig } = await api.systemConfigApi.getFFmpegConfig();
+		items = Object.entries(ffmpegConfig).map(([key, value]) => ({
+			key,
+			value,
+			originalValue: value
+		}));
 	};
 
 	onMount(() => refreshConfig());
@@ -20,11 +24,14 @@
 	const handleSave = async () => {
 		try {
 			isSaving = true;
-			const updates = items
-				.filter((item) => item.value !== item.originalValue)
-				.map(({ key, value }) => ({ key, value: value || null }));
-			if (updates.length > 0) {
-				await api.systemConfigApi.updateConfig({ config: updates });
+			const update: UpdateFFmpegSystemConfigDto = {};
+			for (const item of items) {
+				if (item.value !== item.originalValue) {
+					update[item.key as keyof UpdateFFmpegSystemConfigDto] = item.value;
+				}
+			}
+			if (Object.keys(update).length > 0) {
+				await api.systemConfigApi.updateFFmpegConfig(update);
 				refreshConfig();
 			}
 
@@ -62,32 +69,19 @@
 					}`}
 				>
 					<td class="text-sm px-4 w-1/2 text-ellipsis">
-						{item.name}
+						{item.key}
 					</td>
 					<td class="text-sm px-4 w-1/2 text-ellipsis">
-						{#if item.choices}
-							<select
-								class="w-full text-center immich-form-input"
-								bind:value={item.value}
-								disabled={isSaving}
-								name={item.key}
-							>
-								{#each item.choices as choice}
-									<option value={choice}>{choice}</option>
-								{/each}
-							</select>
-						{:else}
-							<input
-								style="text-align: center"
-								class="w-full immich-form-input"
-								id={item.key}
-								disabled={isSaving}
-								name={item.key}
-								type="text"
-								bind:value={item.value}
-								placeholder={item.defaultValue + ''}
-							/>
-						{/if}
+						<input
+							style="text-align: center"
+							class="w-full immich-form-input"
+							id={item.key}
+							disabled={isSaving}
+							name={item.key}
+							type="text"
+							bind:value={item.value}
+						/>
+						<!-- placeholder={item.defaultValue + ''} -->
 					</td>
 				</tr>
 			{/each}

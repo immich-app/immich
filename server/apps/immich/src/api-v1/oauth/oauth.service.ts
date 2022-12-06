@@ -23,7 +23,7 @@ export class OAuthService {
   ) {}
 
   public async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    const { enabled, scope, buttonText } = await this.getConfig();
+    const { enabled, scope, buttonText } = await this.immichConfigService.getOAuthConfig();
 
     if (!enabled) {
       return { enabled: false };
@@ -57,7 +57,7 @@ export class OAuthService {
 
     // register new user
     if (!user) {
-      const { autoRegister } = await this.getConfig();
+      const { autoRegister } = await this.immichConfigService.getOAuthConfig();
       if (!autoRegister) {
         this.logger.warn(
           `Unable to register ${profile.email}. To enable auto registering, set OAUTH_AUTO_REGISTER=true.`,
@@ -78,7 +78,7 @@ export class OAuthService {
   }
 
   public async getLogoutEndpoint(): Promise<string | null> {
-    const { enabled } = await this.getConfig();
+    const { enabled } = await this.immichConfigService.getOAuthConfig();
     if (!enabled) {
       return null;
     }
@@ -86,7 +86,7 @@ export class OAuthService {
   }
 
   private async getClient() {
-    const { enabled, clientId, clientSecret, issuerUrl } = await this.getConfig();
+    const { enabled, clientId, clientSecret, issuerUrl } = await this.immichConfigService.getOAuthConfig();
 
     if (!enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
@@ -105,19 +105,5 @@ export class OAuthService {
     }
 
     return new issuer.Client(metadata);
-  }
-
-  private async getConfig() {
-    const config = await this.immichConfigService.getSystemConfigMap();
-
-    return {
-      enabled: config.OAUTH_ENABLED === 'true',
-      autoRegister: config.OAUTH_AUTO_REGISTER === 'true',
-      buttonText: config.OAUTH_BUTTON_TEXT || '',
-      scope: config.OAUTH_SCOPE || '',
-      issuerUrl: config.OAUTH_ISSUER_URL || '',
-      clientId: config.OAUTH_CLIENT_ID || '',
-      clientSecret: config.OAUTH_CLIENT_SECRET || '',
-    };
   }
 }

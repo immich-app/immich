@@ -1,8 +1,10 @@
 import { Body, Controller, Get, Put, ValidationPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../../decorators/authenticated.decorator';
-import { UpdateSystemConfigDto } from './dto/update-system-config';
-import { SystemConfigResponseDto } from './response-dto/system-config-response.dto';
+import { UpdateFFmpegSystemConfigDto } from './dto/update-ffmpeg-system-config.dto';
+import { UpdateOAuthSystemConfigDto } from './dto/update-oauth-system-config.dto';
+import { FFmpegSystemConfigResponseDto } from './response-dto/ffmpeg-system-config-response.dto';
+import { OAuthSystemConfigResponseDto } from './response-dto/oauth-system-config-response.dto';
 import { SystemConfigService } from './system-config.service';
 
 @ApiTags('System Config')
@@ -12,13 +14,23 @@ import { SystemConfigService } from './system-config.service';
 export class SystemConfigController {
   constructor(private readonly systemConfigService: SystemConfigService) {}
 
-  @Get()
-  getConfig(): Promise<SystemConfigResponseDto> {
-    return this.systemConfigService.getConfig();
+  @Get('ffmpeg')
+  getFFmpegConfig(): Promise<FFmpegSystemConfigResponseDto> {
+    return this.systemConfigService.getFFmpegConfig();
   }
 
-  @Put()
-  async updateConfig(@Body(ValidationPipe) dto: UpdateSystemConfigDto): Promise<SystemConfigResponseDto> {
-    return this.systemConfigService.updateConfig(dto);
+  @Put('ffmpeg')
+  updateFFmpegConfig(@Body(ValidationPipe) dto: UpdateFFmpegSystemConfigDto): Promise<FFmpegSystemConfigResponseDto> {
+    return this.systemConfigService.updateFFmpegConfig(dto);
+  }
+
+  @Get('oauth')
+  getOAuthConfig(): Promise<OAuthSystemConfigResponseDto> {
+    return this.systemConfigService.getOAuthConfig();
+  }
+
+  @Put('oauth')
+  updateOAuthConfig(@Body(ValidationPipe) dto: UpdateOAuthSystemConfigDto): Promise<OAuthSystemConfigResponseDto> {
+    return this.systemConfigService.updateOAuthConfig(dto);
   }
 }

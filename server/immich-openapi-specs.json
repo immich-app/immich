@@ -2051,9 +2051,9 @@
         ]
       }
     },
-    "/system-config": {
+    "/system-config/ffmpeg": {
       "get": {
-        "operationId": "getConfig",
+        "operationId": "getFFmpegConfig",
         "parameters": [],
         "responses": {
           "200": {
@@ -2061,7 +2061,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SystemConfigResponseDto"
+                  "$ref": "#/components/schemas/FFmpegSystemConfigResponseDto"
                 }
               }
             }
@@ -2077,14 +2077,14 @@
         ]
       },
       "put": {
-        "operationId": "updateConfig",
+        "operationId": "updateFFmpegConfig",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSystemConfigDto"
+                "$ref": "#/components/schemas/UpdateFFmpegSystemConfigDto"
               }
             }
           }
@@ -2095,7 +2095,67 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SystemConfigResponseDto"
+                  "$ref": "#/components/schemas/FFmpegSystemConfigResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/system-config/oauth": {
+      "get": {
+        "operationId": "getOAuthConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthSystemConfigResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateOAuthConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOAuthSystemConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthSystemConfigResponseDto"
                 }
               }
             }
@@ -3919,69 +3979,119 @@
           "command"
         ]
       },
-      "SystemConfigKey": {
-        "type": "string",
-        "enum": [
-          "ffmpeg_crf",
-          "ffmpeg_preset",
-          "ffmpeg_target_video_codec",
-          "ffmpeg_target_audio_codec",
-          "ffmpeg_target_scaling",
-          "OAUTH_ENABLED",
-          "OAUTH_ISSUER_URL",
-          "OAUTH_CLIENT_ID",
-          "OAUTH_CLIENT_SECRET",
-          "OAUTH_SCOPE",
-          "OAUTH_BUTTON_TEXT",
-          "OAUTH_AUTO_REGISTER"
-        ]
-      },
-      "SystemConfigResponseItem": {
+      "FFmpegSystemConfigResponseDto": {
         "type": "object",
         "properties": {
-          "name": {
+          "crf": {
             "type": "string"
           },
-          "key": {
-            "$ref": "#/components/schemas/SystemConfigKey"
-          },
-          "value": {
+          "preset": {
             "type": "string"
           },
-          "defaultValue": {
+          "targetVideoCodec": {
             "type": "string"
           },
-          "choices": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "targetAudioCodec": {
+            "type": "string"
+          },
+          "targetScaling": {
+            "type": "string"
           }
         },
         "required": [
-          "name",
-          "key",
-          "value",
-          "defaultValue"
+          "crf",
+          "preset",
+          "targetVideoCodec",
+          "targetAudioCodec",
+          "targetScaling"
         ]
       },
-      "SystemConfigResponseDto": {
+      "UpdateFFmpegSystemConfigDto": {
         "type": "object",
         "properties": {
-          "config": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SystemConfigResponseItem"
-            }
+          "crf": {
+            "type": "string"
+          },
+          "preset": {
+            "type": "string"
+          },
+          "targetVideoCodec": {
+            "type": "string"
+          },
+          "targetAudioCodec": {
+            "type": "string"
+          },
+          "targetScaling": {
+            "type": "string"
+          }
+        }
+      },
+      "OAuthSystemConfigResponseDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "issuerUrl": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "buttonText": {
+            "type": "string"
+          },
+          "autoRegister": {
+            "type": "boolean"
           }
         },
         "required": [
-          "config"
+          "enabled",
+          "issuerUrl",
+          "clientId",
+          "clientSecret",
+          "scope",
+          "buttonText",
+          "autoRegister"
         ]
       },
-      "UpdateSystemConfigDto": {
+      "UpdateOAuthSystemConfigDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "issuerUrl": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "buttonText": {
+            "type": "string"
+          },
+          "autoRegister": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "issuerUrl",
+          "clientSecret",
+          "buttonText"
+        ]
       }
     }
   }
