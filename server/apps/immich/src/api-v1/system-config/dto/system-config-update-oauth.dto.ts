@@ -1,8 +1,9 @@
 import { IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
 
-const isEnabled = (config: UpdateOAuthSystemConfigDto) => config.enabled;
+const isEnabled = (config: SystemConfigUpdateOAuthDto) => config.enabled;
 
-export class UpdateOAuthSystemConfigDto {
+export class SystemConfigUpdateOAuthDto {
+  @IsOptional()
   @IsBoolean()
   enabled!: boolean;
 

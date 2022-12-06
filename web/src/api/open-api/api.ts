@@ -1260,43 +1260,6 @@ export interface ExifResponseDto {
 /**
  * 
  * @export
- * @interface FFmpegSystemConfigResponseDto
- */
-export interface FFmpegSystemConfigResponseDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof FFmpegSystemConfigResponseDto
-     */
-    'crf': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FFmpegSystemConfigResponseDto
-     */
-    'preset': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FFmpegSystemConfigResponseDto
-     */
-    'targetVideoCodec': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FFmpegSystemConfigResponseDto
-     */
-    'targetAudioCodec': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FFmpegSystemConfigResponseDto
-     */
-    'targetScaling': string;
-}
-/**
- * 
- * @export
  * @interface GetAssetByTimeBucketDto
  */
 export interface GetAssetByTimeBucketDto {
@@ -1566,55 +1529,6 @@ export interface OAuthConfigResponseDto {
 /**
  * 
  * @export
- * @interface OAuthSystemConfigResponseDto
- */
-export interface OAuthSystemConfigResponseDto {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof OAuthSystemConfigResponseDto
-     */
-    'enabled': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof OAuthSystemConfigResponseDto
-     */
-    'issuerUrl': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OAuthSystemConfigResponseDto
-     */
-    'clientId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OAuthSystemConfigResponseDto
-     */
-    'clientSecret': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OAuthSystemConfigResponseDto
-     */
-    'scope': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OAuthSystemConfigResponseDto
-     */
-    'buttonText': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof OAuthSystemConfigResponseDto
-     */
-    'autoRegister': boolean;
-}
-/**
- * 
- * @export
  * @interface RemoveAssetsDto
  */
 export interface RemoveAssetsDto {
@@ -1870,6 +1784,216 @@ export interface SmartInfoResponseDto {
 /**
  * 
  * @export
+ * @interface SystemConfigResponseDto
+ */
+export interface SystemConfigResponseDto {
+    /**
+     * 
+     * @type {SystemOAuthConfigResponseDto}
+     * @memberof SystemConfigResponseDto
+     */
+    'oauth': SystemOAuthConfigResponseDto;
+    /**
+     * 
+     * @type {SystemFFmpegConfigResponseDto}
+     * @memberof SystemConfigResponseDto
+     */
+    'ffmpeg': SystemFFmpegConfigResponseDto;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigUpdateDto
+ */
+export interface SystemConfigUpdateDto {
+    /**
+     * 
+     * @type {SystemConfigUpdateFFmpegDto}
+     * @memberof SystemConfigUpdateDto
+     */
+    'ffmpeg'?: SystemConfigUpdateFFmpegDto;
+    /**
+     * 
+     * @type {SystemConfigUpdateOAuthDto}
+     * @memberof SystemConfigUpdateDto
+     */
+    'oauth'?: SystemConfigUpdateOAuthDto;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigUpdateFFmpegDto
+ */
+export interface SystemConfigUpdateFFmpegDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigUpdateFFmpegDto
+     */
+    'crf'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigUpdateFFmpegDto
+     */
+    'preset'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigUpdateFFmpegDto
+     */
+    'targetVideoCodec'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigUpdateFFmpegDto
+     */
+    'targetAudioCodec'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigUpdateFFmpegDto
+     */
+    'targetScaling'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigUpdateOAuthDto
+ */
+export interface SystemConfigUpdateOAuthDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigUpdateOAuthDto
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigUpdateOAuthDto
+     */
+    'issuerUrl': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigUpdateOAuthDto
+     */
+    'clientId'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigUpdateOAuthDto
+     */
+    'clientSecret': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigUpdateOAuthDto
+     */
+    'scope'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigUpdateOAuthDto
+     */
+    'buttonText': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigUpdateOAuthDto
+     */
+    'autoRegister'?: boolean;
+}
+/**
+ * 
+ * @export
+ * @interface SystemFFmpegConfigResponseDto
+ */
+export interface SystemFFmpegConfigResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemFFmpegConfigResponseDto
+     */
+    'crf': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemFFmpegConfigResponseDto
+     */
+    'preset': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemFFmpegConfigResponseDto
+     */
+    'targetVideoCodec': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemFFmpegConfigResponseDto
+     */
+    'targetAudioCodec': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemFFmpegConfigResponseDto
+     */
+    'targetScaling': string;
+}
+/**
+ * 
+ * @export
+ * @interface SystemOAuthConfigResponseDto
+ */
+export interface SystemOAuthConfigResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemOAuthConfigResponseDto
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemOAuthConfigResponseDto
+     */
+    'issuerUrl': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemOAuthConfigResponseDto
+     */
+    'clientId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemOAuthConfigResponseDto
+     */
+    'clientSecret': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemOAuthConfigResponseDto
+     */
+    'scope': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemOAuthConfigResponseDto
+     */
+    'buttonText': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemOAuthConfigResponseDto
+     */
+    'autoRegister': boolean;
+}
+/**
+ * 
+ * @export
  * @interface TagEntity
  */
 export interface TagEntity {
@@ -2055,92 +2179,6 @@ export interface UpdateDeviceInfoDto {
      * @memberof UpdateDeviceInfoDto
      */
     'isAutoBackup'?: boolean;
-}
-/**
- * 
- * @export
- * @interface UpdateFFmpegSystemConfigDto
- */
-export interface UpdateFFmpegSystemConfigDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateFFmpegSystemConfigDto
-     */
-    'crf'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateFFmpegSystemConfigDto
-     */
-    'preset'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateFFmpegSystemConfigDto
-     */
-    'targetVideoCodec'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateFFmpegSystemConfigDto
-     */
-    'targetAudioCodec'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateFFmpegSystemConfigDto
-     */
-    'targetScaling'?: string;
-}
-/**
- * 
- * @export
- * @interface UpdateOAuthSystemConfigDto
- */
-export interface UpdateOAuthSystemConfigDto {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UpdateOAuthSystemConfigDto
-     */
-    'enabled': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateOAuthSystemConfigDto
-     */
-    'issuerUrl': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateOAuthSystemConfigDto
-     */
-    'clientId'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateOAuthSystemConfigDto
-     */
-    'clientSecret': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateOAuthSystemConfigDto
-     */
-    'scope'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateOAuthSystemConfigDto
-     */
-    'buttonText': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UpdateOAuthSystemConfigDto
-     */
-    'autoRegister'?: boolean;
 }
 /**
  * 
@@ -5769,8 +5807,8 @@ export const SystemConfigApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFFmpegConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/system-config/ffmpeg`;
+        getConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/system-config`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5799,47 +5837,14 @@ export const SystemConfigApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
+         * @param {SystemConfigUpdateDto} systemConfigUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOAuthConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/system-config/oauth`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {UpdateFFmpegSystemConfigDto} updateFFmpegSystemConfigDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateFFmpegConfig: async (updateFFmpegSystemConfigDto: UpdateFFmpegSystemConfigDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'updateFFmpegSystemConfigDto' is not null or undefined
-            assertParamExists('updateFFmpegConfig', 'updateFFmpegSystemConfigDto', updateFFmpegSystemConfigDto)
-            const localVarPath = `/system-config/ffmpeg`;
+        updateConfig: async (systemConfigUpdateDto: SystemConfigUpdateDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'systemConfigUpdateDto' is not null or undefined
+            assertParamExists('updateConfig', 'systemConfigUpdateDto', systemConfigUpdateDto)
+            const localVarPath = `/system-config`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5862,46 +5867,7 @@ export const SystemConfigApiAxiosParamCreator = function (configuration?: Config
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(updateFFmpegSystemConfigDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {UpdateOAuthSystemConfigDto} updateOAuthSystemConfigDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateOAuthConfig: async (updateOAuthSystemConfigDto: UpdateOAuthSystemConfigDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'updateOAuthSystemConfigDto' is not null or undefined
-            assertParamExists('updateOAuthConfig', 'updateOAuthSystemConfigDto', updateOAuthSystemConfigDto)
-            const localVarPath = `/system-config/oauth`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(updateOAuthSystemConfigDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(systemConfigUpdateDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -5923,37 +5889,18 @@ export const SystemConfigApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getFFmpegConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FFmpegSystemConfigResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getFFmpegConfig(options);
+        async getConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getConfig(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
+         * @param {SystemConfigUpdateDto} systemConfigUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOAuthConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OAuthSystemConfigResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOAuthConfig(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {UpdateFFmpegSystemConfigDto} updateFFmpegSystemConfigDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async updateFFmpegConfig(updateFFmpegSystemConfigDto: UpdateFFmpegSystemConfigDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FFmpegSystemConfigResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateFFmpegConfig(updateFFmpegSystemConfigDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {UpdateOAuthSystemConfigDto} updateOAuthSystemConfigDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async updateOAuthConfig(updateOAuthSystemConfigDto: UpdateOAuthSystemConfigDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OAuthSystemConfigResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateOAuthConfig(updateOAuthSystemConfigDto, options);
+        async updateConfig(systemConfigUpdateDto: SystemConfigUpdateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateConfig(systemConfigUpdateDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -5971,34 +5918,17 @@ export const SystemConfigApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFFmpegConfig(options?: any): AxiosPromise<FFmpegSystemConfigResponseDto> {
-            return localVarFp.getFFmpegConfig(options).then((request) => request(axios, basePath));
+        getConfig(options?: any): AxiosPromise<SystemConfigResponseDto> {
+            return localVarFp.getConfig(options).then((request) => request(axios, basePath));
         },
         /**
          * 
+         * @param {SystemConfigUpdateDto} systemConfigUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOAuthConfig(options?: any): AxiosPromise<OAuthSystemConfigResponseDto> {
-            return localVarFp.getOAuthConfig(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {UpdateFFmpegSystemConfigDto} updateFFmpegSystemConfigDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateFFmpegConfig(updateFFmpegSystemConfigDto: UpdateFFmpegSystemConfigDto, options?: any): AxiosPromise<FFmpegSystemConfigResponseDto> {
-            return localVarFp.updateFFmpegConfig(updateFFmpegSystemConfigDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {UpdateOAuthSystemConfigDto} updateOAuthSystemConfigDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateOAuthConfig(updateOAuthSystemConfigDto: UpdateOAuthSystemConfigDto, options?: any): AxiosPromise<OAuthSystemConfigResponseDto> {
-            return localVarFp.updateOAuthConfig(updateOAuthSystemConfigDto, options).then((request) => request(axios, basePath));
+        updateConfig(systemConfigUpdateDto: SystemConfigUpdateDto, options?: any): AxiosPromise<SystemConfigResponseDto> {
+            return localVarFp.updateConfig(systemConfigUpdateDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -6016,40 +5946,19 @@ export class SystemConfigApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof SystemConfigApi
      */
-    public getFFmpegConfig(options?: AxiosRequestConfig) {
-        return SystemConfigApiFp(this.configuration).getFFmpegConfig(options).then((request) => request(this.axios, this.basePath));
+    public getConfig(options?: AxiosRequestConfig) {
+        return SystemConfigApiFp(this.configuration).getConfig(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
+     * @param {SystemConfigUpdateDto} systemConfigUpdateDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SystemConfigApi
      */
-    public getOAuthConfig(options?: AxiosRequestConfig) {
-        return SystemConfigApiFp(this.configuration).getOAuthConfig(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {UpdateFFmpegSystemConfigDto} updateFFmpegSystemConfigDto 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SystemConfigApi
-     */
-    public updateFFmpegConfig(updateFFmpegSystemConfigDto: UpdateFFmpegSystemConfigDto, options?: AxiosRequestConfig) {
-        return SystemConfigApiFp(this.configuration).updateFFmpegConfig(updateFFmpegSystemConfigDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {UpdateOAuthSystemConfigDto} updateOAuthSystemConfigDto 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SystemConfigApi
-     */
-    public updateOAuthConfig(updateOAuthSystemConfigDto: UpdateOAuthSystemConfigDto, options?: AxiosRequestConfig) {
-        return SystemConfigApiFp(this.configuration).updateOAuthConfig(updateOAuthSystemConfigDto, options).then((request) => request(this.axios, this.basePath));
+    public updateConfig(systemConfigUpdateDto: SystemConfigUpdateDto, options?: AxiosRequestConfig) {
+        return SystemConfigApiFp(this.configuration).updateConfig(systemConfigUpdateDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

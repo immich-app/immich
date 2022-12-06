@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class UpdateFFmpegSystemConfigDto {
+export class SystemConfigUpdateFFmpegDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()

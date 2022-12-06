@@ -1,16 +1,18 @@
-import {
-  FFmpegConfig,
-  OAuthConfig,
-  SystemConfigEntity,
-  SystemConfigKey,
-  SystemConfigValue,
-} from '@app/database/entities/system-config.entity';
+import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/database/entities/system-config.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import * as _ from 'lodash';
+import { DeepPartial, In, Repository } from 'typeorm';
 
-const defaults: Record<SystemConfigKey, SystemConfigValue> = {
-  [SystemConfigKey.OAUTH]: {
+const defaults: SystemConfig = {
+  ffmpeg: {
+    crf: '23',
+    preset: 'ultrafast',
+    targetVideoCodec: 'libx264',
+    targetAudioCodec: 'mp3',
+    targetScaling: '1280:-2',
+  },
+  oauth: {
     enabled: false,
     issuerUrl: '',
     clientId: '',
@@ -18,13 +20,6 @@ const defaults: Record<SystemConfigKey, SystemConfigValue> = {
     scope: 'openid email profile',
     buttonText: 'Login with OAuth',
     autoRegister: true,
-  },
-  [SystemConfigKey.FFMPEG]: {
-    crf: '23',
-    preset: 'ultrafast',
-    targetVideoCodec: 'libx264',
-    targetAudioCodec: 'mp3',
-    targetScaling: '1280:-2',
   },
 };
 
@@ -35,32 +30,41 @@ export class ImmichConfigService {
     private systemConfigRepository: Repository<SystemConfigEntity>,
   ) {}
 
-  public async getFFmpegConfig() {
-    return this.getConfig<FFmpegConfig>(SystemConfigKey.FFMPEG);
+  public async getConfig() {
+    const overrides = await this.systemConfigRepository.find();
+    const config: DeepPartial<SystemConfig> = {};
+    for (const { key, value } of overrides) {
+      // set via dot notation
+      _.set(config, key, value);
+    }
+
+    return _.defaultsDeep(config, defaults) as SystemConfig;
   }
 
-  public async getOAuthConfig() {
-    return this.getConfig<OAuthConfig>(SystemConfigKey.OAUTH);
-  }
+  public async updateConfig(config: DeepPartial<SystemConfig> | null): Promise<void> {
+    const updates: SystemConfigEntity[] = [];
+    const deletes: SystemConfigEntity[] = [];
 
-  public async updateFFmpegConfig(config: Partial<FFmpegConfig> | null): Promise<void> {
-    await this.updateConfig<FFmpegConfig>(SystemConfigKey.FFMPEG, config);
-  }
+    for (const key of Object.values(SystemConfigKey)) {
+      // get via dot notation
+      const item = { key, value: _.get(config, key) };
+      const defaultValue = _.get(defaults, key);
+      const isMissing = !_.has(config, key);
 
-  public async updateOAuthConfig(config: Partial<OAuthConfig> | null): Promise<void> {
-    await this.updateConfig(SystemConfigKey.OAUTH, config);
-  }
+      if (isMissing || item.value === null || item.value === defaultValue) {
+        deletes.push(item);
+        continue;
+      }
 
-  private async getConfig<T extends SystemConfigValue>(key: SystemConfigKey) {
-    const override = await this.systemConfigRepository.findOne({ where: { key } });
-    return Object.assign({}, defaults[key], override?.value) as T;
-  }
+      updates.push(item);
+    }
 
-  private async updateConfig<T>(key: SystemConfigKey, config: Partial<T> | null): Promise<void> {
-    if (!config) {
-      await this.systemConfigRepository.delete({ key });
-    } else {
-      await this.systemConfigRepository.save({ key, value: config });
+    if (updates.length > 0) {
+      await this.systemConfigRepository.save(updates);
+    }
+
+    if (deletes.length > 0) {
+      await this.systemConfigRepository.delete({ key: In(deletes.map((item) => item.key)) });
     }
   }
 }

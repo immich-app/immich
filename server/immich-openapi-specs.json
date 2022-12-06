@@ -2051,9 +2051,9 @@
         ]
       }
     },
-    "/system-config/ffmpeg": {
+    "/system-config": {
       "get": {
-        "operationId": "getFFmpegConfig",
+        "operationId": "getConfig",
         "parameters": [],
         "responses": {
           "200": {
@@ -2061,7 +2061,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FFmpegSystemConfigResponseDto"
+                  "$ref": "#/components/schemas/SystemConfigResponseDto"
                 }
               }
             }
@@ -2077,14 +2077,14 @@
         ]
       },
       "put": {
-        "operationId": "updateFFmpegConfig",
+        "operationId": "updateConfig",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateFFmpegSystemConfigDto"
+                "$ref": "#/components/schemas/SystemConfigUpdateDto"
               }
             }
           }
@@ -2095,67 +2095,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FFmpegSystemConfigResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "System Config"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/system-config/oauth": {
-      "get": {
-        "operationId": "getOAuthConfig",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OAuthSystemConfigResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "System Config"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "put": {
-        "operationId": "updateOAuthConfig",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateOAuthSystemConfigDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OAuthSystemConfigResponseDto"
+                  "$ref": "#/components/schemas/SystemConfigResponseDto"
                 }
               }
             }
@@ -3979,54 +3919,7 @@
           "command"
         ]
       },
-      "FFmpegSystemConfigResponseDto": {
-        "type": "object",
-        "properties": {
-          "crf": {
-            "type": "string"
-          },
-          "preset": {
-            "type": "string"
-          },
-          "targetVideoCodec": {
-            "type": "string"
-          },
-          "targetAudioCodec": {
-            "type": "string"
-          },
-          "targetScaling": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "crf",
-          "preset",
-          "targetVideoCodec",
-          "targetAudioCodec",
-          "targetScaling"
-        ]
-      },
-      "UpdateFFmpegSystemConfigDto": {
-        "type": "object",
-        "properties": {
-          "crf": {
-            "type": "string"
-          },
-          "preset": {
-            "type": "string"
-          },
-          "targetVideoCodec": {
-            "type": "string"
-          },
-          "targetAudioCodec": {
-            "type": "string"
-          },
-          "targetScaling": {
-            "type": "string"
-          }
-        }
-      },
-      "OAuthSystemConfigResponseDto": {
+      "SystemOAuthConfigResponseDto": {
         "type": "object",
         "properties": {
           "enabled": {
@@ -4061,7 +3954,69 @@
           "autoRegister"
         ]
       },
-      "UpdateOAuthSystemConfigDto": {
+      "SystemFFmpegConfigResponseDto": {
+        "type": "object",
+        "properties": {
+          "crf": {
+            "type": "string"
+          },
+          "preset": {
+            "type": "string"
+          },
+          "targetVideoCodec": {
+            "type": "string"
+          },
+          "targetAudioCodec": {
+            "type": "string"
+          },
+          "targetScaling": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "crf",
+          "preset",
+          "targetVideoCodec",
+          "targetAudioCodec",
+          "targetScaling"
+        ]
+      },
+      "SystemConfigResponseDto": {
+        "type": "object",
+        "properties": {
+          "oauth": {
+            "$ref": "#/components/schemas/SystemOAuthConfigResponseDto"
+          },
+          "ffmpeg": {
+            "$ref": "#/components/schemas/SystemFFmpegConfigResponseDto"
+          }
+        },
+        "required": [
+          "oauth",
+          "ffmpeg"
+        ]
+      },
+      "SystemConfigUpdateFFmpegDto": {
+        "type": "object",
+        "properties": {
+          "crf": {
+            "type": "string"
+          },
+          "preset": {
+            "type": "string"
+          },
+          "targetVideoCodec": {
+            "type": "string"
+          },
+          "targetAudioCodec": {
+            "type": "string"
+          },
+          "targetScaling": {
+            "type": "string"
+          }
+        }
+      },
+      "SystemConfigUpdateOAuthDto": {
         "type": "object",
         "properties": {
           "enabled": {
@@ -4092,6 +4047,17 @@
           "clientSecret",
           "buttonText"
         ]
+      },
+      "SystemConfigUpdateDto": {
+        "type": "object",
+        "properties": {
+          "ffmpeg": {
+            "$ref": "#/components/schemas/SystemConfigUpdateFFmpegDto"
+          },
+          "oauth": {
+            "$ref": "#/components/schemas/SystemConfigUpdateOAuthDto"
+          }
+        }
       }
     }
   }
