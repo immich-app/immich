@@ -1,4 +1,4 @@
-import { OAuthConfig } from '@app/database/entities/system-config.entity';
+import { SystemConfig } from '@app/database/entities/system-config.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { ImmichConfigService } from '@app/immich-config';
 import { BadRequestException } from '@nestjs/common';
@@ -70,7 +70,7 @@ describe('OAuthService', () => {
     } as unknown as jest.Mocked<ImmichJwtService>;
 
     immichConfigServiceMock = {
-      getOAuthConfig: jest.fn().mockResolvedValue({ enabled: false }),
+      getConfig: jest.fn().mockResolvedValue({ oauth: { enabled: false } }),
     } as unknown as jest.Mocked<ImmichConfigService>;
 
     sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
@@ -83,14 +83,16 @@ describe('OAuthService', () => {
   describe('generateConfig', () => {
     it('should work when oauth is not configured', async () => {
       await expect(sut.generateConfig({ redirectUri: 'http://callback' })).resolves.toEqual({ enabled: false });
-      expect(immichConfigServiceMock.getOAuthConfig).toHaveBeenCalled();
+      expect(immichConfigServiceMock.getConfig).toHaveBeenCalled();
     });
 
     it('should generate the config', async () => {
-      immichConfigServiceMock.getOAuthConfig.mockResolvedValue({
-        enabled: true,
-        buttonText: 'OAuth',
-      } as OAuthConfig);
+      immichConfigServiceMock.getConfig.mockResolvedValue({
+        oauth: {
+          enabled: true,
+          buttonText: 'OAuth',
+        },
+      } as SystemConfig);
       sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
       await expect(sut.generateConfig({ redirectUri: 'http://redirect' })).resolves.toEqual({
         enabled: true,
@@ -106,10 +108,12 @@ describe('OAuthService', () => {
     });
 
     it('should not allow auto registering', async () => {
-      immichConfigServiceMock.getOAuthConfig.mockResolvedValue({
-        enabled: true,
-        autoRegister: false,
-      } as OAuthConfig);
+      immichConfigServiceMock.getConfig.mockResolvedValue({
+        oauth: {
+          enabled: true,
+          autoRegister: false,
+        },
+      } as SystemConfig);
       sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
       jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
       jest.spyOn(sut['logger'], 'warn').mockImplementation(() => null);
@@ -121,10 +125,12 @@ describe('OAuthService', () => {
     });
 
     it('should link an existing user', async () => {
-      immichConfigServiceMock.getOAuthConfig.mockResolvedValue({
-        enabled: true,
-        autoRegister: false,
-      } as OAuthConfig);
+      immichConfigServiceMock.getConfig.mockResolvedValue({
+        oauth: {
+          enabled: true,
+          autoRegister: false,
+        },
+      } as SystemConfig);
       sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
       jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
       jest.spyOn(sut['logger'], 'warn').mockImplementation(() => null);
@@ -139,10 +145,12 @@ describe('OAuthService', () => {
     });
 
     it('should allow auto registering by default', async () => {
-      immichConfigServiceMock.getOAuthConfig.mockResolvedValue({
-        enabled: true,
-        autoRegister: true,
-      } as OAuthConfig);
+      immichConfigServiceMock.getConfig.mockResolvedValue({
+        oauth: {
+          enabled: true,
+          autoRegister: true,
+        },
+      } as SystemConfig);
       sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
       jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
       jest.spyOn(sut['logger'], 'log').mockImplementation(() => null);
@@ -164,10 +172,12 @@ describe('OAuthService', () => {
     });
 
     it('should get the session endpoint from the discovery document', async () => {
-      immichConfigServiceMock.getOAuthConfig.mockResolvedValue({
-        enabled: true,
-        issuerUrl: 'http://issuer,',
-      } as OAuthConfig);
+      immichConfigServiceMock.getConfig.mockResolvedValue({
+        oauth: {
+          enabled: true,
+          issuerUrl: 'http://issuer,',
+        },
+      } as SystemConfig);
       sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
 
       await expect(sut.getLogoutEndpoint()).resolves.toBe('http://end-session-endpoint');
