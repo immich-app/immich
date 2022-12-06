@@ -76,6 +76,7 @@
 	style:border={borderStyle()}
 	class="min-h-[80px] w-[300px] rounded-2xl z-[999999] shadow-md p-4 mb-4 hover:cursor-pointer"
 	on:click={handleClick}
+	on:keydown={handleClick}
 >
 	<div class="flex justify-between">
 		<div class="flex gap-2 place-items-center">

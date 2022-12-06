@@ -82,7 +82,7 @@
 			{/if}
 
 			{#if user.isAdmin}
-				<a data-sveltekit-prefetch href={`admin`}>
+				<a data-sveltekit-prefetch-data="hover" href={`admin`}>
 					<button
 						class={`flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5  dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg p-2 rounded-lg font-medium ${
 							$page.url.pathname == '/admin' &&
@@ -97,6 +97,7 @@
 				on:focus={() => (shouldShowAccountInfo = true)}
 				on:mouseleave={() => (shouldShowAccountInfo = false)}
 				on:click={showAccountInfoPanel}
+				on:keydown={showAccountInfoPanel}
 			>
 				<button
 					class="flex place-items-center place-content-center rounded-full bg-immich-primary hover:bg-immich-primary/80 h-12 w-12 text-gray-100 dark:text-immich-dark-bg dark:bg-immich-dark-primary"
