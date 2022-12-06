@@ -2521,6 +2521,9 @@
           "name": {
             "type": "string"
           },
+          "userId": {
+            "type": "string"
+          },
           "renameTagId": {
             "type": "string",
             "nullable": true
@@ -2529,7 +2532,8 @@
         "required": [
           "id",
           "type",
-          "name"
+          "name",
+          "userId"
         ]
       },
       "AssetResponseDto": {

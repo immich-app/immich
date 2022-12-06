@@ -1,6 +1,5 @@
 import { TagEntity, TagType } from '@app/database/entities/tag.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { mapUser, UserResponseDto } from "../../user/response-dto/user-response.dto";
 
 export class TagResponseDto {
   @ApiProperty()
@@ -11,6 +10,8 @@ export class TagResponseDto {
 
   name!: string;
 
+  userId!: string;
+
   renameTagId?: string | null;
 }
 
@@ -19,6 +20,7 @@ export function mapTag(entity: TagEntity): TagResponseDto {
     id: entity.id,
     type: entity.type,
     name: entity.name,
+    userId: entity.userId,
     renameTagId: entity.renameTagId,
   };
 }

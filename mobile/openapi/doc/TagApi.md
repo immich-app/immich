@@ -17,7 +17,7 @@ Method | HTTP request | Description
 
 
 # **create**
-> TagEntity create(createTagDto)
+> TagResponseDto create(createTagDto)
 
 
 
@@ -44,7 +44,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**TagEntity**](TagEntity.md)
+[**TagResponseDto**](TagResponseDto.md)
 
 ### Authorization
 
@@ -58,7 +58,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **delete**
-> TagEntity delete(id)
+> delete(id)
 
 
 
@@ -70,8 +70,7 @@ final api_instance = TagApi();
 final id = id_example; // String | 
 
 try {
-    final result = api_instance.delete(id);
-    print(result);
+    api_instance.delete(id);
 } catch (e) {
     print('Exception when calling TagApi->delete: $e\n');
 }
@@ -85,7 +84,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**TagEntity**](TagEntity.md)
+void (empty response body)
 
 ### Authorization
 
@@ -94,12 +93,12 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **findAll**
-> List<TagEntity> findAll()
+> List<TagResponseDto> findAll()
 
 
 
@@ -122,7 +121,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**List<TagEntity>**](TagEntity.md)
+[**List<TagResponseDto>**](TagResponseDto.md)
 
 ### Authorization
 
@@ -136,7 +135,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **findOne**
-> TagEntity findOne(id)
+> TagResponseDto findOne(id)
 
 
 
@@ -163,7 +162,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**TagEntity**](TagEntity.md)
+[**TagResponseDto**](TagResponseDto.md)
 
 ### Authorization
 
@@ -177,7 +176,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **update**
-> Object update(id, updateTagDto)
+> TagResponseDto update(id, updateTagDto)
 
 
 
@@ -206,7 +205,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Object**](Object.md)
+[**TagResponseDto**](TagResponseDto.md)
 
 ### Authorization
 

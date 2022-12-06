@@ -328,143 +328,6 @@ export interface AssetCountByUserIdResponseDto {
 /**
  * 
  * @export
- * @interface AssetEntity
- */
-export interface AssetEntity {
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'deviceAssetId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'userId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'deviceId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'type': AssetEntityTypeEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'originalPath': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'resizePath': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'webpPath': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'encodedVideoPath': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'modifiedAt': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetEntity
-     */
-    'isFavorite': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'mimeType': string | null;
-    /**
-     * 
-     * @type {object}
-     * @memberof AssetEntity
-     */
-    'checksum'?: object | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'duration': string | null;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetEntity
-     */
-    'isVisible': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'livePhotoVideoId': string | null;
-    /**
-     * 
-     * @type {ExifEntity}
-     * @memberof AssetEntity
-     */
-    'exifInfo'?: ExifEntity;
-    /**
-     * 
-     * @type {SmartInfoEntity}
-     * @memberof AssetEntity
-     */
-    'smartInfo'?: SmartInfoEntity;
-    /**
-     * 
-     * @type {Array<TagEntity>}
-     * @memberof AssetEntity
-     */
-    'tags': Array<TagEntity>;
-}
-
-export const AssetEntityTypeEnum = {
-    Image: 'IMAGE',
-    Video: 'VIDEO',
-    Audio: 'AUDIO',
-    Other: 'OTHER'
-} as const;
-
-export type AssetEntityTypeEnum = typeof AssetEntityTypeEnum[keyof typeof AssetEntityTypeEnum];
-
-/**
- * 
- * @export
  * @interface AssetFileUploadResponseDto
  */
 export interface AssetFileUploadResponseDto {
@@ -973,163 +836,6 @@ export const DeviceTypeEnum = {
 export type DeviceTypeEnum = typeof DeviceTypeEnum[keyof typeof DeviceTypeEnum];
 
 
-/**
- * 
- * @export
- * @interface ExifEntity
- */
-export interface ExifEntity {
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'assetId': string;
-    /**
-     * General info
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'description': string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'exifImageWidth': number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'exifImageHeight': number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'fileSizeInByte': number | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'orientation': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'dateTimeOriginal': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'modifyDate': string | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'latitude': number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'longitude': number | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'city': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'state': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'country': string | null;
-    /**
-     * Image info
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'make': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'model': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'imageName': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'lensModel': string | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'fNumber': number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'focalLength': number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'iso': number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'exposureTime': number | null;
-    /**
-     * Video info
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'fps'?: number | null;
-    /**
-     * 
-     * @type {AssetEntity}
-     * @memberof ExifEntity
-     */
-    'asset'?: AssetEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'exifTextSearchableColumn': string;
-}
 /**
  * 
  * @export
@@ -1722,43 +1428,6 @@ export interface SignUpDto {
 /**
  * 
  * @export
- * @interface SmartInfoEntity
- */
-export interface SmartInfoEntity {
-    /**
-     * 
-     * @type {string}
-     * @memberof SmartInfoEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SmartInfoEntity
-     */
-    'assetId': string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SmartInfoEntity
-     */
-    'tags': Array<string> | null;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SmartInfoEntity
-     */
-    'objects': Array<string> | null;
-    /**
-     * 
-     * @type {AssetEntity}
-     * @memberof SmartInfoEntity
-     */
-    'asset'?: AssetEntity;
-}
-/**
- * 
- * @export
  * @interface SmartInfoResponseDto
  */
 export interface SmartInfoResponseDto {
@@ -1845,64 +1514,6 @@ export interface SystemConfigResponseItem {
 /**
  * 
  * @export
- * @interface TagEntity
- */
-export interface TagEntity {
-    /**
-     * 
-     * @type {string}
-     * @memberof TagEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TagEntity
-     */
-    'type': TagEntityTypeEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof TagEntity
-     */
-    'name': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TagEntity
-     */
-    'userId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TagEntity
-     */
-    'renameTagId': string;
-    /**
-     * 
-     * @type {Array<AssetEntity>}
-     * @memberof TagEntity
-     */
-    'assets': Array<AssetEntity>;
-    /**
-     * 
-     * @type {UserEntity}
-     * @memberof TagEntity
-     */
-    'user': UserEntity;
-}
-
-export const TagEntityTypeEnum = {
-    Object: 'OBJECT',
-    Face: 'FACE',
-    Custom: 'CUSTOM'
-} as const;
-
-export type TagEntityTypeEnum = typeof TagEntityTypeEnum[keyof typeof TagEntityTypeEnum];
-
-/**
- * 
- * @export
  * @interface TagResponseDto
  */
 export interface TagResponseDto {
@@ -1924,6 +1535,18 @@ export interface TagResponseDto {
      * @memberof TagResponseDto
      */
     'name': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TagResponseDto
+     */
+    'userId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TagResponseDto
+     */
+    'renameTagId'?: string | null;
 }
 /**
  * 
@@ -2148,91 +1771,6 @@ export interface UserCountResponseDto {
      * @memberof UserCountResponseDto
      */
     'userCount': number;
-}
-/**
- * 
- * @export
- * @interface UserEntity
- */
-export interface UserEntity {
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'lastName': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserEntity
-     */
-    'isAdmin': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'email': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'password'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'salt'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'oauthId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'profileImagePath': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserEntity
-     */
-    'shouldChangePassword': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'deletedAt'?: string;
-    /**
-     * 
-     * @type {Array<TagEntity>}
-     * @memberof UserEntity
-     */
-    'tags': Array<TagEntity>;
 }
 /**
  * 
@@ -6005,7 +5543,7 @@ export const TagApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async _delete(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagEntity>> {
+        async _delete(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator._delete(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6015,7 +5553,7 @@ export const TagApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async create(createTagDto: CreateTagDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagEntity>> {
+        async create(createTagDto: CreateTagDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.create(createTagDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6024,7 +5562,7 @@ export const TagApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async findAll(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TagEntity>>> {
+        async findAll(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TagResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.findAll(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6034,7 +5572,7 @@ export const TagApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async findOne(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagEntity>> {
+        async findOne(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.findOne(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6045,7 +5583,7 @@ export const TagApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async update(id: string, updateTagDto: UpdateTagDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async update(id: string, updateTagDto: UpdateTagDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.update(id, updateTagDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6065,7 +5603,7 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        _delete(id: string, options?: any): AxiosPromise<TagEntity> {
+        _delete(id: string, options?: any): AxiosPromise<void> {
             return localVarFp._delete(id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -6074,7 +5612,7 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create(createTagDto: CreateTagDto, options?: any): AxiosPromise<TagEntity> {
+        create(createTagDto: CreateTagDto, options?: any): AxiosPromise<TagResponseDto> {
             return localVarFp.create(createTagDto, options).then((request) => request(axios, basePath));
         },
         /**
@@ -6082,7 +5620,7 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        findAll(options?: any): AxiosPromise<Array<TagEntity>> {
+        findAll(options?: any): AxiosPromise<Array<TagResponseDto>> {
             return localVarFp.findAll(options).then((request) => request(axios, basePath));
         },
         /**
@@ -6091,7 +5629,7 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        findOne(id: string, options?: any): AxiosPromise<TagEntity> {
+        findOne(id: string, options?: any): AxiosPromise<TagResponseDto> {
             return localVarFp.findOne(id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -6101,7 +5639,7 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update(id: string, updateTagDto: UpdateTagDto, options?: any): AxiosPromise<object> {
+        update(id: string, updateTagDto: UpdateTagDto, options?: any): AxiosPromise<TagResponseDto> {
             return localVarFp.update(id, updateTagDto, options).then((request) => request(axios, basePath));
         },
     };
