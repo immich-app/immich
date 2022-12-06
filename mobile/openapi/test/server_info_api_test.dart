@@ -27,6 +27,11 @@ void main() {
       // TODO
     });
 
+    //Future<ServerStatsResponseDto> getStats() async
+    test('test getStats', () async {
+      // TODO
+    });
+
     //Future<ServerPingResponse> pingServer() async
     test('test pingServer', () async {
       // TODO

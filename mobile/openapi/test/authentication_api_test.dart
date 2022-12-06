@@ -27,7 +27,12 @@ void main() {
       // TODO
     });
 
-    //Future<Object> validateAccessToken() async
+    //Future<LogoutResponseDto> logout() async
+    test('test logout', () async {
+      // TODO
+    });
+
+    //Future<ValidateAccessTokenResponseDto> validateAccessToken() async
     test('test validateAccessToken', () async {
       // TODO
     });

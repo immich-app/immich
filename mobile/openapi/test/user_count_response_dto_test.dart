@@ -16,7 +16,7 @@ void main() {
   // final instance = UserCountResponseDto();
 
   group('test UserCountResponseDto', () {
-    // num userCount
+    // int userCount
     test('to test the property `userCount`', () async {
       // TODO
     });

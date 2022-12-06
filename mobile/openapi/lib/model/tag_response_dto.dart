@@ -16,6 +16,8 @@ class TagResponseDto {
     required this.id,
     required this.type,
     required this.name,
+    required this.userId,
+    this.renameTagId,
   });
 
   String id;
@@ -24,27 +26,41 @@ class TagResponseDto {
 
   String name;
 
+  String userId;
+
+  String? renameTagId;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagResponseDto &&
      other.id == id &&
      other.type == type &&
-     other.name == name;
+     other.name == name &&
+     other.userId == userId &&
+     other.renameTagId == renameTagId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (id.hashCode) +
     (type.hashCode) +
-    (name.hashCode);
+    (name.hashCode) +
+    (userId.hashCode) +
+    (renameTagId == null ? 0 : renameTagId!.hashCode);
 
   @override
-  String toString() => 'TagResponseDto[id=$id, type=$type, name=$name]';
+  String toString() => 'TagResponseDto[id=$id, type=$type, name=$name, userId=$userId, renameTagId=$renameTagId]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'id'] = id;
       _json[r'type'] = type;
       _json[r'name'] = name;
+      _json[r'userId'] = userId;
+    if (renameTagId != null) {
+      _json[r'renameTagId'] = renameTagId;
+    } else {
+      _json[r'renameTagId'] = null;
+    }
     return _json;
   }
 
@@ -70,6 +86,8 @@ class TagResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         type: TagTypeEnum.fromJson(json[r'type'])!,
         name: mapValueOfType<String>(json, r'name')!,
+        userId: mapValueOfType<String>(json, r'userId')!,
+        renameTagId: mapValueOfType<String>(json, r'renameTagId'),
       );
     }
     return null;
@@ -122,6 +140,7 @@ class TagResponseDto {
     'id',
     'type',
     'name',
+    'userId',
   };
 }
 

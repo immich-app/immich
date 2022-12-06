@@ -16,6 +16,11 @@ void main() {
   // final instance = AssetResponseDto();
 
   group('test AssetResponseDto', () {
+    // AssetTypeEnum type
+    test('to test the property `type`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -33,11 +38,6 @@ void main() {
 
     // String deviceId
     test('to test the property `deviceId`', () async {
-      // TODO
-    });
-
-    // String type
-    test('to test the property `type`', () async {
       // TODO
     });
 
@@ -93,6 +93,16 @@ void main() {
 
     // SmartInfoResponseDto smartInfo
     test('to test the property `smartInfo`', () async {
+      // TODO
+    });
+
+    // String livePhotoVideoId
+    test('to test the property `livePhotoVideoId`', () async {
+      // TODO
+    });
+
+    // List<TagResponseDto> tags (default value: const [])
+    test('to test the property `tags`', () async {
       // TODO
     });
 

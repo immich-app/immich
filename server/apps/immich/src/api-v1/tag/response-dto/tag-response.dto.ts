@@ -9,6 +9,10 @@ export class TagResponseDto {
   type!: string;
 
   name!: string;
+
+  userId!: string;
+
+  renameTagId?: string | null;
 }
 
 export function mapTag(entity: TagEntity): TagResponseDto {
@@ -16,5 +20,7 @@ export function mapTag(entity: TagEntity): TagResponseDto {
     id: entity.id,
     type: entity.type,
     name: entity.name,
+    userId: entity.userId,
+    renameTagId: entity.renameTagId,
   };
 }

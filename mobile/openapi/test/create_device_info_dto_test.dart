@@ -16,13 +16,13 @@ void main() {
   // final instance = CreateDeviceInfoDto();
 
   group('test CreateDeviceInfoDto', () {
-    // String deviceId
-    test('to test the property `deviceId`', () async {
+    // DeviceTypeEnum deviceType
+    test('to test the property `deviceType`', () async {
       // TODO
     });
 
-    // String deviceType
-    test('to test the property `deviceType`', () async {
+    // String deviceId
+    test('to test the property `deviceId`', () async {
       // TODO
     });
 

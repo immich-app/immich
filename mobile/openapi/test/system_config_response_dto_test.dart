@@ -16,7 +16,7 @@ void main() {
   // final instance = SystemConfigResponseDto();
 
   group('test SystemConfigResponseDto', () {
-    // Object config
+    // List<SystemConfigResponseItem> config (default value: const [])
     test('to test the property `config`', () async {
       // TODO
     });

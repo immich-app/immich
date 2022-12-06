@@ -1,4 +1,5 @@
 .gitignore
+.openapi-generator-ignore
 .travis.yml
 README.md
 analysis_options.yaml
@@ -14,7 +15,6 @@ doc/AssetApi.md
 doc/AssetCountByTimeBucket.md
 doc/AssetCountByTimeBucketResponseDto.md
 doc/AssetCountByUserIdResponseDto.md
-doc/AssetEntity.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetResponseDto.md
 doc/AssetTypeEnum.md
@@ -36,7 +36,6 @@ doc/DeleteAssetStatus.md
 doc/DeviceInfoApi.md
 doc/DeviceInfoResponseDto.md
 doc/DeviceTypeEnum.md
-doc/ExifEntity.md
 doc/ExifResponseDto.md
 doc/FFmpegSystemConfigResponseDto.md
 doc/GetAssetByTimeBucketDto.md
@@ -63,11 +62,9 @@ doc/ServerPingResponse.md
 doc/ServerStatsResponseDto.md
 doc/ServerVersionReponseDto.md
 doc/SignUpDto.md
-doc/SmartInfoEntity.md
 doc/SmartInfoResponseDto.md
 doc/SystemConfigApi.md
 doc/TagApi.md
-doc/TagEntity.md
 doc/TagResponseDto.md
 doc/TagTypeEnum.md
 doc/ThumbnailFormat.md
@@ -82,7 +79,6 @@ doc/UpdateUserDto.md
 doc/UsageByUserDto.md
 doc/UserApi.md
 doc/UserCountResponseDto.md
-doc/UserEntity.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
 git_push.sh
@@ -115,7 +111,6 @@ lib/model/all_job_status_response_dto.dart
 lib/model/asset_count_by_time_bucket.dart
 lib/model/asset_count_by_time_bucket_response_dto.dart
 lib/model/asset_count_by_user_id_response_dto.dart
-lib/model/asset_entity.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_type_enum.dart
@@ -135,7 +130,6 @@ lib/model/delete_asset_response_dto.dart
 lib/model/delete_asset_status.dart
 lib/model/device_info_response_dto.dart
 lib/model/device_type_enum.dart
-lib/model/exif_entity.dart
 lib/model/exif_response_dto.dart
 lib/model/f_fmpeg_system_config_response_dto.dart
 lib/model/get_asset_by_time_bucket_dto.dart
@@ -159,7 +153,6 @@ lib/model/server_ping_response.dart
 lib/model/server_stats_response_dto.dart
 lib/model/server_version_reponse_dto.dart
 lib/model/sign_up_dto.dart
-lib/model/smart_info_entity.dart
 lib/model/smart_info_response_dto.dart
 lib/model/tag_entity.dart
 lib/model/tag_response_dto.dart
@@ -175,7 +168,6 @@ lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart
 lib/model/user_count_response_dto.dart
-lib/model/user_entity.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 pubspec.yaml

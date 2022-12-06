@@ -22,8 +22,8 @@ void main() {
       // TODO
     });
 
-    //Future<OAuthConfigResponseDto> getConfig() async
-    test('test getConfig', () async {
+    //Future<OAuthConfigResponseDto> generateConfig(OAuthConfigDto oAuthConfigDto) async
+    test('test generateConfig', () async {
       // TODO
     });
 

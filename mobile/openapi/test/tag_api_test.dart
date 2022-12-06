@@ -17,27 +17,27 @@ void main() {
   // final instance = TagApi();
 
   group('tests for TagApi', () {
-    //Future<TagEntity> create(CreateTagDto createTagDto) async
+    //Future<TagResponseDto> create(CreateTagDto createTagDto) async
     test('test create', () async {
       // TODO
     });
 
-    //Future<List<TagEntity>> findAll() async
+    //Future delete(String id) async
+    test('test delete', () async {
+      // TODO
+    });
+
+    //Future<List<TagResponseDto>> findAll() async
     test('test findAll', () async {
       // TODO
     });
 
-    //Future<Object> findOne(String id) async
+    //Future<TagResponseDto> findOne(String id) async
     test('test findOne', () async {
       // TODO
     });
 
-    //Future<String> remove(String id) async
-    test('test remove', () async {
-      // TODO
-    });
-
-    //Future<String> update(String id, UpdateTagDto updateTagDto) async
+    //Future<TagResponseDto> update(String id, UpdateTagDto updateTagDto) async
     test('test update', () async {
       // TODO
     });

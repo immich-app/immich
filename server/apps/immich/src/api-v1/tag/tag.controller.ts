@@ -5,7 +5,7 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { TagEntity } from '@app/database/entities/tag.entity';
+import { mapTag, TagResponseDto } from "./response-dto/tag-response.dto";
 
 @Authenticated()
 @ApiTags('Tag')
@@ -14,18 +14,19 @@ export class TagController {
   constructor(private readonly tagService: TagService) {}
 
   @Post()
-  create(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createTagDto: CreateTagDto): Promise<TagEntity> {
+  create(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createTagDto: CreateTagDto): Promise<TagResponseDto> {
     return this.tagService.create(authUser, createTagDto);
   }
 
   @Get()
-  findAll(@GetAuthUser() authUser: AuthUserDto) {
+  findAll(@GetAuthUser() authUser: AuthUserDto): Promise<TagResponseDto[]> {
     return this.tagService.findAll(authUser);
   }
 
   @Get(':id')
-  findOne(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string) {
-    return this.tagService.findOne(authUser, id);
+  async findOne(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<TagResponseDto> {
+    const tag = await this.tagService.findOne(authUser, id);
+    return mapTag(tag);
   }
 
   @Patch(':id')
@@ -33,12 +34,12 @@ export class TagController {
     @GetAuthUser() authUser: AuthUserDto,
     @Param('id') id: string,
     @Body(ValidationPipe) updateTagDto: UpdateTagDto,
-  ) {
+  ): Promise<TagResponseDto>  {
     return this.tagService.update(authUser, id, updateTagDto);
   }
 
   @Delete(':id')
-  delete(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string) {
+  delete(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<void> {
     return this.tagService.remove(authUser, id);
   }
 }

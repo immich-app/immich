@@ -56,6 +56,11 @@ void main() {
       // TODO
     });
 
+    // DateTime deletedAt
+    test('to test the property `deletedAt`', () async {
+      // TODO
+    });
+
 
   });
 
