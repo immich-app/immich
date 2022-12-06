@@ -62,7 +62,7 @@ export class OAuthService {
       const { autoRegister } = config.oauth;
       if (!autoRegister) {
         this.logger.warn(
-          `Unable to register ${profile.email}. To enable auto registering, set OAUTH_AUTO_REGISTER=true.`,
+          `Unable to register ${profile.email}. To enable set OAuth Auto Register to true in admin settings.`,
         );
         throw new BadRequestException(`User does not exist and auto registering is disabled.`);
       }
