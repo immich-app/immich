@@ -2685,7 +2685,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
     return {
         /**
          * Check duplicated asset before uploading - for Web upload used
-         * @summary 
          * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2725,7 +2724,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Checks if multiple assets exist on the server and returns all existing - used by background backup
-         * @summary 
          * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2889,7 +2887,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Get all AssetEntity belong to the user
-         * @summary 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2928,7 +2925,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Get a single asset\'s information
-         * @summary 
          * @param {string} assetId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3218,7 +3214,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Get all asset of a device that are in the database, ID only.
-         * @summary 
          * @param {string} deviceId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3342,7 +3337,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Update an asset
-         * @summary 
          * @param {string} assetId 
          * @param {UpdateAssetDto} updateAssetDto 
          * @param {*} [options] Override http request option.
@@ -3440,7 +3434,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
     return {
         /**
          * Check duplicated asset before uploading - for Web upload used
-         * @summary 
          * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3451,7 +3444,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * Checks if multiple assets exist on the server and returns all existing - used by background backup
-         * @summary 
          * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3494,7 +3486,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * Get all AssetEntity belong to the user
-         * @summary 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3505,7 +3496,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * Get a single asset\'s information
-         * @summary 
          * @param {string} assetId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3583,7 +3573,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * Get all asset of a device that are in the database, ID only.
-         * @summary 
          * @param {string} deviceId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3616,7 +3605,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * Update an asset
-         * @summary 
          * @param {string} assetId 
          * @param {UpdateAssetDto} updateAssetDto 
          * @param {*} [options] Override http request option.
@@ -3648,7 +3636,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
     return {
         /**
          * Check duplicated asset before uploading - for Web upload used
-         * @summary 
          * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3658,7 +3645,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * Checks if multiple assets exist on the server and returns all existing - used by background backup
-         * @summary 
          * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3697,7 +3683,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * Get all AssetEntity belong to the user
-         * @summary 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3707,7 +3692,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * Get a single asset\'s information
-         * @summary 
          * @param {string} assetId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3777,7 +3761,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * Get all asset of a device that are in the database, ID only.
-         * @summary 
          * @param {string} deviceId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3807,7 +3790,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * Update an asset
-         * @summary 
          * @param {string} assetId 
          * @param {UpdateAssetDto} updateAssetDto 
          * @param {*} [options] Override http request option.
@@ -3837,7 +3819,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
 export class AssetApi extends BaseAPI {
     /**
      * Check duplicated asset before uploading - for Web upload used
-     * @summary 
      * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -3849,7 +3830,6 @@ export class AssetApi extends BaseAPI {
 
     /**
      * Checks if multiple assets exist on the server and returns all existing - used by background backup
-     * @summary 
      * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -3896,7 +3876,6 @@ export class AssetApi extends BaseAPI {
 
     /**
      * Get all AssetEntity belong to the user
-     * @summary 
      * @param {string} [ifNoneMatch] ETag of data already cached on the client
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -3908,7 +3887,6 @@ export class AssetApi extends BaseAPI {
 
     /**
      * Get a single asset\'s information
-     * @summary 
      * @param {string} assetId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -3994,7 +3972,6 @@ export class AssetApi extends BaseAPI {
 
     /**
      * Get all asset of a device that are in the database, ID only.
-     * @summary 
      * @param {string} deviceId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -4030,7 +4007,6 @@ export class AssetApi extends BaseAPI {
 
     /**
      * Update an asset
-     * @summary 
      * @param {string} assetId 
      * @param {UpdateAssetDto} updateAssetDto 
      * @param {*} [options] Override http request option.
