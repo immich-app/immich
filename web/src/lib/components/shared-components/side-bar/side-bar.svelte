@@ -18,19 +18,16 @@
 	let showSharingCount = false;
 	let showAlbumsCount = false;
 
-	// let domCount = 0;
 	onMount(async () => {
-		if ($page.route.id == 'albums') {
+		if ($page.route.id?.includes('albums')) {
 			selectedAction = AppSideBarSelection.ALBUMS;
-		} else if ($page.route.id == 'photos') {
+		} else if ($page.route.id?.includes('photos')) {
 			selectedAction = AppSideBarSelection.PHOTOS;
-		} else if ($page.route.id == 'sharing') {
+		} else if ($page.route.id?.includes('sharing')) {
 			selectedAction = AppSideBarSelection.SHARING;
 		}
 
-		// setInterval(() => {
-		// 	domCount = document.getElementsByTagName('*').length;
-		// }, 500);
+
 	});
 
 	const getAssetCount = async () => {
@@ -75,7 +72,6 @@
 			{#if showAssetCount}
 				<div
 					transition:fade={{ duration: 200 }}
-					id="asset-count-info-detail"
 					class="w-32 rounded-lg p-4 shadow-lg bg-white absolute -right-[135px] top-0 z-[9999] flex place-items-center place-content-center"
 				>
 					{#await getAssetCount()}
@@ -112,7 +108,6 @@
 			{#if showSharingCount}
 				<div
 					transition:fade={{ duration: 200 }}
-					id="asset-count-info-detail"
 					class="w-24 rounded-lg p-4 shadow-lg bg-white absolute -right-[105px] top-0 z-[9999] flex place-items-center place-content-center"
 				>
 					{#await getAlbumCount()}

@@ -23,12 +23,35 @@
 			case AdminSideBarSelection.SETTINGS:
 				goto('/admin/settings');
 				break;
+			case AdminSideBarSelection.JOBS:
+				goto('/admin/jobs-status');
+				break;
+			case AdminSideBarSelection.STATS:
+				goto('/admin/server-status');
+				break;
 		}
 	};
 
 	onMount(() => {
-		goto('/admin/user-management');
-	})
+		const path = $page.route.id;
+
+		switch(path) {
+			case '/admin/user-management':
+				selectedAction = AdminSideBarSelection.USER_MANAGEMENT;
+				break;
+			case '/admin/settings':
+				selectedAction = AdminSideBarSelection.SETTINGS;
+				break;
+			case '/admin/jobs-status':
+				selectedAction = AdminSideBarSelection.JOBS;
+				break;
+			case '/admin/server-status':
+				selectedAction = AdminSideBarSelection.STATS;
+				break;
+		}
+	});
+
+
 </script>
 
 <svelte:head>
