@@ -30,8 +30,8 @@ const config = {
 
   presets: [
     [
-      "classic",
-      /** @type {import('@docusaurus/preset-classic').Options} */
+      "docusaurus-preset-openapi",
+      /** @type {import('docusaurus-preset-openapi').Options} */
       ({
         docs: {
           showLastUpdateAuthor: true,
@@ -41,6 +41,10 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: "https://github.com/immich-app/immich/tree/main/docs/",
+        },
+        api: {
+          path: "../server/immich-openapi-specs.json",
+          routeBasePath: "/apidoc"
         },
         // blog: {
         //   showReadingTime: true,
@@ -79,6 +83,11 @@ const config = {
             to: "/docs/overview/introduction",
             position: "right",
             label: "Documentation",
+          },
+          {
+            to: "/apidoc",
+            position: "right",
+            label: "Api"
           },
           { to: "/blog", label: "Blog", position: "right" },
           {
