@@ -154,6 +154,7 @@
 		on:mouseenter={handleMouseOverThumbnail}
 		on:mouseleave={handleMouseLeaveThumbnail}
 		on:click={thumbnailClickedHandler}
+		on:keydown={thumbnailClickedHandler}
 	>
 		{#if mouseOver || selected || disabled}
 			<div

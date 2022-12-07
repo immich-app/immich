@@ -137,6 +137,7 @@
 						transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
 						class="inline-block px-2 hover:cursor-pointer"
 						on:click={() => selectAssetGroupHandler(assetsInDateGroup, dateGroupTitle)}
+						on:keydown={() => selectAssetGroupHandler(assetsInDateGroup, dateGroupTitle)}
 					>
 						{#if $selectedGroup.has(dateGroupTitle)}
 							<CheckCircle size="24" color="#4250af" />
