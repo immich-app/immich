@@ -16,8 +16,6 @@ class AssetApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
   /// Check duplicated asset before uploading - for Web upload used
   ///
   /// Note: This method returns the HTTP [Response].
@@ -50,8 +48,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Check duplicated asset before uploading - for Web upload used
   ///
   /// Parameters:
@@ -72,8 +68,6 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
   /// Checks if multiple assets exist on the server and returns all existing - used by background backup
   ///
   /// Note: This method returns the HTTP [Response].
@@ -106,8 +100,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Checks if multiple assets exist on the server and returns all existing - used by background backup
   ///
   /// Parameters:
@@ -292,8 +284,6 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
   /// Get all AssetEntity belong to the user
   ///
   /// Note: This method returns the HTTP [Response].
@@ -331,8 +321,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Get all AssetEntity belong to the user
   ///
   /// Parameters:
@@ -357,8 +345,6 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
   /// Get a single asset's information
   ///
   /// Note: This method returns the HTTP [Response].
@@ -392,8 +378,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Get a single asset's information
   ///
   /// Parameters:
@@ -740,8 +724,6 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
   /// Get all asset of a device that are in the database, ID only.
   ///
   /// Note: This method returns the HTTP [Response].
@@ -775,8 +757,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Get all asset of a device that are in the database, ID only.
   ///
   /// Parameters:
@@ -913,8 +893,6 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
   /// Update an asset
   ///
   /// Note: This method returns the HTTP [Response].
@@ -950,8 +928,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Update an asset
   ///
   /// Parameters:
