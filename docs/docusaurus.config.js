@@ -87,7 +87,7 @@ const config = {
           {
             to: "/apidoc",
             position: "right",
-            label: "Api"
+            label: "API"
           },
           { to: "/blog", label: "Blog", position: "right" },
           {
