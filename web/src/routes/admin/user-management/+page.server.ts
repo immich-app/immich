@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { serverApi } from '@api';
+// @ts-ignore
 import type { PageServerLoad } from './$types';
 
 // @ts-ignore
@@ -14,6 +15,5 @@ export const load: PageServerLoad = async ({ parent }) => {
 
 	const { data: allUsers } = await serverApi.userApi.getAllUsers(false);
 
-	console.log("all users", allUsers);
 	return { user, allUsers };
 };
