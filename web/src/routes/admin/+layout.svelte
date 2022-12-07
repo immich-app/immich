@@ -1,17 +1,15 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
-	import { onMount } from "svelte";
 	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import Sync from 'svelte-material-icons/Sync.svelte';
 	import Cog from 'svelte-material-icons/Cog.svelte';
 	import Server from 'svelte-material-icons/Server.svelte';
-
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
-
 	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import { goto } from "$app/navigation";
+	import { onMount } from "svelte";
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
@@ -29,8 +27,8 @@
 	};
 
 	onMount(() => {
-		console.log($page)
-	});
+		goto('/admin/user-management');
+	})
 </script>
 
 <svelte:head>
@@ -40,8 +38,7 @@
 <NavigationBar user={$page.data.user} />
 
 <main>
-
-	<section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen">
+	<section class="grid grid-cols-[250px_auto] pt-[72px] h-screen">
 		<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col gap-1">
 			<SideBarButton
 							title="Users"
@@ -75,7 +72,8 @@
 				<StatusBox />
 			</div>
 		</section>
-		<section class="overflow-y-auto relative">
+
+		<section class="overflow-y-auto">
 			<div id="setting-title" class="pt-10 fixed w-full z-50">
 				<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
 					{selectedAction}
@@ -83,7 +81,7 @@
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
 
-			<section id="setting-content" class="relative pt-[85px] flex place-content-center">
+			<section id="setting-content" class="pt-[85px] flex place-content-center">
 				<section class="w-[800px] pt-5">
 					<slot />
 				</section>
