@@ -60,6 +60,11 @@ export class UserRepository implements IUserRepository {
   }
 
   public async create(user: Partial<UserEntity>): Promise<UserEntity> {
+    const localAdmin = await this.getAdmin();
+    if (!localAdmin && !user.isAdmin) {
+      throw new BadRequestException('The first registered account must the administrator.');
+    }
+
     if (user.password) {
       user.salt = await bcrypt.genSalt();
       user.password = await this.hashPassword(user.password, user.salt);
