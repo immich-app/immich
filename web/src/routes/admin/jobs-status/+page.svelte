@@ -1,9 +1,11 @@
+<script>
+	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+</script>
 
 <svelte:head>
-  <title>Jobs Status - Immich</title>
+	<title>Jobs Status - Immich</title>
 </svelte:head>
 
 <section>
-<h1>Jobs Status</h1>
-  <p>Here you can see the status of all jobs.</p>
+	<JobsPanel />
 </section>

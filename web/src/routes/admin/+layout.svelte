@@ -8,15 +8,15 @@
 	import Server from 'svelte-material-icons/Server.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import { goto } from "$app/navigation";
-	import { onMount } from "svelte";
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
 
 	const onButtonClicked = (buttonType: CustomEvent) => {
 		selectedAction = buttonType.detail['actionType'] as AdminSideBarSelection;
 
-		switch(selectedAction) {
+		switch (selectedAction) {
 			case AdminSideBarSelection.USER_MANAGEMENT:
 				goto('/admin/user-management');
 				break;
@@ -35,7 +35,7 @@
 	onMount(() => {
 		const path = $page.route.id;
 
-		switch(path) {
+		switch (path) {
 			case '/admin/user-management':
 				selectedAction = AdminSideBarSelection.USER_MANAGEMENT;
 				break;
@@ -50,8 +50,6 @@
 				break;
 		}
 	});
-
-
 </script>
 
 <svelte:head>
@@ -64,32 +62,32 @@
 	<section class="grid grid-cols-[250px_auto] pt-[72px] h-screen">
 		<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col gap-1">
 			<SideBarButton
-							title="Users"
-							logo={AccountMultipleOutline}
-							actionType={AdminSideBarSelection.USER_MANAGEMENT}
-							isSelected={selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
-							on:selected={onButtonClicked}
+				title="Users"
+				logo={AccountMultipleOutline}
+				actionType={AdminSideBarSelection.USER_MANAGEMENT}
+				isSelected={selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
+				on:selected={onButtonClicked}
 			/>
 			<SideBarButton
-							title="Jobs"
-							logo={Sync}
-							actionType={AdminSideBarSelection.JOBS}
-							isSelected={selectedAction === AdminSideBarSelection.JOBS}
-							on:selected={onButtonClicked}
+				title="Jobs"
+				logo={Sync}
+				actionType={AdminSideBarSelection.JOBS}
+				isSelected={selectedAction === AdminSideBarSelection.JOBS}
+				on:selected={onButtonClicked}
 			/>
 			<SideBarButton
-							title="Settings"
-							logo={Cog}
-							actionType={AdminSideBarSelection.SETTINGS}
-							isSelected={selectedAction === AdminSideBarSelection.SETTINGS}
-							on:selected={onButtonClicked}
+				title="Settings"
+				logo={Cog}
+				actionType={AdminSideBarSelection.SETTINGS}
+				isSelected={selectedAction === AdminSideBarSelection.SETTINGS}
+				on:selected={onButtonClicked}
 			/>
 			<SideBarButton
-							title="Server Stats"
-							logo={Server}
-							actionType={AdminSideBarSelection.STATS}
-							isSelected={selectedAction === AdminSideBarSelection.STATS}
-							on:selected={onButtonClicked}
+				title="Server Stats"
+				logo={Server}
+				actionType={AdminSideBarSelection.STATS}
+				isSelected={selectedAction === AdminSideBarSelection.STATS}
+				on:selected={onButtonClicked}
 			/>
 			<div class="mb-6 mt-auto">
 				<StatusBox />
@@ -111,7 +109,4 @@
 			</section>
 		</section>
 	</section>
-
-
 </main>
-

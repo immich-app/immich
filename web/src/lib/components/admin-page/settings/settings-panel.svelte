@@ -4,19 +4,21 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import { api, UpdateFFmpegSystemConfigDto } from '@api';
+	import { api, SystemConfigUpdateDto } from '@api';
 	import { onMount } from 'svelte';
 
 	let isSaving = false;
 	let items: Array<{ key: string; value: string; originalValue: string }> = [];
 
 	const refreshConfig = async () => {
-		const { data: ffmpegConfig } = await api.systemConfigApi.getFFmpegConfig();
-		items = Object.entries(ffmpegConfig).map(([key, value]) => ({
-			key,
-			value,
-			originalValue: value
-		}));
+		const { data } = await api.systemConfigApi.getConfig();
+
+		console.log(data);
+		// items = Object.entries(ffmpegConfig).map(([key, value]) => ({
+		// 	key,
+		// 	value,
+		// 	originalValue: value
+		// }));
 	};
 
 	onMount(() => refreshConfig());
@@ -24,14 +26,14 @@
 	const handleSave = async () => {
 		try {
 			isSaving = true;
-			const update: UpdateFFmpegSystemConfigDto = {};
+			const update: SystemConfigUpdateDto = {};
 			for (const item of items) {
 				if (item.value !== item.originalValue) {
-					update[item.key as keyof UpdateFFmpegSystemConfigDto] = item.value;
+					// update[item.key as keyof SystemConfigUpdateDto] = item.value;
 				}
 			}
 			if (Object.keys(update).length > 0) {
-				await api.systemConfigApi.updateFFmpegConfig(update);
+				await api.systemConfigApi.updateConfig(update);
 				refreshConfig();
 			}
 

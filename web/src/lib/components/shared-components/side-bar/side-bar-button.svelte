@@ -6,7 +6,7 @@
 	export let actionType: AdminSideBarSelection | AppSideBarSelection;
 	export let isSelected: boolean;
 
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import type {
 		AdminSideBarSelection,
 		AppSideBarSelection

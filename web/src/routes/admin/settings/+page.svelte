@@ -1,7 +1,5 @@
+<script>
+	import SettingsPanel from '$lib/components/admin-page/settings/settings-panel.svelte';
+</script>
 
-
-
-
-<div>
-  <h1>Setting page</h1>
-</div>
+<SettingsPanel />
