@@ -101,6 +101,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeviceInfoApi* | [**createDeviceInfo**](doc//DeviceInfoApi.md#createdeviceinfo) | **POST** /device-info | 
 *DeviceInfoApi* | [**updateDeviceInfo**](doc//DeviceInfoApi.md#updatedeviceinfo) | **PATCH** /device-info | 
+*DeviceInfoApi* | [**upsertDeviceInfo**](doc//DeviceInfoApi.md#upsertdeviceinfo) | **PUT** /device-info | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**getJobStatus**](doc//JobApi.md#getjobstatus) | **GET** /jobs/{jobId} | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
@@ -149,7 +150,6 @@ Class | Method | HTTP request | Description
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
- - [CreateDeviceInfoDto](doc//CreateDeviceInfoDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
  - [CreateUserDto](doc//CreateUserDto.md)
@@ -191,9 +191,9 @@ Class | Method | HTTP request | Description
  - [TimeGroupEnum](doc//TimeGroupEnum.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
- - [UpdateDeviceInfoDto](doc//UpdateDeviceInfoDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
+ - [UpsertDeviceInfoDto](doc//UpsertDeviceInfoDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserCountResponseDto](doc//UserCountResponseDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)

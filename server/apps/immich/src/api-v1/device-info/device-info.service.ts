@@ -1,70 +1,29 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { DeviceInfoEntity } from '@app/database/entities/device-info.entity';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { CreateDeviceInfoDto } from './dto/create-device-info.dto';
-import { UpdateDeviceInfoDto } from './dto/update-device-info.dto';
-import { DeviceInfoEntity } from '@app/database/entities/device-info.entity';
-import { DeviceInfoResponseDto, mapDeviceInfoResponse } from './response-dto/create-device-info-response.dto';
+
+type EntityKeys = Pick<DeviceInfoEntity, 'deviceId' | 'userId'>;
+type Entity = EntityKeys & Partial<DeviceInfoEntity>;
 
 @Injectable()
 export class DeviceInfoService {
   constructor(
     @InjectRepository(DeviceInfoEntity)
-    private deviceRepository: Repository<DeviceInfoEntity>,
+    private repository: Repository<DeviceInfoEntity>,
   ) {}
 
-  async create(createDeviceInfoDto: CreateDeviceInfoDto, authUser: AuthUserDto): Promise<DeviceInfoResponseDto> {
-    const res = await this.deviceRepository.findOne({
-      where: {
-        deviceId: createDeviceInfoDto.deviceId,
-        userId: authUser.id,
-      },
-    });
+  public async upsert(entity: Entity): Promise<DeviceInfoEntity> {
+    const { deviceId, userId } = entity;
+    const exists = await this.repository.findOne({ where: { userId, deviceId } });
 
-    if (res) {
-      Logger.log('Device Info Exist', 'createDeviceInfo');
-      return mapDeviceInfoResponse(res);
+    if (!exists) {
+      return await this.repository.save(entity);
     }
 
-    const deviceInfo = new DeviceInfoEntity();
-    deviceInfo.deviceId = createDeviceInfoDto.deviceId;
-    deviceInfo.deviceType = createDeviceInfoDto.deviceType;
-    deviceInfo.userId = authUser.id;
+    exists.isAutoBackup = entity.isAutoBackup ?? exists.isAutoBackup;
+    exists.deviceType = entity.deviceType ?? exists.deviceType;
 
-    const newDeviceInfo = await this.deviceRepository.save(deviceInfo);
-
-    return mapDeviceInfoResponse(newDeviceInfo);
-  }
-
-  async update(userId: string, updateDeviceInfoDto: UpdateDeviceInfoDto): Promise<DeviceInfoResponseDto> {
-    const deviceInfo = await this.deviceRepository.findOne({
-      where: { deviceId: updateDeviceInfoDto.deviceId, userId: userId },
-    });
-
-    if (!deviceInfo) {
-      throw new NotFoundException('Device Not Found');
-    }
-
-    const res = await this.deviceRepository.update(
-      {
-        id: deviceInfo.id,
-      },
-      updateDeviceInfoDto,
-    );
-
-    if (res.affected == 1) {
-      const updatedDeviceInfo = await this.deviceRepository.findOne({
-        where: { deviceId: updateDeviceInfoDto.deviceId, userId: userId },
-      });
-
-      if (!updatedDeviceInfo) {
-        throw new NotFoundException('Device Not Found');
-      }
-
-      return mapDeviceInfoResponse(updatedDeviceInfo);
-    } else {
-      throw new BadRequestException('Bad Request');
-    }
+    return await this.repository.save(exists);
   }
 }

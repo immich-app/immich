@@ -1789,13 +1789,15 @@
     "/device-info": {
       "post": {
         "operationId": "createDeviceInfo",
+        "summary": "",
+        "description": "@deprecated",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateDeviceInfoDto"
+                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
               }
             }
           }
@@ -1823,13 +1825,49 @@
       },
       "patch": {
         "operationId": "updateDeviceInfo",
+        "summary": "",
+        "description": "@deprecated",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateDeviceInfoDto"
+                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Device Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "upsertDeviceInfo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
               }
             }
           }
@@ -3233,7 +3271,7 @@
           "WEB"
         ]
       },
-      "CreateDeviceInfoDto": {
+      "UpsertDeviceInfoDto": {
         "type": "object",
         "properties": {
           "deviceType": {
@@ -3280,24 +3318,6 @@
           "deviceId",
           "createdAt",
           "isAutoBackup"
-        ]
-      },
-      "UpdateDeviceInfoDto": {
-        "type": "object",
-        "properties": {
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "deviceType",
-          "deviceId"
         ]
       },
       "ServerInfoResponseDto": {
