@@ -44,7 +44,7 @@ const config = {
         },
         api: {
           path: "../server/immich-openapi-specs.json",
-          routeBasePath: "/apidoc"
+          routeBasePath: "/docs/api"
         },
         // blog: {
         //   showReadingTime: true,
@@ -85,7 +85,7 @@ const config = {
             label: "Documentation",
           },
           {
-            to: "/apidoc",
+            to: "/docs/api",
             position: "right",
             label: "API"
           },
