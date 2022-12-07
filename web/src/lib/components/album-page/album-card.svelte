@@ -60,8 +60,10 @@
 <div
 	class="h-[339px] w-[275px] hover:cursor-pointer mt-4 relative"
 	on:click={() => dispatchClick('click', album)}
+	on:keydown={() => dispatchClick('click', album)}
 	data-testid="album-card"
 >
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div
 		id={`icon-${album.id}`}
 		class="absolute top-2 right-2"

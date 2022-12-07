@@ -20,11 +20,11 @@
 
 	// let domCount = 0;
 	onMount(async () => {
-		if ($page.routeId == 'albums') {
+		if ($page.route.id == 'albums') {
 			selectedAction = AppSideBarSelection.ALBUMS;
-		} else if ($page.routeId == 'photos') {
+		} else if ($page.route.id == 'photos') {
 			selectedAction = AppSideBarSelection.PHOTOS;
-		} else if ($page.routeId == 'sharing') {
+		} else if ($page.route.id == 'sharing') {
 			selectedAction = AppSideBarSelection.SHARING;
 		}
 
@@ -54,9 +54,9 @@
 
 <section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg">
 	<a
-		data-sveltekit-prefetch
+		data-sveltekit-preload-data="hover"
 		data-sveltekit-noscroll
-		href={$page.routeId !== 'photos' ? `/photos` : null}
+		href={$page.route.id !== 'photos' ? `/photos` : null}
 		class="relative"
 	>
 		<SideBarButton
@@ -92,8 +92,8 @@
 	</a>
 
 	<a
-		data-sveltekit-prefetch
-		href={$page.routeId !== 'sharing' ? `/sharing` : null}
+		data-sveltekit-preload-data="hover"
+		href={$page.route.id !== 'sharing' ? `/sharing` : null}
 		class="relative"
 	>
 		<SideBarButton
@@ -129,7 +129,11 @@
 	<div class="text-xs ml-5 my-4 dark:text-immich-dark-fg">
 		<p>LIBRARY</p>
 	</div>
-	<a data-sveltekit-prefetch href={$page.routeId !== 'albums' ? `/albums` : null} class="relative">
+	<a
+		data-sveltekit-preload-data="hover"
+		href={$page.route.id !== 'albums' ? `/albums` : null}
+		class="relative"
+	>
 		<SideBarButton
 			title="Albums"
 			logo={ImageAlbum}

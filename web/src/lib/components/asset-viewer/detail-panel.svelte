@@ -197,8 +197,12 @@
 			<p class="text-sm pb-4 ">APPEARS IN</p>
 		{/if}
 		{#each albums as album}
-			<a data-sveltekit-prefetch href={`/albums/${album.id}`}>
-				<div class="flex gap-4 py-2 hover:cursor-pointer" on:click={() => dispatch('click', album)}>
+			<a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
+				<div
+					class="flex gap-4 py-2 hover:cursor-pointer"
+					on:click={() => dispatch('click', album)}
+					on:keydown={() => dispatch('click', album)}
+				>
 					<div>
 						<img
 							alt={album.albumName}

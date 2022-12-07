@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	let toggleButton: HTMLElement;
-
 	onMount(() => {
 		var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
 		var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
@@ -48,7 +46,6 @@
 </script>
 
 <button
-	bind:this={toggleButton}
 	on:click={toggleTheme}
 	id="theme-toggle"
 	type="button"
