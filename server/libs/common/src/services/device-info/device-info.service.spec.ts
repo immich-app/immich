@@ -1,19 +1,18 @@
-import { DeviceInfoEntity, DeviceType } from '@app/database/entities/device-info.entity';
-import { Repository } from 'typeorm';
-import { DeviceInfoService } from './device-info.service';
+import { DeviceInfoEntity } from '@app/database/entities';
+import { DeviceInfoService, DeviceType, IDeviceInfoRepository } from './device-info.service';
 
 const deviceId = 'device-123';
 const userId = 'user-123';
 
 describe('DeviceInfoService', () => {
   let sut: DeviceInfoService;
-  let repositoryMock: jest.Mocked<Repository<DeviceInfoEntity>>;
+  let repositoryMock: jest.Mocked<IDeviceInfoRepository>;
 
   beforeEach(async () => {
     repositoryMock = {
-      findOne: jest.fn(),
+      findByDeviceId: jest.fn(),
       save: jest.fn(),
-    } as unknown as jest.Mocked<Repository<DeviceInfoEntity>>;
+    };
 
     sut = new DeviceInfoService(repositoryMock);
   });
@@ -27,12 +26,12 @@ describe('DeviceInfoService', () => {
       const request = { deviceId, userId, deviceType: DeviceType.IOS } as DeviceInfoEntity;
       const response = { ...request, id: 1 } as DeviceInfoEntity;
 
-      repositoryMock.findOne.mockResolvedValue(null);
+      repositoryMock.findByDeviceId.mockResolvedValue(null);
       repositoryMock.save.mockResolvedValue(response);
 
       await expect(sut.upsert(request)).resolves.toEqual(response);
 
-      expect(repositoryMock.findOne).toHaveBeenCalledTimes(1);
+      expect(repositoryMock.findByDeviceId).toHaveBeenCalledTimes(1);
       expect(repositoryMock.save).toHaveBeenCalledTimes(1);
     });
 
@@ -40,12 +39,12 @@ describe('DeviceInfoService', () => {
       const request = { deviceId, userId, deviceType: DeviceType.IOS, isAutoBackup: true } as DeviceInfoEntity;
       const response = { ...request, id: 1 } as DeviceInfoEntity;
 
-      repositoryMock.findOne.mockResolvedValue(response);
+      repositoryMock.findByDeviceId.mockResolvedValue(response);
       repositoryMock.save.mockResolvedValue(response);
 
       await expect(sut.upsert(request)).resolves.toEqual(response);
 
-      expect(repositoryMock.findOne).toHaveBeenCalledTimes(1);
+      expect(repositoryMock.findByDeviceId).toHaveBeenCalledTimes(1);
       expect(repositoryMock.save).toHaveBeenCalledTimes(1);
     });
 
@@ -53,12 +52,12 @@ describe('DeviceInfoService', () => {
       const request = { deviceId, userId } as DeviceInfoEntity;
       const response = { id: 1, isAutoBackup: true, deviceId, userId, deviceType: DeviceType.WEB } as DeviceInfoEntity;
 
-      repositoryMock.findOne.mockResolvedValue(response);
+      repositoryMock.findByDeviceId.mockResolvedValue(response);
       repositoryMock.save.mockResolvedValue(response);
 
       await expect(sut.upsert(request)).resolves.toEqual(response);
 
-      expect(repositoryMock.findOne).toHaveBeenCalledTimes(1);
+      expect(repositoryMock.findByDeviceId).toHaveBeenCalledTimes(1);
       expect(repositoryMock.save).toHaveBeenCalledTimes(1);
     });
   });

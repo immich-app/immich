@@ -1,6 +1,6 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
-import { DeviceType } from '@app/database/entities/device-info.entity';
+import { DeviceType } from '@app/common';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpsertDeviceInfoDto {
   @IsNotEmpty()

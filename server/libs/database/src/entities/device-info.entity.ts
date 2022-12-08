@@ -1,3 +1,4 @@
+import { DeviceType } from '@app/common';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity('device_info')
@@ -23,10 +24,4 @@ export class DeviceInfoEntity {
 
   @Column({ type: 'bool', default: false })
   isAutoBackup!: boolean;
-}
-
-export enum DeviceType {
-  IOS = 'IOS',
-  ANDROID = 'ANDROID',
-  WEB = 'WEB',
 }

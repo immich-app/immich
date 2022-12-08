@@ -1,7 +1,7 @@
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
-import { DataSource } from 'typeorm';
 
-export const databaseConfig: PostgresConnectionOptions = {
+const postgresConfig: PostgresConnectionOptions = {
   type: 'postgres',
   host: process.env.DB_HOSTNAME || 'immich_postgres',
   port: parseInt(process.env.DB_PORT || '5432'),
@@ -14,4 +14,6 @@ export const databaseConfig: PostgresConnectionOptions = {
   migrationsRun: true,
 };
 
-export const dataSource = new DataSource(databaseConfig);
+export const databaseConfig: TypeOrmModuleOptions = {
+  ...postgresConfig,
+};

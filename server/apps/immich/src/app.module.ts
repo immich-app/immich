@@ -19,11 +19,13 @@ import { JobModule } from './api-v1/job/job.module';
 import { SystemConfigModule } from './api-v1/system-config/system-config.module';
 import { OAuthModule } from './api-v1/oauth/oauth.module';
 import { TagModule } from './api-v1/tag/tag.module';
+import { CommonModule } from '@app/common';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
 
+    CommonModule,
     DatabaseModule,
     UserModule,
 
