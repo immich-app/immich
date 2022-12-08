@@ -733,7 +733,6 @@
     "/asset": {
       "get": {
         "operationId": "getAllAssets",
-        "summary": "",
         "description": "Get all AssetEntity belong to the user",
         "parameters": [
           {
@@ -850,7 +849,6 @@
     "/asset/{deviceId}": {
       "get": {
         "operationId": "getUserAssetsByDeviceId",
-        "summary": "",
         "description": "Get all asset of a device that are in the database, ID only.",
         "parameters": [
           {
@@ -890,7 +888,6 @@
     "/asset/assetById/{assetId}": {
       "get": {
         "operationId": "getAssetById",
-        "summary": "",
         "description": "Get a single asset's information",
         "parameters": [
           {
@@ -927,7 +924,6 @@
     "/asset/{assetId}": {
       "put": {
         "operationId": "updateAsset",
-        "summary": "",
         "description": "Update an asset",
         "parameters": [
           {
@@ -974,7 +970,6 @@
     "/asset/check": {
       "post": {
         "operationId": "checkDuplicateAsset",
-        "summary": "",
         "description": "Check duplicated asset before uploading - for Web upload used",
         "parameters": [],
         "requestBody": {
@@ -1012,7 +1007,6 @@
     "/asset/exist": {
       "post": {
         "operationId": "checkExistingAssets",
-        "summary": "",
         "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
         "parameters": [],
         "requestBody": {
@@ -2108,7 +2102,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.17.0",
+    "version": "1.37.0",
     "contact": {}
   },
   "tags": [],

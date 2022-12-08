@@ -9,6 +9,7 @@ import { AppModule } from './app.module';
 import { serverVersion } from './constants/server_version.constant';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 import { json } from 'body-parser';
+import { patchOpenAPI } from './utils/patch-open-api.util';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -26,7 +27,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
-    .setVersion('1.17.0')
+    .setVersion(`${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`)
     .addBearerAuth({
       type: 'http',
       scheme: 'Bearer',
@@ -55,7 +56,7 @@ async function bootstrap() {
     if (process.env.NODE_ENV == 'development') {
       // Generate API Documentation only in development mode
       const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
-      writeFileSync(outputPath, JSON.stringify(apiDocument, null, 2), { encoding: 'utf8' });
+      writeFileSync(outputPath, JSON.stringify(patchOpenAPI(apiDocument), null, 2), { encoding: 'utf8' });
       Logger.log(
         `Running Immich Server in DEVELOPMENT environment - version ${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`,
         'ImmichServer',

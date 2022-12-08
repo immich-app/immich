@@ -17,8 +17,6 @@ void main() {
   // final instance = AssetApi();
 
   group('tests for AssetApi', () {
-    // 
-    //
     // Check duplicated asset before uploading - for Web upload used
     //
     //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto) async
@@ -26,8 +24,6 @@ void main() {
       // TODO
     });
 
-    // 
-    //
     // Checks if multiple assets exist on the server and returns all existing - used by background backup
     //
     //Future<CheckExistingAssetsResponseDto> checkExistingAssets(CheckExistingAssetsDto checkExistingAssetsDto) async
@@ -50,8 +46,6 @@ void main() {
       // TODO
     });
 
-    // 
-    //
     // Get all AssetEntity belong to the user
     //
     //Future<List<AssetResponseDto>> getAllAssets({ String ifNoneMatch }) async
@@ -59,8 +53,6 @@ void main() {
       // TODO
     });
 
-    // 
-    //
     // Get a single asset's information
     //
     //Future<AssetResponseDto> getAssetById(String assetId) async
@@ -103,8 +95,6 @@ void main() {
       // TODO
     });
 
-    // 
-    //
     // Get all asset of a device that are in the database, ID only.
     //
     //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async
@@ -122,8 +112,6 @@ void main() {
       // TODO
     });
 
-    // 
-    //
     // Update an asset
     //
     //Future<AssetResponseDto> updateAsset(String assetId, UpdateAssetDto updateAssetDto) async
