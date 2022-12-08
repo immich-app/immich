@@ -4,7 +4,7 @@ import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { DeviceInfoService } from './device-info.service';
 import { UpsertDeviceInfoDto } from './dto/upsert-device-info.dto';
-import { mapDeviceInfoResponse } from './response-dto/device-info-response.dto';
+import { DeviceInfoResponseDto, mapDeviceInfoResponse } from './response-dto/device-info-response.dto';
 
 @Authenticated()
 @ApiBearerAuth()
@@ -15,20 +15,27 @@ export class DeviceInfoController {
 
   /** @deprecated */
   @Post()
-  public async createDeviceInfo(@GetAuthUser() user: AuthUserDto, @Body(ValidationPipe) dto: UpsertDeviceInfoDto) {
-    const deviceInfo = await this.deviceInfoService.upsert({ ...dto, userId: user.id });
-    return mapDeviceInfoResponse(deviceInfo);
+  public async createDeviceInfo(
+    @GetAuthUser() user: AuthUserDto,
+    @Body(ValidationPipe) dto: UpsertDeviceInfoDto,
+  ): Promise<DeviceInfoResponseDto> {
+    return this.upsertDeviceInfo(user, dto);
   }
 
   /** @deprecated */
   @Patch()
-  public async updateDeviceInfo(@GetAuthUser() user: AuthUserDto, @Body(ValidationPipe) dto: UpsertDeviceInfoDto) {
-    const deviceInfo = await this.deviceInfoService.upsert({ ...dto, userId: user.id });
-    return mapDeviceInfoResponse(deviceInfo);
+  public async updateDeviceInfo(
+    @GetAuthUser() user: AuthUserDto,
+    @Body(ValidationPipe) dto: UpsertDeviceInfoDto,
+  ): Promise<DeviceInfoResponseDto> {
+    return this.upsertDeviceInfo(user, dto);
   }
 
   @Put()
-  public async upsertDeviceInfo(@GetAuthUser() user: AuthUserDto, @Body(ValidationPipe) dto: UpsertDeviceInfoDto) {
+  public async upsertDeviceInfo(
+    @GetAuthUser() user: AuthUserDto,
+    @Body(ValidationPipe) dto: UpsertDeviceInfoDto,
+  ): Promise<DeviceInfoResponseDto> {
     const deviceInfo = await this.deviceInfoService.upsert({ ...dto, userId: user.id });
     return mapDeviceInfoResponse(deviceInfo);
   }
