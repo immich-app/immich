@@ -14,3 +14,5 @@ export const serverVersion: IServerVersion = {
   patch: 0,
   build: 58,
 };
+
+export const SERVER_VERSION = `${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`;
