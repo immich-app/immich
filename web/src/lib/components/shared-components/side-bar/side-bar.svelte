@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { AppSideBarSelection } from '$lib/models/admin-sidebar-selection';
-	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
@@ -11,24 +9,11 @@
 	import { api } from '@api';
 	import { fade } from 'svelte/transition';
 	import LoadingSpinner from '../loading-spinner.svelte';
-
-	let selectedAction: AppSideBarSelection;
+	import { AppRoute } from '../../../constants';
 
 	let showAssetCount = false;
 	let showSharingCount = false;
 	let showAlbumsCount = false;
-
-	onMount(async () => {
-		if ($page.route.id?.includes('albums')) {
-			selectedAction = AppSideBarSelection.ALBUMS;
-		} else if ($page.route.id?.includes('photos')) {
-			selectedAction = AppSideBarSelection.PHOTOS;
-		} else if ($page.route.id?.includes('sharing')) {
-			selectedAction = AppSideBarSelection.SHARING;
-		}
-
-
-	});
 
 	const getAssetCount = async () => {
 		const { data: assetCount } = await api.assetApi.getAssetCountByUserId();
@@ -53,14 +38,13 @@
 	<a
 		data-sveltekit-preload-data="hover"
 		data-sveltekit-noscroll
-		href={$page.route.id !== 'photos' ? `/photos` : null}
+		href={AppRoute.PHOTOS}
 		class="relative"
 	>
 		<SideBarButton
 			title={`Photos`}
 			logo={ImageOutline}
-			actionType={AppSideBarSelection.PHOTOS}
-			isSelected={selectedAction === AppSideBarSelection.PHOTOS}
+			isSelected={$page.route.id === AppRoute.PHOTOS}
 		/>
 		<div
 			id="asset-count-info"
@@ -87,16 +71,11 @@
 		</div>
 	</a>
 
-	<a
-		data-sveltekit-preload-data="hover"
-		href={$page.route.id !== 'sharing' ? `/sharing` : null}
-		class="relative"
-	>
+	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} class="relative">
 		<SideBarButton
 			title="Sharing"
 			logo={AccountMultipleOutline}
-			actionType={AppSideBarSelection.SHARING}
-			isSelected={selectedAction === AppSideBarSelection.SHARING}
+			isSelected={$page.route.id === AppRoute.SHARING}
 		/>
 		<div
 			id="sharing-count-info"
@@ -124,16 +103,11 @@
 	<div class="text-xs ml-5 my-4 dark:text-immich-dark-fg">
 		<p>LIBRARY</p>
 	</div>
-	<a
-		data-sveltekit-preload-data="hover"
-		href={$page.route.id !== 'albums' ? `/albums` : null}
-		class="relative"
-	>
+	<a data-sveltekit-preload-data="hover" href={AppRoute.ALBUMS} class="relative">
 		<SideBarButton
 			title="Albums"
 			logo={ImageAlbum}
-			actionType={AppSideBarSelection.ALBUMS}
-			isSelected={selectedAction === AppSideBarSelection.ALBUMS}
+			isSelected={$page.route.id === AppRoute.ALBUMS}
 		/>
 
 		<div

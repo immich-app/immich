@@ -7,49 +7,25 @@
 	import Cog from 'svelte-material-icons/Cog.svelte';
 	import Server from 'svelte-material-icons/Server.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
-	import { AdminSideBarSelection } from '$lib/models/admin-sidebar-selection';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { AppRoute } from '../../lib/constants';
 
-	let selectedAction: AdminSideBarSelection = AdminSideBarSelection.USER_MANAGEMENT;
-
-	const onButtonClicked = (buttonType: CustomEvent) => {
-		selectedAction = buttonType.detail['actionType'] as AdminSideBarSelection;
-
-		switch (selectedAction) {
-			case AdminSideBarSelection.USER_MANAGEMENT:
-				goto('/admin/user-management');
-				break;
-			case AdminSideBarSelection.SETTINGS:
-				goto('/admin/settings');
-				break;
-			case AdminSideBarSelection.JOBS:
-				goto('/admin/jobs-status');
-				break;
-			case AdminSideBarSelection.STATS:
-				goto('/admin/server-status');
-				break;
+	const getPageTitle = (routeId: string | null) => {
+		switch (routeId) {
+			case AppRoute.ADMIN_USER_MANAGEMENT:
+				return 'User Management';
+			case AppRoute.ADMIN_SETTINGS:
+				return 'Settings';
+			case AppRoute.ADMIN_JOBS:
+				return 'Jobs';
+			case AppRoute.ADMIN_SETTINGS:
+				return 'Settings';
+			case AppRoute.ADMIN_STATS:
+				return 'Server Stats';
+			default:
+				return '';
 		}
 	};
-
-	onMount(() => {
-		const path = $page.route.id;
-
-		switch (path) {
-			case '/admin/user-management':
-				selectedAction = AdminSideBarSelection.USER_MANAGEMENT;
-				break;
-			case '/admin/settings':
-				selectedAction = AdminSideBarSelection.SETTINGS;
-				break;
-			case '/admin/jobs-status':
-				selectedAction = AdminSideBarSelection.JOBS;
-				break;
-			case '/admin/server-status':
-				selectedAction = AdminSideBarSelection.STATS;
-				break;
-		}
-	});
 </script>
 
 <svelte:head>
@@ -64,30 +40,26 @@
 			<SideBarButton
 				title="Users"
 				logo={AccountMultipleOutline}
-				actionType={AdminSideBarSelection.USER_MANAGEMENT}
-				isSelected={selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
-				on:selected={onButtonClicked}
+				isSelected={$page.route.id === AppRoute.ADMIN_USER_MANAGEMENT}
+				on:selected={() => goto(AppRoute.ADMIN_USER_MANAGEMENT)}
 			/>
 			<SideBarButton
 				title="Jobs"
 				logo={Sync}
-				actionType={AdminSideBarSelection.JOBS}
-				isSelected={selectedAction === AdminSideBarSelection.JOBS}
-				on:selected={onButtonClicked}
+				isSelected={$page.route.id === AppRoute.ADMIN_JOBS}
+				on:selected={() => goto(AppRoute.ADMIN_JOBS)}
 			/>
 			<SideBarButton
 				title="Settings"
 				logo={Cog}
-				actionType={AdminSideBarSelection.SETTINGS}
-				isSelected={selectedAction === AdminSideBarSelection.SETTINGS}
-				on:selected={onButtonClicked}
+				isSelected={$page.route.id === AppRoute.ADMIN_SETTINGS}
+				on:selected={() => goto(AppRoute.ADMIN_SETTINGS)}
 			/>
 			<SideBarButton
 				title="Server Stats"
 				logo={Server}
-				actionType={AdminSideBarSelection.STATS}
-				isSelected={selectedAction === AdminSideBarSelection.STATS}
-				on:selected={onButtonClicked}
+				isSelected={$page.route.id === AppRoute.ADMIN_STATS}
+				on:selected={() => goto(AppRoute.ADMIN_STATS)}
 			/>
 			<div class="mb-6 mt-auto">
 				<StatusBox />
@@ -97,7 +69,7 @@
 		<section class="overflow-y-auto">
 			<div id="setting-title" class="pt-10 fixed w-full z-50">
 				<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
-					{selectedAction}
+					{getPageTitle($page.route.id)}
 				</h1>
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
