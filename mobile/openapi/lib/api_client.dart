@@ -228,8 +228,6 @@ class ApiClient {
           return CheckExistingAssetsResponseDto.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
-        case 'CreateDeviceInfoDto':
-          return CreateDeviceInfoDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'CreateTagDto':
@@ -312,12 +310,12 @@ class ApiClient {
           return UpdateAlbumDto.fromJson(value);
         case 'UpdateAssetDto':
           return UpdateAssetDto.fromJson(value);
-        case 'UpdateDeviceInfoDto':
-          return UpdateDeviceInfoDto.fromJson(value);
         case 'UpdateTagDto':
           return UpdateTagDto.fromJson(value);
         case 'UpdateUserDto':
           return UpdateUserDto.fromJson(value);
+        case 'UpsertDeviceInfoDto':
+          return UpsertDeviceInfoDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
         case 'UserCountResponseDto':
