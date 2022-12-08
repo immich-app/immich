@@ -27,7 +27,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
-    .setVersion('1.17.0')
+    .setVersion(`${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`)
     .addBearerAuth({
       type: 'http',
       scheme: 'Bearer',
