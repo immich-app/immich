@@ -14,7 +14,7 @@ Method | HTTP request | Description
 
 
 # **getConfig**
-> SystemConfigResponseDto getConfig()
+> SystemConfigDto getConfig()
 
 
 
@@ -43,7 +43,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**SystemConfigResponseDto**](SystemConfigResponseDto.md)
+[**SystemConfigDto**](SystemConfigDto.md)
 
 ### Authorization
 
@@ -57,7 +57,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **updateConfig**
-> SystemConfigResponseDto updateConfig(systemConfigUpdateDto)
+> SystemConfigDto updateConfig(systemConfigDto)
 
 
 
@@ -72,10 +72,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = SystemConfigApi();
-final systemConfigUpdateDto = SystemConfigUpdateDto(); // SystemConfigUpdateDto | 
+final systemConfigDto = SystemConfigDto(); // SystemConfigDto | 
 
 try {
-    final result = api_instance.updateConfig(systemConfigUpdateDto);
+    final result = api_instance.updateConfig(systemConfigDto);
     print(result);
 } catch (e) {
     print('Exception when calling SystemConfigApi->updateConfig: $e\n');
@@ -86,11 +86,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **systemConfigUpdateDto** | [**SystemConfigUpdateDto**](SystemConfigUpdateDto.md)|  | 
+ **systemConfigDto** | [**SystemConfigDto**](SystemConfigDto.md)|  | 
 
 ### Return type
 
-[**SystemConfigResponseDto**](SystemConfigResponseDto.md)
+[**SystemConfigDto**](SystemConfigDto.md)
 
 ### Authorization
 

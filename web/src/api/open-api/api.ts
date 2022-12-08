@@ -1453,210 +1453,105 @@ export interface SmartInfoResponseDto {
 /**
  * 
  * @export
- * @interface SystemConfigResponseDto
+ * @interface SystemConfigDto
  */
-export interface SystemConfigResponseDto {
+export interface SystemConfigDto {
     /**
      * 
-     * @type {SystemOAuthConfigResponseDto}
-     * @memberof SystemConfigResponseDto
+     * @type {SystemConfigFFmpegDto}
+     * @memberof SystemConfigDto
      */
-    'oauth': SystemOAuthConfigResponseDto;
+    'ffmpeg': SystemConfigFFmpegDto;
     /**
      * 
-     * @type {SystemFFmpegConfigResponseDto}
-     * @memberof SystemConfigResponseDto
+     * @type {SystemConfigOAuthDto}
+     * @memberof SystemConfigDto
      */
-    'ffmpeg': SystemFFmpegConfigResponseDto;
+    'oauth': SystemConfigOAuthDto;
 }
 /**
  * 
  * @export
- * @interface SystemConfigUpdateDto
+ * @interface SystemConfigFFmpegDto
  */
-export interface SystemConfigUpdateDto {
-    /**
-     * 
-     * @type {SystemConfigUpdateFFmpegDto}
-     * @memberof SystemConfigUpdateDto
-     */
-    'ffmpeg'?: SystemConfigUpdateFFmpegDto;
-    /**
-     * 
-     * @type {SystemConfigUpdateOAuthDto}
-     * @memberof SystemConfigUpdateDto
-     */
-    'oauth'?: SystemConfigUpdateOAuthDto;
-}
-/**
- * 
- * @export
- * @interface SystemConfigUpdateFFmpegDto
- */
-export interface SystemConfigUpdateFFmpegDto {
+export interface SystemConfigFFmpegDto {
     /**
      * 
      * @type {string}
-     * @memberof SystemConfigUpdateFFmpegDto
-     */
-    'crf'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigUpdateFFmpegDto
-     */
-    'preset'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigUpdateFFmpegDto
-     */
-    'targetVideoCodec'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigUpdateFFmpegDto
-     */
-    'targetAudioCodec'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigUpdateFFmpegDto
-     */
-    'targetScaling'?: string;
-}
-/**
- * 
- * @export
- * @interface SystemConfigUpdateOAuthDto
- */
-export interface SystemConfigUpdateOAuthDto {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SystemConfigUpdateOAuthDto
-     */
-    'enabled': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigUpdateOAuthDto
-     */
-    'issuerUrl': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigUpdateOAuthDto
-     */
-    'clientId'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigUpdateOAuthDto
-     */
-    'clientSecret': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigUpdateOAuthDto
-     */
-    'scope'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigUpdateOAuthDto
-     */
-    'buttonText': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SystemConfigUpdateOAuthDto
-     */
-    'autoRegister'?: boolean;
-}
-/**
- * 
- * @export
- * @interface SystemFFmpegConfigResponseDto
- */
-export interface SystemFFmpegConfigResponseDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemFFmpegConfigResponseDto
+     * @memberof SystemConfigFFmpegDto
      */
     'crf': string;
     /**
      * 
      * @type {string}
-     * @memberof SystemFFmpegConfigResponseDto
+     * @memberof SystemConfigFFmpegDto
      */
     'preset': string;
     /**
      * 
      * @type {string}
-     * @memberof SystemFFmpegConfigResponseDto
+     * @memberof SystemConfigFFmpegDto
      */
     'targetVideoCodec': string;
     /**
      * 
      * @type {string}
-     * @memberof SystemFFmpegConfigResponseDto
+     * @memberof SystemConfigFFmpegDto
      */
     'targetAudioCodec': string;
     /**
      * 
      * @type {string}
-     * @memberof SystemFFmpegConfigResponseDto
+     * @memberof SystemConfigFFmpegDto
      */
     'targetScaling': string;
 }
 /**
  * 
  * @export
- * @interface SystemOAuthConfigResponseDto
+ * @interface SystemConfigOAuthDto
  */
-export interface SystemOAuthConfigResponseDto {
+export interface SystemConfigOAuthDto {
     /**
      * 
      * @type {boolean}
-     * @memberof SystemOAuthConfigResponseDto
+     * @memberof SystemConfigOAuthDto
      */
     'enabled': boolean;
     /**
      * 
      * @type {string}
-     * @memberof SystemOAuthConfigResponseDto
+     * @memberof SystemConfigOAuthDto
      */
     'issuerUrl': string;
     /**
      * 
      * @type {string}
-     * @memberof SystemOAuthConfigResponseDto
+     * @memberof SystemConfigOAuthDto
      */
     'clientId': string;
     /**
      * 
      * @type {string}
-     * @memberof SystemOAuthConfigResponseDto
+     * @memberof SystemConfigOAuthDto
      */
     'clientSecret': string;
     /**
      * 
      * @type {string}
-     * @memberof SystemOAuthConfigResponseDto
+     * @memberof SystemConfigOAuthDto
      */
     'scope': string;
     /**
      * 
      * @type {string}
-     * @memberof SystemOAuthConfigResponseDto
+     * @memberof SystemConfigOAuthDto
      */
     'buttonText': string;
     /**
      * 
      * @type {boolean}
-     * @memberof SystemOAuthConfigResponseDto
+     * @memberof SystemConfigOAuthDto
      */
     'autoRegister': boolean;
 }
@@ -5375,13 +5270,13 @@ export const SystemConfigApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
-         * @param {SystemConfigUpdateDto} systemConfigUpdateDto 
+         * @param {SystemConfigDto} systemConfigDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateConfig: async (systemConfigUpdateDto: SystemConfigUpdateDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'systemConfigUpdateDto' is not null or undefined
-            assertParamExists('updateConfig', 'systemConfigUpdateDto', systemConfigUpdateDto)
+        updateConfig: async (systemConfigDto: SystemConfigDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'systemConfigDto' is not null or undefined
+            assertParamExists('updateConfig', 'systemConfigDto', systemConfigDto)
             const localVarPath = `/system-config`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5405,7 +5300,7 @@ export const SystemConfigApiAxiosParamCreator = function (configuration?: Config
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(systemConfigUpdateDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(systemConfigDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -5427,18 +5322,18 @@ export const SystemConfigApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigResponseDto>> {
+        async getConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getConfig(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
-         * @param {SystemConfigUpdateDto} systemConfigUpdateDto 
+         * @param {SystemConfigDto} systemConfigDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateConfig(systemConfigUpdateDto: SystemConfigUpdateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateConfig(systemConfigUpdateDto, options);
+        async updateConfig(systemConfigDto: SystemConfigDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateConfig(systemConfigDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -5456,17 +5351,17 @@ export const SystemConfigApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getConfig(options?: any): AxiosPromise<SystemConfigResponseDto> {
+        getConfig(options?: any): AxiosPromise<SystemConfigDto> {
             return localVarFp.getConfig(options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {SystemConfigUpdateDto} systemConfigUpdateDto 
+         * @param {SystemConfigDto} systemConfigDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateConfig(systemConfigUpdateDto: SystemConfigUpdateDto, options?: any): AxiosPromise<SystemConfigResponseDto> {
-            return localVarFp.updateConfig(systemConfigUpdateDto, options).then((request) => request(axios, basePath));
+        updateConfig(systemConfigDto: SystemConfigDto, options?: any): AxiosPromise<SystemConfigDto> {
+            return localVarFp.updateConfig(systemConfigDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -5490,13 +5385,13 @@ export class SystemConfigApi extends BaseAPI {
 
     /**
      * 
-     * @param {SystemConfigUpdateDto} systemConfigUpdateDto 
+     * @param {SystemConfigDto} systemConfigDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SystemConfigApi
      */
-    public updateConfig(systemConfigUpdateDto: SystemConfigUpdateDto, options?: AxiosRequestConfig) {
-        return SystemConfigApiFp(this.configuration).updateConfig(systemConfigUpdateDto, options).then((request) => request(this.axios, this.basePath));
+    public updateConfig(systemConfigDto: SystemConfigDto, options?: AxiosRequestConfig) {
+        return SystemConfigApiFp(this.configuration).updateConfig(systemConfigDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

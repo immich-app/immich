@@ -294,18 +294,12 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
-        case 'SystemConfigResponseDto':
-          return SystemConfigResponseDto.fromJson(value);
-        case 'SystemConfigUpdateDto':
-          return SystemConfigUpdateDto.fromJson(value);
-        case 'SystemConfigUpdateFFmpegDto':
-          return SystemConfigUpdateFFmpegDto.fromJson(value);
-        case 'SystemConfigUpdateOAuthDto':
-          return SystemConfigUpdateOAuthDto.fromJson(value);
-        case 'SystemFFmpegConfigResponseDto':
-          return SystemFFmpegConfigResponseDto.fromJson(value);
-        case 'SystemOAuthConfigResponseDto':
-          return SystemOAuthConfigResponseDto.fromJson(value);
+        case 'SystemConfigDto':
+          return SystemConfigDto.fromJson(value);
+        case 'SystemConfigFFmpegDto':
+          return SystemConfigFFmpegDto.fromJson(value);
+        case 'SystemConfigOAuthDto':
+          return SystemConfigOAuthDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':

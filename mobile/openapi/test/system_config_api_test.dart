@@ -17,12 +17,12 @@ void main() {
   // final instance = SystemConfigApi();
 
   group('tests for SystemConfigApi', () {
-    //Future<SystemConfigResponseDto> getConfig() async
+    //Future<SystemConfigDto> getConfig() async
     test('test getConfig', () async {
       // TODO
     });
 
-    //Future<SystemConfigResponseDto> updateConfig(SystemConfigUpdateDto systemConfigUpdateDto) async
+    //Future<SystemConfigDto> updateConfig(SystemConfigDto systemConfigDto) async
     test('test updateConfig', () async {
       // TODO
     });

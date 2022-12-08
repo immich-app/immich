@@ -42,7 +42,7 @@ class SystemConfigApi {
     );
   }
 
-  Future<SystemConfigResponseDto?> getConfig() async {
+  Future<SystemConfigDto?> getConfig() async {
     final response = await getConfigWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -51,7 +51,7 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigResponseDto',) as SystemConfigResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto',) as SystemConfigDto;
     
     }
     return null;
@@ -60,13 +60,13 @@ class SystemConfigApi {
   /// Performs an HTTP 'PUT /system-config' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [SystemConfigUpdateDto] systemConfigUpdateDto (required):
-  Future<Response> updateConfigWithHttpInfo(SystemConfigUpdateDto systemConfigUpdateDto,) async {
+  /// * [SystemConfigDto] systemConfigDto (required):
+  Future<Response> updateConfigWithHttpInfo(SystemConfigDto systemConfigDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/system-config';
 
     // ignore: prefer_final_locals
-    Object? postBody = systemConfigUpdateDto;
+    Object? postBody = systemConfigDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -88,9 +88,9 @@ class SystemConfigApi {
 
   /// Parameters:
   ///
-  /// * [SystemConfigUpdateDto] systemConfigUpdateDto (required):
-  Future<SystemConfigResponseDto?> updateConfig(SystemConfigUpdateDto systemConfigUpdateDto,) async {
-    final response = await updateConfigWithHttpInfo(systemConfigUpdateDto,);
+  /// * [SystemConfigDto] systemConfigDto (required):
+  Future<SystemConfigDto?> updateConfig(SystemConfigDto systemConfigDto,) async {
+    final response = await updateConfigWithHttpInfo(systemConfigDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -98,7 +98,7 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigResponseDto',) as SystemConfigResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto',) as SystemConfigDto;
     
     }
     return null;
