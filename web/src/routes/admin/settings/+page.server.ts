@@ -1,4 +1,5 @@
 import { redirect } from '@sveltejs/kit';
+import { serverApi } from '@api';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent }) => {
@@ -9,4 +10,8 @@ export const load: PageServerLoad = async ({ parent }) => {
 	} else if (!user.isAdmin) {
 		throw redirect(302, '/photos');
 	}
+
+	const [{ data: systemConfig }] = await Promise.all([serverApi.systemConfigApi.getConfig()]);
+
+	return { user, systemConfig };
 };

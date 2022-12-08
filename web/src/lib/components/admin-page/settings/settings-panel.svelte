@@ -13,7 +13,6 @@
 	const refreshConfig = async () => {
 		const { data } = await api.systemConfigApi.getConfig();
 
-		console.log(data);
 		// items = Object.entries(ffmpegConfig).map(([key, value]) => ({
 		// 	key,
 		// 	value,

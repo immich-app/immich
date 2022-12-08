@@ -1,5 +1,7 @@
-<script>
-	import SettingsPanel from '$lib/components/admin-page/settings/settings-panel.svelte';
+<script lang="ts">
+	import type { PageData } from './$types';
+
+	export let data: PageData;
 </script>
 
-<SettingsPanel />
+{JSON.stringify(data.systemConfig)}
