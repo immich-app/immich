@@ -6,10 +6,12 @@ import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { AppModule } from './app.module';
-import { serverVersion } from './constants/server_version.constant';
+import { SERVER_VERSION } from './constants/server_version.constant';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 import { json } from 'body-parser';
 import { patchOpenAPI } from './utils/patch-open-api.util';
+
+const logger = new Logger('ImmichServer');
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -27,7 +29,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
-    .setVersion(`${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`)
+    .setVersion(SERVER_VERSION)
     .addBearerAuth({
       type: 'http',
       scheme: 'Bearer',
@@ -57,18 +59,10 @@ async function bootstrap() {
       // Generate API Documentation only in development mode
       const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
       writeFileSync(outputPath, JSON.stringify(patchOpenAPI(apiDocument), null, 2), { encoding: 'utf8' });
-      Logger.log(
-        `Running Immich Server in DEVELOPMENT environment - version ${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`,
-        'ImmichServer',
-      );
     }
 
-    if (process.env.NODE_ENV == 'production') {
-      Logger.log(
-        `Running Immich Server in PRODUCTION environment - version ${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`,
-        'ImmichServer',
-      );
-    }
+    const envName = (process.env.NODE_ENV || 'development').toUpperCase();
+    logger.log(`Running Immich Server in ${envName} environment - version ${SERVER_VERSION}`);
   });
 }
 bootstrap();
