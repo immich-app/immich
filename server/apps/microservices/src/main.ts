@@ -13,7 +13,7 @@ async function bootstrap() {
 
   await app.listen(3002, () => {
     const envName = (process.env.NODE_ENV || 'development').toUpperCase();
-    logger.log(`Running Immich Server in ${envName} environment - version ${SERVER_VERSION}`);
+    logger.log(`Running Immich Microservices in ${envName} environment - version ${SERVER_VERSION}`);
   });
 }
 bootstrap();
