@@ -210,8 +210,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     // Register device info
     try {
       DeviceInfoResponseDto? deviceInfo =
-          await _apiService.deviceInfoApi.createDeviceInfo(
-        CreateDeviceInfoDto(
+          await _apiService.deviceInfoApi.upsertDeviceInfo(
+        UpsertDeviceInfoDto(
           deviceId: state.deviceId,
           deviceType: state.deviceType,
         ),
