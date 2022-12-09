@@ -4,10 +4,8 @@ import { UserModule } from './api-v1/user/user.module';
 import { AssetModule } from './api-v1/asset/asset.module';
 import { AuthModule } from './api-v1/auth/auth.module';
 import { ImmichJwtModule } from './modules/immich-jwt/immich-jwt.module';
-import { DeviceInfoModule } from './api-v1/device-info/device-info.module';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
-import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
 import { AlbumModule } from './api-v1/album/album.module';
@@ -20,13 +18,16 @@ import { SystemConfigModule } from './api-v1/system-config/system-config.module'
 import { OAuthModule } from './api-v1/oauth/oauth.module';
 import { TagModule } from './api-v1/tag/tag.module';
 import { CommonModule } from '@app/common';
+import { APIv1Module } from './api-v1/api-v1.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
 
+    APIv1Module,
     CommonModule,
     DatabaseModule,
+
     UserModule,
 
     AssetModule,
@@ -35,8 +36,6 @@ import { CommonModule } from '@app/common';
     OAuthModule,
 
     ImmichJwtModule,
-
-    DeviceInfoModule,
 
     BullModule.forRootAsync({
       useFactory: async () => ({
@@ -50,8 +49,6 @@ import { CommonModule } from '@app/common';
         },
       }),
     }),
-
-    ServerInfoModule,
 
     BackgroundTaskModule,
 

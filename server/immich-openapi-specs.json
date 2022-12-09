@@ -1,6 +1,196 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/device-info": {
+      "post": {
+        "operationId": "createDeviceInfo",
+        "description": "@deprecated",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Device Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateDeviceInfo",
+        "description": "@deprecated",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Device Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "upsertDeviceInfo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Device Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/server-info": {
+      "get": {
+        "operationId": "getServerDiskInfo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/ping": {
+      "get": {
+        "operationId": "pingServer",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerPingResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/version": {
+      "get": {
+        "operationId": "getServerVersion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerVersionReponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/stats": {
+      "get": {
+        "operationId": "getServerUsageInfo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStatsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/user": {
       "get": {
         "operationId": "getAllUsers",
@@ -1780,198 +1970,6 @@
         ]
       }
     },
-    "/device-info": {
-      "post": {
-        "operationId": "createDeviceInfo",
-        "summary": "",
-        "description": "@deprecated",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Device Info"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "patch": {
-        "operationId": "updateDeviceInfo",
-        "summary": "",
-        "description": "@deprecated",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Device Info"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "put": {
-        "operationId": "upsertDeviceInfo",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Device Info"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/server-info": {
-      "get": {
-        "operationId": "getServerInfo",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/ping": {
-      "get": {
-        "operationId": "pingServer",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerPingResponse"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/version": {
-      "get": {
-        "operationId": "getServerVersion",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerVersionReponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/stats": {
-      "get": {
-        "operationId": "getStats",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerStatsResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
     "/jobs": {
       "get": {
         "operationId": "getAllJobsStatus",
@@ -2161,6 +2159,209 @@
       }
     },
     "schemas": {
+      "DeviceTypeEnum": {
+        "type": "string",
+        "enum": [
+          "IOS",
+          "ANDROID",
+          "WEB"
+        ]
+      },
+      "UpsertDeviceInfoDto": {
+        "type": "object",
+        "properties": {
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceTypeEnum"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "isAutoBackup": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "deviceType",
+          "deviceId"
+        ]
+      },
+      "DeviceInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceTypeEnum"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "isAutoBackup": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "deviceType",
+          "userId",
+          "deviceId",
+          "createdAt",
+          "isAutoBackup"
+        ]
+      },
+      "ServerInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "diskSizeRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "diskUseRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "diskAvailableRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "diskUsagePercentage": {
+            "type": "number",
+            "format": "float"
+          },
+          "diskSize": {
+            "type": "string"
+          },
+          "diskUse": {
+            "type": "string"
+          },
+          "diskAvailable": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "diskSizeRaw",
+          "diskUseRaw",
+          "diskAvailableRaw",
+          "diskUsagePercentage",
+          "diskSize",
+          "diskUse",
+          "diskAvailable"
+        ]
+      },
+      "ServerPingResponse": {
+        "type": "object",
+        "properties": {
+          "res": {
+            "type": "string",
+            "readOnly": true,
+            "example": "pong"
+          }
+        },
+        "required": [
+          "res"
+        ]
+      },
+      "ServerVersionReponseDto": {
+        "type": "object",
+        "properties": {
+          "major": {
+            "type": "integer"
+          },
+          "minor": {
+            "type": "integer"
+          },
+          "patch": {
+            "type": "integer"
+          },
+          "build": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "major",
+          "minor",
+          "patch",
+          "build"
+        ]
+      },
+      "UsageByUserDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "videos": {
+            "type": "integer"
+          },
+          "photos": {
+            "type": "integer"
+          },
+          "usageRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "usage": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "videos",
+          "photos",
+          "usageRaw",
+          "usage"
+        ]
+      },
+      "ServerStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "photos": {
+            "type": "integer"
+          },
+          "videos": {
+            "type": "integer"
+          },
+          "objects": {
+            "type": "integer"
+          },
+          "usageRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "usage": {
+            "type": "string"
+          },
+          "usageByUser": {
+            "title": "Array of usage for each user",
+            "example": [
+              {
+                "photos": 1,
+                "videos": 1,
+                "diskUsageRaw": 1
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageByUserDto"
+            }
+          }
+        },
+        "required": [
+          "photos",
+          "videos",
+          "objects",
+          "usageRaw",
+          "usage",
+          "usageByUser"
+        ]
+      },
       "UserResponseDto": {
         "type": "object",
         "properties": {
@@ -3255,209 +3456,6 @@
         },
         "required": [
           "url"
-        ]
-      },
-      "DeviceTypeEnum": {
-        "type": "string",
-        "enum": [
-          "IOS",
-          "ANDROID",
-          "WEB"
-        ]
-      },
-      "UpsertDeviceInfoDto": {
-        "type": "object",
-        "properties": {
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "deviceType",
-          "deviceId"
-        ]
-      },
-      "DeviceInfoResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "deviceType",
-          "userId",
-          "deviceId",
-          "createdAt",
-          "isAutoBackup"
-        ]
-      },
-      "ServerInfoResponseDto": {
-        "type": "object",
-        "properties": {
-          "diskSizeRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "diskUseRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "diskAvailableRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "diskUsagePercentage": {
-            "type": "number",
-            "format": "float"
-          },
-          "diskSize": {
-            "type": "string"
-          },
-          "diskUse": {
-            "type": "string"
-          },
-          "diskAvailable": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "diskSizeRaw",
-          "diskUseRaw",
-          "diskAvailableRaw",
-          "diskUsagePercentage",
-          "diskSize",
-          "diskUse",
-          "diskAvailable"
-        ]
-      },
-      "ServerPingResponse": {
-        "type": "object",
-        "properties": {
-          "res": {
-            "type": "string",
-            "readOnly": true,
-            "example": "pong"
-          }
-        },
-        "required": [
-          "res"
-        ]
-      },
-      "ServerVersionReponseDto": {
-        "type": "object",
-        "properties": {
-          "major": {
-            "type": "integer"
-          },
-          "minor": {
-            "type": "integer"
-          },
-          "patch": {
-            "type": "integer"
-          },
-          "build": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "major",
-          "minor",
-          "patch",
-          "build"
-        ]
-      },
-      "UsageByUserDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string"
-          },
-          "videos": {
-            "type": "integer"
-          },
-          "photos": {
-            "type": "integer"
-          },
-          "usageRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "usage": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "userId",
-          "videos",
-          "photos",
-          "usageRaw",
-          "usage"
-        ]
-      },
-      "ServerStatsResponseDto": {
-        "type": "object",
-        "properties": {
-          "photos": {
-            "type": "integer"
-          },
-          "videos": {
-            "type": "integer"
-          },
-          "objects": {
-            "type": "integer"
-          },
-          "usageRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "usage": {
-            "type": "string"
-          },
-          "usageByUser": {
-            "title": "Array of usage for each user",
-            "example": [
-              {
-                "photos": 1,
-                "videos": 1,
-                "diskUsageRaw": 1
-              }
-            ],
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageByUserDto"
-            }
-          }
-        },
-        "required": [
-          "photos",
-          "videos",
-          "objects",
-          "usageRaw",
-          "usage",
-          "usageByUser"
         ]
       },
       "JobCounts": {

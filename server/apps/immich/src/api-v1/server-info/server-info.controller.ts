@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { ServerInfoService } from './server-info.service';
+import { ServerInfoService } from '@app/common';
 import { serverVersion } from '../../constants/server_version.constant';
 import { ApiTags } from '@nestjs/swagger';
 import { ServerPingResponse } from './response-dto/server-ping-response.dto';
@@ -11,26 +11,26 @@ import { Authenticated } from '../../decorators/authenticated.decorator';
 @ApiTags('Server Info')
 @Controller('server-info')
 export class ServerInfoController {
-  constructor(private readonly serverInfoService: ServerInfoService) {}
+  constructor(private readonly service: ServerInfoService) {}
 
   @Get()
-  async getServerInfo(): Promise<ServerInfoResponseDto> {
-    return await this.serverInfoService.getServerInfo();
+  public async getServerDiskInfo(): Promise<ServerInfoResponseDto> {
+    return this.service.getServerDiskInfo();
   }
 
   @Get('/ping')
-  async pingServer(): Promise<ServerPingResponse> {
+  public async pingServer(): Promise<ServerPingResponse> {
     return new ServerPingResponse('pong');
   }
 
   @Get('/version')
-  async getServerVersion(): Promise<ServerVersionReponseDto> {
+  public async getServerVersion(): Promise<ServerVersionReponseDto> {
     return serverVersion;
   }
 
   @Authenticated({ admin: true })
   @Get('/stats')
-  async getStats(): Promise<ServerStatsResponseDto> {
-    return await this.serverInfoService.getStats();
+  public async getServerUsageInfo(): Promise<ServerStatsResponseDto> {
+    return this.service.getServerUsageInfo();
   }
 }
