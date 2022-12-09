@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	export let title: string;
 	export let subtitle = '';
@@ -6,10 +7,6 @@
 	let isOpen = false;
 	const toggle = () => (isOpen = !isOpen);
 </script>
-
-<!-- <button on:click={toggle} aria-expanded={isOpen}>
-	{title}
-</button> -->
 
 <div class="border-b-[1px] border-gray-200 dark:border-gray-700 py-4">
 	<div class="flex justify-between place-items-center">
@@ -43,7 +40,7 @@
 	</div>
 
 	{#if isOpen}
-		<ul transition:slide={{ duration: 300 }} class="my-2 ml-4">
+		<ul transition:slide={{ duration: 250, easing: cubicInOut }} class="mb-2 ml-4">
 			<slot />
 		</ul>
 	{/if}

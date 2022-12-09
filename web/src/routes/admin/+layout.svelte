@@ -18,8 +18,6 @@
 				return 'Settings';
 			case AppRoute.ADMIN_JOBS:
 				return 'Jobs';
-			case AppRoute.ADMIN_SETTINGS:
-				return 'Settings';
 			case AppRoute.ADMIN_STATS:
 				return 'Server Stats';
 			default:
@@ -66,8 +64,8 @@
 			</div>
 		</section>
 
-		<section class="overflow-y-auto">
-			<div id="setting-title" class="pt-10 fixed w-full z-50">
+		<section class="overflow-y-auto ">
+			<div id="setting-title" class="pt-10 fixed w-full z-50 bg-immich-bg dark:bg-immich-dark-bg">
 				<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
 					{getPageTitle($page.route.id)}
 				</h1>

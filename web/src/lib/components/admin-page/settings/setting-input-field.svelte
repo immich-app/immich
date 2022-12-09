@@ -11,6 +11,7 @@
 	export let value: string;
 	export let label: string;
 	export let required = false;
+	export let disabled = false;
 
 	const handleInput = (e: Event) => {
 		value = (e.target as HTMLInputElement).value;
@@ -32,5 +33,6 @@
 		{required}
 		{value}
 		on:input={handleInput}
+		{disabled}
 	/>
 </div>
