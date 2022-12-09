@@ -41,7 +41,7 @@
 </script>
 
 <div>
-	<form autocomplete="off">
+	<form autocomplete="off" on:submit|preventDefault>
 		<SettingInputField
 			inputType={SettingInputFieldType.NUMBER}
 			label="CRF"

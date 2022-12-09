@@ -2,7 +2,6 @@
 	export let title: string;
 	export let subtitle = '';
 	export let checked = false;
-	export let color = '#2196F3';
 	export let disabled = false;
 </script>
 
@@ -15,33 +14,25 @@
 		<p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
 	</div>
 
-	<label class="switch" aria-disabled={disabled}>
+	<label class="relative inline-block w-[36px] h-[10px]" {disabled}>
 		<input
-			class="disabled::cursor-not-allowed"
+			class="opacity-0 w-0 h-0 disabled::cursor-not-allowed"
 			type="checkbox"
 			bind:checked
 			{disabled}
-			aria-disabled={disabled}
 		/>
-		<span class="slider" />
+
+		{#if disabled}
+			<span class="slider-disable" />
+		{:else}
+			<span class="slider" />
+		{/if}
 	</label>
 </div>
 
 <style>
-	.switch {
-		position: relative;
-		display: inline-block;
-		width: 36px;
-		height: 10px;
-	}
-
-	.switch input {
-		opacity: 0;
-		width: 0;
-		height: 0;
-	}
-
-	.slider {
+	.slider,
+	.slider-disable {
 		position: absolute;
 		cursor: pointer;
 		top: 0;
@@ -54,11 +45,12 @@
 		border-radius: 34px;
 	}
 
-	.slider:disabled {
+	input:disabled {
 		cursor: not-allowed;
 	}
 
-	.slider:before {
+	.slider:before,
+	.slider-disable:before {
 		position: absolute;
 		content: '';
 		height: 20px;
@@ -72,17 +64,18 @@
 		border-radius: 50%;
 	}
 
-	input:checked + .slider {
-		background-color: #2196f3;
+	input:checked + .slider-disable {
+		background-color: gray;
 	}
 
 	input:checked + .slider {
-		box-shadow: 0 0 1px #2196f3;
+		background-color: #adcbfa;
 	}
 
 	input:checked + .slider:before {
 		-webkit-transform: translateX(18px);
 		-ms-transform: translateX(18px);
 		transform: translateX(18px);
+		background-color: #4250af;
 	}
 </style>

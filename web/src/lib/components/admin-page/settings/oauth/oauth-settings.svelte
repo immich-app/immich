@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SystemConfigOAuthDto } from '@api';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-	import SettingSlider from '../setting-slider.svelte';
+	import SettingSwitch from '../setting-switch.svelte';
 
 	export let oauthConfig: SystemConfigOAuthDto;
 </script>
@@ -9,7 +9,7 @@
 <div class="mt-2">
 	<form autocomplete="off">
 		<div class="mt-4">
-			<SettingSlider title="Enable" bind:checked={oauthConfig.enabled} />
+			<SettingSwitch title="Enable" bind:checked={oauthConfig.enabled} />
 		</div>
 
 		<hr class="m-4" />
@@ -55,7 +55,7 @@
 		/>
 
 		<div class="mt-4">
-			<SettingSlider
+			<SettingSwitch
 				title="AUTO REGISTER"
 				bind:checked={oauthConfig.autoRegister}
 				disabled={!oauthConfig.enabled}
