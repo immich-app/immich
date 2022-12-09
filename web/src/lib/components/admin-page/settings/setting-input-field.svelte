@@ -18,8 +18,12 @@
 </script>
 
 <div class="m-4 flex flex-col gap-2">
-	{value}
-	<label class="immich-form-label" for={label}>{label.toUpperCase()}</label>
+	<div class="flex justify-items-center gap-1">
+		<label class="immich-form-label" for={label}>{label.toUpperCase()}</label>
+		{#if required}
+			<span class="text-red-400">*</span>
+		{/if}
+	</div>
 	<input
 		class="immich-form-input"
 		id={label}
