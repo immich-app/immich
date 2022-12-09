@@ -2103,6 +2103,32 @@
           }
         ]
       }
+    },
+    "/system-config/defaults": {
+      "get": {
+        "operationId": "getDefaults",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {

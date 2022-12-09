@@ -16,6 +16,11 @@ export class SystemConfigController {
     return this.systemConfigService.getConfig();
   }
 
+  @Get('defaults')
+  public getDefaults(): SystemConfigDto {
+    return this.systemConfigService.getDefaults();
+  }
+
   @Put()
   public updateConfig(@Body(ValidationPipe) dto: SystemConfigDto): Promise<SystemConfigDto> {
     return this.systemConfigService.updateConfig(dto);

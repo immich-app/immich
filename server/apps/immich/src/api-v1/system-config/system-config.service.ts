@@ -11,6 +11,11 @@ export class SystemConfigService {
     return mapConfig(config);
   }
 
+  public getDefaults(): SystemConfigDto {
+    const config = this.immichConfigService.getDefaults();
+    return mapConfig(config);
+  }
+
   public async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
     await this.immichConfigService.updateConfig(dto);
     return this.getConfig();

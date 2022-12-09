@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as _ from 'lodash';
 import { DeepPartial, In, Repository } from 'typeorm';
 
-const defaults: SystemConfig = {
+const defaults: SystemConfig = Object.freeze({
   ffmpeg: {
     crf: '23',
     preset: 'ultrafast',
@@ -21,7 +21,7 @@ const defaults: SystemConfig = {
     buttonText: 'Login with OAuth',
     autoRegister: true,
   },
-};
+});
 
 @Injectable()
 export class ImmichConfigService {
@@ -29,6 +29,10 @@ export class ImmichConfigService {
     @InjectRepository(SystemConfigEntity)
     private systemConfigRepository: Repository<SystemConfigEntity>,
   ) {}
+
+  public getDefaults(): SystemConfig {
+    return defaults;
+  }
 
   public async getConfig() {
     const overrides = await this.systemConfigRepository.find();
@@ -51,7 +55,7 @@ export class ImmichConfigService {
       const defaultValue = _.get(defaults, key);
       const isMissing = !_.has(config, key);
 
-      if (isMissing || item.value === null || item.value === defaultValue) {
+      if (isMissing || item.value === null || item.value === '' || item.value === defaultValue) {
         deletes.push(item);
         continue;
       }

@@ -111,6 +111,7 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
+*SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 *TagApi* | [**create**](doc//TagApi.md#create) | **POST** /tag | 
 *TagApi* | [**delete**](doc//TagApi.md#delete) | **DELETE** /tag/{id} | 

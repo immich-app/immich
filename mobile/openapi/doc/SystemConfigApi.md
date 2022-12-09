@@ -10,6 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getConfig**](SystemConfigApi.md#getconfig) | **GET** /system-config | 
+[**getDefaults**](SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
 [**updateConfig**](SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 
 
@@ -35,6 +36,49 @@ try {
     print(result);
 } catch (e) {
     print('Exception when calling SystemConfigApi->getConfig: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**SystemConfigDto**](SystemConfigDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getDefaults**
+> SystemConfigDto getDefaults()
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = SystemConfigApi();
+
+try {
+    final result = api_instance.getDefaults();
+    print(result);
+} catch (e) {
+    print('Exception when calling SystemConfigApi->getDefaults: $e\n');
 }
 ```
 
