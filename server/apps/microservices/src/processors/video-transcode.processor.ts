@@ -42,16 +42,16 @@ export class VideoTranscodeProcessor {
   }
 
   async runFFMPEGPipeLine(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
-    const config = await this.immichConfigService.getSystemConfigMap();
+    const config = await this.immichConfigService.getConfig();
 
     return new Promise((resolve, reject) => {
       ffmpeg(asset.originalPath)
         .outputOptions([
-          `-crf ${config.ffmpeg_crf}`,
-          `-preset ${config.ffmpeg_preset}`,
-          `-vcodec ${config.ffmpeg_target_video_codec}`,
-          `-acodec ${config.ffmpeg_target_audio_codec}`,
-          `-vf scale=${config.ffmpeg_target_scaling}`,
+          `-crf ${config.ffmpeg.crf}`,
+          `-preset ${config.ffmpeg.preset}`,
+          `-vcodec ${config.ffmpeg.targetVideoCodec}`,
+          `-acodec ${config.ffmpeg.targetAudioCodec}`,
+          `-vf scale=${config.ffmpeg.targetScaling}`,
         ])
         .output(savedEncodedPath)
         .on('start', () => {

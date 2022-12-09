@@ -1,5 +1,5 @@
+import { ImmichConfigService } from '@app/immich-config';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ClientMetadata, generators, Issuer, UserinfoResponse } from 'openid-client';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
@@ -16,43 +16,26 @@ type OAuthProfile = UserinfoResponse & {
 export class OAuthService {
   private readonly logger = new Logger(OAuthService.name);
 
-  private readonly enabled: boolean;
-  private readonly autoRegister: boolean;
-  private readonly buttonText: string;
-  private readonly issuerUrl: string;
-  private readonly clientMetadata: ClientMetadata;
-  private readonly scope: string;
-
   constructor(
     private immichJwtService: ImmichJwtService,
-    configService: ConfigService,
+    private immichConfigService: ImmichConfigService,
     @Inject(USER_REPOSITORY) private userRepository: IUserRepository,
-  ) {
-    this.enabled = configService.get('OAUTH_ENABLED', false);
-    this.autoRegister = configService.get('OAUTH_AUTO_REGISTER', true);
-    this.issuerUrl = configService.get<string>('OAUTH_ISSUER_URL', '');
-    this.scope = configService.get<string>('OAUTH_SCOPE', '');
-    this.buttonText = configService.get<string>('OAUTH_BUTTON_TEXT', '');
-
-    this.clientMetadata = {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      client_id: configService.get('OAUTH_CLIENT_ID')!,
-      client_secret: configService.get('OAUTH_CLIENT_SECRET'),
-      response_types: ['code'],
-    };
-  }
+  ) {}
 
   public async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    if (!this.enabled) {
+    const config = await this.immichConfigService.getConfig();
+    const { enabled, scope, buttonText } = config.oauth;
+
+    if (!enabled) {
       return { enabled: false };
     }
 
     const url = (await this.getClient()).authorizationUrl({
       redirect_uri: dto.redirectUri,
-      scope: this.scope,
+      scope,
       state: generators.state(),
     });
-    return { enabled: true, buttonText: this.buttonText, url };
+    return { enabled: true, buttonText, url };
   }
 
   public async callback(dto: OAuthCallbackDto): Promise<LoginResponseDto> {
@@ -75,9 +58,11 @@ export class OAuthService {
 
     // register new user
     if (!user) {
-      if (!this.autoRegister) {
+      const config = await this.immichConfigService.getConfig();
+      const { autoRegister } = config.oauth;
+      if (!autoRegister) {
         this.logger.warn(
-          `Unable to register ${profile.email}. To enable auto registering, set OAUTH_AUTO_REGISTER=true.`,
+          `Unable to register ${profile.email}. To enable set OAuth Auto Register to true in admin settings.`,
         );
         throw new BadRequestException(`User does not exist and auto registering is disabled.`);
       }
@@ -95,20 +80,31 @@ export class OAuthService {
   }
 
   public async getLogoutEndpoint(): Promise<string | null> {
-    if (!this.enabled) {
+    const config = await this.immichConfigService.getConfig();
+    const { enabled } = config.oauth;
+
+    if (!enabled) {
       return null;
     }
     return (await this.getClient()).issuer.metadata.end_session_endpoint || null;
   }
 
   private async getClient() {
-    if (!this.enabled) {
+    const config = await this.immichConfigService.getConfig();
+    const { enabled, clientId, clientSecret, issuerUrl } = config.oauth;
+
+    if (!enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
     }
 
-    const issuer = await Issuer.discover(this.issuerUrl);
+    const metadata: ClientMetadata = {
+      client_id: clientId,
+      client_secret: clientSecret,
+      response_types: ['code'],
+    };
+
+    const issuer = await Issuer.discover(issuerUrl);
     const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
-    const metadata = { ...this.clientMetadata };
     if (algorithms[0] === 'HS256') {
       metadata.id_token_signed_response_alg = algorithms[0];
     }

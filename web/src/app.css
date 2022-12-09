@@ -59,7 +59,7 @@ input:focus-visible {
 
 @layer utilities {
 	.immich-form-input {
-		@apply bg-slate-100 p-2 rounded-md dark:text-immich-dark-bg focus:border-immich-primary text-sm dark:bg-gray-600 dark:text-immich-dark-fg;
+		@apply bg-slate-100 p-2 rounded-md focus:border-immich-primary text-sm dark:bg-gray-600 dark:text-immich-dark-fg disabled:bg-gray-500 dark:disabled:bg-gray-900 disabled:cursor-not-allowed;
 	}
 
 	.immich-form-label {

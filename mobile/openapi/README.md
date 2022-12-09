@@ -112,6 +112,7 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
+*SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 *TagApi* | [**create**](doc//TagApi.md#create) | **POST** /tag | 
 *TagApi* | [**delete**](doc//TagApi.md#delete) | **DELETE** /tag/{id} | 
@@ -182,9 +183,9 @@ Class | Method | HTTP request | Description
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
- - [SystemConfigKey](doc//SystemConfigKey.md)
- - [SystemConfigResponseDto](doc//SystemConfigResponseDto.md)
- - [SystemConfigResponseItem](doc//SystemConfigResponseItem.md)
+ - [SystemConfigDto](doc//SystemConfigDto.md)
+ - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
+ - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagTypeEnum](doc//TagTypeEnum.md)
  - [ThumbnailFormat](doc//ThumbnailFormat.md)

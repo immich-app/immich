@@ -22,8 +22,8 @@
       "@app/database/*": ["libs/database/src/*"],
       "@app/job": ["libs/job/src"],
       "@app/job/*": ["libs/job/src/*"],
-      "@app/system-config": ["libs/immich-config/src"],
-      "@app/system-config/*": ["libs/immich-config/src/*"]
+      "@app/immich-config": ["libs/immich-config/src"],
+      "@app/immich-config/*": ["libs/immich-config/src/*"]
     }
   },
   "exclude": ["dist", "node_modules", "upload"]

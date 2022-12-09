@@ -16,12 +16,6 @@ const jwtSecretValidator: Joi.CustomValidator<string> = (value) => {
   return value;
 };
 
-const WHEN_OAUTH_ENABLED = Joi.when('OAUTH_ENABLED', {
-  is: true,
-  then: Joi.string().required(),
-  otherwise: Joi.string().optional(),
-});
-
 export const immichAppConfig: ConfigModuleOptions = {
   envFilePath: '.env',
   isGlobal: true,
@@ -34,12 +28,5 @@ export const immichAppConfig: ConfigModuleOptions = {
     DISABLE_REVERSE_GEOCODING: Joi.boolean().optional().valid(true, false).default(false),
     REVERSE_GEOCODING_PRECISION: Joi.number().optional().valid(0, 1, 2, 3).default(3),
     LOG_LEVEL: Joi.string().optional().valid('simple', 'verbose').default('simple'),
-    OAUTH_ENABLED: Joi.bool().valid(true, false).default(false),
-    OAUTH_BUTTON_TEXT: Joi.string().optional().default('Login with OAuth'),
-    OAUTH_AUTO_REGISTER: Joi.bool().valid(true, false).default(true),
-    OAUTH_ISSUER_URL: WHEN_OAUTH_ENABLED,
-    OAUTH_SCOPE: Joi.string().optional().default('openid email profile'),
-    OAUTH_CLIENT_ID: WHEN_OAUTH_ENABLED,
-    OAUTH_CLIENT_SECRET: WHEN_OAUTH_ENABLED,
   }),
 };

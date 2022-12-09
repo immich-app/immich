@@ -3,22 +3,12 @@
 	// TODO: why `any` here? There should be a expected type for this
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	export let logo: any;
-	export let actionType: AdminSideBarSelection | AppSideBarSelection;
 	export let isSelected: boolean;
 
 	import { createEventDispatcher } from 'svelte';
-	import type {
-		AdminSideBarSelection,
-		AppSideBarSelection
-	} from '../../../models/admin-sidebar-selection';
 
 	const dispatch = createEventDispatcher();
-
-	const onButtonClicked = () => {
-		dispatch('selected', {
-			actionType
-		});
-	};
+	const onButtonClicked = () => dispatch('selected');
 </script>
 
 <div

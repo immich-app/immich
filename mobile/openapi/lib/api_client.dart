@@ -292,12 +292,12 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
-        case 'SystemConfigKey':
-          return SystemConfigKeyTypeTransformer().decode(value);
-        case 'SystemConfigResponseDto':
-          return SystemConfigResponseDto.fromJson(value);
-        case 'SystemConfigResponseItem':
-          return SystemConfigResponseItem.fromJson(value);
+        case 'SystemConfigDto':
+          return SystemConfigDto.fromJson(value);
+        case 'SystemConfigFFmpegDto':
+          return SystemConfigFFmpegDto.fromJson(value);
+        case 'SystemConfigOAuthDto':
+          return SystemConfigOAuthDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':

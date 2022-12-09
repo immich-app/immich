@@ -1,0 +1,232 @@
+<script lang="ts">
+	import { api, UserResponseDto } from '@api';
+
+	import { onMount } from 'svelte';
+	import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
+	import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+	import DeleteRestore from 'svelte-material-icons/DeleteRestore.svelte';
+	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
+	import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
+	import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialoge.svelte';
+	import RestoreDialogue from '$lib/components/admin-page/restore-dialoge.svelte';
+	import { page } from '$app/stores';
+
+	let allUsers: UserResponseDto[] = [];
+	let shouldShowEditUserForm = false;
+	let shouldShowCreateUserForm = false;
+	let shouldShowInfoPanel = false;
+	let shouldShowDeleteConfirmDialog = false;
+	let shouldShowRestoreDialog = false;
+	let selectedUser: UserResponseDto;
+
+	onMount(() => {
+		allUsers = $page.data.allUsers;
+		console.log('getting all users', allUsers);
+	});
+
+	const isDeleted = (user: UserResponseDto): boolean => {
+		return user.deletedAt != null;
+	};
+
+	const locale = navigator.language;
+	const deleteDateFormat: Intl.DateTimeFormatOptions = {
+		month: 'long',
+		day: 'numeric',
+		year: 'numeric'
+	};
+
+	const getDeleteDate = (user: UserResponseDto): string => {
+		let deletedAt = new Date(user.deletedAt ? user.deletedAt : Date.now());
+		deletedAt.setDate(deletedAt.getDate() + 7);
+		return deletedAt.toLocaleString(locale, deleteDateFormat);
+	};
+
+	const onUserCreated = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		allUsers = getAllUsersRes.data;
+		shouldShowCreateUserForm = false;
+	};
+
+	const editUserHandler = async (user: UserResponseDto) => {
+		selectedUser = user;
+		shouldShowEditUserForm = true;
+	};
+
+	const onEditUserSuccess = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		allUsers = getAllUsersRes.data;
+		shouldShowEditUserForm = false;
+	};
+
+	const onEditPasswordSuccess = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		allUsers = getAllUsersRes.data;
+		shouldShowEditUserForm = false;
+		shouldShowInfoPanel = true;
+	};
+
+	const deleteUserHandler = async (user: UserResponseDto) => {
+		selectedUser = user;
+		shouldShowDeleteConfirmDialog = true;
+	};
+
+	const onUserDeleteSuccess = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		allUsers = getAllUsersRes.data;
+		shouldShowDeleteConfirmDialog = false;
+	};
+
+	const onUserDeleteFail = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		allUsers = getAllUsersRes.data;
+		shouldShowDeleteConfirmDialog = false;
+	};
+
+	const restoreUserHandler = async (user: UserResponseDto) => {
+		selectedUser = user;
+		shouldShowRestoreDialog = true;
+	};
+
+	const onUserRestoreSuccess = async () => {
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		allUsers = getAllUsersRes.data;
+		shouldShowRestoreDialog = false;
+	};
+
+	const onUserRestoreFail = async () => {
+		// show fail dialog
+		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		allUsers = getAllUsersRes.data;
+		shouldShowRestoreDialog = false;
+	};
+</script>
+
+<svelte:head>
+	<title>User Management - Immich</title>
+</svelte:head>
+
+<section>
+	{#if shouldShowCreateUserForm}
+		<FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>
+			<CreateUserForm on:user-created={onUserCreated} />
+		</FullScreenModal>
+	{/if}
+
+	{#if shouldShowEditUserForm}
+		<FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
+			<EditUserForm
+				user={selectedUser}
+				on:edit-success={onEditUserSuccess}
+				on:reset-password-success={onEditPasswordSuccess}
+			/>
+		</FullScreenModal>
+	{/if}
+
+	{#if shouldShowDeleteConfirmDialog}
+		<FullScreenModal on:clickOutside={() => (shouldShowDeleteConfirmDialog = false)}>
+			<DeleteConfirmDialog
+				user={selectedUser}
+				on:user-delete-success={onUserDeleteSuccess}
+				on:user-delete-fail={onUserDeleteFail}
+			/>
+		</FullScreenModal>
+	{/if}
+
+	{#if shouldShowRestoreDialog}
+		<FullScreenModal on:clickOutside={() => (shouldShowRestoreDialog = false)}>
+			<RestoreDialogue
+				user={selectedUser}
+				on:user-restore-success={onUserRestoreSuccess}
+				on:user-restore-fail={onUserRestoreFail}
+			/>
+		</FullScreenModal>
+	{/if}
+
+	{#if shouldShowInfoPanel}
+		<FullScreenModal on:clickOutside={() => (shouldShowInfoPanel = false)}>
+			<div class="border bg-white shadow-sm w-[500px] rounded-3xl p-8 text-sm">
+				<h1 class="font-medium text-immich-primary text-lg mb-4">Password reset success</h1>
+
+				<p>
+					The user's password has been reset to the default <code
+						class="font-bold bg-gray-200 px-2 py-1 rounded-md text-immich-primary">password</code
+					>
+					<br />
+					Please inform the user, and they will need to change the password at the next log-on.
+				</p>
+
+				<div class="flex w-full">
+					<button
+						on:click={() => (shouldShowInfoPanel = false)}
+						class="mt-6 bg-immich-primary hover:bg-immich-primary/75 px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
+						>Done
+					</button>
+				</div>
+			</div>
+		</FullScreenModal>
+	{/if}
+
+	<table class="text-left w-full my-5">
+		<thead
+			class="border rounded-md mb-4 bg-gray-50 flex text-immich-primary w-full h-12 dark:bg-immich-dark-gray dark:text-immich-dark-primary dark:border-immich-dark-gray"
+		>
+			<tr class="flex w-full place-items-center">
+				<th class="text-center w-1/4 font-medium text-sm">Email</th>
+				<th class="text-center w-1/4 font-medium text-sm">First name</th>
+				<th class="text-center w-1/4 font-medium text-sm">Last name</th>
+				<th class="text-center w-1/4 font-medium text-sm">Action</th>
+			</tr>
+		</thead>
+		<tbody
+			class="overflow-y-auto rounded-md w-full max-h-[320px] block border dark:border-immich-dark-gray"
+		>
+			{#if allUsers}
+				{#each allUsers as user, i}
+					<tr
+						class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-fg ${
+							isDeleted(user)
+								? 'bg-red-300 dark:bg-red-900'
+								: i % 2 == 0
+								? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+								: 'bg-immich-bg dark:bg-immich-dark-gray/50'
+						}`}
+					>
+						<td class="text-sm px-4 w-1/4 text-ellipsis">{user.email}</td>
+						<td class="text-sm px-4 w-1/4 text-ellipsis">{user.firstName}</td>
+						<td class="text-sm px-4 w-1/4 text-ellipsis">{user.lastName}</td>
+						<td class="text-sm px-4 w-1/4 text-ellipsis">
+							{#if !isDeleted(user)}
+								<button
+									on:click={() => editUserHandler(user)}
+									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+								>
+									<PencilOutline size="16" />
+								</button>
+								<button
+									on:click={() => deleteUserHandler(user)}
+									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+								>
+									<TrashCanOutline size="16" />
+								</button>
+							{/if}
+							{#if isDeleted(user)}
+								<button
+									on:click={() => restoreUserHandler(user)}
+									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+									title={`scheduled removal on ${getDeleteDate(user)}`}
+								>
+									<DeleteRestore size="16" />
+								</button>
+							{/if}
+						</td>
+					</tr>
+				{/each}
+			{/if}
+		</tbody>
+	</table>
+
+	<button on:click={() => (shouldShowCreateUserForm = true)} class="immich-btn-primary"
+		>Create user</button
+	>
+</section>

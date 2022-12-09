@@ -42,7 +42,7 @@ class SystemConfigApi {
     );
   }
 
-  Future<SystemConfigResponseDto?> getConfig() async {
+  Future<SystemConfigDto?> getConfig() async {
     final response = await getConfigWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -51,7 +51,48 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigResponseDto',) as SystemConfigResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto',) as SystemConfigDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /system-config/defaults' operation and returns the [Response].
+  Future<Response> getDefaultsWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/system-config/defaults';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<SystemConfigDto?> getDefaults() async {
+    final response = await getDefaultsWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto',) as SystemConfigDto;
     
     }
     return null;
@@ -60,13 +101,13 @@ class SystemConfigApi {
   /// Performs an HTTP 'PUT /system-config' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<Response> updateConfigWithHttpInfo(Object body,) async {
+  /// * [SystemConfigDto] systemConfigDto (required):
+  Future<Response> updateConfigWithHttpInfo(SystemConfigDto systemConfigDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/system-config';
 
     // ignore: prefer_final_locals
-    Object? postBody = body;
+    Object? postBody = systemConfigDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -88,9 +129,9 @@ class SystemConfigApi {
 
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<SystemConfigResponseDto?> updateConfig(Object body,) async {
-    final response = await updateConfigWithHttpInfo(body,);
+  /// * [SystemConfigDto] systemConfigDto (required):
+  Future<SystemConfigDto?> updateConfig(SystemConfigDto systemConfigDto,) async {
+    final response = await updateConfigWithHttpInfo(systemConfigDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -98,7 +139,7 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigResponseDto',) as SystemConfigResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto',) as SystemConfigDto;
     
     }
     return null;
