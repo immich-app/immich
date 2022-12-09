@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { api, UserResponseDto } from '@api';
 
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
 	import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
 	import DeleteRestore from 'svelte-material-icons/DeleteRestore.svelte';
