@@ -7,8 +7,8 @@
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	import _ from 'lodash';
-	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
+	import { fade } from 'svelte/transition';
 
 	let savedConfig: SystemConfigFFmpegDto;
 	let defaultConfig: SystemConfigFFmpegDto;
@@ -71,56 +71,56 @@
 </script>
 
 <div>
-	{#await getConfigs()}
-		<LoadingSpinner />
-	{:then}
-		<form autocomplete="off" on:submit|preventDefault>
-			<SettingInputField
-				inputType={SettingInputFieldType.NUMBER}
-				label="CRF"
-				bind:value={ffmpegConfig.crf}
-				required={true}
-				isEdited={!(ffmpegConfig.crf == savedConfig.crf)}
-			/>
+	{#await getConfigs() then}
+		<div in:fade={{ duration: 500 }}>
+			<form autocomplete="off" on:submit|preventDefault>
+				<SettingInputField
+					inputType={SettingInputFieldType.NUMBER}
+					label="CRF"
+					bind:value={ffmpegConfig.crf}
+					required={true}
+					isEdited={!(ffmpegConfig.crf == savedConfig.crf)}
+				/>
 
-			<SettingInputField
-				inputType={SettingInputFieldType.TEXT}
-				label="PRESET"
-				bind:value={ffmpegConfig.preset}
-				required={true}
-				isEdited={!(ffmpegConfig.preset == savedConfig.preset)}
-			/>
+				<SettingInputField
+					inputType={SettingInputFieldType.TEXT}
+					label="PRESET"
+					bind:value={ffmpegConfig.preset}
+					required={true}
+					isEdited={!(ffmpegConfig.preset == savedConfig.preset)}
+				/>
 
-			<SettingInputField
-				inputType={SettingInputFieldType.TEXT}
-				label="AUDIO CODEC"
-				bind:value={ffmpegConfig.targetAudioCodec}
-				required={true}
-				isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
-			/>
+				<SettingInputField
+					inputType={SettingInputFieldType.TEXT}
+					label="AUDIO CODEC"
+					bind:value={ffmpegConfig.targetAudioCodec}
+					required={true}
+					isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
+				/>
 
-			<SettingInputField
-				inputType={SettingInputFieldType.TEXT}
-				label="VIDEO CODEC"
-				bind:value={ffmpegConfig.targetVideoCodec}
-				required={true}
-				isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
-			/>
+				<SettingInputField
+					inputType={SettingInputFieldType.TEXT}
+					label="VIDEO CODEC"
+					bind:value={ffmpegConfig.targetVideoCodec}
+					required={true}
+					isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
+				/>
 
-			<SettingInputField
-				inputType={SettingInputFieldType.TEXT}
-				label="SCALING"
-				bind:value={ffmpegConfig.targetScaling}
-				required={true}
-				isEdited={!(ffmpegConfig.targetScaling == savedConfig.targetScaling)}
-			/>
+				<SettingInputField
+					inputType={SettingInputFieldType.TEXT}
+					label="SCALING"
+					bind:value={ffmpegConfig.targetScaling}
+					required={true}
+					isEdited={!(ffmpegConfig.targetScaling == savedConfig.targetScaling)}
+				/>
 
-			<SettingButtonsRow
-				on:reset={reset}
-				on:save={saveSetting}
-				on:reset-to-default={resetToDefault}
-				showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
-			/>
-		</form>
+				<SettingButtonsRow
+					on:reset={reset}
+					on:save={saveSetting}
+					on:reset-to-default={resetToDefault}
+					showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
+				/>
+			</form>
+		</div>
 	{/await}
 </div>

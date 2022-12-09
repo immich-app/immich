@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	export let title: string;
 	export let subtitle = '';
@@ -40,7 +39,7 @@
 	</div>
 
 	{#if isOpen}
-		<ul transition:slide={{ duration: 250, easing: cubicInOut }} class="mb-2 ml-4">
+		<ul transition:slide={{ duration: 250 }} class="mb-2 ml-4">
 			<slot />
 		</ul>
 	{/if}
