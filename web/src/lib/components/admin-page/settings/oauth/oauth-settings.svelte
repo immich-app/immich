@@ -55,7 +55,11 @@
 		/>
 
 		<div class="mt-4">
-			<SettingSlider title="AUTO REGISTER" bind:checked={oauthConfig.autoRegister} />
+			<SettingSlider
+				title="AUTO REGISTER"
+				bind:checked={oauthConfig.autoRegister}
+				disabled={!oauthConfig.enabled}
+			/>
 		</div>
 	</form>
 </div>

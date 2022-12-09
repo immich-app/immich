@@ -3,6 +3,7 @@
 	export let subtitle = '';
 	export let checked = false;
 	export let color = '#2196F3';
+	export let disabled = false;
 </script>
 
 <div class="flex justify-between mx-4 place-items-center">
@@ -14,8 +15,14 @@
 		<p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
 	</div>
 
-	<label class="switch">
-		<input type="checkbox" bind:checked />
+	<label class="switch" aria-disabled={disabled}>
+		<input
+			class="disabled::cursor-not-allowed"
+			type="checkbox"
+			bind:checked
+			{disabled}
+			aria-disabled={disabled}
+		/>
 		<span class="slider" />
 	</label>
 </div>
@@ -45,6 +52,10 @@
 		-webkit-transition: 0.4s;
 		transition: 0.4s;
 		border-radius: 34px;
+	}
+
+	.slider:disabled {
+		cursor: not-allowed;
 	}
 
 	.slider:before {
