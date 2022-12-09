@@ -10,7 +10,6 @@ import { CommunicationModule } from '../communication/communication.module';
 import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
 import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
-import { TagModule } from '../tag/tag.module';
 import { AlbumModule } from '../album/album.module';
 import { UserModule } from '../user/user.module';
 
@@ -26,8 +25,6 @@ const ASSET_REPOSITORY_PROVIDER = {
     BackgroundTaskModule,
     DownloadModule,
     UserModule,
-    AlbumModule,
-    TagModule,
     forwardRef(() => AlbumModule),
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,

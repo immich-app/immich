@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
-import { DeviceInfoService, ServerInfoService } from './services';
+import { DeviceInfoService, ServerInfoService, TagService } from './services';
 
-const providers = [DeviceInfoService, ServerInfoService];
+const providers = [DeviceInfoService, ServerInfoService, TagService];
 
 @Global()
 @Module({

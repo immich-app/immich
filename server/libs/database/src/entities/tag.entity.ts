@@ -1,3 +1,4 @@
+import { TagType } from '@app/common';
 import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { UserEntity } from './user.entity';
@@ -18,28 +19,11 @@ export class TagEntity {
   userId!: string;
 
   @Column({ type: 'uuid', comment: 'The new renamed tagId', nullable: true })
-  renameTagId!: string;
+  renameTagId?: string;
 
   @ManyToMany(() => AssetEntity, (asset) => asset.tags)
   assets!: AssetEntity[];
 
   @ManyToOne(() => UserEntity, (user) => user.tags)
   user!: UserEntity;
-}
-
-export enum TagType {
-  /**
-   * Tag that is detected by the ML model for object detection will use this type
-   */
-  OBJECT = 'OBJECT',
-
-  /**
-   * Face that is detected by the ML model for facial detection (TBD/NOT YET IMPLEMENTED) will use this type
-   */
-  FACE = 'FACE',
-
-  /**
-   * Tag that is created by the user will use this type
-   */
-  CUSTOM = 'CUSTOM',
 }
