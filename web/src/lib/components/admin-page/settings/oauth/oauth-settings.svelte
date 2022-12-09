@@ -1,4 +1,5 @@
 <script lang="ts">
+	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import {
 		notificationController,
 		NotificationType
@@ -7,13 +8,30 @@
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	import SettingSwitch from '../setting-switch.svelte';
+	import _ from 'lodash';
 
 	export let oauthConfig: SystemConfigOAuthDto;
 
-	async function resetToDefault() {
-		const { data: defaultConfig } = await api.systemConfigApi.getConfig();
+	let savedConfig: SystemConfigOAuthDto;
+	let defaultConfig: SystemConfigOAuthDto;
 
-		oauthConfig = defaultConfig.oauth;
+	async function getConfigs() {
+		[savedConfig, defaultConfig] = await Promise.all([
+			api.systemConfigApi.getConfig().then((res) => res.data.oauth),
+			api.systemConfigApi.getDefaults().then((res) => res.data.oauth)
+		]);
+	}
+
+	async function reset() {
+		const { data: resetConfig } = await api.systemConfigApi.getConfig();
+
+		oauthConfig = resetConfig.oauth;
+		savedConfig = resetConfig.oauth;
+
+		notificationController.show({
+			message: 'Reset OAuth settings to the recent saved settings',
+			type: NotificationType.Info
+		});
 	}
 
 	async function saveSetting() {
@@ -26,6 +44,7 @@
 			});
 
 			oauthConfig = result.data.oauth;
+			savedConfig = result.data.oauth;
 
 			notificationController.show({
 				message: 'OAuth settings saved',
@@ -39,65 +58,90 @@
 			});
 		}
 	}
+
+	async function resetToDefault() {
+		const { data: defaultConfig } = await api.systemConfigApi.getDefaults();
+
+		oauthConfig = defaultConfig.oauth;
+
+		notificationController.show({
+			message: 'Reset OAuth settings to default',
+			type: NotificationType.Info
+		});
+	}
 </script>
 
 <div class="mt-2">
-	<form autocomplete="off" on:submit|preventDefault>
-		<div class="mt-4">
-			<SettingSwitch title="Enable" bind:checked={oauthConfig.enabled} />
-		</div>
+	{#await getConfigs()}
+		<LoadingSpinner />
+	{:then}
+		<form autocomplete="off" on:submit|preventDefault>
+			<div class="mt-4">
+				<SettingSwitch title="Enable" bind:checked={oauthConfig.enabled} />
+			</div>
 
-		<hr class="m-4" />
+			<hr class="m-4" />
 
-		<SettingInputField
-			inputType={SettingInputFieldType.TEXT}
-			label="ISSUER URL"
-			bind:value={oauthConfig.issuerUrl}
-			required={true}
-			disabled={!oauthConfig.enabled}
-		/>
-
-		<SettingInputField
-			inputType={SettingInputFieldType.TEXT}
-			label="CLIENT ID"
-			bind:value={oauthConfig.clientId}
-			required={true}
-			disabled={!oauthConfig.enabled}
-		/>
-
-		<SettingInputField
-			inputType={SettingInputFieldType.TEXT}
-			label="CLIENT SECRET"
-			bind:value={oauthConfig.clientSecret}
-			required={true}
-			disabled={!oauthConfig.enabled}
-		/>
-
-		<SettingInputField
-			inputType={SettingInputFieldType.TEXT}
-			label="SCOPE"
-			bind:value={oauthConfig.scope}
-			required={true}
-			disabled={!oauthConfig.enabled}
-		/>
-
-		<SettingInputField
-			inputType={SettingInputFieldType.TEXT}
-			label="BUTTON TEXT"
-			bind:value={oauthConfig.buttonText}
-			required={false}
-			disabled={!oauthConfig.enabled}
-		/>
-
-		<div class="mt-4">
-			<SettingSwitch
-				title="AUTO REGISTER"
-				subtitle="Automatically register new users after singning in with OAuth"
-				bind:checked={oauthConfig.autoRegister}
+			<SettingInputField
+				inputType={SettingInputFieldType.TEXT}
+				label="ISSUER URL"
+				bind:value={oauthConfig.issuerUrl}
+				required={true}
 				disabled={!oauthConfig.enabled}
+				isEdited={!(oauthConfig.issuerUrl == savedConfig.issuerUrl)}
 			/>
-		</div>
 
-		<SettingButtonsRow on:reset={resetToDefault} on:save={saveSetting} />
-	</form>
+			<SettingInputField
+				inputType={SettingInputFieldType.TEXT}
+				label="CLIENT ID"
+				bind:value={oauthConfig.clientId}
+				required={true}
+				disabled={!oauthConfig.enabled}
+				isEdited={!(oauthConfig.clientId == savedConfig.clientId)}
+			/>
+
+			<SettingInputField
+				inputType={SettingInputFieldType.TEXT}
+				label="CLIENT SECRET"
+				bind:value={oauthConfig.clientSecret}
+				required={true}
+				disabled={!oauthConfig.enabled}
+				isEdited={!(oauthConfig.clientSecret == savedConfig.clientSecret)}
+			/>
+
+			<SettingInputField
+				inputType={SettingInputFieldType.TEXT}
+				label="SCOPE"
+				bind:value={oauthConfig.scope}
+				required={true}
+				disabled={!oauthConfig.enabled}
+				isEdited={!(oauthConfig.scope == savedConfig.scope)}
+			/>
+
+			<SettingInputField
+				inputType={SettingInputFieldType.TEXT}
+				label="BUTTON TEXT"
+				bind:value={oauthConfig.buttonText}
+				required={false}
+				disabled={!oauthConfig.enabled}
+				isEdited={!(oauthConfig.buttonText == savedConfig.buttonText)}
+			/>
+
+			<div class="mt-4">
+				<SettingSwitch
+					title="AUTO REGISTER"
+					subtitle="Automatically register new users after singning in with OAuth"
+					bind:checked={oauthConfig.autoRegister}
+					disabled={!oauthConfig.enabled}
+				/>
+			</div>
+
+			<SettingButtonsRow
+				on:reset={reset}
+				on:save={saveSetting}
+				on:reset-to-default={resetToDefault}
+				showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
+			/>
+		</form>
+	{/await}
 </div>

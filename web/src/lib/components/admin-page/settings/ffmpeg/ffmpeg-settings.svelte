@@ -6,19 +6,31 @@
 	import { api, SystemConfigFFmpegDto } from '@api';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
+	import _ from 'lodash';
+	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+	export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
 
-	export let ffmpegConfig: SystemConfigFFmpegDto;
+	let savedConfig: SystemConfigFFmpegDto;
+	let defaultConfig: SystemConfigFFmpegDto;
+
+	async function getConfigs() {
+		[savedConfig, defaultConfig] = await Promise.all([
+			api.systemConfigApi.getConfig().then((res) => res.data.ffmpeg),
+			api.systemConfigApi.getDefaults().then((res) => res.data.ffmpeg)
+		]);
+	}
 
 	async function saveSetting() {
 		try {
-			const { data: currentConfig } = await api.systemConfigApi.getConfig();
+			const { data: configs } = await api.systemConfigApi.getConfig();
 
 			const result = await api.systemConfigApi.updateConfig({
 				ffmpeg: ffmpegConfig,
-				oauth: currentConfig.oauth
+				oauth: configs.oauth
 			});
 
 			ffmpegConfig = result.data.ffmpeg;
+			savedConfig = result.data.ffmpeg;
 
 			notificationController.show({
 				message: 'FFmpeg settings saved',
@@ -33,50 +45,82 @@
 		}
 	}
 
-	async function resetToDefault() {
-		const { data: defaultConfig } = await api.systemConfigApi.getConfig();
+	async function reset() {
+		const { data: resetConfig } = await api.systemConfigApi.getConfig();
 
-		ffmpegConfig = defaultConfig.ffmpeg;
+		ffmpegConfig = resetConfig.ffmpeg;
+		savedConfig = resetConfig.ffmpeg;
+
+		notificationController.show({
+			message: 'Reset FFmpeg settings to the recent saved settings',
+			type: NotificationType.Info
+		});
+	}
+
+	async function resetToDefault() {
+		const { data: configs } = await api.systemConfigApi.getDefaults();
+
+		ffmpegConfig = configs.ffmpeg;
+		defaultConfig = configs.ffmpeg;
+
+		notificationController.show({
+			message: 'Reset FFmpeg settings to default',
+			type: NotificationType.Info
+		});
 	}
 </script>
 
 <div>
-	<form autocomplete="off" on:submit|preventDefault>
-		<SettingInputField
-			inputType={SettingInputFieldType.NUMBER}
-			label="CRF"
-			bind:value={ffmpegConfig.crf}
-			required={true}
-		/>
+	{#await getConfigs()}
+		<LoadingSpinner />
+	{:then}
+		<form autocomplete="off" on:submit|preventDefault>
+			<SettingInputField
+				inputType={SettingInputFieldType.NUMBER}
+				label="CRF"
+				bind:value={ffmpegConfig.crf}
+				required={true}
+				isEdited={!(ffmpegConfig.crf == savedConfig.crf)}
+			/>
 
-		<SettingInputField
-			inputType={SettingInputFieldType.TEXT}
-			label="PRESET"
-			bind:value={ffmpegConfig.preset}
-			required={true}
-		/>
+			<SettingInputField
+				inputType={SettingInputFieldType.TEXT}
+				label="PRESET"
+				bind:value={ffmpegConfig.preset}
+				required={true}
+				isEdited={!(ffmpegConfig.preset == savedConfig.preset)}
+			/>
 
-		<SettingInputField
-			inputType={SettingInputFieldType.TEXT}
-			label="AUDIO CODEC"
-			bind:value={ffmpegConfig.targetAudioCodec}
-			required={true}
-		/>
+			<SettingInputField
+				inputType={SettingInputFieldType.TEXT}
+				label="AUDIO CODEC"
+				bind:value={ffmpegConfig.targetAudioCodec}
+				required={true}
+				isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
+			/>
 
-		<SettingInputField
-			inputType={SettingInputFieldType.TEXT}
-			label="VIDEO CODEC"
-			bind:value={ffmpegConfig.targetVideoCodec}
-			required={true}
-		/>
+			<SettingInputField
+				inputType={SettingInputFieldType.TEXT}
+				label="VIDEO CODEC"
+				bind:value={ffmpegConfig.targetVideoCodec}
+				required={true}
+				isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
+			/>
 
-		<SettingInputField
-			inputType={SettingInputFieldType.TEXT}
-			label="SCALING"
-			bind:value={ffmpegConfig.targetScaling}
-			required={true}
-		/>
+			<SettingInputField
+				inputType={SettingInputFieldType.TEXT}
+				label="SCALING"
+				bind:value={ffmpegConfig.targetScaling}
+				required={true}
+				isEdited={!(ffmpegConfig.targetScaling == savedConfig.targetScaling)}
+			/>
 
-		<SettingButtonsRow on:reset={resetToDefault} on:save={saveSetting} />
-	</form>
+			<SettingButtonsRow
+				on:reset={reset}
+				on:save={saveSetting}
+				on:reset-to-default={resetToDefault}
+				showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
+			/>
+		</form>
+	{/await}
 </div>
