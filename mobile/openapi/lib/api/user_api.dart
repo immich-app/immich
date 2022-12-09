@@ -358,7 +358,10 @@ class UserApi {
   }
 
   /// Performs an HTTP 'GET /user/count' operation and returns the [Response].
-  Future<Response> getUserCountWithHttpInfo() async {
+  /// Parameters:
+  ///
+  /// * [bool] admin:
+  Future<Response> getUserCountWithHttpInfo({ bool? admin, }) async {
     // ignore: prefer_const_declarations
     final path = r'/user/count';
 
@@ -368,6 +371,10 @@ class UserApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (admin != null) {
+      queryParams.addAll(_queryParams('', 'admin', admin));
+    }
 
     const contentTypes = <String>[];
 
@@ -383,8 +390,11 @@ class UserApi {
     );
   }
 
-  Future<UserCountResponseDto?> getUserCount() async {
-    final response = await getUserCountWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [bool] admin:
+  Future<UserCountResponseDto?> getUserCount({ bool? admin, }) async {
+    final response = await getUserCountWithHttpInfo( admin: admin, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

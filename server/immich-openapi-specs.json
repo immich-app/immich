@@ -166,7 +166,17 @@
     "/user/count": {
       "get": {
         "operationId": "getUserCount",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "admin",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",

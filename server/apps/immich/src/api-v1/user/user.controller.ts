@@ -26,6 +26,7 @@ import { UserResponseDto } from './response-dto/user-response.dto';
 import { UserCountResponseDto } from './response-dto/user-count-response.dto';
 import { CreateProfileImageDto } from './dto/create-profile-image.dto';
 import { CreateProfileImageResponseDto } from './response-dto/create-profile-image-response.dto';
+import { UserCountDto } from './dto/user-count.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -64,8 +65,8 @@ export class UserController {
   }
 
   @Get('/count')
-  async getUserCount(): Promise<UserCountResponseDto> {
-    return await this.userService.getUserCount();
+  async getUserCount(@Query(new ValidationPipe({ transform: true })) dto: UserCountDto): Promise<UserCountResponseDto> {
+    return await this.userService.getUserCount(dto);
   }
 
   @Authenticated({ admin: true })

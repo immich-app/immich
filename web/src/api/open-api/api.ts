@@ -6108,10 +6108,11 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
+         * @param {boolean} [admin] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUserCount: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getUserCount: async (admin?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/user/count`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6123,6 +6124,10 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (admin !== undefined) {
+                localVarQueryParameter['admin'] = admin;
+            }
 
 
     
@@ -6292,11 +6297,12 @@ export const UserApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {boolean} [admin] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getUserCount(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserCountResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserCount(options);
+        async getUserCount(admin?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserCountResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserCount(admin, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6393,11 +6399,12 @@ export const UserApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
+         * @param {boolean} [admin] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUserCount(options?: any): AxiosPromise<UserCountResponseDto> {
-            return localVarFp.getUserCount(options).then((request) => request(axios, basePath));
+        getUserCount(admin?: boolean, options?: any): AxiosPromise<UserCountResponseDto> {
+            return localVarFp.getUserCount(admin, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6505,12 +6512,13 @@ export class UserApi extends BaseAPI {
 
     /**
      * 
+     * @param {boolean} [admin] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof UserApi
      */
-    public getUserCount(options?: AxiosRequestConfig) {
-        return UserApiFp(this.configuration).getUserCount(options).then((request) => request(this.axios, this.basePath));
+    public getUserCount(admin?: boolean, options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).getUserCount(admin, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -335,7 +335,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getUserCount**
-> UserCountResponseDto getUserCount()
+> UserCountResponseDto getUserCount(admin)
 
 
 
@@ -344,9 +344,10 @@ No authorization required
 import 'package:openapi/api.dart';
 
 final api_instance = UserApi();
+final admin = true; // bool | 
 
 try {
-    final result = api_instance.getUserCount();
+    final result = api_instance.getUserCount(admin);
     print(result);
 } catch (e) {
     print('Exception when calling UserApi->getUserCount: $e\n');
@@ -354,7 +355,10 @@ try {
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **admin** | **bool**|  | [optional] [default to false]
 
 ### Return type
 

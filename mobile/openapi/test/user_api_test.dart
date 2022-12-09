@@ -52,7 +52,7 @@ void main() {
       // TODO
     });
 
-    //Future<UserCountResponseDto> getUserCount() async
+    //Future<UserCountResponseDto> getUserCount({ bool admin }) async
     test('test getUserCount', () async {
       // TODO
     });

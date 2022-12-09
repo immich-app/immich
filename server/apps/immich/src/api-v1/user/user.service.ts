@@ -14,6 +14,7 @@ import { createReadStream } from 'fs';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserCountDto } from './dto/user-count.dto';
 import {
   CreateProfileImageResponseDto,
   mapCreateProfileImageResponse,
@@ -57,8 +58,12 @@ export class UserService {
     return mapUser(user);
   }
 
-  async getUserCount(): Promise<UserCountResponseDto> {
-    const users = await this.userRepository.getList();
+  async getUserCount(dto: UserCountDto): Promise<UserCountResponseDto> {
+    let users = await this.userRepository.getList();
+
+    if (dto.admin) {
+      users = users.filter((user) => user.isAdmin);
+    }
 
     return mapUserCountResponse(users.length);
   }
