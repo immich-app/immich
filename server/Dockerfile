@@ -32,6 +32,8 @@ COPY LICENSE /LICENSE
 COPY package.json package-lock.json ./
 COPY start-server.sh start-microservices.sh ./
 
+RUN npm link
+
 VOLUME /usr/src/app/upload
 
 EXPOSE 3001
