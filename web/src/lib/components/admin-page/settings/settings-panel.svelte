@@ -4,7 +4,7 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import { api, SystemConfigUpdateDto } from '@api';
+	import { api } from '@api';
 	import { onMount } from 'svelte';
 
 	let isSaving = false;
@@ -25,14 +25,14 @@
 	const handleSave = async () => {
 		try {
 			isSaving = true;
-			const update: SystemConfigUpdateDto = {};
+			const update: any = {};
 			for (const item of items) {
 				if (item.value !== item.originalValue) {
 					// update[item.key as keyof SystemConfigUpdateDto] = item.value;
 				}
 			}
 			if (Object.keys(update).length > 0) {
-				await api.systemConfigApi.updateConfig(update);
+				// await api.systemConfigApi.updateConfig(update);
 				refreshConfig();
 			}
 
