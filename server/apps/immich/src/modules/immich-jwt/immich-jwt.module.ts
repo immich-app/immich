@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ImmichJwtService } from './immich-jwt.service';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '../../config/jwt.config';
+import { ImmichJwtService } from './immich-jwt.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@app/database/entities/user.entity';
 
 @Module({
-  imports: [JwtModule.register(jwtConfig), TypeOrmModule.forFeature([UserEntity])],
+  imports: [JwtModule.register(jwtConfig)],
   providers: [ImmichJwtService, JwtStrategy],
-  exports: [ImmichJwtService],
+  exports: [JwtModule, ImmichJwtService],
 })
 export class ImmichJwtModule {}

@@ -1,16 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { UserService } from '@app/common';
+import { databaseConfig, DatabaseModule } from '@app/database';
 import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
-import { clearDb, getAuthUser, authCustom } from './test-utils';
-import { databaseConfig } from '@app/database/config/database.config';
+import { DataSource } from 'typeorm';
 import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
-import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
-import { UserService } from '../src/api-v1/user/user.service';
-import { UserModule } from '../src/api-v1/user/user.module';
-import { DataSource } from 'typeorm';
+import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
+import { authCustom, clearDb, getAuthUser } from './test-utils';
 
 function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   return request(app.getHttpServer()).post('/album').send(data);
@@ -52,7 +51,7 @@ describe('Album', () => {
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [AlbumModule, UserModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [AlbumModule, DatabaseModule, TypeOrmModule.forRoot(databaseConfig)],
       });
       authUser = getAuthUser(); // set default auth user
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
@@ -95,13 +94,13 @@ describe('Album', () => {
       beforeAll(async () => {
         // setup users
         const result = await Promise.all([
-          userService.createUser({
+          userService.create({
             email: 'one@test.com',
             password: '1234',
             firstName: 'one',
             lastName: 'test',
           }),
-          userService.createUser({
+          userService.create({
             email: 'two@test.com',
             password: '1234',
             firstName: 'two',

@@ -1,11 +1,10 @@
+import { IUserRepository } from '@app/common';
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { BadRequestException, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { OAuthService } from '../oauth/oauth.service';
-import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { LoginResponseDto } from './response-dto/login-response.dto';
@@ -20,6 +19,15 @@ const fixtures = {
 const CLIENT_IP = '127.0.0.1';
 
 jest.mock('bcrypt');
+jest.mock('@nestjs/common', () => {
+  return {
+    ...jest.requireActual('@nestjs/common'),
+    Logger: function MockLogger() {
+      (MockLogger as any).warn = jest.fn();
+      (MockLogger as any).error = jest.fn();
+    },
+  };
+});
 
 describe('AuthService', () => {
   let sut: AuthService;
@@ -44,7 +52,7 @@ describe('AuthService', () => {
       getList: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      delete: jest.fn(),
+      remove: jest.fn(),
       restore: jest.fn(),
     };
 
@@ -61,19 +69,7 @@ describe('AuthService', () => {
       getLogoutEndpoint: jest.fn(),
     } as unknown as jest.Mocked<OAuthService>;
 
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        AuthService,
-        { provide: ImmichJwtService, useValue: immichJwtServiceMock },
-        { provide: OAuthService, useValue: oauthServiceMock },
-        {
-          provide: USER_REPOSITORY,
-          useValue: userRepositoryMock,
-        },
-      ],
-    }).compile();
-
-    sut = moduleRef.get(AuthService);
+    sut = new AuthService(oauthServiceMock, immichJwtServiceMock, userRepositoryMock);
   });
 
   it('should be defined', () => {

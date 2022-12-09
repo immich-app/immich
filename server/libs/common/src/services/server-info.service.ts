@@ -1,8 +1,8 @@
 import { AssetType } from '@app/database/entities';
 import { Inject, Injectable } from '@nestjs/common';
 import diskusage from 'diskusage';
-import { APP_UPLOAD_LOCATION } from '../../constants';
-import { asHumanReadable } from '../../utils/human-readable.util';
+import { APP_UPLOAD_LOCATION } from '../constants';
+import { asHumanReadable } from '../utils/human-readable.util';
 
 export interface ServerDiskInfo {
   diskSize: string;

@@ -2,10 +2,10 @@ import { UserEntity } from '@app/database/entities/user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { generators, Issuer } from 'openid-client';
+import { IUserRepository } from '@app/common';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
 import { OAuthService } from '../oauth/oauth.service';
-import { IUserRepository } from '../user/user-repository';
 
 interface OAuthConfig {
   OAUTH_ENABLED: boolean;
@@ -67,7 +67,7 @@ describe('OAuthService', () => {
       getList: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      delete: jest.fn(),
+      remove: jest.fn(),
       restore: jest.fn(),
     };
 
@@ -152,7 +152,7 @@ describe('OAuthService', () => {
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(loginResponse);
 
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
-      expect(userRepositoryMock.update).toHaveBeenCalledWith(user.id, { oauthId: sub });
+      expect(userRepositoryMock.update).toHaveBeenCalledWith({ id: user.id, oauthId: sub });
     });
 
     it('should allow auto registering by default', async () => {

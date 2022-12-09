@@ -1,22 +1,21 @@
+import { IUserRepository, User } from '@app/common';
 import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserEntity } from '../../../../../libs/database/src/entities/user.entity';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
-import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
+import { OAuthService } from '../oauth/oauth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/admin-signup-response.dto';
 import { LoginResponseDto } from './response-dto/login-response.dto';
 import { LogoutResponseDto } from './response-dto/logout-response.dto';
-import { OAuthService } from '../oauth/oauth.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private oauthService: OAuthService,
     private immichJwtService: ImmichJwtService,
-    @Inject(USER_REPOSITORY) private userRepository: IUserRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {}
 
   public async login(loginCredential: LoginCredentialDto, clientIp: string): Promise<LoginResponseDto> {
@@ -71,7 +70,7 @@ export class AuthService {
     }
   }
 
-  private async validatePassword(inputPassword: string, user: UserEntity): Promise<boolean> {
+  private async validatePassword(inputPassword: string, user: User): Promise<boolean> {
     if (!user || !user.password) {
       return false;
     }

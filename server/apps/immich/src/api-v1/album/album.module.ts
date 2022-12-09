@@ -8,7 +8,6 @@ import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
 import { AlbumRepository, ALBUM_REPOSITORY } from './album-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { AssetModule } from '../asset/asset.module';
-import { UserModule } from '../user/user.module';
 
 const ALBUM_REPOSITORY_PROVIDER = {
   provide: ALBUM_REPOSITORY,
@@ -19,7 +18,6 @@ const ALBUM_REPOSITORY_PROVIDER = {
   imports: [
     TypeOrmModule.forFeature([AlbumEntity, AssetAlbumEntity, UserAlbumEntity]),
     DownloadModule,
-    UserModule,
     forwardRef(() => AssetModule),
   ],
   controllers: [AlbumController],

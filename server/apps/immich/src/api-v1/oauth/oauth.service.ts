@@ -1,9 +1,9 @@
+import { IUserRepository } from '@app/common';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientMetadata, generators, Issuer, UserinfoResponse } from 'openid-client';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
-import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
 import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto';
@@ -26,7 +26,7 @@ export class OAuthService {
   constructor(
     private immichJwtService: ImmichJwtService,
     configService: ConfigService,
-    @Inject(USER_REPOSITORY) private userRepository: IUserRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.enabled = configService.get('OAUTH_ENABLED', false);
     this.autoRegister = configService.get('OAUTH_AUTO_REGISTER', true);
@@ -69,7 +69,7 @@ export class OAuthService {
     if (!user) {
       const emailUser = await this.userRepository.getByEmail(profile.email);
       if (emailUser) {
-        user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
+        user = await this.userRepository.update({ id: emailUser.id, oauthId: profile.sub });
       }
     }
 

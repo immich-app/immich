@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database/entities/user.entity';
+import { User } from '@app/common';
 
 export class AdminSignupResponseDto {
   id!: string;
@@ -8,7 +8,7 @@ export class AdminSignupResponseDto {
   createdAt!: string;
 }
 
-export function mapAdminSignupResponse(entity: UserEntity): AdminSignupResponseDto {
+export function mapAdminSignupResponse(entity: User): AdminSignupResponseDto {
   return {
     id: entity.id,
     email: entity.email,

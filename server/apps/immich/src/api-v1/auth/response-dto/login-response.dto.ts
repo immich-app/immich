@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database/entities/user.entity';
+import { User } from '@app/common';
 import { ApiResponseProperty } from '@nestjs/swagger';
 
 export class LoginResponseDto {
@@ -27,7 +27,7 @@ export class LoginResponseDto {
   shouldChangePassword!: boolean;
 }
 
-export function mapLoginResponse(entity: UserEntity, accessToken: string): LoginResponseDto {
+export function mapLoginResponse(entity: User, accessToken: string): LoginResponseDto {
   return {
     accessToken: accessToken,
     userId: entity.id,

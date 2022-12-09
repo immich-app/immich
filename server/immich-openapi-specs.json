@@ -371,7 +371,7 @@
         ]
       },
       "post": {
-        "operationId": "createUser",
+        "operationId": "create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -385,40 +385,6 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "User"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "put": {
-        "operationId": "updateUser",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -518,7 +484,7 @@
     },
     "/user/{userId}": {
       "delete": {
-        "operationId": "deleteUser",
+        "operationId": "remove",
         "parameters": [
           {
             "name": "userId",
@@ -529,6 +495,49 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -638,14 +647,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2507,9 +2509,6 @@
       "UpdateUserDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
           "password": {
             "type": "string"
           },
@@ -2528,10 +2527,7 @@
           "profileImagePath": {
             "type": "string"
           }
-        },
-        "required": [
-          "id"
-        ]
+        }
       },
       "CreateProfileImageDto": {
         "type": "object",

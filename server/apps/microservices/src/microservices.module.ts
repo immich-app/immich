@@ -1,5 +1,5 @@
 import { immichAppConfig } from '@app/common/config';
-import { DatabaseModule } from '@app/database';
+import { databaseConfig, DatabaseModule } from '@app/database';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ExifEntity } from '@app/database/entities/exif.entity';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
@@ -22,6 +22,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
+    TypeOrmModule.forRoot(databaseConfig),
     DatabaseModule,
     ImmichConfigModule,
     TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),

@@ -8,13 +8,11 @@ import { jwtConfig } from '../../config/jwt.config';
 import { BullModule } from '@nestjs/bull';
 import { QueueNameEnum } from '@app/job';
 import { AssetModule } from '../asset/asset.module';
-import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     ImmichJwtModule,
     AssetModule,
-    UserModule,
     JwtModule.register(jwtConfig),
     BullModule.registerQueue(
       {

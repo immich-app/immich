@@ -1,95 +1,113 @@
+import { UserService } from '@app/common';
 import {
-  Controller,
-  Get,
-  Post,
-  Delete,
+  BadRequestException,
   Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
   Param,
-  ValidationPipe,
+  ParseBoolPipe,
+  Post,
   Put,
   Query,
-  UseInterceptors,
+  StreamableFile,
   UploadedFile,
-  Response,
-  ParseBoolPipe,
+  UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { Authenticated } from '../../decorators/authenticated.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { createReadStream } from 'fs';
+import { profileImageUploadOption } from '../../config/profile-image-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
+import { Authenticated } from '../../decorators/authenticated.decorator';
+import { CreateProfileImageDto } from './dto/create-profile-image.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { profileImageUploadOption } from '../../config/profile-image-upload.config';
-import { Response as Res } from 'express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { UserResponseDto } from './response-dto/user-response.dto';
-import { UserCountResponseDto } from './response-dto/user-count-response.dto';
-import { CreateProfileImageDto } from './dto/create-profile-image.dto';
-import { CreateProfileImageResponseDto } from './response-dto/create-profile-image-response.dto';
+import {
+  CreateProfileImageResponseDto,
+  mapCreateProfileImageResponse,
+} from './response-dto/create-profile-image-response.dto';
+import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
+import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly service: UserService) {}
 
   @Authenticated()
   @ApiBearerAuth()
   @Get()
-  async getAllUsers(
+  public async getAllUsers(
     @GetAuthUser() authUser: AuthUserDto,
     @Query('isAll', ParseBoolPipe) isAll: boolean,
   ): Promise<UserResponseDto[]> {
-    return await this.userService.getAllUsers(authUser, isAll);
+    const users = await this.service.getAllUsers(authUser.id, isAll);
+    return users.map(mapUser);
   }
 
   @Get('/info/:userId')
-  async getUserById(@Param('userId') userId: string): Promise<UserResponseDto> {
-    return await this.userService.getUserById(userId);
+  public async getUserById(@Param('userId') userId: string): Promise<UserResponseDto> {
+    const user = await this.service.getUserById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    return mapUser(user);
   }
 
   @Authenticated()
   @ApiBearerAuth()
   @Get('me')
-  async getMyUserInfo(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
-    return await this.userService.getUserInfo(authUser);
+  public async getMyUserInfo(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
+    return this.getUserById(authUser.id);
   }
 
   @Authenticated({ admin: true })
   @ApiBearerAuth()
   @Post()
-  async createUser(
-    @Body(new ValidationPipe({ transform: true })) createUserDto: CreateUserDto,
-  ): Promise<UserResponseDto> {
-    return await this.userService.createUser(createUserDto);
+  public async create(@Body(new ValidationPipe({ transform: true })) dto: CreateUserDto): Promise<UserResponseDto> {
+    const user = await this.service.create(dto);
+    return mapUser(user);
   }
 
   @Get('/count')
-  async getUserCount(): Promise<UserCountResponseDto> {
-    return await this.userService.getUserCount();
+  public async getUserCount(): Promise<UserCountResponseDto> {
+    const count = await this.service.getUserCount();
+    return mapUserCountResponse(count);
   }
 
   @Authenticated({ admin: true })
   @ApiBearerAuth()
   @Delete('/:userId')
-  async deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
-    return await this.userService.deleteUser(authUser, userId);
+  public async remove(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
+    const user = await this.service.remove(authUser.id, userId);
+    return mapUser(user);
   }
 
   @Authenticated({ admin: true })
   @ApiBearerAuth()
   @Post('/:userId/restore')
-  async restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
-    return await this.userService.restoreUser(authUser, userId);
+  public async restoreUser(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param('userId') userId: string,
+  ): Promise<UserResponseDto> {
+    const user = await this.service.restore(authUser.id, userId);
+    return mapUser(user);
   }
 
   @Authenticated()
   @ApiBearerAuth()
-  @Put()
-  async updateUser(
+  @Put(':userId')
+  public async updateUser(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) updateUserDto: UpdateUserDto,
+    @Param('userId') userId: string,
+    @Body(ValidationPipe) dto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    return await this.userService.updateUser(authUser, updateUserDto);
+    const user = await this.service.update(authUser.id, { ...dto, id: userId });
+    return mapUser(user);
   }
 
   @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
@@ -101,15 +119,33 @@ export class UserController {
     type: CreateProfileImageDto,
   })
   @Post('/profile-image')
-  async createProfileImage(
+  public async createProfileImage(
     @GetAuthUser() authUser: AuthUserDto,
     @UploadedFile() fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
-    return await this.userService.createProfileImage(authUser, fileInfo);
+    await this.service.update(authUser.id, {
+      id: authUser.id,
+      profileImagePath: fileInfo.path,
+    });
+    return mapCreateProfileImageResponse(authUser.id, fileInfo.path);
   }
 
   @Get('/profile-image/:userId')
-  async getProfileImage(@Param('userId') userId: string, @Response({ passthrough: true }) res: Res): Promise<any> {
-    return this.userService.getUserProfileImage(userId, res);
+  @Header('Content-Type', 'image/jpeg')
+  public async getProfileImage(@Param('userId') userId: string): Promise<StreamableFile> {
+    const user = await this.service.getUserById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (!user.profileImagePath) {
+      throw new BadRequestException('User does not have a profile image');
+    }
+
+    try {
+      return new StreamableFile(createReadStream(user.profileImagePath));
+    } catch (e) {
+      throw new BadRequestException('User does not have a profile image');
+    }
   }
 }

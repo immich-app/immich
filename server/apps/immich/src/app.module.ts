@@ -1,6 +1,5 @@
 import { immichAppConfig } from '@app/common/config';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { UserModule } from './api-v1/user/user.module';
 import { AssetModule } from './api-v1/asset/asset.module';
 import { AuthModule } from './api-v1/auth/auth.module';
 import { ImmichJwtModule } from './modules/immich-jwt/immich-jwt.module';
@@ -12,22 +11,22 @@ import { AlbumModule } from './api-v1/album/album.module';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
-import { DatabaseModule } from '@app/database';
+import { databaseConfig, DatabaseModule } from '@app/database';
 import { JobModule } from './api-v1/job/job.module';
 import { SystemConfigModule } from './api-v1/system-config/system-config.module';
 import { OAuthModule } from './api-v1/oauth/oauth.module';
 import { CommonModule } from '@app/common';
 import { APIv1Module } from './api-v1/api-v1.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
+    TypeOrmModule.forRoot(databaseConfig),
 
     APIv1Module,
     CommonModule,
     DatabaseModule,
-
-    UserModule,
 
     AssetModule,
 

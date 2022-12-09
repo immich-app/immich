@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database/entities/user.entity';
+import { User } from '@app/common';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
@@ -28,7 +28,7 @@ export class ImmichJwtService {
     return [accessTokenCookie, authTypeCookie];
   }
 
-  public async createLoginResponse(user: UserEntity): Promise<LoginResponseDto> {
+  public async createLoginResponse(user: User): Promise<LoginResponseDto> {
     const payload = new JwtPayloadDto(user.id, user.email);
     const accessToken = await this.generateToken(payload);
 

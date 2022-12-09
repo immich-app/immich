@@ -1,19 +1,13 @@
-import { UserEntity } from '@app/database/entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import bcrypt from 'bcrypt';
+import { UserService } from '@app/common';
 import { Command, CommandRunner, InquirerService, Question, QuestionSet } from 'nest-commander';
 import { randomBytes } from 'node:crypto';
-import { Repository } from 'typeorm';
 
 @Command({
   name: 'reset-admin-password',
   description: 'Reset the admin password',
 })
 export class ResetAdminPasswordCommand extends CommandRunner {
-  constructor(
-    private readonly inquirer: InquirerService,
-    @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
-  ) {
+  constructor(private readonly inquirer: InquirerService, private readonly userService: UserService) {
     super();
   }
 
@@ -21,20 +15,13 @@ export class ResetAdminPasswordCommand extends CommandRunner {
     let { password } = await this.inquirer.ask<{ password: string }>('prompt-password', undefined);
     password = password || randomBytes(24).toString('base64').replace(/\W/g, '');
 
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = await this.userRepository.findOne({ where: { isAdmin: true } });
-    if (!user) {
+    const admin = await this.userService.getAdmin();
+    if (!admin) {
       console.log('Unable to reset password: no admin user.');
       return;
     }
 
-    user.salt = salt;
-    user.password = hashedPassword;
-    user.shouldChangePassword = true;
-
-    await this.userRepository.save(user);
+    await this.userService.update(admin.id, { id: admin.id, password });
 
     console.log(`New password:\n${password}`);
   }

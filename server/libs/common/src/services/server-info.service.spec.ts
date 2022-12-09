@@ -1,14 +1,9 @@
 import { AssetType } from '@app/database/entities';
 import { IAssetRepository, ServerInfoService } from './server-info.service';
 
-jest.mock('diskusage', () => {
-  return {
-    check: jest.fn().mockImplementation(() => {
-      console.log('mocked');
-      return { total: 100, free: 80, available: 20 };
-    }),
-  };
-});
+jest.mock('diskusage', () => ({
+  check: jest.fn().mockImplementation(() => ({ total: 100, free: 80, available: 20 })),
+}));
 
 describe('ServerInfoService', () => {
   let sut: ServerInfoService;

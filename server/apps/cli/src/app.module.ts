@@ -1,11 +1,11 @@
-import { DatabaseModule } from '@app/database';
-import { UserEntity } from '@app/database/entities/user.entity';
+import { CommonModule } from '@app/common';
+import { databaseConfig, DatabaseModule } from '@app/database';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PromptPasswordQuestions, ResetAdminPasswordCommand } from './commands/reset-admin-password.command';
 
 @Module({
-  imports: [DatabaseModule, TypeOrmModule.forFeature([UserEntity])],
+  imports: [CommonModule, DatabaseModule, TypeOrmModule.forRoot(databaseConfig)],
   providers: [ResetAdminPasswordCommand, PromptPasswordQuestions],
 })
 export class AppModule {}

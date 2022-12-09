@@ -1,18 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { UserCreateDto, UserService } from '@app/common';
+import { databaseConfig, DatabaseModule } from '@app/database';
 import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
-import { clearDb, authCustom } from './test-utils';
-import { databaseConfig } from '@app/database/config/database.config';
-import { UserModule } from '../src/api-v1/user/user.module';
-import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
-import { UserService } from '../src/api-v1/user/user.service';
-import { CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
-import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
 import { DataSource } from 'typeorm';
+import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
+import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
+import { authCustom, clearDb } from './test-utils';
 
-function _createUser(userService: UserService, data: CreateUserDto) {
-  return userService.createUser(data);
+function _createUser(userService: UserService, data: UserCreateDto) {
+  return userService.create(data);
 }
 
 describe('User', () => {
@@ -27,7 +25,7 @@ describe('User', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [UserModule, ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [DatabaseModule, ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
       }).compile();
 
       app = moduleFixture.createNestApplication();
@@ -51,7 +49,7 @@ describe('User', () => {
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [UserModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [DatabaseModule, TypeOrmModule.forRoot(databaseConfig)],
       });
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 

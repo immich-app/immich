@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database/entities/user.entity';
+import { User } from '@app/common';
 
 export class UserResponseDto {
   id!: string;
@@ -12,7 +12,7 @@ export class UserResponseDto {
   deletedAt?: Date;
 }
 
-export function mapUser(entity: UserEntity): UserResponseDto {
+export function mapUser(entity: User): UserResponseDto {
   return {
     id: entity.id,
     email: entity.email,

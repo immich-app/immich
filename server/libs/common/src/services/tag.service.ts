@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { Tag } from '../../models';
+import { Tag } from '../models';
 
 export type TagCreateDto = Pick<Tag, 'userId' | 'name' | 'type'> & Partial<Tag>;
 export type TagUpdateDto = Pick<Tag, 'userId' | 'id'> & Partial<Tag>;
