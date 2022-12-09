@@ -19,7 +19,7 @@ To run a command, connect to the container and then execute it. For example:
 docker exec -it immich-server_1 sh
 
 /usr/src/app$ immich reset-admin-password
-? Please choose a new password (optional) immich-is-awesome-unline-this-password
+? Please choose a new password (optional) immich-is-awesome-unlike-this-password
 New password:
-immich-is-awesome-unline-this-password
+immich-is-awesome-unlike-this-password
 ```
