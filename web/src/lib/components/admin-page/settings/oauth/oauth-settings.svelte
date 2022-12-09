@@ -54,7 +54,7 @@
 			disabled={!oauthConfig.enabled}
 		/>
 
-		<div class="mt-8">
+		<div class="mt-4">
 			<SettingSlider title="AUTO REGISTER" bind:checked={oauthConfig.autoRegister} />
 		</div>
 	</form>
