@@ -113,7 +113,7 @@ describe('UserService', () => {
   describe('getUserCount', () => {
     it('should return the count', async () => {
       repositoryMock.getList.mockResolvedValue([]);
-      await expect(sut.getUserCount()).resolves.toEqual(0);
+      await expect(sut.getUserCount({})).resolves.toEqual(0);
       expect(repositoryMock.getList).toHaveBeenCalled();
     });
   });
@@ -148,6 +148,12 @@ describe('UserService', () => {
         password: 'new-password-hash',
         salt: 'new-salt',
       });
+    });
+
+    it('should not create a user if there is no local admin account', async () => {
+      repositoryMock.getAdmin.mockResolvedValue(null);
+      await expect(sut.create({ isAdmin: false, email: '' })).rejects.toBeInstanceOf(BadRequestException);
+      expect(repositoryMock.getAdmin).toHaveBeenCalled();
     });
   });
 

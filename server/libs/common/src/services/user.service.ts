@@ -4,6 +4,9 @@ import { User } from '../models';
 
 export type UserCreateDto = Pick<User, 'email'> & Partial<User>;
 export type UserUpdateDto = Pick<User, 'id'> & Partial<User>;
+export interface UserCountDto {
+  admin?: boolean;
+}
 
 export interface IUserRepository {
   get(id: string, withDeleted?: boolean): Promise<User | null>;
@@ -35,8 +38,12 @@ export class UserService {
     return this.repository.get(userId, withDeleted);
   }
 
-  public async getUserCount(): Promise<number> {
-    const users = await this.repository.getList();
+  public async getUserCount(dto: UserCountDto): Promise<number> {
+    let users = await this.repository.getList();
+    if (dto.admin) {
+      users = users.filter((user) => user.isAdmin);
+    }
+
     return users.length;
   }
 
@@ -45,6 +52,11 @@ export class UserService {
   }
 
   public async create(dto: UserCreateDto): Promise<User> {
+    const localAdmin = await this.getAdmin();
+    if (!localAdmin && !dto.isAdmin) {
+      throw new BadRequestException('The first registered account must the administrator.');
+    }
+
     const user = await this.repository.getByEmail(dto.email);
     if (user) {
       throw new BadRequestException('User exists');

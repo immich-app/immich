@@ -7,6 +7,7 @@
 	import { clickOutside } from '../../utils/click-outside';
 	import { api, UserResponseDto } from '@api';
 	import ThemeButton from './theme-button.svelte';
+	import { AppRoute } from '../../constants';
 
 	export let user: UserResponseDto;
 	export let shouldShowUploadButton = true;
@@ -70,7 +71,7 @@
 		<section class="flex gap-4 place-items-center">
 			<ThemeButton />
 
-			{#if $page.url.pathname !== '/admin' && shouldShowUploadButton}
+			{#if !$page.url.pathname.includes('/admin') && shouldShowUploadButton}
 				<button
 					in:fly={{ x: 50, duration: 250 }}
 					on:click={() => dispatch('uploadClicked')}
@@ -82,10 +83,10 @@
 			{/if}
 
 			{#if user.isAdmin}
-				<a data-sveltekit-preload-data="hover" href={`admin`}>
+				<a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}>
 					<button
 						class={`flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5  dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg p-2 rounded-lg font-medium ${
-							$page.url.pathname == '/admin' &&
+							$page.url.pathname.includes('/admin') &&
 							'text-immich-primary dark:immich-dark-primary underline'
 						}`}>Administration</button
 					>

@@ -140,7 +140,7 @@
       "^@app/database(|/.*)$": "<rootDir>/libs/database/src/$1",
       "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1",
       "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1",
-      "^@app/system-config(|/.*)$": "<rootDir>/libs/system-config/src/$1"
+      "^@app/immich-config(|/.*)$": "<rootDir>/libs/immich-config/src/$1"
     }
   }
 }

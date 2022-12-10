@@ -1,32 +1,27 @@
-import { SystemConfigEntity, SystemConfigKey, SystemConfigValue } from '@app/database/entities/system-config.entity';
+import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/database/entities/system-config.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import * as _ from 'lodash';
+import { DeepPartial, In, Repository } from 'typeorm';
 
-type SystemConfigMap = Record<SystemConfigKey, SystemConfigValue>;
-
-const configDefaults: Record<SystemConfigKey, { name: string; value: SystemConfigValue }> = {
-  [SystemConfigKey.FFMPEG_CRF]: {
-    name: 'FFmpeg Constant Rate Factor (-crf)',
-    value: '23',
+const defaults: SystemConfig = Object.freeze({
+  ffmpeg: {
+    crf: '23',
+    preset: 'ultrafast',
+    targetVideoCodec: 'libx264',
+    targetAudioCodec: 'mp3',
+    targetScaling: '1280:-2',
   },
-  [SystemConfigKey.FFMPEG_PRESET]: {
-    name: 'FFmpeg preset (-preset)',
-    value: 'ultrafast',
+  oauth: {
+    enabled: false,
+    issuerUrl: '',
+    clientId: '',
+    clientSecret: '',
+    scope: 'openid email profile',
+    buttonText: 'Login with OAuth',
+    autoRegister: true,
   },
-  [SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC]: {
-    name: 'FFmpeg target video codec (-vcodec)',
-    value: 'libx264',
-  },
-  [SystemConfigKey.FFMPEG_TARGET_AUDIO_CODEC]: {
-    name: 'FFmpeg target audio codec (-acodec)',
-    value: 'mp3',
-  },
-  [SystemConfigKey.FFMPEG_TARGET_SCALING]: {
-    name: 'FFmpeg target scaling (-vf scale=)',
-    value: '1280:-2',
-  },
-};
+});
 
 @Injectable()
 export class ImmichConfigService {
@@ -35,38 +30,32 @@ export class ImmichConfigService {
     private systemConfigRepository: Repository<SystemConfigEntity>,
   ) {}
 
-  public async getSystemConfig() {
-    const items = this._getDefaults();
+  public getDefaults(): SystemConfig {
+    return defaults;
+  }
 
-    // override default values
+  public async getConfig() {
     const overrides = await this.systemConfigRepository.find();
-    for (const override of overrides) {
-      const item = items.find((_item) => _item.key === override.key);
-      if (item) {
-        item.value = override.value;
-      }
+    const config: DeepPartial<SystemConfig> = {};
+    for (const { key, value } of overrides) {
+      // set via dot notation
+      _.set(config, key, value);
     }
 
-    return items;
+    return _.defaultsDeep(config, defaults) as SystemConfig;
   }
 
-  public async getSystemConfigMap(): Promise<SystemConfigMap> {
-    const items = await this.getSystemConfig();
-    const map: Partial<SystemConfigMap> = {};
-
-    for (const { key, value } of items) {
-      map[key] = value;
-    }
-
-    return map as SystemConfigMap;
-  }
-
-  public async updateSystemConfig(items: SystemConfigEntity[]): Promise<void> {
-    const deletes: SystemConfigEntity[] = [];
+  public async updateConfig(config: DeepPartial<SystemConfig> | null): Promise<void> {
     const updates: SystemConfigEntity[] = [];
+    const deletes: SystemConfigEntity[] = [];
 
-    for (const item of items) {
-      if (item.value === null || item.value === this._getDefaultValue(item.key)) {
+    for (const key of Object.values(SystemConfigKey)) {
+      // get via dot notation
+      const item = { key, value: _.get(config, key) };
+      const defaultValue = _.get(defaults, key);
+      const isMissing = !_.has(config, key);
+
+      if (isMissing || item.value === null || item.value === '' || item.value === defaultValue) {
         deletes.push(item);
         continue;
       }
@@ -81,17 +70,5 @@ export class ImmichConfigService {
     if (deletes.length > 0) {
       await this.systemConfigRepository.delete({ key: In(deletes.map((item) => item.key)) });
     }
-  }
-
-  private _getDefaults() {
-    return Object.values(SystemConfigKey).map((key) => ({
-      key,
-      defaultValue: configDefaults[key].value,
-      ...configDefaults[key],
-    }));
-  }
-
-  private _getDefaultValue(key: SystemConfigKey) {
-    return this._getDefaults().find((item) => item.key === key)?.value || null;
   }
 }

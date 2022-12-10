@@ -31,6 +31,7 @@ import {
   mapCreateProfileImageResponse,
 } from './response-dto/create-profile-image-response.dto';
 import { createReadStream } from 'fs';
+import { UserCountDto } from './dto/user-count.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -74,8 +75,10 @@ export class UserController {
   }
 
   @Get('/count')
-  public async getUserCount(): Promise<UserCountResponseDto> {
-    const count = await this.service.getUserCount();
+  public async getUserCount(
+    @Query(new ValidationPipe({ transform: true })) dto: UserCountDto,
+  ): Promise<UserCountResponseDto> {
+    const count = await this.service.getUserCount(dto);
     return mapUserCountResponse(count);
   }
 
