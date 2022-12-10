@@ -18,12 +18,14 @@ export class DeviceInfoService {
     const exists = await this.repository.findOne({ where: { userId, deviceId } });
 
     if (!exists) {
+      if (!entity.isAutoBackup) {
+        entity.isAutoBackup = false;
+      }
       return await this.repository.save(entity);
     }
 
     exists.isAutoBackup = entity.isAutoBackup ?? exists.isAutoBackup;
     exists.deviceType = entity.deviceType ?? exists.deviceType;
-
     return await this.repository.save(exists);
   }
 }

@@ -16,8 +16,6 @@ class DeviceInfoApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
   /// @deprecated
   ///
   /// Note: This method returns the HTTP [Response].
@@ -50,8 +48,6 @@ class DeviceInfoApi {
     );
   }
 
-  /// 
-  ///
   /// @deprecated
   ///
   /// Parameters:
@@ -72,8 +68,6 @@ class DeviceInfoApi {
     return null;
   }
 
-  /// 
-  ///
   /// @deprecated
   ///
   /// Note: This method returns the HTTP [Response].
@@ -106,8 +100,6 @@ class DeviceInfoApi {
     );
   }
 
-  /// 
-  ///
   /// @deprecated
   ///
   /// Parameters:
