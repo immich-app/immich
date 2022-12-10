@@ -12,6 +12,8 @@ download:
   files:
     - file: mobile/assets/i18n/en-US.json
       locale_code: en-US
+    - file: mobile/assets/i18n/da-DK.json
+      locale_code: da-DK
     - file: mobile/assets/i18n/de-DE.json
       locale_code: de-DE
     - file: mobile/assets/i18n/fr-FR.json
@@ -22,5 +24,13 @@ download:
       locale_code: nl-NL
     - file: mobile/assets/i18n/ko-KR.json
       locale_code: ko-KR
-    - file: mobile/assets/i18n/da-DK.json
-      locale_code: da-DK
+    - file: mobile/assets/i18n/es-ES.json
+      locale_code: es-ES
+    - file: mobile/assets/i18n/fi-FI.json
+      locale_code: fi-FI
+    - file: mobile/assets/i18n/ja-JP.json
+      locale_code: ja-JP
+    - file: mobile/assets/i18n/pt-BR.json
+      locale_code: pt-BR
+    - file: mobile/assets/i18n/pl-PL.json
+      locale_code: pl-PL
