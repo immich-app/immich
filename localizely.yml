@@ -1,23 +1,14 @@
 config_version: 1.0
 project_id: ead34689-ec52-41d9-b675-09bc85a6cbd7
 file_type: json
+branch: main
 upload:
   files:
     - file: mobile/assets/i18n/en-US.json
       locale_code: en-US
-    - file: mobile/assets/i18n/de-DE.json
-      locale_code: de-DE
-    - file: mobile/assets/i18n/fr-FR.json
-      locale_code: fr-FR
-    - file: mobile/assets/i18n/it-IT.json
-      locale_code: it-IT
-    - file: mobile/assets/i18n/nl-NL.json
-      locale_code: nl-NL
-    - file: mobile/assets/i18n/ko-KR.json
-      locale_code: ko-KR
-    - file: mobile/assets/i18n/da-DK.json
-      locale_code: da-DK
 download:
+  params:
+    export_empty_as: main
   files:
     - file: mobile/assets/i18n/en-US.json
       locale_code: en-US
