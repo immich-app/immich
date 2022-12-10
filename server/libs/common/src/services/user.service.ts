@@ -62,10 +62,7 @@ export class UserService {
       throw new BadRequestException('User exists');
     }
 
-    if (dto.password) {
-      dto.salt = await bcrypt.genSalt();
-      dto.password = await bcrypt.hash(dto.password, dto.salt);
-    }
+    await this.updatePasswordCheck(dto);
 
     return this.repository.create(dto);
   }
@@ -94,18 +91,14 @@ export class UserService {
       user.isAdmin = true;
     }
 
-    if (dto.password) {
-      user.salt = await bcrypt.genSalt();
-      user.password = await bcrypt.hash(dto.password, user.salt);
-      user.shouldChangePassword = false;
-    }
-
     user.firstName = dto.firstName ?? user.firstName;
     user.lastName = dto.lastName ?? user.lastName;
     user.email = dto.email ?? user.email;
     user.oauthId = dto.oauthId ?? user.oauthId;
     user.profileImagePath = dto.profileImagePath ?? user.profileImagePath;
     user.shouldChangePassword = dto.shouldChangePassword ?? user.shouldChangePassword;
+
+    await this.updatePasswordCheck(dto);
 
     return this.repository.update(user);
   }
@@ -148,5 +141,13 @@ export class UserService {
     }
 
     return this.repository.restore(user);
+  }
+
+  private async updatePasswordCheck(dto: Partial<User>) {
+    if (dto.password) {
+      dto.salt = await bcrypt.genSalt();
+      dto.password = await bcrypt.hash(dto.password, dto.salt);
+      dto.shouldChangePassword = false;
+    }
   }
 }

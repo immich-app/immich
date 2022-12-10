@@ -111,6 +111,26 @@ describe('UserService', () => {
   });
 
   describe('getUserCount', () => {
+    it('should count the users', async () => {
+      repositoryMock.getList.mockResolvedValue([]);
+      await expect(sut.getUserCount({ admin: false })).resolves.toBe(0);
+      expect(repositoryMock.getList).toHaveBeenCalled();
+    });
+
+    it('should count the admin users', async () => {
+      repositoryMock.getList.mockResolvedValue([adminUser, immichUser]);
+      await expect(sut.getUserCount({ admin: true })).resolves.toBe(1);
+      expect(repositoryMock.getList).toHaveBeenCalled();
+    });
+
+    it('should return a deleted user', async () => {
+      repositoryMock.get.mockResolvedValue(adminUser);
+      await expect(sut.getUserById('user-1')).resolves.toEqual(adminUser);
+      expect(repositoryMock.get).toHaveBeenCalledWith('user-1', false);
+    });
+  });
+
+  describe('getUserCount', () => {
     it('should return the count', async () => {
       repositoryMock.getList.mockResolvedValue([]);
       await expect(sut.getUserCount({})).resolves.toEqual(0);
@@ -147,6 +167,7 @@ describe('UserService', () => {
         email: 'new-user@immich.app',
         password: 'new-password-hash',
         salt: 'new-salt',
+        shouldChangePassword: false,
       });
     });
 
