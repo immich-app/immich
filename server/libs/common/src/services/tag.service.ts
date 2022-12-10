@@ -7,10 +7,10 @@ export type TagUpdateDto = Pick<Tag, 'userId' | 'id'> & Partial<Tag>;
 export const ITagRepository = 'ITagRepository';
 
 export interface ITagRepository {
-  findById(userId: string, id: string): Promise<Tag | null>;
-  findByIds(userId: string, ids: string[]): Promise<Tag[]>;
-  findByName(userId: string, name: string): Promise<Tag | null>;
-  findAll(userId: string): Promise<Tag[]>;
+  getById(userId: string, id: string): Promise<Tag | null>;
+  getByIds(userId: string, ids: string[]): Promise<Tag[]>;
+  getByName(userId: string, name: string): Promise<Tag | null>;
+  getAll(userId: string): Promise<Tag[]>;
   create(dto: TagCreateDto): Promise<Tag>;
   update(dto: TagUpdateDto): Promise<Tag>;
   remove(userId: string, id: string): Promise<void>;
@@ -24,7 +24,7 @@ export class TagService {
 
   public async create(dto: TagCreateDto) {
     const { userId, name } = dto;
-    const exists = await this.repository.findByName(userId, name);
+    const exists = await this.repository.getByName(userId, name);
     if (exists) {
       throw new BadRequestException('Tag already exists');
     }
@@ -34,7 +34,7 @@ export class TagService {
 
   public async update(dto: TagUpdateDto) {
     const { userId, id } = dto;
-    const exists = await this.repository.findById(userId, id);
+    const exists = await this.repository.getById(userId, id);
     if (!exists) {
       throw new BadRequestException('Tag not found');
     }
@@ -46,11 +46,11 @@ export class TagService {
   }
 
   public async findOne(userId: string, id: string): Promise<Tag | null> {
-    return this.repository.findById(userId, id);
+    return this.repository.getById(userId, id);
   }
 
   public async findAll(userId: string): Promise<Tag[]> {
-    return this.repository.findAll(userId);
+    return this.repository.getAll(userId);
   }
 
   public async remove(userId: string, id: string): Promise<void> {

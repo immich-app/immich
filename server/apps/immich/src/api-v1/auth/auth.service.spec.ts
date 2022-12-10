@@ -1,6 +1,6 @@
 import { IUserRepository } from '@app/common';
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';

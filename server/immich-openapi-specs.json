@@ -138,7 +138,7 @@
         ]
       },
       "get": {
-        "operationId": "getAll",
+        "operationId": "findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -251,7 +251,7 @@
     },
     "/server-info": {
       "get": {
-        "operationId": "getServerDiskInfo",
+        "operationId": "getServerInfo",
         "parameters": [],
         "responses": {
           "200": {
@@ -314,7 +314,7 @@
     },
     "/server-info/stats": {
       "get": {
-        "operationId": "getServerUsageInfo",
+        "operationId": "getStats",
         "parameters": [],
         "responses": {
           "200": {
@@ -371,7 +371,7 @@
         ]
       },
       "post": {
-        "operationId": "create",
+        "operationId": "createUser",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -385,6 +385,40 @@
         },
         "responses": {
           "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateUser",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -484,7 +518,7 @@
     },
     "/user/{userId}": {
       "delete": {
-        "operationId": "remove",
+        "operationId": "deleteUser",
         "parameters": [
           {
             "name": "userId",
@@ -495,49 +529,6 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "User"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "put": {
-        "operationId": "updateUser",
-        "parameters": [
-          {
-            "name": "userId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserDto"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "",
@@ -2509,6 +2500,9 @@
       "UpdateUserDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "password": {
             "type": "string"
           },
@@ -2527,7 +2521,10 @@
           "profileImagePath": {
             "type": "string"
           }
-        }
+        },
+        "required": [
+          "id"
+        ]
       },
       "CreateProfileImageDto": {
         "type": "object",

@@ -11,18 +11,16 @@ import { AlbumModule } from './api-v1/album/album.module';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
-import { databaseConfig, DatabaseModule } from '@app/database';
+import { DatabaseModule } from '@app/database';
 import { JobModule } from './api-v1/job/job.module';
 import { SystemConfigModule } from './api-v1/system-config/system-config.module';
 import { OAuthModule } from './api-v1/oauth/oauth.module';
 import { CommonModule } from '@app/common';
 import { APIv1Module } from './api-v1/api-v1.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
-    TypeOrmModule.forRoot(databaseConfig),
 
     APIv1Module,
     CommonModule,

@@ -1,16 +1,16 @@
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
-import { BullModule } from '@nestjs/bull';
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { AssetService } from './asset.service';
+import { AssetController } from './asset.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AssetEntity } from '@app/database';
+import { BullModule } from '@nestjs/bull';
 import { BackgroundTaskModule } from '../../modules/background-task/background-task.module';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
+import { CommunicationModule } from '../communication/communication.module';
+import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
+import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { AlbumModule } from '../album/album.module';
-import { CommunicationModule } from '../communication/communication.module';
-import { AssetRepository, ASSET_REPOSITORY } from './asset-repository';
-import { AssetController } from './asset.controller';
-import { AssetService } from './asset.service';
 
 const ASSET_REPOSITORY_PROVIDER = {
   provide: ASSET_REPOSITORY,
@@ -23,7 +23,7 @@ const ASSET_REPOSITORY_PROVIDER = {
     CommunicationModule,
     BackgroundTaskModule,
     DownloadModule,
-    forwardRef(() => AlbumModule),
+    AlbumModule,
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,
       defaultJobOptions: {

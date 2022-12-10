@@ -8,22 +8,22 @@ import { In, Repository } from 'typeorm';
 export class TagRepository implements ITagRepository {
   constructor(@InjectRepository(TagEntity) private repository: Repository<TagEntity>) {}
 
-  public async findByName(userId: string, name: string): Promise<Tag | null> {
+  public async getByName(userId: string, name: string): Promise<Tag | null> {
     return this.repository.findOne({ where: { userId, name } });
   }
 
-  public async findById(userId: string, id: string): Promise<Tag | null> {
+  public async getById(userId: string, id: string): Promise<Tag | null> {
     return this.repository.findOne({ where: { id, userId } });
   }
 
-  public async findByIds(userId: string, ids: string[]): Promise<Tag[]> {
+  public async getByIds(userId: string, ids: string[]): Promise<Tag[]> {
     return await this.repository.find({
       where: { id: In(ids), userId },
       relations: { user: true },
     });
   }
 
-  public async findAll(userId: string): Promise<Tag[]> {
+  public async getAll(userId: string): Promise<Tag[]> {
     return this.repository.find({ where: { userId } });
   }
 

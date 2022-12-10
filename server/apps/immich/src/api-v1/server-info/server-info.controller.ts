@@ -14,7 +14,7 @@ export class ServerInfoController {
   constructor(private readonly service: ServerInfoService) {}
 
   @Get()
-  public async getServerDiskInfo(): Promise<ServerInfoResponseDto> {
+  public async getServerInfo(): Promise<ServerInfoResponseDto> {
     return this.service.getServerDiskInfo();
   }
 
@@ -30,7 +30,7 @@ export class ServerInfoController {
 
   @Authenticated({ admin: true })
   @Get('/stats')
-  public async getServerUsageInfo(): Promise<ServerStatsResponseDto> {
+  public async getStats(): Promise<ServerStatsResponseDto> {
     return this.service.getServerUsageInfo();
   }
 }

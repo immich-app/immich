@@ -3,7 +3,6 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity } from '@app/database/entities/album.entity';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
-import { IAssetRepository } from '../asset/asset-repository';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
@@ -11,7 +10,6 @@ import { DownloadService } from '../../modules/download/download.service';
 describe('Album service', () => {
   let sut: AlbumService;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
-  let assetRepositoryMock: jest.Mocked<IAssetRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
 
   const authUser: AuthUserDto = Object.freeze({
@@ -126,31 +124,11 @@ describe('Album service', () => {
       getSharedWithUserAlbumCount: jest.fn(),
     };
 
-    assetRepositoryMock = {
-      create: jest.fn(),
-      update: jest.fn(),
-      getAllByUserId: jest.fn(),
-      getAllByDeviceId: jest.fn(),
-      getAssetCountByTimeBucket: jest.fn(),
-      getById: jest.fn(),
-      getDetectedObjectsByUserId: jest.fn(),
-      getLocationsByUserId: jest.fn(),
-      getSearchPropertiesByUserId: jest.fn(),
-      getAssetByTimeBucket: jest.fn(),
-      getAssetByChecksum: jest.fn(),
-      getAssetCountByUserId: jest.fn(),
-      getAssetWithNoEXIF: jest.fn(),
-      getAssetWithNoThumbnail: jest.fn(),
-      getAssetWithNoSmartInfo: jest.fn(),
-      getExistingAssets: jest.fn(),
-      countByIdAndUser: jest.fn(),
-    };
-
     downloadServiceMock = {
       downloadArchive: jest.fn(),
     };
 
-    sut = new AlbumService(albumRepositoryMock, assetRepositoryMock, downloadServiceMock as DownloadService);
+    sut = new AlbumService(albumRepositoryMock, downloadServiceMock as DownloadService);
   });
 
   it('creates album', async () => {

@@ -1,13 +1,12 @@
-import { UserCreateDto, UserService } from '@app/common';
-import { databaseConfig, DatabaseModule } from '@app/database';
-import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { DataSource } from 'typeorm';
-import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
+import { clearDb, authCustom } from './test-utils';
+import { DatabaseModule } from '@app/database';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
-import { authCustom, clearDb } from './test-utils';
+import { UserCreateDto, UserService } from '@app/common';
+import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
+import { DataSource } from 'typeorm';
 
 function _createUser(userService: UserService, data: UserCreateDto) {
   return userService.create(data);
@@ -25,7 +24,7 @@ describe('User', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [DatabaseModule, ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [DatabaseModule, ImmichJwtModule],
       }).compile();
 
       app = moduleFixture.createNestApplication();
@@ -49,7 +48,7 @@ describe('User', () => {
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [DatabaseModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [DatabaseModule],
       });
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 

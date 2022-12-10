@@ -1,5 +1,4 @@
-import { DeviceType } from '@app/common';
-import { DeviceInfoEntity } from '@app/database/entities';
+import { DeviceInfo, DeviceType } from '@app/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class DeviceInfoResponseDto {
@@ -15,7 +14,7 @@ export class DeviceInfoResponseDto {
   isAutoBackup!: boolean;
 }
 
-export function mapDeviceInfoResponse(entity: DeviceInfoEntity): DeviceInfoResponseDto {
+export function mapDeviceInfoResponse(entity: DeviceInfo): DeviceInfoResponseDto {
   return {
     id: entity.id,
     userId: entity.userId,

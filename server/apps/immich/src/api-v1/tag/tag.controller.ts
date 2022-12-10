@@ -1,10 +1,10 @@
+import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, BadRequestException } from '@nestjs/common';
 import { TagService } from '@app/common';
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, ValidationPipe } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { Authenticated } from '../../decorators/authenticated.decorator';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
+import { Authenticated } from '../../decorators/authenticated.decorator';
+import { ApiTags } from '@nestjs/swagger';
+import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { mapTag, TagResponseDto } from './response-dto/tag-response.dto';
 
 @Authenticated()
@@ -22,7 +22,7 @@ export class TagController {
   }
 
   @Get()
-  public async getAll(@GetAuthUser() authUser: AuthUserDto): Promise<TagResponseDto[]> {
+  public async findAll(@GetAuthUser() authUser: AuthUserDto): Promise<TagResponseDto[]> {
     return this.service.findAll(authUser.id);
   }
 
@@ -46,10 +46,6 @@ export class TagController {
 
   @Delete(':id')
   public async remove(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<void> {
-    const tag = await this.service.findOne(authUser.id, id);
-    if (!tag) {
-      throw new BadRequestException('Tag not found');
-    }
-    return this.service.remove(authUser.id, tag.id);
+    return this.service.remove(authUser.id, id);
   }
 }

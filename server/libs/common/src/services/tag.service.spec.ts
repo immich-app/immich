@@ -9,10 +9,10 @@ describe('TagService', () => {
   beforeAll(() => {
     repositoryMock = {
       create: jest.fn(),
-      findByName: jest.fn(),
-      findByIds: jest.fn(),
-      findById: jest.fn(),
-      findAll: jest.fn(),
+      getByName: jest.fn(),
+      getById: jest.fn(),
+      getByIds: jest.fn(),
+      getAll: jest.fn(),
       remove: jest.fn(),
       update: jest.fn(),
     };
@@ -59,7 +59,7 @@ describe('TagService', () => {
         type: TagType.OBJECT,
       };
 
-      repositoryMock.findByName.mockResolvedValue(response);
+      repositoryMock.getByName.mockResolvedValue(response);
 
       await expect(sut.create(request)).rejects.toBeInstanceOf(BadRequestException);
       expect(repositoryMock.create).not.toHaveBeenCalled();
@@ -83,11 +83,11 @@ describe('TagService', () => {
         renameTagId: 'new-tag-id',
       };
 
-      repositoryMock.findById.mockResolvedValue(response);
+      repositoryMock.getById.mockResolvedValue(response);
       repositoryMock.update.mockResolvedValue(response);
 
       await expect(sut.update(request)).resolves.toEqual(response);
-      expect(repositoryMock.findById).toHaveBeenCalled();
+      expect(repositoryMock.getById).toHaveBeenCalled();
       expect(repositoryMock.update).toHaveBeenCalled();
     });
 
@@ -105,11 +105,11 @@ describe('TagService', () => {
         renameTagId: 'new-tag-id',
       };
 
-      repositoryMock.findById.mockResolvedValue(response);
+      repositoryMock.getById.mockResolvedValue(response);
       repositoryMock.update.mockResolvedValue(response);
 
       await expect(sut.update(request)).resolves.toEqual(response);
-      expect(repositoryMock.findById).toHaveBeenCalled();
+      expect(repositoryMock.getById).toHaveBeenCalled();
       expect(repositoryMock.update).toHaveBeenCalled();
     });
 
@@ -119,7 +119,7 @@ describe('TagService', () => {
         userId: 'user-1',
       };
 
-      repositoryMock.findById.mockResolvedValue(null);
+      repositoryMock.getById.mockResolvedValue(null);
 
       await expect(sut.update(request)).rejects.toBeInstanceOf(BadRequestException);
       expect(repositoryMock.update).not.toHaveBeenCalled();
@@ -135,10 +135,10 @@ describe('TagService', () => {
         userId: 'user-123',
       };
 
-      repositoryMock.findById.mockResolvedValue(response);
+      repositoryMock.getById.mockResolvedValue(response);
 
       await expect(sut.findOne('user-123', 'tag-123')).resolves.toEqual(response);
-      expect(repositoryMock.findById).toHaveBeenCalled();
+      expect(repositoryMock.getById).toHaveBeenCalled();
     });
   });
 
@@ -159,10 +159,10 @@ describe('TagService', () => {
         },
       ];
 
-      repositoryMock.findAll.mockResolvedValue(response);
+      repositoryMock.getAll.mockResolvedValue(response);
 
       await expect(sut.findAll('user-1')).resolves.toEqual(response);
-      expect(repositoryMock.findAll).toHaveBeenCalled();
+      expect(repositoryMock.getAll).toHaveBeenCalled();
     });
   });
 
@@ -175,14 +175,14 @@ describe('TagService', () => {
         userId: 'user-1',
       };
 
-      repositoryMock.findById.mockResolvedValue(response);
+      repositoryMock.getById.mockResolvedValue(response);
 
       await sut.remove('user-1', 'tag-1');
       expect(repositoryMock.remove).toHaveBeenCalled();
     });
 
     it('should throw an error when the tag does not exist', async () => {
-      repositoryMock.findById.mockResolvedValue(null);
+      repositoryMock.getById.mockResolvedValue(null);
 
       await expect(sut.remove('user-1', 'tag-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(repositoryMock.remove).not.toHaveBeenCalled();

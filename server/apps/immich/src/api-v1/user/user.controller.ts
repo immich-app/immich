@@ -1,36 +1,36 @@
-import { UserService } from '@app/common';
 import {
-  BadRequestException,
-  Body,
   Controller,
-  Delete,
   Get,
-  Header,
-  Param,
-  ParseBoolPipe,
   Post,
+  Delete,
+  Body,
+  Param,
+  ValidationPipe,
   Put,
   Query,
-  StreamableFile,
-  UploadedFile,
   UseInterceptors,
-  ValidationPipe,
+  UploadedFile,
+  ParseBoolPipe,
+  BadRequestException,
+  Header,
+  StreamableFile,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { createReadStream } from 'fs';
-import { profileImageUploadOption } from '../../config/profile-image-upload.config';
-import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
+import { UserService } from '@app/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
-import { CreateProfileImageDto } from './dto/create-profile-image.dto';
+import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { profileImageUploadOption } from '../../config/profile-image-upload.config';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
+import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
+import { CreateProfileImageDto } from './dto/create-profile-image.dto';
 import {
   CreateProfileImageResponseDto,
   mapCreateProfileImageResponse,
 } from './response-dto/create-profile-image-response.dto';
-import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
-import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
+import { createReadStream } from 'fs';
 
 @ApiTags('User')
 @Controller('user')
@@ -68,7 +68,7 @@ export class UserController {
   @Authenticated({ admin: true })
   @ApiBearerAuth()
   @Post()
-  public async create(@Body(new ValidationPipe({ transform: true })) dto: CreateUserDto): Promise<UserResponseDto> {
+  public async createUser(@Body(new ValidationPipe({ transform: true })) dto: CreateUserDto): Promise<UserResponseDto> {
     const user = await this.service.create(dto);
     return mapUser(user);
   }
@@ -82,7 +82,10 @@ export class UserController {
   @Authenticated({ admin: true })
   @ApiBearerAuth()
   @Delete('/:userId')
-  public async remove(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
+  public async deleteUser(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param('userId') userId: string,
+  ): Promise<UserResponseDto> {
     const user = await this.service.remove(authUser.id, userId);
     return mapUser(user);
   }
@@ -98,15 +101,15 @@ export class UserController {
     return mapUser(user);
   }
 
+  // TODO: refactor to @Put(':userId')
   @Authenticated()
   @ApiBearerAuth()
-  @Put(':userId')
+  @Put()
   public async updateUser(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param('userId') userId: string,
     @Body(ValidationPipe) dto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    const user = await this.service.update(authUser.id, { ...dto, id: userId });
+    const user = await this.service.update(authUser.id, dto);
     return mapUser(user);
   }
 
