@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import diskusage from 'diskusage';
 import { APP_UPLOAD_LOCATION } from '../constants';
 import { asHumanReadable } from '../utils/human-readable.util';
+import { IAssetRepository } from './asset.service';
 
 export interface ServerDiskInfo {
   diskSize: string;
@@ -33,20 +34,6 @@ export interface ServerUserUsageInfo {
   other: number;
   usageRaw: number;
   usage: string;
-}
-
-export type ServerUsageItems = ServerUsageItem[];
-export interface ServerUsageItem {
-  userId: string;
-  assetType: AssetType;
-  assetCount: number;
-  totalSizeInBytes: number;
-}
-
-export const IAssetRepository = 'AssetRepository';
-
-export interface IAssetRepository {
-  getUserStats(): Promise<ServerUsageItems>;
 }
 
 @Injectable()
