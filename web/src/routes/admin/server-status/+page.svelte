@@ -21,7 +21,7 @@
 </script>
 
 <svelte:head>
-	<title>Jobs Status - Immich</title>
+	<title>Server Status - Immich</title>
 </svelte:head>
 
 {#if $page.data.allUsers && serverStat}
