@@ -1793,7 +1793,6 @@
     "/device-info": {
       "post": {
         "operationId": "createDeviceInfo",
-        "summary": "",
         "description": "@deprecated",
         "parameters": [],
         "requestBody": {
@@ -1829,7 +1828,6 @@
       },
       "patch": {
         "operationId": "updateDeviceInfo",
-        "summary": "",
         "description": "@deprecated",
         "parameters": [],
         "requestBody": {
@@ -2176,7 +2174,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.37.0",
+    "version": "1.38.0",
     "contact": {}
   },
   "tags": [],
