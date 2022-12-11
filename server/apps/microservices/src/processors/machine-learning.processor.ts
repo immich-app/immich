@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { Job } from 'bull';
 import { Repository } from 'typeorm';
+import _ from 'lodash';
 
 const immich_machine_learning_url = process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003';
 
@@ -82,7 +83,10 @@ export class MachineLearningProcessor {
         immichTags.push(immichTag);
       }
 
-      assetEntity.tags = assetEntity.tags ? Array.from(new Set([...assetEntity.tags, ...immichTags])) : immichTags;
+      const tags = assetEntity.tags ? Array.from(new Set([...assetEntity.tags, ...immichTags])) : immichTags;
+      const uniqueTags = _.uniqBy(tags, (tag) => tag.name);
+
+      assetEntity.tags = uniqueTags;
       await this.assetRepository.save(assetEntity);
     } catch (e) {
       this.logger.error(e);
