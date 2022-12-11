@@ -1,6 +1,9 @@
 import 'dart:math';
 
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:logging/logging.dart';
+
+final log = Logger('AssetGridDataStructure');
 
 enum RenderAssetGridElementType {
   assetRow,
@@ -64,46 +67,50 @@ List<RenderAssetGridElement> assetGroupsToRenderList(
   DateTime? lastDate;
 
   assetGroups.forEach((groupName, assets) {
-    final date = DateTime.parse(groupName);
+    try {
+      final date = DateTime.parse(groupName);
 
-    if (lastDate == null || lastDate!.month != date.month) {
+      if (lastDate == null || lastDate!.month != date.month) {
+        elements.add(
+          RenderAssetGridElement(
+            RenderAssetGridElementType.monthTitle,
+            title: groupName,
+            date: date,
+          ),
+        );
+      }
+
+      // Add group title
       elements.add(
         RenderAssetGridElement(
-          RenderAssetGridElementType.monthTitle,
+          RenderAssetGridElementType.dayTitle,
           title: groupName,
           date: date,
-        ),
-      );
-    }
-
-    // Add group title
-    elements.add(
-      RenderAssetGridElement(
-        RenderAssetGridElementType.dayTitle,
-        title: groupName,
-        date: date,
-        relatedAssetList: assets,
-      ),
-    );
-
-    // Add rows
-    int cursor = 0;
-    while (cursor < assets.length) {
-      int rowElements = min(assets.length - cursor, assetsPerRow);
-
-      final rowElement = RenderAssetGridElement(
-        RenderAssetGridElementType.assetRow,
-        date: date,
-        assetRow: RenderAssetGridRow(
-          assets.sublist(cursor, cursor + rowElements),
+          relatedAssetList: assets,
         ),
       );
 
-      elements.add(rowElement);
-      cursor += rowElements;
-    }
+      // Add rows
+      int cursor = 0;
+      while (cursor < assets.length) {
+        int rowElements = min(assets.length - cursor, assetsPerRow);
 
-    lastDate = date;
+        final rowElement = RenderAssetGridElement(
+          RenderAssetGridElementType.assetRow,
+          date: date,
+          assetRow: RenderAssetGridRow(
+            assets.sublist(cursor, cursor + rowElements),
+          ),
+        );
+
+        elements.add(rowElement);
+        cursor += rowElements;
+      }
+
+      lastDate = date;
+    } catch (e, stackTrace) {
+      log.severe(e, stackTrace);
+    }
   });
 
   return elements;
