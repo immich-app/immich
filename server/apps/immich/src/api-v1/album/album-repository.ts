@@ -3,7 +3,7 @@ import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
 import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository, SelectQueryBuilder, DataSource } from 'typeorm';
+import { In, Repository, SelectQueryBuilder, DataSource, Brackets } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -286,14 +286,18 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   async getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number> {
-    const result = await this
-        .userAlbumRepository
-        .createQueryBuilder('usa')
-        .select('count(aa)', 'count')
-        .innerJoin('asset_album', 'aa', 'aa.albumId = usa.albumId')
-        .where('aa.assetId = :assetId', { assetId })
-        .andWhere('usa.sharedUserId = :userId', { userId })
-        .getRawOne();
+    const result = await this.userAlbumRepository
+      .createQueryBuilder('usa')
+      .select('count(aa)', 'count')
+      .innerJoin('asset_album', 'aa', 'aa.albumId = usa.albumId')
+      .innerJoin('albums', 'a', 'a.id = usa.albumId')
+      .where('aa.assetId = :assetId', { assetId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('a.ownerId = :userId', { userId }).orWhere('usa.sharedUserId = :userId', { userId });
+        }),
+      )
+      .getRawOne();
 
     return result.count;
   }
