@@ -291,8 +291,10 @@ export class AlbumRepository implements IAlbumRepository {
         .createQueryBuilder('usa')
         .select('count(aa)', 'count')
         .innerJoin('asset_album', 'aa', 'aa.albumId = usa.albumId')
+        .innerJoin('albums', 'a', 'a.id = usa.albumId')
         .where('aa.assetId = :assetId', { assetId })
         .andWhere('usa.sharedUserId = :userId', { userId })
+        .orWhere('a.ownerId = :userId', { userId })
         .getRawOne();
 
     return result.count;
