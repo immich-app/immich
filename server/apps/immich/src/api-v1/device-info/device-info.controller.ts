@@ -1,11 +1,10 @@
-import { Controller, Post, Body, Patch, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Patch, Post, Put, ValidationPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { DeviceInfoService } from './device-info.service';
-import { CreateDeviceInfoDto } from './dto/create-device-info.dto';
-import { UpdateDeviceInfoDto } from './dto/update-device-info.dto';
-import { DeviceInfoResponseDto } from './response-dto/create-device-info-response.dto';
+import { UpsertDeviceInfoDto } from './dto/upsert-device-info.dto';
+import { DeviceInfoResponseDto, mapDeviceInfoResponse } from './response-dto/device-info-response.dto';
 
 @Authenticated()
 @ApiBearerAuth()
@@ -14,19 +13,30 @@ import { DeviceInfoResponseDto } from './response-dto/create-device-info-respons
 export class DeviceInfoController {
   constructor(private readonly deviceInfoService: DeviceInfoService) {}
 
+  /** @deprecated */
   @Post()
-  async createDeviceInfo(
-    @Body(ValidationPipe) createDeviceInfoDto: CreateDeviceInfoDto,
-    @GetAuthUser() authUser: AuthUserDto,
+  public async createDeviceInfo(
+    @GetAuthUser() user: AuthUserDto,
+    @Body(ValidationPipe) dto: UpsertDeviceInfoDto,
   ): Promise<DeviceInfoResponseDto> {
-    return this.deviceInfoService.create(createDeviceInfoDto, authUser);
+    return this.upsertDeviceInfo(user, dto);
   }
 
+  /** @deprecated */
   @Patch()
-  async updateDeviceInfo(
-    @Body(ValidationPipe) updateDeviceInfoDto: UpdateDeviceInfoDto,
-    @GetAuthUser() authUser: AuthUserDto,
+  public async updateDeviceInfo(
+    @GetAuthUser() user: AuthUserDto,
+    @Body(ValidationPipe) dto: UpsertDeviceInfoDto,
   ): Promise<DeviceInfoResponseDto> {
-    return this.deviceInfoService.update(authUser.id, updateDeviceInfoDto);
+    return this.upsertDeviceInfo(user, dto);
+  }
+
+  @Put()
+  public async upsertDeviceInfo(
+    @GetAuthUser() user: AuthUserDto,
+    @Body(ValidationPipe) dto: UpsertDeviceInfoDto,
+  ): Promise<DeviceInfoResponseDto> {
+    const deviceInfo = await this.deviceInfoService.upsert({ ...dto, userId: user.id });
+    return mapDeviceInfoResponse(deviceInfo);
   }
 }

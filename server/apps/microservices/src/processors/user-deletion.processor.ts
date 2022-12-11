@@ -26,9 +26,9 @@ export class UserDeletionProcessor {
     // just for extra protection here
     if (userUtils.isReadyForDeletion(user)) {
       const basePath = APP_UPLOAD_LOCATION;
-      const userAssetDir = join(basePath, user.id)
-      fs.rmSync(userAssetDir, { recursive: true, force: true })
-      await this.assetRepository.delete({ userId: user.id })
+      const userAssetDir = join(basePath, user.id);
+      fs.rmSync(userAssetDir, { recursive: true, force: true });
+      await this.assetRepository.delete({ userId: user.id });
       await this.userRepository.remove(user);
     }
   }

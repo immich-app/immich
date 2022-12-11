@@ -28,7 +28,6 @@
 	export let scrollbarHeight = 0;
 
 	$: timelineHeight = $assetGridState.timelineHeight;
-	$: viewportWidth = $assetGridState.viewportWidth;
 	$: timelineScrolltop = (scrollbarPosition / scrollbarHeight) * timelineHeight;
 
 	let segmentScrollbarLayout: SegmentScrollbarLayout[] = [];

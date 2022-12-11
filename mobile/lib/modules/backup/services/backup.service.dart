@@ -376,8 +376,8 @@ class BackupService {
     DeviceTypeEnum deviceType,
   ) async {
     try {
-      var updatedDeviceInfo = await _apiService.deviceInfoApi.updateDeviceInfo(
-        UpdateDeviceInfoDto(
+      var updatedDeviceInfo = await _apiService.deviceInfoApi.upsertDeviceInfo(
+        UpsertDeviceInfoDto(
           deviceId: deviceId,
           deviceType: deviceType,
           isAutoBackup: status,

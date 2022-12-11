@@ -28,7 +28,7 @@
     "test:e2e": "jest --config ./apps/immich/test/jest-e2e.json",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
     "api:typescript": "rm -rf ../web/src/api/open-api && npx openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ../web/src/api/open-api",
-    "api:dart": "npx openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi",
+    "api:dart": "rm -rf ../mobile/openapi && npx openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi",
     "api:generate": "npm run api:typescript && npm run api:dart"
   },
   "dependencies": {
@@ -142,7 +142,7 @@
       "@app/database/config": "<rootDir>/libs/database/src/config",
       "@app/common": "<rootDir>/libs/common/src",
       "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1",
-      "^@app/system-config(|/.*)$": "<rootDir>/libs/system-config/src/$1"
+      "^@app/immich-config(|/.*)$": "<rootDir>/libs/immich-config/src/$1"
     }
   }
 }

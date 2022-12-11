@@ -21,8 +21,8 @@ void main() {
       // TODO
     });
 
-    // String ownerId
-    test('to test the property `ownerId`', () async {
+    // String albumThumbnailAssetId
+    test('to test the property `albumThumbnailAssetId`', () async {
       // TODO
     });
 

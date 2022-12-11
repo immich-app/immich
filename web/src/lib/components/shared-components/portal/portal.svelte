@@ -44,7 +44,7 @@
 	}
 </script>
 
-<script>
+<script lang="ts">
 	/**
 	 * DOM Element or CSS Selector
 	 * @type { HTMLElement|string}

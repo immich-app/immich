@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // String buttonText
+    test('to test the property `buttonText`', () async {
+      // TODO
+    });
+
 
   });
 

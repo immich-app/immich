@@ -26,6 +26,7 @@ const String backgroundBackupInfoBox = "immichBackgroundBackupInfoBox"; // Box
 const String backupFailedSince = "immichBackupFailedSince"; // Key 1
 const String backupRequireWifi = "immichBackupRequireWifi"; // Key 2
 const String backupRequireCharging = "immichBackupRequireCharging"; // Key 3
+const String backupTriggerDelay = "immichBackupTriggerDelay"; // Key 4
 
 // Duplicate asset
 const String duplicatedAssetsBox = "immichDuplicatedAssetsBox"; // Box

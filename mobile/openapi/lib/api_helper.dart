@@ -70,9 +70,6 @@ String parameterToString(dynamic value) {
   if (value is JobId) {
     return JobIdTypeTransformer().encode(value).toString();
   }
-  if (value is SystemConfigKey) {
-    return SystemConfigKeyTypeTransformer().encode(value).toString();
-  }
   if (value is TagTypeEnum) {
     return TagTypeEnumTypeTransformer().encode(value).toString();
   }

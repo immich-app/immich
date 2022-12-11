@@ -86,6 +86,8 @@ class BackgroundService {
   Future<bool> configureService({
     bool requireUnmetered = true,
     bool requireCharging = false,
+    int triggerUpdateDelay = 5000,
+    int triggerMaxDelay = 50000,
   }) async {
     if (!Platform.isAndroid) {
       return true;
@@ -93,7 +95,12 @@ class BackgroundService {
     try {
       final bool ok = await _foregroundChannel.invokeMethod(
         'configure',
-        [requireUnmetered, requireCharging],
+        [
+          requireUnmetered,
+          requireCharging,
+          triggerUpdateDelay,
+          triggerMaxDelay
+        ],
       );
       return ok;
     } catch (error) {

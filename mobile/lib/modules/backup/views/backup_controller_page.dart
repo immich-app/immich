@@ -198,6 +198,46 @@ class BackupControllerPage extends HookConsumerWidget {
       final bool isWifiRequired = backupState.backupRequireWifi;
       final bool isChargingRequired = backupState.backupRequireCharging;
       final Color activeColor = Theme.of(context).primaryColor;
+
+      String formatBackupDelaySliderValue(double v) {
+        if (v == 0.0) {
+          return 'setting_notifications_notify_seconds'.tr(args: const ['5']);
+        } else if (v == 1.0) {
+          return 'setting_notifications_notify_seconds'.tr(args: const ['30']);
+        } else if (v == 2.0) {
+          return 'setting_notifications_notify_minutes'.tr(args: const ['2']);
+        } else {
+          return 'setting_notifications_notify_minutes'.tr(args: const ['10']);
+        }
+      }
+
+      int backupDelayToMilliseconds(double v) {
+        if (v == 0.0) {
+          return 5000;
+        } else if (v == 1.0) {
+          return 30000;
+        } else if (v == 2.0) {
+          return 120000;
+        } else {
+          return 600000;
+        }
+      }
+
+      double backupDelayToSliderValue(int ms) {
+        if (ms == 5000) {
+          return 0.0;
+        } else if (ms == 30000) {
+          return 1.0;
+        } else if (ms == 120000) {
+          return 2.0;
+        } else {
+          return 3.0;
+        }
+      }
+
+      final triggerDelay =
+          useState(backupDelayToSliderValue(backupState.backupTriggerDelay));
+
       return ListTile(
         isThreeLine: true,
         leading: isBackgroundEnabled
@@ -263,6 +303,35 @@ class BackupControllerPage extends HookConsumerWidget {
                           onBatteryInfo: showBatteryOptimizationInfoToUser,
                         )
                     : null,
+              ),
+            if (isBackgroundEnabled)
+              ListTile(
+                isThreeLine: false,
+                dense: true,
+                enabled: hasExclusiveAccess,
+                title: const Text(
+                  'backup_controller_page_background_delay',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ).tr(args: [formatBackupDelaySliderValue(triggerDelay.value)]),
+                subtitle: Slider(
+                  value: triggerDelay.value,
+                  onChanged: hasExclusiveAccess
+                      ? (double v) => triggerDelay.value = v
+                      : null,
+                  onChangeEnd: (double v) => ref
+                      .read(backupProvider.notifier)
+                      .configureBackgroundBackup(
+                        triggerDelay: backupDelayToMilliseconds(v),
+                        onError: showErrorToUser,
+                        onBatteryInfo: showBatteryOptimizationInfoToUser,
+                      ),
+                  max: 3.0,
+                  divisions: 3,
+                  label: formatBackupDelaySliderValue(triggerDelay.value),
+                  activeColor: Theme.of(context).primaryColor,
+                ),
               ),
             ElevatedButton(
               onPressed: () =>

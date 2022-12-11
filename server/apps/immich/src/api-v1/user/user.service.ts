@@ -14,6 +14,7 @@ import { createReadStream } from 'fs';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserCountDto } from './dto/user-count.dto';
 import {
   CreateProfileImageResponseDto,
   mapCreateProfileImageResponse,
@@ -57,8 +58,12 @@ export class UserService {
     return mapUser(user);
   }
 
-  async getUserCount(): Promise<UserCountResponseDto> {
-    const users = await this.userRepository.getList();
+  async getUserCount(dto: UserCountDto): Promise<UserCountResponseDto> {
+    let users = await this.userRepository.getList();
+
+    if (dto.admin) {
+      users = users.filter((user) => user.isAdmin);
+    }
 
     return mapUserCountResponse(users.length);
   }
@@ -98,7 +103,14 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
     try {
-      const updatedUser = await this.userRepository.update(user.id, updateUserDto);
+      user.password = updateUserDto.password ?? user.password;
+      user.firstName = updateUserDto.firstName ?? user.firstName;
+      user.lastName = updateUserDto.lastName ?? user.lastName;
+      user.isAdmin = updateUserDto.isAdmin ?? user.isAdmin;
+      user.shouldChangePassword = updateUserDto.shouldChangePassword ?? user.shouldChangePassword;
+      user.profileImagePath = updateUserDto.profileImagePath ?? user.profileImagePath;
+
+      const updatedUser = await this.userRepository.update(user.id, user);
 
       return mapUser(updatedUser);
     } catch (e) {

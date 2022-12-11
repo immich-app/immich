@@ -1,8 +1,7 @@
 import { Body, Controller, Get, Put, ValidationPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../../decorators/authenticated.decorator';
-import { UpdateSystemConfigDto } from './dto/update-system-config';
-import { SystemConfigResponseDto } from './response-dto/system-config-response.dto';
+import { SystemConfigDto } from './dto/system-config.dto';
 import { SystemConfigService } from './system-config.service';
 
 @ApiTags('System Config')
@@ -13,12 +12,17 @@ export class SystemConfigController {
   constructor(private readonly systemConfigService: SystemConfigService) {}
 
   @Get()
-  getConfig(): Promise<SystemConfigResponseDto> {
+  public getConfig(): Promise<SystemConfigDto> {
     return this.systemConfigService.getConfig();
   }
 
+  @Get('defaults')
+  public getDefaults(): SystemConfigDto {
+    return this.systemConfigService.getDefaults();
+  }
+
   @Put()
-  async updateConfig(@Body(ValidationPipe) dto: UpdateSystemConfigDto): Promise<SystemConfigResponseDto> {
+  public updateConfig(@Body(ValidationPipe) dto: SystemConfigDto): Promise<SystemConfigDto> {
     return this.systemConfigService.updateConfig(dto);
   }
 }

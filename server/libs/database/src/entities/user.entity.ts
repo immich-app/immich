@@ -15,7 +15,7 @@ export class UserEntity {
   @Column({ default: false })
   isAdmin!: boolean;
 
-  @Column()
+  @Column({ unique: true })
   email!: string;
 
   @Column({ default: '', select: false })

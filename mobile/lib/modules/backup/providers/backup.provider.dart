@@ -38,6 +38,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             backgroundBackup: false,
             backupRequireWifi: true,
             backupRequireCharging: false,
+            backupTriggerDelay: 5000,
             serverInfo: ServerInfoResponseDto(
               diskAvailable: "0",
               diskAvailableRaw: 0,
@@ -119,18 +120,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     bool? enabled,
     bool? requireWifi,
     bool? requireCharging,
+    int? triggerDelay,
     required void Function(String msg) onError,
     required void Function() onBatteryInfo,
   }) async {
-    assert(enabled != null || requireWifi != null || requireCharging != null);
+    assert(
+      enabled != null ||
+          requireWifi != null ||
+          requireCharging != null ||
+          triggerDelay != null,
+    );
     if (Platform.isAndroid) {
       final bool wasEnabled = state.backgroundBackup;
       final bool wasWifi = state.backupRequireWifi;
-      final bool wasCharing = state.backupRequireCharging;
+      final bool wasCharging = state.backupRequireCharging;
+      final int oldTriggerDelay = state.backupTriggerDelay;
       state = state.copyWith(
         backgroundBackup: enabled,
         backupRequireWifi: requireWifi,
         backupRequireCharging: requireCharging,
+        backupTriggerDelay: triggerDelay,
       );
 
       if (state.backgroundBackup) {
@@ -145,17 +154,22 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             await _backgroundService.configureService(
               requireUnmetered: state.backupRequireWifi,
               requireCharging: state.backupRequireCharging,
+              triggerUpdateDelay: state.backupTriggerDelay,
+              triggerMaxDelay: state.backupTriggerDelay * 10,
             );
         if (success) {
-          await Hive.box(backgroundBackupInfoBox)
-              .put(backupRequireWifi, state.backupRequireWifi);
-          await Hive.box(backgroundBackupInfoBox)
-              .put(backupRequireCharging, state.backupRequireCharging);
+          final box = Hive.box(backgroundBackupInfoBox);
+          await Future.wait([
+            box.put(backupRequireWifi, state.backupRequireWifi),
+            box.put(backupRequireCharging, state.backupRequireCharging),
+            box.put(backupTriggerDelay, state.backupTriggerDelay),
+          ]);
         } else {
           state = state.copyWith(
             backgroundBackup: wasEnabled,
             backupRequireWifi: wasWifi,
-            backupRequireCharging: wasCharing,
+            backupRequireCharging: wasCharging,
+            backupTriggerDelay: oldTriggerDelay,
           );
           onError("backup_controller_page_background_configure_error");
         }
@@ -602,6 +616,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         excludedBackupAlbums: excludedAlbums,
         backupRequireWifi: backgroundBox.get(backupRequireWifi),
         backupRequireCharging: backgroundBox.get(backupRequireCharging),
+        backupTriggerDelay: backgroundBox.get(backupTriggerDelay),
       );
     }
     return _resumeBackup();

@@ -17,7 +17,7 @@ void main() {
   // final instance = AlbumApi();
 
   group('tests for AlbumApi', () {
-    //Future<AlbumResponseDto> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto) async
+    //Future<AddAssetsResponseDto> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto) async
     test('test addAssetsToAlbum', () async {
       // TODO
     });
@@ -37,17 +37,27 @@ void main() {
       // TODO
     });
 
+    //Future<Object> downloadArchive(String albumId, { num skip }) async
+    test('test downloadArchive', () async {
+      // TODO
+    });
+
+    //Future<AlbumCountResponseDto> getAlbumCountByUserId() async
+    test('test getAlbumCountByUserId', () async {
+      // TODO
+    });
+
     //Future<AlbumResponseDto> getAlbumInfo(String albumId) async
     test('test getAlbumInfo', () async {
       // TODO
     });
 
-    //Future<List<AlbumResponseDto>> getAllAlbums({ bool shared }) async
+    //Future<List<AlbumResponseDto>> getAllAlbums({ bool shared, String assetId }) async
     test('test getAllAlbums', () async {
       // TODO
     });
 
-    //Future removeAssetFromAlbum(String albumId, RemoveAssetsDto removeAssetsDto) async
+    //Future<AlbumResponseDto> removeAssetFromAlbum(String albumId, RemoveAssetsDto removeAssetsDto) async
     test('test removeAssetFromAlbum', () async {
       // TODO
     });
