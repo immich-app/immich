@@ -17,6 +17,7 @@ import { GenerateChecksumProcessor } from './processors/generate-checksum.proces
 import { MachineLearningProcessor } from './processors/machine-learning.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
+import { UserDeletionProcessor } from './processors/user-deletion.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
 
 @Module({
@@ -38,6 +39,14 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
       }),
     }),
     BullModule.registerQueue(
+      {
+        name: QueueNameEnum.USER_DELETION,
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      },
       {
         name: QueueNameEnum.THUMBNAIL_GENERATION,
         defaultJobOptions: {
@@ -98,6 +107,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     VideoTranscodeProcessor,
     GenerateChecksumProcessor,
     MachineLearningProcessor,
+    UserDeletionProcessor,
   ],
   exports: [],
 })
