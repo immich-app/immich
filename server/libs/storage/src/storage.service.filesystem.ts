@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ImmichStorageInterface } from './interfaces/immich-storage.interface';
+import { IImmichStorage } from './interfaces/immich-storage.interface';
 
 @Injectable()
-export class FileSystemStorageService implements ImmichStorageInterface {
+export class FileSystemStorageService implements IImmichStorage {
   read(): Promise<void> {
     throw new Error('Method not implemented.');
   }
