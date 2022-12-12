@@ -15,8 +15,7 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository, TAG_REPOSITORY } from '../tag/tag.repository';
-import { Brackets, IsNull, Not } from 'typeorm';
-import { TagEntity, TagType } from '@app/database/entities/tag.entity';
+import { Brackets } from 'typeorm';
 
 export interface IAssetRepository {
   create(
