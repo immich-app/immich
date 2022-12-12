@@ -39,15 +39,14 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
   }
 
   const basePath = APP_UPLOAD_LOCATION;
-  const sanitizedDeviceId = sanitize(String(req.body['deviceId']));
-  const originalUploadFolder = join(basePath, req.user.id, 'original', sanitizedDeviceId);
+  const destination = join(basePath, req.user.id, 'consume');
 
-  if (!existsSync(originalUploadFolder)) {
-    mkdirSync(originalUploadFolder, { recursive: true });
+  if (!existsSync(destination)) {
+    mkdirSync(destination, { recursive: true });
   }
 
   // Save original to disk
-  cb(null, originalUploadFolder);
+  cb(null, destination);
 }
 
 function filename(req: Request, file: Express.Multer.File, cb: any) {

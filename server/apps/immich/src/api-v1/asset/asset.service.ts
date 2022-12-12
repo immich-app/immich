@@ -55,6 +55,7 @@ import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { ALBUM_REPOSITORY, IAlbumRepository } from '../album/album-repository';
+import { StorageService } from '@app/storage';
 
 const fileInfo = promisify(stat);
 
@@ -79,6 +80,8 @@ export class AssetService {
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
 
     private downloadService: DownloadService,
+
+    private storageService: StorageService,
   ) {}
 
   public async handleUploadedAsset(
@@ -138,6 +141,8 @@ export class AssetService {
         ]);
         throw new BadRequestException('Asset not created');
       }
+
+      await this.storageService.buildOriginalFile(assetEntity, originalAssetData.originalname);
 
       await this.assetUploadedQueue.add(
         assetUploadedProcessorName,

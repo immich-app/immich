@@ -1616,6 +1616,92 @@
         ]
       }
     },
+    "/system-config": {
+      "get": {
+        "operationId": "getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/system-config/defaults": {
+      "get": {
+        "operationId": "getDefaults",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/auth/login": {
       "post": {
         "operationId": "login",
@@ -2083,98 +2169,12 @@
           }
         ]
       }
-    },
-    "/system-config": {
-      "get": {
-        "operationId": "getConfig",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SystemConfigDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "System Config"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "put": {
-        "operationId": "updateConfig",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SystemConfigDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SystemConfigDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "System Config"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/system-config/defaults": {
-      "get": {
-        "operationId": "getDefaults",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SystemConfigDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "System Config"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
     }
   },
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.38.0",
+    "version": "1.38.2",
     "contact": {}
   },
   "tags": [],
@@ -3103,6 +3103,83 @@
           }
         }
       },
+      "SystemConfigFFmpegDto": {
+        "type": "object",
+        "properties": {
+          "crf": {
+            "type": "string"
+          },
+          "preset": {
+            "type": "string"
+          },
+          "targetVideoCodec": {
+            "type": "string"
+          },
+          "targetAudioCodec": {
+            "type": "string"
+          },
+          "targetScaling": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "crf",
+          "preset",
+          "targetVideoCodec",
+          "targetAudioCodec",
+          "targetScaling"
+        ]
+      },
+      "SystemConfigOAuthDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "issuerUrl": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "buttonText": {
+            "type": "string"
+          },
+          "autoRegister": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "issuerUrl",
+          "clientId",
+          "clientSecret",
+          "scope",
+          "buttonText",
+          "autoRegister"
+        ]
+      },
+      "SystemConfigDto": {
+        "type": "object",
+        "properties": {
+          "ffmpeg": {
+            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
+          },
+          "oauth": {
+            "$ref": "#/components/schemas/SystemConfigOAuthDto"
+          }
+        },
+        "required": [
+          "ffmpeg",
+          "oauth"
+        ]
+      },
       "LoginCredentialDto": {
         "type": "object",
         "properties": {
@@ -3600,83 +3677,6 @@
         },
         "required": [
           "command"
-        ]
-      },
-      "SystemConfigFFmpegDto": {
-        "type": "object",
-        "properties": {
-          "crf": {
-            "type": "string"
-          },
-          "preset": {
-            "type": "string"
-          },
-          "targetVideoCodec": {
-            "type": "string"
-          },
-          "targetAudioCodec": {
-            "type": "string"
-          },
-          "targetScaling": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "crf",
-          "preset",
-          "targetVideoCodec",
-          "targetAudioCodec",
-          "targetScaling"
-        ]
-      },
-      "SystemConfigOAuthDto": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "issuerUrl": {
-            "type": "string"
-          },
-          "clientId": {
-            "type": "string"
-          },
-          "clientSecret": {
-            "type": "string"
-          },
-          "scope": {
-            "type": "string"
-          },
-          "buttonText": {
-            "type": "string"
-          },
-          "autoRegister": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled",
-          "issuerUrl",
-          "clientId",
-          "clientSecret",
-          "scope",
-          "buttonText",
-          "autoRegister"
-        ]
-      },
-      "SystemConfigDto": {
-        "type": "object",
-        "properties": {
-          "ffmpeg": {
-            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
-          },
-          "oauth": {
-            "$ref": "#/components/schemas/SystemConfigOAuthDto"
-          }
-        },
-        "required": [
-          "ffmpeg",
-          "oauth"
         ]
       }
     }
