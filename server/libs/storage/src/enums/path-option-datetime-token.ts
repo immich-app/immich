@@ -1,8 +1,8 @@
 /**
- * Selected Luxon's Token
+ * Selected Luxon's Token for year
  * https://moment.github.io/luxon/#/formatting?id=table-of-tokens
  */
-export enum PathOptionDatetimeToken {
+export enum PathOptionDatetimeYearFormatToken {
   /**
    * Year unpaded (4-digit)
    * e.g. 2019
@@ -14,7 +14,13 @@ export enum PathOptionDatetimeToken {
    * e.g. 19
    */
   YEAR_TWO_DIGITS = 'yy',
+}
 
+/**
+ * Selected Luxon's Token for month format
+ * https://moment.github.io/luxon/#/formatting?id=table-of-tokens
+ */
+export enum PathOptionDatetimeMonthFormatToken {
   /**
    * month as an unpadded number
    * e.g. '1'
@@ -38,7 +44,13 @@ export enum PathOptionDatetimeToken {
    * e.g. 'January'
    */
   MONTH_FULL = 'LLLL',
+}
 
+/**
+ * Selected Luxon's Token for day format
+ * https://moment.github.io/luxon/#/formatting?id=table-of-tokens
+ */
+export enum PathOptionDatetimeDayFormatToken {
   /**
    * day of the month, no padding
    * e.g. '18'
