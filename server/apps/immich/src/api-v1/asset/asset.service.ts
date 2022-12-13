@@ -142,7 +142,7 @@ export class AssetService {
         throw new BadRequestException('Asset not created');
       }
 
-      await this.storageService.buildOriginalFile(assetEntity, originalAssetData.originalname);
+      await this.storageService.writeFile(assetEntity, originalAssetData.originalname);
 
       await this.assetUploadedQueue.add(
         assetUploadedProcessorName,

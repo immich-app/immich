@@ -42,9 +42,8 @@ const defaults: SystemConfig = Object.freeze({
     },
     allowedSeparatorTokens: PathAllowedSeparatorToken,
   },
-  storagePath: {
-    folder: FolderPresetOptions.DEFAULT,
-    filename: 'YYYY-MM-DD_HH-mm-ss',
+  storageTemplate: {
+    template: 'YYYY-MM-DD_HH-mm-ss',
   },
 });
 

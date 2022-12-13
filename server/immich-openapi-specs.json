@@ -1702,6 +1702,42 @@
         ]
       }
     },
+    "/system-config/storage-template": {
+      "post": {
+        "operationId": "updateStorageTemplate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemConfigCustomStorageTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/auth/login": {
       "post": {
         "operationId": "login",
@@ -3165,6 +3201,17 @@
           "autoRegister"
         ]
       },
+      "SystemConfigStorageTemplateDto": {
+        "type": "object",
+        "properties": {
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "template"
+        ]
+      },
       "SystemConfigDto": {
         "type": "object",
         "properties": {
@@ -3173,11 +3220,55 @@
           },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
+          },
+          "storageTemplate": {
+            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           }
         },
         "required": [
           "ffmpeg",
-          "oauth"
+          "oauth",
+          "storageTemplate"
+        ]
+      },
+      "StorageTemplateTypeEnum": {
+        "type": "string",
+        "enum": [
+          "datetime",
+          "literal"
+        ]
+      },
+      "StorageDateTemplate": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/StorageTemplateTypeEnum"
+          },
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "key",
+          "value"
+        ]
+      },
+      "SystemConfigCustomStorageTemplateDto": {
+        "type": "object",
+        "properties": {
+          "template": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorageDateTemplate"
+            }
+          }
+        },
+        "required": [
+          "template"
         ]
       },
       "LoginCredentialDto": {

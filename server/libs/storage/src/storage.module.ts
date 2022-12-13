@@ -6,11 +6,10 @@ import { SystemConfigModule } from 'apps/immich/src/api-v1/system-config/system-
 import { SystemConfigService } from 'apps/immich/src/api-v1/system-config/system-config.service';
 import { StorageService } from './storage.service';
 import { FileSystemStorageService } from './storage.service.filesystem';
-import { S3StorageService } from './storage.service.s3';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AssetEntity]), SystemConfigModule, ImmichConfigModule],
-  providers: [StorageService, SystemConfigService, FileSystemStorageService, S3StorageService],
+  providers: [StorageService, SystemConfigService, FileSystemStorageService],
   exports: [StorageService],
 })
 export class StorageModule {}
