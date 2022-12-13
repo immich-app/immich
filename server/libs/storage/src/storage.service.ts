@@ -25,6 +25,6 @@ export class StorageService {
     // this.s3StorageService.write();
 
     // If FileSystem storage enable -> Use FileSystemService
-    this.fileSystemStorageService.write();
+    // this.fileSystemStorageService.write();
   }
 }

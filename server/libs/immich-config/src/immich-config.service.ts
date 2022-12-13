@@ -1,4 +1,6 @@
 import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/database/entities/system-config.entity';
+import { PathOptionDatetimeToken } from '@app/storage/enums/path-option-datetime-token';
+import { FolderPresetOptions } from '@app/storage/enums/path-preset-options';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as _ from 'lodash';
@@ -20,6 +22,11 @@ const defaults: SystemConfig = Object.freeze({
     scope: 'openid email profile',
     buttonText: 'Login with OAuth',
     autoRegister: true,
+  },
+  storageBuilderOptions: {
+    folderBuilderOptions: PathOptionDatetimeToken,
+    folderPresetOptions: FolderPresetOptions,
+    filenameBuilderOptions: PathOptionDatetimeToken,
   },
 });
 
