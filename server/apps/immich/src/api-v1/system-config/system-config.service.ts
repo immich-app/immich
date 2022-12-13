@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ImmichConfigService } from 'libs/immich-config/src';
-import { SystemConfigCustomStorageTemplateDto } from './dto/system-config-custom-storage-template.dto';
-import { SystemConfigStorageTemplateDto } from './dto/system-config-storage-template.dto';
 import { mapConfig, SystemConfigDto } from './dto/system-config.dto';
+import {
+  storageTemplateOptions,
+  SystemConfigTemplateStorageOptionDto,
+} from './response-dto/system-config-template-storage-option.dto';
 
 @Injectable()
 export class SystemConfigService {
@@ -23,13 +25,14 @@ export class SystemConfigService {
     return this.getConfig();
   }
 
-  public async updateStorageTemplate(
-    dto: SystemConfigCustomStorageTemplateDto,
-  ): Promise<SystemConfigStorageTemplateDto> {
-    console.log('updateStorageTemplate', dto);
+  public getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
+    const options = new SystemConfigTemplateStorageOptionDto();
 
-    const result = new SystemConfigStorageTemplateDto();
-    result.template = 'yyyy/MM/dd';
-    return result;
+    options.dayOptions = Object.values(storageTemplateOptions.dayOptions);
+    options.monthOptions = Object.values(storageTemplateOptions.monthOptions);
+    options.yearOptions = Object.values(storageTemplateOptions.yearOptions);
+    options.presetOptions = Object.values(storageTemplateOptions.presetOptions);
+
+    return options;
   }
 }

@@ -1702,27 +1702,17 @@
         ]
       }
     },
-    "/system-config/storage-template": {
-      "post": {
-        "operationId": "updateStorageTemplate",
+    "/system-config/storage-template-options": {
+      "get": {
+        "operationId": "getStorageTemplateOptions",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SystemConfigCustomStorageTemplateDto"
-              }
-            }
-          }
-        },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+                  "$ref": "#/components/schemas/SystemConfigTemplateStorageOptionDto"
                 }
               }
             }
@@ -3231,44 +3221,39 @@
           "storageTemplate"
         ]
       },
-      "StorageTemplateTypeEnum": {
-        "type": "string",
-        "enum": [
-          "datetime",
-          "literal"
-        ]
-      },
-      "StorageDateTemplate": {
+      "SystemConfigTemplateStorageOptionDto": {
         "type": "object",
         "properties": {
-          "type": {
-            "$ref": "#/components/schemas/StorageTemplateTypeEnum"
-          },
-          "key": {
-            "type": "string"
-          },
-          "value": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "key",
-          "value"
-        ]
-      },
-      "SystemConfigCustomStorageTemplateDto": {
-        "type": "object",
-        "properties": {
-          "template": {
+          "yearOptions": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StorageDateTemplate"
+              "type": "string"
+            }
+          },
+          "monthOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dayOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "presetOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         },
         "required": [
-          "template"
+          "yearOptions",
+          "monthOptions",
+          "dayOptions",
+          "presetOptions"
         ]
       },
       "LoginCredentialDto": {

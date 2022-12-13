@@ -1,11 +1,4 @@
 import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/database/entities/system-config.entity';
-import { PathAllowedSeparatorToken } from '@app/storage/enums/path-allowed-separator-token';
-import {
-  PathOptionDatetimeDayFormatToken,
-  PathOptionDatetimeMonthFormatToken,
-  PathOptionDatetimeYearFormatToken,
-} from '@app/storage/enums/path-option-datetime-token';
-import { FolderPresetOptions } from '@app/storage/enums/path-preset-options';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as _ from 'lodash';
@@ -28,20 +21,7 @@ const defaults: SystemConfig = Object.freeze({
     buttonText: 'Login with OAuth',
     autoRegister: true,
   },
-  storageBuilderOptions: {
-    folderBuilderOptions: {
-      datetimeYearFormat: PathOptionDatetimeYearFormatToken,
-      datetimeMonthFormat: PathOptionDatetimeMonthFormatToken,
-      datetimeDayFormat: PathOptionDatetimeDayFormatToken,
-    },
-    folderPresetOptions: FolderPresetOptions,
-    filenameBuilderOptions: {
-      datetimeYearFormat: PathOptionDatetimeYearFormatToken,
-      datetimeMonthFormat: PathOptionDatetimeMonthFormatToken,
-      datetimeDayFormat: PathOptionDatetimeDayFormatToken,
-    },
-    allowedSeparatorTokens: PathAllowedSeparatorToken,
-  },
+
   storageTemplate: {
     template: 'YYYY-MM-DD_HH-mm-ss',
   },
