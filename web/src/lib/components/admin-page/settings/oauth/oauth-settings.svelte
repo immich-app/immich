@@ -29,7 +29,7 @@
 		savedConfig = resetConfig.oauth;
 
 		notificationController.show({
-			message: 'Reset OAuth settings to the recent saved settings',
+			message: 'Reset OAuth settings to the last saved settings',
 			type: NotificationType.Info
 		});
 	}
@@ -129,7 +129,7 @@
 				<div class="mt-4">
 					<SettingSwitch
 						title="AUTO REGISTER"
-						subtitle="Automatically register new users after singning in with OAuth"
+						subtitle="Automatically register new users after signing in with OAuth"
 						bind:checked={oauthConfig.autoRegister}
 						disabled={!oauthConfig.enabled}
 					/>
