@@ -31,6 +31,21 @@ void main() {
       // TODO
     });
 
+    // List<String> hourOptions (default value: const [])
+    test('to test the property `hourOptions`', () async {
+      // TODO
+    });
+
+    // List<String> minuteOptions (default value: const [])
+    test('to test the property `minuteOptions`', () async {
+      // TODO
+    });
+
+    // List<String> secondOptions (default value: const [])
+    test('to test the property `secondOptions`', () async {
+      // TODO
+    });
+
     // List<String> presetOptions (default value: const [])
     test('to test the property `presetOptions`', () async {
       // TODO

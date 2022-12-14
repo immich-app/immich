@@ -1,10 +1,16 @@
+import {
+  supportedDayTokens,
+  supportedHourTokens,
+  supportedMinuteTokens,
+  supportedMonthTokens,
+  supportedPresetTokens,
+  supportedSecondTokens,
+  supportedYearTokens,
+} from '@app/storage/constants/supported-datetime-template';
 import { Injectable } from '@nestjs/common';
 import { ImmichConfigService } from 'libs/immich-config/src';
 import { mapConfig, SystemConfigDto } from './dto/system-config.dto';
-import {
-  storageTemplateOptions,
-  SystemConfigTemplateStorageOptionDto,
-} from './response-dto/system-config-template-storage-option.dto';
+import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 
 @Injectable()
 export class SystemConfigService {
@@ -28,10 +34,13 @@ export class SystemConfigService {
   public getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
     const options = new SystemConfigTemplateStorageOptionDto();
 
-    options.dayOptions = Object.values(storageTemplateOptions.dayOptions);
-    options.monthOptions = Object.values(storageTemplateOptions.monthOptions);
-    options.yearOptions = Object.values(storageTemplateOptions.yearOptions);
-    options.presetOptions = Object.values(storageTemplateOptions.presetOptions);
+    options.dayOptions = supportedDayTokens;
+    options.monthOptions = supportedMonthTokens;
+    options.yearOptions = supportedYearTokens;
+    options.hourOptions = supportedHourTokens;
+    options.minuteOptions = supportedMinuteTokens;
+    options.secondOptions = supportedSecondTokens;
+    options.presetOptions = supportedPresetTokens;
 
     return options;
   }

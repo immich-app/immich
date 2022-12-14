@@ -16,6 +16,9 @@ class SystemConfigTemplateStorageOptionDto {
     this.yearOptions = const [],
     this.monthOptions = const [],
     this.dayOptions = const [],
+    this.hourOptions = const [],
+    this.minuteOptions = const [],
+    this.secondOptions = const [],
     this.presetOptions = const [],
   });
 
@@ -25,6 +28,12 @@ class SystemConfigTemplateStorageOptionDto {
 
   List<String> dayOptions;
 
+  List<String> hourOptions;
+
+  List<String> minuteOptions;
+
+  List<String> secondOptions;
+
   List<String> presetOptions;
 
   @override
@@ -32,6 +41,9 @@ class SystemConfigTemplateStorageOptionDto {
      other.yearOptions == yearOptions &&
      other.monthOptions == monthOptions &&
      other.dayOptions == dayOptions &&
+     other.hourOptions == hourOptions &&
+     other.minuteOptions == minuteOptions &&
+     other.secondOptions == secondOptions &&
      other.presetOptions == presetOptions;
 
   @override
@@ -40,16 +52,22 @@ class SystemConfigTemplateStorageOptionDto {
     (yearOptions.hashCode) +
     (monthOptions.hashCode) +
     (dayOptions.hashCode) +
+    (hourOptions.hashCode) +
+    (minuteOptions.hashCode) +
+    (secondOptions.hashCode) +
     (presetOptions.hashCode);
 
   @override
-  String toString() => 'SystemConfigTemplateStorageOptionDto[yearOptions=$yearOptions, monthOptions=$monthOptions, dayOptions=$dayOptions, presetOptions=$presetOptions]';
+  String toString() => 'SystemConfigTemplateStorageOptionDto[yearOptions=$yearOptions, monthOptions=$monthOptions, dayOptions=$dayOptions, hourOptions=$hourOptions, minuteOptions=$minuteOptions, secondOptions=$secondOptions, presetOptions=$presetOptions]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'yearOptions'] = yearOptions;
       _json[r'monthOptions'] = monthOptions;
       _json[r'dayOptions'] = dayOptions;
+      _json[r'hourOptions'] = hourOptions;
+      _json[r'minuteOptions'] = minuteOptions;
+      _json[r'secondOptions'] = secondOptions;
       _json[r'presetOptions'] = presetOptions;
     return _json;
   }
@@ -81,6 +99,15 @@ class SystemConfigTemplateStorageOptionDto {
             : const [],
         dayOptions: json[r'dayOptions'] is List
             ? (json[r'dayOptions'] as List).cast<String>()
+            : const [],
+        hourOptions: json[r'hourOptions'] is List
+            ? (json[r'hourOptions'] as List).cast<String>()
+            : const [],
+        minuteOptions: json[r'minuteOptions'] is List
+            ? (json[r'minuteOptions'] as List).cast<String>()
+            : const [],
+        secondOptions: json[r'secondOptions'] is List
+            ? (json[r'secondOptions'] as List).cast<String>()
             : const [],
         presetOptions: json[r'presetOptions'] is List
             ? (json[r'presetOptions'] as List).cast<String>()
@@ -137,6 +164,9 @@ class SystemConfigTemplateStorageOptionDto {
     'yearOptions',
     'monthOptions',
     'dayOptions',
+    'hourOptions',
+    'minuteOptions',
+    'secondOptions',
     'presetOptions',
   };
 }

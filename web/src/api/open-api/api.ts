@@ -1578,6 +1578,24 @@ export interface SystemConfigTemplateStorageOptionDto {
      * @type {Array<string>}
      * @memberof SystemConfigTemplateStorageOptionDto
      */
+    'hourOptions': Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SystemConfigTemplateStorageOptionDto
+     */
+    'minuteOptions': Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SystemConfigTemplateStorageOptionDto
+     */
+    'secondOptions': Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SystemConfigTemplateStorageOptionDto
+     */
     'presetOptions': Array<string>;
 }
 /**

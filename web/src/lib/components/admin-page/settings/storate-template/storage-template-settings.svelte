@@ -18,7 +18,7 @@
 			const template = handlebar.compile(templateString, {
 				knownHelpers: undefined
 			});
-			const dt = luxon.DateTime.fromISO(new Date().toISOString());
+			const dt = luxon.DateTime.fromISO(new Date('2020-10-04T21:14:50.250').toISOString());
 
 			return template(
 				{
@@ -30,6 +30,14 @@
 					LLLL: dt.toFormat('LLLL'),
 					d: dt.toFormat('d'),
 					dd: dt.toFormat('dd'),
+					h: dt.toFormat('h'),
+					hh: dt.toFormat('hh'),
+					H: dt.toFormat('H'),
+					HH: dt.toFormat('HH'),
+					m: dt.toFormat('m'),
+					mm: dt.toFormat('mm'),
+					s: dt.toFormat('s'),
+					ss: dt.toFormat('ss'),
 					filename: 'IMG_10041123',
 					ext: 'jpeg'
 				},
@@ -41,7 +49,9 @@
 	};
 
 	const getLuxonExample = (format: string) => {
-		return luxon.DateTime.fromISO(new Date().toISOString()).toFormat(format);
+		return luxon.DateTime.fromISO(new Date('2020-10-04T21:14:50.250').toISOString()).toFormat(
+			format
+		);
 	};
 </script>
 
@@ -54,7 +64,6 @@
 				>{parsedTemplate().length + user.id.length + 'UPLOAD_LOCATION'.length}</span
 			>/260
 		</p>
-		<p class="text-xs"><span class="font-semibold">{user.id}</span> is the user ID</p>
 
 		<p class="p-4 bg-gray-200 dark:text-immich-dark-bg  py-2 rounded-md mt-2">
 			<span class="text-immich-fg/25">UPLOAD_LOCATION/{user.id}</span>/{parsedTemplate()}
@@ -75,6 +84,10 @@
 				</div>
 
 				<div class="text-xs bg-gray-200 dark:text-immich-dark-bg p-4 mt-2 rounded-lg">
+					<div class="mb-2 text-gray-600">
+						<p>Asset's timestamp is used for the datetime information</p>
+						<p>Sample time 2020-10-04T21:14:50.250</p>
+					</div>
 					<div class="flex gap-[50px]">
 						<div>
 							<p class="text-immich-primary font-medium">YEAR</p>
@@ -98,6 +111,33 @@
 							<p class="text-immich-primary font-medium">DAY</p>
 							<ul>
 								{#each options.dayOptions as dayFormat}
+									<li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
+								{/each}
+							</ul>
+						</div>
+
+						<div>
+							<p class="text-immich-primary font-medium">HOUR</p>
+							<ul>
+								{#each options.hourOptions as dayFormat}
+									<li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
+								{/each}
+							</ul>
+						</div>
+
+						<div>
+							<p class="text-immich-primary font-medium">MINUTE</p>
+							<ul>
+								{#each options.minuteOptions as dayFormat}
+									<li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
+								{/each}
+							</ul>
+						</div>
+
+						<div>
+							<p class="text-immich-primary font-medium">SECOND</p>
+							<ul>
+								{#each options.secondOptions as dayFormat}
 									<li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
 								{/each}
 							</ul>

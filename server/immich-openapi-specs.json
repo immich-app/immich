@@ -3741,6 +3741,24 @@
               "type": "string"
             }
           },
+          "hourOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minuteOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "secondOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "presetOptions": {
             "type": "array",
             "items": {
@@ -3752,6 +3770,9 @@
           "yearOptions",
           "monthOptions",
           "dayOptions",
+          "hourOptions",
+          "minuteOptions",
+          "secondOptions",
           "presetOptions"
         ]
       }
