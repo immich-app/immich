@@ -15,7 +15,7 @@
 	export let label: string;
 	export let required = false;
 	export let disabled = false;
-	export let isEdited: boolean;
+	export let isEdited = false;
 
 	const handleInput = (e: Event) => {
 		value = (e.target as HTMLInputElement).value;

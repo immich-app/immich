@@ -3,6 +3,8 @@
 	import * as luxon from 'luxon';
 	import handlebar from 'handlebars';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+	import { onMount } from 'svelte';
+	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	export let storageTemplate: SystemConfigStorageTemplateDto;
 	export let user: UserResponseDto;
 
@@ -10,6 +12,20 @@
 		const { data: templateOption } = await api.systemConfigApi.getStorageTemplateOptions();
 		return templateOption;
 	};
+
+	let filenameTemplate = '';
+	let directoryTemplate = '';
+
+	onMount(() => {
+		const filename = storageTemplate.template.split('/').pop();
+
+		if (filename) {
+			filenameTemplate = filename;
+		}
+
+		directoryTemplate = storageTemplate.template.replace(filenameTemplate, '');
+	});
+
 	$: parsedTemplate = () => {
 		const template = handlebar.compile(storageTemplate.template);
 
@@ -31,11 +47,11 @@
 	};
 </script>
 
+{storageTemplate.template}
 <section class="dark:text-immich-dark-fg">
 	<div class="mt-4 text-sm">
 		<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary">Current template</h3>
-		<pre
-			class="bg-gray-300 dark:text-immich-dark-bg py-2 px-4 rounded-lg mt-2">{user.id}/{parsedTemplate()}</pre>
+		<pre class="text-black py-2 px-4 rounded-md mt-2 font-bold">{user.id}/{parsedTemplate()}</pre>
 	</div>
 
 	<div id="directory-path-builder" class="mt-4">
@@ -92,5 +108,14 @@
 		<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm">
 			Filename builder
 		</h3>
+
+		<form autocomplete="off" on:submit|preventDefault>
+			<SettingInputField
+				inputType={SettingInputFieldType.TEXT}
+				label="FILENAME TEMPLATE"
+				bind:value={filenameTemplate}
+				required
+			/>
+		</form>
 	</div>
 </section>
