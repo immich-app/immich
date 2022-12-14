@@ -1,7 +1,7 @@
 import { AssetEntity } from '@app/database/entities/asset.entity';
+import { ImmichConfigService } from '@app/immich-config';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SystemConfigService } from 'apps/immich/src/api-v1/system-config/system-config.service';
 import { Repository } from 'typeorm';
 import { FileSystemStorageService } from './storage.service.filesystem';
 
@@ -10,9 +10,10 @@ export class StorageService {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-    private systemConfig: SystemConfigService,
 
     private fileSystemStorageService: FileSystemStorageService,
+
+    private immichConfigService: ImmichConfigService,
   ) {}
 
   public async writeFile(asset: AssetEntity, filename: string) {
@@ -24,7 +25,7 @@ export class StorageService {
   private async buildPath(asset: AssetEntity, filename: string) {
     // Build path from user config
     // Get user config from database
-    const configs = await this.systemConfig.getConfig();
+    this.immichConfigService.getConfig();
 
     return '';
   }
