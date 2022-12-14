@@ -39,7 +39,7 @@
 			const { data: currentConfig } = await api.systemConfigApi.getConfig();
 
 			const result = await api.systemConfigApi.updateConfig({
-				ffmpeg: currentConfig.ffmpeg,
+				...currentConfig,
 				oauth: oauthConfig
 			});
 
