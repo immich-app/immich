@@ -50,7 +50,7 @@
 				<div class="text-xs my-2">
 					<h4>SUPPORTED DATE FORMAT</h4>
 					<p class="italic">
-						· The asset creation date will be used to extract the date time information below
+						- The asset creation date will be used to extract the date time information below
 					</p>
 				</div>
 
