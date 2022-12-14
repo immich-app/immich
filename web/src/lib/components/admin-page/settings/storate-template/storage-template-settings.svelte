@@ -3,8 +3,6 @@
 	import * as luxon from 'luxon';
 	import handlebar from 'handlebars';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-	import { onMount } from 'svelte';
-	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	export let storageTemplate: SystemConfigStorageTemplateDto;
 	export let user: UserResponseDto;
 
@@ -13,33 +11,33 @@
 		return templateOption;
 	};
 
-	let filenameTemplate = '';
-	let directoryTemplate = '';
-
-	onMount(() => {
-		const filename = storageTemplate.template.split('/').pop();
-
-		if (filename) {
-			filenameTemplate = filename;
-		}
-
-		directoryTemplate = storageTemplate.template.replace(filenameTemplate, '');
-	});
-
+	let editableTemplate = storageTemplate.template.split('.')[0];
 	$: parsedTemplate = () => {
-		const template = handlebar.compile(storageTemplate.template);
+		try {
+			const templateString = editableTemplate + '.{{ext}}';
+			const template = handlebar.compile(templateString, {
+				knownHelpers: undefined
+			});
+			const dt = luxon.DateTime.fromISO(new Date().toISOString());
 
-		const compiledTemplate = template({
-			filename: 'imagename',
-			ext: 'jpeg',
-			shortId: 'abcde12345'
-		});
-
-		const parsedTemplate = luxon.DateTime.fromISO(new Date().toISOString()).toFormat(
-			compiledTemplate
-		);
-
-		return parsedTemplate;
+			return template(
+				{
+					y: dt.toFormat('y'),
+					yy: dt.toFormat('yy'),
+					L: dt.toFormat('L'),
+					LL: dt.toFormat('LL'),
+					LLL: dt.toFormat('LLL'),
+					LLLL: dt.toFormat('LLLL'),
+					d: dt.toFormat('d'),
+					dd: dt.toFormat('dd'),
+					filename: 'IMG_10041123',
+					ext: 'jpeg'
+				},
+				{}
+			);
+		} catch (error) {
+			return 'error';
+		}
 	};
 
 	const getLuxonExample = (format: string) => {
@@ -47,36 +45,42 @@
 	};
 </script>
 
-{storageTemplate.template}
 <section class="dark:text-immich-dark-fg">
 	<div class="mt-4 text-sm">
-		<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary">Current template</h3>
-		<pre class="text-black py-2 px-4 rounded-md mt-2 font-bold">{user.id}/{parsedTemplate()}</pre>
+		<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary">Preview</h3>
+		<p class="text-xs">
+			Approximately path length limit : <span
+				class="font-semibold text-immich-primary dark:text-immich-dark-primary"
+				>{parsedTemplate().length + user.id.length + 'UPLOAD_LOCATION'.length}</span
+			>/260
+		</p>
+		<p class="text-xs"><span class="font-semibold">{user.id}</span> is the user ID</p>
+
+		<p class="p-4 bg-gray-200 dark:text-immich-dark-bg  py-2 rounded-md mt-2">
+			<span class="text-immich-fg/25">UPLOAD_LOCATION/{user.id}</span>/{parsedTemplate()}
+		</p>
 	</div>
 
 	<div id="directory-path-builder" class="mt-4">
 		<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm">
-			Directory Path Builder
+			Template builder
 		</h3>
 
-		<div>
+		<div class="support-date">
 			{#await getSupportDateTimeFormat()}
 				<LoadingSpinner />
 			{:then options}
 				<div class="text-xs my-2">
-					<h4>SUPPORTED DATE FORMAT</h4>
-					<p class="italic">
-						- The asset creation date will be used to extract the date time information below
-					</p>
+					<h4>SUPPORTED DATE TIME FORMAT</h4>
 				</div>
 
-				<div class="text-xs bg-gray-300 dark:text-immich-dark-bg p-4 mt-2 rounded-lg">
-					<div class="flex justify-between">
+				<div class="text-xs bg-gray-200 dark:text-immich-dark-bg p-4 mt-2 rounded-lg">
+					<div class="flex gap-[50px]">
 						<div>
 							<p class="text-immich-primary font-medium">YEAR</p>
 							<ul>
 								{#each options.yearOptions as yearFormat}
-									<li>{yearFormat} - {getLuxonExample(yearFormat)}</li>
+									<li>{'{{'}{yearFormat}{'}}'} - {getLuxonExample(yearFormat)}</li>
 								{/each}
 							</ul>
 						</div>
@@ -85,7 +89,7 @@
 							<p class="text-immich-primary font-medium">MONTH</p>
 							<ul>
 								{#each options.monthOptions as monthFormat}
-									<li>{monthFormat} - {getLuxonExample(monthFormat)}</li>
+									<li>{'{{'}{monthFormat}{'}}'} - {getLuxonExample(monthFormat)}</li>
 								{/each}
 							</ul>
 						</div>
@@ -94,7 +98,7 @@
 							<p class="text-immich-primary font-medium">DAY</p>
 							<ul>
 								{#each options.dayOptions as dayFormat}
-									<li>{dayFormat} - {getLuxonExample(dayFormat)}</li>
+									<li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
 								{/each}
 							</ul>
 						</div>
@@ -102,20 +106,53 @@
 				</div>
 			{/await}
 		</div>
-	</div>
 
-	<div id="directory-path-builder" class="mt-4">
-		<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm">
-			Filename builder
-		</h3>
+		<div class="support-date">
+			<div class="text-xs my-2">
+				<h4>SUPPORTED VARIABLES</h4>
+			</div>
 
-		<form autocomplete="off" on:submit|preventDefault>
-			<SettingInputField
-				inputType={SettingInputFieldType.TEXT}
-				label="FILENAME TEMPLATE"
-				bind:value={filenameTemplate}
-				required
-			/>
-		</form>
+			<div class="text-xs bg-gray-200 dark:text-immich-dark-bg p-4 mt-2 rounded-lg">
+				<div class="flex gap-[50px]">
+					<div>
+						<p class="text-immich-primary font-medium">FILE NAME</p>
+						<ul>
+							<li>{`{{filename}}`}</li>
+						</ul>
+					</div>
+
+					<div>
+						<p class="text-immich-primary font-medium">FILE EXTENSION</p>
+						<ul>
+							<li>{`{{ext}}`}</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="mt-2 flex flex-col">
+			<label class="text-xs mb-2" for="path-tempalte">INPUT</label>
+
+			<form autocomplete="off" class="flex gap-2">
+				<input
+					class="immich-form-input w-full"
+					type="text"
+					name="path-template"
+					id="path-template"
+					bind:value={editableTemplate}
+				/>
+
+				<input
+					class="immich-form-input"
+					type="text"
+					name="path-template"
+					id="path-template"
+					value={'.{{ext}}'}
+					disabled
+					title="File extension is automatically added"
+				/>
+			</form>
+		</div>
 	</div>
 </section>

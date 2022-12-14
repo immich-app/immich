@@ -1616,118 +1616,6 @@
         ]
       }
     },
-    "/system-config": {
-      "get": {
-        "operationId": "getConfig",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SystemConfigDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "System Config"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "put": {
-        "operationId": "updateConfig",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SystemConfigDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SystemConfigDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "System Config"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/system-config/defaults": {
-      "get": {
-        "operationId": "getDefaults",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SystemConfigDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "System Config"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/system-config/storage-template-options": {
-      "get": {
-        "operationId": "getStorageTemplateOptions",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SystemConfigTemplateStorageOptionDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "System Config"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
     "/auth/login": {
       "post": {
         "operationId": "login",
@@ -2188,6 +2076,118 @@
         },
         "tags": [
           "Job"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/system-config": {
+      "get": {
+        "operationId": "getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/system-config/defaults": {
+      "get": {
+        "operationId": "getDefaults",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/system-config/storage-template-options": {
+      "get": {
+        "operationId": "getStorageTemplateOptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigTemplateStorageOptionDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
         ],
         "security": [
           {
@@ -3129,133 +3129,6 @@
           }
         }
       },
-      "SystemConfigFFmpegDto": {
-        "type": "object",
-        "properties": {
-          "crf": {
-            "type": "string"
-          },
-          "preset": {
-            "type": "string"
-          },
-          "targetVideoCodec": {
-            "type": "string"
-          },
-          "targetAudioCodec": {
-            "type": "string"
-          },
-          "targetScaling": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "crf",
-          "preset",
-          "targetVideoCodec",
-          "targetAudioCodec",
-          "targetScaling"
-        ]
-      },
-      "SystemConfigOAuthDto": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "issuerUrl": {
-            "type": "string"
-          },
-          "clientId": {
-            "type": "string"
-          },
-          "clientSecret": {
-            "type": "string"
-          },
-          "scope": {
-            "type": "string"
-          },
-          "buttonText": {
-            "type": "string"
-          },
-          "autoRegister": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled",
-          "issuerUrl",
-          "clientId",
-          "clientSecret",
-          "scope",
-          "buttonText",
-          "autoRegister"
-        ]
-      },
-      "SystemConfigStorageTemplateDto": {
-        "type": "object",
-        "properties": {
-          "template": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "template"
-        ]
-      },
-      "SystemConfigDto": {
-        "type": "object",
-        "properties": {
-          "ffmpeg": {
-            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
-          },
-          "oauth": {
-            "$ref": "#/components/schemas/SystemConfigOAuthDto"
-          },
-          "storageTemplate": {
-            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
-          }
-        },
-        "required": [
-          "ffmpeg",
-          "oauth",
-          "storageTemplate"
-        ]
-      },
-      "SystemConfigTemplateStorageOptionDto": {
-        "type": "object",
-        "properties": {
-          "yearOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "monthOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "dayOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "presetOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "yearOptions",
-          "monthOptions",
-          "dayOptions",
-          "presetOptions"
-        ]
-      },
       "LoginCredentialDto": {
         "type": "object",
         "properties": {
@@ -3753,6 +3626,133 @@
         },
         "required": [
           "command"
+        ]
+      },
+      "SystemConfigFFmpegDto": {
+        "type": "object",
+        "properties": {
+          "crf": {
+            "type": "string"
+          },
+          "preset": {
+            "type": "string"
+          },
+          "targetVideoCodec": {
+            "type": "string"
+          },
+          "targetAudioCodec": {
+            "type": "string"
+          },
+          "targetScaling": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "crf",
+          "preset",
+          "targetVideoCodec",
+          "targetAudioCodec",
+          "targetScaling"
+        ]
+      },
+      "SystemConfigOAuthDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "issuerUrl": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "buttonText": {
+            "type": "string"
+          },
+          "autoRegister": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "issuerUrl",
+          "clientId",
+          "clientSecret",
+          "scope",
+          "buttonText",
+          "autoRegister"
+        ]
+      },
+      "SystemConfigStorageTemplateDto": {
+        "type": "object",
+        "properties": {
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "template"
+        ]
+      },
+      "SystemConfigDto": {
+        "type": "object",
+        "properties": {
+          "ffmpeg": {
+            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
+          },
+          "oauth": {
+            "$ref": "#/components/schemas/SystemConfigOAuthDto"
+          },
+          "storageTemplate": {
+            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+          }
+        },
+        "required": [
+          "ffmpeg",
+          "oauth",
+          "storageTemplate"
+        ]
+      },
+      "SystemConfigTemplateStorageOptionDto": {
+        "type": "object",
+        "properties": {
+          "yearOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "monthOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dayOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "presetOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "yearOptions",
+          "monthOptions",
+          "dayOptions",
+          "presetOptions"
         ]
       }
     }
