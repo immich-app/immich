@@ -23,7 +23,7 @@ const defaults: SystemConfig = Object.freeze({
   },
 
   storageTemplate: {
-    template: 'YYYY-MM-DD_HH-mm-ss',
+    template: "y'/'y'-'LL'-'dd'/''{{filename}}-{{shortId}}.{{ext}}'",
   },
 });
 
