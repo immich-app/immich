@@ -23,7 +23,7 @@
 </script>
 
 <div class="w-full">
-	<div class="flex place-items-center gap-1">
+	<div class="flex place-items-center gap-1 h-[26px]">
 		<label class="immich-form-label" for={label}>{label.toUpperCase()} </label>
 		{#if required}
 			<div class="text-red-400">*</div>

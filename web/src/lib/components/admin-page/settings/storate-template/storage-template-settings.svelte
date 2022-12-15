@@ -171,7 +171,7 @@
 			<div class="mt-4 flex flex-col">
 				<label class="text-xs mb-2" for="path-template">INPUT</label>
 
-				<form autocomplete="off" class="flex gap-2">
+				<form autocomplete="off" class="flex gap-2 align-bottom">
 					<SettingInputField
 						inputType={SettingInputFieldType.TEXT}
 						label="Template"
