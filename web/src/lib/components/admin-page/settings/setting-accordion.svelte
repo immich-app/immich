@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 	export let title: string;
 	export let subtitle = '';
 

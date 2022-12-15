@@ -12,7 +12,7 @@
 
 	export let inputType: SettingInputFieldType;
 	export let value: string;
-	export let label: string;
+	export let label = '';
 	export let required = false;
 	export let disabled = false;
 	export let isEdited = false;
@@ -22,7 +22,7 @@
 	};
 </script>
 
-<div class="m-4 flex flex-col gap-2">
+<div class="w-full">
 	<div class="flex place-items-center gap-1">
 		<label class="immich-form-label" for={label}>{label.toUpperCase()} </label>
 		{#if required}
@@ -39,7 +39,7 @@
 		{/if}
 	</div>
 	<input
-		class="immich-form-input"
+		class="immich-form-input w-full"
 		id={label}
 		name={label}
 		type={inputType}

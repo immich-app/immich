@@ -80,51 +80,52 @@
 				</div>
 
 				<hr class="m-4" />
+				<div class="flex flex-col gap-4 ml-4">
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="ISSUER URL"
+						bind:value={oauthConfig.issuerUrl}
+						required={true}
+						disabled={!oauthConfig.enabled}
+						isEdited={!(oauthConfig.issuerUrl == savedConfig.issuerUrl)}
+					/>
 
-				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
-					label="ISSUER URL"
-					bind:value={oauthConfig.issuerUrl}
-					required={true}
-					disabled={!oauthConfig.enabled}
-					isEdited={!(oauthConfig.issuerUrl == savedConfig.issuerUrl)}
-				/>
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="CLIENT ID"
+						bind:value={oauthConfig.clientId}
+						required={true}
+						disabled={!oauthConfig.enabled}
+						isEdited={!(oauthConfig.clientId == savedConfig.clientId)}
+					/>
 
-				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
-					label="CLIENT ID"
-					bind:value={oauthConfig.clientId}
-					required={true}
-					disabled={!oauthConfig.enabled}
-					isEdited={!(oauthConfig.clientId == savedConfig.clientId)}
-				/>
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="CLIENT SECRET"
+						bind:value={oauthConfig.clientSecret}
+						required={true}
+						disabled={!oauthConfig.enabled}
+						isEdited={!(oauthConfig.clientSecret == savedConfig.clientSecret)}
+					/>
 
-				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
-					label="CLIENT SECRET"
-					bind:value={oauthConfig.clientSecret}
-					required={true}
-					disabled={!oauthConfig.enabled}
-					isEdited={!(oauthConfig.clientSecret == savedConfig.clientSecret)}
-				/>
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="SCOPE"
+						bind:value={oauthConfig.scope}
+						required={true}
+						disabled={!oauthConfig.enabled}
+						isEdited={!(oauthConfig.scope == savedConfig.scope)}
+					/>
 
-				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
-					label="SCOPE"
-					bind:value={oauthConfig.scope}
-					required={true}
-					disabled={!oauthConfig.enabled}
-					isEdited={!(oauthConfig.scope == savedConfig.scope)}
-				/>
-
-				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
-					label="BUTTON TEXT"
-					bind:value={oauthConfig.buttonText}
-					required={false}
-					disabled={!oauthConfig.enabled}
-					isEdited={!(oauthConfig.buttonText == savedConfig.buttonText)}
-				/>
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="BUTTON TEXT"
+						bind:value={oauthConfig.buttonText}
+						required={false}
+						disabled={!oauthConfig.enabled}
+						isEdited={!(oauthConfig.buttonText == savedConfig.buttonText)}
+					/>
+				</div>
 
 				<div class="mt-4">
 					<SettingSwitch

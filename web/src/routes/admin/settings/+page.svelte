@@ -40,7 +40,7 @@
 			title="Storage Template"
 			subtitle="Manage the folder structure and file name of the upload asset"
 		>
-			<StorageTemplateSettings storageTemplate={configs.storageTemplate} user={data.user} />
+			<StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
 		</SettingAccordion>
 	{/await}
 </section>
