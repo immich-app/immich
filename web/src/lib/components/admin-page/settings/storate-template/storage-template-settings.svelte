@@ -130,28 +130,9 @@
 
 <section class="dark:text-immich-dark-fg">
 	{#await getConfigs() then}
-		<div class="m-4">
-			<h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">
-				Preview
-			</h3>
-			<p class="text-sm">
-				Approximately path length limit : <span
-					class="font-semibold text-immich-primary dark:text-immich-dark-primary"
-					>{parsedTemplate().length + user.id.length + 'UPLOAD_LOCATION'.length}</span
-				>/260
-			</p>
-
-			<p
-				class="text-xs p-4 bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg py-2 rounded-md mt-2"
-			>
-				<span class="text-immich-fg/25 dark:text-immich-dark-fg/50">UPLOAD_LOCATION/{user.id}</span
-				>/{parsedTemplate()}
-			</p>
-		</div>
-
 		<div id="directory-path-builder" class="m-4">
 			<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-base">
-				Template builder
+				Variables
 			</h3>
 
 			<section class="support-date">
@@ -169,33 +150,64 @@
 			</section>
 
 			<div class="mt-4 flex flex-col">
-				<label class="text-xs mb-2" for="path-template">INPUT</label>
+				<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-base">
+					Template
+				</h3>
 
-				<form autocomplete="off" class="flex gap-2 align-bottom">
-					<SettingInputField
-						inputType={SettingInputFieldType.TEXT}
-						label="Template"
-						bind:value={editableTemplate}
-						required
-						isEdited={!(editableTemplate + '.{{ext}}' == savedConfig.template)}
-					/>
+				<div class="text-xs my-2">
+					<h4>PREVIEW</h4>
+				</div>
 
-					<div class="flex-0">
+				<p class="text-xs">
+					Approximately path length limit : <span
+						class="font-semibold text-immich-primary dark:text-immich-dark-primary"
+						>{parsedTemplate().length + user.id.length + 'UPLOAD_LOCATION'.length}</span
+					>/260
+				</p>
+
+				<p class="text-xs">
+					{user.id} is the user's ID
+				</p>
+
+				<p
+					class="text-xs p-4 bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg py-2 rounded-md mt-2"
+				>
+					<span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
+						>UPLOAD_LOCATION/{user.id}</span
+					>/{parsedTemplate()}
+				</p>
+
+				<div class="text-xs mt-4">
+					<h4>INPUT</h4>
+				</div>
+
+				<form autocomplete="off" class="flex flex-col">
+					<div class="flex gap-2 align-bottom">
 						<SettingInputField
-							label="Extension"
+							label="template"
+							required
 							inputType={SettingInputFieldType.TEXT}
-							value={'.{{ext}}'}
-							disabled
+							bind:value={editableTemplate}
+							isEdited={!(editableTemplate + '.{{ext}}' == savedConfig.template)}
 						/>
-					</div>
-				</form>
 
-				<SettingButtonsRow
-					on:reset={reset}
-					on:save={saveSetting}
-					on:reset-to-default={resetToDefault}
-					showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
-				/>
+						<div class="flex-0">
+							<SettingInputField
+								label="Extension"
+								inputType={SettingInputFieldType.TEXT}
+								value={'.{{ext}}'}
+								disabled
+							/>
+						</div>
+					</div>
+
+					<SettingButtonsRow
+						on:reset={reset}
+						on:save={saveSetting}
+						on:reset-to-default={resetToDefault}
+						showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
+					/>
+				</form>
 			</div>
 		</div>
 	{/await}

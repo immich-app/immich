@@ -1,5 +1,5 @@
 <div class="text-xs mt-4">
-	<h4>SUPPORTED VARIABLES</h4>
+	<h4>OTHER VARIABLES</h4>
 </div>
 
 <div class="text-xs bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg p-4 mt-2 rounded-lg">

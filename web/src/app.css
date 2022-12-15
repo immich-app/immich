@@ -63,7 +63,7 @@ input:focus-visible {
 	}
 
 	.immich-form-label {
-		@apply font-medium text-sm text-gray-500 dark:text-gray-300;
+		@apply font-medium text-gray-500 dark:text-gray-300;
 	}
 
 	.immich-btn-primary {

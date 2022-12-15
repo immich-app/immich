@@ -12,7 +12,7 @@
 </script>
 
 <div class="text-xs mt-2">
-	<h4>SUPPORTED DATE TIME FORMAT</h4>
+	<h4>DATE & TIME</h4>
 </div>
 
 <div class="text-xs bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg p-4 mt-2 rounded-lg">

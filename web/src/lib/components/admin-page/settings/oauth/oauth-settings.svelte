@@ -136,12 +136,14 @@
 					/>
 				</div>
 
-				<SettingButtonsRow
-					on:reset={reset}
-					on:save={saveSetting}
-					on:reset-to-default={resetToDefault}
-					showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
-				/>
+				<div class="ml-4">
+					<SettingButtonsRow
+						on:reset={reset}
+						on:save={saveSetting}
+						on:reset-to-default={resetToDefault}
+						showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
+					/>
+				</div>
 			</form>
 		</div>
 	{/await}
