@@ -23,7 +23,7 @@ const defaults: SystemConfig = Object.freeze({
   },
 
   storageTemplate: {
-    template: '{{y}}/{{y}}-{{LL}}-{{dd}}/{{filename}}.{{ext}}',
+    template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}.{{ext}}',
   },
 });
 

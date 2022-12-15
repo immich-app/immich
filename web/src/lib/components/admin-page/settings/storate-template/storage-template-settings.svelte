@@ -18,16 +18,16 @@
 			const template = handlebar.compile(templateString, {
 				knownHelpers: undefined
 			});
-			const dt = luxon.DateTime.fromISO(new Date('2020-10-04T21:14:50.250').toISOString());
+			const dt = luxon.DateTime.fromISO(new Date('2020-09-04T21:03:05.250').toISOString());
 
 			return template(
 				{
 					y: dt.toFormat('y'),
 					yy: dt.toFormat('yy'),
-					L: dt.toFormat('L'),
-					LL: dt.toFormat('LL'),
-					LLL: dt.toFormat('LLL'),
-					LLLL: dt.toFormat('LLLL'),
+					M: dt.toFormat('M'),
+					MM: dt.toFormat('MM'),
+					MMM: dt.toFormat('MMM'),
+					MMMM: dt.toFormat('MMMM'),
 					d: dt.toFormat('d'),
 					dd: dt.toFormat('dd'),
 					h: dt.toFormat('h'),
@@ -49,29 +49,32 @@
 	};
 
 	const getLuxonExample = (format: string) => {
-		return luxon.DateTime.fromISO(new Date('2020-10-04T21:14:50.250').toISOString()).toFormat(
+		return luxon.DateTime.fromISO(new Date('2020-09-04T21:03:05.250').toISOString()).toFormat(
 			format
 		);
 	};
 </script>
 
 <section class="dark:text-immich-dark-fg">
-	<div class="mt-4 text-sm">
-		<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary">Preview</h3>
-		<p class="text-xs">
+	<div class="my-4">
+		<h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Preview</h3>
+		<p class="text-sm">
 			Approximately path length limit : <span
 				class="font-semibold text-immich-primary dark:text-immich-dark-primary"
 				>{parsedTemplate().length + user.id.length + 'UPLOAD_LOCATION'.length}</span
 			>/260
 		</p>
 
-		<p class="p-4 bg-gray-200 dark:text-immich-dark-bg  py-2 rounded-md mt-2">
-			<span class="text-immich-fg/25">UPLOAD_LOCATION/{user.id}</span>/{parsedTemplate()}
+		<p
+			class="text-xs p-4 bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg py-2 rounded-md mt-2"
+		>
+			<span class="text-immich-fg/25 dark:text-immich-dark-fg/50">UPLOAD_LOCATION/{user.id}</span
+			>/{parsedTemplate()}
 		</p>
 	</div>
 
 	<div id="directory-path-builder" class="mt-4">
-		<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm">
+		<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-base">
 			Template builder
 		</h3>
 
@@ -79,18 +82,20 @@
 			{#await getSupportDateTimeFormat()}
 				<LoadingSpinner />
 			{:then options}
-				<div class="text-xs my-2">
+				<div class="text-xs mt-2">
 					<h4>SUPPORTED DATE TIME FORMAT</h4>
 				</div>
 
-				<div class="text-xs bg-gray-200 dark:text-immich-dark-bg p-4 mt-2 rounded-lg">
-					<div class="mb-2 text-gray-600">
-						<p>Asset's timestamp is used for the datetime information</p>
-						<p>Sample time 2020-10-04T21:14:50.250</p>
+				<div
+					class="text-xs bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg p-4 mt-2 rounded-lg"
+				>
+					<div class="mb-2 text-gray-600 dark:text-immich-dark-fg">
+						<p>Asset's creation timestamp is used for the datetime information</p>
+						<p>Sample time 2020-09-04T21:03:05.250</p>
 					</div>
 					<div class="flex gap-[50px]">
 						<div>
-							<p class="text-immich-primary font-medium">YEAR</p>
+							<p class="text-immich-primary font-medium dark:text-immich-dark-primary">YEAR</p>
 							<ul>
 								{#each options.yearOptions as yearFormat}
 									<li>{'{{'}{yearFormat}{'}}'} - {getLuxonExample(yearFormat)}</li>
@@ -99,7 +104,7 @@
 						</div>
 
 						<div>
-							<p class="text-immich-primary font-medium">MONTH</p>
+							<p class="text-immich-primary font-medium dark:text-immich-dark-primary">MONTH</p>
 							<ul>
 								{#each options.monthOptions as monthFormat}
 									<li>{'{{'}{monthFormat}{'}}'} - {getLuxonExample(monthFormat)}</li>
@@ -108,7 +113,7 @@
 						</div>
 
 						<div>
-							<p class="text-immich-primary font-medium">DAY</p>
+							<p class="text-immich-primary font-medium dark:text-immich-dark-primary">DAY</p>
 							<ul>
 								{#each options.dayOptions as dayFormat}
 									<li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -117,7 +122,7 @@
 						</div>
 
 						<div>
-							<p class="text-immich-primary font-medium">HOUR</p>
+							<p class="text-immich-primary font-medium dark:text-immich-dark-primary">HOUR</p>
 							<ul>
 								{#each options.hourOptions as dayFormat}
 									<li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -126,7 +131,7 @@
 						</div>
 
 						<div>
-							<p class="text-immich-primary font-medium">MINUTE</p>
+							<p class="text-immich-primary font-medium dark:text-immich-dark-primary">MINUTE</p>
 							<ul>
 								{#each options.minuteOptions as dayFormat}
 									<li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -135,7 +140,7 @@
 						</div>
 
 						<div>
-							<p class="text-immich-primary font-medium">SECOND</p>
+							<p class="text-immich-primary font-medium dark:text-immich-dark-primary">SECOND</p>
 							<ul>
 								{#each options.secondOptions as dayFormat}
 									<li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -148,21 +153,25 @@
 		</div>
 
 		<div class="support-date">
-			<div class="text-xs my-2">
+			<div class="text-xs mt-4">
 				<h4>SUPPORTED VARIABLES</h4>
 			</div>
 
-			<div class="text-xs bg-gray-200 dark:text-immich-dark-bg p-4 mt-2 rounded-lg">
+			<div
+				class="text-xs bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg p-4 mt-2 rounded-lg"
+			>
 				<div class="flex gap-[50px]">
 					<div>
-						<p class="text-immich-primary font-medium">FILE NAME</p>
+						<p class="text-immich-primary font-medium dark:text-immich-dark-primary">FILE NAME</p>
 						<ul>
 							<li>{`{{filename}}`}</li>
 						</ul>
 					</div>
 
 					<div>
-						<p class="text-immich-primary font-medium">FILE EXTENSION</p>
+						<p class="text-immich-primary font-medium dark:text-immich-dark-primary">
+							FILE EXTENSION
+						</p>
 						<ul>
 							<li>{`{{ext}}`}</li>
 						</ul>
@@ -171,8 +180,8 @@
 			</div>
 		</div>
 
-		<div class="mt-2 flex flex-col">
-			<label class="text-xs mb-2" for="path-tempalte">INPUT</label>
+		<div class="mt-4 flex flex-col">
+			<label class="text-xs mb-2" for="path-template">INPUT</label>
 
 			<form autocomplete="off" class="flex gap-2">
 				<input
@@ -186,8 +195,8 @@
 				<input
 					class="immich-form-input"
 					type="text"
-					name="path-template"
-					id="path-template"
+					name="filename-extention"
+					id="filename-extention"
 					value={'.{{ext}}'}
 					disabled
 					title="File extension is automatically added"
