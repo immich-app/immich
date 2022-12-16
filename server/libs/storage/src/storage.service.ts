@@ -51,10 +51,14 @@ export class StorageService {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${ext}`));
+      const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
       const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
-      const fullPath = path.normalize(path.join(APP_UPLOAD_LOCATION, asset.userId, storagePath));
+      const fullPath = path.normalize(path.join(rootPath, storagePath));
 
-      // TODO: parent directory check
+      if (!fullPath.startsWith(rootPath)) {
+        this.log.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
+        return asset;
+      }
 
       let duplicateCount = 0;
       let destination = `${fullPath}.${ext}`;
