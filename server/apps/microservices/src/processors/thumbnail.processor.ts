@@ -60,9 +60,7 @@ export class ThumbnailGeneratorProcessor {
       mkdirSync(resizePath, { recursive: true });
     }
 
-    const temp = asset.originalPath.split('/');
-    const originalFilename = temp[temp.length - 1].split('.')[0];
-    const jpegThumbnailPath = join(resizePath, `${originalFilename}.jpeg`);
+    const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
     if (asset.type == AssetType.IMAGE) {
       try {
