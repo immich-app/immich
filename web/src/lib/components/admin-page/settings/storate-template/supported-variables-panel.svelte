@@ -10,12 +10,5 @@
 				<li>{`{{filename}}`}</li>
 			</ul>
 		</div>
-
-		<div>
-			<p class="text-immich-primary font-medium dark:text-immich-dark-primary">FILE EXTENSION</p>
-			<ul>
-				<li>{`{{ext}}`}</li>
-			</ul>
-		</div>
 	</div>
 </div>

@@ -32,46 +32,35 @@
 		return templateOption;
 	};
 
-	let editableTemplate = storageConfig.template.split('.')[0];
-
 	$: parsedTemplate = () => {
 		try {
-			const templateString = editableTemplate + '.{{ext}}';
-			const template = handlebar.compile(templateString, {
+			const template = handlebar.compile(storageConfig.template, {
 				knownHelpers: undefined
 			});
 			const dt = luxon.DateTime.fromISO(new Date('2022-09-04T21:03:05.250').toISOString());
 
-			return template(
-				{
-					y: dt.toFormat('y'),
-					yy: dt.toFormat('yy'),
-					M: dt.toFormat('M'),
-					MM: dt.toFormat('MM'),
-					MMM: dt.toFormat('MMM'),
-					MMMM: dt.toFormat('MMMM'),
-					d: dt.toFormat('d'),
-					dd: dt.toFormat('dd'),
-					h: dt.toFormat('h'),
-					hh: dt.toFormat('hh'),
-					H: dt.toFormat('H'),
-					HH: dt.toFormat('HH'),
-					m: dt.toFormat('m'),
-					mm: dt.toFormat('mm'),
-					s: dt.toFormat('s'),
-					ss: dt.toFormat('ss'),
-					filename: 'IMG_10041123',
-					ext: 'jpeg'
-				},
-				{}
-			);
+			return template({
+				y: dt.toFormat('y'),
+				yy: dt.toFormat('yy'),
+				M: dt.toFormat('M'),
+				MM: dt.toFormat('MM'),
+				MMM: dt.toFormat('MMM'),
+				MMMM: dt.toFormat('MMMM'),
+				d: dt.toFormat('d'),
+				dd: dt.toFormat('dd'),
+				h: dt.toFormat('h'),
+				hh: dt.toFormat('hh'),
+				H: dt.toFormat('H'),
+				HH: dt.toFormat('HH'),
+				m: dt.toFormat('m'),
+				mm: dt.toFormat('mm'),
+				s: dt.toFormat('s'),
+				ss: dt.toFormat('ss'),
+				filename: 'IMG_10041123'
+			});
 		} catch (error) {
 			return 'error';
 		}
-	};
-
-	const updateEditableTemplate = () => {
-		editableTemplate = storageConfig.template.split('.')[0];
 	};
 
 	async function reset() {
@@ -79,7 +68,6 @@
 
 		storageConfig = resetConfig.storageTemplate;
 		savedConfig = resetConfig.storageTemplate;
-		updateEditableTemplate();
 
 		notificationController.show({
 			message: 'Reset storage template settings to the recent saved settings',
@@ -91,16 +79,13 @@
 		try {
 			const { data: currentConfig } = await api.systemConfigApi.getConfig();
 
-			const templateString = editableTemplate + '.{{ext}}';
-			currentConfig.storageTemplate.template = templateString;
-
 			const result = await api.systemConfigApi.updateConfig({
-				...currentConfig
+				...currentConfig,
+				storageTemplate: storageConfig
 			});
 
 			storageConfig = result.data.storageTemplate;
 			savedConfig = result.data.storageTemplate;
-			updateEditableTemplate();
 
 			notificationController.show({
 				message: 'Storage template saved',
@@ -119,7 +104,6 @@
 		const { data: defaultConfig } = await api.systemConfigApi.getDefaults();
 
 		storageConfig = defaultConfig.storageTemplate;
-		updateEditableTemplate();
 
 		notificationController.show({
 			message: 'Reset storage template to default',
@@ -174,7 +158,7 @@
 				>
 					<span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
 						>UPLOAD_LOCATION/{user.id}</span
-					>/{parsedTemplate()}
+					>/{parsedTemplate()}.jpeg
 				</p>
 
 				<div class="text-xs mt-4">
@@ -187,15 +171,15 @@
 							label="template"
 							required
 							inputType={SettingInputFieldType.TEXT}
-							bind:value={editableTemplate}
-							isEdited={!(editableTemplate + '.{{ext}}' == savedConfig.template)}
+							bind:value={storageConfig.template}
+							isEdited={!(storageConfig.template == savedConfig.template)}
 						/>
 
 						<div class="flex-0">
 							<SettingInputField
 								label="Extension"
 								inputType={SettingInputFieldType.TEXT}
-								value={'.{{ext}}'}
+								value={'.jpeg'}
 								disabled
 							/>
 						</div>
