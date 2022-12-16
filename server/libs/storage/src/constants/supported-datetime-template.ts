@@ -5,16 +5,16 @@ export const supportedHourTokens = ['h', 'hh', 'H', 'HH'];
 export const supportedMinuteTokens = ['m', 'mm'];
 export const supportedSecondTokens = ['s', 'ss'];
 export const supportedPresetTokens = [
-  '{{y}}/{{y}}-{{MM}}-{{dd}}',
-  '{{y}}/{{MM}}-{{dd}}',
-  '{{y}}/{{MMMM}}-{{dd}}',
-  '{{y}}/{{MM}}',
-  '{{y}}/{{MMM}}',
-  '{{y}}/{{MMMM}}',
-  '{{y}}/{{MM}}/{{dd}}',
-  '{{y}}/{{MMMM}}/{{dd}}',
-  '{{y}}/{{y}}-{{MM}}/{{y}}-{{MM}}-{{dd}}',
-  '{{y}}-{{MM}}-{{dd}}',
-  '{{y}}-{{MMM}}-{{dd}}',
-  '{{y}}-{{MMMM}}-{{dd}}',
+  '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{MM}}/{{filename}}',
+  '{{y}}/{{MMM}}/{{filename}}',
+  '{{y}}/{{MMMM}}/{{filename}}',
+  '{{y}}/{{MM}}/{{dd}}/{{filename}}',
+  '{{y}}/{{MMMM}}/{{dd}}/{{filename}}',
+  '{{y}}/{{y}}-{{MM}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
+  '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
 ];

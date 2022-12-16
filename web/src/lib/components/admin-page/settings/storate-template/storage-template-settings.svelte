@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { api, SystemConfigStorageTemplateDto, UserResponseDto } from '@api';
+	import {
+		api,
+		SystemConfigStorageTemplateDto,
+		SystemConfigTemplateStorageOptionDto,
+		UserResponseDto
+	} from '@api';
 	import * as luxon from 'luxon';
 	import handlebar from 'handlebars';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
@@ -19,49 +24,58 @@
 
 	let savedConfig: SystemConfigStorageTemplateDto;
 	let defaultConfig: SystemConfigStorageTemplateDto;
+	let templateOptions: SystemConfigTemplateStorageOptionDto;
+	let selectedPreset = '';
 
 	async function getConfigs() {
-		[savedConfig, defaultConfig] = await Promise.all([
+		[savedConfig, defaultConfig, templateOptions] = await Promise.all([
 			api.systemConfigApi.getConfig().then((res) => res.data.storageTemplate),
-			api.systemConfigApi.getDefaults().then((res) => res.data.storageTemplate)
+			api.systemConfigApi.getDefaults().then((res) => res.data.storageTemplate),
+			api.systemConfigApi.getStorageTemplateOptions().then((res) => res.data)
 		]);
+
+		selectedPreset = templateOptions.presetOptions[0];
 	}
 
 	const getSupportDateTimeFormat = async () => {
-		const { data: templateOption } = await api.systemConfigApi.getStorageTemplateOptions();
-		return templateOption;
+		const { data } = await api.systemConfigApi.getStorageTemplateOptions();
+		return data;
 	};
 
 	$: parsedTemplate = () => {
 		try {
-			const template = handlebar.compile(storageConfig.template, {
-				knownHelpers: undefined
-			});
-			const dt = luxon.DateTime.fromISO(new Date('2022-09-04T21:03:05.250').toISOString());
-
-			return template({
-				y: dt.toFormat('y'),
-				yy: dt.toFormat('yy'),
-				M: dt.toFormat('M'),
-				MM: dt.toFormat('MM'),
-				MMM: dt.toFormat('MMM'),
-				MMMM: dt.toFormat('MMMM'),
-				d: dt.toFormat('d'),
-				dd: dt.toFormat('dd'),
-				h: dt.toFormat('h'),
-				hh: dt.toFormat('hh'),
-				H: dt.toFormat('H'),
-				HH: dt.toFormat('HH'),
-				m: dt.toFormat('m'),
-				mm: dt.toFormat('mm'),
-				s: dt.toFormat('s'),
-				ss: dt.toFormat('ss'),
-				filename: 'IMG_10041123',
-				ext: 'jpeg'
-			});
+			return renderTemplate(storageConfig.template);
 		} catch (error) {
 			return 'error';
 		}
+	};
+
+	const renderTemplate = (templateString: string) => {
+		const template = handlebar.compile(templateString, {
+			knownHelpers: undefined
+		});
+
+		const substitutions: Record<string, string> = {
+			filename: 'IMG_10041123',
+			ext: 'jpeg'
+		};
+
+		const dt = luxon.DateTime.fromISO(new Date('2022-09-04T20:03:05.250').toISOString());
+
+		const dateTokens = [
+			...templateOptions.yearOptions,
+			...templateOptions.monthOptions,
+			...templateOptions.dayOptions,
+			...templateOptions.hourOptions,
+			...templateOptions.minuteOptions,
+			...templateOptions.secondOptions
+		];
+
+		for (const token of dateTokens) {
+			substitutions[token] = dt.toFormat(token);
+		}
+
+		return template(substitutions);
 	};
 
 	async function reset() {
@@ -111,6 +125,9 @@
 			type: NotificationType.Info
 		});
 	}
+	const handlePresetSelection = () => {
+		storageConfig.template = selectedPreset;
+	};
 </script>
 
 <section class="dark:text-immich-dark-fg">
@@ -155,18 +172,30 @@
 				</p>
 
 				<p
-					class="text-xs p-4 bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg py-2 rounded-md mt-2"
+					class="text-xs p-4 bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg py-2 rounded-lg mt-2"
 				>
 					<span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
 						>UPLOAD_LOCATION/{user.id}</span
 					>/{parsedTemplate()}.jpeg
 				</p>
 
-				<div class="text-xs mt-4">
-					<h4>INPUT</h4>
-				</div>
-
 				<form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
+					<div class="flex flex-col my-2">
+						<label class="text-xs" for="presets">PRESET</label>
+						<select
+							class="text-sm bg-gray-200 p-2 rounded-lg mt-2"
+							name="presets"
+							id="preset-select"
+							bind:value={selectedPreset}
+							on:change={handlePresetSelection}
+						>
+							<option value="">Folder structure preset</option>
+							{#each templateOptions.presetOptions as preset}
+								<option value={preset}>{renderTemplate(preset)}</option>
+							{/each}
+						</select>
+					</div>
+
 					<div class="flex gap-2 align-bottom">
 						<SettingInputField
 							label="template"

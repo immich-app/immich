@@ -5,7 +5,7 @@
 	export let options: SystemConfigTemplateStorageOptionDto;
 
 	const getLuxonExample = (format: string) => {
-		return luxon.DateTime.fromISO(new Date('2022-09-04T21:03:05.250').toISOString()).toFormat(
+		return luxon.DateTime.fromISO(new Date('2022-09-04T20:03:05.250').toISOString()).toFormat(
 			format
 		);
 	};
@@ -18,7 +18,7 @@
 <div class="text-xs bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg p-4 mt-2 rounded-lg">
 	<div class="mb-2 text-gray-600 dark:text-immich-dark-fg">
 		<p>Asset's creation timestamp is used for the datetime information</p>
-		<p>Sample time 2022-09-04T21:03:05.250</p>
+		<p>Sample time 2022-09-04T20:03:05.250</p>
 	</div>
 	<div class="flex gap-[50px]">
 		<div>
