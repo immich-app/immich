@@ -184,7 +184,7 @@
 					<div class="flex flex-col my-2">
 						<label class="text-xs" for="presets">PRESET</label>
 						<select
-							class="text-sm bg-gray-200 p-2 rounded-lg mt-2 dark:bg-gray-600 hover:cursor-pointer"
+							class="text-sm bg-slate-200 p-2 rounded-lg mt-2 dark:bg-gray-600 hover:cursor-pointer"
 							name="presets"
 							id="preset-select"
 							bind:value={selectedPreset}
