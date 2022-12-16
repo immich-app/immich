@@ -25,14 +25,13 @@ export class StorageService {
   public async moveFile(asset: AssetEntity, filename: string): Promise<AssetEntity> {
     try {
       const parsedPath = await this.buildPath(asset, filename);
-      const fileExtension = path.extname(asset.originalPath).split('.').pop() as string;
-      let qualifiedPath = path.join(APP_UPLOAD_LOCATION, asset.userId, parsedPath + '.' + fileExtension);
+      let qualifiedPath = path.join(APP_UPLOAD_LOCATION, asset.userId, parsedPath + path.extname(asset.originalPath));
 
       let duplicateCount = 1;
       this.log.debug(`Checking if file exists: ${qualifiedPath}`);
       while (await this.checkFileExist(qualifiedPath)) {
         const newPath = await this.buildPath(asset, filename + `_${duplicateCount}`);
-        qualifiedPath = path.join(APP_UPLOAD_LOCATION, asset.userId, newPath + '.' + fileExtension);
+        qualifiedPath = path.join(APP_UPLOAD_LOCATION, asset.userId, newPath + path.extname(asset.originalPath));
         duplicateCount++;
       }
 
