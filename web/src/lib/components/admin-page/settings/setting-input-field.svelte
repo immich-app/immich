@@ -32,7 +32,7 @@
 		{#if isEdited}
 			<div
 				transition:fly={{ x: 10, duration: 200, easing: quintOut }}
-				class="text-gray-500 text-xs italic"
+				class="bg-orange-100 px-2 rounded-full text-orange-900 text-[10px]"
 			>
 				Unsaved change
 			</div>

@@ -81,8 +81,8 @@
 	async function reset() {
 		const { data: resetConfig } = await api.systemConfigApi.getConfig();
 
-		storageConfig = resetConfig.storageTemplate;
-		savedConfig = resetConfig.storageTemplate;
+		storageConfig.template = resetConfig.storageTemplate.template;
+		savedConfig.template = resetConfig.storageTemplate.template;
 
 		notificationController.show({
 			message: 'Reset storage template settings to the recent saved settings',
@@ -99,8 +99,8 @@
 				storageTemplate: storageConfig
 			});
 
-			storageConfig = result.data.storageTemplate;
-			savedConfig = result.data.storageTemplate;
+			storageConfig.template = result.data.storageTemplate.template;
+			savedConfig.template = result.data.storageTemplate.template;
 
 			notificationController.show({
 				message: 'Storage template saved',
@@ -118,13 +118,14 @@
 	async function resetToDefault() {
 		const { data: defaultConfig } = await api.systemConfigApi.getDefaults();
 
-		storageConfig = defaultConfig.storageTemplate;
+		storageConfig.template = defaultConfig.storageTemplate.template;
 
 		notificationController.show({
 			message: 'Reset storage template to default',
 			type: NotificationType.Info
 		});
 	}
+
 	const handlePresetSelection = () => {
 		storageConfig.template = selectedPreset;
 	};
@@ -183,26 +184,24 @@
 					<div class="flex flex-col my-2">
 						<label class="text-xs" for="presets">PRESET</label>
 						<select
-							class="text-sm bg-gray-200 p-2 rounded-lg mt-2"
+							class="text-sm bg-gray-200 p-2 rounded-lg mt-2 dark:bg-gray-600 hover:cursor-pointer"
 							name="presets"
 							id="preset-select"
 							bind:value={selectedPreset}
 							on:change={handlePresetSelection}
 						>
-							<option value="">Folder structure preset</option>
 							{#each templateOptions.presetOptions as preset}
 								<option value={preset}>{renderTemplate(preset)}</option>
 							{/each}
 						</select>
 					</div>
-
 					<div class="flex gap-2 align-bottom">
 						<SettingInputField
 							label="template"
 							required
 							inputType={SettingInputFieldType.TEXT}
 							bind:value={storageConfig.template}
-							isEdited={!(storageConfig.template == savedConfig.template)}
+							isEdited={!(storageConfig.template === savedConfig.template)}
 						/>
 
 						<div class="flex-0">

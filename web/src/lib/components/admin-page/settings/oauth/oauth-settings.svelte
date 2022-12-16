@@ -25,8 +25,8 @@
 	async function reset() {
 		const { data: resetConfig } = await api.systemConfigApi.getConfig();
 
-		oauthConfig = resetConfig.oauth;
-		savedConfig = resetConfig.oauth;
+		oauthConfig = { ...resetConfig.oauth };
+		savedConfig = { ...resetConfig.oauth };
 
 		notificationController.show({
 			message: 'Reset OAuth settings to the recent saved settings',
@@ -43,8 +43,8 @@
 				oauth: oauthConfig
 			});
 
-			oauthConfig = result.data.oauth;
-			savedConfig = result.data.oauth;
+			oauthConfig = { ...result.data.oauth };
+			savedConfig = { ...result.data.oauth };
 
 			notificationController.show({
 				message: 'OAuth settings saved',
@@ -62,7 +62,7 @@
 	async function resetToDefault() {
 		const { data: defaultConfig } = await api.systemConfigApi.getDefaults();
 
-		oauthConfig = defaultConfig.oauth;
+		oauthConfig = { ...defaultConfig.oauth };
 
 		notificationController.show({
 			message: 'Reset OAuth settings to default',

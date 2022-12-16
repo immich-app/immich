@@ -29,8 +29,8 @@
 				ffmpeg: ffmpegConfig
 			});
 
-			ffmpegConfig = result.data.ffmpeg;
-			savedConfig = result.data.ffmpeg;
+			ffmpegConfig = { ...result.data.ffmpeg };
+			savedConfig = { ...result.data.ffmpeg };
 
 			notificationController.show({
 				message: 'FFmpeg settings saved',
@@ -48,8 +48,8 @@
 	async function reset() {
 		const { data: resetConfig } = await api.systemConfigApi.getConfig();
 
-		ffmpegConfig = resetConfig.ffmpeg;
-		savedConfig = resetConfig.ffmpeg;
+		ffmpegConfig = { ...resetConfig.ffmpeg };
+		savedConfig = { ...resetConfig.ffmpeg };
 
 		notificationController.show({
 			message: 'Reset FFmpeg settings to the recent saved settings',
@@ -60,8 +60,8 @@
 	async function resetToDefault() {
 		const { data: configs } = await api.systemConfigApi.getDefaults();
 
-		ffmpegConfig = configs.ffmpeg;
-		defaultConfig = configs.ffmpeg;
+		ffmpegConfig = { ...configs.ffmpeg };
+		defaultConfig = { ...configs.ffmpeg };
 
 		notificationController.show({
 			message: 'Reset FFmpeg settings to default',
