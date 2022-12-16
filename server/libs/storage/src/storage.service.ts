@@ -1,3 +1,4 @@
+import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ImmichConfigService } from '@app/immich-config';
 import { Injectable, Logger } from '@nestjs/common';
@@ -11,7 +12,6 @@ import path from 'node:path';
 import { constants } from 'node:fs';
 import fsPromise from 'fs/promises';
 import mv from 'mv';
-import { APP_UPLOAD_LOCATION } from '@app/common';
 
 @Injectable()
 export class StorageService {
