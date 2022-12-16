@@ -142,15 +142,15 @@ export class AssetService {
         throw new BadRequestException('Asset not created');
       }
 
-      await this.storageService.writeFile(assetEntity, originalAssetData.originalname);
+      const movedAsset = await this.storageService.moveFile(assetEntity, originalAssetData.originalname);
 
       await this.assetUploadedQueue.add(
         assetUploadedProcessorName,
-        { asset: assetEntity, fileName: originalAssetData.originalname },
-        { jobId: assetEntity.id },
+        { asset: movedAsset, fileName: originalAssetData.originalname },
+        { jobId: movedAsset.id },
       );
 
-      return new AssetFileUploadResponseDto(assetEntity.id);
+      return new AssetFileUploadResponseDto(movedAsset.id);
     } catch (err) {
       await this.backgroundTaskService.deleteFileOnDisk([
         {
