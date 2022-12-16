@@ -64,11 +64,6 @@ export class StorageService {
       let destination = `${fullPath}.${ext}`;
 
       while (true) {
-        // some sanity to prevent infinite loop?
-        // if (duplicateCount > threshold) {
-        //   throw new InternalServerErrorException(`Unable to find unique filename!`);
-        // }
-
         const exists = await this.checkFileExist(destination);
         if (!exists) {
           break;
