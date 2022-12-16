@@ -165,7 +165,7 @@
 					<h4>INPUT</h4>
 				</div>
 
-				<form autocomplete="off" class="flex flex-col">
+				<form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
 					<div class="flex gap-2 align-bottom">
 						<SettingInputField
 							label="template"
