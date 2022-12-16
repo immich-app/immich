@@ -25,8 +25,8 @@
 	async function reset() {
 		const { data: resetConfig } = await api.systemConfigApi.getConfig();
 
-		oauthConfig = resetConfig.oauth;
-		savedConfig = resetConfig.oauth;
+		oauthConfig = { ...resetConfig.oauth };
+		savedConfig = { ...resetConfig.oauth };
 
 		notificationController.show({
 			message: 'Reset OAuth settings to the last saved settings',
@@ -39,12 +39,12 @@
 			const { data: currentConfig } = await api.systemConfigApi.getConfig();
 
 			const result = await api.systemConfigApi.updateConfig({
-				ffmpeg: currentConfig.ffmpeg,
+				...currentConfig,
 				oauth: oauthConfig
 			});
 
-			oauthConfig = result.data.oauth;
-			savedConfig = result.data.oauth;
+			oauthConfig = { ...result.data.oauth };
+			savedConfig = { ...result.data.oauth };
 
 			notificationController.show({
 				message: 'OAuth settings saved',
@@ -62,7 +62,7 @@
 	async function resetToDefault() {
 		const { data: defaultConfig } = await api.systemConfigApi.getDefaults();
 
-		oauthConfig = defaultConfig.oauth;
+		oauthConfig = { ...defaultConfig.oauth };
 
 		notificationController.show({
 			message: 'Reset OAuth settings to default',
@@ -80,51 +80,52 @@
 				</div>
 
 				<hr class="m-4" />
+				<div class="flex flex-col gap-4 ml-4">
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="ISSUER URL"
+						bind:value={oauthConfig.issuerUrl}
+						required={true}
+						disabled={!oauthConfig.enabled}
+						isEdited={!(oauthConfig.issuerUrl == savedConfig.issuerUrl)}
+					/>
 
-				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
-					label="ISSUER URL"
-					bind:value={oauthConfig.issuerUrl}
-					required={true}
-					disabled={!oauthConfig.enabled}
-					isEdited={!(oauthConfig.issuerUrl == savedConfig.issuerUrl)}
-				/>
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="CLIENT ID"
+						bind:value={oauthConfig.clientId}
+						required={true}
+						disabled={!oauthConfig.enabled}
+						isEdited={!(oauthConfig.clientId == savedConfig.clientId)}
+					/>
 
-				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
-					label="CLIENT ID"
-					bind:value={oauthConfig.clientId}
-					required={true}
-					disabled={!oauthConfig.enabled}
-					isEdited={!(oauthConfig.clientId == savedConfig.clientId)}
-				/>
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="CLIENT SECRET"
+						bind:value={oauthConfig.clientSecret}
+						required={true}
+						disabled={!oauthConfig.enabled}
+						isEdited={!(oauthConfig.clientSecret == savedConfig.clientSecret)}
+					/>
 
-				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
-					label="CLIENT SECRET"
-					bind:value={oauthConfig.clientSecret}
-					required={true}
-					disabled={!oauthConfig.enabled}
-					isEdited={!(oauthConfig.clientSecret == savedConfig.clientSecret)}
-				/>
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="SCOPE"
+						bind:value={oauthConfig.scope}
+						required={true}
+						disabled={!oauthConfig.enabled}
+						isEdited={!(oauthConfig.scope == savedConfig.scope)}
+					/>
 
-				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
-					label="SCOPE"
-					bind:value={oauthConfig.scope}
-					required={true}
-					disabled={!oauthConfig.enabled}
-					isEdited={!(oauthConfig.scope == savedConfig.scope)}
-				/>
-
-				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
-					label="BUTTON TEXT"
-					bind:value={oauthConfig.buttonText}
-					required={false}
-					disabled={!oauthConfig.enabled}
-					isEdited={!(oauthConfig.buttonText == savedConfig.buttonText)}
-				/>
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="BUTTON TEXT"
+						bind:value={oauthConfig.buttonText}
+						required={false}
+						disabled={!oauthConfig.enabled}
+						isEdited={!(oauthConfig.buttonText == savedConfig.buttonText)}
+					/>
+				</div>
 
 				<div class="mt-4">
 					<SettingSwitch
@@ -135,12 +136,14 @@
 					/>
 				</div>
 
-				<SettingButtonsRow
-					on:reset={reset}
-					on:save={saveSetting}
-					on:reset-to-default={resetToDefault}
-					showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
-				/>
+				<div class="ml-4">
+					<SettingButtonsRow
+						on:reset={reset}
+						on:save={saveSetting}
+						on:reset-to-default={resetToDefault}
+						showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
+					/>
+				</div>
 			</form>
 		</div>
 	{/await}

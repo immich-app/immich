@@ -19,7 +19,7 @@ describe('UserService', () => {
     email: 'immich@test.com',
   });
 
-  const adminUser: UserEntity = Object.freeze({
+  const adminUser: UserEntity = {
     id: 'admin_id',
     email: 'admin@test.com',
     password: 'admin_password',
@@ -32,9 +32,9 @@ describe('UserService', () => {
     profileImagePath: '',
     createdAt: '2021-01-01',
     tags: [],
-  });
+  };
 
-  const immichUser: UserEntity = Object.freeze({
+  const immichUser: UserEntity = {
     id: 'immich_id',
     email: 'immich@test.com',
     password: 'immich_password',
@@ -47,9 +47,9 @@ describe('UserService', () => {
     profileImagePath: '',
     createdAt: '2021-01-01',
     tags: [],
-  });
+  };
 
-  const updatedImmichUser: UserEntity = Object.freeze({
+  const updatedImmichUser: UserEntity = {
     id: 'immich_id',
     email: 'immich@test.com',
     password: 'immich_password',
@@ -62,7 +62,7 @@ describe('UserService', () => {
     profileImagePath: '',
     createdAt: '2021-01-01',
     tags: [],
-  });
+  };
 
   beforeAll(() => {
     userRepositoryMock = newUserRepositoryMock();
@@ -75,7 +75,7 @@ describe('UserService', () => {
   });
 
   describe('Update user', () => {
-    it('should update user', () => {
+    it('should update user', async () => {
       const requestor = immichAuthUser;
       const userToUpdate = immichUser;
 
@@ -83,11 +83,11 @@ describe('UserService', () => {
       userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(userToUpdate));
       userRepositoryMock.update.mockImplementationOnce(() => Promise.resolve(updatedImmichUser));
 
-      const result = sui.updateUser(requestor, {
+      const result = await sui.updateUser(requestor, {
         id: userToUpdate.id,
         shouldChangePassword: true,
       });
-      expect(result).resolves.toBeDefined();
+      expect(result.shouldChangePassword).toEqual(true);
     });
 
     it('user can only update its information', () => {

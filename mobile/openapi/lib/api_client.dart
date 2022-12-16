@@ -298,6 +298,10 @@ class ApiClient {
           return SystemConfigFFmpegDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
+        case 'SystemConfigStorageTemplateDto':
+          return SystemConfigStorageTemplateDto.fromJson(value);
+        case 'SystemConfigTemplateStorageOptionDto':
+          return SystemConfigTemplateStorageOptionDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':

@@ -2169,12 +2169,38 @@
           }
         ]
       }
+    },
+    "/system-config/storage-template-options": {
+      "get": {
+        "operationId": "getStorageTemplateOptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigTemplateStorageOptionDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.38.0",
+    "version": "1.38.2",
     "contact": {}
   },
   "tags": [],
@@ -3664,6 +3690,17 @@
           "autoRegister"
         ]
       },
+      "SystemConfigStorageTemplateDto": {
+        "type": "object",
+        "properties": {
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "template"
+        ]
+      },
       "SystemConfigDto": {
         "type": "object",
         "properties": {
@@ -3672,11 +3709,71 @@
           },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
+          },
+          "storageTemplate": {
+            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           }
         },
         "required": [
           "ffmpeg",
-          "oauth"
+          "oauth",
+          "storageTemplate"
+        ]
+      },
+      "SystemConfigTemplateStorageOptionDto": {
+        "type": "object",
+        "properties": {
+          "yearOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "monthOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dayOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hourOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minuteOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "secondOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "presetOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "yearOptions",
+          "monthOptions",
+          "dayOptions",
+          "hourOptions",
+          "minuteOptions",
+          "secondOptions",
+          "presetOptions"
         ]
       }
     }

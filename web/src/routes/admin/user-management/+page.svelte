@@ -22,7 +22,6 @@
 
 	onMount(() => {
 		allUsers = $page.data.allUsers;
-		console.log('getting all users', allUsers);
 	});
 
 	const isDeleted = (user: UserResponseDto): boolean => {

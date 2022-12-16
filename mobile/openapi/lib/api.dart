@@ -91,6 +91,8 @@ part 'model/smart_info_response_dto.dart';
 part 'model/system_config_dto.dart';
 part 'model/system_config_f_fmpeg_dto.dart';
 part 'model/system_config_o_auth_dto.dart';
+part 'model/system_config_storage_template_dto.dart';
+part 'model/system_config_template_storage_option_dto.dart';
 part 'model/tag_response_dto.dart';
 part 'model/tag_type_enum.dart';
 part 'model/thumbnail_format.dart';

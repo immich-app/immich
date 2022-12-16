@@ -25,6 +25,7 @@ export enum SystemConfigKey {
   OAUTH_SCOPE = 'oauth.scope',
   OAUTH_BUTTON_TEXT = 'oauth.buttonText',
   OAUTH_AUTO_REGISTER = 'oauth.autoRegister',
+  STORAGE_TEMPLATE = 'storageTemplate.template',
 }
 
 export interface SystemConfig {
@@ -43,5 +44,8 @@ export interface SystemConfig {
     scope: string;
     buttonText: string;
     autoRegister: boolean;
+  };
+  storageTemplate: {
+    template: string;
   };
 }

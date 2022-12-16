@@ -44,6 +44,7 @@ export class ThumbnailGeneratorProcessor {
     private configService: ConfigService,
   ) {
     this.logLevel = this.configService.get('LOG_LEVEL') || ImmichLogLevel.SIMPLE;
+    // TODO - Add observable paterrn to listen to the config change
   }
 
   @Process({ name: generateJPEGThumbnailProcessorName, concurrency: 3 })
@@ -59,9 +60,7 @@ export class ThumbnailGeneratorProcessor {
       mkdirSync(resizePath, { recursive: true });
     }
 
-    const temp = asset.originalPath.split('/');
-    const originalFilename = temp[temp.length - 1].split('.')[0];
-    const jpegThumbnailPath = join(resizePath, `${originalFilename}.jpeg`);
+    const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
     if (asset.type == AssetType.IMAGE) {
       try {

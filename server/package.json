@@ -59,11 +59,13 @@
     "fdir": "^5.3.0",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^7.0.2",
+    "handlebars": "^4.7.7",
     "i18n-iso-countries": "^7.5.0",
     "joi": "^17.5.0",
     "local-reverse-geocoder": "^0.12.5",
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
+    "mv": "^2.1.1",
     "nest-commander": "^3.3.0",
     "openid-client": "^5.2.1",
     "passport": "^0.6.0",
@@ -96,6 +98,7 @@
     "@types/jest": "27.0.2",
     "@types/lodash": "^4.14.178",
     "@types/multer": "^1.4.7",
+    "@types/mv": "^2.1.2",
     "@types/node": "^16.0.0",
     "@types/passport-jwt": "^3.0.6",
     "@types/sharp": "^0.30.2",
@@ -142,7 +145,8 @@
       "@app/database/config": "<rootDir>/libs/database/src/config",
       "@app/common": "<rootDir>/libs/common/src",
       "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1",
-      "^@app/immich-config(|/.*)$": "<rootDir>/libs/immich-config/src/$1"
+      "^@app/immich-config(|/.*)$": "<rootDir>/libs/immich-config/src/$1",
+      "^@app/storage(|/.*)$": "<rootDir>/libs/storage/src/$1"
     }
   }
 }

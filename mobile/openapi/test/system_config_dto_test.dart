@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigStorageTemplateDto storageTemplate
+    test('to test the property `storageTemplate`', () async {
+      // TODO
+    });
+
 
   });
 

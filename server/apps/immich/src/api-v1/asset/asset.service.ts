@@ -55,6 +55,7 @@ import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { ALBUM_REPOSITORY, IAlbumRepository } from '../album/album-repository';
+import { StorageService } from '@app/storage';
 
 const fileInfo = promisify(stat);
 
@@ -79,6 +80,8 @@ export class AssetService {
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
 
     private downloadService: DownloadService,
+
+    private storageService: StorageService,
   ) {}
 
   public async handleUploadedAsset(
@@ -113,6 +116,8 @@ export class AssetService {
           throw new BadRequestException('Asset not created');
         }
 
+        await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
+
         await this.videoConversionQueue.add(
           mp4ConversionProcessorName,
           { asset: livePhotoAssetEntity },
@@ -139,13 +144,15 @@ export class AssetService {
         throw new BadRequestException('Asset not created');
       }
 
+      const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
+
       await this.assetUploadedQueue.add(
         assetUploadedProcessorName,
-        { asset: assetEntity, fileName: originalAssetData.originalname },
-        { jobId: assetEntity.id },
+        { asset: movedAsset, fileName: originalAssetData.originalname },
+        { jobId: movedAsset.id },
       );
 
-      return new AssetFileUploadResponseDto(assetEntity.id);
+      return new AssetFileUploadResponseDto(movedAsset.id);
     } catch (err) {
       await this.backgroundTaskService.deleteFileOnDisk([
         {

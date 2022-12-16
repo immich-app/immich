@@ -13,6 +13,7 @@ import { DownloadModule } from '../../modules/download/download.module';
 import { TagModule } from '../tag/tag.module';
 import { AlbumModule } from '../album/album.module';
 import { UserModule } from '../user/user.module';
+import { StorageModule } from '@app/storage';
 
 const ASSET_REPOSITORY_PROVIDER = {
   provide: ASSET_REPOSITORY,
@@ -28,6 +29,7 @@ const ASSET_REPOSITORY_PROVIDER = {
     UserModule,
     AlbumModule,
     TagModule,
+    StorageModule,
     forwardRef(() => AlbumModule),
     BullModule.registerQueue({
       name: QueueNameEnum.ASSET_UPLOADED,

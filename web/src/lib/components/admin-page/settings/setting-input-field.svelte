@@ -12,19 +12,19 @@
 
 	export let inputType: SettingInputFieldType;
 	export let value: string;
-	export let label: string;
+	export let label = '';
 	export let required = false;
 	export let disabled = false;
-	export let isEdited: boolean;
+	export let isEdited = false;
 
 	const handleInput = (e: Event) => {
 		value = (e.target as HTMLInputElement).value;
 	};
 </script>
 
-<div class="m-4 flex flex-col gap-2">
-	<div class="flex place-items-center gap-1">
-		<label class="immich-form-label" for={label}>{label.toUpperCase()} </label>
+<div class="w-full">
+	<div class={`flex place-items-center gap-1 h-[26px]`}>
+		<label class={`immich-form-label text-xs`} for={label}>{label.toUpperCase()} </label>
 		{#if required}
 			<div class="text-red-400">*</div>
 		{/if}
@@ -32,14 +32,14 @@
 		{#if isEdited}
 			<div
 				transition:fly={{ x: 10, duration: 200, easing: quintOut }}
-				class="text-gray-500 text-xs italic"
+				class="bg-orange-100 px-2 rounded-full text-orange-900 text-[10px]"
 			>
 				Unsaved change
 			</div>
 		{/if}
 	</div>
 	<input
-		class="immich-form-input"
+		class="immich-form-input w-full"
 		id={label}
 		name={label}
 		type={inputType}
