@@ -56,7 +56,8 @@
 				mm: dt.toFormat('mm'),
 				s: dt.toFormat('s'),
 				ss: dt.toFormat('ss'),
-				filename: 'IMG_10041123'
+				filename: 'IMG_10041123',
+				ext: 'jpeg'
 			});
 		} catch (error) {
 			return 'error';

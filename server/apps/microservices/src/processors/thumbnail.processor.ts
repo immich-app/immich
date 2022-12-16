@@ -44,6 +44,7 @@ export class ThumbnailGeneratorProcessor {
     private configService: ConfigService,
   ) {
     this.logLevel = this.configService.get('LOG_LEVEL') || ImmichLogLevel.SIMPLE;
+    // TODO - Add observable paterrn to listen to the config change
   }
 
   @Process({ name: generateJPEGThumbnailProcessorName, concurrency: 3 })

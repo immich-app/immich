@@ -26,7 +26,6 @@ export class StorageService {
     try {
       const parsedPath = await this.buildPath(asset, filename);
       let qualifiedPath = path.join(APP_UPLOAD_LOCATION, asset.userId, parsedPath + path.extname(asset.originalPath));
-
       let duplicateCount = 1;
       while (await this.checkFileExist(qualifiedPath)) {
         const newPath = parsedPath + `_${duplicateCount}` + path.extname(asset.originalPath);
@@ -91,6 +90,7 @@ export class StorageService {
         s: dt.toFormat('s'),
         ss: dt.toFormat('ss'),
         filename: sanitizedFilename,
+        ext: path.extname(asset.originalPath).split('.').pop(),
       });
     } catch (error: any) {
       this.log.error(error, error.stack);
