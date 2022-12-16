@@ -59,6 +59,7 @@
     "fdir": "^5.3.0",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^7.0.2",
+    "handlebars": "^4.7.7",
     "i18n-iso-countries": "^7.5.0",
     "joi": "^17.5.0",
     "local-reverse-geocoder": "^0.12.5",
