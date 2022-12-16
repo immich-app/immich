@@ -50,7 +50,7 @@ export class StorageService {
     try {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
-      const sanitized = sanitize(path.basename(filename, ext));
+      const sanitized = sanitize(path.basename(filename, `.${ext}`));
       const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
       const fullPath = path.normalize(path.join(APP_UPLOAD_LOCATION, asset.userId, storagePath));
 
