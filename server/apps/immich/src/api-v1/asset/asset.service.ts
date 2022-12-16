@@ -116,6 +116,8 @@ export class AssetService {
           throw new BadRequestException('Asset not created');
         }
 
+        await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
+
         await this.videoConversionQueue.add(
           mp4ConversionProcessorName,
           { asset: livePhotoAssetEntity },
