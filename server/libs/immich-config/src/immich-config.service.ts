@@ -1,9 +1,11 @@
 import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/database/entities/system-config.entity';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { DeepPartial, In, Repository } from 'typeorm';
+
+export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
 
 const defaults: SystemConfig = Object.freeze({
   ffmpeg: {
@@ -30,6 +32,9 @@ const defaults: SystemConfig = Object.freeze({
 
 @Injectable()
 export class ImmichConfigService {
+  private logger = new Logger(ImmichConfigService.name);
+  private validators: SystemConfigValidator[] = [];
+
   public config$ = new Subject<SystemConfig>();
 
   constructor(
@@ -39,6 +44,10 @@ export class ImmichConfigService {
 
   public getDefaults(): SystemConfig {
     return defaults;
+  }
+
+  public addValidator(validator: SystemConfigValidator) {
+    this.validators.push(validator);
   }
 
   public async getConfig() {
@@ -52,7 +61,16 @@ export class ImmichConfigService {
     return _.defaultsDeep(config, defaults) as SystemConfig;
   }
 
-  public async updateConfig(config: DeepPartial<SystemConfig> | null): Promise<SystemConfig> {
+  public async updateConfig(config: SystemConfig): Promise<SystemConfig> {
+    try {
+      for (const validator of this.validators) {
+        await validator(config);
+      }
+    } catch (e) {
+      this.logger.warn(`Unable to save system config due to a validation error: ${e}`);
+      throw new BadRequestException(e instanceof Error ? e.message : e);
+    }
+
     const updates: SystemConfigEntity[] = [];
     const deletes: SystemConfigEntity[] = [];
 

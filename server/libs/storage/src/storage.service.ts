@@ -1,5 +1,6 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity } from '@app/database/entities/asset.entity';
+import { SystemConfig } from '@app/database/entities/system-config.entity';
 import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,7 +13,6 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import sanitize from 'sanitize-filename';
 import { Repository } from 'typeorm';
-import { SystemConfig } from '@app/database/entities/system-config.entity';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -36,13 +36,13 @@ export class StorageService {
     private immichConfigService: ImmichConfigService,
     @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
   ) {
-    // initial config
-    this.storageTemplate = this.makeStorageTemplate(config);
+    this.storageTemplate = this.compile(config.storageTemplate.template);
 
-    // subscribe to changes
+    this.immichConfigService.addValidator((config) => this.validateConfig(config));
+
     this.immichConfigService.config$.subscribe((config) => {
       this.log.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
-      this.storageTemplate = this.makeStorageTemplate(config);
+      this.storageTemplate = this.compile(config.storageTemplate.template);
     });
   }
 
@@ -51,7 +51,7 @@ export class StorageService {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, ext));
-      const storagePath = await this.renderStorageTemplate(asset, sanitized, ext);
+      const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
       const fullPath = path.normalize(path.join(APP_UPLOAD_LOCATION, asset.userId, storagePath));
 
       // TODO: parent directory check
@@ -97,39 +97,58 @@ export class StorageService {
     }
   }
 
-  private makeStorageTemplate(config: SystemConfig) {
-    return handlebar.compile(config.storageTemplate.template, {
+  private validateConfig(config: SystemConfig) {
+    this.validateStorageTemplate(config.storageTemplate.template);
+  }
+
+  private validateStorageTemplate(templateString: string) {
+    try {
+      const template = this.compile(templateString);
+
+      // test render an asset
+      this.render(
+        template,
+        {
+          createdAt: new Date().toISOString(),
+          originalPath: '/upload/test/IMG_123.jpg',
+        } as AssetEntity,
+        'IMG_123',
+        'jpg',
+      );
+    } catch (e) {
+      this.log.warn(`Storage template validation failed: ${e}`);
+      throw new Error(`Invalid storage template: ${e}`);
+    }
+  }
+
+  private compile(template: string) {
+    return handlebar.compile(template, {
       knownHelpers: undefined,
       strict: true,
     });
   }
 
-  private async renderStorageTemplate(asset: AssetEntity, filename: string, ext: string) {
-    try {
-      const substitutions: Record<string, string> = {
-        filename,
-        ext,
-      };
+  private render(template: HandlebarsTemplateDelegate<any>, asset: AssetEntity, filename: string, ext: string) {
+    const substitutions: Record<string, string> = {
+      filename,
+      ext,
+    };
 
-      const dt = luxon.DateTime.fromISO(new Date(asset.createdAt).toISOString());
+    const dt = luxon.DateTime.fromISO(new Date(asset.createdAt).toISOString());
 
-      const dateTokens = [
-        ...supportedYearTokens,
-        ...supportedMonthTokens,
-        ...supportedDayTokens,
-        ...supportedHourTokens,
-        ...supportedMinuteTokens,
-        ...supportedSecondTokens,
-      ];
+    const dateTokens = [
+      ...supportedYearTokens,
+      ...supportedMonthTokens,
+      ...supportedDayTokens,
+      ...supportedHourTokens,
+      ...supportedMinuteTokens,
+      ...supportedSecondTokens,
+    ];
 
-      for (const token of dateTokens) {
-        substitutions[token] = dt.toFormat(token);
-      }
-
-      return this.storageTemplate(substitutions);
-    } catch (error: any) {
-      this.log.error(error, error.stack);
-      return asset.originalPath;
+    for (const token of dateTokens) {
+      substitutions[token] = dt.toFormat(token);
     }
+
+    return template(substitutions);
   }
 }
