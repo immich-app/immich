@@ -4,11 +4,10 @@ import { ImmichConfigModule } from '@app/immich-config';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StorageService } from './storage.service';
-import { FileSystemStorageService } from './storage.service.filesystem';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AssetEntity, SystemConfigEntity]), ImmichConfigModule],
-  providers: [StorageService, FileSystemStorageService],
+  providers: [StorageService],
   exports: [StorageService],
 })
 export class StorageModule {}

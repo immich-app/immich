@@ -27,8 +27,8 @@ export class SystemConfigService {
   }
 
   public async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
-    await this.immichConfigService.updateConfig(dto);
-    return this.getConfig();
+    const config = await this.immichConfigService.updateConfig(dto);
+    return mapConfig(config);
   }
 
   public getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {

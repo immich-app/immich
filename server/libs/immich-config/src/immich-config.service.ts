@@ -2,6 +2,7 @@ import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/database
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as _ from 'lodash';
+import { Subject } from 'rxjs';
 import { DeepPartial, In, Repository } from 'typeorm';
 
 const defaults: SystemConfig = Object.freeze({
@@ -29,6 +30,8 @@ const defaults: SystemConfig = Object.freeze({
 
 @Injectable()
 export class ImmichConfigService {
+  public config$ = new Subject<SystemConfig>();
+
   constructor(
     @InjectRepository(SystemConfigEntity)
     private systemConfigRepository: Repository<SystemConfigEntity>,
@@ -49,7 +52,7 @@ export class ImmichConfigService {
     return _.defaultsDeep(config, defaults) as SystemConfig;
   }
 
-  public async updateConfig(config: DeepPartial<SystemConfig> | null): Promise<void> {
+  public async updateConfig(config: DeepPartial<SystemConfig> | null): Promise<SystemConfig> {
     const updates: SystemConfigEntity[] = [];
     const deletes: SystemConfigEntity[] = [];
 
@@ -74,5 +77,11 @@ export class ImmichConfigService {
     if (deletes.length > 0) {
       await this.systemConfigRepository.delete({ key: In(deletes.map((item) => item.key)) });
     }
+
+    const newConfig = await this.getConfig();
+
+    this.config$.next(newConfig);
+
+    return newConfig;
   }
 }

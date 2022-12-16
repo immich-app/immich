@@ -1,39 +1,80 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity } from '@app/database/entities/asset.entity';
-import { ImmichConfigService } from '@app/immich-config';
-import { Injectable, Logger } from '@nestjs/common';
+import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import fsPromise from 'fs/promises';
 import handlebar from 'handlebars';
 import * as luxon from 'luxon';
-import sanitize from 'sanitize-filename';
-import path from 'node:path';
-import { constants } from 'node:fs';
-import fsPromise from 'fs/promises';
 import mv from 'mv';
+import { constants } from 'node:fs';
+import path from 'node:path';
+import { promisify } from 'node:util';
+import sanitize from 'sanitize-filename';
+import { Repository } from 'typeorm';
+import { SystemConfig } from '@app/database/entities/system-config.entity';
+import {
+  supportedDayTokens,
+  supportedHourTokens,
+  supportedMinuteTokens,
+  supportedMonthTokens,
+  supportedSecondTokens,
+  supportedYearTokens,
+} from './constants/supported-datetime-template';
+
+const moveFile = promisify<string, string, mv.Options>(mv);
 
 @Injectable()
 export class StorageService {
   readonly log = new Logger(StorageService.name);
 
+  private storageTemplate: HandlebarsTemplateDelegate<any>;
+
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
     private immichConfigService: ImmichConfigService,
-  ) {}
+    @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
+  ) {
+    // initial config
+    this.storageTemplate = this.makeStorageTemplate(config);
 
-  public async moveFile(asset: AssetEntity, filename: string): Promise<AssetEntity> {
+    // subscribe to changes
+    this.immichConfigService.config$.subscribe((config) => {
+      this.log.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
+      this.storageTemplate = this.makeStorageTemplate(config);
+    });
+  }
+
+  public async moveAsset(asset: AssetEntity, filename: string): Promise<AssetEntity> {
     try {
-      const parsedPath = await this.buildPath(asset, filename);
-      let qualifiedPath = path.join(APP_UPLOAD_LOCATION, asset.userId, parsedPath + path.extname(asset.originalPath));
-      let duplicateCount = 1;
-      while (await this.checkFileExist(qualifiedPath)) {
-        const newPath = parsedPath + `_${duplicateCount}` + path.extname(asset.originalPath);
-        qualifiedPath = path.join(APP_UPLOAD_LOCATION, asset.userId, newPath);
+      const source = asset.originalPath;
+      const ext = path.extname(source).split('.').pop() as string;
+      const sanitized = sanitize(path.basename(filename, ext));
+      const storagePath = await this.renderStorageTemplate(asset, sanitized, ext);
+      const fullPath = path.normalize(path.join(APP_UPLOAD_LOCATION, asset.userId, storagePath));
+
+      // TODO: parent directory check
+
+      let duplicateCount = 0;
+      let destination = `${fullPath}.${ext}`;
+
+      while (true) {
+        // some sanity to prevent infinite loop?
+        // if (duplicateCount > threshold) {
+        //   throw new InternalServerErrorException(`Unable to find unique filename!`);
+        // }
+
+        const exists = await this.checkFileExist(destination);
+        if (!exists) {
+          break;
+        }
+
         duplicateCount++;
+        destination = `${fullPath}_${duplicateCount}.${ext}`;
       }
 
-      const destination = await this.moveAndDeleteFile(asset.originalPath, qualifiedPath);
+      await this.safeMove(source, destination);
 
       asset.originalPath = destination;
       return await this.assetRepository.save(asset);
@@ -43,13 +84,8 @@ export class StorageService {
     }
   }
 
-  private moveAndDeleteFile(original: string, destination: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      mv(original, destination, { mkdirp: true, clobber: false }, (err) => {
-        if (err) reject(err);
-        resolve(destination);
-      });
-    });
+  private safeMove(source: string, destination: string): Promise<void> {
+    return moveFile(source, destination, { mkdirp: true, clobber: false });
   }
 
   private async checkFileExist(path: string): Promise<boolean> {
@@ -61,37 +97,36 @@ export class StorageService {
     }
   }
 
-  private async buildPath(asset: AssetEntity, filename: string) {
-    const configs = await this.immichConfigService.getConfig();
+  private makeStorageTemplate(config: SystemConfig) {
+    return handlebar.compile(config.storageTemplate.template, {
+      knownHelpers: undefined,
+      strict: true,
+    });
+  }
 
+  private async renderStorageTemplate(asset: AssetEntity, filename: string, ext: string) {
     try {
-      const template = handlebar.compile(configs.storageTemplate.template, {
-        knownHelpers: undefined,
-      });
+      const substitutions: Record<string, string> = {
+        filename,
+        ext,
+      };
 
       const dt = luxon.DateTime.fromISO(new Date(asset.createdAt).toISOString());
-      const sanitizedFilename = sanitize(path.basename(filename, path.extname(filename)));
 
-      return template({
-        y: dt.toFormat('y'),
-        yy: dt.toFormat('yy'),
-        M: dt.toFormat('M'),
-        MM: dt.toFormat('MM'),
-        MMM: dt.toFormat('MMM'),
-        MMMM: dt.toFormat('MMMM'),
-        d: dt.toFormat('d'),
-        dd: dt.toFormat('dd'),
-        h: dt.toFormat('h'),
-        hh: dt.toFormat('hh'),
-        H: dt.toFormat('H'),
-        HH: dt.toFormat('HH'),
-        m: dt.toFormat('m'),
-        mm: dt.toFormat('mm'),
-        s: dt.toFormat('s'),
-        ss: dt.toFormat('ss'),
-        filename: sanitizedFilename,
-        ext: path.extname(asset.originalPath).split('.').pop(),
-      });
+      const dateTokens = [
+        ...supportedYearTokens,
+        ...supportedMonthTokens,
+        ...supportedDayTokens,
+        ...supportedHourTokens,
+        ...supportedMinuteTokens,
+        ...supportedSecondTokens,
+      ];
+
+      for (const token of dateTokens) {
+        substitutions[token] = dt.toFormat(token);
+      }
+
+      return this.storageTemplate(substitutions);
     } catch (error: any) {
       this.log.error(error, error.stack);
       return asset.originalPath;

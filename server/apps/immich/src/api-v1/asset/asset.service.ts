@@ -142,7 +142,7 @@ export class AssetService {
         throw new BadRequestException('Asset not created');
       }
 
-      const movedAsset = await this.storageService.moveFile(assetEntity, originalAssetData.originalname);
+      const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
 
       await this.assetUploadedQueue.add(
         assetUploadedProcessorName,
