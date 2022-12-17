@@ -1,7 +1,6 @@
 import { UserEntity } from '@app/database/entities/user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
 import { Not, Repository } from 'typeorm';
 
 export interface IUserRepository {
@@ -60,27 +59,11 @@ export class UserRepository implements IUserRepository {
   }
 
   public async create(user: Partial<UserEntity>): Promise<UserEntity> {
-    const localAdmin = await this.getAdmin();
-    if (!localAdmin && !user.isAdmin) {
-      throw new BadRequestException('The first registered account must the administrator.');
-    }
-
-    if (user.password) {
-      user.salt = await bcrypt.genSalt();
-      user.password = await this.hashPassword(user.password, user.salt);
-    }
-
     return this.userRepository.save(user);
   }
 
   public async update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
     user.id = id;
-
-    // If payload includes password - Create new password for user
-    if (user.password) {
-      user.salt = await bcrypt.genSalt();
-      user.password = await this.hashPassword(user.password, user.salt);
-    }
 
     // TODO: can this happen? If so we can move it to the service, otherwise remove it (also from DTO)
     if (user.isAdmin) {
@@ -105,9 +88,5 @@ export class UserRepository implements IUserRepository {
 
   public async restore(user: UserEntity): Promise<UserEntity> {
     return this.userRepository.recover(user);
-  }
-
-  private async hashPassword(password: string, salt: string): Promise<string> {
-    return bcrypt.hash(password, salt);
   }
 }

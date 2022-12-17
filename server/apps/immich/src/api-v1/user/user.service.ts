@@ -22,13 +22,17 @@ import {
 import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
 import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
 import { IUserRepository, USER_REPOSITORY } from './user-repository';
+import { UserDomain } from './user.domain';
 
 @Injectable()
 export class UserService {
+  private userDomain: UserDomain;
   constructor(
     @Inject(USER_REPOSITORY)
     private userRepository: IUserRepository,
-  ) {}
+  ) {
+    this.userDomain = new UserDomain(userRepository);
+  }
 
   async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
     if (isAll) {
@@ -69,54 +73,18 @@ export class UserService {
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const user = await this.userRepository.getByEmail(createUserDto.email);
-
-    if (user) {
-      throw new BadRequestException('User exists');
-    }
-
-    try {
-      const savedUser = await this.userRepository.create(createUserDto);
-
-      return mapUser(savedUser);
-    } catch (e) {
-      Logger.error(e, 'Create new user');
-      throw new InternalServerErrorException('Failed to register new user');
-    }
+    const createdUser = await this.userDomain.createUser(createUserDto);
+    return mapUser(createdUser);
   }
 
   async updateUser(authUser: AuthUserDto, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
-    const requestor = await this.userRepository.get(authUser.id);
-
-    if (!requestor) {
-      throw new NotFoundException('Requestor not found');
-    }
-
-    if (!requestor.isAdmin) {
-      if (requestor.id !== updateUserDto.id) {
-        throw new BadRequestException('Unauthorized');
-      }
-    }
-
     const user = await this.userRepository.get(updateUserDto.id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    try {
-      user.password = updateUserDto.password ?? user.password;
-      user.firstName = updateUserDto.firstName ?? user.firstName;
-      user.lastName = updateUserDto.lastName ?? user.lastName;
-      user.isAdmin = updateUserDto.isAdmin ?? user.isAdmin;
-      user.shouldChangePassword = updateUserDto.shouldChangePassword ?? user.shouldChangePassword;
-      user.profileImagePath = updateUserDto.profileImagePath ?? user.profileImagePath;
 
-      const updatedUser = await this.userRepository.update(user.id, user);
-
-      return mapUser(updatedUser);
-    } catch (e) {
-      Logger.error(e, 'Failed to update user info');
-      throw new InternalServerErrorException('Failed to update user info');
-    }
+    const updatedUser = await this.userDomain.updateUser(authUser, user, updateUserDto);
+    return mapUser(updatedUser);
   }
 
   async deleteUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
@@ -133,7 +101,7 @@ export class UserService {
     }
 
     if (user.isAdmin) {
-      throw new BadRequestException('Cannot delete admin user');
+      throw new ForbiddenException('Cannot delete admin user');
     }
 
     try {

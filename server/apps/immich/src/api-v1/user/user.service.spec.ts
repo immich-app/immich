@@ -1,22 +1,26 @@
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { newUserRepositoryMock } from '../../../test/test-utils';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { IUserRepository } from './user-repository';
+import { when } from 'jest-when';
 import { UserService } from './user.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 describe('UserService', () => {
-  let sui: UserService;
+  let sut: UserService;
   let userRepositoryMock: jest.Mocked<IUserRepository>;
 
-  const adminAuthUser: AuthUserDto = Object.freeze({
+  const adminUserAuth: AuthUserDto = Object.freeze({
     id: 'admin_id',
     email: 'admin@test.com',
+    isAdmin: true,
   });
 
-  const immichAuthUser: AuthUserDto = Object.freeze({
+  const immichUserAuth: AuthUserDto = Object.freeze({
     id: 'immich_id',
     email: 'immich@test.com',
+    isAdmin: false,
   });
 
   const adminUser: UserEntity = Object.freeze({
@@ -64,85 +68,96 @@ describe('UserService', () => {
     tags: [],
   });
 
-  beforeAll(() => {
+  beforeEach(() => {
     userRepositoryMock = newUserRepositoryMock();
-
-    sui = new UserService(userRepositoryMock);
-  });
-
-  it('should be defined', () => {
-    expect(sui).toBeDefined();
+    sut = new UserService(userRepositoryMock);
   });
 
   describe('Update user', () => {
-    it('should update user', () => {
-      const requestor = immichAuthUser;
-      const userToUpdate = immichUser;
-
-      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(immichUser));
-      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(userToUpdate));
-      userRepositoryMock.update.mockImplementationOnce(() => Promise.resolve(updatedImmichUser));
-
-      const result = sui.updateUser(requestor, {
-        id: userToUpdate.id,
+    it('should update user', async () => {
+      const update: UpdateUserDto = {
+        id: immichUser.id,
         shouldChangePassword: true,
-      });
-      expect(result).resolves.toBeDefined();
+      };
+
+      when(userRepositoryMock.get).calledWith(immichUserAuth.id).mockResolvedValueOnce(immichUser);
+      when(userRepositoryMock.update).calledWith(update.id, update).mockResolvedValueOnce(updatedImmichUser);
+
+      const result = sut.updateUser(immichUserAuth, update);
+      await expect(result).resolves.toBeDefined();
     });
 
-    it('user can only update its information', () => {
-      const requestor = immichAuthUser;
+    it('user can only update its information', async () => {
+      when(userRepositoryMock.get).calledWith(immichUserAuth.id).mockResolvedValueOnce(immichUser);
+      when(userRepositoryMock.get)
+        .calledWith('not_immich_auth_user_id')
+        .mockResolvedValueOnce({
+          ...immichUser,
+          id: 'not_immich_auth_user_id',
+        });
 
-      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(immichUser));
-
-      const result = sui.updateUser(requestor, {
+      const result = sut.updateUser(immichUserAuth, {
         id: 'not_immich_auth_user_id',
         password: 'I take over your account now',
       });
-      expect(result).rejects.toBeInstanceOf(BadRequestException);
+      await expect(result).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('admin can update any user information', async () => {
-      const requestor = adminAuthUser;
-      const userToUpdate = immichUser;
-
-      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(adminUser));
-      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(userToUpdate));
-      userRepositoryMock.update.mockImplementationOnce(() => Promise.resolve(updatedImmichUser));
-
-      const result = await sui.updateUser(requestor, {
-        id: userToUpdate.id,
+      const update: UpdateUserDto = {
+        id: immichUser.id,
         shouldChangePassword: true,
-      });
+      };
+
+      when(userRepositoryMock.get).calledWith(adminUser.id).mockResolvedValueOnce(adminUser);
+      when(userRepositoryMock.get).calledWith(immichUser.id).mockResolvedValueOnce(immichUser);
+      when(userRepositoryMock.update).calledWith(immichUser.id, update).mockResolvedValueOnce(updatedImmichUser);
+
+      const result = await sut.updateUser(adminUserAuth, update);
 
       expect(result).toBeDefined();
       expect(result.id).toEqual(updatedImmichUser.id);
       expect(result.shouldChangePassword).toEqual(updatedImmichUser.shouldChangePassword);
     });
 
-    it('update user information should throw error if user not found', () => {
-      const requestor = adminAuthUser;
+    it('update user information should throw error if user not found', async () => {
+      const requestor = adminUserAuth;
       const userToUpdate = immichUser;
 
-      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(adminUser));
-      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(null));
+      when(userRepositoryMock.get).calledWith(requestor.id).mockResolvedValueOnce(adminUser);
+      when(userRepositoryMock.get).calledWith(userToUpdate.id).mockResolvedValueOnce(null);
 
-      const result = sui.updateUser(requestor, {
+      const result = sut.updateUser(requestor, {
         id: userToUpdate.id,
         shouldChangePassword: true,
       });
-      expect(result).rejects.toBeInstanceOf(NotFoundException);
+
+      await expect(result).rejects.toBeInstanceOf(NotFoundException);
     });
+  });
 
-    it('cannot delete admin user', () => {
-      const requestor = adminAuthUser;
+  describe('Delete user', () => {
+    it('cannot delete admin user', async () => {
+      when(userRepositoryMock.get).calledWith(adminUserAuth.id).mockResolvedValue(adminUser);
 
-      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(adminUser));
-      userRepositoryMock.get.mockImplementationOnce(() => Promise.resolve(adminUser));
+      const result = sut.deleteUser(adminUserAuth, adminUserAuth.id);
 
-      const result = sui.deleteUser(requestor, adminAuthUser.id);
+      await expect(result).rejects.toBeInstanceOf(ForbiddenException);
+    });
+  });
 
-      expect(result).rejects.toBeInstanceOf(BadRequestException);
+  describe('Create user', () => {
+    it('should not create a user if there is no local admin account', async () => {
+      when(userRepositoryMock.getAdmin).calledWith().mockResolvedValueOnce(null);
+
+      await expect(
+        sut.createUser({
+          email: 'john_smith@email.com',
+          firstName: 'John',
+          lastName: 'Smith',
+          password: 'password',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 });

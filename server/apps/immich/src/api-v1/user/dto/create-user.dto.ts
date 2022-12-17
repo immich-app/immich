@@ -20,3 +20,24 @@ export class CreateUserDto {
   @ApiProperty({ example: 'Doe' })
   lastName!: string;
 }
+
+export class CreateAdminDto extends CreateUserDto {
+  @IsNotEmpty()
+  isAdmin!: true;
+}
+
+export class CreateUserOauthDto {
+  @IsEmail()
+  @Transform(({ value }) => value?.toLowerCase())
+  @ApiProperty({ example: 'testuser@email.com' })
+  email!: string;
+
+  @IsNotEmpty()
+  oauthId!: string;
+
+  @ApiProperty({ example: 'John' })
+  firstName?: string;
+
+  @ApiProperty({ example: 'Doe' })
+  lastName?: string;
+}

@@ -11,6 +11,7 @@ describe('TagService', () => {
   const user1AuthUser: AuthUserDto = Object.freeze({
     id: '1111',
     email: 'testuser@email.com',
+    isAdmin: false,
   });
 
   const user1: UserEntity = Object.freeze({

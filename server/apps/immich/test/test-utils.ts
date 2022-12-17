@@ -33,6 +33,7 @@ export function getAuthUser(): AuthUserDto {
   return {
     id: '3108ac14-8afb-4b7e-87fd-39ebb6b79750',
     email: 'test@email.com',
+    isAdmin: false,
   };
 }
 

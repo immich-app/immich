@@ -11,7 +11,7 @@ import { DownloadService } from '../../modules/download/download.service';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { IAssetUploadedJob, IVideoTranscodeJob } from '@app/job';
 import { Queue } from 'bull';
-import { IAlbumRepository } from "../album/album-repository";
+import { IAlbumRepository } from '../album/album-repository';
 
 describe('AssetService', () => {
   let sui: AssetService;
@@ -25,6 +25,7 @@ describe('AssetService', () => {
   const authUser: AuthUserDto = Object.freeze({
     id: 'user_id_1',
     email: 'auth@test.com',
+    isAdmin: false,
   });
 
   const _getCreateAssetDto = (): CreateAssetDto => {
