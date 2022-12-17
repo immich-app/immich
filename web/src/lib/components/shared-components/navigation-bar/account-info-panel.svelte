@@ -56,10 +56,13 @@
 
 	<div class="mt-4 flex place-items-center place-content-center">
 		<button
-			class="flex border rounded-3xl px-6 py-2 hover:bg-gray-50 dark:border-immich-dark-gray dark:bg-gray-300 dark:hover:bg-immich-dark-primary font-medium place-items-center place-content-center gap-2"
-			on:click={() => goto('/user-settings')}
+			class="flex border rounded-3xl px-6 py-2 hover:bg-gray-50 dark:border-immich-dark-gray dark:bg-gray-300 dark:hover:bg-immich-dark-primary font-medium place-items-center place-content-center gap-2 text-xs"
+			on:click={() => {
+				goto('/user-settings');
+				dispatch('close');
+			}}
 		>
-			<span><Cog size="24" /></span>Manage your Immich account</button
+			<span><Cog size="18" /></span>Manage your Immich account</button
 		>
 	</div>
 
@@ -69,7 +72,7 @@
 
 	<div class="mb-6">
 		<button
-			class="border rounded-3xl px-6 py-2 hover:bg-gray-50 dark:border-immich-dark-gray dark:bg-gray-300 dark:hover:bg-immich-dark-primary"
+			class="border rounded-3xl px-6 py-2 hover:bg-gray-50 dark:border-immich-dark-gray dark:bg-gray-300 dark:hover:bg-immich-dark-primary text-xs"
 			on:click={() => dispatch('logout')}>Sign Out</button
 		>
 	</div>
