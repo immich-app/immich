@@ -31,9 +31,7 @@
 		<button
 			class="flex place-items-center place-content-center rounded-full bg-immich-primary dark:bg-immich-dark-primary dark:immich-dark-primary/80 h-20 w-20 text-gray-100 hover:bg-immich-primary dark:text-immich-dark-bg"
 		>
-			{#await getUserProfileImage()}
-				<LoadingSpinner />
-			{:then data}
+			{#await getUserProfileImage() then}
 				<img
 					src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 					alt="profile-img"
@@ -61,7 +59,7 @@
 	<div class="mb-6">
 		<button
 			class="border rounded-3xl px-6 py-2 hover:bg-gray-50 dark:border-immich-dark-gray dark:bg-gray-300 dark:hover:bg-immich-dark-primary"
-			on:click={() => dispatch('signout')}>Sign Out</button
+			on:click={() => dispatch('logout')}>Sign Out</button
 		>
 	</div>
 </div>
