@@ -11,7 +11,7 @@
 	out:fade={{ duration: 100 }}
 	class="absolute left-0 top-0 w-full h-full bg-black/40 z-[100] flex place-items-center place-content-center"
 >
-	<div class="z-[9999]" use:clickOutside on:out-click={() => dispatch('clickOutside')}>
+	<div class="z-[9999]" use:clickOutside on:outclick={() => dispatch('clickOutside')}>
 		<slot />
 	</div>
 </section>

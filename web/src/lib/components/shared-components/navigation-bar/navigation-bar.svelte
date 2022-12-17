@@ -4,10 +4,11 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
-	import { clickOutside } from '../../utils/click-outside';
+	import { clickOutside } from '../../../utils/click-outside';
 	import { api, UserResponseDto } from '@api';
-	import ThemeButton from './theme-button.svelte';
-	import { AppRoute } from '../../constants';
+	import ThemeButton from '../theme-button.svelte';
+	import { AppRoute } from '../../../constants';
+	import AccountInfoPanel from './account-info-panel.svelte';
 
 	export let user: UserResponseDto;
 	export let shouldShowUploadButton = true;
@@ -129,49 +130,10 @@
 	</div>
 
 	{#if shouldShowAccountInfoPanel}
-		<div
-			in:fade={{ duration: 100 }}
-			out:fade={{ duration: 100 }}
-			id="account-info-panel"
-			class="absolute right-[25px] top-[75px] bg-immich-bg dark:bg-immich-dark-gray dark:border dark:border-immich-dark-gray shadow-lg rounded-2xl w-[360px] text-center z-[100]"
-			use:clickOutside
-			on:out-click={() => (shouldShowAccountInfoPanel = false)}
-		>
-			<div class="flex place-items-center place-content-center mt-6">
-				<button
-					class="flex place-items-center place-content-center rounded-full bg-immich-primary dark:bg-immich-dark-primary dark:immich-dark-primary/80 h-20 w-20 text-gray-100 hover:bg-immich-primary dark:text-immich-dark-bg"
-				>
-					{#if shouldShowProfileImage}
-						<img
-							src={`api/user/profile-image/${user.id}`}
-							alt="profile-img"
-							class="inline rounded-full h-20 w-20 object-cover shadow-md"
-						/>
-					{:else}
-						<div class="text-lg">
-							{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
-						</div>
-					{/if}
-				</button>
-			</div>
-
-			<p class="text-lg text-immich-primary dark:text-immich-dark-primary font-medium mt-4">
-				{user.firstName}
-				{user.lastName}
-			</p>
-
-			<p class="text-sm text-gray-500 dark:text-immich-dark-fg">{user.email}</p>
-
-			<div class="my-4">
-				<hr class="dark:border-immich-dark-bg" />
-			</div>
-
-			<div class="mb-6">
-				<button
-					class="border rounded-3xl px-6 py-2 hover:bg-gray-50 dark:border-immich-dark-gray dark:bg-gray-300 dark:hover:bg-immich-dark-primary"
-					on:click={logOut}>Sign Out</button
-				>
-			</div>
-		</div>
+		<AccountInfoPanel
+			{user}
+			on:close={() => (shouldShowAccountInfoPanel = false)}
+			on:logout={logOut}
+		/>
 	{/if}
 </section>
