@@ -4,6 +4,8 @@
 	import { createEventDispatcher } from 'svelte';
 	import { page } from '$app/stores';
 	import { fade } from 'svelte/transition';
+	import Cog from 'svelte-material-icons/Cog.svelte';
+	import { goto } from '$app/navigation';
 
 	export let user: UserResponseDto;
 
@@ -51,6 +53,15 @@
 	</p>
 
 	<p class="text-sm text-gray-500 dark:text-immich-dark-fg">{user.email}</p>
+
+	<div class="mt-4 flex place-items-center place-content-center">
+		<button
+			class="flex border rounded-3xl px-6 py-2 hover:bg-gray-50 dark:border-immich-dark-gray dark:bg-gray-300 dark:hover:bg-immich-dark-primary font-medium place-items-center place-content-center gap-2"
+			on:click={() => goto('/user-settings')}
+		>
+			<span><Cog size="24" /></span>Manage your Immich account</button
+		>
+	</div>
 
 	<div class="my-4">
 		<hr class="dark:border-immich-dark-bg" />
