@@ -4,7 +4,6 @@
 	import { createEventDispatcher } from 'svelte';
 	import { page } from '$app/stores';
 	import { fade } from 'svelte/transition';
-	import LoadingSpinner from '../loading-spinner.svelte';
 
 	export let user: UserResponseDto;
 
@@ -33,12 +32,13 @@
 		>
 			{#await getUserProfileImage() then}
 				<img
+					transition:fade={{ duration: 100 }}
 					src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 					alt="profile-img"
 					class="inline rounded-full h-20 w-20 object-cover shadow-md"
 				/>
-			{:catch error}
-				<div class="text-lg">
+			{:catch}
+				<div transition:fade={{ duration: 200 }} class="text-lg">
 					{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
 				</div>
 			{/await}
