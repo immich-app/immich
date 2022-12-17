@@ -26,7 +26,7 @@
 			class="pt-10 fixed w-full z-50 bg-immich-bg dark:bg-immich-dark-bg"
 		>
 			<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
-				Users settings
+				User Settings
 			</h1>
 			<hr class="dark:border-immich-dark-gray" />
 		</div>
