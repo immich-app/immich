@@ -15,7 +15,7 @@
 			case AppRoute.ADMIN_USER_MANAGEMENT:
 				return 'User Management';
 			case AppRoute.ADMIN_SETTINGS:
-				return 'Settings';
+				return 'System Settings';
 			case AppRoute.ADMIN_JOBS:
 				return 'Jobs';
 			case AppRoute.ADMIN_STATS:

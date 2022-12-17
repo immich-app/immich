@@ -9,17 +9,19 @@
 </script>
 
 <SettingAccordion title="User profile" subtitle="Manage the user information">
-	<SettingInputField
-		inputType={SettingInputFieldType.TEXT}
-		label="First name"
-		bind:value={user.firstName}
-		required={true}
-	/>
+	<section class="my-4">
+		<SettingInputField
+			inputType={SettingInputFieldType.TEXT}
+			label="First name"
+			bind:value={user.firstName}
+			required={true}
+		/>
 
-	<SettingInputField
-		inputType={SettingInputFieldType.TEXT}
-		label="Last name"
-		bind:value={user.lastName}
-		required={true}
-	/>
+		<SettingInputField
+			inputType={SettingInputFieldType.TEXT}
+			label="Last name"
+			bind:value={user.lastName}
+			required={true}
+		/>
+	</section>
 </SettingAccordion>

@@ -18,7 +18,7 @@
 </script>
 
 <svelte:head>
-	<title>Settings - Immich</title>
+	<title>System Settings - Immich</title>
 </svelte:head>
 
 <section class="">
