@@ -18,7 +18,6 @@
 
 	onMount(() => {
 		getUserProfileImage();
-		console.log($page.url);
 	});
 
 	const getUserProfileImage = async () => {

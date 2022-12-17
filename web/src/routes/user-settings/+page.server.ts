@@ -1,6 +1,5 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { serverApi } from '@api';
 
 export const load: PageServerLoad = async ({ parent }) => {
 	try {
