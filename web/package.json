@@ -21,9 +21,9 @@
 		"@babel/preset-env": "^7.19.0",
 		"@babel/preset-typescript": "^7.18.6",
 		"@faker-js/faker": "^7.5.0",
-		"@sveltejs/adapter-auto": "next",
-		"@sveltejs/adapter-node": "next",
-		"@sveltejs/kit": "next",
+		"@sveltejs/adapter-auto": "^1.0.0",
+		"@sveltejs/adapter-node": "^1.0.0",
+		"@sveltejs/kit": "^1.0.0",
 		"@testing-library/jest-dom": "^5.16.5",
 		"@testing-library/svelte": "^3.2.1",
 		"@types/bcrypt": "^5.0.0",
@@ -55,7 +55,7 @@
 		"tailwindcss": "^3.0.24",
 		"tslib": "^2.3.1",
 		"typescript": "^4.7.4",
-		"vite": "^3.0.0"
+		"vite": "^4.0.0"
 	},
 	"type": "module",
 	"dependencies": {
