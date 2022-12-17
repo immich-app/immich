@@ -2,12 +2,11 @@
 	import { clickOutside } from '$lib/utils/click-outside';
 	import { api, UserResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
-
+	import { page } from '$app/stores';
 	import { fade } from 'svelte/transition';
 	import LoadingSpinner from '../loading-spinner.svelte';
 
 	export let user: UserResponseDto;
-	let shouldShowProfileImage = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -36,7 +35,7 @@
 				<LoadingSpinner />
 			{:then data}
 				<img
-					src={`api/user/profile-image/${user.id}`}
+					src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 					alt="profile-img"
 					class="inline rounded-full h-20 w-20 object-cover shadow-md"
 				/>

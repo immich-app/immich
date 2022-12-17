@@ -4,32 +4,25 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
-	import { clickOutside } from '../../../utils/click-outside';
 	import { api, UserResponseDto } from '@api';
 	import ThemeButton from '../theme-button.svelte';
 	import { AppRoute } from '../../../constants';
 	import AccountInfoPanel from './account-info-panel.svelte';
-
 	export let user: UserResponseDto;
 	export let shouldShowUploadButton = true;
 
 	let shouldShowAccountInfo = false;
-	let shouldShowProfileImage = false;
 
 	const dispatch = createEventDispatcher();
 	let shouldShowAccountInfoPanel = false;
 
 	onMount(() => {
 		getUserProfileImage();
+		console.log($page.url);
 	});
 
 	const getUserProfileImage = async () => {
-		try {
-			await api.userApi.getProfileImage(user.id);
-			shouldShowProfileImage = true;
-		} catch (e) {
-			shouldShowProfileImage = false;
-		}
+		return await api.userApi.getProfileImage(user.id);
 	};
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
@@ -104,15 +97,15 @@
 				<button
 					class="flex place-items-center place-content-center rounded-full bg-immich-primary hover:bg-immich-primary/80 h-12 w-12 text-gray-100 dark:text-immich-dark-bg dark:bg-immich-dark-primary"
 				>
-					{#if shouldShowProfileImage}
+					{#await getUserProfileImage() then}
 						<img
-							src={`api/user/profile-image/${user.id}`}
+							src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 							alt="profile-img"
 							class="inline rounded-full h-12 w-12 object-cover shadow-md"
 						/>
-					{:else}
+					{:catch}
 						{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
-					{/if}
+					{/await}
 				</button>
 
 				{#if shouldShowAccountInfo}
