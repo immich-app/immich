@@ -35,7 +35,7 @@
 	class="absolute w-[200px] z-[99999] rounded-lg overflow-hidden"
 	style={`top: ${y}px; left: ${x}px;`}
 	use:clickOutside
-	on:out-click={() => dispatch('clickoutside')}
+	on:outclick={() => dispatch('clickoutside')}
 >
 	<slot />
 </div>

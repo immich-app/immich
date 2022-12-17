@@ -1,5 +1,5 @@
 <script lang="ts">
-	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';

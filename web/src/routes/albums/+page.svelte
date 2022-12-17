@@ -6,7 +6,7 @@
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import type { PageData } from './$types';
-	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 	import { useAlbums } from './albums.bloc';

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import Sync from 'svelte-material-icons/Sync.svelte';
@@ -15,7 +15,7 @@
 			case AppRoute.ADMIN_USER_MANAGEMENT:
 				return 'User Management';
 			case AppRoute.ADMIN_SETTINGS:
-				return 'Settings';
+				return 'System Settings';
 			case AppRoute.ADMIN_JOBS:
 				return 'Jobs';
 			case AppRoute.ADMIN_STATS:
