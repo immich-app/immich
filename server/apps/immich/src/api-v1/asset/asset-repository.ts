@@ -28,6 +28,7 @@ export interface IAssetRepository {
     livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity>;
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
+  getAll(): Promise<AssetEntity[]>;
   getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -58,6 +59,12 @@ export class AssetRepository implements IAssetRepository {
 
     @Inject(TAG_REPOSITORY) private _tagRepository: ITagRepository,
   ) {}
+
+  async getAll(): Promise<AssetEntity[]> {
+    return await this.assetRepository.find({
+      relations: ['exifInfo'],
+    });
+  }
 
   async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
     return await this.assetRepository

@@ -116,7 +116,8 @@ export class AssetService {
           throw new BadRequestException('Asset not created');
         }
 
-        await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
+        // TODO remove this for prod
+        // await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
 
         await this.videoConversionQueue.add(
           mp4ConversionProcessorName,
@@ -144,15 +145,24 @@ export class AssetService {
         throw new BadRequestException('Asset not created');
       }
 
-      const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
+      // TODO remove this for prod
+      // const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
+
+      // await this.assetUploadedQueue.add(
+      //   assetUploadedProcessorName,
+      //   { asset: movedAsset, fileName: originalAssetData.originalname },
+      //   { jobId: movedAsset.id },
+      // );
+
+      // return new AssetFileUploadResponseDto(movedAsset.id);
 
       await this.assetUploadedQueue.add(
         assetUploadedProcessorName,
-        { asset: movedAsset, fileName: originalAssetData.originalname },
-        { jobId: movedAsset.id },
+        { asset: assetEntity, fileName: originalAssetData.originalname },
+        { jobId: assetEntity.id },
       );
 
-      return new AssetFileUploadResponseDto(movedAsset.id);
+      return new AssetFileUploadResponseDto(assetEntity.id);
     } catch (err) {
       await this.backgroundTaskService.deleteFileOnDisk([
         {

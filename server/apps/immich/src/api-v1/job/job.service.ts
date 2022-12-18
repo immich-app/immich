@@ -6,6 +6,7 @@ import {
   IVideoTranscodeJob,
   MachineLearningJobNameEnum,
   QueueNameEnum,
+  templateMigrationProcessorName,
   videoMetadataExtractionProcessorName,
 } from '@app/job';
 import { InjectQueue } from '@nestjs/bull';
@@ -18,6 +19,8 @@ import { AssetType } from '@app/database/entities/asset.entity';
 import { GetJobDto, JobId } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
+import { IStorageMigrationJob } from '@app/job/interfaces/storage-migration.interface';
+import { StorageService } from '@app/storage';
 
 @Injectable()
 export class JobService {
@@ -34,12 +37,18 @@ export class JobService {
     @InjectQueue(QueueNameEnum.MACHINE_LEARNING)
     private machineLearningQueue: Queue<IMachineLearningJob>,
 
+    @InjectQueue(QueueNameEnum.STORAGE_MIGRATION)
+    private storageMigrationQueue: Queue<IStorageMigrationJob>,
+
     @Inject(ASSET_REPOSITORY)
     private _assetRepository: IAssetRepository,
+
+    private storageService: StorageService,
   ) {
     this.thumbnailGeneratorQueue.empty();
     this.metadataExtractionQueue.empty();
     this.videoConversionQueue.empty();
+    this.storageMigrationQueue.empty();
   }
 
   async startJob(jobDto: GetJobDto): Promise<number> {
@@ -52,6 +61,8 @@ export class JobService {
         return 0;
       case JobId.MACHINE_LEARNING:
         return this.runMachineLearningPipeline();
+      case JobId.STORAGE_TEMPLATE_MIGRATION:
+        return this.runStorageMigration();
       default:
         throw new BadRequestException('Invalid job id');
     }
@@ -62,6 +73,7 @@ export class JobService {
     const metadataExtractionJobCount = await this.metadataExtractionQueue.getJobCounts();
     const videoConversionJobCount = await this.videoConversionQueue.getJobCounts();
     const machineLearningJobCount = await this.machineLearningQueue.getJobCounts();
+    const storageMigrationJobCount = await this.storageMigrationQueue.getJobCounts();
 
     const response = new AllJobStatusResponseDto();
     response.isThumbnailGenerationActive = Boolean(thumbnailGeneratorJobCount.waiting);
@@ -72,6 +84,8 @@ export class JobService {
     response.videoConversionQueueCount = videoConversionJobCount;
     response.isMachineLearningActive = Boolean(machineLearningJobCount.waiting);
     response.machineLearningQueueCount = machineLearningJobCount;
+    response.isStorageMigrationActive = Boolean(storageMigrationJobCount.waiting);
+    response.storageMigrationQueueCount = storageMigrationJobCount;
 
     return response;
   }
@@ -93,6 +107,11 @@ export class JobService {
       response.queueCount = await this.videoConversionQueue.getJobCounts();
     }
 
+    if (query.jobId === JobId.STORAGE_TEMPLATE_MIGRATION) {
+      response.isActive = Boolean((await this.storageMigrationQueue.getJobCounts()).waiting);
+      response.queueCount = await this.storageMigrationQueue.getJobCounts();
+    }
+
     return response;
   }
 
@@ -109,6 +128,9 @@ export class JobService {
         return 0;
       case JobId.MACHINE_LEARNING:
         this.machineLearningQueue.empty();
+        return 0;
+      case JobId.STORAGE_TEMPLATE_MIGRATION:
+        this.storageMigrationQueue.empty();
         return 0;
       default:
         throw new BadRequestException('Invalid job id');
@@ -176,5 +198,41 @@ export class JobService {
     }
 
     return assetWithNoSmartInfo.length;
+  }
+
+  async runStorageMigration() {
+    let migrationAssetCount = 0;
+    const jobCount = await this.storageMigrationQueue.getJobCounts();
+
+    if (jobCount.waiting > 0) {
+      throw new BadRequestException('Storage migration job is already running');
+    }
+
+    const assets = await this._assetRepository.getAll();
+
+    for (const asset of assets) {
+      let shouldMigration = false;
+      let filename = '';
+      if (asset.exifInfo?.imageName) {
+        filename = asset.exifInfo.imageName;
+        shouldMigration = await this.storageService.shouldMigrate(asset, asset.exifInfo.imageName);
+
+        console.log('migration', asset.id, filename);
+      } else {
+        shouldMigration = await this.storageService.shouldMigrate(asset, asset.id);
+        filename = asset.id;
+      }
+
+      if (shouldMigration) {
+        migrationAssetCount++;
+        await this.storageMigrationQueue.add(
+          templateMigrationProcessorName,
+          { asset, filename },
+          { jobId: randomUUID() },
+        );
+      }
+    }
+
+    return migrationAssetCount;
   }
 }

@@ -27,7 +27,7 @@ import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interf
 
 @Processor(QueueNameEnum.THUMBNAIL_GENERATION)
 export class ThumbnailGeneratorProcessor {
-  private logLevel: ImmichLogLevel;
+  readonly logger: Logger = new Logger(ThumbnailGeneratorProcessor.name);
 
   constructor(
     @InjectRepository(AssetEntity)
@@ -40,12 +40,7 @@ export class ThumbnailGeneratorProcessor {
 
     @InjectQueue(QueueNameEnum.MACHINE_LEARNING)
     private machineLearningQueue: Queue<IMachineLearningJob>,
-
-    private configService: ConfigService,
-  ) {
-    this.logLevel = this.configService.get('LOG_LEVEL') || ImmichLogLevel.SIMPLE;
-    // TODO - Add observable paterrn to listen to the config change
-  }
+  ) {}
 
   @Process({ name: generateJPEGThumbnailProcessorName, concurrency: 3 })
   async generateJPEGThumbnail(job: Job<JpegGeneratorProcessor>) {
@@ -70,12 +65,8 @@ export class ThumbnailGeneratorProcessor {
           .rotate()
           .toFile(jpegThumbnailPath);
         await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
-      } catch (error) {
-        Logger.error('Failed to generate jpeg thumbnail for asset: ' + asset.id);
-
-        if (this.logLevel == ImmichLogLevel.VERBOSE) {
-          console.trace('Failed to generate jpeg thumbnail for asset', error);
-        }
+      } catch (error: any) {
+        this.logger.error('Failed to generate jpeg thumbnail for asset: ' + asset.id, error.stack);
       }
 
       // Update resize path to send to generate webp queue
@@ -140,12 +131,8 @@ export class ThumbnailGeneratorProcessor {
     try {
       await sharp(asset.resizePath, { failOnError: false }).resize(250).webp().rotate().toFile(webpPath);
       await this.assetRepository.update({ id: asset.id }, { webpPath: webpPath });
-    } catch (error) {
-      Logger.error('Failed to generate webp thumbnail for asset: ' + asset.id);
-
-      if (this.logLevel == ImmichLogLevel.VERBOSE) {
-        console.trace('Failed to generate webp thumbnail for asset', error);
-      }
+    } catch (error: any) {
+      this.logger.error('Failed to generate webp thumbnail for asset: ' + asset.id, error.stack);
     }
   }
 }

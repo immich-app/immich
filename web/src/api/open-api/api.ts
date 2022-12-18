@@ -227,6 +227,12 @@ export interface AllJobStatusResponseDto {
     'machineLearningQueueCount': JobCounts;
     /**
      * 
+     * @type {JobCounts}
+     * @memberof AllJobStatusResponseDto
+     */
+    'storageMigrationQueueCount': JobCounts;
+    /**
+     * 
      * @type {boolean}
      * @memberof AllJobStatusResponseDto
      */
@@ -249,6 +255,12 @@ export interface AllJobStatusResponseDto {
      * @memberof AllJobStatusResponseDto
      */
     'isMachineLearningActive': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AllJobStatusResponseDto
+     */
+    'isStorageMigrationActive': boolean;
 }
 /**
  * 
@@ -1038,7 +1050,8 @@ export const JobId = {
     ThumbnailGeneration: 'thumbnail-generation',
     MetadataExtraction: 'metadata-extraction',
     VideoConversion: 'video-conversion',
-    MachineLearning: 'machine-learning'
+    MachineLearning: 'machine-learning',
+    StorageTemplateMigration: 'storage-template-migration'
 } as const;
 
 export type JobId = typeof JobId[keyof typeof JobId];

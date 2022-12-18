@@ -150,4 +150,16 @@ export class StorageService {
 
     return template(substitutions);
   }
+
+  public async shouldMigrate(asset: AssetEntity, filename: string): Promise<boolean> {
+    const source = asset.originalPath;
+    const ext = path.extname(source).split('.').pop() as string;
+    const sanitized = sanitize(path.basename(filename, `.${ext}`));
+    const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
+    const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
+    const fullPath = path.normalize(path.join(rootPath, storagePath));
+    const shouldBeDestination = `${fullPath}.${ext}`;
+    const isFileExist = await this.checkFileExist(shouldBeDestination);
+    return !isFileExist;
+  }
 }

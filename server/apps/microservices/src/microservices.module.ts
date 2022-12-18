@@ -5,6 +5,7 @@ import { ExifEntity } from '@app/database/entities/exif.entity';
 import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { QueueNameEnum } from '@app/job/constants/queue-name.constant';
+import { StorageModule } from '@app/storage';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -17,7 +18,7 @@ import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
 import { GenerateChecksumProcessor } from './processors/generate-checksum.processor';
 import { MachineLearningProcessor } from './processors/machine-learning.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
-import { StorageTemplateMigrationProcessor } from './processors/storage-template-migration.processor';
+import { StorageMigrationProcessor } from './processors/storage-migration.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { UserDeletionProcessor } from './processors/user-deletion.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
@@ -33,6 +34,7 @@ export const ImmichDefaultJobOptions: Bull.JobOptions = {
     DatabaseModule,
     ImmichConfigModule,
     TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
+    StorageModule,
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',
@@ -75,7 +77,7 @@ export const ImmichDefaultJobOptions: Bull.JobOptions = {
         defaultJobOptions: ImmichDefaultJobOptions,
       },
       {
-        name: QueueNameEnum.STORAGE_TEMPLATE_MIGRATION,
+        name: QueueNameEnum.STORAGE_MIGRATION,
         defaultJobOptions: ImmichDefaultJobOptions,
       },
     ),
@@ -91,7 +93,7 @@ export const ImmichDefaultJobOptions: Bull.JobOptions = {
     GenerateChecksumProcessor,
     MachineLearningProcessor,
     UserDeletionProcessor,
-    StorageTemplateMigrationProcessor,
+    StorageMigrationProcessor,
   ],
   exports: [BullModule],
 })

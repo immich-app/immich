@@ -104,6 +104,33 @@
 			});
 		}
 	};
+
+	const runTemplateMigration = async () => {
+		try {
+			const { data } = await api.jobApi.sendJobCommand(JobId.StorageTemplateMigration, {
+				command: JobCommand.Start
+			});
+
+			if (data) {
+				notificationController.show({
+					message: `Storage migration started for ${data} asset`,
+					type: NotificationType.Info
+				});
+			} else {
+				notificationController.show({
+					message: `All files have been migrated to the new storage template`,
+					type: NotificationType.Info
+				});
+			}
+		} catch (e) {
+			console.log('[ERROR] runTemplateMigration', e);
+
+			notificationController.show({
+				message: `Error running template migration job, check console for more detail`,
+				type: NotificationType.Error
+			});
+		}
+	};
 </script>
 
 <div class="flex flex-col gap-10">
@@ -135,4 +162,13 @@
 	>
 		Note that some asset does not have any object detected, this is normal.
 	</JobTile>
+
+	<JobTile
+		title={'Storage migration'}
+		subtitle={'Move files from the current storage structure to new user defined storage structure'}
+		on:click={runTemplateMigration}
+		jobStatus={allJobsStatus?.isStorageMigrationActive}
+		waitingJobCount={allJobsStatus?.storageMigrationQueueCount.waiting}
+		activeJobCount={allJobsStatus?.storageMigrationQueueCount.active}
+	/>
 </div>
