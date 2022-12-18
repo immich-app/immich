@@ -12,15 +12,8 @@ import { AssetModule } from '../asset/asset.module';
 import { UserModule } from '../user/user.module';
 
 import { StorageModule } from '@app/storage';
-import { QueueNameEnum } from '@app/job';
+import { ImmichDefaultJobOptions, QueueNameEnum } from '@app/job';
 import { BullModule } from '@nestjs/bull';
-import Bull from 'bull';
-
-const ImmichDefaultJobOptions: Bull.JobOptions = {
-  attempts: 3,
-  removeOnComplete: true,
-  removeOnFail: false,
-};
 
 @Module({
   imports: [

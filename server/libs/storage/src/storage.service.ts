@@ -90,7 +90,7 @@ export class StorageService {
 
   private async checkFileExist(path: string): Promise<boolean> {
     try {
-      await fsPromise.access(path, constants.F_OK);
+      await fsPromise.access(path, constants.R_OK | constants.W_OK);
       return true;
     } catch (_) {
       return false;
@@ -158,11 +158,9 @@ export class StorageService {
     const sanitized = sanitize(path.basename(filename, `.${ext}`));
     const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
     const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
+    console.log(storagePath);
     const fullPath = path.normalize(path.join(rootPath, storagePath));
     const shouldBeDestination = `${fullPath}.${ext}`;
-
-    // console.log('Source: ', source);
-    // console.log('Destination: ', shouldBeDestination);
 
     const isFileExist = await this.checkFileExist(shouldBeDestination);
     return !isFileExist;

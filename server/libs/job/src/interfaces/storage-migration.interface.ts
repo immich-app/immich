@@ -12,4 +12,8 @@ export interface StorageMigration {
   filename: string;
 }
 
-export type IStorageMigrationJob = StorageMigration;
+export interface StorageTemplateUpdate {
+  dummy: string;
+}
+
+export type IStorageMigrationJob = StorageMigration | StorageTemplateUpdate;
