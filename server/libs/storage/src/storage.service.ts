@@ -152,16 +152,21 @@ export class StorageService {
   }
 
   public async shouldMigrate(asset: AssetEntity, filename: string): Promise<boolean> {
-    const source = asset.originalPath;
+    let source = asset.originalPath;
+
+    // Replace potential legacy path
+    if (source.startsWith('./upload/')) {
+      source = source.replace('./upload/', 'upload/');
+    }
+
     const ext = path.extname(source).split('.').pop() as string;
     const sanitized = sanitize(path.basename(filename, `.${ext}`));
     const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
     const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
     const fullPath = path.normalize(path.join(rootPath, storagePath));
-    const shouldBeDestination = `${fullPath}.${ext}`;
+    const destination = `${fullPath}.${ext}`;
 
-    const isFileExist = await this.checkFileExist(shouldBeDestination);
-    return !isFileExist;
+    return !(source === destination);
   }
 
   public async removeEmptyDirectories(directory: string) {
