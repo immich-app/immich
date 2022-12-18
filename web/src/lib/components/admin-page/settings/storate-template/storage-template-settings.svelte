@@ -221,6 +221,16 @@
 						showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
 					/>
 				</form>
+
+				<div id="migration-info" class="text-sm mt-4">
+					<p>
+						When changing to a new template, new migration is required so that the new template can
+						be applied to the existing files. Migration can be triggered from the <a
+							href="/admin/jobs-status"
+							class="text-immich-primary dark:text-immich-dark-primary">Job panel</a
+						>
+					</p>
+				</div>
 			</div>
 		</div>
 	{/await}

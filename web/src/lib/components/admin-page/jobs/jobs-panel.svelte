@@ -9,6 +9,7 @@
 
 	let allJobsStatus: AllJobStatusResponseDto;
 	let setIntervalHandler: NodeJS.Timer;
+
 	onMount(async () => {
 		const { data } = await api.jobApi.getAllJobsStatus();
 		allJobsStatus = data;
