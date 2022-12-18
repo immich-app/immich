@@ -1,5 +1,4 @@
 import { QueueNameEnum, updateTemplateProcessorName } from '@app/job';
-import { IStorageMigrationJob } from '@app/job/interfaces/storage-migration.interface';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -22,7 +21,7 @@ export class SystemConfigService {
   constructor(
     private immichConfigService: ImmichConfigService,
     @InjectQueue(QueueNameEnum.STORAGE_MIGRATION)
-    private storageMigrationQueue: Queue<IStorageMigrationJob>,
+    private storageMigrationQueue: Queue,
   ) {}
 
   public async getConfig(): Promise<SystemConfigDto> {
@@ -37,7 +36,7 @@ export class SystemConfigService {
 
   public async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
     const config = await this.immichConfigService.updateConfig(dto);
-    this.storageMigrationQueue.add(updateTemplateProcessorName, { dummy: 'dummy' }, { jobId: randomUUID() });
+    this.storageMigrationQueue.add(updateTemplateProcessorName, {}, { jobId: randomUUID() });
     return mapConfig(config);
   }
 

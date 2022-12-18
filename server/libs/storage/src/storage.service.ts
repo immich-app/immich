@@ -26,7 +26,7 @@ const moveFile = promisify<string, string, mv.Options>(mv);
 
 @Injectable()
 export class StorageService {
-  readonly log = new Logger(StorageService.name);
+  readonly logger = new Logger(StorageService.name);
 
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 
@@ -41,7 +41,7 @@ export class StorageService {
     this.immichConfigService.addValidator((config) => this.validateConfig(config));
 
     this.immichConfigService.config$.subscribe((config) => {
-      this.log.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
+      this.logger.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
       this.storageTemplate = this.compile(config.storageTemplate.template);
     });
   }
@@ -56,7 +56,7 @@ export class StorageService {
       const fullPath = path.normalize(path.join(rootPath, storagePath));
 
       if (!fullPath.startsWith(rootPath)) {
-        this.log.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
+        this.logger.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
         return asset;
       }
 
@@ -78,8 +78,7 @@ export class StorageService {
       asset.originalPath = destination;
       return await this.assetRepository.save(asset);
     } catch (error: any) {
-      console.log(error);
-      this.log.error(error, error.stack);
+      this.logger.error(error);
       return asset;
     }
   }
@@ -90,7 +89,7 @@ export class StorageService {
 
   private async checkFileExist(path: string): Promise<boolean> {
     try {
-      await fsPromise.access(path, constants.R_OK | constants.W_OK);
+      await fsPromise.access(path, constants.F_OK);
       return true;
     } catch (_) {
       return false;
@@ -116,7 +115,7 @@ export class StorageService {
         'jpg',
       );
     } catch (e) {
-      this.log.warn(`Storage template validation failed: ${e}`);
+      this.logger.warn(`Storage template validation failed: ${e}`);
       throw new Error(`Invalid storage template: ${e}`);
     }
   }
@@ -158,11 +157,33 @@ export class StorageService {
     const sanitized = sanitize(path.basename(filename, `.${ext}`));
     const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
     const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
-    console.log(storagePath);
     const fullPath = path.normalize(path.join(rootPath, storagePath));
     const shouldBeDestination = `${fullPath}.${ext}`;
 
     const isFileExist = await this.checkFileExist(shouldBeDestination);
     return !isFileExist;
+  }
+
+  public async removeEmptyDirectories(directory: string) {
+    // lstat does not follow symlinks (in contrast to stat)
+    const fileStats = await fsPromise.lstat(directory);
+    if (!fileStats.isDirectory()) {
+      return;
+    }
+    let fileNames = await fsPromise.readdir(directory);
+    if (fileNames.length > 0) {
+      const recursiveRemovalPromises = fileNames.map((fileName) =>
+        this.removeEmptyDirectories(path.join(directory, fileName)),
+      );
+      await Promise.all(recursiveRemovalPromises);
+
+      // re-evaluate fileNames; after deleting subdirectory
+      // we may have parent directory empty now
+      fileNames = await fsPromise.readdir(directory);
+    }
+
+    if (fileNames.length === 0) {
+      await fsPromise.rmdir(directory);
+    }
   }
 }

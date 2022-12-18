@@ -114,7 +114,7 @@
 
 			if (data) {
 				notificationController.show({
-					message: `Storage migration started for ${data} asset`,
+					message: `Storage migration started`,
 					type: NotificationType.Info
 				});
 			} else {

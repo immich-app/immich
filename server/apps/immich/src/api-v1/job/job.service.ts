@@ -19,7 +19,6 @@ import { AssetType } from '@app/database/entities/asset.entity';
 import { GetJobDto, JobId } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
-import { IStorageMigrationJob } from '@app/job/interfaces/storage-migration.interface';
 import { StorageService } from '@app/storage';
 
 @Injectable()
@@ -38,7 +37,7 @@ export class JobService {
     private machineLearningQueue: Queue<IMachineLearningJob>,
 
     @InjectQueue(QueueNameEnum.STORAGE_MIGRATION)
-    private storageMigrationQueue: Queue<IStorageMigrationJob>,
+    private storageMigrationQueue: Queue,
 
     @Inject(ASSET_REPOSITORY)
     private _assetRepository: IAssetRepository,
@@ -85,7 +84,7 @@ export class JobService {
     response.isMachineLearningActive = Boolean(machineLearningJobCount.waiting);
     response.machineLearningQueueCount = machineLearningJobCount;
 
-    response.isStorageMigrationActive = Boolean(storageMigrationJobCount.waiting);
+    response.isStorageMigrationActive = Boolean(storageMigrationJobCount.active);
     response.storageMigrationQueueCount = storageMigrationJobCount;
 
     return response;
@@ -202,35 +201,14 @@ export class JobService {
   }
 
   async runStorageMigration() {
-    let migrationAssetCount = 0;
     const jobCount = await this.storageMigrationQueue.getJobCounts();
 
-    if (jobCount.waiting > 0) {
+    if (jobCount.active > 0) {
       throw new BadRequestException('Storage migration job is already running');
     }
 
-    const assets = await this._assetRepository.getAll();
+    await this.storageMigrationQueue.add(templateMigrationProcessorName, {}, { jobId: randomUUID() });
 
-    for (const asset of assets) {
-      let shouldMigration = false;
-      let filename = '';
-      if (asset.exifInfo?.imageName) {
-        filename = asset.exifInfo.imageName;
-        shouldMigration = await this.storageService.shouldMigrate(asset, asset.exifInfo.imageName);
-      } else {
-        shouldMigration = await this.storageService.shouldMigrate(asset, asset.id);
-        filename = asset.id;
-      }
-
-      if (shouldMigration) {
-        migrationAssetCount++;
-        await this.storageMigrationQueue.add(
-          templateMigrationProcessorName,
-          { asset, filename },
-          { jobId: randomUUID() },
-        );
-      }
-    }
-    return migrationAssetCount;
+    return 1;
   }
 }

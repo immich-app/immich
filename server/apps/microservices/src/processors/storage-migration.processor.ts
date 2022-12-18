@@ -1,25 +1,55 @@
+import { APP_UPLOAD_LOCATION } from '@app/common';
+import { AssetEntity } from '@app/database/entities/asset.entity';
 import { ImmichConfigService } from '@app/immich-config';
 import { QueueNameEnum, templateMigrationProcessorName, updateTemplateProcessorName } from '@app/job';
-import { StorageMigration } from '@app/job/interfaces/storage-migration.interface';
 import { StorageService } from '@app/storage';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bull';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Processor(QueueNameEnum.STORAGE_MIGRATION)
 export class StorageMigrationProcessor {
   readonly logger: Logger = new Logger(StorageMigrationProcessor.name);
 
-  constructor(private storageService: StorageService, private immichConfigService: ImmichConfigService) {}
+  constructor(
+    private storageService: StorageService,
+    private immichConfigService: ImmichConfigService,
+
+    @InjectRepository(AssetEntity)
+    private assetRepository: Repository<AssetEntity>,
+  ) {}
 
   /**
    * Migration process when a new user set a new storage template.
    * @param job
    */
-  @Process({ name: templateMigrationProcessorName, concurrency: 1 })
-  async templateMigration(job: Job<StorageMigration>) {
-    const { asset, filename } = job.data;
-    await this.storageService.moveAsset(asset, filename);
+  @Process({ name: templateMigrationProcessorName, concurrency: 100 })
+  async templateMigration() {
+    const assets = await this.assetRepository.find({
+      relations: ['exifInfo'],
+    });
+
+    this.logger.debug(`Migrating ${assets.length} assets to new template`);
+    console.time('migrating-time');
+    for (const asset of assets) {
+      let shouldMigration = false;
+      let filename = '';
+      if (asset.exifInfo?.imageName) {
+        filename = asset.exifInfo.imageName;
+        shouldMigration = await this.storageService.shouldMigrate(asset, asset.exifInfo.imageName);
+      } else {
+        shouldMigration = await this.storageService.shouldMigrate(asset, asset.id);
+        filename = asset.id;
+      }
+
+      if (shouldMigration) {
+        await this.storageService.moveAsset(asset, filename);
+      }
+    }
+
+    this.storageService.removeEmptyDirectories(APP_UPLOAD_LOCATION);
+    console.timeEnd('migrating-time');
   }
 
   /**
