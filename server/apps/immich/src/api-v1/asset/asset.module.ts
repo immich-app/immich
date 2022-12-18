@@ -14,7 +14,6 @@ import { TagModule } from '../tag/tag.module';
 import { AlbumModule } from '../album/album.module';
 import { UserModule } from '../user/user.module';
 import { StorageModule } from '@app/storage';
-import { MicroservicesModule } from 'apps/microservices/src/microservices.module';
 
 const ASSET_REPOSITORY_PROVIDER = {
   provide: ASSET_REPOSITORY,
@@ -32,7 +31,22 @@ const ASSET_REPOSITORY_PROVIDER = {
     TagModule,
     StorageModule,
     forwardRef(() => AlbumModule),
-    MicroservicesModule,
+    BullModule.registerQueue({
+      name: QueueNameEnum.ASSET_UPLOADED,
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
+    BullModule.registerQueue({
+      name: QueueNameEnum.VIDEO_CONVERSION,
+      defaultJobOptions: {
+        attempts: 3,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
   ],
   controllers: [AssetController],
   providers: [AssetService, BackgroundTaskService, ASSET_REPOSITORY_PROVIDER],

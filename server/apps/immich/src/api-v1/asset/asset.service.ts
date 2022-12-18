@@ -119,7 +119,7 @@ export class AssetService {
         // TODO
         // Comment out for testing migration service
         // Leave as is for production
-        await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
+        // await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
 
         await this.videoConversionQueue.add(
           mp4ConversionProcessorName,
@@ -147,24 +147,24 @@ export class AssetService {
         throw new BadRequestException('Asset not created');
       }
 
-      const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
+      // const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
 
-      await this.assetUploadedQueue.add(
-        assetUploadedProcessorName,
-        { asset: movedAsset, fileName: originalAssetData.originalname },
-        { jobId: movedAsset.id },
-      );
-
-      return new AssetFileUploadResponseDto(movedAsset.id);
-
-      // TODO For testing migration service
       // await this.assetUploadedQueue.add(
       //   assetUploadedProcessorName,
-      //   { asset: assetEntity, fileName: originalAssetData.originalname },
-      //   { jobId: assetEntity.id },
+      //   { asset: movedAsset, fileName: originalAssetData.originalname },
+      //   { jobId: movedAsset.id },
       // );
 
-      // return new AssetFileUploadResponseDto(assetEntity.id);
+      // return new AssetFileUploadResponseDto(movedAsset.id);
+
+      // TODO For testing migration service
+      await this.assetUploadedQueue.add(
+        assetUploadedProcessorName,
+        { asset: assetEntity, fileName: originalAssetData.originalname },
+        { jobId: assetEntity.id },
+      );
+
+      return new AssetFileUploadResponseDto(assetEntity.id);
     } catch (err) {
       await this.backgroundTaskService.deleteFileOnDisk([
         {

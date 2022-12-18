@@ -84,6 +84,7 @@ export class JobService {
     response.videoConversionQueueCount = videoConversionJobCount;
     response.isMachineLearningActive = Boolean(machineLearningJobCount.waiting);
     response.machineLearningQueueCount = machineLearningJobCount;
+
     response.isStorageMigrationActive = Boolean(storageMigrationJobCount.waiting);
     response.storageMigrationQueueCount = storageMigrationJobCount;
 
@@ -230,7 +231,6 @@ export class JobService {
         );
       }
     }
-
     return migrationAssetCount;
   }
 }

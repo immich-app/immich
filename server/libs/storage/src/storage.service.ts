@@ -78,6 +78,7 @@ export class StorageService {
       asset.originalPath = destination;
       return await this.assetRepository.save(asset);
     } catch (error: any) {
+      console.log(error);
       this.log.error(error, error.stack);
       return asset;
     }
@@ -159,6 +160,10 @@ export class StorageService {
     const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
     const fullPath = path.normalize(path.join(rootPath, storagePath));
     const shouldBeDestination = `${fullPath}.${ext}`;
+
+    // console.log('Source: ', source);
+    // console.log('Destination: ', shouldBeDestination);
+
     const isFileExist = await this.checkFileExist(shouldBeDestination);
     return !isFileExist;
   }

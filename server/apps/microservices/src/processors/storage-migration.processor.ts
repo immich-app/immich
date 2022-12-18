@@ -15,10 +15,10 @@ export class StorageMigrationProcessor {
    * Migration process when a new user set a new storage template.
    * @param job
    */
-  @Process({ name: templateMigrationProcessorName, concurrency: 100 })
+  @Process({ name: templateMigrationProcessorName, concurrency: 5 })
   async templateMigration(job: Job<StorageMigration>) {
     const { asset, filename } = job.data;
-
+    console.log('run job', job.id, await job.isWaiting());
     await this.storageService.moveAsset(asset, filename);
   }
 }

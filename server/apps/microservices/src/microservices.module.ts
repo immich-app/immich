@@ -22,12 +22,12 @@ import { StorageMigrationProcessor } from './processors/storage-migration.proces
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { UserDeletionProcessor } from './processors/user-deletion.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
-
-export const ImmichDefaultJobOptions: Bull.JobOptions = {
+const ImmichDefaultJobOptions: Bull.JobOptions = {
   attempts: 3,
   removeOnComplete: true,
   removeOnFail: false,
 };
+
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),

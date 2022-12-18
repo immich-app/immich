@@ -10,8 +10,17 @@ import { ExifEntity } from '@app/database/entities/exif.entity';
 import { TagModule } from '../tag/tag.module';
 import { AssetModule } from '../asset/asset.module';
 import { UserModule } from '../user/user.module';
-import { MicroservicesModule } from 'apps/microservices/src/microservices.module';
+
 import { StorageModule } from '@app/storage';
+import { QueueNameEnum } from '@app/job';
+import { BullModule } from '@nestjs/bull';
+import Bull from 'bull';
+
+const ImmichDefaultJobOptions: Bull.JobOptions = {
+  attempts: 3,
+  removeOnComplete: true,
+  removeOnFail: false,
+};
 
 @Module({
   imports: [
@@ -21,8 +30,41 @@ import { StorageModule } from '@app/storage';
     AssetModule,
     UserModule,
     JwtModule.register(jwtConfig),
-    MicroservicesModule,
     StorageModule,
+    BullModule.registerQueue(
+      {
+        name: QueueNameEnum.USER_DELETION,
+        defaultJobOptions: ImmichDefaultJobOptions,
+      },
+      {
+        name: QueueNameEnum.THUMBNAIL_GENERATION,
+        defaultJobOptions: ImmichDefaultJobOptions,
+      },
+      {
+        name: QueueNameEnum.ASSET_UPLOADED,
+        defaultJobOptions: ImmichDefaultJobOptions,
+      },
+      {
+        name: QueueNameEnum.METADATA_EXTRACTION,
+        defaultJobOptions: ImmichDefaultJobOptions,
+      },
+      {
+        name: QueueNameEnum.VIDEO_CONVERSION,
+        defaultJobOptions: ImmichDefaultJobOptions,
+      },
+      {
+        name: QueueNameEnum.CHECKSUM_GENERATION,
+        defaultJobOptions: ImmichDefaultJobOptions,
+      },
+      {
+        name: QueueNameEnum.MACHINE_LEARNING,
+        defaultJobOptions: ImmichDefaultJobOptions,
+      },
+      {
+        name: QueueNameEnum.STORAGE_MIGRATION,
+        defaultJobOptions: ImmichDefaultJobOptions,
+      },
+    ),
   ],
   controllers: [JobController],
   providers: [JobService, ImmichJwtService],
