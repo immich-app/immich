@@ -4,6 +4,7 @@ const List<Locale> locales = [
   // Default locale
   Locale('en', 'US'),
   // Additional locales
+  Locale('cs', 'CZ'),
   Locale('da', 'DK'),
   Locale('de', 'DE'),
   Locale('es', 'ES'),
@@ -11,12 +12,13 @@ const List<Locale> locales = [
   Locale('fr', 'FR'),
   Locale('it', 'IT'),
   Locale('ja', 'JP'),
+  Locale('ko', 'KR'),
   Locale('nl', 'NL'),
   Locale('pl', 'PL'),
   Locale('pt', 'PR'),
-  Locale('ko', 'KR'),
+  Locale('ru', 'RU'),
   Locale('sk', 'SK'),
-  Locale('cz', 'CZ'),
+  Locale('zh', 'CN'),
 ];
 
 const String translationsPath = 'assets/i18n';

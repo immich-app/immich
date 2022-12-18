@@ -58,7 +58,7 @@
       <string>UIInterfaceOrientationPortrait</string>
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
-  </array>
+    </array>
     <key>UISupportedInterfaceOrientations~ipad</key>
     <array>
       <string>UIInterfaceOrientationPortrait</string>
@@ -84,20 +84,22 @@
 
     <key>CFBundleLocalizations</key>
     <array>
-      <string>en</string>
-      <string>de</string>
+      <string>cs</string>
       <string>da</string>
+      <string>de</string>
+      <string>en</string>
       <string>es</string>
+      <string>fi</string>
       <string>fr</string>
       <string>it</string>
-      <string>fi</string>
       <string>ja</string>
       <string>ko</string>
       <string>nl</string>
       <string>pl</string>
       <string>pt</string>
+      <string>ru</string>
       <string>sk</string>
-      <string>cz</string>
+      <string>zh</string>
     </array>
   </dict>
 </plist>
