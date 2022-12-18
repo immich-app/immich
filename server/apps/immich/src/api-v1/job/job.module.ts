@@ -12,6 +12,7 @@ import { ExifEntity } from '@app/database/entities/exif.entity';
 import { TagModule } from '../tag/tag.module';
 import { AssetModule } from '../asset/asset.module';
 import { UserModule } from '../user/user.module';
+import { MicroservicesModule } from 'apps/microservices/src/microservices.module';
 
 @Module({
   imports: [
@@ -21,56 +22,7 @@ import { UserModule } from '../user/user.module';
     AssetModule,
     UserModule,
     JwtModule.register(jwtConfig),
-    BullModule.registerQueue(
-      {
-        name: QueueNameEnum.THUMBNAIL_GENERATION,
-        defaultJobOptions: {
-          attempts: 3,
-          removeOnComplete: true,
-          removeOnFail: false,
-        },
-      },
-      {
-        name: QueueNameEnum.ASSET_UPLOADED,
-        defaultJobOptions: {
-          attempts: 3,
-          removeOnComplete: true,
-          removeOnFail: false,
-        },
-      },
-      {
-        name: QueueNameEnum.METADATA_EXTRACTION,
-        defaultJobOptions: {
-          attempts: 3,
-          removeOnComplete: true,
-          removeOnFail: false,
-        },
-      },
-      {
-        name: QueueNameEnum.VIDEO_CONVERSION,
-        defaultJobOptions: {
-          attempts: 3,
-          removeOnComplete: true,
-          removeOnFail: false,
-        },
-      },
-      {
-        name: QueueNameEnum.CHECKSUM_GENERATION,
-        defaultJobOptions: {
-          attempts: 3,
-          removeOnComplete: true,
-          removeOnFail: false,
-        },
-      },
-      {
-        name: QueueNameEnum.MACHINE_LEARNING,
-        defaultJobOptions: {
-          attempts: 3,
-          removeOnComplete: true,
-          removeOnFail: false,
-        },
-      },
-    ),
+    MicroservicesModule,
   ],
   controllers: [JobController],
   providers: [JobService, ImmichJwtService],
