@@ -213,15 +213,17 @@
 							/>
 						</div>
 					</div>
+
 					<div id="migration-info" class="text-sm mt-4">
 						<p>
-							When changing to a new template, new migration is required so that the new template
-							can be applied to the existing files. Migration can be triggered from the <a
+							When changing to a new template, a migration process is required so that the new
+							template can be applied to the existing files. You can start the migration from the <a
 								href="/admin/jobs-status"
 								class="text-immich-primary dark:text-immich-dark-primary">Job panel</a
 							>
 						</p>
 					</div>
+
 					<SettingButtonsRow
 						on:reset={reset}
 						on:save={saveSetting}
