@@ -216,8 +216,6 @@ export class JobService {
       if (asset.exifInfo?.imageName) {
         filename = asset.exifInfo.imageName;
         shouldMigration = await this.storageService.shouldMigrate(asset, asset.exifInfo.imageName);
-
-        console.log('migration', asset.id, filename);
       } else {
         shouldMigration = await this.storageService.shouldMigrate(asset, asset.id);
         filename = asset.id;

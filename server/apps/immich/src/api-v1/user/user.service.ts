@@ -10,7 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Response as Res } from 'express';
-import { createReadStream } from 'fs';
+import { constants, createReadStream } from 'fs';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -22,6 +22,7 @@ import {
 import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
 import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
 import { IUserRepository, USER_REPOSITORY } from './user-repository';
+import fs from 'fs/promises';
 
 @Injectable()
 export class UserService {
@@ -195,6 +196,8 @@ export class UserService {
       if (!user.profileImagePath) {
         throw new NotFoundException('User does not have a profile image');
       }
+
+      await fs.access(user.profileImagePath, constants.R_OK | constants.W_OK);
 
       res.set({
         'Content-Type': 'image/jpeg',
