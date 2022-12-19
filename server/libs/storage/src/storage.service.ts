@@ -70,7 +70,7 @@ export class StorageService {
         }
 
         duplicateCount++;
-        destination = `${fullPath}_${duplicateCount}.${ext}`;
+        destination = `${fullPath}+${duplicateCount}.${ext}`;
       }
 
       await this.safeMove(source, destination);
@@ -160,7 +160,31 @@ export class StorageService {
     const fullPath = path.normalize(path.join(rootPath, storagePath));
     const destination = `${fullPath}.${ext}`;
 
-    return !(source === destination);
+    if (source === destination) {
+      return false;
+    }
+
+    /**
+     * In case of migrating duplicate filename to a new path, we need to check if it is already migrated
+     * Due to the mechanism of appending +1, +2, +3, etc to the filename
+     *
+     * Example:
+     * Source = upload/abc/def/FullSizeRender+7.heic
+     * Expected Destination = upload/abc/def/FullSizeRender.heic
+     *
+     * The file is already at the correct location, but since there are other FullSizeRender.heic files in the
+     * destination, it was renamed to FullSizeRender+7.heic.
+     *
+     * The lines below will be used to check if the differences between the source and destination is only the
+     * +7 suffix, and if so, it will be considered as already migrated.
+     */
+    if (source.startsWith(fullPath) && source.endsWith(`.${ext}`)) {
+      const diff = source.replace(fullPath, '').replace(`.${ext}`, '');
+      const hasDuplicationAnnotation = /^\+\d+$/.test(diff);
+      return !hasDuplicationAnnotation;
+    }
+
+    return true;
   }
 
   public async removeEmptyDirectories(directory: string) {

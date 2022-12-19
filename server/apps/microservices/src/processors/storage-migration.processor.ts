@@ -30,7 +30,6 @@ export class StorageMigrationProcessor {
       relations: ['exifInfo'],
     });
 
-    this.logger.debug(`Migrating ${assets.length} assets to new template`);
     console.time('migrating-time');
     for (const asset of assets) {
       let shouldMigration = false;
