@@ -54,14 +54,40 @@ export class StorageService {
       const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
       const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
       const fullPath = path.normalize(path.join(rootPath, storagePath));
+      let destination = `${fullPath}.${ext}`;
 
       if (!fullPath.startsWith(rootPath)) {
         this.logger.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
         return asset;
       }
 
+      if (source === destination) {
+        return asset;
+      }
+
+      /**
+       * In case of migrating duplicate filename to a new path, we need to check if it is already migrated
+       * Due to the mechanism of appending +1, +2, +3, etc to the filename
+       *
+       * Example:
+       * Source = upload/abc/def/FullSizeRender+7.heic
+       * Expected Destination = upload/abc/def/FullSizeRender.heic
+       *
+       * The file is already at the correct location, but since there are other FullSizeRender.heic files in the
+       * destination, it was renamed to FullSizeRender+7.heic.
+       *
+       * The lines below will be used to check if the differences between the source and destination is only the
+       * +7 suffix, and if so, it will be considered as already migrated.
+       */
+      if (source.startsWith(fullPath) && source.endsWith(`.${ext}`)) {
+        const diff = source.replace(fullPath, '').replace(`.${ext}`, '');
+        const hasDuplicationAnnotation = /^\+\d+$/.test(diff);
+        if (hasDuplicationAnnotation) {
+          return asset;
+        }
+      }
+
       let duplicateCount = 0;
-      let destination = `${fullPath}.${ext}`;
 
       while (true) {
         const exists = await this.checkFileExist(destination);
@@ -151,41 +177,41 @@ export class StorageService {
     return template(substitutions);
   }
 
-  public async shouldMigrate(asset: AssetEntity, filename: string): Promise<boolean> {
-    const source = path.normalize(asset.originalPath);
-    const ext = path.extname(source).split('.').pop() as string;
-    const sanitized = sanitize(path.basename(filename, `.${ext}`));
-    const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
-    const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
-    const fullPath = path.normalize(path.join(rootPath, storagePath));
-    const destination = `${fullPath}.${ext}`;
+  // public async shouldMigrate(asset: AssetEntity, filename: string): Promise<boolean> {
+  //   const source = path.normalize(asset.originalPath);
+  //   const ext = path.extname(source).split('.').pop() as string;
+  //   const sanitized = sanitize(path.basename(filename, `.${ext}`));
+  //   const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
+  //   const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
+  //   const fullPath = path.normalize(path.join(rootPath, storagePath));
+  //   const destination = `${fullPath}.${ext}`;
 
-    if (source === destination) {
-      return false;
-    }
+  //   if (source === destination) {
+  //     return false;
+  //   }
 
-    /**
-     * In case of migrating duplicate filename to a new path, we need to check if it is already migrated
-     * Due to the mechanism of appending +1, +2, +3, etc to the filename
-     *
-     * Example:
-     * Source = upload/abc/def/FullSizeRender+7.heic
-     * Expected Destination = upload/abc/def/FullSizeRender.heic
-     *
-     * The file is already at the correct location, but since there are other FullSizeRender.heic files in the
-     * destination, it was renamed to FullSizeRender+7.heic.
-     *
-     * The lines below will be used to check if the differences between the source and destination is only the
-     * +7 suffix, and if so, it will be considered as already migrated.
-     */
-    if (source.startsWith(fullPath) && source.endsWith(`.${ext}`)) {
-      const diff = source.replace(fullPath, '').replace(`.${ext}`, '');
-      const hasDuplicationAnnotation = /^\+\d+$/.test(diff);
-      return !hasDuplicationAnnotation;
-    }
+  //   /**
+  //    * In case of migrating duplicate filename to a new path, we need to check if it is already migrated
+  //    * Due to the mechanism of appending +1, +2, +3, etc to the filename
+  //    *
+  //    * Example:
+  //    * Source = upload/abc/def/FullSizeRender+7.heic
+  //    * Expected Destination = upload/abc/def/FullSizeRender.heic
+  //    *
+  //    * The file is already at the correct location, but since there are other FullSizeRender.heic files in the
+  //    * destination, it was renamed to FullSizeRender+7.heic.
+  //    *
+  //    * The lines below will be used to check if the differences between the source and destination is only the
+  //    * +7 suffix, and if so, it will be considered as already migrated.
+  //    */
+  //   if (source.startsWith(fullPath) && source.endsWith(`.${ext}`)) {
+  //     const diff = source.replace(fullPath, '').replace(`.${ext}`, '');
+  //     const hasDuplicationAnnotation = /^\+\d+$/.test(diff);
+  //     return !hasDuplicationAnnotation;
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   public async removeEmptyDirectories(directory: string) {
     // lstat does not follow symlinks (in contrast to stat)

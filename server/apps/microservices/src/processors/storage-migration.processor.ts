@@ -32,13 +32,8 @@ export class StorageMigrationProcessor {
 
     console.time('migrating-time');
     for (const asset of assets) {
-      let shouldMigration = false;
       const filename = asset.exifInfo?.imageName || asset.id;
-      shouldMigration = await this.storageService.shouldMigrate(asset, filename);
-
-      if (shouldMigration) {
-        await this.storageService.moveAsset(asset, filename);
-      }
+      await this.storageService.moveAsset(asset, filename);
     }
 
     await this.storageService.removeEmptyDirectories(APP_UPLOAD_LOCATION);
