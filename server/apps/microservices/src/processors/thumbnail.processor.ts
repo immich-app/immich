@@ -1,5 +1,4 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
-import { ImmichLogLevel } from '@app/common/constants/log-level.constant';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import {
   WebpGeneratorProcessor,
@@ -11,7 +10,6 @@ import {
 } from '@app/job';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
 import { Job, Queue } from 'bull';
