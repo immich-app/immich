@@ -6,6 +6,7 @@
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import { api, SystemConfigDto } from '@api';
 	import type { PageData } from './$types';
+	import { page } from '$app/stores';
 
 	let systemConfig: SystemConfigDto;
 	export let data: PageData;
@@ -39,6 +40,7 @@
 		<SettingAccordion
 			title="Storage Template"
 			subtitle="Manage the folder structure and file name of the upload asset"
+			isOpen={$page.url.searchParams.get('open') === 'storage-template'}
 		>
 			<StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
 		</SettingAccordion>

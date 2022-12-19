@@ -26,7 +26,7 @@ const moveFile = promisify<string, string, mv.Options>(mv);
 
 @Injectable()
 export class StorageService {
-  readonly log = new Logger(StorageService.name);
+  readonly logger = new Logger(StorageService.name);
 
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 
@@ -41,7 +41,7 @@ export class StorageService {
     this.immichConfigService.addValidator((config) => this.validateConfig(config));
 
     this.immichConfigService.config$.subscribe((config) => {
-      this.log.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
+      this.logger.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
       this.storageTemplate = this.compile(config.storageTemplate.template);
     });
   }
@@ -54,14 +54,40 @@ export class StorageService {
       const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
       const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
       const fullPath = path.normalize(path.join(rootPath, storagePath));
+      let destination = `${fullPath}.${ext}`;
 
       if (!fullPath.startsWith(rootPath)) {
-        this.log.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
+        this.logger.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
         return asset;
       }
 
+      if (source === destination) {
+        return asset;
+      }
+
+      /**
+       * In case of migrating duplicate filename to a new path, we need to check if it is already migrated
+       * Due to the mechanism of appending +1, +2, +3, etc to the filename
+       *
+       * Example:
+       * Source = upload/abc/def/FullSizeRender+7.heic
+       * Expected Destination = upload/abc/def/FullSizeRender.heic
+       *
+       * The file is already at the correct location, but since there are other FullSizeRender.heic files in the
+       * destination, it was renamed to FullSizeRender+7.heic.
+       *
+       * The lines below will be used to check if the differences between the source and destination is only the
+       * +7 suffix, and if so, it will be considered as already migrated.
+       */
+      if (source.startsWith(fullPath) && source.endsWith(`.${ext}`)) {
+        const diff = source.replace(fullPath, '').replace(`.${ext}`, '');
+        const hasDuplicationAnnotation = /^\+\d+$/.test(diff);
+        if (hasDuplicationAnnotation) {
+          return asset;
+        }
+      }
+
       let duplicateCount = 0;
-      let destination = `${fullPath}.${ext}`;
 
       while (true) {
         const exists = await this.checkFileExist(destination);
@@ -70,7 +96,7 @@ export class StorageService {
         }
 
         duplicateCount++;
-        destination = `${fullPath}_${duplicateCount}.${ext}`;
+        destination = `${fullPath}+${duplicateCount}.${ext}`;
       }
 
       await this.safeMove(source, destination);
@@ -78,7 +104,7 @@ export class StorageService {
       asset.originalPath = destination;
       return await this.assetRepository.save(asset);
     } catch (error: any) {
-      this.log.error(error, error.stack);
+      this.logger.error(error);
       return asset;
     }
   }
@@ -115,7 +141,7 @@ export class StorageService {
         'jpg',
       );
     } catch (e) {
-      this.log.warn(`Storage template validation failed: ${e}`);
+      this.logger.warn(`Storage template validation failed: ${e}`);
       throw new Error(`Invalid storage template: ${e}`);
     }
   }
@@ -149,5 +175,28 @@ export class StorageService {
     }
 
     return template(substitutions);
+  }
+
+  public async removeEmptyDirectories(directory: string) {
+    // lstat does not follow symlinks (in contrast to stat)
+    const fileStats = await fsPromise.lstat(directory);
+    if (!fileStats.isDirectory()) {
+      return;
+    }
+    let fileNames = await fsPromise.readdir(directory);
+    if (fileNames.length > 0) {
+      const recursiveRemovalPromises = fileNames.map((fileName) =>
+        this.removeEmptyDirectories(path.join(directory, fileName)),
+      );
+      await Promise.all(recursiveRemovalPromises);
+
+      // re-evaluate fileNames; after deleting subdirectory
+      // we may have parent directory empty now
+      fileNames = await fsPromise.readdir(directory);
+    }
+
+    if (fileNames.length === 0) {
+      await fsPromise.rmdir(directory);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { immichAppConfig } from '@app/common/config';
+import { immichAppConfig, immichBullAsyncConfig } from '@app/common/config';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { UserModule } from './api-v1/user/user.module';
 import { AssetModule } from './api-v1/asset/asset.module';
@@ -36,18 +36,7 @@ import { TagModule } from './api-v1/tag/tag.module';
 
     DeviceInfoModule,
 
-    BullModule.forRootAsync({
-      useFactory: async () => ({
-        prefix: 'immich_bull',
-        redis: {
-          host: process.env.REDIS_HOSTNAME || 'immich_redis',
-          port: parseInt(process.env.REDIS_PORT || '6379'),
-          db: parseInt(process.env.REDIS_DBINDEX || '0'),
-          password: process.env.REDIS_PASSWORD || undefined,
-          path: process.env.REDIS_SOCKET || undefined,
-        },
-      }),
-    }),
+    BullModule.forRootAsync(immichBullAsyncConfig),
 
     ServerInfoModule,
 

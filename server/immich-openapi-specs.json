@@ -3562,6 +3562,9 @@
           "machineLearningQueueCount": {
             "$ref": "#/components/schemas/JobCounts"
           },
+          "storageMigrationQueueCount": {
+            "$ref": "#/components/schemas/JobCounts"
+          },
           "isThumbnailGenerationActive": {
             "type": "boolean"
           },
@@ -3573,6 +3576,9 @@
           },
           "isMachineLearningActive": {
             "type": "boolean"
+          },
+          "isStorageMigrationActive": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -3580,10 +3586,12 @@
           "metadataExtractionQueueCount",
           "videoConversionQueueCount",
           "machineLearningQueueCount",
+          "storageMigrationQueueCount",
           "isThumbnailGenerationActive",
           "isMetadataExtractionActive",
           "isVideoConversionActive",
-          "isMachineLearningActive"
+          "isMachineLearningActive",
+          "isStorageMigrationActive"
         ]
       },
       "JobId": {
@@ -3592,7 +3600,8 @@
           "thumbnail-generation",
           "metadata-extraction",
           "video-conversion",
-          "machine-learning"
+          "machine-learning",
+          "storage-template-migration"
         ]
       },
       "JobStatusResponseDto": {

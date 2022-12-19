@@ -73,7 +73,7 @@
 			</div>
 
 			<section id="setting-content" class="pt-[85px] flex place-content-center">
-				<section class="w-[800px] pt-5">
+				<section class="w-[800px] pt-5 pb-28">
 					<slot />
 				</section>
 			</section>

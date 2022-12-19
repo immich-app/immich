@@ -214,6 +214,16 @@
 						</div>
 					</div>
 
+					<div id="migration-info" class="text-sm mt-4">
+						<p>
+							Template changes will only apply to new assets. To retroactively apply the template to
+							previously uploaded assets, run the <a
+								href="/admin/jobs-status"
+								class="text-immich-primary dark:text-immich-dark-primary">Storage Migration Job</a
+							>
+						</p>
+					</div>
+
 					<SettingButtonsRow
 						on:reset={reset}
 						on:save={saveSetting}

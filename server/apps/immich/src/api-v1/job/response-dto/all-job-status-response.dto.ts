@@ -17,6 +17,7 @@ export class AllJobStatusResponseDto {
   isMetadataExtractionActive!: boolean;
   isVideoConversionActive!: boolean;
   isMachineLearningActive!: boolean;
+  isStorageMigrationActive!: boolean;
 
   @ApiProperty({
     type: JobCounts,
@@ -37,4 +38,9 @@ export class AllJobStatusResponseDto {
     type: JobCounts,
   })
   machineLearningQueueCount!: JobCounts;
+
+  @ApiProperty({
+    type: JobCounts,
+  })
+  storageMigrationQueueCount!: JobCounts;
 }

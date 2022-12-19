@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // JobCounts storageMigrationQueueCount
+    test('to test the property `storageMigrationQueueCount`', () async {
+      // TODO
+    });
+
     // bool isThumbnailGenerationActive
     test('to test the property `isThumbnailGenerationActive`', () async {
       // TODO
@@ -53,6 +58,11 @@ void main() {
 
     // bool isMachineLearningActive
     test('to test the property `isMachineLearningActive`', () async {
+      // TODO
+    });
+
+    // bool isStorageMigrationActive
+    test('to test the property `isStorageMigrationActive`', () async {
       // TODO
     });
 
