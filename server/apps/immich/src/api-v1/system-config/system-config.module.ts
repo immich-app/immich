@@ -1,5 +1,5 @@
 import { SystemConfigEntity } from '@app/database/entities/system-config.entity';
-import { ImmichDefaultJobOptions, QueueNameEnum } from '@app/job';
+import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.constant';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,10 +13,7 @@ import { SystemConfigService } from './system-config.service';
     ImmichJwtModule,
     ImmichConfigModule,
     TypeOrmModule.forFeature([SystemConfigEntity]),
-    BullModule.registerQueue({
-      name: QueueNameEnum.STORAGE_MIGRATION,
-      defaultJobOptions: ImmichDefaultJobOptions,
-    }),
+    BullModule.registerQueue(...immichSharedQueues),
   ],
   controllers: [SystemConfigController],
   providers: [SystemConfigService],

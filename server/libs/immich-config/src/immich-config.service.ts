@@ -102,4 +102,10 @@ export class ImmichConfigService {
 
     return newConfig;
   }
+
+  public async refreshConfig() {
+    const newConfig = await this.getConfig();
+
+    this.config$.next(newConfig);
+  }
 }

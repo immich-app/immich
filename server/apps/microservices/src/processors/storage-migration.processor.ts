@@ -33,21 +33,15 @@ export class StorageMigrationProcessor {
     console.time('migrating-time');
     for (const asset of assets) {
       let shouldMigration = false;
-      let filename = '';
-      if (asset.exifInfo?.imageName) {
-        filename = asset.exifInfo.imageName;
-        shouldMigration = await this.storageService.shouldMigrate(asset, asset.exifInfo.imageName);
-      } else {
-        shouldMigration = await this.storageService.shouldMigrate(asset, asset.id);
-        filename = asset.id;
-      }
+      const filename = asset.exifInfo?.imageName || asset.id;
+      shouldMigration = await this.storageService.shouldMigrate(asset, filename);
 
       if (shouldMigration) {
         await this.storageService.moveAsset(asset, filename);
       }
     }
 
-    this.storageService.removeEmptyDirectories(APP_UPLOAD_LOCATION);
+    await this.storageService.removeEmptyDirectories(APP_UPLOAD_LOCATION);
     console.timeEnd('migrating-time');
   }
 
@@ -58,7 +52,6 @@ export class StorageMigrationProcessor {
    */
   @Process({ name: updateTemplateProcessorName, concurrency: 1 })
   async updateTemplate() {
-    const latestConfig = await this.immichConfigService.getConfig();
-    await this.immichConfigService.updateConfig(latestConfig);
+    await this.immichConfigService.refreshConfig();
   }
 }

@@ -12,8 +12,8 @@ import { AssetModule } from '../asset/asset.module';
 import { UserModule } from '../user/user.module';
 
 import { StorageModule } from '@app/storage';
-import { ImmichDefaultJobOptions, QueueNameEnum } from '@app/job';
 import { BullModule } from '@nestjs/bull';
+import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.constant';
 
 @Module({
   imports: [
@@ -24,40 +24,7 @@ import { BullModule } from '@nestjs/bull';
     UserModule,
     JwtModule.register(jwtConfig),
     StorageModule,
-    BullModule.registerQueue(
-      {
-        name: QueueNameEnum.USER_DELETION,
-        defaultJobOptions: ImmichDefaultJobOptions,
-      },
-      {
-        name: QueueNameEnum.THUMBNAIL_GENERATION,
-        defaultJobOptions: ImmichDefaultJobOptions,
-      },
-      {
-        name: QueueNameEnum.ASSET_UPLOADED,
-        defaultJobOptions: ImmichDefaultJobOptions,
-      },
-      {
-        name: QueueNameEnum.METADATA_EXTRACTION,
-        defaultJobOptions: ImmichDefaultJobOptions,
-      },
-      {
-        name: QueueNameEnum.VIDEO_CONVERSION,
-        defaultJobOptions: ImmichDefaultJobOptions,
-      },
-      {
-        name: QueueNameEnum.CHECKSUM_GENERATION,
-        defaultJobOptions: ImmichDefaultJobOptions,
-      },
-      {
-        name: QueueNameEnum.MACHINE_LEARNING,
-        defaultJobOptions: ImmichDefaultJobOptions,
-      },
-      {
-        name: QueueNameEnum.STORAGE_MIGRATION,
-        defaultJobOptions: ImmichDefaultJobOptions,
-      },
-    ),
+    BullModule.registerQueue(...immichSharedQueues),
   ],
   controllers: [JobController],
   providers: [JobService, ImmichJwtService],

@@ -11,11 +11,6 @@ import { BackgroundTaskService } from './background-task.service';
   imports: [
     BullModule.registerQueue({
       name: 'background-task',
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
-      },
     }),
     TypeOrmModule.forFeature([AssetEntity, ExifEntity, SmartInfoEntity]),
   ],
