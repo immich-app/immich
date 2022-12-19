@@ -152,13 +152,7 @@ export class StorageService {
   }
 
   public async shouldMigrate(asset: AssetEntity, filename: string): Promise<boolean> {
-    let source = asset.originalPath;
-
-    // Replace potential legacy path
-    if (source.startsWith('./upload/')) {
-      source = source.replace('./upload/', 'upload/');
-    }
-
+    const source = path.normalize(asset.originalPath);
     const ext = path.extname(source).split('.').pop() as string;
     const sanitized = sanitize(path.basename(filename, `.${ext}`));
     const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
