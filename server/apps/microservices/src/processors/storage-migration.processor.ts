@@ -6,6 +6,7 @@ import { StorageService } from '@app/storage';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { string } from 'joi';
 import { Repository } from 'typeorm';
 
 @Processor(QueueNameEnum.STORAGE_MIGRATION)
@@ -26,13 +27,22 @@ export class StorageMigrationProcessor {
    */
   @Process({ name: templateMigrationProcessorName, concurrency: 100 })
   async templateMigration() {
+    console.time('migrating-time');
     const assets = await this.assetRepository.find({
       relations: ['exifInfo'],
     });
 
-    console.time('migrating-time');
+    const livePhotoMap: Record<string, AssetEntity> = {};
+
     for (const asset of assets) {
-      const filename = asset.exifInfo?.imageName || asset.id;
+      if (asset.livePhotoVideoId) {
+        livePhotoMap[asset.livePhotoVideoId] = asset;
+      }
+    }
+
+    for (const asset of assets) {
+      const livePhotoParentAsset = livePhotoMap[asset.id];
+      const filename = asset.exifInfo?.imageName || livePhotoParentAsset?.exifInfo?.imageName || asset.id;
       await this.storageService.moveAsset(asset, filename);
     }
 
