@@ -166,10 +166,17 @@
 
 	<JobTile
 		title={'Storage migration'}
-		subtitle={'Move files from the current storage structure to new user defined storage structure'}
+		subtitle={''}
 		on:click={runTemplateMigration}
 		jobStatus={allJobsStatus?.isStorageMigrationActive}
 		waitingJobCount={allJobsStatus?.storageMigrationQueueCount.waiting}
 		activeJobCount={allJobsStatus?.storageMigrationQueueCount.active}
-	/>
+	>
+		Apply the current
+		<a
+			href="/admin/system-settings?open=storage-template"
+			class="text-immich-primary dark:text-immich-dark-primary">Storage template</a
+		>
+		to previously uploaded assets
+	</JobTile>
 </div>
