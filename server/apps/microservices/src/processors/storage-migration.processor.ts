@@ -6,7 +6,6 @@ import { StorageService } from '@app/storage';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { string } from 'joi';
 import { Repository } from 'typeorm';
 
 @Processor(QueueNameEnum.STORAGE_MIGRATION)
