@@ -26,7 +26,7 @@ You can also use Podman to run the application. However, additional configuratio
 TensorFlow doesn't run with older CPU architecture, it requires a CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
 
 ```bash
-more /proc/cpuinfo | grep flags
+grep -E 'avx2?' /proc/cpuinfo
 ```
 
 #### Promox
