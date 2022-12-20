@@ -43,7 +43,7 @@ You can use the machine learning image that is built for Non-AVX CPU. The image 
 
 https://github.com/bertmelis/immich-machine-learning-no-avx
 
-Otherwise, you can safely remove the `immich-machine-learning` service if you do not intend to use Immich's object detection features.
+Otherwise, you can safely remove the `immich-machine-learning` service if you do not intend to use Immich's object detection features. Simply remove or comment out the declaration of the service in your compose file.
 :::
 
 ## Installation methods
