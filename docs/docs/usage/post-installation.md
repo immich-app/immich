@@ -14,7 +14,24 @@ The mobile app can be downloaded from
 - [Apple App Store](https://apps.apple.com/us/app/immich/id1613945652)
 - [F-Droid](https://f-droid.org/packages/app.alextran.immich)
 
-## Step 2 - Set storage template
+## Step 2 - Register the admin user
+
+The first user to register will be the admin user. The admin user will be able to add other users to the application.
+
+To register for the admin user, access the web application at `http://<machine-ip-address>:2283` and click on the **Getting Started** button.
+
+<img src={require('./img/admin-registration-form.png').default} width="500" title="Admin Registration" />
+
+Follow the prompts to register as the admin user and log in to the application.
+
+## Step 3 - Create a new user (optional)
+
+If you have a family member who wants to use the application, you can create a new account. The default password is `password`, and the user can change their password after logging in to the application for the first time.
+
+<img src={require('./img/create-new-user.png').default} title="Admin Registration" />
+
+
+## Step 4 - Set storage template (optional)
 
 Immich allows the admin user to set the pattern of how the files are uploaded to the Immich would look like. Both in the directory and the filename level.
 
@@ -27,22 +44,6 @@ Year/Year-Month-Day/Filename.Extension
 <img src={require('./img/storage-template.png').default} width="100%" title="Storage Template Setting" />
 
 Immich also provides a mechanism to migrate between template so that if the template you set now doesn't work in the future, you can always migrate all the existing files to the new template. The mechanism is run as a job in the Job page.
-
-## Step 3 - Register the admin user
-
-The first user to register will be the admin user. The admin user will be able to add other users to the application.
-
-To register for the admin user, access the web application at `http://<machine-ip-address>:2283` and click on the **Getting Started** button.
-
-<img src={require('./img/admin-registration-form.png').default} width="500" title="Admin Registration" />
-
-Follow the prompts to register as the admin user and log in to the application.
-
-## Step 4 - Create a new user (optional)
-
-If you have a family member who wants to use the application, you can create a new account. The default password is `password`, and the user can change their password after logging in to the application for the first time.
-
-<img src={require('./img/create-new-user.png').default} title="Admin Registration" />
 
 ## Step 5 - Access the mobile app
 
