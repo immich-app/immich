@@ -23,7 +23,7 @@ You can also use Podman to run the application. However, additional configuratio
 
 :::info Machine Learning on older CPU
 
-TensorFlow doesn't run with older CPU architecture, it requires a CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
+The TensorFlow version used by Immich doesn't run on older CPU architectures. It requires a CPU with AVX and AVX2 instruction sets. If you encounter the error `illegal instruction core dump` check your CPU flags with the command below and make sure you see `avx` and `avx2`:
 
 ```bash
 grep -E 'avx2?' /proc/cpuinfo
@@ -31,7 +31,7 @@ grep -E 'avx2?' /proc/cpuinfo
 
 #### Promox
 
-If you are running virtualization in Proxmox, the VM doesn't have the flag enabled.
+If you are running virtualization in Proxmox, the CPU type of the VM is probably configured incorrectly.
 
 You need to change the CPU type from `kvm64` to `host` under VMs hardware tab.
 
@@ -43,7 +43,7 @@ You can use the machine learning image that is built for Non-AVX CPU. The image 
 
 https://github.com/bertmelis/immich-machine-learning-no-avx
 
-Otherwise, you can safely remove the `immich-machine-learning` service if you do not intend to use Immich's object detection feature.
+Otherwise, you can safely remove the `immich-machine-learning` service if you do not intend to use Immich's object detection features.
 :::
 
 ## Installation methods
