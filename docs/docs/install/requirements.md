@@ -2,9 +2,9 @@
 sidebar_position: 1
 ---
 
-
 # Requirements
-Hardware and software requirements for Immich
+
+Hardware and software requirements to run Immich.
 
 ## Software
 
@@ -12,7 +12,7 @@ Hardware and software requirements for Immich
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
 :::info Podman
-You can also use Podman to run the application. However, additional configuration might be required on your end.
+You can also use Podman to run the application. However, additional configuration might be required.
 :::
 
 ## Hardware
@@ -43,12 +43,3 @@ You can use the machine learning image that is built for Non-AVX CPU. The image 
 
 https://github.com/bertmelis/immich-machine-learning-no-avx
 :::
-
-## Installation methods
-
-There are a couple installation methods that you can use to install the application. You can choose the one that suits you the best.
-
-1. [One-step installation (Evaluation only)](/docs/installation/one-step-installation)
-2. **[Docker Compose with manual configuration (Recommended)](/docs/installation/recommended-installation)**
-3. [Portainer](/docs/installation/portainer-installation)
-4. [Unraid (Community contribution)](/docs/installation/unraid-installation)
