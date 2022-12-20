@@ -35,7 +35,7 @@ function HomepageHeader() {
           <div className={styles.buttons}>
             <Link
               className={clsx("button button--lg", styles.installButton)}
-              to="docs/installation/requirements"
+              to="docs/install/requirements"
             >
               Installation
             </Link>
