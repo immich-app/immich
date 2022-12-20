@@ -6,11 +6,9 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  StreamableFile,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Response as Res } from 'express';
-import { createReadStream } from 'fs';
+import { createReadStream, ReadStream } from 'fs';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -153,7 +151,7 @@ export class UserService {
     }
   }
 
-  async getUserProfileImage(userId: string, res: Res) {
+  async getUserProfileImage(userId: string): Promise<ReadStream> {
     try {
       const user = await this.userRepository.get(userId);
       if (!user) {
@@ -164,11 +162,8 @@ export class UserService {
         throw new NotFoundException('User does not have a profile image');
       }
 
-      res.set({
-        'Content-Type': 'image/jpeg',
-      });
       const fileStream = createReadStream(user.profileImagePath);
-      return new StreamableFile(fileStream);
+      return fileStream;
     } catch (e) {
       throw new NotFoundException('User does not have a profile image');
     }
