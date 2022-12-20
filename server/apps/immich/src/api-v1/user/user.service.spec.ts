@@ -24,7 +24,7 @@ describe('UserService', () => {
   });
 
   const adminUser: UserEntity = Object.freeze({
-    id: 'admin_id',
+    id: adminUserAuth.id,
     email: 'admin@test.com',
     password: 'admin_password',
     salt: 'admin_salt',
@@ -39,7 +39,7 @@ describe('UserService', () => {
   });
 
   const immichUser: UserEntity = Object.freeze({
-    id: 'immich_id',
+    id: immichUserAuth.id,
     email: 'immich@test.com',
     password: 'immich_password',
     salt: 'immich_salt',
@@ -54,7 +54,7 @@ describe('UserService', () => {
   });
 
   const updatedImmichUser: UserEntity = Object.freeze({
-    id: 'immich_id',
+    id: immichUserAuth.id,
     email: 'immich@test.com',
     password: 'immich_password',
     salt: 'immich_salt',
@@ -70,6 +70,10 @@ describe('UserService', () => {
 
   beforeEach(() => {
     userRepositoryMock = newUserRepositoryMock();
+    when(userRepositoryMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);
+    when(userRepositoryMock.get).calledWith(adminUser.id, undefined).mockResolvedValue(adminUser);
+    when(userRepositoryMock.get).calledWith(immichUser.id, undefined).mockResolvedValue(immichUser);
+
     sut = new UserService(userRepositoryMock);
   });
 
@@ -80,7 +84,6 @@ describe('UserService', () => {
         shouldChangePassword: true,
       };
 
-      when(userRepositoryMock.get).calledWith(immichUserAuth.id).mockResolvedValueOnce(immichUser);
       when(userRepositoryMock.update).calledWith(update.id, update).mockResolvedValueOnce(updatedImmichUser);
 
       const result = sut.updateUser(immichUserAuth, update);
@@ -88,9 +91,8 @@ describe('UserService', () => {
     });
 
     it('user can only update its information', async () => {
-      when(userRepositoryMock.get).calledWith(immichUserAuth.id).mockResolvedValueOnce(immichUser);
       when(userRepositoryMock.get)
-        .calledWith('not_immich_auth_user_id')
+        .calledWith('not_immich_auth_user_id', undefined)
         .mockResolvedValueOnce({
           ...immichUser,
           id: 'not_immich_auth_user_id',
@@ -109,8 +111,6 @@ describe('UserService', () => {
         shouldChangePassword: true,
       };
 
-      when(userRepositoryMock.get).calledWith(adminUser.id).mockResolvedValueOnce(adminUser);
-      when(userRepositoryMock.get).calledWith(immichUser.id).mockResolvedValueOnce(immichUser);
       when(userRepositoryMock.update).calledWith(immichUser.id, update).mockResolvedValueOnce(updatedImmichUser);
 
       const result = await sut.updateUser(adminUserAuth, update);
@@ -121,14 +121,10 @@ describe('UserService', () => {
     });
 
     it('update user information should throw error if user not found', async () => {
-      const requestor = adminUserAuth;
-      const userToUpdate = immichUser;
+      when(userRepositoryMock.get).calledWith(immichUser.id, undefined).mockResolvedValueOnce(null);
 
-      when(userRepositoryMock.get).calledWith(requestor.id).mockResolvedValueOnce(adminUser);
-      when(userRepositoryMock.get).calledWith(userToUpdate.id).mockResolvedValueOnce(null);
-
-      const result = sut.updateUser(requestor, {
-        id: userToUpdate.id,
+      const result = sut.updateUser(adminUser, {
+        id: immichUser.id,
         shouldChangePassword: true,
       });
 
@@ -138,8 +134,6 @@ describe('UserService', () => {
 
   describe('Delete user', () => {
     it('cannot delete admin user', async () => {
-      when(userRepositoryMock.get).calledWith(adminUserAuth.id).mockResolvedValue(adminUser);
-
       const result = sut.deleteUser(adminUserAuth, adminUserAuth.id);
 
       await expect(result).rejects.toBeInstanceOf(ForbiddenException);
