@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # Unraid
 
-Install Immich on Unraid using the [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/) plugin from the Unraid Community Apps.
+Immich can easily be installed and updated on Unraid using the [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/) plugin from the Unraid Community Apps.
 
 :::info
 
@@ -14,6 +14,8 @@ Install Immich on Unraid using the [Docker Compose Manager](https://forums.unrai
 - There has been a [report](https://forums.unraid.net/topic/130006-errortraps-traps-node27707-trap-invalid-opcode-ip14fcfc8d03c0-sp7fff32889dd8-more/#comment-1189395) of this not working if your Unraid server doesn't support AVX _(e.g. using a T610)_
 
 :::
+
+## Installation Steps
 
 1. Go to "**Plugins**" and click on "**Compose.Manager**"
 2. Click "**Add New Stack**" and when prompted for a label enter "**Immich**"
@@ -105,3 +107,36 @@ alt="Go to Docker Tab and visit the address listed next to immich-proxy"
 :::tip
 For more information on how to use the application once installed, please refer to the [Post Installation](/docs/usage/post-installation) guide.
 :::
+
+## Updating Steps
+
+Updating is extremely easy however it's important to be aware that containers managed via the Docker Compose Manager plugin do not integrate with Unraid's native dockerman ui, the label "_update ready_" will always be present on containers installed via the Docker Compose Manager.
+
+<img
+src={require('./img/unraid09.png').default}
+width="50%"
+alt="Docker Compose containers always say update ready, ignore it"
+/>
+
+You should ignore the "_update ready_" on the Unraid WebUI and update when you receive the notification within the Immich WebUI.
+<img
+src={require('./img/unraid10.png').default}
+width="50%"
+alt="Immich update notification"
+/>
+
+1. Go to the "**Docker**" tab and scroll to the Compose section
+2. Next to Immich click the "**Update Stack**" button and Unraid will begin to update all Immmich related containers
+   > Note: **Do not** select Compose Down first, it is unecessary.
+3. Once complete you will see a "_Connection Closed_" message, select "**Done**".
+   <img
+   src={require('./img/unraid11.png').default}
+   width="50%"
+   alt="Wait for Connection Closed and click Done"
+   />
+4. Return back to the Immich WebUI and you will see the version has been updated to the latest
+   <img
+   src={require('./img/unraid12.png').default}
+   width="70%"
+   alt="Wait for Connection Closed and click Done"
+   />
