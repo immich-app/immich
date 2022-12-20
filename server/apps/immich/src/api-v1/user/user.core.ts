@@ -5,7 +5,7 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAdminDto, CreateUserDto, CreateUserOauthDto } from './dto/create-user.dto';
 import { IUserRepository } from './user-repository';
 
-export class UserDomain {
+export class UserCore {
   constructor(private userRepository: IUserRepository) {}
 
   private async generateSalt(): Promise<string> {

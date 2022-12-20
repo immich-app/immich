@@ -22,16 +22,16 @@ import {
 import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
 import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
 import { IUserRepository, USER_REPOSITORY } from './user-repository';
-import { UserDomain } from './user.domain';
+import { UserCore } from './user.core';
 
 @Injectable()
 export class UserService {
-  private userDomain: UserDomain;
+  private userCore: UserCore;
   constructor(
     @Inject(USER_REPOSITORY)
     private userRepository: IUserRepository,
   ) {
-    this.userDomain = new UserDomain(userRepository);
+    this.userCore = new UserCore(userRepository);
   }
 
   async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
@@ -73,7 +73,7 @@ export class UserService {
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const createdUser = await this.userDomain.createUser(createUserDto);
+    const createdUser = await this.userCore.createUser(createUserDto);
     return mapUser(createdUser);
   }
 
@@ -83,7 +83,7 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    const updatedUser = await this.userDomain.updateUser(authUser, user, updateUserDto);
+    const updatedUser = await this.userCore.updateUser(authUser, user, updateUserDto);
     return mapUser(updatedUser);
   }
 
