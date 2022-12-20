@@ -112,7 +112,7 @@ const config = {
               },
               {
                 label: 'Installation',
-                to: '/docs/installation/requirements',
+                to: '/docs/install/requirements',
               },
             ],
           },

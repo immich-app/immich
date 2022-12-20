@@ -22,4 +22,4 @@ The initial approach of Immich is to become a backup tool, primarily for mobile 
 
 ### How can I reset the admin password?
 
-The admin password can be reset by running the [reset-admin-password](/docs/features/server-commands) command on the immich-server.
+The admin password can be reset by running the [reset-admin-password](/docs/features/server-commands.md) command on the immich-server.

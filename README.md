@@ -29,12 +29,12 @@
 
 ## Content
 
-- [Official Documentation](https://immich.app/docs/overview/introduction)
+- [Official Documentation](https://immich.app/docs)
 - [Demo](#demo)
 - [Features](#features)
 - [Introduction](https://immich.app/docs/overview/introduction)
-- [Installation](https://immich.app/docs/installation/requirements)
-- [Contribution Guidelines](https://immich.app/docs/contribution-guidelines)
+- [Installation](https://immich.app/docs/install/requirements)
+- [Contribution Guidelines](https://immich.app/docs/overview/support-the-project)
 - [Support The Project](#support-the-project)
 - [Known Issues](#known-issues)
 
@@ -98,4 +98,4 @@ If you feel like this is the right cause and the app is something you are seeing
 
 Symptoms: the container logs `illegal instruction core dump` and restarts
 
-Solution: https://immich.app/docs/installation/requirements#hardware
+Solution: https://immich.app/docs/install/requirements#hardware

@@ -40,9 +40,9 @@ You can select which album(s) you want to back up to the Immich server from the 
 Scroll down to the bottom and press "**Start Backup**" to start the backup process.
 
 :::info
-You can enable automatic backup on supported devices. For more information see [Automatic Backup](/docs/docs/features/automatic-backup.md).
+You can enable automatic backup on supported devices. For more information see [Automatic Backup](/docs/features/automatic-backup.md).
 :::
 
 :::info
-To upload from other devices, try using the [Bulk Upload CLI](<(docs/feature/bulk-upload.mdk)>).
+To upload from other devices, try using the [Bulk Upload CLI](/docs/features/bulk-upload.md).
 :::
