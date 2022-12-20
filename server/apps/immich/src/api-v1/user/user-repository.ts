@@ -8,11 +8,15 @@ export interface IUserRepository {
   getAdmin(): Promise<UserEntity | null>;
   getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null>;
   getByOAuthId(oauthId: string): Promise<UserEntity | null>;
-  getList(filter?: { excludeId?: string }): Promise<UserEntity[]>;
+  getList(filter?: UserListFilter): Promise<UserEntity[]>;
   create(user: Partial<UserEntity>): Promise<UserEntity>;
   update(id: string, user: Partial<UserEntity>): Promise<UserEntity>;
   delete(user: UserEntity): Promise<UserEntity>;
   restore(user: UserEntity): Promise<UserEntity>;
+}
+
+export interface UserListFilter {
+  excludeId?: string;
 }
 
 export const USER_REPOSITORY = 'USER_REPOSITORY';

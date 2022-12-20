@@ -1,13 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { createReadStream, ReadStream } from 'fs';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -27,24 +18,23 @@ export class UserService {
   private userCore: UserCore;
   constructor(
     @Inject(USER_REPOSITORY)
-    private userRepository: IUserRepository,
+    userRepository: IUserRepository,
   ) {
     this.userCore = new UserCore(userRepository);
   }
 
   async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
     if (isAll) {
-      const allUsers = await this.userRepository.getList();
+      const allUsers = await this.userCore.getList();
       return allUsers.map(mapUser);
     }
 
-    const allUserExceptRequestedUser = await this.userRepository.getList({ excludeId: authUser.id });
-
+    const allUserExceptRequestedUser = await this.userCore.getList({ excludeId: authUser.id });
     return allUserExceptRequestedUser.map(mapUser);
   }
 
   async getUserById(userId: string, withDeleted = false): Promise<UserResponseDto> {
-    const user = await this.userRepository.get(userId, withDeleted);
+    const user = await this.userCore.get(userId, withDeleted);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -53,7 +43,7 @@ export class UserService {
   }
 
   async getUserInfo(authUser: AuthUserDto): Promise<UserResponseDto> {
-    const user = await this.userRepository.get(authUser.id);
+    const user = await this.userCore.get(authUser.id);
     if (!user) {
       throw new BadRequestException('User not found');
     }
@@ -61,7 +51,7 @@ export class UserService {
   }
 
   async getUserCount(dto: UserCountDto): Promise<UserCountResponseDto> {
-    let users = await this.userRepository.getList();
+    let users = await this.userCore.getList();
 
     if (dto.admin) {
       users = users.filter((user) => user.isAdmin);
@@ -76,96 +66,45 @@ export class UserService {
   }
 
   async updateUser(authUser: AuthUserDto, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
-    const user = await this.userRepository.get(updateUserDto.id);
+    const user = await this.userCore.get(updateUserDto.id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
     const updatedUser = await this.userCore.updateUser(authUser, user, updateUserDto);
     return mapUser(updatedUser);
   }
 
   async deleteUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
-    const requestor = await this.userRepository.get(authUser.id);
-    if (!requestor) {
-      throw new UnauthorizedException('Requestor not found');
-    }
-    if (!requestor.isAdmin) {
-      throw new ForbiddenException('Unauthorized');
-    }
-    const user = await this.userRepository.get(userId);
+    const user = await this.userCore.get(userId);
     if (!user) {
       throw new BadRequestException('User not found');
     }
-
-    if (user.isAdmin) {
-      throw new ForbiddenException('Cannot delete admin user');
-    }
-
-    try {
-      const deletedUser = await this.userRepository.delete(user);
-      return mapUser(deletedUser);
-    } catch (e) {
-      Logger.error(e, 'Failed to delete user');
-      throw new InternalServerErrorException('Failed to delete user');
-    }
+    const deletedUser = await this.userCore.deleteUser(authUser, user);
+    return mapUser(deletedUser);
   }
 
   async restoreUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
-    const requestor = await this.userRepository.get(authUser.id);
-    if (!requestor) {
-      throw new UnauthorizedException('Requestor not found');
-    }
-    if (!requestor.isAdmin) {
-      throw new ForbiddenException('Unauthorized');
-    }
-    const user = await this.userRepository.get(userId, true);
+    const user = await this.userCore.get(userId, true);
     if (!user) {
       throw new BadRequestException('User not found');
     }
-    try {
-      const restoredUser = await this.userRepository.restore(user);
-      return mapUser(restoredUser);
-    } catch (e) {
-      Logger.error(e, 'Failed to restore deleted user');
-      throw new InternalServerErrorException('Failed to restore deleted user');
-    }
+    const updatedUser = await this.userCore.restoreUser(authUser, user);
+    return mapUser(updatedUser);
   }
 
   async createProfileImage(
     authUser: AuthUserDto,
     fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
-    const user = await this.userRepository.get(authUser.id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    try {
-      await this.userRepository.update(user.id, { profileImagePath: fileInfo.path });
-
-      return mapCreateProfileImageResponse(authUser.id, fileInfo.path);
-    } catch (e) {
-      Logger.error(e, 'Create User Profile Image');
-      throw new InternalServerErrorException('Failed to create new user profile image');
-    }
+    const updatedUser = await this.userCore.createProfileImage(authUser, fileInfo.path);
+    return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
   }
 
   async getUserProfileImage(userId: string): Promise<ReadStream> {
-    try {
-      const user = await this.userRepository.get(userId);
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
-
-      if (!user.profileImagePath) {
-        throw new NotFoundException('User does not have a profile image');
-      }
-
-      const fileStream = createReadStream(user.profileImagePath);
-      return fileStream;
-    } catch (e) {
-      throw new NotFoundException('User does not have a profile image');
+    const user = await this.userCore.get(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+    return this.userCore.getUserProfileImage(user);
   }
 }

@@ -1,9 +1,17 @@
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException, ForbiddenException, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { genSalt, hash } from 'bcrypt';
+import { createReadStream, ReadStream } from 'fs';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAdminDto, CreateUserDto, CreateUserOauthDto } from './dto/create-user.dto';
-import { IUserRepository } from './user-repository';
+import { IUserRepository, UserListFilter } from './user-repository';
 
 export class UserCore {
   constructor(private userRepository: IUserRepository) {}
@@ -16,19 +24,19 @@ export class UserCore {
     return hash(password, salt);
   }
 
-  async updateUser(authUser: AuthUserDto, user: UserEntity, update: Partial<UserEntity>): Promise<UserEntity> {
-    if (!authUser.isAdmin && (authUser.id !== user.id || user.id != update.id)) {
+  async updateUser(authUser: AuthUserDto, userToUpdate: UserEntity, data: Partial<UserEntity>): Promise<UserEntity> {
+    if (!authUser.isAdmin && (authUser.id !== userToUpdate.id || userToUpdate.id != data.id)) {
       throw new ForbiddenException('You are not allowed to update this user');
     }
 
     try {
-      const payload: Partial<UserEntity> = { ...update };
+      const payload: Partial<UserEntity> = { ...data };
       if (payload.password) {
         const salt = await this.generateSalt();
         payload.salt = salt;
         payload.password = await this.hashPassword(payload.password, salt);
       }
-      return this.userRepository.update(user.id, payload);
+      return this.userRepository.update(userToUpdate.id, payload);
     } catch (e) {
       Logger.error(e, 'Failed to update user info');
       throw new InternalServerErrorException('Failed to update user info');
@@ -62,19 +70,84 @@ export class UserCore {
     }
   }
 
-  public async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
+  async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
     return this.userRepository.get(userId, withDeleted);
   }
 
-  public async getAdmin(): Promise<UserEntity | null> {
+  async getAdmin(): Promise<UserEntity | null> {
     return this.userRepository.getAdmin();
   }
 
-  public async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
+  async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
     return this.userRepository.getByEmail(email, withPassword);
   }
 
-  public async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
+  async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
     return this.userRepository.getByOAuthId(oauthId);
+  }
+
+  async getUserProfileImage(user: UserEntity): Promise<ReadStream> {
+    if (!user.profileImagePath) {
+      throw new NotFoundException('User does not have a profile image');
+    }
+    return createReadStream(user.profileImagePath);
+  }
+
+  async getList(filter?: UserListFilter): Promise<UserEntity[]> {
+    return this.userRepository.getList(filter);
+  }
+
+  async createProfileImage(authUser: AuthUserDto, filePath: string): Promise<UserEntity> {
+    // TODO: do we need to do this? Maybe we can trust the authUser
+    const user = await this.userRepository.get(authUser.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    try {
+      return this.userRepository.update(user.id, { profileImagePath: filePath });
+    } catch (e) {
+      Logger.error(e, 'Create User Profile Image');
+      throw new InternalServerErrorException('Failed to create new user profile image');
+    }
+  }
+
+  async restoreUser(authUser: AuthUserDto, userToRestore: UserEntity): Promise<UserEntity> {
+    // TODO: do we need to do this? Maybe we can trust the authUser
+    const requestor = await this.userRepository.get(authUser.id);
+    if (!requestor) {
+      throw new UnauthorizedException('Requestor not found');
+    }
+    if (!requestor.isAdmin) {
+      throw new ForbiddenException('Unauthorized');
+    }
+    try {
+      return this.userRepository.restore(userToRestore);
+    } catch (e) {
+      Logger.error(e, 'Failed to restore deleted user');
+      throw new InternalServerErrorException('Failed to restore deleted user');
+    }
+  }
+
+  async deleteUser(authUser: AuthUserDto, userToDelete: UserEntity): Promise<UserEntity> {
+    // TODO: do we need to do this? Maybe we can trust the authUser
+    const requestor = await this.userRepository.get(authUser.id);
+    if (!requestor) {
+      throw new UnauthorizedException('Requestor not found');
+    }
+    if (!requestor.isAdmin) {
+      throw new ForbiddenException('Unauthorized');
+    }
+
+    if (userToDelete.isAdmin) {
+      throw new ForbiddenException('Cannot delete admin user');
+    }
+
+    try {
+      return this.userRepository.delete(userToDelete);
+    } catch (e) {
+      Logger.error(e, 'Failed to delete user');
+      throw new InternalServerErrorException('Failed to delete user');
+    }
   }
 }
