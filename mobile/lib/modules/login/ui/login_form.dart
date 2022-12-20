@@ -94,105 +94,107 @@ class LoginForm extends HookConsumerWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 300),
         child: SingleChildScrollView(
-          child: Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            alignment: WrapAlignment.center,
-            children: [
-              GestureDetector(
-                onDoubleTap: () => populateTestLoginInfo(),
-                child: const Image(
-                  image: AssetImage('assets/immich-logo-no-outline.png'),
-                  width: 100,
-                  filterQuality: FilterQuality.high,
+          child: AutofillGroup (
+            child: Wrap(
+              spacing: 16,
+              runSpacing: 16,
+              alignment: WrapAlignment.center,
+              children: [
+                GestureDetector(
+                  onDoubleTap: () => populateTestLoginInfo(),
+                  child: const Image(
+                    image: AssetImage('assets/immich-logo-no-outline.png'),
+                    width: 100,
+                    filterQuality: FilterQuality.high,
+                  ),
                 ),
-              ),
-              Text(
-                'IMMICH',
-                style: TextStyle(
-                  fontFamily: 'SnowburstOne',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 48,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
-              EmailInput(controller: usernameController),
-              PasswordInput(controller: passwordController),
-              ServerEndpointInput(
-                controller: serverEndpointController,
-                focusNode: serverEndpointFocusNode,
-              ),
-              CheckboxListTile(
-                activeColor: Theme.of(context).primaryColor,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                dense: true,
-                side: const BorderSide(color: Colors.grey, width: 1.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                enableFeedback: true,
-                title: const Text(
-                  "login_form_save_login",
+                Text(
+                  'IMMICH',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontFamily: 'SnowburstOne',
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
-                ).tr(),
-                value: isSaveLoginInfo.value,
-                onChanged: (switchValue) {
-                  if (switchValue != null) {
-                    isSaveLoginInfo.value = switchValue;
-                  }
-                },
-              ),
-              if (isLoading.value)
-                const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
+                    fontSize: 48,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
-              if (!isLoading.value)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    LoginButton(
-                      emailController: usernameController,
-                      passwordController: passwordController,
-                      serverEndpointController: serverEndpointController,
-                      isSavedLoginInfo: isSaveLoginInfo.value,
+                EmailInput(controller: usernameController),
+                PasswordInput(controller: passwordController),
+                ServerEndpointInput(
+                  controller: serverEndpointController,
+                  focusNode: serverEndpointFocusNode,
+                ),
+                CheckboxListTile(
+                  activeColor: Theme.of(context).primaryColor,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                  dense: true,
+                  side: const BorderSide(color: Colors.grey, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  enableFeedback: true,
+                  title: const Text(
+                    "login_form_save_login",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
                     ),
-                    if (isOauthEnable.value) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                        ),
-                        child: Divider(
-                          color: Brightness.dark == Theme.of(context).brightness
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                      ),
-                      OAuthLoginButton(
+                  ).tr(),
+                  value: isSaveLoginInfo.value,
+                  onChanged: (switchValue) {
+                    if (switchValue != null) {
+                      isSaveLoginInfo.value = switchValue;
+                    }
+                  },
+                ),
+                if (isLoading.value)
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  ),
+                if (!isLoading.value)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      LoginButton(
+                        emailController: usernameController,
+                        passwordController: passwordController,
                         serverEndpointController: serverEndpointController,
                         isSavedLoginInfo: isSaveLoginInfo.value,
-                        buttonLabel: oAuthButtonLabel.value,
-                        isLoading: isLoading,
-                        onLoginSuccess: () {
-                          isLoading.value = false;
-                          ref.watch(backupProvider.notifier).resumeBackup();
-                          AutoRouter.of(context).replace(
-                            const TabControllerRoute(),
-                          );
-                        },
                       ),
+                      if (isOauthEnable.value) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                          ),
+                          child: Divider(
+                            color: Brightness.dark == Theme.of(context).brightness
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ),
+                        OAuthLoginButton(
+                          serverEndpointController: serverEndpointController,
+                          isSavedLoginInfo: isSaveLoginInfo.value,
+                          buttonLabel: oAuthButtonLabel.value,
+                          isLoading: isLoading,
+                          onLoginSuccess: () {
+                            isLoading.value = false;
+                            ref.watch(backupProvider.notifier).resumeBackup();
+                            AutoRouter.of(context).replace(
+                              const TabControllerRoute(),
+                            );
+                          },
+                        ),
+                      ],
                     ],
-                  ],
-                )
-            ],
+                  )
+              ],
+            ),
           ),
         ),
       ),
@@ -229,6 +231,8 @@ class ServerEndpointInput extends StatelessWidget {
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
       focusNode: focusNode,
+      autofillHints: const [AutofillHints.url],
+      keyboardType: TextInputType.url,
     );
   }
 }
@@ -259,6 +263,8 @@ class EmailInput extends StatelessWidget {
       ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
+      autofillHints: const [AutofillHints.email],
+      keyboardType: TextInputType.emailAddress,
     );
   }
 }
@@ -278,6 +284,8 @@ class PasswordInput extends StatelessWidget {
         border: const OutlineInputBorder(),
         hintText: 'login_form_password_hint'.tr(),
       ),
+      autofillHints: const [AutofillHints.password],
+      keyboardType: TextInputType.text,
     );
   }
 }
