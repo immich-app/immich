@@ -42,6 +42,8 @@ You need to change the CPU type from `kvm64` to `host` under VMs hardware tab.
 You can use the machine learning image that is built for Non-AVX CPU. The image is community maintained and can be found in the repository below
 
 https://github.com/bertmelis/immich-machine-learning-no-avx
+
+Otherwise, you can safely remove the `immich-machine-learning` service if you do not intend to use Immich's object detection feature.
 :::
 
 ## Installation methods
