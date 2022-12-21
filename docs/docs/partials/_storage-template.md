@@ -1,9 +1,3 @@
----
-sidebar_position: 5
----
-
-# Storage Template
-
 Immich allows the admin user to set the pattern of how the files are uploaded to the Immich would look like. Both in the directory and the filename level.
 
 The admin user can set the template by using the template builder in the `Administration -> Settings -> Storage Template`. Immich provides a set of variables that you can use in constructing the template, along with additional custom text.
