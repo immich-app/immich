@@ -61,6 +61,11 @@ void main() {
       // TODO
     });
 
+    // String oauthId
+    test('to test the property `oauthId`', () async {
+      // TODO
+    });
+
 
   });
 

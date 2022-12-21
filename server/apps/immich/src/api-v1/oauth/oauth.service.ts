@@ -1,8 +1,10 @@
 import { ImmichConfigService } from '@app/immich-config';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientMetadata, generators, Issuer, UserinfoResponse } from 'openid-client';
+import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
+import { UserResponseDto } from '../user/response-dto/user-response.dto';
 import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
@@ -38,13 +40,8 @@ export class OAuthService {
     return { enabled: true, buttonText, url };
   }
 
-  public async callback(dto: OAuthCallbackDto): Promise<LoginResponseDto> {
-    const redirectUri = dto.url.split('?')[0];
-    const client = await this.getClient();
-    const params = client.callbackParams(dto.url);
-    const tokens = await client.callback(redirectUri, params, { state: params.state });
-    const profile = await client.userinfo<OAuthProfile>(tokens.access_token || '');
-
+  public async login(dto: OAuthCallbackDto): Promise<LoginResponseDto> {
+    const profile = await this.callback(dto.url);
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user = await this.userRepository.getByOAuthId(profile.sub);
 
@@ -79,6 +76,15 @@ export class OAuthService {
     return this.immichJwtService.createLoginResponse(user);
   }
 
+  public async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
+    const profile = await this.callback(dto.url);
+    return this.userRepository.update(user.id, { oauthId: profile.sub });
+  }
+
+  public async unlink(user: AuthUserDto): Promise<UserResponseDto> {
+    return this.userRepository.update(user.id, { oauthId: '' });
+  }
+
   public async getLogoutEndpoint(): Promise<string | null> {
     const config = await this.immichConfigService.getConfig();
     const { enabled } = config.oauth;
@@ -87,6 +93,14 @@ export class OAuthService {
       return null;
     }
     return (await this.getClient()).issuer.metadata.end_session_endpoint || null;
+  }
+
+  private async callback(url: string): Promise<any> {
+    const redirectUri = url.split('?')[0];
+    const client = await this.getClient();
+    const params = client.callbackParams(url);
+    const tokens = await client.callback(redirectUri, params, { state: params.state });
+    return await client.userinfo<OAuthProfile>(tokens.access_token || '');
   }
 
   private async getClient() {

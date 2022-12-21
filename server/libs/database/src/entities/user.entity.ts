@@ -24,7 +24,7 @@ export class UserEntity {
   @Column({ default: '', select: false })
   salt?: string;
 
-  @Column({ default: '', select: false })
+  @Column({ default: '' })
   oauthId!: string;
 
   @Column({ default: '' })

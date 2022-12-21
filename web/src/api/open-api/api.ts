@@ -1951,6 +1951,12 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'deletedAt'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'oauthId': string;
 }
 /**
  * 
@@ -5064,6 +5070,70 @@ export const OAuthApiAxiosParamCreator = function (configuration?: Configuration
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {OAuthCallbackDto} oAuthCallbackDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        link: async (oAuthCallbackDto: OAuthCallbackDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'oAuthCallbackDto' is not null or undefined
+            assertParamExists('link', 'oAuthCallbackDto', oAuthCallbackDto)
+            const localVarPath = `/oauth/link`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(oAuthCallbackDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        unlink: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/oauth/unlink`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -5094,6 +5164,25 @@ export const OAuthApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.generateConfig(oAuthConfigDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
+        /**
+         * 
+         * @param {OAuthCallbackDto} oAuthCallbackDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async link(oAuthCallbackDto: OAuthCallbackDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.link(oAuthCallbackDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async unlink(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.unlink(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
     }
 };
 
@@ -5121,6 +5210,23 @@ export const OAuthApiFactory = function (configuration?: Configuration, basePath
          */
         generateConfig(oAuthConfigDto: OAuthConfigDto, options?: any): AxiosPromise<OAuthConfigResponseDto> {
             return localVarFp.generateConfig(oAuthConfigDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {OAuthCallbackDto} oAuthCallbackDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        link(oAuthCallbackDto: OAuthCallbackDto, options?: any): AxiosPromise<UserResponseDto> {
+            return localVarFp.link(oAuthCallbackDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        unlink(options?: any): AxiosPromise<UserResponseDto> {
+            return localVarFp.unlink(options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -5152,6 +5258,27 @@ export class OAuthApi extends BaseAPI {
      */
     public generateConfig(oAuthConfigDto: OAuthConfigDto, options?: AxiosRequestConfig) {
         return OAuthApiFp(this.configuration).generateConfig(oAuthConfigDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {OAuthCallbackDto} oAuthCallbackDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OAuthApi
+     */
+    public link(oAuthCallbackDto: OAuthCallbackDto, options?: AxiosRequestConfig) {
+        return OAuthApiFp(this.configuration).link(oAuthCallbackDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OAuthApi
+     */
+    public unlink(options?: AxiosRequestConfig) {
+        return OAuthApiFp(this.configuration).unlink(options).then((request) => request(this.axios, this.basePath));
     }
 }
 
