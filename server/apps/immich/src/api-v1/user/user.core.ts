@@ -8,7 +8,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { genSalt, hash } from 'bcrypt';
-import { createReadStream, ReadStream } from 'fs';
+import { createReadStream, constants, ReadStream } from 'fs';
+import fs from 'fs/promises';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAdminDto, CreateUserDto, CreateUserOauthDto } from './dto/create-user.dto';
 import { IUserRepository, UserListFilter } from './user-repository';
@@ -90,6 +91,7 @@ export class UserCore {
     if (!user.profileImagePath) {
       throw new NotFoundException('User does not have a profile image');
     }
+    await fs.access(user.profileImagePath, constants.R_OK | constants.W_OK);
     return createReadStream(user.profileImagePath);
   }
 
