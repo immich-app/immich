@@ -11,6 +11,8 @@
 		SettingInputFieldType
 	} from '../admin-page/settings/setting-input-field.svelte';
 
+	type ApiError = AxiosError<{ message: string }>;
+
 	export let user: UserResponseDto;
 
 	const handleSaveProfile = async () => {
@@ -55,10 +57,10 @@
 			password = '';
 			newPassword = '';
 			confirmPassword = '';
-		} catch (error: AxiosError | any) {
+		} catch (error) {
 			console.error('Error [user-profile] [changePassword]', error);
 			notificationController.show({
-				message: error?.response?.data?.message || 'Unable to change password',
+				message: (error as ApiError)?.response?.data?.message || 'Unable to change password',
 				type: NotificationType.Error
 			});
 		}
