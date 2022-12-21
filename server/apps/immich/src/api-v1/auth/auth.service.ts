@@ -64,7 +64,7 @@ export class AuthService {
 
   public async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
     const { password, newPassword } = dto;
-    const user = await this.userRepository.getByEmail(authUser.email, true);
+    const user = await this.userCore.getByEmail(authUser.email, true);
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -76,7 +76,7 @@ export class AuthService {
 
     user.password = newPassword;
 
-    return this.userRepository.update(user.id, user);
+    return this.userCore.updateUser(authUser, user, dto);
   }
 
   public async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {
