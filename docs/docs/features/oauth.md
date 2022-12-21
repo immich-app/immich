@@ -1,10 +1,10 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 # OAuth Authentication
 
-This page contains details about using OAuth 2 in Immich.
+This page contains details about using OAuth in Immich.
 
 ## Overview
 

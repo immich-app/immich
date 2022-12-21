@@ -50,5 +50,5 @@ openssl rand -base64 128
 
 
 :::tip
-For more information on how to use the application, please refer to the [Post Installation](/docs/usage/post-installation) guide.
+For more information on how to use the application, please refer to the [Post Installation](/docs/install/post-install.md) guide.
 :::

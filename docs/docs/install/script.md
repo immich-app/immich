@@ -2,10 +2,10 @@
 sidebar_position: 2
 ---
 
-# One-step installation
+# Install Script [Experimental]
 
 :::caution
-This method is for evaluation purposes only. It is not recommended for production use. For production usage, please refer to the recommended installation method [here](/docs/installation/recommended-installation).
+This method is experimental and not currently recommended for production use. For production, please refer to installing with [Docker Compose](/docs/install/docker-compose.md).
 :::
 
 In the shell, from a directory of your choice, run the following command:
@@ -25,5 +25,5 @@ The web application will be available at `http://<machine-ip-address>:2283`, and
 The directory which is used to store the library files is `./immich-data` relative to the current directory.
 
 :::tip
-For more information on how to use the application, please refer to the [Post Installation](/docs/usage/post-installation) guide.
+For common next steps, see [Post Install Steps](/docs/install/post-install.md).
 :::

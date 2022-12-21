@@ -105,7 +105,7 @@ alt="Go to Docker Tab and visit the address listed next to immich-proxy"
 </details>
 
 :::tip
-For more information on how to use the application once installed, please refer to the [Post Installation](/docs/usage/post-installation) guide.
+For more information on how to use the application once installed, please refer to the [Post Install](/docs/install/post-install.md) guide.
 :::
 
 ## Updating Steps

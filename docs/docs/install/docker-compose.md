@@ -2,14 +2,15 @@
 sidebar_position: 3
 ---
 
+# Docker Compose [Recommended]
 
-# Recommended installation
-
-This is the recommended installation method for production use.
+Docker Compose is the recommended method to run Immich in production. Below are the steps to deploy Immich with Docker Compose.
 
 ### Step 1 - Download the required files
 
-From a directory of your choice (e.g. `./immich-app`) run the following commands
+Download [`docker-compose.yml`][compose-file] [`.env.example`][env-file].
+
+From a directory of your choice (e.g. `./immich-app`) run the following commands:
 
 ```bash title="Get docker-compose.yml file"
 wget https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml
@@ -99,9 +100,9 @@ PUBLIC_LOGIN_PAGE_MESSAGE="My Family Photos and Videos Backup Server"
 
 </details>
 
-* Populate custom database information if necessary.
-* Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
-* Populate a secret value for `JWT_SECRET`. You can use the command below to generate a secure key:
+- Populate custom database information if necessary.
+- Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
+- Populate a secret value for `JWT_SECRET`. You can use the command below to generate a secure key:
 
 ```bash title="Command to generate secure JWT_SECRET key"
 openssl rand -base64 128
@@ -114,5 +115,16 @@ docker-compose up -d # or `docker compose up -d` based on your docker-compose ve
 ```
 
 :::tip
-For more information on how to use the application, please refer to the [Post Installation](/docs/usage/post-installation) guide.
+For more information on how to use the application, please refer to the [Post Installation](/docs/install/post-install.md) guide.
 :::
+
+### Step 4 - Upgrading
+
+When a new version of Immich is (released)[], the application can be upgraded with the following commands, run in the directory with the `docker-compose.yml` file:
+
+```bash title="Upgrade Immich"
+docker-compose pull && docker-compose up -d # Or `docker compose`
+```
+
+[compose-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml
+[env-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
