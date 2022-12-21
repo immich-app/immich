@@ -13,7 +13,9 @@
 
 <div class="flex border-b pb-5 dark:border-b-immich-dark-gray">
 	<div class="w-[70%]">
-		<h1 class="text-immich-primary dark:text-immich-dark-primary text-sm">{title.toUpperCase()}</h1>
+		<h1 class="text-immich-primary dark:text-immich-dark-primary text-sm font-semibold">
+			{title.toUpperCase()}
+		</h1>
 		<p class="text-sm mt-1 dark:text-immich-dark-fg">{subtitle}</p>
 		<p class="text-sm dark:text-immich-dark-fg">
 			<slot />
