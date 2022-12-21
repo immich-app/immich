@@ -5,7 +5,6 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { api, UserResponseDto } from '@api';
 	import { fade } from 'svelte/transition';
-	import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
 	import SettingInputField, {
 		SettingInputFieldType
 	} from '../admin-page/settings/setting-input-field.svelte';

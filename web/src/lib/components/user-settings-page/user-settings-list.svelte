@@ -18,7 +18,9 @@
 		try {
 			const { data } = await oauth.getConfig(window.location);
 			oauthEnabled = data.enabled;
-		} catch {}
+		} catch {
+			// noop
+		}
 	});
 </script>
 
