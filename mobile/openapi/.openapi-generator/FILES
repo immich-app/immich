@@ -19,6 +19,7 @@ doc/AssetFileUploadResponseDto.md
 doc/AssetResponseDto.md
 doc/AssetTypeEnum.md
 doc/AuthenticationApi.md
+doc/ChangePasswordDto.md
 doc/CheckDuplicateAssetDto.md
 doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
@@ -114,6 +115,7 @@ lib/model/asset_count_by_user_id_response_dto.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_type_enum.dart
+lib/model/change_password_dto.dart
 lib/model/check_duplicate_asset_dto.dart
 lib/model/check_duplicate_asset_response_dto.dart
 lib/model/check_existing_assets_dto.dart
@@ -186,6 +188,7 @@ test/asset_file_upload_response_dto_test.dart
 test/asset_response_dto_test.dart
 test/asset_type_enum_test.dart
 test/authentication_api_test.dart
+test/change_password_dto_test.dart
 test/check_duplicate_asset_dto_test.dart
 test/check_duplicate_asset_response_dto_test.dart
 test/check_existing_assets_dto_test.dart
