@@ -49,7 +49,7 @@ export class UserRepository implements IUserRepository {
     return this.userRepository.findOne({ where: { oauthId } });
   }
 
-  public async getList({ excludeId }: { excludeId?: string } = {}): Promise<UserEntity[]> {
+  public async getList({ excludeId }: UserListFilter = {}): Promise<UserEntity[]> {
     if (!excludeId) {
       return this.userRepository.find(); // TODO: this should also be ordered the same as below
     }

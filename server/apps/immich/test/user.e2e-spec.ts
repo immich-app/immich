@@ -7,11 +7,11 @@ import { databaseConfig } from '@app/database/config/database.config';
 import { UserModule } from '../src/api-v1/user/user.module';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { UserService } from '../src/api-v1/user/user.service';
-import { CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
+import { CreateAdminDto, CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
 import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
 import { DataSource } from 'typeorm';
 
-function _createUser(userService: UserService, data: CreateUserDto) {
+function _createUser(userService: UserService, data: CreateUserDto | CreateAdminDto) {
   return userService.createUser(data);
 }
 
@@ -67,13 +67,15 @@ describe('User', () => {
       const userTwoEmail = 'two@test.com';
 
       beforeAll(async () => {
+        // first user must be admin
+        authUser = await _createUser(userService, {
+          firstName: 'auth-user',
+          lastName: 'test',
+          email: authUserEmail,
+          password: '1234',
+          isAdmin: true,
+        });
         await Promise.allSettled([
-          _createUser(userService, {
-            firstName: 'auth-user',
-            lastName: 'test',
-            email: authUserEmail,
-            password: '1234',
-          }).then((user) => (authUser = user)),
           _createUser(userService, {
             firstName: 'one',
             lastName: 'test',
