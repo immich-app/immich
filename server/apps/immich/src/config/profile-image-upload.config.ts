@@ -6,6 +6,7 @@ import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
+import { patchFormData } from '../utils/path-form-data.util';
 
 export const profileImageUploadOption: MulterOptions = {
   fileFilter,
@@ -48,6 +49,8 @@ function filename(req: Request, file: Express.Multer.File, cb: any) {
   if (!req.user) {
     return cb(new UnauthorizedException());
   }
+
+  file.originalname = patchFormData(file.originalname);
 
   const userId = req.user.id;
   const fileName = `${userId}${extname(file.originalname)}`;
