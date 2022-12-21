@@ -36,7 +36,7 @@ describe('UserService', () => {
     profileImagePath: '',
     createdAt: '2021-01-01',
     tags: [],
-  };
+  });
 
   const immichUser: UserEntity = Object.freeze({
     id: immichUserAuth.id,
@@ -51,7 +51,7 @@ describe('UserService', () => {
     profileImagePath: '',
     createdAt: '2021-01-01',
     tags: [],
-  };
+  });
 
   const updatedImmichUser: UserEntity = Object.freeze({
     id: immichUserAuth.id,
@@ -66,7 +66,7 @@ describe('UserService', () => {
     profileImagePath: '',
     createdAt: '2021-01-01',
     tags: [],
-  };
+  });
 
   beforeEach(() => {
     userRepositoryMock = newUserRepositoryMock();
