@@ -1,9 +1,18 @@
-import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from '../../../../../libs/database/src/entities/user.entity';
 import { AuthType } from '../../constants/jwt.constant';
+import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/admin-signup-response.dto';
@@ -46,6 +55,23 @@ export class AuthService {
     }
 
     return { successful: true, redirectUri: '/auth/login' };
+  }
+
+  public async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
+    const { password, newPassword } = dto;
+    const user = await this.userRepository.getByEmail(authUser.email, true);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const valid = await this.validatePassword(password, user);
+    if (!valid) {
+      throw new BadRequestException('Wrong password');
+    }
+
+    user.password = newPassword;
+
+    return this.userRepository.update(user.id, user);
   }
 
   public async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {

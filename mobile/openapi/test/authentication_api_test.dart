@@ -22,6 +22,11 @@ void main() {
       // TODO
     });
 
+    //Future<UserResponseDto> changePassword(ChangePasswordDto changePasswordDto) async
+    test('test changePassword', () async {
+      // TODO
+    });
+
     //Future<LoginResponseDto> login(LoginCredentialDto loginCredentialDto) async
     test('test login', () async {
       // TODO
