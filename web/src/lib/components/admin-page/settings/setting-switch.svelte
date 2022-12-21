@@ -7,7 +7,7 @@
 
 <div class="flex justify-between mx-4 place-items-center">
 	<div>
-		<h2 class="immich-form-label">
+		<h2 class="immich-form-label text-sm">
 			{title.toUpperCase()}
 		</h2>
 

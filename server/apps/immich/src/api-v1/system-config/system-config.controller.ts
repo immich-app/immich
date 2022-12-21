@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Put, ValidationPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../../decorators/authenticated.decorator';
+import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import { SystemConfigDto } from './dto/system-config.dto';
 import { SystemConfigService } from './system-config.service';
 
@@ -24,5 +25,10 @@ export class SystemConfigController {
   @Put()
   public updateConfig(@Body(ValidationPipe) dto: SystemConfigDto): Promise<SystemConfigDto> {
     return this.systemConfigService.updateConfig(dto);
+  }
+
+  @Get('storage-template-options')
+  public getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
+    return this.systemConfigService.getStorageTemplateOptions();
   }
 }

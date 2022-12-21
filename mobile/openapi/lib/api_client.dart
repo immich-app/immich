@@ -218,6 +218,8 @@ class ApiClient {
           return AssetResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
+        case 'ChangePasswordDto':
+          return ChangePasswordDto.fromJson(value);
         case 'CheckDuplicateAssetDto':
           return CheckDuplicateAssetDto.fromJson(value);
         case 'CheckDuplicateAssetResponseDto':
@@ -298,6 +300,10 @@ class ApiClient {
           return SystemConfigFFmpegDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
+        case 'SystemConfigStorageTemplateDto':
+          return SystemConfigStorageTemplateDto.fromJson(value);
+        case 'SystemConfigTemplateStorageOptionDto':
+          return SystemConfigTemplateStorageOptionDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':

@@ -3,7 +3,7 @@
 	export let title: string;
 	export let subtitle = '';
 
-	let isOpen = false;
+	export let isOpen = false;
 	const toggle = () => (isOpen = !isOpen);
 </script>
 

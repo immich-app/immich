@@ -36,7 +36,7 @@ describe('UserService', () => {
     profileImagePath: '',
     createdAt: '2021-01-01',
     tags: [],
-  });
+  };
 
   const immichUser: UserEntity = Object.freeze({
     id: immichUserAuth.id,
@@ -51,7 +51,7 @@ describe('UserService', () => {
     profileImagePath: '',
     createdAt: '2021-01-01',
     tags: [],
-  });
+  };
 
   const updatedImmichUser: UserEntity = Object.freeze({
     id: immichUserAuth.id,
@@ -66,7 +66,7 @@ describe('UserService', () => {
     profileImagePath: '',
     createdAt: '2021-01-01',
     tags: [],
-  });
+  };
 
   beforeEach(() => {
     userRepositoryMock = newUserRepositoryMock();
@@ -86,8 +86,8 @@ describe('UserService', () => {
 
       when(userRepositoryMock.update).calledWith(update.id, update).mockResolvedValueOnce(updatedImmichUser);
 
-      const result = sut.updateUser(immichUserAuth, update);
-      await expect(result).resolves.toBeDefined();
+      const updatedUser = await sut.updateUser(immichUserAuth, update);
+      expect(updatedUser.shouldChangePassword).toEqual(true);
     });
 
     it('user can only update its information', async () => {

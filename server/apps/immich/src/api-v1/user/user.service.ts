@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { createReadStream, ReadStream } from 'fs';
+import { ReadStream } from 'fs';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';

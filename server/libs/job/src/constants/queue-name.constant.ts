@@ -6,4 +6,5 @@ export enum QueueNameEnum {
   ASSET_UPLOADED = 'asset-uploaded-queue',
   MACHINE_LEARNING = 'machine-learning-queue',
   USER_DELETION = 'user-deletion-queue',
+  STORAGE_MIGRATION = 'storage-template-migration',
 }

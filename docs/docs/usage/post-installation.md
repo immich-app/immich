@@ -30,13 +30,28 @@ If you have a family member who wants to use the application, you can create a n
 
 <img src={require('./img/create-new-user.png').default} title="Admin Registration" />
 
-## Step 4 - Access the mobile app
+
+## Step 4 - Set storage template (optional)
+
+Immich allows the admin user to set the pattern of how the files are uploaded to the Immich would look like. Both in the directory and the filename level.
+
+The admin user can set the template by using the template builder in the `Administration -> Settings -> Storage Template`. Immich provides a set of variables that you can use in construting the template, along with additional custom text. 
+
+```bash title="Default template"
+Year/Year-Month-Day/Filename.Extension
+```
+
+<img src={require('./img/storage-template.png').default} width="100%" title="Storage Template Setting" />
+
+Immich also provides a mechanism to migrate between template so that if the template you set now doesn't work in the future, you can always migrate all the existing files to the new template. The mechanism is run as a job in the Job page.
+
+## Step 5 - Access the mobile app
 
 Login to the mobile app with the server endpoint URL at `http://<machine-ip-address>:2283/api`
 
 <img src={require('./img/sign-in-phone.jpeg').default} width="50%" title="Mobile App Sign In" />
 
-## Step 5 - Back up your photos and videos
+## Step 6 - Back up your photos and videos
 
 Navigate to the backup screen by clicking on the cloud icon in the top right corner of the screen.
 

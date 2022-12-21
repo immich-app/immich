@@ -5,7 +5,9 @@ import { AuthType, IMMICH_AUTH_TYPE_COOKIE } from '../../constants/jwt.constant'
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
+import { UserResponseDto } from '../user/response-dto/user-response.dto';
 import { AuthService } from './auth.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto } from './response-dto/admin-signup-response.dto';
@@ -43,6 +45,13 @@ export class AuthController {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validateAccessToken(@GetAuthUser() authUser: AuthUserDto): Promise<ValidateAccessTokenResponseDto> {
     return new ValidateAccessTokenResponseDto(true);
+  }
+
+  @Authenticated()
+  @ApiBearerAuth()
+  @Post('change-password')
+  async changePassword(@GetAuthUser() authUser: AuthUserDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
+    return this.authService.changePassword(authUser, dto);
   }
 
   @Post('/logout')

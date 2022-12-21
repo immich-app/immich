@@ -12,6 +12,7 @@ import { BackgroundTaskService } from '../../modules/background-task/background-
 import { IAssetUploadedJob, IVideoTranscodeJob } from '@app/job';
 import { Queue } from 'bull';
 import { IAlbumRepository } from '../album/album-repository';
+import { StorageService } from '@app/storage';
 
 describe('AssetService', () => {
   let sui: AssetService;
@@ -22,6 +23,7 @@ describe('AssetService', () => {
   let backgroundTaskServiceMock: jest.Mocked<BackgroundTaskService>;
   let assetUploadedQueueMock: jest.Mocked<Queue<IAssetUploadedJob>>;
   let videoConversionQueueMock: jest.Mocked<Queue<IVideoTranscodeJob>>;
+  let storageSeriveMock: jest.Mocked<StorageService>;
   const authUser: AuthUserDto = Object.freeze({
     id: 'user_id_1',
     email: 'auth@test.com',
@@ -140,6 +142,7 @@ describe('AssetService', () => {
       assetUploadedQueueMock,
       videoConversionQueueMock,
       downloadServiceMock as DownloadService,
+      storageSeriveMock,
     );
   });
 

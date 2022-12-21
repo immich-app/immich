@@ -27,6 +27,11 @@ void main() {
       // TODO
     });
 
+    //Future<SystemConfigTemplateStorageOptionDto> getStorageTemplateOptions() async
+    test('test getStorageTemplateOptions', () async {
+      // TODO
+    });
+
     //Future<SystemConfigDto> updateConfig(SystemConfigDto systemConfigDto) async
     test('test updateConfig', () async {
       // TODO

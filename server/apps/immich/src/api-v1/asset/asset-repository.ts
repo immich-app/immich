@@ -15,6 +15,7 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository, TAG_REPOSITORY } from '../tag/tag.repository';
+import { IsNull } from 'typeorm';
 
 export interface IAssetRepository {
   create(
@@ -69,14 +70,14 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getAssetWithNoThumbnail(): Promise<AssetEntity[]> {
-    return await this.assetRepository
-      .createQueryBuilder('asset')
-      .where('asset.resizePath IS NULL')
-      .andWhere('asset.isVisible = true')
-      .orWhere('asset.resizePath = :resizePath', { resizePath: '' })
-      .orWhere('asset.webpPath IS NULL')
-      .orWhere('asset.webpPath = :webpPath', { webpPath: '' })
-      .getMany();
+    return await this.assetRepository.find({
+      where: [
+        { resizePath: IsNull(), isVisible: true },
+        { resizePath: '', isVisible: true },
+        { webpPath: IsNull(), isVisible: true },
+        { webpPath: '', isVisible: true },
+      ],
+    });
   }
 
   async getAssetWithNoEXIF(): Promise<AssetEntity[]> {

@@ -1707,6 +1707,42 @@
         ]
       }
     },
+    "/auth/change-password": {
+      "post": {
+        "operationId": "changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/auth/logout": {
       "post": {
         "operationId": "logout",
@@ -2169,12 +2205,38 @@
           }
         ]
       }
+    },
+    "/system-config/storage-template-options": {
+      "get": {
+        "operationId": "getStorageTemplateOptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigTemplateStorageOptionDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.38.0",
+    "version": "1.39.0",
     "contact": {}
   },
   "tags": [],
@@ -3232,6 +3294,23 @@
           "authStatus"
         ]
       },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "example": "password"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "password"
+          }
+        },
+        "required": [
+          "password",
+          "newPassword"
+        ]
+      },
       "LogoutResponseDto": {
         "type": "object",
         "properties": {
@@ -3536,6 +3615,9 @@
           "machineLearningQueueCount": {
             "$ref": "#/components/schemas/JobCounts"
           },
+          "storageMigrationQueueCount": {
+            "$ref": "#/components/schemas/JobCounts"
+          },
           "isThumbnailGenerationActive": {
             "type": "boolean"
           },
@@ -3547,6 +3629,9 @@
           },
           "isMachineLearningActive": {
             "type": "boolean"
+          },
+          "isStorageMigrationActive": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -3554,10 +3639,12 @@
           "metadataExtractionQueueCount",
           "videoConversionQueueCount",
           "machineLearningQueueCount",
+          "storageMigrationQueueCount",
           "isThumbnailGenerationActive",
           "isMetadataExtractionActive",
           "isVideoConversionActive",
-          "isMachineLearningActive"
+          "isMachineLearningActive",
+          "isStorageMigrationActive"
         ]
       },
       "JobId": {
@@ -3566,7 +3653,8 @@
           "thumbnail-generation",
           "metadata-extraction",
           "video-conversion",
-          "machine-learning"
+          "machine-learning",
+          "storage-template-migration"
         ]
       },
       "JobStatusResponseDto": {
@@ -3664,6 +3752,17 @@
           "autoRegister"
         ]
       },
+      "SystemConfigStorageTemplateDto": {
+        "type": "object",
+        "properties": {
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "template"
+        ]
+      },
       "SystemConfigDto": {
         "type": "object",
         "properties": {
@@ -3672,11 +3771,71 @@
           },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
+          },
+          "storageTemplate": {
+            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           }
         },
         "required": [
           "ffmpeg",
-          "oauth"
+          "oauth",
+          "storageTemplate"
+        ]
+      },
+      "SystemConfigTemplateStorageOptionDto": {
+        "type": "object",
+        "properties": {
+          "yearOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "monthOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dayOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hourOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minuteOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "secondOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "presetOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "yearOptions",
+          "monthOptions",
+          "dayOptions",
+          "hourOptions",
+          "minuteOptions",
+          "secondOptions",
+          "presetOptions"
         ]
       }
     }

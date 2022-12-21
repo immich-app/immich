@@ -34,3 +34,9 @@ export enum MachineLearningJobNameEnum {
  * User deletion Queue Jobs
  */
 export const userDeletionProcessorName = 'user-deletion';
+
+/**
+ * Storage Template Migration Queue Jobs
+ */
+export const templateMigrationProcessorName = 'template-migration';
+export const updateTemplateProcessorName = 'update-template';

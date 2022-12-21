@@ -19,6 +19,7 @@ doc/AssetFileUploadResponseDto.md
 doc/AssetResponseDto.md
 doc/AssetTypeEnum.md
 doc/AuthenticationApi.md
+doc/ChangePasswordDto.md
 doc/CheckDuplicateAssetDto.md
 doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
@@ -64,6 +65,8 @@ doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
 doc/SystemConfigOAuthDto.md
+doc/SystemConfigStorageTemplateDto.md
+doc/SystemConfigTemplateStorageOptionDto.md
 doc/TagApi.md
 doc/TagResponseDto.md
 doc/TagTypeEnum.md
@@ -112,6 +115,7 @@ lib/model/asset_count_by_user_id_response_dto.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_type_enum.dart
+lib/model/change_password_dto.dart
 lib/model/check_duplicate_asset_dto.dart
 lib/model/check_duplicate_asset_response_dto.dart
 lib/model/check_existing_assets_dto.dart
@@ -152,6 +156,8 @@ lib/model/smart_info_response_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_o_auth_dto.dart
+lib/model/system_config_storage_template_dto.dart
+lib/model/system_config_template_storage_option_dto.dart
 lib/model/tag_response_dto.dart
 lib/model/tag_type_enum.dart
 lib/model/thumbnail_format.dart
@@ -182,6 +188,7 @@ test/asset_file_upload_response_dto_test.dart
 test/asset_response_dto_test.dart
 test/asset_type_enum_test.dart
 test/authentication_api_test.dart
+test/change_password_dto_test.dart
 test/check_duplicate_asset_dto_test.dart
 test/check_duplicate_asset_response_dto_test.dart
 test/check_existing_assets_dto_test.dart
@@ -227,6 +234,8 @@ test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
 test/system_config_o_auth_dto_test.dart
+test/system_config_storage_template_dto_test.dart
+test/system_config_template_storage_option_dto_test.dart
 test/tag_api_test.dart
 test/tag_response_dto_test.dart
 test/tag_type_enum_test.dart

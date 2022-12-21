@@ -1,5 +1,4 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
-import { ImmichLogLevel } from '@app/common/constants/log-level.constant';
 import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
 import {
   WebpGeneratorProcessor,
@@ -11,7 +10,6 @@ import {
 } from '@app/job';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
 import { Job, Queue } from 'bull';
@@ -27,7 +25,7 @@ import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interf
 
 @Processor(QueueNameEnum.THUMBNAIL_GENERATION)
 export class ThumbnailGeneratorProcessor {
-  private logLevel: ImmichLogLevel;
+  readonly logger: Logger = new Logger(ThumbnailGeneratorProcessor.name);
 
   constructor(
     @InjectRepository(AssetEntity)
@@ -40,11 +38,7 @@ export class ThumbnailGeneratorProcessor {
 
     @InjectQueue(QueueNameEnum.MACHINE_LEARNING)
     private machineLearningQueue: Queue<IMachineLearningJob>,
-
-    private configService: ConfigService,
-  ) {
-    this.logLevel = this.configService.get('LOG_LEVEL') || ImmichLogLevel.SIMPLE;
-  }
+  ) {}
 
   @Process({ name: generateJPEGThumbnailProcessorName, concurrency: 3 })
   async generateJPEGThumbnail(job: Job<JpegGeneratorProcessor>) {
@@ -59,9 +53,7 @@ export class ThumbnailGeneratorProcessor {
       mkdirSync(resizePath, { recursive: true });
     }
 
-    const temp = asset.originalPath.split('/');
-    const originalFilename = temp[temp.length - 1].split('.')[0];
-    const jpegThumbnailPath = join(resizePath, `${originalFilename}.jpeg`);
+    const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
     if (asset.type == AssetType.IMAGE) {
       try {
@@ -71,12 +63,8 @@ export class ThumbnailGeneratorProcessor {
           .rotate()
           .toFile(jpegThumbnailPath);
         await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
-      } catch (error) {
-        Logger.error('Failed to generate jpeg thumbnail for asset: ' + asset.id);
-
-        if (this.logLevel == ImmichLogLevel.VERBOSE) {
-          console.trace('Failed to generate jpeg thumbnail for asset', error);
-        }
+      } catch (error: any) {
+        this.logger.error('Failed to generate jpeg thumbnail for asset: ' + asset.id, error.stack);
       }
 
       // Update resize path to send to generate webp queue
@@ -141,12 +129,8 @@ export class ThumbnailGeneratorProcessor {
     try {
       await sharp(asset.resizePath, { failOnError: false }).resize(250).webp().rotate().toFile(webpPath);
       await this.assetRepository.update({ id: asset.id }, { webpPath: webpPath });
-    } catch (error) {
-      Logger.error('Failed to generate webp thumbnail for asset: ' + asset.id);
-
-      if (this.logLevel == ImmichLogLevel.VERBOSE) {
-        console.trace('Failed to generate webp thumbnail for asset', error);
-      }
+    } catch (error: any) {
+      this.logger.error('Failed to generate webp thumbnail for asset: ' + asset.id, error.stack);
     }
   }
 }

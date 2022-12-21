@@ -73,7 +73,7 @@ export class UserRepository implements IUserRepository {
     if (user.isAdmin) {
       const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
 
-      if (adminUser) {
+      if (adminUser && adminUser.id !== id) {
         throw new BadRequestException('Admin user exists');
       }
 

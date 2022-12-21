@@ -67,17 +67,17 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Selective album(s) for backup               | Yes     | N/A |
 | Download photos and videos to local device  | Yes     | Yes |
 | Multi-user support                          | Yes     | Yes |
-| Album                                       | Yes     | Yes |
-| Shared Albums                               | Yes     | Yes |
-| Quick navigation with draggable scrollbar   | Yes     | Yes |
+| Album and Shared albums                     | Yes     | Yes |
+| Scrubbable/draggable scrollbar              | Yes     | Yes |
 | Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes     | Yes |
 | Metadata view (EXIF, map)                   | Yes     | Yes |
 | Search by metadata, objects and image tags  | Yes     | No  |
 | Administrative functions (user management)  | N/A     | Yes |
 | Background backup                           | Android | N/A |
 | Virtual scroll                              | Yes     | Yes |
-| OAuth Support                               | Yes     | Yes |
-| LivePhotos Backup and Playback (iOS only)   | Yes     | Yes |
+| OAuth support                               | Yes     | Yes |
+| LivePhoto backup and playback               | iOS     | Yes |
+| User-defined storage structure              | Yes     | Yes |
 
 # Support the project
 
@@ -94,18 +94,8 @@ If you feel like this is the right cause and the app is something you are seeing
 
 # Known Issues
 
-## TensorFlow Build Issue
+## immich-machine-learning fails to start
 
-_This is a known issue for incorrect Proxmox setup_
+Symptoms: the container logs `illegal instruction core dump` and restarts
 
-TensorFlow doesn't run with older CPU architecture, it requires a CPU with AVX and AVX2 instruction set. If you encounter the error `illegal instruction core dump` when running the docker-compose command above, check for your CPU flags with the command and make sure you see `AVX` and `AVX2`:
-
-```bash
-more /proc/cpuinfo | grep flags
-```
-
-If you are running virtualization in Proxmox, the VM doesn't have the flag enabled.
-
-You need to change the CPU type from `kvm64` to `host` under VMs hardware tab.
-
-`Hardware > Processors > Edit > Advanced > Type (dropdown menu) > host`
+Solution: https://immich.app/docs/installation/requirements#hardware
