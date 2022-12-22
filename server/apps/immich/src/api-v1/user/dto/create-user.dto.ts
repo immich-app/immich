@@ -39,7 +39,7 @@ export class CreateAdminDto {
   lastName!: string;
 }
 
-export class CreateUserOauthDto {
+export class CreateUserOAuthDto {
   @IsEmail()
   @Transform(({ value }) => value?.toLowerCase())
   email!: string;

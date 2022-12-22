@@ -11,7 +11,7 @@ import { genSalt, hash } from 'bcrypt';
 import { createReadStream, constants, ReadStream } from 'fs';
 import fs from 'fs/promises';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { CreateAdminDto, CreateUserDto, CreateUserOauthDto } from './dto/create-user.dto';
+import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './dto/create-user.dto';
 import { IUserRepository, UserListFilter } from './user-repository';
 
 export class UserCore {
@@ -44,7 +44,7 @@ export class UserCore {
     }
   }
 
-  async createUser(createUserDto: CreateUserDto | CreateAdminDto | CreateUserOauthDto): Promise<UserEntity> {
+  async createUser(createUserDto: CreateUserDto | CreateAdminDto | CreateUserOAuthDto): Promise<UserEntity> {
     const user = await this.userRepository.getByEmail(createUserDto.email);
     if (user) {
       throw new BadRequestException('User exists');
