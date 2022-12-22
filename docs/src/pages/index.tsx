@@ -1,71 +1,54 @@
 import React from "react";
-import clsx from "clsx";
 import Link from "@docusaurus/Link";
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Layout from "@theme/Layout";
-import HomepageFeatures from "@site/src/components/HomepageFeatures";
-
-import styles from "./index.module.css";
 
 function HomepageHeader() {
-  const { siteConfig } = useDocusaurusContext();
   return (
-    <header className={clsx("hero hero--primary", styles.heroBanner)}>
-      <div className="container">
-        <h1
-          className="hero__title"
-          style={{
-            fontFamily: "Snowburst One",
-            color: "#adcbfa",
-          }}
-        >
+    <header>
+      <section className="text-center m-6 p-12 border border-red-400 rounded-[50px] bg-gray-100 dark:bg-immich-dark-gray">
+        <h1 className="text-6xl font-bold mb-10 font-immich-title text-immich-primary dark:text-immich-dark-primary">
           IMMICH
         </h1>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttonsRow}>
-          <div className={styles.buttons}>
-            <Link
-              className={clsx("button button--lg", styles.introButton)}
-              to="docs/overview/introduction"
-            >
-              Introduction
-            </Link>
-          </div>
+        <div className="font-thin text-2xl my-12 leading-4">
+          <p>SELF-HOSTED BACKUP SOLUTION </p>
+          <p>FOR PHOTOS AND VIDEOS</p>
+          <p>ON MOBILE DEVICE</p>
+        </div>
 
-          <div className={styles.buttons}>
-            <Link
-              className={clsx("button button--lg", styles.installButton)}
-              to="docs/install/requirements"
-            >
-              Installation
-            </Link>
-          </div>
+        <div className="flex place-items-center place-content-center mt-9 mb-16 gap-4">
+          <Link
+            className="flex place-items-center place-content-center py-3 px-8 text-lg border bg-immich-primary dark:bg-immich-dark-primary rounded-full no-underline hover:no-underline text-white hover:text-gray-50 dark:text-immich-dark-bg  font-bold"
+            to="docs/overview/introduction"
+          >
+            GET STARTED
+          </Link>
 
-          <div className={styles.buttons}>
-            <Link
-              className={clsx("button button--lg", styles.demoButton)}
-              to="https://demo.immich.app/"
-            >
-              Demo
-            </Link>
-          </div>
+          <Link
+            className="flex place-items-center place-content-center py-3 px-8 text-lg border bg-immich-primary/10 dark:bg-gray-300  rounded-full hover:no-underline text-immich-primary dark:text-immich-dark-bg font-bold"
+            to="https://demo.immich.app/"
+          >
+            DEMO PORTAL
+          </Link>
         </div>
 
         <img src="/img/immich-screenshots.webp" alt="logo" />
-      </div>
+      </section>
     </header>
   );
 }
 
 export default function Home(): JSX.Element {
-  const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
       title={`Home`}
       description="immich Self-hosted photo and video backup solution directly from your mobile phone "
+      noFooter={true}
     >
       <HomepageHeader />
-      <main>{/* <HomepageFeatures /> */}</main>
+      <div className="flex flex-col place-items-center place-content-center">
+        <p>This project is available under MIT license.</p>
+        <p className="text-xs">Privacy should not be a luxury</p>
+      </div>
     </Layout>
   );
 }
