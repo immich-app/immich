@@ -21,7 +21,6 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
-	import path from 'path';
 
 	import { assetStore } from '$lib/stores/assets.store';
 
