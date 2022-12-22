@@ -94,7 +94,7 @@ class LoginForm extends HookConsumerWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 300),
         child: SingleChildScrollView(
-          child: AutofillGroup (
+          child: AutofillGroup(
             child: Wrap(
               spacing: 16,
               runSpacing: 16,
@@ -172,9 +172,10 @@ class LoginForm extends HookConsumerWidget {
                             horizontal: 16.0,
                           ),
                           child: Divider(
-                            color: Brightness.dark == Theme.of(context).brightness
-                                ? Colors.white
-                                : Colors.black,
+                            color:
+                                Brightness.dark == Theme.of(context).brightness
+                                    ? Colors.white
+                                    : Colors.black,
                           ),
                         ),
                         OAuthLoginButton(
@@ -233,6 +234,7 @@ class ServerEndpointInput extends StatelessWidget {
       focusNode: focusNode,
       autofillHints: const [AutofillHints.url],
       keyboardType: TextInputType.url,
+      autocorrect: false,
     );
   }
 }
