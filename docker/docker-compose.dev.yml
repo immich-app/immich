@@ -11,6 +11,7 @@ services:
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${IMPORT_LOCATION}:/import
       - /usr/src/app/node_modules
     ports:
       - 9230:9230

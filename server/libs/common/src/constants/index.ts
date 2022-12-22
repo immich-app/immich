@@ -1,1 +1,1 @@
-export * from './upload_location.constant';
+export * from './location.constant';

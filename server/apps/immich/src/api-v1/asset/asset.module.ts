@@ -35,6 +35,6 @@ const ASSET_REPOSITORY_PROVIDER = {
   ],
   controllers: [AssetController],
   providers: [AssetService, BackgroundTaskService, ASSET_REPOSITORY_PROVIDER],
-  exports: [ASSET_REPOSITORY_PROVIDER],
+  exports: [AssetService, ASSET_REPOSITORY_PROVIDER],
 })
 export class AssetModule {}
