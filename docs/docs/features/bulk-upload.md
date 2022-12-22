@@ -1,7 +1,3 @@
----
-sidebar_position: 3
----
-
 # Bulk Upload (Using the CLI)
 
 You can use the CLI to upload an existing gallery to the Immich server

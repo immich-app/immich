@@ -1,7 +1,3 @@
----
-sidebar_position: 7
----
-
 # Server Commands
 
 The `immich-server` docker image comes preinstalled with an administrative CLI that supports the following commands:
