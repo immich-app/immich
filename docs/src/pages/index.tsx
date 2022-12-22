@@ -60,12 +60,11 @@ function HomepageHeader() {
 export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout
-      title={`Home`}
-      description="immich Self-hosted photo and video backup solution directly from your mobile phone "
-    >
-      <HomepageHeader />
-      <main>{/* <HomepageFeatures /> */}</main>
-    </Layout>
+    // <Layout
+    //   title={`Home`}
+    //   description="immich Self-hosted photo and video backup solution directly from your mobile phone "
+    // >
+    <HomepageHeader />
+    // </Layout>
   );
 }
