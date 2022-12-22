@@ -22,7 +22,7 @@ The initial approach of Immich is to become a backup tool, primarily for mobile 
 
 ### What happens to existing files after I choose a new [Storage Template](/docs/features/storage-template.mdx)?
 
-Template changes will only apply to new assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Administration Screen]((/docs/features/administration)).
+Template changes will only apply to new assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/features/jobs.md) page.
 
 ### Why is object detection not very good?
 

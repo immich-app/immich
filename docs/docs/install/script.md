@@ -25,5 +25,5 @@ The web application will be available at `http://<machine-ip-address>:2283`, and
 The directory which is used to store the library files is `./immich-data` relative to the current directory.
 
 :::tip
-For common next steps, see [Post Install Steps](/docs/install/post-install.md).
+For common next steps, see [Post Install Steps](/docs/install/post-install.mdx).
 :::
