@@ -28,6 +28,19 @@ const config = {
     locales: ["en"],
   },
 
+  plugins: [
+    async function myPlugin(context, options) {
+      return {
+        name: "docusaurus-tailwindcss",
+        configurePostCss(postcssOptions) {
+          // Appends TailwindCSS and AutoPrefixer.
+          postcssOptions.plugins.push(require("tailwindcss"));
+          postcssOptions.plugins.push(require("autoprefixer"));
+          return postcssOptions;
+        },
+      };
+    },
+  ],
   presets: [
     [
       "docusaurus-preset-openapi",
@@ -44,7 +57,7 @@ const config = {
         },
         api: {
           path: "../server/immich-openapi-specs.json",
-          routeBasePath: "/docs/api"
+          routeBasePath: "/docs/api",
         },
         // blog: {
         //   showReadingTime: true,
@@ -60,6 +73,9 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      colorMode: {
+        defaultMode: "dark",
+      },
       announcementBar: {
         id: "site_announcement_immich",
         content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
@@ -82,14 +98,18 @@ const config = {
           {
             to: "/docs/overview/introduction",
             position: "right",
-            label: "Documentation",
+            label: "Docs",
           },
           {
             to: "/docs/api",
             position: "right",
-            label: "API"
+            label: "API",
           },
-          { to: "/blog", label: "Blog", position: "right" },
+          {
+            to: "/blog",
+            position: "right",
+            label: "Blog",
+          },
           {
             href: "https://github.com/immich-app/immich",
             label: "GitHub",
@@ -109,7 +129,7 @@ const config = {
               },
               {
                 label: "Installation",
-                to: "/docs/installation/requirements",
+                to: "/docs/install/requirements",
               },
             ],
           },
@@ -142,6 +162,7 @@ const config = {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
+      image: "overview/img/feature-panel.png",
     }),
 };
 

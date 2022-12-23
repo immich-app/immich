@@ -11,9 +11,11 @@ import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
+import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
@@ -86,6 +88,20 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     }
 
+    void handleDelete(Asset deleteAsset) {
+      showDialog(
+        context: context,
+        builder: (BuildContext _) {
+          return DeleteDialog(
+            onDelete: () {
+              ref.watch(assetProvider.notifier).deleteAssets({deleteAsset});
+              AutoRouter.of(context).pop(null);
+            },
+          );
+        },
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: TopControlAppBar(
@@ -110,6 +126,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         onToggleMotionVideo: (() {
           isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
         }),
+        onDeletePressed: () => handleDelete((assetList[indexOfAsset.value])),
       ),
       body: SafeArea(
         child: PageView.builder(

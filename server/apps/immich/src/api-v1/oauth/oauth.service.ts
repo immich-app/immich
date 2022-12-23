@@ -1,6 +1,6 @@
 import { ImmichConfigService } from '@app/immich-config';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { ClientMetadata, generators, Issuer, UserinfoResponse } from 'openid-client';
+import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
@@ -25,6 +25,10 @@ export class OAuthService {
     @Inject(USER_REPOSITORY) userRepository: IUserRepository,
   ) {
     this.userCore = new UserCore(userRepository);
+
+    custom.setHttpOptionsDefaults({
+      timeout: 30000,
+    });
   }
 
   public async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {

@@ -21,6 +21,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+
 	import { assetStore } from '$lib/stores/assets.store';
 
 	export let asset: AssetResponseDto;
@@ -98,11 +99,24 @@
 		downloadFile(asset.id, false);
 	};
 
+	/**
+	 * Get the filename of the asset based on the user defined template
+	 */
+	const getTemplateFilename = () => {
+		const filenameWithExtension = asset.originalPath.split('/').pop() as string;
+		const filenameWithoutExtension = filenameWithExtension.split('.')[0];
+		return {
+			filenameWithExtension,
+			filenameWithoutExtension
+		};
+	};
+
 	const downloadFile = async (assetId: string, isLivePhoto: boolean) => {
 		try {
-			const imageName = asset.exifInfo?.imageName ? asset.exifInfo?.imageName : asset.id;
+			const { filenameWithoutExtension } = getTemplateFilename();
+
 			const imageExtension = isLivePhoto ? 'mov' : asset.originalPath.split('.')[1];
-			const imageFileName = imageName + '.' + imageExtension;
+			const imageFileName = filenameWithoutExtension + '.' + imageExtension;
 
 			// If assets is already download -> return;
 			if ($downloadAssets[imageFileName]) {
