@@ -30,6 +30,14 @@ export class UserCore {
       throw new ForbiddenException('You are not allowed to update this user');
     }
 
+    // TODO: can this happen? If so we should implement a test case, otherwise remove it (also from DTO)
+    if (userToUpdate.isAdmin) {
+      const adminUser = await this.userRepository.getAdmin();
+      if (adminUser && adminUser.id !== userToUpdate.id) {
+        throw new BadRequestException('Admin user exists');
+      }
+    }
+
     try {
       const payload: Partial<UserEntity> = { ...data };
       if (payload.password) {

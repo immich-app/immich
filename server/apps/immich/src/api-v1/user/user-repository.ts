@@ -1,5 +1,5 @@
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 
@@ -27,15 +27,15 @@ export class UserRepository implements IUserRepository {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  public async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
+  async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { id: userId }, withDeleted: withDeleted });
   }
 
-  public async getAdmin(): Promise<UserEntity | null> {
+  async getAdmin(): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { isAdmin: true } });
   }
 
-  public async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
+  async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
     let builder = this.userRepository.createQueryBuilder('user').where({ email });
 
     if (withPassword) {
@@ -45,11 +45,11 @@ export class UserRepository implements IUserRepository {
     return builder.getOne();
   }
 
-  public async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
+  async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { oauthId } });
   }
 
-  public async getList({ excludeId }: UserListFilter = {}): Promise<UserEntity[]> {
+  async getList({ excludeId }: UserListFilter = {}): Promise<UserEntity[]> {
     if (!excludeId) {
       return this.userRepository.find(); // TODO: this should also be ordered the same as below
     }
@@ -62,35 +62,29 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  public async create(user: Partial<UserEntity>): Promise<UserEntity> {
+  async create(user: Partial<UserEntity>): Promise<UserEntity> {
     return this.userRepository.save(user);
   }
 
-  public async update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
+  async update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
     user.id = id;
 
-    // TODO: can this happen? If so we can move it to the service, otherwise remove it (also from DTO)
-    if (user.isAdmin) {
-      const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
-
-      if (adminUser && adminUser.id !== id) {
-        throw new BadRequestException('Admin user exists');
-      }
-
-      user.isAdmin = true;
+    await this.userRepository.save(user);
+    const updatedUser = await this.get(id);
+    if (!updatedUser) {
+      throw new InternalServerErrorException('Cannot reload user after update');
     }
-
-    return this.userRepository.save(user);
+    return updatedUser;
   }
 
-  public async delete(user: UserEntity): Promise<UserEntity> {
+  async delete(user: UserEntity): Promise<UserEntity> {
     if (user.isAdmin) {
       throw new BadRequestException('Cannot delete admin user! stay sane!');
     }
     return this.userRepository.softRemove(user);
   }
 
-  public async restore(user: UserEntity): Promise<UserEntity> {
+  async restore(user: UserEntity): Promise<UserEntity> {
     return this.userRepository.recover(user);
   }
 }
