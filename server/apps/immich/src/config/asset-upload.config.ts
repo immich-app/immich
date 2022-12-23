@@ -1,5 +1,5 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { randomUUID } from 'crypto';
 import { Request } from 'express';
@@ -8,6 +8,8 @@ import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import sanitize from 'sanitize-filename';
 import { patchFormData } from '../utils/path-form-data.util';
+
+const logger = new Logger('AssetUploadConfig');
 
 export const assetUploadOption: MulterOptions = {
   fileFilter,
@@ -30,6 +32,7 @@ function fileFilter(req: Request, file: any, cb: any) {
   ) {
     cb(null, true);
   } else {
+    logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
     cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
   }
 }
