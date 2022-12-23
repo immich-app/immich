@@ -1,5 +1,5 @@
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 
@@ -78,9 +78,6 @@ export class UserRepository implements IUserRepository {
   }
 
   async delete(user: UserEntity): Promise<UserEntity> {
-    if (user.isAdmin) {
-      throw new BadRequestException('Cannot delete admin user! stay sane!');
-    }
     return this.userRepository.softRemove(user);
   }
 
