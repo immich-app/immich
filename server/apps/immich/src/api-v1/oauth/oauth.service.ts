@@ -1,9 +1,11 @@
 import { ImmichConfigService } from '@app/immich-config';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';
+import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
 import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
+import { UserCore } from '../user/user.core';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
 import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto';
@@ -14,13 +16,16 @@ type OAuthProfile = UserinfoResponse & {
 
 @Injectable()
 export class OAuthService {
+  private readonly userCore: UserCore;
   private readonly logger = new Logger(OAuthService.name);
 
   constructor(
     private immichJwtService: ImmichJwtService,
     private immichConfigService: ImmichConfigService,
-    @Inject(USER_REPOSITORY) private userRepository: IUserRepository,
+    @Inject(USER_REPOSITORY) userRepository: IUserRepository,
   ) {
+    this.userCore = new UserCore(userRepository);
+
     custom.setHttpOptionsDefaults({
       timeout: 30000,
     });
@@ -42,7 +47,7 @@ export class OAuthService {
     return { enabled: true, buttonText, url };
   }
 
-  public async callback(dto: OAuthCallbackDto): Promise<LoginResponseDto> {
+  public async callback(authUser: AuthUserDto, dto: OAuthCallbackDto): Promise<LoginResponseDto> {
     const redirectUri = dto.url.split('?')[0];
     const client = await this.getClient();
     const params = client.callbackParams(dto.url);
@@ -50,13 +55,13 @@ export class OAuthService {
     const profile = await client.userinfo<OAuthProfile>(tokens.access_token || '');
 
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
-    let user = await this.userRepository.getByOAuthId(profile.sub);
+    let user = await this.userCore.getByOAuthId(profile.sub);
 
     // link existing user
     if (!user) {
-      const emailUser = await this.userRepository.getByEmail(profile.email);
+      const emailUser = await this.userCore.getByEmail(profile.email);
       if (emailUser) {
-        user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
+        user = await this.userCore.updateUser(authUser, emailUser, { oauthId: profile.sub });
       }
     }
 
@@ -72,7 +77,7 @@ export class OAuthService {
       }
 
       this.logger.log(`Registering new user: ${profile.email}/${profile.sub}`);
-      user = await this.userRepository.create({
+      user = await this.userCore.createUser({
         firstName: profile.given_name || '',
         lastName: profile.family_name || '',
         email: profile.email,

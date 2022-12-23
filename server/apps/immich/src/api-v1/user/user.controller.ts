@@ -12,6 +12,7 @@ import {
   UploadedFile,
   Response,
   ParseBoolPipe,
+  StreamableFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Authenticated } from '../../decorators/authenticated.decorator';
@@ -111,6 +112,10 @@ export class UserController {
 
   @Get('/profile-image/:userId')
   async getProfileImage(@Param('userId') userId: string, @Response({ passthrough: true }) res: Res): Promise<any> {
-    return this.userService.getUserProfileImage(userId, res);
+    const readableStream = await this.userService.getUserProfileImage(userId);
+    res.set({
+      'Content-Type': 'image/jpeg',
+    });
+    return new StreamableFile(readableStream);
   }
 }
