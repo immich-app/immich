@@ -1,7 +1,6 @@
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException } from '@nestjs/common';
+import { InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
 import { Not, Repository } from 'typeorm';
 
 export interface IUserRepository {
@@ -9,11 +8,15 @@ export interface IUserRepository {
   getAdmin(): Promise<UserEntity | null>;
   getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null>;
   getByOAuthId(oauthId: string): Promise<UserEntity | null>;
-  getList(filter?: { excludeId?: string }): Promise<UserEntity[]>;
+  getList(filter?: UserListFilter): Promise<UserEntity[]>;
   create(user: Partial<UserEntity>): Promise<UserEntity>;
   update(id: string, user: Partial<UserEntity>): Promise<UserEntity>;
   delete(user: UserEntity): Promise<UserEntity>;
   restore(user: UserEntity): Promise<UserEntity>;
+}
+
+export interface UserListFilter {
+  excludeId?: string;
 }
 
 export const USER_REPOSITORY = 'USER_REPOSITORY';
@@ -24,15 +27,15 @@ export class UserRepository implements IUserRepository {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  public async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
+  async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { id: userId }, withDeleted: withDeleted });
   }
 
-  public async getAdmin(): Promise<UserEntity | null> {
+  async getAdmin(): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { isAdmin: true } });
   }
 
-  public async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
+  async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
     let builder = this.userRepository.createQueryBuilder('user').where({ email });
 
     if (withPassword) {
@@ -42,11 +45,11 @@ export class UserRepository implements IUserRepository {
     return builder.getOne();
   }
 
-  public async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
+  async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { oauthId } });
   }
 
-  public async getList({ excludeId }: { excludeId?: string } = {}): Promise<UserEntity[]> {
+  async getList({ excludeId }: UserListFilter = {}): Promise<UserEntity[]> {
     if (!excludeId) {
       return this.userRepository.find(); // TODO: this should also be ordered the same as below
     }
@@ -59,55 +62,26 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  public async create(user: Partial<UserEntity>): Promise<UserEntity> {
-    const localAdmin = await this.getAdmin();
-    if (!localAdmin && !user.isAdmin) {
-      throw new BadRequestException('The first registered account must the administrator.');
-    }
-
-    if (user.password) {
-      user.salt = await bcrypt.genSalt();
-      user.password = await this.hashPassword(user.password, user.salt);
-    }
-
+  async create(user: Partial<UserEntity>): Promise<UserEntity> {
     return this.userRepository.save(user);
   }
 
-  public async update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
+  async update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
     user.id = id;
 
-    // If payload includes password - Create new password for user
-    if (user.password) {
-      user.salt = await bcrypt.genSalt();
-      user.password = await this.hashPassword(user.password, user.salt);
+    await this.userRepository.save(user);
+    const updatedUser = await this.get(id);
+    if (!updatedUser) {
+      throw new InternalServerErrorException('Cannot reload user after update');
     }
-
-    // TODO: can this happen? If so we can move it to the service, otherwise remove it (also from DTO)
-    if (user.isAdmin) {
-      const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
-
-      if (adminUser && adminUser.id !== id) {
-        throw new BadRequestException('Admin user exists');
-      }
-
-      user.isAdmin = true;
-    }
-
-    return this.userRepository.save(user);
+    return updatedUser;
   }
 
-  public async delete(user: UserEntity): Promise<UserEntity> {
-    if (user.isAdmin) {
-      throw new BadRequestException('Cannot delete admin user! stay sane!');
-    }
+  async delete(user: UserEntity): Promise<UserEntity> {
     return this.userRepository.softRemove(user);
   }
 
-  public async restore(user: UserEntity): Promise<UserEntity> {
+  async restore(user: UserEntity): Promise<UserEntity> {
     return this.userRepository.recover(user);
-  }
-
-  private async hashPassword(password: string, salt: string): Promise<string> {
-    return bcrypt.hash(password, salt);
   }
 }

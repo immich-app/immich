@@ -19,17 +19,22 @@ import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/a
 import { LoginResponseDto } from './response-dto/login-response.dto';
 import { LogoutResponseDto } from './response-dto/logout-response.dto';
 import { OAuthService } from '../oauth/oauth.service';
+import { UserCore } from '../user/user.core';
 
 @Injectable()
 export class AuthService {
+  private userCore: UserCore;
+
   constructor(
     private oauthService: OAuthService,
     private immichJwtService: ImmichJwtService,
-    @Inject(USER_REPOSITORY) private userRepository: IUserRepository,
-  ) {}
+    @Inject(USER_REPOSITORY) userRepository: IUserRepository,
+  ) {
+    this.userCore = new UserCore(userRepository);
+  }
 
   public async login(loginCredential: LoginCredentialDto, clientIp: string): Promise<LoginResponseDto> {
-    let user = await this.userRepository.getByEmail(loginCredential.email, true);
+    let user = await this.userCore.getByEmail(loginCredential.email, true);
 
     if (user) {
       const isAuthenticated = await this.validatePassword(loginCredential.password, user);
@@ -59,7 +64,7 @@ export class AuthService {
 
   public async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
     const { password, newPassword } = dto;
-    const user = await this.userRepository.getByEmail(authUser.email, true);
+    const user = await this.userCore.getByEmail(authUser.email, true);
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -71,18 +76,18 @@ export class AuthService {
 
     user.password = newPassword;
 
-    return this.userRepository.update(user.id, user);
+    return this.userCore.updateUser(authUser, user, dto);
   }
 
   public async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {
-    const adminUser = await this.userRepository.getAdmin();
+    const adminUser = await this.userCore.getAdmin();
 
     if (adminUser) {
       throw new BadRequestException('The server already has an admin');
     }
 
     try {
-      const admin = await this.userRepository.create({
+      const admin = await this.userCore.createUser({
         isAdmin: true,
         email: dto.email,
         firstName: dto.firstName,

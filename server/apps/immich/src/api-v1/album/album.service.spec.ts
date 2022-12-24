@@ -17,6 +17,7 @@ describe('Album service', () => {
   const authUser: AuthUserDto = Object.freeze({
     id: '1111',
     email: 'auth@test.com',
+    isAdmin: false,
   });
   const albumId = 'f19ab956-4761-41ea-a5d6-bae948308d58';
   const sharedAlbumOwnerId = '2222';
@@ -400,7 +401,7 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
-    expect(
+    await expect(
       sut.addAssetsToAlbum(
         authUser,
         {
@@ -464,7 +465,7 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
-    expect(
+    await expect(
       sut.removeAssetsFromAlbum(
         authUser,
         {

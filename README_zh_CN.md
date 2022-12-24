@@ -38,8 +38,8 @@
 - [示例](#示例)
 - [功能特性](#功能特性)
 - [介绍](https://immich.app/docs/overview/introduction)
-- [安装](https://immich.app/docs/installation/requirements)
-- [贡献指南](https://immich.app/docs/contribution-guidelines)
+- [安装](https://immich.app/docs/install/requirements)
+- [贡献指南](https://immich.app/docs/overview/support-the-project)
 - [支持本项目](#support-the-project)
 - [已知问题](#known-issues)
 

@@ -27,6 +27,7 @@ describe('AssetService', () => {
   const authUser: AuthUserDto = Object.freeze({
     id: 'user_id_1',
     email: 'auth@test.com',
+    isAdmin: false,
   });
 
   const _getCreateAssetDto = (): CreateAssetDto => {

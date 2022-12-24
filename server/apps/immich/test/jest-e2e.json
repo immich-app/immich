@@ -7,8 +7,15 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    "@app/common/(.*)": "<rootDir>../../../libs/common/src/$1",
+    "^@app/database(|/.*)$": "<rootDir>../../../libs/database/src/$1",
+    "@app/database/config": "<rootDir>../../../libs/database/src/config",
     "@app/database/config/(.*)": "<rootDir>../../../libs/database/src/config/$1",
-    "@app/database/entities/(.*)": "<rootDir>../../../libs/database/src/entities/$1"
+    "@app/database/entities/(.*)": "<rootDir>../../../libs/database/src/entities/$1",
+    "@app/common": "<rootDir>../../../libs/common/src",
+    "@app/common/(.*)": "<rootDir>../../../libs/common/src/$1",
+    "^@app/job(|/.*)$": "<rootDir>../../../libs/job/src/$1",
+    "@app/job": "<rootDir>../../../libs/job/src",
+    "^@app/immich-config(|/.*)$": "<rootDir>../../../libs/immich-config/src/$1",
+    "^@app/storage(|/.*)$": "<rootDir>../../../libs/storage/src/$1"
   }
 }

@@ -3,6 +3,7 @@ import { UserEntity } from '@app/database/entities/user.entity';
 import { ImmichConfigService } from '@app/immich-config';
 import { BadRequestException } from '@nestjs/common';
 import { generators, Issuer } from 'openid-client';
+import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
 import { OAuthService } from '../oauth/oauth.service';
@@ -12,12 +13,18 @@ const email = 'user@immich.com';
 const sub = 'my-auth-user-sub';
 
 const user = {
-  id: 'user',
+  id: 'user_id',
   email,
   firstName: 'user',
   lastName: 'imimch',
   oauthId: '',
 } as UserEntity;
+
+const authUser: AuthUserDto = {
+  id: 'user_id',
+  email,
+  isAdmin: true,
+};
 
 const loginResponse = {
   accessToken: 'access-token',
@@ -104,7 +111,7 @@ describe('OAuthService', () => {
 
   describe('callback', () => {
     it('should throw an error if OAuth is not enabled', async () => {
-      await expect(sut.callback({ url: '' })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.callback(authUser, { url: '' })).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should not allow auto registering', async () => {
@@ -118,7 +125,7 @@ describe('OAuthService', () => {
       jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
       jest.spyOn(sut['logger'], 'warn').mockImplementation(() => null);
       userRepositoryMock.getByEmail.mockResolvedValue(null);
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' })).rejects.toBeInstanceOf(
+      await expect(sut.callback(authUser, { url: 'http://immich/auth/login?code=abc123' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
@@ -138,7 +145,9 @@ describe('OAuthService', () => {
       userRepositoryMock.update.mockResolvedValue(user);
       immichJwtServiceMock.createLoginResponse.mockResolvedValue(loginResponse);
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(loginResponse);
+      await expect(sut.callback(authUser, { url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(
+        loginResponse,
+      );
 
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
       expect(userRepositoryMock.update).toHaveBeenCalledWith(user.id, { oauthId: sub });
@@ -155,12 +164,15 @@ describe('OAuthService', () => {
       jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
       jest.spyOn(sut['logger'], 'log').mockImplementation(() => null);
       userRepositoryMock.getByEmail.mockResolvedValue(null);
+      userRepositoryMock.getAdmin.mockResolvedValue(user);
       userRepositoryMock.create.mockResolvedValue(user);
       immichJwtServiceMock.createLoginResponse.mockResolvedValue(loginResponse);
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(loginResponse);
+      await expect(sut.callback(authUser, { url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(
+        loginResponse,
+      );
 
-      expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
+      expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(2); // second call is for domain check before create
       expect(userRepositoryMock.create).toHaveBeenCalledTimes(1);
       expect(immichJwtServiceMock.createLoginResponse).toHaveBeenCalledTimes(1);
     });

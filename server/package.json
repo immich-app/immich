@@ -61,6 +61,7 @@
     "geo-tz": "^7.0.2",
     "handlebars": "^4.7.7",
     "i18n-iso-countries": "^7.5.0",
+    "jest-when": "^3.5.2",
     "joi": "^17.5.0",
     "local-reverse-geocoder": "^0.12.5",
     "lodash": "^4.17.21",
@@ -96,6 +97,7 @@
     "@types/fluent-ffmpeg": "^2.1.20",
     "@types/imagemin": "^8.0.0",
     "@types/jest": "27.0.2",
+    "@types/jest-when": "^3.5.2",
     "@types/lodash": "^4.14.178",
     "@types/multer": "^1.4.7",
     "@types/mv": "^2.1.2",
@@ -145,6 +147,7 @@
       "@app/database/config": "<rootDir>/libs/database/src/config",
       "@app/common": "<rootDir>/libs/common/src",
       "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1",
+      "@app/job": "<rootDir>/libs/job/src",
       "^@app/immich-config(|/.*)$": "<rootDir>/libs/immich-config/src/$1",
       "^@app/storage(|/.*)$": "<rootDir>/libs/storage/src/$1"
     }
