@@ -74,9 +74,7 @@ export class AuthService {
       throw new BadRequestException('Wrong password');
     }
 
-    user.password = newPassword;
-
-    return this.userCore.updateUser(authUser, user, dto);
+    return this.userCore.updateUser(authUser, authUser.id, { password: newPassword });
   }
 
   public async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {

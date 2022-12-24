@@ -65,12 +65,12 @@ export class UserService {
     return mapUser(createdUser);
   }
 
-  async updateUser(authUser: AuthUserDto, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
-    const user = await this.userCore.get(updateUserDto.id);
+  async updateUser(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {
+    const user = await this.userCore.get(dto.id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const updatedUser = await this.userCore.updateUser(authUser, user, updateUserDto);
+    const updatedUser = await this.userCore.updateUser(authUser, dto.id, dto);
     return mapUser(updatedUser);
   }
 

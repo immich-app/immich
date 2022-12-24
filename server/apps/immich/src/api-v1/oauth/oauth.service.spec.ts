@@ -111,7 +111,7 @@ describe('OAuthService', () => {
 
   describe('callback', () => {
     it('should throw an error if OAuth is not enabled', async () => {
-      await expect(sut.callback(authUser, { url: '' })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.login({ url: '' })).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should not allow auto registering', async () => {
@@ -125,7 +125,7 @@ describe('OAuthService', () => {
       jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
       jest.spyOn(sut['logger'], 'warn').mockImplementation(() => null);
       userRepositoryMock.getByEmail.mockResolvedValue(null);
-      await expect(sut.callback(authUser, { url: 'http://immich/auth/login?code=abc123' })).rejects.toBeInstanceOf(
+      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
@@ -145,9 +145,7 @@ describe('OAuthService', () => {
       userRepositoryMock.update.mockResolvedValue(user);
       immichJwtServiceMock.createLoginResponse.mockResolvedValue(loginResponse);
 
-      await expect(sut.callback(authUser, { url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(
-        loginResponse,
-      );
+      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(loginResponse);
 
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
       expect(userRepositoryMock.update).toHaveBeenCalledWith(user.id, { oauthId: sub });
@@ -168,9 +166,7 @@ describe('OAuthService', () => {
       userRepositoryMock.create.mockResolvedValue(user);
       immichJwtServiceMock.createLoginResponse.mockResolvedValue(loginResponse);
 
-      await expect(sut.callback(authUser, { url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(
-        loginResponse,
-      );
+      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(loginResponse);
 
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(2); // second call is for domain check before create
       expect(userRepositoryMock.create).toHaveBeenCalledTimes(1);

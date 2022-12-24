@@ -25,27 +25,22 @@ export class UserCore {
     return hash(password, salt);
   }
 
-  async updateUser(authUser: AuthUserDto, userToUpdate: UserEntity, data: Partial<UserEntity>): Promise<UserEntity> {
-    if (!authUser.isAdmin && (authUser.id !== userToUpdate.id || userToUpdate.id != data.id)) {
+  async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
+    if (!(authUser.isAdmin || authUser.id === id)) {
       throw new ForbiddenException('You are not allowed to update this user');
     }
 
-    // TODO: can this happen? If so we should implement a test case, otherwise remove it (also from DTO)
-    if (userToUpdate.isAdmin) {
-      const adminUser = await this.userRepository.getAdmin();
-      if (adminUser && adminUser.id !== userToUpdate.id) {
-        throw new BadRequestException('Admin user exists');
-      }
+    if (dto.isAdmin && authUser.isAdmin && authUser.id !== id) {
+      throw new BadRequestException('Admin user exists');
     }
 
     try {
-      const payload: Partial<UserEntity> = { ...data };
-      if (payload.password) {
+      if (dto.password) {
         const salt = await this.generateSalt();
-        payload.salt = salt;
-        payload.password = await this.hashPassword(payload.password, salt);
+        dto.salt = salt;
+        dto.password = await this.hashPassword(dto.password, salt);
       }
-      return this.userRepository.update(userToUpdate.id, payload);
+      return this.userRepository.update(id, dto);
     } catch (e) {
       Logger.error(e, 'Failed to update user info');
       throw new InternalServerErrorException('Failed to update user info');

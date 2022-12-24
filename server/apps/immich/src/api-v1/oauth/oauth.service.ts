@@ -59,7 +59,7 @@ export class OAuthService {
     if (!user) {
       const emailUser = await this.userCore.getByEmail(profile.email);
       if (emailUser) {
-        user = await this.userCore.updateUser(emailUser, emailUser, { oauthId: profile.sub });
+        user = await this.userCore.updateUser(emailUser, emailUser.id, { oauthId: profile.sub });
       }
     }
 
@@ -88,11 +88,11 @@ export class OAuthService {
 
   public async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
     const profile = await this.callback(dto.url);
-    return this.userCore.updateUser(user, user as UserEntity, { oauthId: profile.sub });
+    return this.userCore.updateUser(user, user.id, { oauthId: profile.sub });
   }
 
   public async unlink(user: AuthUserDto): Promise<UserResponseDto> {
-    return this.userCore.updateUser(user, user as UserEntity, { oauthId: '' });
+    return this.userCore.updateUser(user, user.id, { oauthId: '' });
   }
 
   public async getLogoutEndpoint(): Promise<string | null> {
