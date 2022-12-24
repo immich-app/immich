@@ -141,6 +141,25 @@ describe('UserService', () => {
   });
 
   describe('Create user', () => {
+    it('should let the admin update himself', async () => {
+      const dto = { id: adminUser.id, shouldChangePassword: true, isAdmin: true };
+
+      when(userRepositoryMock.get).calledWith(adminUser.id).mockResolvedValueOnce(null);
+      when(userRepositoryMock.update).calledWith(adminUser.id, dto).mockResolvedValueOnce(adminUser);
+
+      await sut.updateUser(adminUser, dto);
+
+      expect(userRepositoryMock.update).toHaveBeenCalledWith(adminUser.id, dto);
+    });
+
+    it('should not let the another user become an admin', async () => {
+      const dto = { id: immichUser.id, shouldChangePassword: true, isAdmin: true };
+
+      when(userRepositoryMock.get).calledWith(immichUser.id).mockResolvedValueOnce(immichUser);
+
+      await expect(sut.updateUser(adminUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+    });
+
     it('should not create a user if there is no local admin account', async () => {
       when(userRepositoryMock.getAdmin).calledWith().mockResolvedValueOnce(null);
 

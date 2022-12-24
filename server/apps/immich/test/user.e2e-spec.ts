@@ -107,6 +107,7 @@ describe('User', () => {
               shouldChangePassword: true,
               profileImagePath: '',
               deletedAt: null,
+              oauthId: '',
             },
             {
               email: userTwoEmail,
@@ -118,6 +119,7 @@ describe('User', () => {
               shouldChangePassword: true,
               profileImagePath: '',
               deletedAt: null,
+              oauthId: '',
             },
           ]),
         );

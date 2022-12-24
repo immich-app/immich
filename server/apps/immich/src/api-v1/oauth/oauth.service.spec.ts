@@ -174,6 +174,40 @@ describe('OAuthService', () => {
     });
   });
 
+  describe('link', () => {
+    it('should link an account', async () => {
+      immichConfigServiceMock.getConfig.mockResolvedValue({
+        oauth: {
+          enabled: true,
+          autoRegister: true,
+        },
+      } as SystemConfig);
+
+      userRepositoryMock.update.mockResolvedValue(user);
+
+      await sut.link(authUser, { url: 'http://immich/user-settings?code=abc123' });
+
+      expect(userRepositoryMock.update).toHaveBeenCalledWith(authUser.id, { oauthId: sub });
+    });
+  });
+
+  describe('unlink', () => {
+    it('should unlink an account', async () => {
+      immichConfigServiceMock.getConfig.mockResolvedValue({
+        oauth: {
+          enabled: true,
+          autoRegister: true,
+        },
+      } as SystemConfig);
+
+      userRepositoryMock.update.mockResolvedValue(user);
+
+      await sut.unlink(authUser);
+
+      expect(userRepositoryMock.update).toHaveBeenCalledWith(authUser.id, { oauthId: '' });
+    });
+  });
+
   describe('getLogoutEndpoint', () => {
     it('should return null if OAuth is not configured', async () => {
       await expect(sut.getLogoutEndpoint()).resolves.toBeNull();
