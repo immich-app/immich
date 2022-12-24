@@ -19,9 +19,8 @@
 			try {
 				loading = true;
 
-				await oauth.link(window.location);
-				//  TODO: bug with user update
-				user = { ...user, oauthId: 'true' };
+				const { data } = await oauth.link(window.location);
+				user = data;
 				goto('?open=oauth');
 
 				notificationController.show({
@@ -51,9 +50,8 @@
 
 	const handleUnlink = async () => {
 		try {
-			await oauth.unlink();
-			//  TODO: bug with user update
-			user = { ...user, oauthId: '' };
+			const { data } = await oauth.unlink();
+			user = data;
 			notificationController.show({
 				message: 'Unlinked OAuth account',
 				type: NotificationType.Info
