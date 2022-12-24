@@ -24,11 +24,10 @@ export class OAuthController {
 
   @Post('/callback')
   public async callback(
-    @GetAuthUser() authUser: AuthUserDto,
     @Res({ passthrough: true }) response: Response,
     @Body(ValidationPipe) dto: OAuthCallbackDto,
   ): Promise<LoginResponseDto> {
-    const loginResponse = await this.oauthService.login(authUser, dto);
+    const loginResponse = await this.oauthService.login(dto);
     response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse, AuthType.OAUTH));
     return loginResponse;
   }

@@ -49,7 +49,7 @@ export class OAuthService {
     return { enabled: true, buttonText, url };
   }
 
-  public async login(authUser: AuthUserDto, dto: OAuthCallbackDto): Promise<LoginResponseDto> {
+  public async login(dto: OAuthCallbackDto): Promise<LoginResponseDto> {
     const profile = await this.callback(dto.url);
 
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
@@ -59,7 +59,7 @@ export class OAuthService {
     if (!user) {
       const emailUser = await this.userCore.getByEmail(profile.email);
       if (emailUser) {
-        user = await this.userCore.updateUser(authUser, emailUser, { oauthId: profile.sub });
+        user = await this.userCore.updateUser(emailUser, emailUser, { oauthId: profile.sub });
       }
     }
 
