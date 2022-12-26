@@ -34,32 +34,7 @@ class RenderAssetGridElement {
   });
 }
 
-List<RenderAssetGridElement> assetsToRenderList(
-  List<Asset> assets,
-  int assetsPerRow,
-) {
-  List<RenderAssetGridElement> elements = [];
-
-  int cursor = 0;
-  while (cursor < assets.length) {
-    int rowElements = min(assets.length - cursor, assetsPerRow);
-    final date = assets[cursor].createdAt;
-
-    final rowElement = RenderAssetGridElement(
-      RenderAssetGridElementType.assetRow,
-      date: date,
-      assetRow: RenderAssetGridRow(
-        assets.sublist(cursor, cursor + rowElements),
-      ),
-    );
-
-    elements.add(rowElement);
-    cursor += rowElements;
-  }
-
-  return elements;
-}
-
+/// Converts assets grouped by date to the data model required by Immich's custom asset grid implementation.
 List<RenderAssetGridElement> assetGroupsToRenderList(
   Map<String, List<Asset>> assetGroups,
   int assetsPerRow,
@@ -73,7 +48,6 @@ List<RenderAssetGridElement> assetGroupsToRenderList(
 
   assetGroups.forEach((groupName, assets) {
     try {
-
       final date = DateTime.parse(groupName);
 
       if (lastDate == null || lastDate!.month != date.month) {
@@ -99,9 +73,8 @@ List<RenderAssetGridElement> assetGroupsToRenderList(
       // Add group title
       var currentYear = DateTime.now().year;
       var groupYear = DateTime.parse(groupName).year;
-      var formatDate = currentYear == groupYear
-          ? dayFormatSameYear
-          : dayFormatOtherYear;
+      var formatDate =
+          currentYear == groupYear ? dayFormatSameYear : dayFormatOtherYear;
 
       var dateText = groupName;
 

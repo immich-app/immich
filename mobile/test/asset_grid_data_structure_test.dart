@@ -54,52 +54,6 @@ void main() {
     }).toList()
   };
 
-  group('Asset only list', () {
-    test('items < itemsPerRow', () {
-      final assets = testAssets.sublist(0, 2);
-      final renderList = assetsToRenderList(assets, 3);
-
-      expect(renderList.length, 1);
-      expect(renderList[0].assetRow!.assets.length, 2);
-    });
-
-    test('items = itemsPerRow', () {
-      final assets = testAssets.sublist(0, 3);
-      final renderList = assetsToRenderList(assets, 3);
-
-      expect(renderList.length, 1);
-      expect(renderList[0].assetRow!.assets.length, 3);
-    });
-
-    test('items > itemsPerRow', () {
-      final assets = testAssets.sublist(0, 20);
-      final renderList = assetsToRenderList(assets, 3);
-
-      expect(renderList.length, 7);
-      expect(renderList[6].assetRow!.assets.length, 2);
-    });
-
-    test('items > itemsPerRow partition 4', () {
-      final assets = testAssets.sublist(0, 21);
-      final renderList = assetsToRenderList(assets, 4);
-
-      expect(renderList.length, 6);
-      expect(renderList[5].assetRow!.assets.length, 1);
-    });
-
-    test('items > itemsPerRow check ids', () {
-      final assets = testAssets.sublist(0, 21);
-      final renderList = assetsToRenderList(assets, 3);
-
-      expect(renderList.length, 7);
-      expect(renderList[6].assetRow!.assets.length, 3);
-      expect(renderList[0].assetRow!.assets[0].id, '0');
-      expect(renderList[1].assetRow!.assets[1].id, '4');
-      expect(renderList[3].assetRow!.assets[2].id, '11');
-      expect(renderList[6].assetRow!.assets[2].id, '20');
-    });
-  });
-
   group('Test grouped', () {
     test('test grouped check months', () {
       final renderList = assetGroupsToRenderList(groups, 3);
