@@ -1,11 +1,10 @@
 import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { OAuthService } from '../oauth/oauth.service';
-import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
+import { IUserRepository } from '../user/user-repository';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { LoginResponseDto } from './response-dto/login-response.dto';
@@ -20,6 +19,17 @@ const fixtures = {
 const CLIENT_IP = '127.0.0.1';
 
 jest.mock('bcrypt');
+jest.mock('@nestjs/common', () => ({
+  ...jest.requireActual('@nestjs/common'),
+  Logger: jest.fn().mockReturnValue({
+    verbose: jest.fn(),
+    debug: jest.fn(),
+    log: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  }),
+}));
 
 describe('AuthService', () => {
   let sut: AuthService;
@@ -61,19 +71,7 @@ describe('AuthService', () => {
       getLogoutEndpoint: jest.fn(),
     } as unknown as jest.Mocked<OAuthService>;
 
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        AuthService,
-        { provide: ImmichJwtService, useValue: immichJwtServiceMock },
-        { provide: OAuthService, useValue: oauthServiceMock },
-        {
-          provide: USER_REPOSITORY,
-          useValue: userRepositoryMock,
-        },
-      ],
-    }).compile();
-
-    sut = moduleRef.get(AuthService);
+    sut = new AuthService(oauthServiceMock, immichJwtServiceMock, userRepositoryMock);
   });
 
   it('should be defined', () => {
@@ -101,6 +99,62 @@ describe('AuthService', () => {
       await expect(sut.login(fixtures.login, CLIENT_IP)).resolves.toEqual(dto);
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
       expect(immichJwtServiceMock.createLoginResponse).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('changePassword', () => {
+    it('should change the password', async () => {
+      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      compare.mockResolvedValue(true);
+
+      userRepositoryMock.getByEmail.mockResolvedValue({
+        email: 'test@immich.com',
+        password: 'hash-password',
+      } as UserEntity);
+
+      await sut.changePassword(authUser, dto);
+
+      expect(userRepositoryMock.getByEmail).toHaveBeenCalledWith(authUser.email, true);
+      expect(compare).toHaveBeenCalledWith('old-password', 'hash-password');
+    });
+
+    it('should throw when auth user email is not found', async () => {
+      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      userRepositoryMock.getByEmail.mockResolvedValue(null);
+
+      await expect(sut.changePassword(authUser, dto)).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should throw when password does not match existing password', async () => {
+      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      compare.mockResolvedValue(false);
+
+      userRepositoryMock.getByEmail.mockResolvedValue({
+        email: 'test@immich.com',
+        password: 'hash-password',
+      } as UserEntity);
+
+      await expect(sut.changePassword(authUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should throw when user does not have a password', async () => {
+      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      compare.mockResolvedValue(false);
+
+      userRepositoryMock.getByEmail.mockResolvedValue({
+        email: 'test@immich.com',
+        password: '',
+      } as UserEntity);
+
+      await expect(sut.changePassword(authUser, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 

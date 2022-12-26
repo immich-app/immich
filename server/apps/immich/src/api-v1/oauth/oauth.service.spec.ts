@@ -1,7 +1,7 @@
 import { SystemConfig } from '@app/database/entities/system-config.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { ImmichConfigService } from '@app/immich-config';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { generators, Issuer } from 'openid-client';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
@@ -32,20 +32,17 @@ const loginResponse = {
   userEmail: 'user@immich.com,',
 } as LoginResponseDto;
 
-jest.mock('@nestjs/common', () => {
-  return {
-    ...jest.requireActual('@nestjs/common'),
-    Logger: function MockLogger() {
-      Object.assign(this as Logger, {
-        verbose: jest.fn(),
-        debug: jest.fn(),
-        log: jest.fn(),
-        warn: jest.fn(),
-        error: jest.fn(),
-      });
-    },
-  };
-});
+jest.mock('@nestjs/common', () => ({
+  ...jest.requireActual('@nestjs/common'),
+  Logger: jest.fn().mockReturnValue({
+    verbose: jest.fn(),
+    debug: jest.fn(),
+    log: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  }),
+}));
 
 describe('OAuthService', () => {
   let sut: OAuthService;
