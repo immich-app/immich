@@ -1826,6 +1826,58 @@
         ]
       }
     },
+    "/oauth/link": {
+      "post": {
+        "operationId": "link",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthCallbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
+    "/oauth/unlink": {
+      "post": {
+        "operationId": "unlink",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
     "/device-info": {
       "post": {
         "operationId": "createDeviceInfo",
@@ -2287,6 +2339,9 @@
           "deletedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "oauthId": {
+            "type": "string"
           }
         },
         "required": [
@@ -2297,7 +2352,8 @@
           "createdAt",
           "profileImagePath",
           "shouldChangePassword",
-          "isAdmin"
+          "isAdmin",
+          "oauthId"
         ]
       },
       "CreateUserDto": {

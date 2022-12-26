@@ -1,7 +1,7 @@
 <script lang="ts">
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import { loginPageMessage } from '$lib/constants';
-	import { api, OAuthConfigResponseDto } from '@api';
+	import { api, oauth, OAuthConfigResponseDto } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 
 	let error: string;
@@ -14,11 +14,10 @@
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
-		const search = window.location.search;
-		if (search.includes('code=') || search.includes('error=')) {
+		if (oauth.isCallback(window.location)) {
 			try {
 				loading = true;
-				await api.oauthApi.callback({ url: window.location.href });
+				await oauth.login(window.location);
 				dispatch('success');
 				return;
 			} catch (e) {
@@ -29,9 +28,7 @@
 		}
 
 		try {
-			const redirectUri = window.location.href.split('?')[0];
-			console.log(`OAuth Redirect URI: ${redirectUri}`);
-			const { data } = await api.oauthApi.generateConfig({ redirectUri });
+			const { data } = await oauth.getConfig(window.location);
 			oauthConfig = data;
 		} catch (e) {
 			console.error('Error [login-form] [oauth.generateConfig]', e);

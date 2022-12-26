@@ -22,6 +22,7 @@ class UserResponseDto {
     required this.shouldChangePassword,
     required this.isAdmin,
     this.deletedAt,
+    required this.oauthId,
   });
 
   String id;
@@ -48,6 +49,8 @@ class UserResponseDto {
   ///
   DateTime? deletedAt;
 
+  String oauthId;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
      other.id == id &&
@@ -58,7 +61,8 @@ class UserResponseDto {
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
      other.isAdmin == isAdmin &&
-     other.deletedAt == deletedAt;
+     other.deletedAt == deletedAt &&
+     other.oauthId == oauthId;
 
   @override
   int get hashCode =>
@@ -71,10 +75,11 @@ class UserResponseDto {
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
     (isAdmin.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode);
+    (deletedAt == null ? 0 : deletedAt!.hashCode) +
+    (oauthId.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt]';
+  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt, oauthId=$oauthId]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -91,6 +96,7 @@ class UserResponseDto {
     } else {
       _json[r'deletedAt'] = null;
     }
+      _json[r'oauthId'] = oauthId;
     return _json;
   }
 
@@ -122,6 +128,7 @@ class UserResponseDto {
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         deletedAt: mapDateTime(json, r'deletedAt', ''),
+        oauthId: mapValueOfType<String>(json, r'oauthId')!,
       );
     }
     return null;
@@ -179,6 +186,7 @@ class UserResponseDto {
     'profileImagePath',
     'shouldChangePassword',
     'isAdmin',
+    'oauthId',
   };
 }
 

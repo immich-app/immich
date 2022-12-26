@@ -4,6 +4,7 @@ import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'op
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
+import { UserResponseDto } from '../user/response-dto/user-response.dto';
 import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
 import { UserCore } from '../user/user.core';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
@@ -47,12 +48,8 @@ export class OAuthService {
     return { enabled: true, buttonText, url };
   }
 
-  public async callback(authUser: AuthUserDto, dto: OAuthCallbackDto): Promise<LoginResponseDto> {
-    const redirectUri = dto.url.split('?')[0];
-    const client = await this.getClient();
-    const params = client.callbackParams(dto.url);
-    const tokens = await client.callback(redirectUri, params, { state: params.state });
-    const profile = await client.userinfo<OAuthProfile>(tokens.access_token || '');
+  public async login(dto: OAuthCallbackDto): Promise<LoginResponseDto> {
+    const profile = await this.callback(dto.url);
 
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user = await this.userCore.getByOAuthId(profile.sub);
@@ -61,7 +58,7 @@ export class OAuthService {
     if (!user) {
       const emailUser = await this.userCore.getByEmail(profile.email);
       if (emailUser) {
-        user = await this.userCore.updateUser(authUser, emailUser, { oauthId: profile.sub });
+        user = await this.userCore.updateUser(emailUser, emailUser.id, { oauthId: profile.sub });
       }
     }
 
@@ -88,6 +85,20 @@ export class OAuthService {
     return this.immichJwtService.createLoginResponse(user);
   }
 
+  public async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
+    const { sub: oauthId } = await this.callback(dto.url);
+    const duplicate = await this.userCore.getByOAuthId(oauthId);
+    if (duplicate && duplicate.id !== user.id) {
+      this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
+      throw new BadRequestException('This OAuth account has already been linked to another user.');
+    }
+    return this.userCore.updateUser(user, user.id, { oauthId });
+  }
+
+  public async unlink(user: AuthUserDto): Promise<UserResponseDto> {
+    return this.userCore.updateUser(user, user.id, { oauthId: '' });
+  }
+
   public async getLogoutEndpoint(): Promise<string | null> {
     const config = await this.immichConfigService.getConfig();
     const { enabled } = config.oauth;
@@ -96,6 +107,14 @@ export class OAuthService {
       return null;
     }
     return (await this.getClient()).issuer.metadata.end_session_endpoint || null;
+  }
+
+  private async callback(url: string): Promise<any> {
+    const redirectUri = url.split('?')[0];
+    const client = await this.getClient();
+    const params = client.callbackParams(url);
+    const tokens = await client.callback(redirectUri, params, { state: params.state });
+    return await client.userinfo<OAuthProfile>(tokens.access_token || '');
   }
 
   private async getClient() {
