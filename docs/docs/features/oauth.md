@@ -26,14 +26,33 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 
 The **Sign-in redirect URIs** should include:
 
-- All URLs that will be used to access the login page of the Immich web client (eg. `http://localhost:2283/auth/login`, `http://192.168.0.200:2283/auth/login`, `https://immich.example.com/auth/login`)
-- Mobile app redirect URL `app.immich:/`
+- `app.immich:/` - for logging in with OAuth from the [Mobile App](/docs/features/mobile-app.mdx)
+- `http://DOMAIN:PORT/auth/login` - for logging in with OAuth from the Web Client
+- `http://DOMAIN:PORT/user-settings` - for manually linking OAuth in the Web Client
 
-:::caution
-You **MUST** include `app.immich:/` as the redirect URI for iOS and Android mobile app to work properly.
+:::info Redirect URIs
 
-**Authentik example**
-<img src={require('./img/authentik-redirect.png').default} title="Authentik Redirection URL" width="80%" />
+Redirect URIs should contain all the domains you will be using to access Immich. Some examples include:
+
+Mobile
+
+- `app.immich:/` (You **MUST** include this for iOS and Android mobile apps to work properly)
+
+Localhost
+
+- `http://localhost:2283/auth/login`
+- `http://localhost:2283/user-settings`
+
+Local IP
+
+- `http://192.168.0.200:2283/auth/login`
+- `http://192.168.0.200:2283/user-settings`
+
+Hostname
+
+- `https://immich.example.com/auth/login`)
+- `https://immich.example.com/user-settings`)
+
 :::
 
 ## Enable OAuth
@@ -42,7 +61,7 @@ Once you have a new OAuth client application configured, Immich can be configure
 
 | Setting       | Type    | Default              | Description                                                               |
 | ------------- | ------- | -------------------- | ------------------------------------------------------------------------- |
-| Enabled       | boolean | false                | Enable/disable OAuth                                                     |
+| Enabled       | boolean | false                | Enable/disable OAuth                                                      |
 | Issuer URL    | URL     | (required)           | Required. Self-discovery URL for client (from previous step)              |
 | Client ID     | string  | (required)           | Required. Client ID (from previous step)                                  |
 | Client secret | string  | (required)           | Required. Client Secret (previous step)                                   |
