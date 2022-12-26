@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:logging/logging.dart';
 
@@ -66,25 +67,41 @@ List<RenderAssetGridElement> assetGroupsToRenderList(
   List<RenderAssetGridElement> elements = [];
   DateTime? lastDate;
 
+  final monthFormat = DateFormat("monthly_title_text_date_format".tr());
+  final dayFormatSameYear = DateFormat("daily_title_text_date".tr());
+  final dayFormatOtherYear = DateFormat("daily_title_text_date_year".tr());
+
   assetGroups.forEach((groupName, assets) {
     try {
+
       final date = DateTime.parse(groupName);
 
       if (lastDate == null || lastDate!.month != date.month) {
+        // Month title
+        var monthTitleText =
+          monthFormat.format(DateTime.parse(groupName));
+
         elements.add(
           RenderAssetGridElement(
             RenderAssetGridElementType.monthTitle,
-            title: groupName,
+            title: monthTitleText,
             date: date,
           ),
         );
       }
 
       // Add group title
+      var currentYear = DateTime.now().year;
+      var groupYear = DateTime.parse(groupName).year;
+      var formatDate = currentYear == groupYear
+          ? dayFormatSameYear
+          : dayFormatOtherYear;
+      var dateText = formatDate.format(DateTime.parse(groupName));
+
       elements.add(
         RenderAssetGridElement(
           RenderAssetGridElementType.dayTitle,
-          title: groupName,
+          title: dateText,
           date: date,
           relatedAssetList: assets,
         ),

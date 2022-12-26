@@ -24,22 +24,10 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   bool _scrolling = false;
   final Set<String> _selectedAssets = HashSet();
 
-  List<Asset> get _assets {
-    return widget.renderList
-        .map((e) {
-          if (e.type == RenderAssetGridElementType.assetRow) {
-            return e.assetRow!.assets;
-          } else {
-            return List<Asset>.empty();
-          }
-        })
-        .flattened
-        .toList();
-  }
 
   Set<Asset> _getSelectedAssets() {
     return _selectedAssets
-        .map((e) => _assets.firstWhereOrNull((a) => a.id == e))
+        .map((e) => widget.allAssets.firstWhereOrNull((a) => a.id == e))
         .whereNotNull()
         .toSet();
   }
@@ -95,9 +83,9 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     }
     return ThumbnailImage(
       asset: asset,
-      assetList: _assets,
+      assetList: widget.allAssets,
       multiselectEnabled: widget.selectionActive,
-      isSelected: _selectedAssets.contains(asset.id),
+      isSelected: widget.selectionActive && _selectedAssets.contains(asset.id),
       onSelect: () => _selectAssets([asset]),
       onDeselect: () => _deselectAssets([asset]),
       useGrayBoxPlaceholder: true,
@@ -137,7 +125,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     List<Asset> assets,
   ) {
     return DailyTitleText(
-      isoDate: title,
+      text: title,
       multiselectEnabled: widget.selectionActive,
       onSelect: () => _selectAssets(assets),
       onDeselect: () => _deselectAssets(assets),
@@ -146,14 +134,11 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Widget _buildMonthTitle(BuildContext context, String title) {
-    var monthTitleText = DateFormat("monthly_title_text_date_format".tr())
-        .format(DateTime.parse(title));
-
     return Padding(
       key: Key("month-$title"),
       padding: const EdgeInsets.only(left: 12.0, top: 32),
       child: Text(
-        monthTitleText,
+        title,
         style: TextStyle(
           fontSize: 26,
           fontWeight: FontWeight.bold,
@@ -196,7 +181,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Widget _buildAssetGrid() {
-    final useDragScrolling = _assets.length >= 20;
+    final useDragScrolling = widget.allAssets.length >= 20;
 
     void dragScrolling(bool active) {
       setState(() {
@@ -209,6 +194,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       itemPositionsListener: _itemPositionsListener,
       itemScrollController: _itemScrollController,
       itemCount: widget.renderList.length,
+      addRepaintBoundaries: true,
     );
 
     if (!useDragScrolling) {
@@ -256,10 +242,12 @@ class ImmichAssetGrid extends StatefulWidget {
   final bool showStorageIndicator;
   final ImmichAssetGridSelectionListener? listener;
   final bool selectionActive;
+  final List<Asset> allAssets;
 
   const ImmichAssetGrid({
     super.key,
     required this.renderList,
+    required this.allAssets,
     required this.assetsPerRow,
     required this.showStorageIndicator,
     this.listener,

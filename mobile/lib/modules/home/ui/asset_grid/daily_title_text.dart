@@ -5,14 +5,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 class DailyTitleText extends ConsumerWidget {
   const DailyTitleText({
     Key? key,
-    required this.isoDate,
+    required this.text,
     required this.multiselectEnabled,
     required this.onSelect,
     required this.onDeselect,
     required this.selected,
   }) : super(key: key);
 
-  final String isoDate;
+  final String text;
   final bool multiselectEnabled;
   final Function onSelect;
   final Function onDeselect;
@@ -20,13 +20,7 @@ class DailyTitleText extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var currentYear = DateTime.now().year;
-    var groupYear = DateTime.parse(isoDate).year;
-    var formatDateTemplate = currentYear == groupYear
-        ? "daily_title_text_date".tr()
-        : "daily_title_text_date_year".tr();
-    var dateText =
-        DateFormat(formatDateTemplate).format(DateTime.parse(isoDate));
+
 
     void handleTitleIconClick() {
       if (selected) {
@@ -46,7 +40,7 @@ class DailyTitleText extends ConsumerWidget {
       child: Row(
         children: [
           Text(
-            dateText,
+            text,
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,

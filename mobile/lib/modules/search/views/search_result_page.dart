@@ -111,6 +111,7 @@ class SearchResultPage extends HookConsumerWidget {
     buildSearchResult() {
       var searchResultPageState = ref.watch(searchResultPageProvider);
       var searchResultRenderList = ref.watch(searchRenderListProvider);
+      var allSearchAssets = ref.watch(searchResultPageProvider).searchResult;
 
       var settings = ref.watch(appSettingsServiceProvider);
       final assetsPerRow = settings.getSetting(AppSettingsEnum.tilesPerRow);
@@ -127,6 +128,7 @@ class SearchResultPage extends HookConsumerWidget {
 
       if (searchResultPageState.isSuccess) {
         return ImmichAssetGrid(
+          allAssets: allSearchAssets,
           renderList: searchResultRenderList,
           assetsPerRow: assetsPerRow,
           showStorageIndicator: showStorageIndicator,
