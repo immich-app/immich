@@ -161,7 +161,7 @@
 		waitingJobCount={allJobsStatus?.machineLearningQueueCount.waiting}
 		activeJobCount={allJobsStatus?.machineLearningQueueCount.active}
 	>
-		Note that some asset does not have any object detected, this is normal.
+		Note that some assets may not have any objects detected, this is normal.
 	</JobTile>
 
 	<JobTile
