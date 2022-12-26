@@ -24,6 +24,7 @@ import { UserCore } from '../user/user.core';
 @Injectable()
 export class AuthService {
   private userCore: UserCore;
+  private logger = new Logger(AuthService.name);
 
   constructor(
     private oauthService: OAuthService,
@@ -44,7 +45,7 @@ export class AuthService {
     }
 
     if (!user) {
-      Logger.warn(`Failed login attempt for user ${loginCredential.email} from ip address ${clientIp}`);
+      this.logger.warn(`Failed login attempt for user ${loginCredential.email} from ip address ${clientIp}`);
       throw new BadRequestException('Incorrect email or password');
     }
 
@@ -94,8 +95,8 @@ export class AuthService {
       });
 
       return mapAdminSignupResponse(admin);
-    } catch (e) {
-      Logger.error('e', 'signUp');
+    } catch (error) {
+      this.logger.error(`Unable to register admin user: ${error}`, (error as Error).stack);
       throw new InternalServerErrorException('Failed to register new admin user');
     }
   }
