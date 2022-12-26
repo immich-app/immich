@@ -86,8 +86,13 @@ export class OAuthService {
   }
 
   public async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
-    const profile = await this.callback(dto.url);
-    return this.userCore.updateUser(user, user.id, { oauthId: profile.sub });
+    const { sub: oauthId } = await this.callback(dto.url);
+    const duplicate = await this.userCore.getByOAuthId(oauthId);
+    if (duplicate && duplicate.id !== user.id) {
+      this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
+      throw new BadRequestException('This OAuth account has already been linked to another user.');
+    }
+    return this.userCore.updateUser(user, user.id, { oauthId });
   }
 
   public async unlink(user: AuthUserDto): Promise<UserResponseDto> {

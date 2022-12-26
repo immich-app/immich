@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { ApiError, oauth, OAuthConfigResponseDto, UserResponseDto } from '@api';
+	import { oauth, OAuthConfigResponseDto, UserResponseDto } from '@api';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import { handleError } from '../../utils/handle-error';
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import {
 		notificationController,
@@ -21,28 +22,23 @@
 
 				const { data } = await oauth.link(window.location);
 				user = data;
-				goto('?open=oauth');
 
 				notificationController.show({
 					message: 'Linked OAuth account',
 					type: NotificationType.Info
 				});
-			} catch (e) {
-				notificationController.show({
-					message: 'Unable to link OAuth account',
-					type: NotificationType.Error
-				});
+			} catch (error) {
+				handleError(error, 'Unable to link OAuth account');
+			} finally {
+				goto('?open=oauth');
 			}
 		}
 
 		try {
 			const { data } = await oauth.getConfig(window.location);
 			config = data;
-		} catch (e) {
-			notificationController.show({
-				message: 'Unable to load OAuth config',
-				type: NotificationType.Error
-			});
+		} catch (error) {
+			handleError(error, 'Unable to load OAuth config');
 		}
 
 		loading = false;
@@ -57,11 +53,7 @@
 				type: NotificationType.Info
 			});
 		} catch (error) {
-			console.error('Error [user-profile:oauth-settings] [unlink]', error);
-			notificationController.show({
-				message: (error as ApiError)?.response?.data?.message || 'Unable to unlink account',
-				type: NotificationType.Error
-			});
+			handleError(error, 'Unable to unlink account');
 		}
 	};
 </script>
