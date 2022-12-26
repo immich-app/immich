@@ -1,7 +1,7 @@
 import { SystemConfig } from '@app/database/entities/system-config.entity';
 import { UserEntity } from '@app/database/entities/user.entity';
 import { ImmichConfigService } from '@app/immich-config';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { generators, Issuer } from 'openid-client';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
@@ -31,6 +31,21 @@ const loginResponse = {
   userId: 'user',
   userEmail: 'user@immich.com,',
 } as LoginResponseDto;
+
+jest.mock('@nestjs/common', () => {
+  return {
+    ...jest.requireActual('@nestjs/common'),
+    Logger: function MockLogger() {
+      Object.assign(this as Logger, {
+        verbose: jest.fn(),
+        debug: jest.fn(),
+        log: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      });
+    },
+  };
+});
 
 describe('OAuthService', () => {
   let sut: OAuthService;
@@ -109,7 +124,7 @@ describe('OAuthService', () => {
     });
   });
 
-  describe('callback', () => {
+  describe('login', () => {
     it('should throw an error if OAuth is not enabled', async () => {
       await expect(sut.login({ url: '' })).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -122,8 +137,6 @@ describe('OAuthService', () => {
         },
       } as SystemConfig);
       sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
-      jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
-      jest.spyOn(sut['logger'], 'warn').mockImplementation(() => null);
       userRepositoryMock.getByEmail.mockResolvedValue(null);
       await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' })).rejects.toBeInstanceOf(
         BadRequestException,
@@ -139,8 +152,6 @@ describe('OAuthService', () => {
         },
       } as SystemConfig);
       sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
-      jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
-      jest.spyOn(sut['logger'], 'warn').mockImplementation(() => null);
       userRepositoryMock.getByEmail.mockResolvedValue(user);
       userRepositoryMock.update.mockResolvedValue(user);
       immichJwtServiceMock.createLoginResponse.mockResolvedValue(loginResponse);
@@ -159,8 +170,6 @@ describe('OAuthService', () => {
         },
       } as SystemConfig);
       sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
-      jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
-      jest.spyOn(sut['logger'], 'log').mockImplementation(() => null);
       userRepositoryMock.getByEmail.mockResolvedValue(null);
       userRepositoryMock.getAdmin.mockResolvedValue(user);
       userRepositoryMock.create.mockResolvedValue(user);
@@ -188,6 +197,23 @@ describe('OAuthService', () => {
       await sut.link(authUser, { url: 'http://immich/user-settings?code=abc123' });
 
       expect(userRepositoryMock.update).toHaveBeenCalledWith(authUser.id, { oauthId: sub });
+    });
+
+    it('should not link an already linked oauth.sub', async () => {
+      immichConfigServiceMock.getConfig.mockResolvedValue({
+        oauth: {
+          enabled: true,
+          autoRegister: true,
+        },
+      } as SystemConfig);
+
+      userRepositoryMock.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserEntity);
+
+      await expect(sut.link(authUser, { url: 'http://immich/user-settings?code=abc123' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(userRepositoryMock.update).not.toHaveBeenCalled();
     });
   });
 
