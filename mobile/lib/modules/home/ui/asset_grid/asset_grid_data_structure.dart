@@ -78,8 +78,14 @@ List<RenderAssetGridElement> assetGroupsToRenderList(
 
       if (lastDate == null || lastDate!.month != date.month) {
         // Month title
-        var monthTitleText =
-          monthFormat.format(DateTime.parse(groupName));
+
+        var monthTitleText = groupName;
+
+        try {
+          monthTitleText = monthFormat.format(DateTime.parse(groupName));
+        } catch (e) {
+          log.severe("Failed to format date for month title: $groupName");
+        }
 
         elements.add(
           RenderAssetGridElement(
@@ -96,7 +102,14 @@ List<RenderAssetGridElement> assetGroupsToRenderList(
       var formatDate = currentYear == groupYear
           ? dayFormatSameYear
           : dayFormatOtherYear;
-      var dateText = formatDate.format(DateTime.parse(groupName));
+
+      var dateText = groupName;
+
+      try {
+        dateText = formatDate.format(DateTime.parse(groupName));
+      } catch (e) {
+        log.severe("Failed to format date for day title: $groupName");
+      }
 
       elements.add(
         RenderAssetGridElement(
