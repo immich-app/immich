@@ -7,23 +7,17 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { genSalt, hash } from 'bcrypt';
+import { hash } from 'bcrypt';
 import { createReadStream, constants, ReadStream } from 'fs';
 import fs from 'fs/promises';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './dto/create-user.dto';
 import { IUserRepository, UserListFilter } from './user-repository';
 
+const SALT_ROUNDS = 10;
+
 export class UserCore {
   constructor(private userRepository: IUserRepository) {}
-
-  private async generateSalt(): Promise<string> {
-    return genSalt();
-  }
-
-  private async hashPassword(password: string, salt: string): Promise<string> {
-    return hash(password, salt);
-  }
 
   async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
     if (!(authUser.isAdmin || authUser.id === id)) {
@@ -36,9 +30,7 @@ export class UserCore {
 
     try {
       if (dto.password) {
-        const salt = await this.generateSalt();
-        dto.salt = salt;
-        dto.password = await this.hashPassword(dto.password, salt);
+        dto.password = await hash(dto.password, SALT_ROUNDS);
       }
       return this.userRepository.update(id, dto);
     } catch (e) {
@@ -63,9 +55,7 @@ export class UserCore {
     try {
       const payload: Partial<UserEntity> = { ...createUserDto };
       if (payload.password) {
-        const salt = await this.generateSalt();
-        payload.salt = salt;
-        payload.password = await this.hashPassword(payload.password, salt);
+        payload.password = await hash(payload.password, SALT_ROUNDS);
       }
       return this.userRepository.create(payload);
     } catch (e) {

@@ -21,8 +21,7 @@ export class ResetAdminPasswordCommand extends CommandRunner {
     let { password } = await this.inquirer.ask<{ password: string }>('prompt-password', undefined);
     password = password || randomBytes(24).toString('base64').replace(/\W/g, '');
 
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.userRepository.findOne({ where: { isAdmin: true } });
     if (!user) {
@@ -30,7 +29,6 @@ export class ResetAdminPasswordCommand extends CommandRunner {
       return;
     }
 
-    user.salt = salt;
     user.password = hashedPassword;
     user.shouldChangePassword = true;
 
