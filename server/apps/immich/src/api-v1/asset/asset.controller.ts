@@ -110,7 +110,7 @@ export class AssetController {
   }
 
   @Get('/file/:assetId')
-  @Header('Cache-Control', 'max-age=3600')
+  @Header('Cache-Control', 'max-age=31536000')
   async serveFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
@@ -123,7 +123,7 @@ export class AssetController {
   }
 
   @Get('/thumbnail/:assetId')
-  @Header('Cache-Control', 'max-age=3600')
+  @Header('Cache-Control', 'max-age=31536000')
   async getAssetThumbnail(
     @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,

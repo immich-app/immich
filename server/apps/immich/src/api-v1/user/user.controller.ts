@@ -13,6 +13,7 @@ import {
   Response,
   ParseBoolPipe,
   StreamableFile,
+  Header,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Authenticated } from '../../decorators/authenticated.decorator';
@@ -111,6 +112,7 @@ export class UserController {
   }
 
   @Get('/profile-image/:userId')
+  @Header('Cache-Control', 'max-age=86400')
   async getProfileImage(@Param('userId') userId: string, @Response({ passthrough: true }) res: Res): Promise<any> {
     const readableStream = await this.userService.getUserProfileImage(userId);
     res.set({
