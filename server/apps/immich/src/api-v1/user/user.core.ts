@@ -28,6 +28,13 @@ export class UserCore {
       throw new BadRequestException('Admin user exists');
     }
 
+    if (dto.email) {
+      const duplicate = await this.userRepository.getByEmail(dto.email);
+      if (duplicate && duplicate.id !== id) {
+        throw new BadRequestException('Email already in user by another account');
+      }
+    }
+
     try {
       if (dto.password) {
         dto.password = await hash(dto.password, SALT_ROUNDS);
