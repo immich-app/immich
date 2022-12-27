@@ -5,6 +5,7 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { api, UserResponseDto } from '@api';
 	import { fade } from 'svelte/transition';
+	import { handleError } from '../../utils/handle-error';
 	import SettingInputField, {
 		SettingInputFieldType
 	} from '../admin-page/settings/setting-input-field.svelte';
@@ -15,6 +16,7 @@
 		try {
 			const { data } = await api.userApi.updateUser({
 				id: user.id,
+				email: user.email,
 				firstName: user.firstName,
 				lastName: user.lastName
 			});
@@ -26,11 +28,7 @@
 				type: NotificationType.Info
 			});
 		} catch (error) {
-			console.error('Error [user-profile] [updateProfile]', error);
-			notificationController.show({
-				message: 'Unable to save profile',
-				type: NotificationType.Error
-			});
+			handleError(error, 'Unable to save profile');
 		}
 	};
 </script>
@@ -47,10 +45,9 @@
 				/>
 
 				<SettingInputField
-					inputType={SettingInputFieldType.TEXT}
+					inputType={SettingInputFieldType.EMAIL}
 					label="Email"
 					bind:value={user.email}
-					disabled={true}
 				/>
 
 				<SettingInputField

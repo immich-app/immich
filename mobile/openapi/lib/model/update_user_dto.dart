@@ -14,6 +14,7 @@ class UpdateUserDto {
   /// Returns a new [UpdateUserDto] instance.
   UpdateUserDto({
     required this.id,
+    this.email,
     this.password,
     this.firstName,
     this.lastName,
@@ -23,6 +24,14 @@ class UpdateUserDto {
   });
 
   String id;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? email;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -75,6 +84,7 @@ class UpdateUserDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateUserDto &&
      other.id == id &&
+     other.email == email &&
      other.password == password &&
      other.firstName == firstName &&
      other.lastName == lastName &&
@@ -86,6 +96,7 @@ class UpdateUserDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (id.hashCode) +
+    (email == null ? 0 : email!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (firstName == null ? 0 : firstName!.hashCode) +
     (lastName == null ? 0 : lastName!.hashCode) +
@@ -94,11 +105,16 @@ class UpdateUserDto {
     (profileImagePath == null ? 0 : profileImagePath!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[id=$id, password=$password, firstName=$firstName, lastName=$lastName, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword, profileImagePath=$profileImagePath]';
+  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'id'] = id;
+    if (email != null) {
+      _json[r'email'] = email;
+    } else {
+      _json[r'email'] = null;
+    }
     if (password != null) {
       _json[r'password'] = password;
     } else {
@@ -152,6 +168,7 @@ class UpdateUserDto {
 
       return UpdateUserDto(
         id: mapValueOfType<String>(json, r'id')!,
+        email: mapValueOfType<String>(json, r'email'),
         password: mapValueOfType<String>(json, r'password'),
         firstName: mapValueOfType<String>(json, r'firstName'),
         lastName: mapValueOfType<String>(json, r'lastName'),
