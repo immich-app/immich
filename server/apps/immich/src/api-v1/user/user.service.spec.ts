@@ -102,6 +102,28 @@ describe('UserService', () => {
       await expect(result).rejects.toBeInstanceOf(ForbiddenException);
     });
 
+    it('should let a user change their email', async () => {
+      const dto = { id: immichUser.id, email: 'updated@test.com' };
+
+      userRepositoryMock.get.mockResolvedValue(immichUser);
+      userRepositoryMock.update.mockResolvedValue(immichUser);
+
+      await sut.updateUser(immichUser, dto);
+
+      expect(userRepositoryMock.update).toHaveBeenCalledWith(immichUser.id, { email: 'updated@test.com' });
+    });
+
+    it('should not let a user change their email to one already in use', async () => {
+      const dto = { id: immichUser.id, email: 'updated@test.com' };
+
+      userRepositoryMock.get.mockResolvedValue(immichUser);
+      userRepositoryMock.getByEmail.mockResolvedValue(adminUser);
+
+      await expect(sut.updateUser(immichUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(userRepositoryMock.update).not.toHaveBeenCalled();
+    });
+
     it('admin can update any user information', async () => {
       const update: UpdateUserDto = {
         id: immichUser.id,
