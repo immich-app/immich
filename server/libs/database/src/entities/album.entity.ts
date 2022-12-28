@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { AssetAlbumEntity } from './asset-album.entity';
+import { SharedLinkEntity } from './shared-link.entity';
 import { UserAlbumEntity } from './user-album.entity';
 
 @Entity('albums')
@@ -24,4 +25,8 @@ export class AlbumEntity {
 
   @OneToMany(() => AssetAlbumEntity, (assetAlbumEntity) => assetAlbumEntity.albumInfo)
   assets?: AssetAlbumEntity[];
+
+  @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true })
+  @JoinTable({ name: 'sharedlink_album' })
+  sharedLinks!: SharedLinkEntity[];
 }
