@@ -1,15 +1,11 @@
-import { SharedLinkEntity, SharedLinkType } from '@app/database/entities/shared-link.entity';
+import { SharedLinkEntity } from '@app/database/entities/shared-link.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import crypto from 'node:crypto';
-import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AlbumEntity } from '@app/database/entities/album.entity';
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { InternalServerErrorException, Logger } from '@nestjs/common';
+import { Repository } from 'typeorm';
+
+import { Logger } from '@nestjs/common';
 
 export interface ISharedLinkRepository {
-  get(): Promise<SharedLinkEntity | null>;
+  get(userId: string): Promise<SharedLinkEntity[]>;
   create(payload: SharedLinkEntity): Promise<SharedLinkEntity>;
 }
 
@@ -22,8 +18,13 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     private readonly sharedLinkRepository: Repository<SharedLinkEntity>,
   ) {}
 
-  get(): Promise<SharedLinkEntity | null> {
-    throw new Error('Method not implemented.');
+  async get(userId: string): Promise<SharedLinkEntity[]> {
+    return await this.sharedLinkRepository.find({
+      where: {
+        userId: userId,
+      },
+      relations: ['assets', 'albums'],
+    });
   }
 
   async create(payload: SharedLinkEntity): Promise<SharedLinkEntity> {

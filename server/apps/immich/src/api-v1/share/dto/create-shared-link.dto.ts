@@ -1,5 +1,6 @@
+import { SharedLinkType } from '@app/database/entities/shared-link.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
 
 export class CreateSharedLinkDto {
   @IsOptional()
@@ -8,10 +9,21 @@ export class CreateSharedLinkDto {
   @IsOptional()
   expiredAt?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
+  @IsEnum(SharedLinkType, {
+    message: `params must be one of ${Object.values(SharedLinkType).join()}`,
+  })
+  @ApiProperty({
+    type: String,
+    enum: SharedLinkType,
+    enumName: 'SharedLinkType',
+  })
+  sharedType!: SharedLinkType;
+
+  @ValidateIf((dto) => dto.sharedType === SharedLinkType.INDIVIDUAL)
+  @IsNotEmpty({ each: true })
   @IsArray()
   @IsString({ each: true })
-  @IsNotEmpty({ each: true })
   @ApiProperty({
     isArray: true,
     type: String,
@@ -22,8 +34,9 @@ export class CreateSharedLinkDto {
       'fad77c3f-deef-4e7e-9608-14c1aa4e559a',
     ],
   })
-  assetIds?: string[];
+  assetIds!: string[];
 
-  @IsOptional()
-  albumId?: string;
+  @ValidateIf((dto) => dto.sharedType === SharedLinkType.ALBUM)
+  @IsNotEmpty()
+  albumId!: string;
 }

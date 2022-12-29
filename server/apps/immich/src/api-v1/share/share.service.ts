@@ -4,6 +4,7 @@ import { ALBUM_REPOSITORY, IAlbumRepository } from '../album/album-repository';
 import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
 import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
 import { UpdateShareDto } from './dto/update-share.dto';
+import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
 import { ShareCore } from './share.core';
 import { ISharedLinkRepository, SHARED_LINK_REPOSITORY } from './shared-link.repository';
 
@@ -24,14 +25,14 @@ export class ShareService {
     this.shareCore = new ShareCore(sharedLinkRepository, assetRepository, albumRepository);
   }
 
-  async createSharedLink(authUser: AuthUserDto, dto: CreateSharedLinkDto) {
+  async createSharedLink(authUser: AuthUserDto, dto: CreateSharedLinkDto): Promise<SharedLinkResponseDto> {
     const createdSharedLink = await this.shareCore.createSharedLink(authUser.id, dto);
-
-    // return mapdto
+    return mapSharedLinkToResponseDto(createdSharedLink);
   }
 
-  findAll() {
-    return `This action returns all share`;
+  async findAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
+    const links = await this.shareCore.getSharedLinks(authUser.id);
+    return links.map(mapSharedLinkToResponseDto);
   }
 
   findOne(id: number) {

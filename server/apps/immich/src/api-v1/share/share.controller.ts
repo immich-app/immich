@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe } from '@nestjs/common';
 import { ShareService } from './share.service';
-import { CreateShareDto } from './dto/create-share.dto';
 import { UpdateShareDto } from './dto/update-share.dto';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
+import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
+import { SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
 
 @Controller('share')
 export class ShareController {
@@ -11,23 +12,17 @@ export class ShareController {
 
   @Authenticated()
   @Post()
-  async create(@Body(ValidationPipe) createSharedLinkDto: CreateShareDto, @GetAuthUser() authUser: AuthUserDto) {
+  create(
+    @Body(ValidationPipe) createSharedLinkDto: CreateSharedLinkDto,
+    @GetAuthUser() authUser: AuthUserDto,
+  ): Promise<SharedLinkResponseDto> {
     return this.shareService.createSharedLink(authUser, createSharedLinkDto);
   }
 
   @Get()
-  async findAll() {
-    // const a = await this.assetRepository.findOne({
-    //   where: { id: 'a04e3a13-10f5-4196-b5d2-fc4904ff7cfc' },
-    //   relations: { sharedLinks: true },
-    // });
-    // console.log('aset', a);
-    // const ret = await this.sharedLinkRepository.find({
-    //   relations: {
-    //     assets: true,
-    //   },
-    // });
-    // return ret;
+  @Authenticated()
+  findAll(@GetAuthUser() authUser: AuthUserDto) {
+    return this.shareService.findAll(authUser);
   }
 
   @Get(':id')

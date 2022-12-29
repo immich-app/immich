@@ -17,40 +17,59 @@ export class ShareCore {
   ) {}
 
   async createSharedLink(userId: string, dto: CreateSharedLinkDto): Promise<SharedLinkEntity> {
-    const sharedLink = new SharedLinkEntity();
+    try {
+      const sharedLink = new SharedLinkEntity();
 
-    sharedLink.id = crypto.randomBytes(35).toString('hex');
-    sharedLink.key = crypto.randomBytes(25).toString('hex');
-    sharedLink.description = dto.description;
-    sharedLink.userId = userId;
-    sharedLink.createdAt = new Date().toISOString();
-    sharedLink.expiresAt = dto.expiredAt;
+      sharedLink.id = crypto.randomBytes(35).toString('hex');
+      sharedLink.key = crypto.randomBytes(25).toString('hex');
+      sharedLink.description = dto.description;
+      sharedLink.userId = userId;
+      sharedLink.createdAt = new Date().toISOString();
+      sharedLink.expiresAt = dto.expiredAt;
 
-    if (dto.assetIds?.length) {
-      const assets: AssetEntity[] = [];
+      if (dto.sharedType === SharedLinkType.ALBUM) {
+        const assets: AssetEntity[] = [];
 
-      for (const id of dto.assetIds) {
-        const asset = await this.assetRepository.getById(id);
-        assets.push(asset);
+        const album = await this.albumRepository.get(dto.albumId);
+        if (!album) {
+          this.logger.error('Album not found');
+          throw new BadRequestException('Album not found');
+        }
+
+        if (album.assets) {
+          for (const asset of album.assets) {
+            assets.push(asset.assetInfo);
+          }
+        }
+
+        sharedLink.type = SharedLinkType.ALBUM;
+        sharedLink.albums = [album];
+        sharedLink.assets = assets;
       }
 
-      if (assets.length == 0) {
-        throw new BadRequestException('Assets not found');
+      if (dto.sharedType === SharedLinkType.INDIVIDUAL) {
+        const assets: AssetEntity[] = [];
+
+        for (const id of dto.assetIds) {
+          const asset = await this.assetRepository.getById(id);
+          assets.push(asset);
+        }
+
+        if (assets.length == 0) {
+          throw new BadRequestException('Assets not found');
+        }
+        sharedLink.type = SharedLinkType.INDIVIDUAL;
+        sharedLink.assets = assets;
       }
-      sharedLink.type = SharedLinkType.INDIVIDUAL;
-      sharedLink.assets = assets;
+
+      return this.sharedLinkRepository.create(sharedLink);
+    } catch (error: any) {
+      this.logger.error(error, error.stack);
+      throw new InternalServerErrorException('failed to create shared link');
     }
+  }
 
-    if (dto.albumId) {
-      const album = await this.albumRepository.get(dto.albumId);
-      if (!album) {
-        this.logger.error('Album not found');
-        throw new BadRequestException('Album not found');
-      }
-      sharedLink.type = SharedLinkType.ALBUM;
-      sharedLink.albums = [album];
-    }
-
-    return this.sharedLinkRepository.create(sharedLink);
+  async getSharedLinks(userId: string): Promise<SharedLinkEntity[]> {
+    return this.sharedLinkRepository.get(userId);
   }
 }

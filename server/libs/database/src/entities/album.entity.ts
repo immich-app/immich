@@ -26,7 +26,7 @@ export class AlbumEntity {
   @OneToMany(() => AssetAlbumEntity, (assetAlbumEntity) => assetAlbumEntity.albumInfo)
   assets?: AssetAlbumEntity[];
 
-  @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true })
+  @ManyToMany(() => SharedLinkEntity, (link) => link.albums, { cascade: true })
   @JoinTable({ name: 'sharedlink_album' })
   sharedLinks!: SharedLinkEntity[];
 }
