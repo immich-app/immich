@@ -8,8 +8,12 @@ class AssetCacheService extends JsonCache<List<Asset>> {
   AssetCacheService() : super("asset_cache");
 
   @override
-  void put(List<Asset> data) {
-    putRawData(data.map((e) => e.toJson()).toList());
+  void put(List<Asset> data) async {
+    serialize(List<Asset> assets) {
+      return data.map((e) => e.toJson()).toList();
+    }
+
+    putRawData(await compute(serialize, data));
   }
 
   @override
@@ -17,8 +21,11 @@ class AssetCacheService extends JsonCache<List<Asset>> {
     try {
       final mapList = await readRawData() as List<dynamic>;
 
-      final responseData =
-          mapList.map((e) => Asset.fromJson(e)).whereNotNull().toList();
+      decodeJson(List<dynamic> data) {
+        return data.map((e) => Asset.fromJson(e)).whereNotNull().toList();
+      }
+
+      final responseData = await compute(decodeJson, mapList);
 
       return responseData;
     } catch (e) {

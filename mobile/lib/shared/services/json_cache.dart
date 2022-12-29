@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 abstract class JsonCache<T> {
@@ -32,7 +33,12 @@ abstract class JsonCache<T> {
   }
 
   Future<void> putRawData(dynamic data) async {
-    final jsonString = json.encode(data);
+    encodeJson(dynamic toEncode) {
+      return json.encode(toEncode);
+    }
+
+    final jsonString = await compute(encodeJson, data);
+
     final file = await _getCacheFile();
 
     if (!await file.exists()) {
@@ -45,7 +51,12 @@ abstract class JsonCache<T> {
   dynamic readRawData() async {
     final file = await _getCacheFile();
     final data = await file.readAsString();
-    return json.decode(data);
+
+    decodeJson(String jsonData) {
+      return json.decode(jsonData);
+    }
+
+    return await compute(decodeJson, data);
   }
 
   void put(T data);
