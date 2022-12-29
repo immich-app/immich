@@ -35,11 +35,25 @@ export class UserCore {
       }
     }
 
+    const user = await this.userRepository.get(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     try {
       if (dto.password) {
         dto.password = await hash(dto.password, SALT_ROUNDS);
       }
-      return this.userRepository.update(id, dto);
+
+      user.password = dto.password ?? user.password;
+      user.email = dto.email ?? user.email;
+      user.firstName = dto.firstName ?? user.firstName;
+      user.lastName = dto.lastName ?? user.lastName;
+      user.isAdmin = dto.isAdmin ?? user.isAdmin;
+      user.shouldChangePassword = dto.shouldChangePassword ?? user.shouldChangePassword;
+      user.profileImagePath = dto.profileImagePath ?? user.profileImagePath;
+
+      return this.userRepository.update(id, user);
     } catch (e) {
       Logger.error(e, 'Failed to update user info');
       throw new InternalServerErrorException('Failed to update user info');
