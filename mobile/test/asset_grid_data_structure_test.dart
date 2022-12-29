@@ -55,8 +55,8 @@ void main() {
   };
 
   group('Test grouped', () {
-    test('test grouped check months', () {
-      final renderList = assetGroupsToRenderList(groups, 3);
+    test('test grouped check months', () async {
+      final renderList = await assetGroupsToRenderList(groups, 3);
 
       // Jan
       // Day 1
@@ -78,8 +78,8 @@ void main() {
       expect(renderList[11].date.month, 10);
     });
 
-    test('test grouped check types', () {
-      final renderList = assetGroupsToRenderList(groups, 5);
+    test('test grouped check types', () async {
+      final renderList = await assetGroupsToRenderList(groups, 5);
 
       // Jan
       // Day 1
