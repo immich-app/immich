@@ -28,7 +28,7 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
+import { IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import {
   AssetCountByTimeBucketResponseDto,
@@ -62,8 +62,7 @@ const fileInfo = promisify(stat);
 @Injectable()
 export class AssetService {
   constructor(
-    @Inject(ASSET_REPOSITORY)
-    private _assetRepository: IAssetRepository,
+    @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
 
     @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
 

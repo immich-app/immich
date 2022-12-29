@@ -48,7 +48,7 @@ export interface IAssetRepository {
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
 
-export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
+export const IAssetRepository = 'IAssetRepository';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
