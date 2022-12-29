@@ -110,7 +110,10 @@ describe('UserService', () => {
 
       await sut.updateUser(immichUser, dto);
 
-      expect(userRepositoryMock.update).toHaveBeenCalledWith(immichUser.id, { email: 'updated@test.com' });
+      expect(userRepositoryMock.update).toHaveBeenCalledWith(immichUser.id, {
+        id: 'immich_id',
+        email: 'updated@test.com',
+      });
     });
 
     it('should not let a user change their email to one already in use', async () => {
