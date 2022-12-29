@@ -54,7 +54,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
-import { ALBUM_REPOSITORY, IAlbumRepository } from '../album/album-repository';
+import { IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
 
 const fileInfo = promisify(stat);
@@ -65,8 +65,7 @@ export class AssetService {
     @Inject(ASSET_REPOSITORY)
     private _assetRepository: IAssetRepository,
 
-    @Inject(ALBUM_REPOSITORY)
-    private _albumRepository: IAlbumRepository,
+    @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,

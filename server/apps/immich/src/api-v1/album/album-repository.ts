@@ -26,7 +26,7 @@ export interface IAlbumRepository {
   getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
 }
 
-export const ALBUM_REPOSITORY = 'ALBUM_REPOSITORY';
+export const IAlbumRepository = 'IAlbumRepository';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
