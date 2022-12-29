@@ -14,7 +14,7 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
-import { ITagRepository, TAG_REPOSITORY } from '../tag/tag.repository';
+import { ITagRepository } from '../tag/tag.repository';
 import { IsNull } from 'typeorm';
 
 export interface IAssetRepository {
@@ -56,7 +56,7 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @Inject(TAG_REPOSITORY) private _tagRepository: ITagRepository,
+    @Inject(ITagRepository) private _tagRepository: ITagRepository,
   ) {}
 
   async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {

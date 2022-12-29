@@ -13,7 +13,7 @@ export interface ITagRepository {
   remove(tag: TagEntity): Promise<TagEntity>;
 }
 
-export const TAG_REPOSITORY = 'TAG_REPOSITORY';
+export const ITagRepository = 'ITagRepository';
 
 @Injectable()
 export class TagRepository implements ITagRepository {

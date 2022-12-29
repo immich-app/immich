@@ -3,14 +3,14 @@ import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
-import { ITagRepository, TAG_REPOSITORY } from './tag.repository';
+import { ITagRepository } from './tag.repository';
 import { mapTag, TagResponseDto } from './response-dto/tag-response.dto';
 
 @Injectable()
 export class TagService {
   readonly logger = new Logger(TagService.name);
 
-  constructor(@Inject(TAG_REPOSITORY) private _tagRepository: ITagRepository) {}
+  constructor(@Inject(ITagRepository) private _tagRepository: ITagRepository) {}
 
   async create(authUser: AuthUserDto, createTagDto: CreateTagDto) {
     try {
