@@ -1,5 +1,4 @@
-import { TagEntity, TagType } from '@app/database';
-import { UserEntity } from '@app/database';
+import { TagEntity, TagType, UserEntity } from '@app/database';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ITagRepository } from './tag.repository';
 import { TagService } from './tag.service';

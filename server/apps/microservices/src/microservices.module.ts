@@ -1,9 +1,5 @@
 import { immichAppConfig, immichBullAsyncConfig } from '@app/common/config';
-import { DatabaseModule } from '@app/database';
-import { AssetEntity } from '@app/database';
-import { ExifEntity } from '@app/database';
-import { SmartInfoEntity } from '@app/database';
-import { UserEntity } from '@app/database';
+import { DatabaseModule, AssetEntity, ExifEntity, SmartInfoEntity, UserEntity } from '@app/database';
 import { StorageModule } from '@app/storage';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
