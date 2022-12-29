@@ -4,7 +4,6 @@
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import BaseModal from './base-modal.svelte';
 	import AlbumListItem from '../asset-viewer/album-list-item.svelte';
-	import { fade } from 'svelte/transition';
 
 	let albums: AlbumResponseDto[] = [];
 	let recentAlbums: AlbumResponseDto[] = [];
