@@ -6,4 +6,6 @@ COPY LICENSE /LICENSE
 COPY nginx.conf "/etc/nginx/nginx.conf.template"
 COPY start.sh /start.sh
 
+STOPSIGNAL SIGQUIT
+
 CMD /start.sh
