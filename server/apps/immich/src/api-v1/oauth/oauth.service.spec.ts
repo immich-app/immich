@@ -33,6 +33,15 @@ const config = {
       autoRegister: false,
     },
   } as SystemConfig,
+  override: {
+    oauth: {
+      enabled: true,
+      autoRegister: true,
+      buttonText: 'OAuth',
+      mobileOverrideEnabled: true,
+      mobileRedirectUri: 'http://mobile-redirect',
+    },
+  } as SystemConfig,
 };
 
 const user = {
@@ -72,8 +81,11 @@ describe('OAuthService', () => {
   let userRepositoryMock: jest.Mocked<IUserRepository>;
   let immichConfigServiceMock: jest.Mocked<ImmichConfigService>;
   let immichJwtServiceMock: jest.Mocked<ImmichJwtService>;
+  let callbackMock: jest.Mock;
 
   beforeEach(async () => {
+    callbackMock = jest.fn().mockReturnValue({ access_token: 'access-token' });
+
     jest.spyOn(generators, 'state').mockReturnValue('state');
     jest.spyOn(Issuer, 'discover').mockResolvedValue({
       id_token_signing_alg_values_supported: ['HS256'],
@@ -85,7 +97,7 @@ describe('OAuthService', () => {
         },
         authorizationUrl: jest.fn().mockReturnValue('http://authorization-url'),
         callbackParams: jest.fn().mockReturnValue({ state: 'state' }),
-        callback: jest.fn().mockReturnValue({ access_token: 'access-token' }),
+        callback: callbackMock,
         userinfo: jest.fn().mockResolvedValue({ sub, email }),
       }),
     } as any);
@@ -112,8 +124,8 @@ describe('OAuthService', () => {
     } as unknown as jest.Mocked<ImmichJwtService>;
 
     immichConfigServiceMock = {
-      getConfig: jest.fn().mockResolvedValue({ oauth: { enabled: false } }),
       config$: { subscribe: jest.fn() },
+      getConfig: jest.fn().mockResolvedValue({ oauth: { enabled: false } }),
     } as unknown as jest.Mocked<ImmichConfigService>;
 
     sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.disabled);
@@ -177,6 +189,16 @@ describe('OAuthService', () => {
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(2); // second call is for domain check before create
       expect(userRepositoryMock.create).toHaveBeenCalledTimes(1);
       expect(immichJwtServiceMock.createLoginResponse).toHaveBeenCalledTimes(1);
+    });
+
+    it('should use the mobile redirect override', async () => {
+      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.override);
+
+      userRepositoryMock.getByOAuthId.mockResolvedValue(user);
+
+      await sut.login({ url: `app.immich:/?code=abc123` });
+
+      expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
     });
   });
 
