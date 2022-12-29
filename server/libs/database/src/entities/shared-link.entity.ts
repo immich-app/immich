@@ -1,10 +1,10 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { AlbumEntity } from './album.entity';
 import { AssetEntity } from './asset.entity';
 
 @Entity('shared_links')
 export class SharedLinkEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ type: 'varchar' })
   id!: string;
 
   @Column({ nullable: true })
@@ -41,3 +41,5 @@ export enum SharedLinkType {
    */
   INDIVIDUAL = 'INDIVIDUAL',
 }
+
+// npm run typeorm -- migration:generate ./libs/database/src/AddSharedLinkTable -d libs/database/src/config/database.config.ts
