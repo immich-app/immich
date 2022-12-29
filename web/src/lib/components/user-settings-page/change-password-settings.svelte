@@ -44,21 +44,21 @@
 			<div class="flex flex-col gap-4 ml-4 mt-4">
 				<SettingInputField
 					inputType={SettingInputFieldType.PASSWORD}
-					label="Password"
+					label="PASSWORD"
 					bind:value={password}
 					required={true}
 				/>
 
 				<SettingInputField
 					inputType={SettingInputFieldType.PASSWORD}
-					label="New password"
+					label="NEW PASSWORD"
 					bind:value={newPassword}
 					required={true}
 				/>
 
 				<SettingInputField
 					inputType={SettingInputFieldType.PASSWORD}
-					label="Confirm password"
+					label="CONFIRM PASSWORD"
 					bind:value={confirmPassword}
 					required={true}
 				/>
