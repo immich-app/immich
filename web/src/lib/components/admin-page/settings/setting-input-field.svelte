@@ -17,7 +17,6 @@
 	export let required = false;
 	export let disabled = false;
 	export let isEdited = false;
-	export let note = '';
 
 	const handleInput = (e: Event) => {
 		value = (e.target as HTMLInputElement).value;
@@ -50,7 +49,4 @@
 		on:input={handleInput}
 		{disabled}
 	/>
-	{#if note}
-		<small>{note}</small>
-	{/if}
 </div>

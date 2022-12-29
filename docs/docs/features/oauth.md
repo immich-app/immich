@@ -2,6 +2,10 @@
 
 This page contains details about using OAuth in Immich.
 
+:::tip
+Unable to set `app.immich:/` as a valid redirect URI? See [Mobile Redirect URI](#mobile-redirect-uri) for an alternative solution.
+:::
+
 ## Overview
 
 Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers, including:
@@ -24,50 +28,47 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 
 2. Configure Redirect URIs/Origins
 
-The **Sign-in redirect URIs** should include:
+   The **Sign-in redirect URIs** should include:
 
-- `app.immich:/` - for logging in with OAuth from the [Mobile App](/docs/features/mobile-app.mdx)
-- `http://DOMAIN:PORT/auth/login` - for logging in with OAuth from the Web Client
-- `http://DOMAIN:PORT/user-settings` - for manually linking OAuth in the Web Client
+   - `app.immich:/` - for logging in with OAuth from the [Mobile App](/docs/features/mobile-app.mdx)
+   - `http://DOMAIN:PORT/auth/login` - for logging in with OAuth from the Web Client
+   - `http://DOMAIN:PORT/user-settings` - for manually linking OAuth in the Web Client
 
-:::info Redirect URIs
+   Redirect URIs should contain all the domains you will be using to access Immich. Some examples include:
 
-Redirect URIs should contain all the domains you will be using to access Immich. Some examples include:
+   Mobile
 
-Mobile
+   - `app.immich:/` (You **MUST** include this for iOS and Android mobile apps to work properly)
 
-- `app.immich:/` (You **MUST** include this for iOS and Android mobile apps to work properly)
+   Localhost
 
-Localhost
+   - `http://localhost:2283/auth/login`
+   - `http://localhost:2283/user-settings`
 
-- `http://localhost:2283/auth/login`
-- `http://localhost:2283/user-settings`
+   Local IP
 
-Local IP
+   - `http://192.168.0.200:2283/auth/login`
+   - `http://192.168.0.200:2283/user-settings`
 
-- `http://192.168.0.200:2283/auth/login`
-- `http://192.168.0.200:2283/user-settings`
+   Hostname
 
-Hostname
-
-- `https://immich.example.com/auth/login`)
-- `https://immich.example.com/user-settings`)
-
-:::
+   - `https://immich.example.com/auth/login`)
+   - `https://immich.example.com/user-settings`)
 
 ## Enable OAuth
 
 Once you have a new OAuth client application configured, Immich can be configured using the Administration Settings page, available on the web (Administration -> Settings).
 
-| Setting       | Type    | Default              | Description                                                               |
-| ------------- | ------- | -------------------- | ------------------------------------------------------------------------- |
-| Enabled       | boolean | false                | Enable/disable OAuth                                                      |
-| Issuer URL    | URL     | (required)           | Required. Self-discovery URL for client (from previous step)              |
-| Client ID     | string  | (required)           | Required. Client ID (from previous step)                                  |
-| Client secret | string  | (required)           | Required. Client Secret (previous step)                                   |
-| Scope         | string  | openid email profile | Full list of scopes to send with the request (space delimited)            |
-| Button text   | string  | Login with OAuth     | Text for the OAuth button on the web                                      |
-| Auto register | boolean | true                 | When true, will automatically register a user the first time they sign in |
+| Setting                      | Type    | Default              | Description                                                               |
+| ---------------------------- | ------- | -------------------- | ------------------------------------------------------------------------- |
+| Enabled                      | boolean | false                | Enable/disable OAuth                                                      |
+| Issuer URL                   | URL     | (required)           | Required. Self-discovery URL for client (from previous step)              |
+| Client ID                    | string  | (required)           | Required. Client ID (from previous step)                                  |
+| Client secret                | string  | (required)           | Required. Client Secret (previous step)                                   |
+| Scope                        | string  | openid email profile | Full list of scopes to send with the request (space delimited)            |
+| Button text                  | string  | Login with OAuth     | Text for the OAuth button on the web                                      |
+| Auto register                | boolean | true                 | When true, will automatically register a user the first time they sign in |
+| Mobile Redirect URI Override | URL     | (empty)              | Http(s) alternative mobile redirect URI                                   |
 
 :::info
 The Issuer URL should look something like the following, and return a valid json document.
@@ -77,6 +78,22 @@ The Issuer URL should look something like the following, and return a valid json
 
 The `.well-known/openid-configuration` part of the url is optional and will be automatically added during discovery.
 :::
+
+## Mobile Redirect URI
+
+The redirect URI for the mobile app is `app.immich:/`, which is a [Custom Scheme](https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app). If this custom scheme is an invalid redirect URI for your OAuth Provider, you can work around this by doing the following:
+
+1. Configure an http(s) endpoint to forwards requests to `app.immich:/`
+2. Whitelist the new endpoint as a valid redirect URI with your provider.
+3. Specify the new endpoint as the `Mobile Redirect URI Override`, in the OAuth settings.
+
+With these steps in place, you should be able to use OAuth from the [Mobile App](/docs/features/mobile-app.mdx) without a custom scheme redirect URI.
+
+:::info
+Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to forward requests to `app.immich:/`, and can be used for step 1.
+:::
+
+## Example Configuration
 
 Here's an example of OAuth configured for Authentik:
 

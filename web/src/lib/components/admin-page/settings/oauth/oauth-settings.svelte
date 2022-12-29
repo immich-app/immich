@@ -84,6 +84,15 @@
 	{#await getConfigs() then}
 		<div in:fade={{ duration: 500 }}>
 			<form autocomplete="off" on:submit|preventDefault class="flex flex-col mx-4 gap-4 py-4">
+				<p class="text-sm dark:text-immich-dark-fg">
+					For more details about this feature, refer to the <a
+						href="http://immich.app/docs/features/oauth#mobile-redirect-uri"
+						class="underline"
+						target="_blank"
+						rel="noreferrer">docs</a
+					>.
+				</p>
+
 				<SettingSwitch title="Enable" bind:checked={oauthConfig.enabled} />
 				<hr />
 				<SettingInputField
@@ -139,8 +148,8 @@
 				/>
 
 				<SettingSwitch
-					title="MOBILE SCHEME COMPATIBILITY FIX"
-					subtitle="Enable when `app.immich://` is an invalid redirect URI"
+					title="MOBILE REDIRECT URI OVERRIDE"
+					subtitle="Enable when `app.immich:/` is an invalid redirect URI."
 					disabled={!oauthConfig.enabled}
 					on:click={() => handleToggleOverride()}
 					bind:checked={oauthConfig.mobileOverrideEnabled}
@@ -150,7 +159,6 @@
 					<SettingInputField
 						inputType={SettingInputFieldType.TEXT}
 						label="MOBILE REDIRECT URI"
-						note="Override the mobile redirect URI."
 						bind:value={oauthConfig.mobileRedirectUri}
 						required={true}
 						disabled={!oauthConfig.enabled}
