@@ -35,8 +35,9 @@ export class ShareService {
     return links.map(mapSharedLinkToResponseDto);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} share`;
+  async findOne(id: string): Promise<SharedLinkResponseDto> {
+    const link = await this.shareCore.getSharedLinkById(id);
+    return mapSharedLinkToResponseDto(link);
   }
 
   update(id: number, updateShareDto: UpdateShareDto) {

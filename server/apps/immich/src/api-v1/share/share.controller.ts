@@ -27,7 +27,7 @@ export class ShareController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.shareService.findOne(+id);
+    return this.shareService.findOne(id);
   }
 
   @Patch(':id')
