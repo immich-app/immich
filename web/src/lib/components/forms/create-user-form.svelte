@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { api } from '@api';
 	import { createEventDispatcher } from 'svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '../shared-components/notification/notification';
 
 	let error: string;
 	let success: string;
@@ -38,23 +42,35 @@
 			const firstName = form.get('firstName');
 			const lastName = form.get('lastName');
 
-			const { status } = await api.userApi.createUser({
-				email: String(email),
-				password: String(password),
-				firstName: String(firstName),
-				lastName: String(lastName)
-			});
+			try {
+				const { status } = await api.userApi.createUser({
+					email: String(email),
+					password: String(password),
+					firstName: String(firstName),
+					lastName: String(lastName)
+				});
 
-			if (status === 201) {
-				success = 'New user created';
+				if (status === 201) {
+					success = 'New user created';
 
-				dispatch('user-created');
+					dispatch('user-created');
 
-				isCreatingUser = false;
-				return;
-			} else {
+					isCreatingUser = false;
+					return;
+				} else {
+					error = 'Error create user account';
+					isCreatingUser = false;
+				}
+			} catch (e) {
 				error = 'Error create user account';
 				isCreatingUser = false;
+
+				console.log('[ERROR] registerUser', e);
+
+				notificationController.show({
+					message: `Error create new user, check console for more detail`,
+					type: NotificationType.Error
+				});
 			}
 		}
 	}
