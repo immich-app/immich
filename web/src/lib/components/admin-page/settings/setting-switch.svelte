@@ -5,7 +5,7 @@
 	export let disabled = false;
 </script>
 
-<div class="flex justify-between mx-4 place-items-center">
+<div class="flex justify-between place-items-center">
 	<div>
 		<h2 class="immich-form-label text-sm">
 			{title.toUpperCase()}
@@ -19,6 +19,7 @@
 			class="opacity-0 w-0 h-0 disabled::cursor-not-allowed"
 			type="checkbox"
 			bind:checked
+			on:click
 			{disabled}
 		/>
 

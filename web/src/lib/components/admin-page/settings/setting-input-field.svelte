@@ -25,7 +25,7 @@
 
 <div class="w-full">
 	<div class={`flex place-items-center gap-1 h-[26px]`}>
-		<label class={`immich-form-label text-xs`} for={label}>{label.toUpperCase()} </label>
+		<label class={`immich-form-label text-xs`} for={label}>{label}</label>
 		{#if required}
 			<div class="text-red-400">*</div>
 		{/if}

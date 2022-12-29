@@ -1,6 +1,6 @@
-import { Body, Controller, Post, Res, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthType } from '../../constants/jwt.constant';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { Authenticated } from '../../decorators/authenticated.decorator';
@@ -9,7 +9,7 @@ import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
 import { UserResponseDto } from '../user/response-dto/user-response.dto';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
-import { OAuthService } from './oauth.service';
+import { MOBILE_REDIRECT, OAuthService } from './oauth.service';
 import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto';
 
 @ApiTags('OAuth')
@@ -17,12 +17,19 @@ import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto
 export class OAuthController {
   constructor(private readonly immichJwtService: ImmichJwtService, private readonly oauthService: OAuthService) {}
 
-  @Post('/config')
+  @Get('mobile-redirect')
+  @Redirect()
+  public mobileRedirect(@Req() req: Request) {
+    const url = `${MOBILE_REDIRECT}?${req.url.split('?')[1] || ''}`;
+    return { url, statusCode: HttpStatus.TEMPORARY_REDIRECT };
+  }
+
+  @Post('config')
   public generateConfig(@Body(ValidationPipe) dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
     return this.oauthService.generateConfig(dto);
   }
 
-  @Post('/callback')
+  @Post('callback')
   public async callback(
     @Res({ passthrough: true }) response: Response,
     @Body(ValidationPipe) dto: OAuthCallbackDto,
