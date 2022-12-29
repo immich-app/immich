@@ -1,21 +1,25 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:latlong2/latlong.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 
-class ExifBottomSheet extends ConsumerWidget {
+class ExifBottomSheet extends HookConsumerWidget {
   final Asset assetDetail;
 
-  const ExifBottomSheet({Key? key, required this.assetDetail})
-      : super(key: key);
+  final dsController = DraggableScrollableController();
+
+  ExifBottomSheet({Key? key, required this.assetDetail}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
     buildMap() {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -65,128 +69,156 @@ class ExifBottomSheet extends ConsumerWidget {
       );
     }
 
-    ExifResponseDto? exifInfo = assetDetail.remote?.exifInfo;
+    final textColor = Theme.of(context).primaryColor;
 
-    buildLocationText() {
-      return Text(
-        "${exifInfo?.city}, ${exifInfo?.state}",
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey[200],
-          fontWeight: FontWeight.bold,
-        ),
+    buildContent(BuildContext context, ScrollController scrollController) {
+      ExifResponseDto? exifInfo = assetDetail.remote?.exifInfo;
+
+      buildLocationText() {
+        return Text(
+          "${exifInfo?.city}, ${exifInfo?.state}",
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        );
+      }
+
+      return SingleChildScrollView(
+        controller: scrollController,
+        child: Card(
+            elevation: 12.0,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
+            margin: const EdgeInsets.all(0),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  const CustomDraggingHandle(),
+                  const SizedBox(height: 12),
+                  if (exifInfo?.dateTimeOriginal != null)
+                    Text(
+                      DateFormat('date_format'.tr()).format(
+                        exifInfo!.dateTimeOriginal!.toLocal(),
+                      ),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Text(
+                      "exif_bottom_sheet_description",
+                      style: TextStyle(
+                        fontSize: 11,
+                      ),
+                    ).tr(),
+                  ),
+
+                  // Location
+                  if (assetDetail.latitude != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 32.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Divider(
+                            thickness: 1,
+                          ),
+                          Text(
+                            "exif_bottom_sheet_location",
+                            style: TextStyle(
+
+                                fontSize: 11, color: textColor),
+                          ).tr(),
+                          if (assetDetail.latitude != null &&
+                              assetDetail.longitude != null)
+                            buildMap(),
+                          if (exifInfo != null &&
+                              exifInfo.city != null &&
+                              exifInfo.state != null)
+                            buildLocationText(),
+                          Text(
+                            "${assetDetail.latitude?.toStringAsFixed(4)}, ${assetDetail.longitude?.toStringAsFixed(4)}",
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey[400]),
+                          )
+                        ],
+                      ),
+                    ),
+                  // Detail
+                  if (exifInfo != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 32.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Divider(
+                            thickness: 1,
+                            color: Colors.grey[600],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Text(
+                              "exif_bottom_sheet_details",
+                              style: TextStyle(fontSize: 11, color: textColor),
+                            ).tr(),
+                          ),
+                          ListTile(
+                            contentPadding: const EdgeInsets.all(0),
+                            dense: true,
+                            leading: const Icon(Icons.image),
+                            title: Text(
+                              "${exifInfo.imageName!}${p.extension(assetDetail.remote!.originalPath)}",
+                              style:
+                                  TextStyle(fontWeight: FontWeight.bold, color: textColor),
+                            ),
+                            subtitle: exifInfo.exifImageHeight != null
+                                ? Text(
+                                    "${exifInfo.exifImageHeight} x ${exifInfo.exifImageWidth}  ${formatBytes(exifInfo.fileSizeInByte!)} ",
+                                  )
+                                : null,
+                          ),
+                          if (exifInfo.make != null)
+                            ListTile(
+                              contentPadding: const EdgeInsets.all(0),
+                              dense: true,
+                              leading: const Icon(Icons.camera),
+                              title: Text(
+                                "${exifInfo.make} ${exifInfo.model}",
+                                style: TextStyle(
+                                    color: textColor,
+                                    fontWeight: FontWeight.bold
+                                ),
+                              ),
+                              subtitle: Text(
+                                "ƒ/${exifInfo.fNumber}   1/${(1 / (exifInfo.exposureTime ?? 1)).toStringAsFixed(0)}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 200),
+                ],
+              ),
+            )),
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8),
-      child: ListView(
-        children: [
-          if (exifInfo?.dateTimeOriginal != null)
-            Text(
-              DateFormat('date_format'.tr()).format(
-                exifInfo!.dateTimeOriginal!.toLocal(),
-              ),
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: Text(
-              "exif_bottom_sheet_description",
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 11,
-              ),
-            ).tr(),
-          ),
-
-          // Location
-          if (assetDetail.latitude != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 32.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Divider(
-                    thickness: 1,
-                    color: Colors.grey[600],
-                  ),
-                  Text(
-                    "exif_bottom_sheet_location",
-                    style: TextStyle(fontSize: 11, color: Colors.grey[400]),
-                  ).tr(),
-                  if (assetDetail.latitude != null &&
-                      assetDetail.longitude != null)
-                    buildMap(),
-                  if (exifInfo != null &&
-                      exifInfo.city != null &&
-                      exifInfo.state != null)
-                    buildLocationText(),
-                  Text(
-                    "${assetDetail.latitude?.toStringAsFixed(4)}, ${assetDetail.longitude?.toStringAsFixed(4)}",
-                    style: TextStyle(fontSize: 12, color: Colors.grey[400]),
-                  )
-                ],
-              ),
-            ),
-          // Detail
-          if (exifInfo != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 32.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Divider(
-                    thickness: 1,
-                    color: Colors.grey[600],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Text(
-                      "exif_bottom_sheet_details",
-                      style: TextStyle(fontSize: 11, color: Colors.grey[400]),
-                    ).tr(),
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.all(0),
-                    dense: true,
-                    textColor: Colors.grey[300],
-                    iconColor: Colors.grey[300],
-                    leading: const Icon(Icons.image),
-                    title: Text(
-                      "${exifInfo.imageName!}${p.extension(assetDetail.remote!.originalPath)}",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: exifInfo.exifImageHeight != null
-                        ? Text(
-                            "${exifInfo.exifImageHeight} x ${exifInfo.exifImageWidth}  ${formatBytes(exifInfo.fileSizeInByte!)} ",
-                          )
-                        : null,
-                  ),
-                  if (exifInfo.make != null)
-                    ListTile(
-                      contentPadding: const EdgeInsets.all(0),
-                      dense: true,
-                      textColor: Colors.grey[300],
-                      iconColor: Colors.grey[300],
-                      leading: const Icon(Icons.camera),
-                      title: Text(
-                        "${exifInfo.make} ${exifInfo.model}",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        "ƒ/${exifInfo.fNumber}   1/${(1 / (exifInfo.exposureTime ?? 1)).toStringAsFixed(0)}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
-                      ),
-                    ),
-                ],
-              ),
-            ),
-        ],
-      ),
+    return DraggableScrollableSheet(
+      controller: dsController,
+      snap: true,
+      minChildSize: 0.5,
+      maxChildSize: 0.8,
+      builder: buildContent,
     );
   }
 }

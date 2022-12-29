@@ -4,7 +4,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -17,6 +16,7 @@ class ImageViewerPage extends HookConsumerWidget {
   final String authToken;
   final ValueNotifier<bool> isZoomedListener;
   final void Function() isZoomedFunction;
+  final void Function()? showExifSheet;
   final bool loadPreview;
   final bool loadOriginal;
 
@@ -29,6 +29,7 @@ class ImageViewerPage extends HookConsumerWidget {
     required this.isZoomedListener,
     required this.loadPreview,
     required this.loadOriginal,
+    this.showExifSheet,
   }) : super(key: key);
 
   Asset? assetDetail;
@@ -56,18 +57,6 @@ class ImageViewerPage extends HookConsumerWidget {
       [],
     );
 
-    showInfo() {
-      showModalBottomSheet(
-        backgroundColor: Colors.black,
-        barrierColor: Colors.transparent,
-        isScrollControlled: false,
-        context: context,
-        builder: (context) {
-          return ExifBottomSheet(assetDetail: assetDetail ?? asset);
-        },
-      );
-    }
-
     return Stack(
       children: [
         Center(
@@ -81,7 +70,7 @@ class ImageViewerPage extends HookConsumerWidget {
               isZoomedFunction: isZoomedFunction,
               isZoomedListener: isZoomedListener,
               onSwipeDown: () => AutoRouter.of(context).pop(),
-              onSwipeUp: asset.isRemote ? showInfo : () {},
+              onSwipeUp: (asset.isRemote && showExifSheet  != null) ? showExifSheet! : () {},
             ),
           ),
         ),

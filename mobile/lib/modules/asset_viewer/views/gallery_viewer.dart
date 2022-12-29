@@ -69,9 +69,9 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     void showInfo() {
       showModalBottomSheet(
-        backgroundColor: Colors.black,
         barrierColor: Colors.transparent,
-        isScrollControlled: false,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
         context: context,
         builder: (context) {
           return ExifBottomSheet(assetDetail: assetDetail!);
