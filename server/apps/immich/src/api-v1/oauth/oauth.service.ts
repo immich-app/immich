@@ -5,7 +5,7 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
 import { UserResponseDto } from '../user/response-dto/user-response.dto';
-import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
+import { IUserRepository } from '../user/user-repository';
 import { UserCore } from '../user/user.core';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
@@ -23,7 +23,7 @@ export class OAuthService {
   constructor(
     private immichJwtService: ImmichJwtService,
     private immichConfigService: ImmichConfigService,
-    @Inject(USER_REPOSITORY) userRepository: IUserRepository,
+    @Inject(IUserRepository) userRepository: IUserRepository,
   ) {
     this.userCore = new UserCore(userRepository);
 

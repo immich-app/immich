@@ -19,7 +19,7 @@ export interface UserListFilter {
   excludeId?: string;
 }
 
-export const USER_REPOSITORY = 'USER_REPOSITORY';
+export const IUserRepository = 'IUserRepository';
 
 export class UserRepository implements IUserRepository {
   constructor(
