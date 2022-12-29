@@ -32,6 +32,11 @@ void main() {
       // TODO
     });
 
+    //Future mobileRedirect() async
+    test('test mobileRedirect', () async {
+      // TODO
+    });
+
     //Future<UserResponseDto> unlink() async
     test('test unlink', () async {
       // TODO

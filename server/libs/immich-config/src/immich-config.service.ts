@@ -20,6 +20,8 @@ const defaults: SystemConfig = Object.freeze({
     issuerUrl: '',
     clientId: '',
     clientSecret: '',
+    mobileOverrideEnabled: false,
+    mobileRedirectUri: '',
     scope: 'openid email profile',
     buttonText: 'Login with OAuth',
     autoRegister: true,

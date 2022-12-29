@@ -1,4 +1,5 @@
-import { ImmichConfigService } from '@app/immich-config';
+import { SystemConfig } from '@app/database/entities/system-config.entity';
+import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
@@ -15,6 +16,8 @@ type OAuthProfile = UserinfoResponse & {
   email: string;
 };
 
+export const MOBILE_REDIRECT = 'app.immich:/';
+
 @Injectable()
 export class OAuthService {
   private readonly userCore: UserCore;
@@ -22,26 +25,29 @@ export class OAuthService {
 
   constructor(
     private immichJwtService: ImmichJwtService,
-    private immichConfigService: ImmichConfigService,
+    immichConfigService: ImmichConfigService,
     @Inject(USER_REPOSITORY) userRepository: IUserRepository,
+    @Inject(INITIAL_SYSTEM_CONFIG) private config: SystemConfig,
   ) {
     this.userCore = new UserCore(userRepository);
 
     custom.setHttpOptionsDefaults({
       timeout: 30000,
     });
+
+    immichConfigService.config$.subscribe((config) => (this.config = config));
   }
 
   public async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    const config = await this.immichConfigService.getConfig();
-    const { enabled, scope, buttonText } = config.oauth;
+    const { enabled, scope, buttonText } = this.config.oauth;
+    const redirectUri = this.normalize(dto.redirectUri);
 
     if (!enabled) {
       return { enabled: false };
     }
 
     const url = (await this.getClient()).authorizationUrl({
-      redirect_uri: dto.redirectUri,
+      redirect_uri: redirectUri,
       scope,
       state: generators.state(),
     });
@@ -64,9 +70,7 @@ export class OAuthService {
 
     // register new user
     if (!user) {
-      const config = await this.immichConfigService.getConfig();
-      const { autoRegister } = config.oauth;
-      if (!autoRegister) {
+      if (!this.config.oauth.autoRegister) {
         this.logger.warn(
           `Unable to register ${profile.email}. To enable set OAuth Auto Register to true in admin settings.`,
         );
@@ -100,17 +104,14 @@ export class OAuthService {
   }
 
   public async getLogoutEndpoint(): Promise<string | null> {
-    const config = await this.immichConfigService.getConfig();
-    const { enabled } = config.oauth;
-
-    if (!enabled) {
+    if (!this.config.oauth.enabled) {
       return null;
     }
     return (await this.getClient()).issuer.metadata.end_session_endpoint || null;
   }
 
   private async callback(url: string): Promise<any> {
-    const redirectUri = url.split('?')[0];
+    const redirectUri = this.normalize(url.split('?')[0]);
     const client = await this.getClient();
     const params = client.callbackParams(url);
     const tokens = await client.callback(redirectUri, params, { state: params.state });
@@ -118,8 +119,7 @@ export class OAuthService {
   }
 
   private async getClient() {
-    const config = await this.immichConfigService.getConfig();
-    const { enabled, clientId, clientSecret, issuerUrl } = config.oauth;
+    const { enabled, clientId, clientSecret, issuerUrl } = this.config.oauth;
 
     if (!enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
@@ -138,5 +138,14 @@ export class OAuthService {
     }
 
     return new issuer.Client(metadata);
+  }
+
+  private normalize(redirectUri: string) {
+    const isMobile = redirectUri === MOBILE_REDIRECT;
+    const { mobileRedirectUri, mobileOverrideEnabled } = this.config.oauth;
+    if (isMobile && mobileOverrideEnabled && mobileRedirectUri) {
+      return mobileRedirectUri;
+    }
+    return redirectUri;
   }
 }

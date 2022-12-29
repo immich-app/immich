@@ -157,6 +157,39 @@ class OAuthApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /oauth/mobile-redirect' operation and returns the [Response].
+  Future<Response> mobileRedirectWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/oauth/mobile-redirect';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> mobileRedirect() async {
+    final response = await mobileRedirectWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'POST /oauth/unlink' operation and returns the [Response].
   Future<Response> unlinkWithHttpInfo() async {
     // ignore: prefer_const_declarations
