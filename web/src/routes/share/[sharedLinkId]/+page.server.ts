@@ -5,6 +5,6 @@ import { serverApi } from '@api';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const { shareHash } = params;
-	console.log('share page', shareHash);
+	const { sharedLinkId } = params;
+	console.log('share page', sharedLinkId);
 };

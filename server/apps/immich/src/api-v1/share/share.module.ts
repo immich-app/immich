@@ -3,12 +3,19 @@ import { ShareService } from './share.service';
 import { ShareController } from './share.controller';
 import { SharedLinkEntity } from '@app/database/entities/shared-link.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AlbumEntity } from '@app/database/entities/album.entity';
-import { AssetEntity } from '@app/database/entities/asset.entity';
+import { SharedLinkRepository, SHARED_LINK_REPOSITORY } from './shared-link.repository';
+import { AssetModule } from '../asset/asset.module';
+import { AlbumModule } from '../album/album.module';
+
+const SHARED_LINK_REPOSITORY_PROVIDER = {
+  provide: SHARED_LINK_REPOSITORY,
+  useClass: SharedLinkRepository,
+};
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SharedLinkEntity, AlbumEntity, AssetEntity])],
+  imports: [TypeOrmModule.forFeature([SharedLinkEntity]), AssetModule, AlbumModule],
   controllers: [ShareController],
-  providers: [ShareService],
+  providers: [ShareService, SHARED_LINK_REPOSITORY_PROVIDER],
+  exports: [SHARED_LINK_REPOSITORY_PROVIDER],
 })
 export class ShareModule {}

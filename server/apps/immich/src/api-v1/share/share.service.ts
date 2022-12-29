@@ -1,11 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import { CreateShareDto } from './dto/create-share.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { AuthUserDto } from '../../decorators/auth-user.decorator';
+import { ALBUM_REPOSITORY, IAlbumRepository } from '../album/album-repository';
+import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
+import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
 import { UpdateShareDto } from './dto/update-share.dto';
+import { ShareCore } from './share.core';
+import { ISharedLinkRepository, SHARED_LINK_REPOSITORY } from './shared-link.repository';
 
 @Injectable()
 export class ShareService {
-  create(createShareDto: CreateShareDto) {
-    return 'This action adds a new share';
+  private shareCore: ShareCore;
+
+  constructor(
+    @Inject(SHARED_LINK_REPOSITORY)
+    sharedLinkRepository: ISharedLinkRepository,
+
+    @Inject(ASSET_REPOSITORY)
+    assetRepository: IAssetRepository,
+
+    @Inject(ALBUM_REPOSITORY)
+    albumRepository: IAlbumRepository,
+  ) {
+    this.shareCore = new ShareCore(sharedLinkRepository, assetRepository, albumRepository);
+  }
+
+  async createSharedLink(authUser: AuthUserDto, dto: CreateSharedLinkDto) {
+    const createdSharedLink = await this.shareCore.createSharedLink(authUser.id, dto);
+
+    // return mapdto
   }
 
   findAll() {

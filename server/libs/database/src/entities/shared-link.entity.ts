@@ -8,7 +8,7 @@ export class SharedLinkEntity {
   id!: string;
 
   @Column({ nullable: true })
-  description!: string;
+  description?: string;
 
   @Column()
   userId!: string;
@@ -23,7 +23,7 @@ export class SharedLinkEntity {
   createdAt!: string;
 
   @Column({ type: 'timestamptz', nullable: true })
-  expiresAt!: string;
+  expiresAt?: string;
 
   @ManyToMany(() => AssetEntity, (asset) => asset.sharedLinks)
   assets!: AssetEntity[];
