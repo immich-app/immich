@@ -1,6 +1,6 @@
 import { ImmichLogLevel } from '@app/common/constants/log-level.constant';
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { ExifEntity } from '@app/database/entities/exif.entity';
+import { AssetEntity } from '@app/database';
+import { ExifEntity } from '@app/database';
 import {
   IExifExtractionProcessor,
   IVideoLengthExtractionProcessor,

@@ -1,4 +1,4 @@
-import { SystemConfigEntity } from '@app/database/entities/system-config.entity';
+import { SystemConfigEntity } from '@app/database';
 import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.constant';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';

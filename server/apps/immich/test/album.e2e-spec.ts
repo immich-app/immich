@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 import { clearDb, getAuthUser, authCustom } from './test-utils';
-import { databaseConfig } from '@app/database/config/database.config';
+import { databaseConfig } from '@app/database';
 import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';

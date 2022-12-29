@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { AlbumEntity } from '@app/database/entities/album.entity';
+import { AlbumEntity } from '@app/database';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';

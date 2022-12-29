@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database/entities/user.entity';
+import { UserEntity } from '@app/database';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { newUserRepositoryMock } from '../../../test/test-utils';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';

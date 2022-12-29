@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserEntity } from '../../../../../libs/database/src/entities/user.entity';
+import { UserEntity } from '@app/database';
 import { AuthType } from '../../constants/jwt.constant';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';

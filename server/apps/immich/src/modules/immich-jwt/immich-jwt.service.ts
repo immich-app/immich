@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database/entities/user.entity';
+import { UserEntity } from '@app/database';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';

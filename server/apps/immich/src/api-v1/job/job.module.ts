@@ -6,7 +6,7 @@ import { ImmichJwtModule } from '../../modules/immich-jwt/immich-jwt.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '../../config/jwt.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ExifEntity } from '@app/database/entities/exif.entity';
+import { ExifEntity } from '@app/database';
 import { TagModule } from '../tag/tag.module';
 import { AssetModule } from '../asset/asset.module';
 import { UserModule } from '../user/user.module';
