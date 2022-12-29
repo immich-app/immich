@@ -5,7 +5,7 @@
 	import { page } from '$app/stores';
 	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
 	import AnnouncementBox from '$lib/components/shared-components/announcement-box.svelte';
-	import UploadCover from '$lib/components/shared-components/upload-cover.svelte';
+	import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
 	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import { onMount } from 'svelte';
 	import { checkAppVersion } from '$lib/utils/check-app-version';
