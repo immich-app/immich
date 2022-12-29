@@ -53,7 +53,7 @@ class AddAssetsResponseDto {
     if (album != null) {
       _json[r'album'] = album;
     } else {
-      _json[r'album'] = null;
+      // _json[r'album'] = null;
     }
     return _json;
   }

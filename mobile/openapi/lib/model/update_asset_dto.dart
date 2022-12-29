@@ -47,7 +47,7 @@ class UpdateAssetDto {
     if (isFavorite != null) {
       _json[r'isFavorite'] = isFavorite;
     } else {
-      _json[r'isFavorite'] = null;
+      // _json[r'isFavorite'] = null;
     }
     return _json;
   }

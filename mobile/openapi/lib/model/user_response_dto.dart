@@ -94,7 +94,7 @@ class UserResponseDto {
     if (deletedAt != null) {
       _json[r'deletedAt'] = deletedAt!.toUtc().toIso8601String();
     } else {
-      _json[r'deletedAt'] = null;
+      // _json[r'deletedAt'] = null;
     }
       _json[r'oauthId'] = oauthId;
     return _json;

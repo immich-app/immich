@@ -53,7 +53,7 @@ class UpsertDeviceInfoDto {
     if (isAutoBackup != null) {
       _json[r'isAutoBackup'] = isAutoBackup;
     } else {
-      _json[r'isAutoBackup'] = null;
+      // _json[r'isAutoBackup'] = null;
     }
     return _json;
   }

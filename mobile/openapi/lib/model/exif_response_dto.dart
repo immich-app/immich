@@ -130,102 +130,102 @@ class ExifResponseDto {
     if (id != null) {
       _json[r'id'] = id;
     } else {
-      _json[r'id'] = null;
+      // _json[r'id'] = null;
     }
     if (fileSizeInByte != null) {
       _json[r'fileSizeInByte'] = fileSizeInByte;
     } else {
-      _json[r'fileSizeInByte'] = null;
+      // _json[r'fileSizeInByte'] = null;
     }
     if (make != null) {
       _json[r'make'] = make;
     } else {
-      _json[r'make'] = null;
+      // _json[r'make'] = null;
     }
     if (model != null) {
       _json[r'model'] = model;
     } else {
-      _json[r'model'] = null;
+      // _json[r'model'] = null;
     }
     if (imageName != null) {
       _json[r'imageName'] = imageName;
     } else {
-      _json[r'imageName'] = null;
+      // _json[r'imageName'] = null;
     }
     if (exifImageWidth != null) {
       _json[r'exifImageWidth'] = exifImageWidth;
     } else {
-      _json[r'exifImageWidth'] = null;
+      // _json[r'exifImageWidth'] = null;
     }
     if (exifImageHeight != null) {
       _json[r'exifImageHeight'] = exifImageHeight;
     } else {
-      _json[r'exifImageHeight'] = null;
+      // _json[r'exifImageHeight'] = null;
     }
     if (orientation != null) {
       _json[r'orientation'] = orientation;
     } else {
-      _json[r'orientation'] = null;
+      // _json[r'orientation'] = null;
     }
     if (dateTimeOriginal != null) {
       _json[r'dateTimeOriginal'] = dateTimeOriginal!.toUtc().toIso8601String();
     } else {
-      _json[r'dateTimeOriginal'] = null;
+      // _json[r'dateTimeOriginal'] = null;
     }
     if (modifyDate != null) {
       _json[r'modifyDate'] = modifyDate!.toUtc().toIso8601String();
     } else {
-      _json[r'modifyDate'] = null;
+      // _json[r'modifyDate'] = null;
     }
     if (lensModel != null) {
       _json[r'lensModel'] = lensModel;
     } else {
-      _json[r'lensModel'] = null;
+      // _json[r'lensModel'] = null;
     }
     if (fNumber != null) {
       _json[r'fNumber'] = fNumber;
     } else {
-      _json[r'fNumber'] = null;
+      // _json[r'fNumber'] = null;
     }
     if (focalLength != null) {
       _json[r'focalLength'] = focalLength;
     } else {
-      _json[r'focalLength'] = null;
+      // _json[r'focalLength'] = null;
     }
     if (iso != null) {
       _json[r'iso'] = iso;
     } else {
-      _json[r'iso'] = null;
+      // _json[r'iso'] = null;
     }
     if (exposureTime != null) {
       _json[r'exposureTime'] = exposureTime;
     } else {
-      _json[r'exposureTime'] = null;
+      // _json[r'exposureTime'] = null;
     }
     if (latitude != null) {
       _json[r'latitude'] = latitude;
     } else {
-      _json[r'latitude'] = null;
+      // _json[r'latitude'] = null;
     }
     if (longitude != null) {
       _json[r'longitude'] = longitude;
     } else {
-      _json[r'longitude'] = null;
+      // _json[r'longitude'] = null;
     }
     if (city != null) {
       _json[r'city'] = city;
     } else {
-      _json[r'city'] = null;
+      // _json[r'city'] = null;
     }
     if (state != null) {
       _json[r'state'] = state;
     } else {
-      _json[r'state'] = null;
+      // _json[r'state'] = null;
     }
     if (country != null) {
       _json[r'country'] = country;
     } else {
-      _json[r'country'] = null;
+      // _json[r'country'] = null;
     }
     return _json;
   }

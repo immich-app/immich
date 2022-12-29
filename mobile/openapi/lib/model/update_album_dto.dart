@@ -52,12 +52,12 @@ class UpdateAlbumDto {
     if (albumName != null) {
       _json[r'albumName'] = albumName;
     } else {
-      _json[r'albumName'] = null;
+      // _json[r'albumName'] = null;
     }
     if (albumThumbnailAssetId != null) {
       _json[r'albumThumbnailAssetId'] = albumThumbnailAssetId;
     } else {
-      _json[r'albumThumbnailAssetId'] = null;
+      // _json[r'albumThumbnailAssetId'] = null;
     }
     return _json;
   }

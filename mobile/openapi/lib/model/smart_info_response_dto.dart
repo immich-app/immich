@@ -51,17 +51,17 @@ class SmartInfoResponseDto {
     if (id != null) {
       _json[r'id'] = id;
     } else {
-      _json[r'id'] = null;
+      // _json[r'id'] = null;
     }
     if (tags != null) {
       _json[r'tags'] = tags;
     } else {
-      _json[r'tags'] = null;
+      // _json[r'tags'] = null;
     }
     if (objects != null) {
       _json[r'objects'] = objects;
     } else {
-      _json[r'objects'] = null;
+      // _json[r'objects'] = null;
     }
     return _json;
   }

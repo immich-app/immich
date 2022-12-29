@@ -138,7 +138,7 @@ class AssetResponseDto {
     if (resizePath != null) {
       _json[r'resizePath'] = resizePath;
     } else {
-      _json[r'resizePath'] = null;
+      // _json[r'resizePath'] = null;
     }
       _json[r'createdAt'] = createdAt;
       _json[r'modifiedAt'] = modifiedAt;
@@ -146,33 +146,33 @@ class AssetResponseDto {
     if (mimeType != null) {
       _json[r'mimeType'] = mimeType;
     } else {
-      _json[r'mimeType'] = null;
+      // _json[r'mimeType'] = null;
     }
       _json[r'duration'] = duration;
     if (webpPath != null) {
       _json[r'webpPath'] = webpPath;
     } else {
-      _json[r'webpPath'] = null;
+      // _json[r'webpPath'] = null;
     }
     if (encodedVideoPath != null) {
       _json[r'encodedVideoPath'] = encodedVideoPath;
     } else {
-      _json[r'encodedVideoPath'] = null;
+      // _json[r'encodedVideoPath'] = null;
     }
     if (exifInfo != null) {
       _json[r'exifInfo'] = exifInfo;
     } else {
-      _json[r'exifInfo'] = null;
+      // _json[r'exifInfo'] = null;
     }
     if (smartInfo != null) {
       _json[r'smartInfo'] = smartInfo;
     } else {
-      _json[r'smartInfo'] = null;
+      // _json[r'smartInfo'] = null;
     }
     if (livePhotoVideoId != null) {
       _json[r'livePhotoVideoId'] = livePhotoVideoId;
     } else {
-      _json[r'livePhotoVideoId'] = null;
+      // _json[r'livePhotoVideoId'] = null;
     }
       _json[r'tags'] = tags;
     return _json;

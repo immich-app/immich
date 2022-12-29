@@ -80,7 +80,7 @@ class AlbumResponseDto {
     if (albumThumbnailAssetId != null) {
       _json[r'albumThumbnailAssetId'] = albumThumbnailAssetId;
     } else {
-      _json[r'albumThumbnailAssetId'] = null;
+      // _json[r'albumThumbnailAssetId'] = null;
     }
       _json[r'shared'] = shared;
       _json[r'sharedUsers'] = sharedUsers;

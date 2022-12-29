@@ -47,7 +47,7 @@ class CheckDuplicateAssetResponseDto {
     if (id != null) {
       _json[r'id'] = id;
     } else {
-      _json[r'id'] = null;
+      // _json[r'id'] = null;
     }
     return _json;
   }

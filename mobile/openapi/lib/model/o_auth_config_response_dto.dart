@@ -58,12 +58,12 @@ class OAuthConfigResponseDto {
     if (url != null) {
       _json[r'url'] = url;
     } else {
-      _json[r'url'] = null;
+      // _json[r'url'] = null;
     }
     if (buttonText != null) {
       _json[r'buttonText'] = buttonText;
     } else {
-      _json[r'buttonText'] = null;
+      // _json[r'buttonText'] = null;
     }
     return _json;
   }

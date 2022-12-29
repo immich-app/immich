@@ -59,7 +59,7 @@ class TagResponseDto {
     if (renameTagId != null) {
       _json[r'renameTagId'] = renameTagId;
     } else {
-      _json[r'renameTagId'] = null;
+      // _json[r'renameTagId'] = null;
     }
     return _json;
   }

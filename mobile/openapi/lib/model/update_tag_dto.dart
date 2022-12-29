@@ -52,12 +52,12 @@ class UpdateTagDto {
     if (name != null) {
       _json[r'name'] = name;
     } else {
-      _json[r'name'] = null;
+      // _json[r'name'] = null;
     }
     if (renameTagId != null) {
       _json[r'renameTagId'] = renameTagId;
     } else {
-      _json[r'renameTagId'] = null;
+      // _json[r'renameTagId'] = null;
     }
     return _json;
   }

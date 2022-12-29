@@ -113,37 +113,37 @@ class UpdateUserDto {
     if (email != null) {
       _json[r'email'] = email;
     } else {
-      _json[r'email'] = null;
+      // _json[r'email'] = null;
     }
     if (password != null) {
       _json[r'password'] = password;
     } else {
-      _json[r'password'] = null;
+      // _json[r'password'] = null;
     }
     if (firstName != null) {
       _json[r'firstName'] = firstName;
     } else {
-      _json[r'firstName'] = null;
+      // _json[r'firstName'] = null;
     }
     if (lastName != null) {
       _json[r'lastName'] = lastName;
     } else {
-      _json[r'lastName'] = null;
+      // _json[r'lastName'] = null;
     }
     if (isAdmin != null) {
       _json[r'isAdmin'] = isAdmin;
     } else {
-      _json[r'isAdmin'] = null;
+      // _json[r'isAdmin'] = null;
     }
     if (shouldChangePassword != null) {
       _json[r'shouldChangePassword'] = shouldChangePassword;
     } else {
-      _json[r'shouldChangePassword'] = null;
+      // _json[r'shouldChangePassword'] = null;
     }
     if (profileImagePath != null) {
       _json[r'profileImagePath'] = profileImagePath;
     } else {
-      _json[r'profileImagePath'] = null;
+      // _json[r'profileImagePath'] = null;
     }
     return _json;
   }
