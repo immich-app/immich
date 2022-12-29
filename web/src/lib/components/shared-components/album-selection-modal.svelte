@@ -14,12 +14,21 @@
 	export let shared: boolean;
 
 	onMount(async () => {
+		loading = true;
+
 		const { data } = await api.albumApi.getAllAlbums();
-		albums = data;
+
+		if (shared) {
+			albums = data.filter((album) => album.shared === shared);
+		} else {
+			albums = data;
+		}
+
 		recentAlbums = albums
 			.filter((album) => album.shared === shared)
 			.sort((a, b) => (new Date(a.createdAt) > new Date(b.createdAt) ? -1 : 1))
 			.slice(0, 3);
+
 		loading = false;
 	});
 
@@ -75,20 +84,16 @@
 				{#if albums.length > 0}
 					{#if !shared}
 						<p class="text-xs px-5 py-3">RECENT</p>
-					{/if}
-					{#each recentAlbums as album}
-						{#key album.id}
+						{#each recentAlbums as album (album.id)}
 							<AlbumListItem variant="simple" {album} on:album={() => handleSelect(album)} />
-						{/key}
-					{/each}
+						{/each}
+					{/if}
 
 					{#if !shared}
 						<p class="text-xs px-5 py-3">ALL ALBUMS</p>
 					{/if}
-					{#each albums as album}
-						{#key album.id}
-							<AlbumListItem {album} on:album={() => handleSelect(album)} />
-						{/key}
+					{#each albums as album (album.id)}
+						<AlbumListItem {album} on:album={() => handleSelect(album)} />
 					{/each}
 				{:else}
 					<p class="text-sm px-5 py-1">It looks like you do not have any albums yet.</p>
