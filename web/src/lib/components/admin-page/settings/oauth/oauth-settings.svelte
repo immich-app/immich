@@ -148,6 +148,13 @@
 				/>
 
 				<SettingSwitch
+					title="AUTO LAUNCH"
+					subtitle="Start the OAuth login flow automatically upon navigating to the login page"
+					disabled={!oauthConfig.enabled}
+					bind:checked={oauthConfig.autoLaunch}
+				/>
+
+				<SettingSwitch
 					title="MOBILE REDIRECT URI OVERRIDE"
 					subtitle="Enable when `app.immich:/` is an invalid redirect URI."
 					disabled={!oauthConfig.enabled}

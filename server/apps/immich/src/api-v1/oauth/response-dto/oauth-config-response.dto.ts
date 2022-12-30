@@ -1,12 +1,7 @@
-import { ApiResponseProperty } from '@nestjs/swagger';
-
 export class OAuthConfigResponseDto {
-  @ApiResponseProperty()
   enabled!: boolean;
-
-  @ApiResponseProperty()
+  passwordLoginEnabled!: boolean;
   url?: string;
-
-  @ApiResponseProperty()
   buttonText?: string;
+  autoLaunch?: boolean;
 }

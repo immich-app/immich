@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool passwordLoginEnabled
+    test('to test the property `passwordLoginEnabled`', () async {
+      // TODO
+    });
+
     // String url
     test('to test the property `url`', () async {
       // TODO
@@ -28,6 +33,11 @@ void main() {
 
     // String buttonText
     test('to test the property `buttonText`', () async {
+      // TODO
+    });
+
+    // bool autoLaunch
+    test('to test the property `autoLaunch`', () async {
       // TODO
     });
 

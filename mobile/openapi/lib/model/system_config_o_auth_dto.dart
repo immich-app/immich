@@ -20,6 +20,7 @@ class SystemConfigOAuthDto {
     required this.scope,
     required this.buttonText,
     required this.autoRegister,
+    required this.autoLaunch,
     required this.mobileOverrideEnabled,
     required this.mobileRedirectUri,
   });
@@ -38,6 +39,8 @@ class SystemConfigOAuthDto {
 
   bool autoRegister;
 
+  bool autoLaunch;
+
   bool mobileOverrideEnabled;
 
   String mobileRedirectUri;
@@ -51,6 +54,7 @@ class SystemConfigOAuthDto {
      other.scope == scope &&
      other.buttonText == buttonText &&
      other.autoRegister == autoRegister &&
+     other.autoLaunch == autoLaunch &&
      other.mobileOverrideEnabled == mobileOverrideEnabled &&
      other.mobileRedirectUri == mobileRedirectUri;
 
@@ -64,11 +68,12 @@ class SystemConfigOAuthDto {
     (scope.hashCode) +
     (buttonText.hashCode) +
     (autoRegister.hashCode) +
+    (autoLaunch.hashCode) +
     (mobileOverrideEnabled.hashCode) +
     (mobileRedirectUri.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[enabled=$enabled, issuerUrl=$issuerUrl, clientId=$clientId, clientSecret=$clientSecret, scope=$scope, buttonText=$buttonText, autoRegister=$autoRegister, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri]';
+  String toString() => 'SystemConfigOAuthDto[enabled=$enabled, issuerUrl=$issuerUrl, clientId=$clientId, clientSecret=$clientSecret, scope=$scope, buttonText=$buttonText, autoRegister=$autoRegister, autoLaunch=$autoLaunch, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -79,6 +84,7 @@ class SystemConfigOAuthDto {
       _json[r'scope'] = scope;
       _json[r'buttonText'] = buttonText;
       _json[r'autoRegister'] = autoRegister;
+      _json[r'autoLaunch'] = autoLaunch;
       _json[r'mobileOverrideEnabled'] = mobileOverrideEnabled;
       _json[r'mobileRedirectUri'] = mobileRedirectUri;
     return _json;
@@ -110,6 +116,7 @@ class SystemConfigOAuthDto {
         scope: mapValueOfType<String>(json, r'scope')!,
         buttonText: mapValueOfType<String>(json, r'buttonText')!,
         autoRegister: mapValueOfType<bool>(json, r'autoRegister')!,
+        autoLaunch: mapValueOfType<bool>(json, r'autoLaunch')!,
         mobileOverrideEnabled: mapValueOfType<bool>(json, r'mobileOverrideEnabled')!,
         mobileRedirectUri: mapValueOfType<String>(json, r'mobileRedirectUri')!,
       );
@@ -168,6 +175,7 @@ class SystemConfigOAuthDto {
     'scope',
     'buttonText',
     'autoRegister',
+    'autoLaunch',
     'mobileOverrideEnabled',
     'mobileRedirectUri',
   };

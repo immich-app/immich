@@ -25,6 +25,10 @@ const defaults: SystemConfig = Object.freeze({
     scope: 'openid email profile',
     buttonText: 'Login with OAuth',
     autoRegister: true,
+    autoLaunch: false,
+  },
+  passwordLogin: {
+    enabled: true,
   },
 
   storageTemplate: {

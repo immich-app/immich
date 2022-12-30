@@ -1228,6 +1228,12 @@ export interface OAuthConfigResponseDto {
     'enabled': boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof OAuthConfigResponseDto
+     */
+    'passwordLoginEnabled': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof OAuthConfigResponseDto
      */
@@ -1238,6 +1244,12 @@ export interface OAuthConfigResponseDto {
      * @memberof OAuthConfigResponseDto
      */
     'buttonText'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof OAuthConfigResponseDto
+     */
+    'autoLaunch'?: boolean;
 }
 /**
  * 
@@ -1477,6 +1489,12 @@ export interface SystemConfigDto {
     'oauth': SystemConfigOAuthDto;
     /**
      * 
+     * @type {SystemConfigPasswordLoginDto}
+     * @memberof SystemConfigDto
+     */
+    'passwordLogin': SystemConfigPasswordLoginDto;
+    /**
+     * 
      * @type {SystemConfigStorageTemplateDto}
      * @memberof SystemConfigDto
      */
@@ -1572,6 +1590,12 @@ export interface SystemConfigOAuthDto {
      * @type {boolean}
      * @memberof SystemConfigOAuthDto
      */
+    'autoLaunch': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigOAuthDto
+     */
     'mobileOverrideEnabled': boolean;
     /**
      * 
@@ -1579,6 +1603,19 @@ export interface SystemConfigOAuthDto {
      * @memberof SystemConfigOAuthDto
      */
     'mobileRedirectUri': string;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigPasswordLoginDto
+ */
+export interface SystemConfigPasswordLoginDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigPasswordLoginDto
+     */
+    'enabled': boolean;
 }
 /**
  * 

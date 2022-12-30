@@ -15,6 +15,7 @@ class SystemConfigDto {
   SystemConfigDto({
     required this.ffmpeg,
     required this.oauth,
+    required this.passwordLogin,
     required this.storageTemplate,
   });
 
@@ -22,12 +23,15 @@ class SystemConfigDto {
 
   SystemConfigOAuthDto oauth;
 
+  SystemConfigPasswordLoginDto passwordLogin;
+
   SystemConfigStorageTemplateDto storageTemplate;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
      other.ffmpeg == ffmpeg &&
      other.oauth == oauth &&
+     other.passwordLogin == passwordLogin &&
      other.storageTemplate == storageTemplate;
 
   @override
@@ -35,15 +39,17 @@ class SystemConfigDto {
     // ignore: unnecessary_parenthesis
     (ffmpeg.hashCode) +
     (oauth.hashCode) +
+    (passwordLogin.hashCode) +
     (storageTemplate.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, oauth=$oauth, storageTemplate=$storageTemplate]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'ffmpeg'] = ffmpeg;
       _json[r'oauth'] = oauth;
+      _json[r'passwordLogin'] = passwordLogin;
       _json[r'storageTemplate'] = storageTemplate;
     return _json;
   }
@@ -69,6 +75,7 @@ class SystemConfigDto {
       return SystemConfigDto(
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
+        passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
       );
     }
@@ -121,6 +128,7 @@ class SystemConfigDto {
   static const requiredKeys = <String>{
     'ffmpeg',
     'oauth',
+    'passwordLogin',
     'storageTemplate',
   };
 }
