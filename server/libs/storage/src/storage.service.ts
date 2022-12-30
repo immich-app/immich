@@ -1,6 +1,5 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { SystemConfig } from '@app/database/entities/system-config.entity';
+import { AssetEntity, SystemConfig } from '@app/database';
 import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';

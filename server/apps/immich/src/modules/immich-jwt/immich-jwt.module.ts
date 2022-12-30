@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '../../config/jwt.config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@app/database/entities/user.entity';
+import { UserEntity } from '@app/database';
 
 @Module({
   imports: [JwtModule.register(jwtConfig), TypeOrmModule.forFeature([UserEntity])],

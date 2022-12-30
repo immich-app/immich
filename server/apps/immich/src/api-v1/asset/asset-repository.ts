@@ -1,6 +1,6 @@
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/database';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
@@ -14,7 +14,7 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
-import { ITagRepository, TAG_REPOSITORY } from '../tag/tag.repository';
+import { ITagRepository } from '../tag/tag.repository';
 import { IsNull } from 'typeorm';
 
 export interface IAssetRepository {
@@ -48,7 +48,7 @@ export interface IAssetRepository {
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
 
-export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
+export const IAssetRepository = 'IAssetRepository';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -56,7 +56,7 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @Inject(TAG_REPOSITORY) private _tagRepository: ITagRepository,
+    @Inject(ITagRepository) private _tagRepository: ITagRepository,
   ) {}
 
   async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {

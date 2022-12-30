@@ -1,4 +1,4 @@
-import { ExifEntity } from '@app/database/entities/exif.entity';
+import { ExifEntity } from '@app/database';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ExifResponseDto {

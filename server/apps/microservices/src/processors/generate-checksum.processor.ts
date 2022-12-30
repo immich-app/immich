@@ -1,4 +1,4 @@
-import { AssetEntity } from '@app/database/entities/asset.entity';
+import { AssetEntity } from '@app/database';
 import { QueueNameEnum } from '@app/job';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
