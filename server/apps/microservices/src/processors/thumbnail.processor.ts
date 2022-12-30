@@ -1,5 +1,5 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/database';
 import {
   WebpGeneratorProcessor,
   generateJPEGThumbnailProcessorName,

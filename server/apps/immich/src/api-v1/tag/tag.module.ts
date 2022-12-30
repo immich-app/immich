@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TagService } from './tag.service';
 import { TagController } from './tag.controller';
-import { TagEntity } from '@app/database/entities/tag.entity';
+import { TagEntity } from '@app/database';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TagRepository, TAG_REPOSITORY } from './tag.repository';
+import { TagRepository, ITagRepository } from './tag.repository';
 
 const TAG_REPOSITORY_PROVIDER = {
-  provide: TAG_REPOSITORY,
+  provide: ITagRepository,
   useClass: TagRepository,
 };
 @Module({

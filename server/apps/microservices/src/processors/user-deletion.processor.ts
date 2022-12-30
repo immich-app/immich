@@ -1,6 +1,5 @@
 import { APP_UPLOAD_LOCATION, userUtils } from '@app/common';
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { UserEntity } from '@app/database/entities/user.entity';
+import { AssetEntity, UserEntity } from '@app/database';
 import { QueueNameEnum, userDeletionProcessorName } from '@app/job';
 import { IUserDeletionJob } from '@app/job/interfaces/user-deletion.interface';
 import { Process, Processor } from '@nestjs/bull';

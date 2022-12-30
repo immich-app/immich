@@ -1,15 +1,15 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { AlbumEntity } from '@app/database/entities/album.entity';
+import { AlbumEntity } from '@app/database';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
 import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from './response-dto/album-response.dto';
-import { ALBUM_REPOSITORY, IAlbumRepository } from './album-repository';
+import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
-import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
+import { IAssetRepository } from '../asset/asset-repository';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { DownloadService } from '../../modules/download/download.service';
@@ -18,8 +18,8 @@ import { DownloadDto } from '../asset/dto/download-library.dto';
 @Injectable()
 export class AlbumService {
   constructor(
-    @Inject(ALBUM_REPOSITORY) private _albumRepository: IAlbumRepository,
-    @Inject(ASSET_REPOSITORY) private _assetRepository: IAssetRepository,
+    @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
+    @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     private downloadService: DownloadService,
   ) {}
 

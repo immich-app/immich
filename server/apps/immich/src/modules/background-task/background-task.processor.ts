@@ -1,8 +1,7 @@
 import { Process, Processor } from '@nestjs/bull';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
+import { AssetEntity, SmartInfoEntity } from '@app/database';
 import { Job } from 'bull';
 import { AssetResponseDto } from '../../api-v1/asset/response-dto/asset-response.dto';
 import { assetUtils } from '@app/common/utils';

@@ -2,11 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType, ExifEntity, UserEntity } from '@app/database';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { randomUUID } from 'crypto';
-import { ExifEntity } from '@app/database/entities/exif.entity';
 import {
   userDeletionProcessorName,
   exifExtractionProcessorName,
@@ -19,7 +18,6 @@ import {
   videoMetadataExtractionProcessorName,
 } from '@app/job';
 import { ConfigService } from '@nestjs/config';
-import { UserEntity } from '@app/database/entities/user.entity';
 import { IUserDeletionJob } from '@app/job/interfaces/user-deletion.interface';
 import { userUtils } from '@app/common';
 
