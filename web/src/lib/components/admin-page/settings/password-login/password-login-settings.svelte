@@ -3,7 +3,7 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import { api, SystemConfigFFmpegDto, SystemConfigPasswordLoginDto } from '@api';
+	import { api, SystemConfigPasswordLoginDto } from '@api';
 	import _ from 'lodash';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import { fade } from 'svelte/transition';

@@ -10,12 +10,7 @@
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
-	import {
-		api,
-		AssetResponseDto,
-		AssetTypeEnum,
-		AlbumResponseDto
-	} from '@api';
+	import { api, AssetResponseDto, AssetTypeEnum, AlbumResponseDto } from '@api';
 	import {
 		notificationController,
 		NotificationType
