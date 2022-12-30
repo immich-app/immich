@@ -34,6 +34,8 @@ COPY start-server.sh start-microservices.sh ./
 
 RUN npm link
 
+RUN mkdir /usr/src/app/upload && chmod 777 /usr/src/app/upload && \
+    mkdir /usr/src/app/.reverse-geocoding-dump && chmod 777 /usr/src/app/.reverse-geocoding-dump
 VOLUME /usr/src/app/upload
 
 EXPOSE 3001
