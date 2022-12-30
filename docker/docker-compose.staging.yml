@@ -21,6 +21,7 @@ services:
     image: altran1502/immich-server:staging
     entrypoint: ["/bin/sh", "./start-microservices.sh"]
     volumes:
+      - /usr/src/app/.reverse-geocoding-dump
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
       - .env

@@ -52,6 +52,7 @@ services:
     command: npm run start:dev microservices
     volumes:
       - ../server:/usr/src/app
+      - /usr/src/app/.reverse-geocoding-dump
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
     env_file:
