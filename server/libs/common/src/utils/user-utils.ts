@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database/entities/user.entity';
+import { UserEntity } from '@app/database';
 
 function createUserUtils() {
   const isReadyForDeletion = (user: UserEntity): boolean => {

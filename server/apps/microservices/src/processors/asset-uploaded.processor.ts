@@ -1,4 +1,4 @@
-import { AssetType } from '@app/database/entities/asset.entity';
+import { AssetType } from '@app/database';
 import {
   IAssetUploadedJob,
   IMetadataExtractionJob,

@@ -1,4 +1,4 @@
-import { AlbumEntity } from '../../../../../../libs/database/src/entities/album.entity';
+import { AlbumEntity } from '@app/database';
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { AssetResponseDto, mapAsset } from '../../asset/response-dto/asset-response.dto';
 import { ApiProperty } from '@nestjs/swagger';

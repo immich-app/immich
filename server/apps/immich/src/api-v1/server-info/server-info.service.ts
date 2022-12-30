@@ -4,7 +4,7 @@ import { ServerInfoResponseDto } from './response-dto/server-info-response.dto';
 import diskusage from 'diskusage';
 import { ServerStatsResponseDto } from './response-dto/server-stats-response.dto';
 import { UsageByUserDto } from './response-dto/usage-by-user-response.dto';
-import { AssetEntity } from '@app/database/entities/asset.entity';
+import { AssetEntity } from '@app/database';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { asHumanReadable } from '../../utils/human-readable.util';

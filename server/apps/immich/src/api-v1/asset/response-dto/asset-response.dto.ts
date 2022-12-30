@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/database';
 import { ApiProperty } from '@nestjs/swagger';
 import { mapTag, TagResponseDto } from '../../tag/response-dto/tag-response.dto';
 import { ExifResponseDto, mapExif } from './exif-response.dto';

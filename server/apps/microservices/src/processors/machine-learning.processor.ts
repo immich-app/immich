@@ -1,5 +1,5 @@
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
+import { AssetEntity } from '@app/database';
+import { SmartInfoEntity } from '@app/database';
 import { MachineLearningJobNameEnum, QueueNameEnum } from '@app/job';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
 import { Process, Processor } from '@nestjs/bull';
@@ -22,12 +22,9 @@ export class MachineLearningProcessor {
   async tagImage(job: Job<IMachineLearningJob>) {
     const { asset } = job.data;
 
-    const res = await axios.post(
-      immich_machine_learning_url + '/image-classifier/tag-image',
-      {
-        thumbnailPath: asset.resizePath,
-      },
-    );
+    const res = await axios.post(immich_machine_learning_url + '/image-classifier/tag-image', {
+      thumbnailPath: asset.resizePath,
+    });
 
     if (res.status == 201 && res.data.length > 0) {
       const smartInfo = new SmartInfoEntity();
@@ -45,12 +42,9 @@ export class MachineLearningProcessor {
     try {
       const { asset }: { asset: AssetEntity } = job.data;
 
-      const res = await axios.post(
-        immich_machine_learning_url + '/object-detection/detect-object',
-        {
-          thumbnailPath: asset.resizePath,
-        },
-      );
+      const res = await axios.post(immich_machine_learning_url + '/object-detection/detect-object', {
+        thumbnailPath: asset.resizePath,
+      });
 
       if (res.status == 201 && res.data.length > 0) {
         const smartInfo = new SmartInfoEntity();
