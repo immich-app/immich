@@ -46,7 +46,7 @@ services:
     restart: always
 
   immich-web:
-    container_name: immich_we
+    container_name: immich_web
     image: altran1502/immich-web:staging
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
