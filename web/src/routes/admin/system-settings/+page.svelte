@@ -2,11 +2,11 @@
 	import { page } from '$app/stores';
 	import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
 	import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
+	import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
 	import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
 	import StorageTemplateSettings from '$lib/components/admin-page/settings/storate-template/storage-template-settings.svelte';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import { api, SystemConfigDto } from '@api';
-	import PasswordLoginSettings from '../../../lib/components/admin-page/settings/password-login/password-login-settings.svelte';
 	import type { PageData } from './$types';
 
 	let systemConfig: SystemConfigDto;
