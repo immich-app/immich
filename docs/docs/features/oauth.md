@@ -59,16 +59,17 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 
 Once you have a new OAuth client application configured, Immich can be configured using the Administration Settings page, available on the web (Administration -> Settings).
 
-| Setting                      | Type    | Default              | Description                                                               |
-| ---------------------------- | ------- | -------------------- | ------------------------------------------------------------------------- |
-| Enabled                      | boolean | false                | Enable/disable OAuth                                                      |
-| Issuer URL                   | URL     | (required)           | Required. Self-discovery URL for client (from previous step)              |
-| Client ID                    | string  | (required)           | Required. Client ID (from previous step)                                  |
-| Client secret                | string  | (required)           | Required. Client Secret (previous step)                                   |
-| Scope                        | string  | openid email profile | Full list of scopes to send with the request (space delimited)            |
-| Button text                  | string  | Login with OAuth     | Text for the OAuth button on the web                                      |
-| Auto register                | boolean | true                 | When true, will automatically register a user the first time they sign in |
-| Mobile Redirect URI Override | URL     | (empty)              | Http(s) alternative mobile redirect URI                                   |
+| Setting                                              | Type    | Default              | Description                                                                         |
+| ---------------------------------------------------- | ------- | -------------------- | ----------------------------------------------------------------------------------- |
+| Enabled                                              | boolean | false                | Enable/disable OAuth                                                                |
+| Issuer URL                                           | URL     | (required)           | Required. Self-discovery URL for client (from previous step)                        |
+| Client ID                                            | string  | (required)           | Required. Client ID (from previous step)                                            |
+| Client Secret                                        | string  | (required)           | Required. Client Secret (previous step)                                             |
+| Scope                                                | string  | openid email profile | Full list of scopes to send with the request (space delimited)                      |
+| Button Text                                          | string  | Login with OAuth     | Text for the OAuth button on the web                                                |
+| Auto Register                                        | boolean | true                 | When true, will automatically register a user the first time they sign in           |
+| [Auto Launch](#auto-launch)                          | boolean | false                | When true, will skip the login page and automatically start the OAuth login process |
+| [Mobile Redirect URI Override](#mobile-redirect-uri) | URL     | (empty)              | Http(s) alternative mobile redirect URI                                             |
 
 :::info
 The Issuer URL should look something like the following, and return a valid json document.
@@ -78,6 +79,10 @@ The Issuer URL should look something like the following, and return a valid json
 
 The `.well-known/openid-configuration` part of the url is optional and will be automatically added during discovery.
 :::
+
+## Auto Launch
+
+When Auto Launch is enabled, the login page will automatically redirect the user to the OAuth authorization url, to login with OAuth. To access the login screen again, use the browser's back button, or navigate directly to `/auth/login?autoLaunch=0`.
 
 ## Mobile Redirect URI
 
