@@ -55,6 +55,8 @@ services:
   redis:
     container_name: immich_redis
     image: redis:6.2
+    volumes:
+      - redisdata:/data
     restart: always
 
   database:
@@ -88,3 +90,4 @@ services:
 
 volumes:
   pgdata:
+  redisdata:

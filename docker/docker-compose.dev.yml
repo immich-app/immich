@@ -84,6 +84,8 @@ services:
   redis:
     container_name: immich_redis
     image: redis:6.2
+    volumes:
+      - redisdata:/data
 
   database:
     container_name: immich_postgres
@@ -120,3 +122,4 @@ services:
 
 volumes:
   pgdata:
+  redisdata:
