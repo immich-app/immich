@@ -18,29 +18,37 @@ const config = {
       enabled: false,
       buttonText: 'OAuth',
       issuerUrl: 'http://issuer,',
+      autoLaunch: false,
     },
+    passwordLogin: { enabled: true },
   } as SystemConfig,
   enabled: {
     oauth: {
       enabled: true,
       autoRegister: true,
       buttonText: 'OAuth',
+      autoLaunch: false,
     },
+    passwordLogin: { enabled: true },
   } as SystemConfig,
   noAutoRegister: {
     oauth: {
       enabled: true,
       autoRegister: false,
+      autoLaunch: false,
     },
+    passwordLogin: { enabled: true },
   } as SystemConfig,
   override: {
     oauth: {
       enabled: true,
       autoRegister: true,
+      autoLaunch: false,
       buttonText: 'OAuth',
       mobileOverrideEnabled: true,
       mobileRedirectUri: 'http://mobile-redirect',
     },
+    passwordLogin: { enabled: true },
   } as SystemConfig,
 };
 
@@ -125,7 +133,6 @@ describe('OAuthService', () => {
 
     immichConfigServiceMock = {
       config$: { subscribe: jest.fn() },
-      getConfig: jest.fn().mockResolvedValue({ oauth: { enabled: false } }),
     } as unknown as jest.Mocked<ImmichConfigService>;
 
     sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.disabled);
@@ -137,7 +144,10 @@ describe('OAuthService', () => {
 
   describe('generateConfig', () => {
     it('should work when oauth is not configured', async () => {
-      await expect(sut.generateConfig({ redirectUri: 'http://callback' })).resolves.toEqual({ enabled: false });
+      await expect(sut.generateConfig({ redirectUri: 'http://callback' })).resolves.toEqual({
+        enabled: false,
+        passwordLoginEnabled: true,
+      });
     });
 
     it('should generate the config', async () => {
@@ -146,6 +156,8 @@ describe('OAuthService', () => {
         enabled: true,
         buttonText: 'OAuth',
         url: 'http://authorization-url',
+        autoLaunch: false,
+        passwordLoginEnabled: true,
       });
     });
   });
