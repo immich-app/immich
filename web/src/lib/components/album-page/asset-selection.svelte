@@ -3,8 +3,7 @@
 	import { quintOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import { AssetResponseDto } from '@api';
-	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
-	import { albumUploadAssetStore } from '$lib/stores/album-upload-asset';
+	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 	import AssetGrid from '../photos-page/asset-grid.svelte';
 	import {
@@ -15,49 +14,12 @@
 
 	const dispatch = createEventDispatcher();
 
+	export let albumId: string;
 	export let assetsInAlbum: AssetResponseDto[];
-
-	let uploadAssets: string[] = [];
-	let uploadAssetsCount = 9999;
 
 	onMount(() => {
 		$assetsInAlbumStoreState = assetsInAlbum;
-
-		albumUploadAssetStore.asset.subscribe((uploadedAsset) => {
-			uploadAssets = uploadedAsset;
-		});
-
-		albumUploadAssetStore.count.subscribe((count) => {
-			uploadAssetsCount = count;
-		});
 	});
-
-	/**
-	 * Watch for the uploading event - when the uploaded assets are the same number of the chosen asset
-	 * navigate back and add them to the album
-	 */
-	$: {
-		if (uploadAssets.length == uploadAssetsCount) {
-			// Filter assets that are already in the album
-			const assetIds = uploadAssets.filter(
-				(asset) => !!asset && !assetsInAlbum.some((a) => a.id === asset)
-			);
-
-			// Add the just uploaded assets to the album
-			if (assetIds.length) {
-				dispatch('asset-uploaded', {
-					assetIds
-				});
-			}
-
-			// Clean up states.
-			albumUploadAssetStore.asset.set([]);
-			albumUploadAssetStore.count.set(9999);
-
-			assetInteractionStore.clearMultiselect();
-			dispatch('go-back');
-		}
-	}
 
 	const addSelectedAssets = async () => {
 		dispatch('create-album', {
@@ -88,7 +50,11 @@
 
 		<svelte:fragment slot="trailing">
 			<button
-				on:click={() => openFileUploadDialog(UploadType.ALBUM)}
+				on:click={() =>
+					openFileUploadDialog(albumId, () => {
+						assetInteractionStore.clearMultiselect();
+						dispatch('go-back');
+					})}
 				class="text-immich-primary dark:text-immich-dark-primary text-sm hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/25 transition-all px-6 py-2 rounded-lg font-medium"
 			>
 				Select from computer
