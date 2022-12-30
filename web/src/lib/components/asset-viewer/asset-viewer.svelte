@@ -12,7 +12,6 @@
 	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
 	import {
 		api,
-		AddAssetsResponseDto,
 		AssetResponseDto,
 		AssetTypeEnum,
 		AlbumResponseDto
@@ -23,6 +22,7 @@
 	} from '../shared-components/notification/notification';
 
 	import { assetStore } from '$lib/stores/assets.store';
+	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 
 	export let asset: AssetResponseDto;
 	$: {
@@ -209,17 +209,6 @@
 		addToSharedAlbum = shared;
 	};
 
-	const showAddNotification = (dto: AddAssetsResponseDto) => {
-		notificationController.show({
-			message: `Added ${dto.successfullyAdded} to ${dto.album?.albumName}`,
-			type: NotificationType.Info
-		});
-
-		if (dto.successfullyAdded === 1 && dto.album) {
-			appearsInAlbums = [...appearsInAlbums, dto.album];
-		}
-	};
-
 	const handleAddToNewAlbum = () => {
 		isShowAlbumPicker = false;
 		api.albumApi.createAlbum({ albumName: 'Untitled', assetIds: [asset.id] }).then((response) => {
@@ -232,9 +221,11 @@
 		isShowAlbumPicker = false;
 		const album = event.detail.album;
 
-		api.albumApi
-			.addAssetsToAlbum(album.id, { assetIds: [asset.id] })
-			.then((response) => showAddNotification(response.data));
+		addAssetsToAlbum(album.id, [asset.id]).then((dto) => {
+			if (dto.successfullyAdded === 1 && dto.album) {
+				appearsInAlbums = [...appearsInAlbums, dto.album];
+			}
+		});
 	};
 </script>
 

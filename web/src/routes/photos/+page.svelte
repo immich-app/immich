@@ -9,7 +9,7 @@
 
 	import type { PageData } from './$types';
 
-	import { openFileUploadDialog, UploadType } from '$lib/utils/file-uploader';
+	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import {
 		assetInteractionStore,
 		isMultiSelectStoreState,
@@ -26,6 +26,7 @@
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { assetStore } from '$lib/stores/assets.store';
+	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 
 	export let data: PageData;
 
@@ -100,12 +101,8 @@
 		const album = event.detail.album;
 
 		const assetIds = Array.from($selectedAssets).map((asset) => asset.id);
-		api.albumApi.addAssetsToAlbum(album.id, { assetIds }).then(({ data: dto }) => {
-			notificationController.show({
-				message: `Added ${dto.successfullyAdded} to ${dto.album?.albumName}`,
-				type: NotificationType.Info
-			});
 
+		addAssetsToAlbum(album.id, assetIds).then(() => {
 			assetInteractionStore.clearMultiselect();
 		});
 	};
@@ -137,10 +134,7 @@
 			</svelte:fragment>
 		</ControlAppBar>
 	{:else}
-		<NavigationBar
-			user={data.user}
-			on:uploadClicked={() => openFileUploadDialog(UploadType.GENERAL)}
-		/>
+		<NavigationBar user={data.user} on:uploadClicked={() => openFileUploadDialog()} />
 	{/if}
 
 	{#if isShowAddMenu}

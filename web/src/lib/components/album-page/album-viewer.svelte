@@ -236,25 +236,6 @@
 		}
 	};
 
-	const assetUploadedToAlbumHandler = async (event: CustomEvent) => {
-		const { assetIds }: { assetIds: string[] } = event.detail;
-		try {
-			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
-				assetIds: assetIds
-			});
-
-			if (data.album) {
-				album = data.album;
-			}
-		} catch (e) {
-			console.error('Error [assetUploadedToAlbumHandler] ', e);
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error adding asset to album, check console for more details'
-			});
-		}
-	};
-
 	const addUserHandler = async (event: CustomEvent) => {
 		const { selectedUsers }: { selectedUsers: UserResponseDto[] } = event.detail;
 
@@ -591,10 +572,10 @@
 
 {#if isShowAssetSelection}
 	<AssetSelection
+		albumId={album.id}
 		assetsInAlbum={album.assets}
 		on:go-back={() => (isShowAssetSelection = false)}
 		on:create-album={createAlbumHandler}
-		on:asset-uploaded={assetUploadedToAlbumHandler}
 	/>
 {/if}
 
