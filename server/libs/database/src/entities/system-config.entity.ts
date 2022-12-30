@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')
-export class SystemConfigEntity<T = string> {
+export class SystemConfigEntity<T = string | boolean> {
   @PrimaryColumn()
   key!: SystemConfigKey;
 
