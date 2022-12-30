@@ -1764,6 +1764,20 @@
         ]
       }
     },
+    "/oauth/mobile-redirect": {
+      "get": {
+        "operationId": "mobileRedirect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
     "/oauth/config": {
       "post": {
         "operationId": "generateConfig",
@@ -3926,6 +3940,12 @@
           },
           "autoRegister": {
             "type": "boolean"
+          },
+          "mobileOverrideEnabled": {
+            "type": "boolean"
+          },
+          "mobileRedirectUri": {
+            "type": "string"
           }
         },
         "required": [
@@ -3935,7 +3955,9 @@
           "clientSecret",
           "scope",
           "buttonText",
-          "autoRegister"
+          "autoRegister",
+          "mobileOverrideEnabled",
+          "mobileRedirectUri"
         ]
       },
       "SystemConfigStorageTemplateDto": {
