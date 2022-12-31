@@ -13,7 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { createHash, randomUUID } from 'node:crypto';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/database';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -28,7 +28,7 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
+import { IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import {
   AssetCountByTimeBucketResponseDto,
@@ -54,7 +54,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
-import { ALBUM_REPOSITORY, IAlbumRepository } from '../album/album-repository';
+import { IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
 
 const fileInfo = promisify(stat);
@@ -62,11 +62,9 @@ const fileInfo = promisify(stat);
 @Injectable()
 export class AssetService {
   constructor(
-    @Inject(ASSET_REPOSITORY)
-    private _assetRepository: IAssetRepository,
+    @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
 
-    @Inject(ALBUM_REPOSITORY)
-    private _albumRepository: IAlbumRepository,
+    @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,

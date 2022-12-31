@@ -10,16 +10,13 @@ import {
 } from './response-dto/create-profile-image-response.dto';
 import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
 import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
-import { IUserRepository, USER_REPOSITORY } from './user-repository';
+import { IUserRepository } from './user-repository';
 import { UserCore } from './user.core';
 
 @Injectable()
 export class UserService {
   private userCore: UserCore;
-  constructor(
-    @Inject(USER_REPOSITORY)
-    userRepository: IUserRepository,
-  ) {
+  constructor(@Inject(IUserRepository) userRepository: IUserRepository) {
     this.userCore = new UserCore(userRepository);
   }
 

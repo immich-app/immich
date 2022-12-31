@@ -14,8 +14,8 @@ import { Queue } from 'bull';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
 import { randomUUID } from 'crypto';
-import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
-import { AssetType } from '@app/database/entities/asset.entity';
+import { IAssetRepository } from '../asset/asset-repository';
+import { AssetType } from '@app/database';
 import { GetJobDto, JobId } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
@@ -39,7 +39,7 @@ export class JobService {
     @InjectQueue(QueueNameEnum.STORAGE_MIGRATION)
     private storageMigrationQueue: Queue,
 
-    @Inject(ASSET_REPOSITORY)
+    @Inject(IAssetRepository)
     private _assetRepository: IAssetRepository,
 
     private storageService: StorageService,

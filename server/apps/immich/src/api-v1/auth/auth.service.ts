@@ -7,11 +7,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserEntity } from '../../../../../libs/database/src/entities/user.entity';
+import { UserEntity } from '@app/database';
 import { AuthType } from '../../constants/jwt.constant';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
-import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
+import { IUserRepository } from '../user/user-repository';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -29,7 +29,7 @@ export class AuthService {
   constructor(
     private oauthService: OAuthService,
     private immichJwtService: ImmichJwtService,
-    @Inject(USER_REPOSITORY) userRepository: IUserRepository,
+    @Inject(IUserRepository) userRepository: IUserRepository,
   ) {
     this.userCore = new UserCore(userRepository);
   }

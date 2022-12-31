@@ -1,5 +1,4 @@
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { SystemConfigEntity } from '@app/database/entities/system-config.entity';
+import { AssetEntity, SystemConfigEntity } from '@app/database';
 import { ImmichConfigModule } from '@app/immich-config';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
