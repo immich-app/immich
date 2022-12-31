@@ -4,6 +4,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
@@ -13,6 +15,8 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
+import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/models/backup_data_saving.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
@@ -140,6 +144,78 @@ class BackupControllerPage extends HookConsumerWidget {
             ],
           ),
         ),
+      );
+    }
+
+    Widget buildSavingController() {
+      var dropDownItems = <DropdownMenuItem<BackupDataSavingModeType>>[];
+      for (var backupDataSavingModeOption in BackupDataSavingModeEnum.values) {
+        dropDownItems.add(
+          DropdownMenuItem<BackupDataSavingModeType>(
+            value: BackupDataSavingModeType(mode: backupDataSavingModeOption),
+            child: Text("backup_controller_page_saving_mode_${backupDataSavingModeOption.index}").tr(),
+          ),
+        );
+      }
+
+      // Can happen if the device is too slow or the user too fast
+      if(!Hive.isBoxOpen(backgroundBackupInfoBox)) {
+        return Container();
+      }
+
+      return ValueListenableBuilder<Box>(
+          valueListenable: Hive.box(backgroundBackupInfoBox).listenable(),
+          builder: (context, box, widget) {
+            BackupDataSavingModeType dataSavingMode = BackupDataSavingModeType(modeInt: box.get(backupDataSavingMode));
+
+            return ListTile(
+              isThreeLine: true,
+              leading: dataSavingMode.isSaving
+                  ? Icon(
+                Icons.data_saver_on,
+                color: Theme.of(context).primaryColor,
+              )
+                  : const Icon(Icons.data_saver_off),
+              title: Text(
+                dataSavingMode.isSaving ? "backup_controller_page_saving_on".tr() : "backup_controller_page_saving_off".tr(),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "backup_controller_page_saving_description",
+                      style: TextStyle(fontSize: 14),
+                    ).tr(),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12.0),
+                      child: ElevatedButton(
+                        onPressed: (){},
+                        child: DropdownButton(
+                          dropdownColor: Theme.of(context).primaryColor,
+                          iconEnabledColor: Colors.white,
+                          underline: const SizedBox(),
+                          onChanged: (BackupDataSavingModeType? value) {
+                            if(value != null) {
+                              box.put(backupDataSavingMode, value.modeInt);
+                            }
+                          },
+                          value: dataSavingMode,
+                          items: dropDownItems,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          },
       );
     }
 
@@ -696,6 +772,8 @@ class BackupControllerPage extends HookConsumerWidget {
             buildAutoBackupController(),
             if (Platform.isAndroid) const Divider(),
             if (Platform.isAndroid) buildBackgroundBackupController(),
+            const Divider(),
+            buildSavingController(),
             const Divider(),
             buildStorageInformation(),
             const Divider(),

@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_data_saving.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -19,6 +22,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:cancellation_token_http/http.dart' as http;
+import 'package:image/image.dart' as img;
 
 import '../models/hive_duplicated_assets.model.dart';
 
@@ -213,9 +217,15 @@ class BackupService {
   ) async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+    BackupDataSavingModeType dataSavingMode = BackupDataSavingModeType(modeInt: Hive.box(backgroundBackupInfoBox).get(backupDataSavingMode));
     File? file;
     bool anyErrors = false;
     final List<String> duplicatedAssetIds = [];
+
+    Directory? dataSavingTempDir;
+    if(dataSavingMode.isSaving) {
+      dataSavingTempDir = Directory.systemTemp.createTempSync();
+    }
 
     for (var entity in assetList) {
       try {
@@ -227,15 +237,37 @@ class BackupService {
 
         if (file != null) {
           String originalFileName = await entity.titleAsync;
-          String fileNameWithoutPath =
-              originalFileName.toString().split(".")[0];
+          String fileNameWithoutPath = originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
           var mimeType = FileHelper.getMimeType(file.path);
           var fileStream = file.openRead();
+
+          int? fileLength;
+          if(dataSavingMode.isSaving && dataSavingTempDir != null) {
+            if(entity.type == AssetType.image) {
+              final p = ReceivePort();
+              await Isolate.spawn(_resizeImage,
+                DataSavingResizeCommand(
+                  sendPort: p.sendPort,
+                  dataSavingMode: dataSavingMode,
+                  file: file,
+                  originalFileName: originalFileName,
+                  tempDir: dataSavingTempDir,
+                ),
+              );
+
+              var resizedImage = await p.first as DataSavingImageMetadata;
+              if(resizedImage.success) {
+                fileLength = resizedImage.file!.lengthSync();
+                fileStream = resizedImage.file!.openRead();
+              }
+            }
+          }
+
           var assetRawUploadData = http.MultipartFile(
             "assetData",
             fileStream,
-            file.lengthSync(),
+            fileLength ?? file.lengthSync(),
             filename: fileNameWithoutPath,
             contentType: MediaType(
               mimeType["type"],
@@ -326,6 +358,9 @@ class BackupService {
     }
     if (duplicatedAssetIds.isNotEmpty) {
       _saveDuplicatedAssetIdToLocalStorage(duplicatedAssetIds);
+    }
+    if(dataSavingMode.isSaving) {
+      dataSavingTempDir!.deleteSync(recursive: true);
     }
     return !anyErrors;
   }
@@ -426,4 +461,38 @@ class MultipartRequest extends http.MultipartRequest {
     final stream = byteStream.transform(t);
     return http.ByteStream(stream);
   }
+}
+
+Future<DataSavingImageMetadata> _resizeImage(
+    DataSavingResizeCommand cmd,
+    ) async {
+  final oldImage = img.getDecoderForNamedImage(cmd.file.path)?.decodeImage(cmd.file.readAsBytesSync());
+  if(oldImage == null) return Isolate.exit(cmd.sendPort, DataSavingImageMetadata.fail);
+
+  const isTesting = kDebugMode; // Android Emulator doesn't generate large pictures
+  final imagePixels = oldImage.width * oldImage.height;
+  if(!isTesting && imagePixels < cmd.dataSavingMode.maxPixels!) return DataSavingImageMetadata.fail;
+
+  img.Image? resizedImage;
+  if(oldImage.width > cmd.dataSavingMode.maxWidth!) {
+    resizedImage = img.copyResize(oldImage, width: cmd.dataSavingMode.maxWidth);
+  } else if(oldImage.height > cmd.dataSavingMode.maxHeight!) {
+    resizedImage = img.copyResize(oldImage, height: cmd.dataSavingMode.maxHeight);
+  }
+  if(resizedImage == null) return Isolate.exit(cmd.sendPort, DataSavingImageMetadata.fail);
+
+  final newFilePath = "${cmd.tempDir.path}/${cmd.originalFileName}";
+  final newFile = File(newFilePath);
+  newFile.createSync();
+
+  var encodedImage = img.encodeNamedImage(resizedImage, cmd.originalFileName);
+  if(encodedImage == null) return Isolate.exit(cmd.sendPort, DataSavingImageMetadata.fail);
+  newFile.writeAsBytesSync(encodedImage);
+
+  return Isolate.exit(cmd.sendPort, DataSavingImageMetadata(
+    file: newFile,
+    success: true,
+    newHeight: resizedImage.height,
+    newWidth: resizedImage.width,
+  ));
 }
