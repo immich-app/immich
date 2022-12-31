@@ -3,12 +3,12 @@ import { ShareService } from './share.service';
 import { ShareController } from './share.controller';
 import { SharedLinkEntity } from '@app/database/entities/shared-link.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SharedLinkRepository, SHARED_LINK_REPOSITORY } from './shared-link.repository';
+import { SharedLinkRepository, ISharedLinkRepository } from './shared-link.repository';
 import { AssetModule } from '../asset/asset.module';
 import { AlbumModule } from '../album/album.module';
 
 const SHARED_LINK_REPOSITORY_PROVIDER = {
-  provide: SHARED_LINK_REPOSITORY,
+  provide: ISharedLinkRepository,
   useClass: SharedLinkRepository,
 };
 

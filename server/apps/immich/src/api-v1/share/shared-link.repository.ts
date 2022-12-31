@@ -10,7 +10,7 @@ export interface ISharedLinkRepository {
   create(payload: SharedLinkEntity): Promise<SharedLinkEntity>;
 }
 
-export const SHARED_LINK_REPOSITORY = 'SHARED_LINK_REPOSITORY';
+export const ISharedLinkRepository = 'ISharedLinkRepository';
 
 export class SharedLinkRepository implements ISharedLinkRepository {
   readonly logger = new Logger(SharedLinkRepository.name);

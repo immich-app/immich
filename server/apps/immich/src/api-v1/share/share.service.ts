@@ -6,14 +6,14 @@ import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
 import { UpdateShareDto } from './dto/update-share.dto';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
 import { ShareCore } from './share.core';
-import { ISharedLinkRepository, SHARED_LINK_REPOSITORY } from './shared-link.repository';
+import { ISharedLinkRepository } from './shared-link.repository';
 
 @Injectable()
 export class ShareService {
   private shareCore: ShareCore;
 
   constructor(
-    @Inject(SHARED_LINK_REPOSITORY)
+    @Inject(ISharedLinkRepository)
     sharedLinkRepository: ISharedLinkRepository,
 
     @Inject(IAssetRepository)
