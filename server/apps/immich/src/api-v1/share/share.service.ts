@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { ALBUM_REPOSITORY, IAlbumRepository } from '../album/album-repository';
-import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
+import { IAlbumRepository } from '../album/album-repository';
+import { IAssetRepository } from '../asset/asset-repository';
 import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
 import { UpdateShareDto } from './dto/update-share.dto';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
@@ -16,10 +16,10 @@ export class ShareService {
     @Inject(SHARED_LINK_REPOSITORY)
     sharedLinkRepository: ISharedLinkRepository,
 
-    @Inject(ASSET_REPOSITORY)
+    @Inject(IAssetRepository)
     assetRepository: IAssetRepository,
 
-    @Inject(ALBUM_REPOSITORY)
+    @Inject(IAlbumRepository)
     albumRepository: IAlbumRepository,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository, assetRepository, albumRepository);
