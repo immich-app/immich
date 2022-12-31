@@ -149,7 +149,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Widget _itemBuilder(BuildContext c, int position) {
-    final item = widget.renderList[position];
+    final item = widget.renderList.elements[position];
 
     if (item.type == RenderAssetGridElementType.dayTitle) {
       return _buildTitle(c, item.title!, item.relatedAssetList!);
@@ -163,7 +163,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Text _labelBuilder(int pos) {
-    final date = widget.renderList[pos].date;
+    final date = widget.renderList.elements[pos].date;
     return Text(
       DateFormat.yMMMd().format(date),
       style: const TextStyle(
@@ -193,7 +193,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
       itemScrollController: _itemScrollController,
-      itemCount: widget.renderList.length,
+      itemCount: widget.renderList.elements.length,
       addRepaintBoundaries: true,
     );
 
@@ -236,7 +236,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
 }
 
 class ImmichAssetGrid extends StatefulWidget {
-  final List<RenderAssetGridElement> renderList;
+  final RenderList renderList;
   final int assetsPerRow;
   final double margin;
   final bool showStorageIndicator;

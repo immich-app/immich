@@ -20,14 +20,14 @@ import 'package:photo_manager/photo_manager.dart';
 
 class AssetsState {
   final List<Asset> allAssets;
-  final List<RenderAssetGridElement>? renderList;
+  final RenderList? renderList;
 
   AssetsState(this.allAssets, {this.renderList});
 
   Future<AssetsState> withRenderDataStructure(int groupSize) async {
     return AssetsState(
       allAssets,
-      renderList: await assetGroupsToRenderList(await _groupByDate(), groupSize),
+      renderList: await RenderList.fromAssetGroups(await _groupByDate(), groupSize),
     );
   }
 

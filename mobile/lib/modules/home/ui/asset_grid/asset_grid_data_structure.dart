@@ -35,104 +35,112 @@ class RenderAssetGridElement {
   });
 }
 
-/// Converts assets grouped by date to the data model required by Immich's custom asset grid implementation.
-Future<List<RenderAssetGridElement>> assetGroupsToRenderList(
-  Map<String, List<Asset>> assetGroups,
-  int assetsPerRow,
-) async {
+class RenderList {
+  final List<RenderAssetGridElement> elements;
 
-  processData(Map<String, Object> data) {
-    final monthFormat = DateFormat(data["month_format"]! as String);
-    final dayFormatSameYear = DateFormat(data["day_format"]! as String);
-    final dayFormatOtherYear = DateFormat(data["day_format_year"]! as String);
-    final groups = data["groups"]! as Map<String, List<Asset>>;
-    final perRow = data["per_row"]! as int;
+  RenderList(this.elements);
 
-    List<RenderAssetGridElement> elements = [];
-    DateTime? lastDate;
+  static Future<RenderList> fromAssetGroups(
+    Map<String, List<Asset>> assetGroups,
+    int assetsPerRow,
+  ) async {
+    const month_format_key = "month_format";
+    const day_format_key = "day_format";
+    const day_format_year_key = "day_format_year";
+    const groups_key = "groups";
+    const per_row_key = "per_row";
 
-    groups.forEach((groupName, assets) {
-      try {
-        final date = DateTime.parse(groupName);
+    processData(Map<String, Object> data) {
+      final monthFormat = DateFormat(data[month_format_key]! as String);
+      final dayFormatSameYear = DateFormat(data[day_format_key]! as String);
+      final dayFormatOtherYear =
+          DateFormat(data[day_format_year_key]! as String);
+      final groups = data[groups_key]! as Map<String, List<Asset>>;
+      final perRow = data[per_row_key]! as int;
 
-        if (lastDate == null || lastDate!.month != date.month) {
-          // Month title
+      List<RenderAssetGridElement> elements = [];
+      DateTime? lastDate;
 
-          var monthTitleText = groupName;
+      groups.forEach((groupName, assets) {
+        try {
+          final date = DateTime.parse(groupName);
+
+          if (lastDate == null || lastDate!.month != date.month) {
+            // Month title
+
+            var monthTitleText = groupName;
+
+            try {
+              monthTitleText = monthFormat.format(DateTime.parse(groupName));
+            } catch (e) {
+              log.severe("Failed to format date for month title: $groupName");
+            }
+
+            elements.add(
+              RenderAssetGridElement(
+                RenderAssetGridElementType.monthTitle,
+                title: monthTitleText,
+                date: date,
+              ),
+            );
+          }
+
+          // Add group title
+          var currentYear = DateTime.now().year;
+          var groupYear = DateTime.parse(groupName).year;
+          var formatDate =
+              currentYear == groupYear ? dayFormatSameYear : dayFormatOtherYear;
+
+          var dateText = groupName;
 
           try {
-            monthTitleText = monthFormat.format(DateTime.parse(groupName));
+            dateText = formatDate.format(DateTime.parse(groupName));
           } catch (e) {
-            log.severe("Failed to format date for month title: $groupName");
+            log.severe("Failed to format date for day title: $groupName");
           }
 
           elements.add(
             RenderAssetGridElement(
-              RenderAssetGridElementType.monthTitle,
-              title: monthTitleText,
+              RenderAssetGridElementType.dayTitle,
+              title: dateText,
               date: date,
-            ),
-          );
-        }
-
-        // Add group title
-        var currentYear = DateTime
-            .now()
-            .year;
-        var groupYear = DateTime
-            .parse(groupName)
-            .year;
-        var formatDate =
-        currentYear == groupYear ? dayFormatSameYear : dayFormatOtherYear;
-
-        var dateText = groupName;
-
-        try {
-          dateText = formatDate.format(DateTime.parse(groupName));
-        } catch (e) {
-          log.severe("Failed to format date for day title: $groupName");
-        }
-
-        elements.add(
-          RenderAssetGridElement(
-            RenderAssetGridElementType.dayTitle,
-            title: dateText,
-            date: date,
-            relatedAssetList: assets,
-          ),
-        );
-
-        // Add rows
-        int cursor = 0;
-        while (cursor < assets.length) {
-          int rowElements = min(assets.length - cursor, perRow);
-
-          final rowElement = RenderAssetGridElement(
-            RenderAssetGridElementType.assetRow,
-            date: date,
-            assetRow: RenderAssetGridRow(
-              assets.sublist(cursor, cursor + rowElements),
+              relatedAssetList: assets,
             ),
           );
 
-          elements.add(rowElement);
-          cursor += rowElements;
-        }
+          // Add rows
+          int cursor = 0;
+          while (cursor < assets.length) {
+            int rowElements = min(assets.length - cursor, perRow);
 
-        lastDate = date;
-      } catch (e, stackTrace) {
-        log.severe(e, stackTrace);
-      }
+            final rowElement = RenderAssetGridElement(
+              RenderAssetGridElementType.assetRow,
+              date: date,
+              assetRow: RenderAssetGridRow(
+                assets.sublist(cursor, cursor + rowElements),
+              ),
+            );
+
+            elements.add(rowElement);
+            cursor += rowElements;
+          }
+
+          lastDate = date;
+        } catch (e, stackTrace) {
+          log.severe(e, stackTrace);
+        }
+      });
+
+      return RenderList(elements);
+    }
+
+    // Compute only allows for one parameter. Therefore we pass all parameters in a map
+    return compute(processData, {
+      month_format_key: "monthly_title_text_date_format".tr(),
+      day_format_key: "daily_title_text_date".tr(),
+      day_format_year_key: "daily_title_text_date_year".tr(),
+      groups_key: assetGroups,
+      per_row_key: assetsPerRow
     });
-
-    return elements;
   }
-
-  return compute(processData, {
-    "month_format": "monthly_title_text_date_format".tr(),
-    "day_format": "daily_title_text_date".tr(),
-    "day_format_year": "daily_title_text_date_year".tr(),
-    "groups": assetGroups,
-    "per_row": assetsPerRow
-  });
 }

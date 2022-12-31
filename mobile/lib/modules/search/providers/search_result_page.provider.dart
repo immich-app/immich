@@ -76,5 +76,5 @@ final searchRenderListProvider = FutureProvider((ref) {
   var settings = ref.watch(appSettingsServiceProvider);
   final assetsPerRow = settings.getSetting(AppSettingsEnum.tilesPerRow);
 
-  return assetGroupsToRenderList(assetGroups, assetsPerRow);
+  return RenderList.fromAssetGroups(assetGroups, assetsPerRow);
 });
