@@ -82,4 +82,14 @@ export class ShareCore {
 
     return link;
   }
+
+  async removeSharedLink(id: string): Promise<SharedLinkEntity> {
+    const link = await this.sharedLinkRepository.getbyId(id);
+
+    if (!link) {
+      throw new BadRequestException('Shared link not found');
+    }
+
+    return await this.sharedLinkRepository.remove(link);
+  }
 }

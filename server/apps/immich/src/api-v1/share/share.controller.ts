@@ -36,11 +36,7 @@ export class ShareController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    // const link = await this.sharedLinkRepository.findOne({ where: { id } });
-    // if (!link) {
-    //   return;
-    // }
-    // return this.sharedLinkRepository.remove(link);
+  remove(@Param('id') id: string) {
+    return this.shareService.remove(id);
   }
 }

@@ -8,6 +8,7 @@ export interface ISharedLinkRepository {
   get(userId: string): Promise<SharedLinkEntity[]>;
   getbyId(id: string): Promise<SharedLinkEntity | null>;
   create(payload: SharedLinkEntity): Promise<SharedLinkEntity>;
+  remove(entity: SharedLinkEntity): Promise<SharedLinkEntity>;
 }
 
 export const ISharedLinkRepository = 'ISharedLinkRepository';
@@ -39,5 +40,9 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       },
       relations: ['assets', 'albums'],
     });
+  }
+
+  async remove(entity: SharedLinkEntity): Promise<SharedLinkEntity> {
+    return await this.sharedLinkRepository.remove(entity);
   }
 }
