@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/public';
 import {
 	AlbumApi,
+	APIKeyApi,
 	AssetApi,
 	AuthenticationApi,
 	Configuration,
@@ -21,6 +22,7 @@ class ImmichApi {
 	public deviceInfoApi: DeviceInfoApi;
 	public serverInfoApi: ServerInfoApi;
 	public jobApi: JobApi;
+	public keyApi: APIKeyApi;
 	public systemConfigApi: SystemConfigApi;
 
 	private config = new Configuration({ basePath: '/api' });
@@ -34,6 +36,7 @@ class ImmichApi {
 		this.deviceInfoApi = new DeviceInfoApi(this.config);
 		this.serverInfoApi = new ServerInfoApi(this.config);
 		this.jobApi = new JobApi(this.config);
+		this.keyApi = new APIKeyApi(this.config);
 		this.systemConfigApi = new SystemConfigApi(this.config);
 	}
 
