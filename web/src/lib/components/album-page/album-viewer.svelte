@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { AlbumResponseDto, api, AssetResponseDto, ThumbnailFormat, UserResponseDto } from '@api';
+	import {
+		AlbumResponseDto,
+		api,
+		AssetResponseDto,
+		SharedLinkType,
+		ThumbnailFormat,
+		UserResponseDto
+	} from '@api';
 	import { onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
@@ -29,7 +36,6 @@
 	} from '../shared-components/notification/notification';
 	import { browser } from '$app/environment';
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
-	import BaseModal from '../shared-components/base-modal.svelte';
 	import CreateSharedLinkModal from '../shared-components/create-shared-link-modal.svelte';
 
 	export let album: AlbumResponseDto;
@@ -598,7 +604,11 @@
 {/if}
 
 {#if isShowShareLinkModal}
-	<CreateSharedLinkModal on:close={() => (isShowShareLinkModal = false)} />
+	<CreateSharedLinkModal
+		on:close={() => (isShowShareLinkModal = false)}
+		shareType={SharedLinkType.Album}
+		{album}
+	/>
 {/if}
 {#if isShowShareInfoModal}
 	<ShareInfoModal
