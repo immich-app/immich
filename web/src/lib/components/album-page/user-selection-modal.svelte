@@ -3,6 +3,7 @@
 	import { api, UserResponseDto } from '@api';
 	import BaseModal from '../shared-components/base-modal.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
+	import Link from 'svelte-material-icons/Link.svelte';
 
 	export let sharedUsersInAlbum: Set<UserResponseDto>;
 	let users: UserResponseDto[] = [];
@@ -31,6 +32,10 @@
 
 	const deselectUser = (user: UserResponseDto) => {
 		selectedUsers = selectedUsers.filter((selectedUser) => selectedUser.id !== user.id);
+	};
+
+	const onSharedLinkClick = () => {
+		dispatch('sharedlinkclick');
 	};
 </script>
 
@@ -107,5 +112,16 @@
 				>
 			</div>
 		{/if}
+	</div>
+
+	<hr />
+	<div id="shared-buttons" class="flex my-4 place-items-center place-content-center">
+		<button
+			class="flex flex-col gap-2 place-items-center place-content-center hover:cursor-pointer"
+			on:click={onSharedLinkClick}
+		>
+			<Link size={24} />
+			<p class="text-sm">Create link</p>
+		</button>
 	</div>
 </BaseModal>

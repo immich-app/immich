@@ -29,6 +29,8 @@
 	} from '../shared-components/notification/notification';
 	import { browser } from '$app/environment';
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
+	import BaseModal from '../shared-components/base-modal.svelte';
+	import CreateSharedLinkModal from '../shared-components/create-shared-link-modal.svelte';
 
 	export let album: AlbumResponseDto;
 	const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
@@ -36,6 +38,8 @@
 	let isShowAssetViewer = false;
 
 	let isShowAssetSelection = false;
+
+	let isShowShareLinkModal = false;
 
 	$: $isAlbumAssetSelectionOpen = isShowAssetSelection;
 	$: {
@@ -397,6 +401,11 @@
 
 		isShowThumbnailSelection = false;
 	};
+
+	const onSharedLinkClickHandler = () => {
+		isShowShareUserSelection = false;
+		isShowShareLinkModal = true;
+	};
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
@@ -583,10 +592,14 @@
 	<UserSelectionModal
 		on:close={() => (isShowShareUserSelection = false)}
 		on:add-user={addUserHandler}
+		on:sharedlinkclick={onSharedLinkClickHandler}
 		sharedUsersInAlbum={new Set(album.sharedUsers)}
 	/>
 {/if}
 
+{#if isShowShareLinkModal}
+	<CreateSharedLinkModal on:close={() => (isShowShareLinkModal = false)} />
+{/if}
 {#if isShowShareInfoModal}
 	<ShareInfoModal
 		on:close={() => (isShowShareInfoModal = false)}

@@ -33,4 +33,9 @@ export class ShareController {
   remove(@Param('id') id: string) {
     return this.shareService.remove(id);
   }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateShareDto: any) {
+    return 'ok';
+  }
 }
