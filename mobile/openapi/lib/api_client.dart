@@ -232,6 +232,8 @@ class ApiClient {
           return CreateAlbumDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
+        case 'CreateSharedLinkDto':
+          return CreateSharedLinkDto.fromJson(value);
         case 'CreateTagDto':
           return CreateTagDto.fromJson(value);
         case 'CreateUserDto':
@@ -290,6 +292,10 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerVersionReponseDto':
           return ServerVersionReponseDto.fromJson(value);
+        case 'SharedLinkResponseDto':
+          return SharedLinkResponseDto.fromJson(value);
+        case 'SharedLinkType':
+          return SharedLinkTypeTypeTransformer().decode(value);
         case 'SignUpDto':
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':

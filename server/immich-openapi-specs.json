@@ -2300,7 +2300,7 @@
     },
     "/share": {
       "post": {
-        "operationId": "create",
+        "operationId": "createSharedLink",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2323,10 +2323,13 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "share"
+        ]
       },
       "get": {
-        "operationId": "findAll",
+        "operationId": "getAllSharedLinks",
         "parameters": [],
         "responses": {
           "200": {
@@ -2342,12 +2345,15 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "share"
+        ]
       }
     },
     "/share/{id}": {
       "get": {
-        "operationId": "findOne",
+        "operationId": "getSharedLink",
         "parameters": [
           {
             "name": "id",
@@ -2369,10 +2375,13 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "share"
+        ]
       },
       "delete": {
-        "operationId": "remove",
+        "operationId": "removeSharedLink",
         "parameters": [
           {
             "name": "id",
@@ -2394,32 +2403,10 @@
               }
             }
           }
-        }
-      },
-      "patch": {
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
+        },
+        "tags": [
+          "share"
+        ]
       }
     }
   },
