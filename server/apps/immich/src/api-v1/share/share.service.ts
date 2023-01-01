@@ -40,10 +40,6 @@ export class ShareService {
     return mapSharedLinkToResponseDto(link);
   }
 
-  update(id: number, updateShareDto: UpdateShareDto) {
-    return `This action updates a #${id} share`;
-  }
-
   async remove(id: string) {
     const removedLink = await this.shareCore.removeSharedLink(id);
     return mapSharedLinkToResponseDto(removedLink);

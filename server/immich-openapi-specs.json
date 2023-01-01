@@ -2371,41 +2371,6 @@
           }
         }
       },
-      "patch": {
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateShareDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "operationId": "remove",
         "parameters": [
@@ -4140,10 +4105,6 @@
           "assets",
           "albums"
         ]
-      },
-      "UpdateShareDto": {
-        "type": "object",
-        "properties": {}
       }
     }
   }

@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe } from '@nestjs/common';
 import { ShareService } from './share.service';
-import { UpdateShareDto } from './dto/update-share.dto';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
@@ -28,11 +27,6 @@ export class ShareController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.shareService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateShareDto: UpdateShareDto) {
-    return this.shareService.update(+id, updateShareDto);
   }
 
   @Delete(':id')
