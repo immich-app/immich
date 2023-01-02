@@ -192,6 +192,14 @@ class ApiClient {
           return valueString == 'true' || valueString == '1';
         case 'DateTime':
           return value is DateTime ? value : DateTime.tryParse(value);
+        case 'APIKeyCreateDto':
+          return APIKeyCreateDto.fromJson(value);
+        case 'APIKeyCreateResponseDto':
+          return APIKeyCreateResponseDto.fromJson(value);
+        case 'APIKeyResponseDto':
+          return APIKeyResponseDto.fromJson(value);
+        case 'APIKeyUpdateDto':
+          return APIKeyUpdateDto.fromJson(value);
         case 'AddAssetsDto':
           return AddAssetsDto.fromJson(value);
         case 'AddAssetsResponseDto':

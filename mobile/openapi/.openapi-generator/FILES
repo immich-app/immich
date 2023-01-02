@@ -3,6 +3,11 @@
 .travis.yml
 README.md
 analysis_options.yaml
+doc/APIKeyApi.md
+doc/APIKeyCreateDto.md
+doc/APIKeyCreateResponseDto.md
+doc/APIKeyResponseDto.md
+doc/APIKeyUpdateDto.md
 doc/AddAssetsDto.md
 doc/AddAssetsResponseDto.md
 doc/AddUsersDto.md
@@ -85,6 +90,7 @@ doc/ValidateAccessTokenResponseDto.md
 git_push.sh
 lib/api.dart
 lib/api/album_api.dart
+lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/authentication_api.dart
 lib/api/device_info_api.dart
@@ -109,6 +115,10 @@ lib/model/admin_signup_response_dto.dart
 lib/model/album_count_response_dto.dart
 lib/model/album_response_dto.dart
 lib/model/all_job_status_response_dto.dart
+lib/model/api_key_create_dto.dart
+lib/model/api_key_create_response_dto.dart
+lib/model/api_key_response_dto.dart
+lib/model/api_key_update_dto.dart
 lib/model/asset_count_by_time_bucket.dart
 lib/model/asset_count_by_time_bucket_response_dto.dart
 lib/model/asset_count_by_user_id_response_dto.dart
@@ -180,6 +190,11 @@ test/album_api_test.dart
 test/album_count_response_dto_test.dart
 test/album_response_dto_test.dart
 test/all_job_status_response_dto_test.dart
+test/api_key_api_test.dart
+test/api_key_create_dto_test.dart
+test/api_key_create_response_dto_test.dart
+test/api_key_response_dto_test.dart
+test/api_key_update_dto_test.dart
 test/asset_api_test.dart
 test/asset_count_by_time_bucket_response_dto_test.dart
 test/asset_count_by_time_bucket_test.dart
