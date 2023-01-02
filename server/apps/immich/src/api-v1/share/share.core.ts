@@ -1,4 +1,4 @@
-import { SharedLinkEntity, SharedLinkType } from '@app/database/entities/shared-link.entity';
+import { SharedLinkEntity } from '@app/database/entities/shared-link.entity';
 import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
 import { ISharedLinkRepository } from './shared-link.repository';
 import crypto from 'node:crypto';

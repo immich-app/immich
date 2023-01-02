@@ -69,6 +69,10 @@ export class AlbumService {
       albums = await this._albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
     } else {
       albums = await this._albumRepository.getList(authUser.id, getAlbumsDto);
+      if (getAlbumsDto.shared) {
+        const publicSharingAlbums = await this._albumRepository.getPublicSharingList(authUser.id);
+        albums = [...albums, ...publicSharingAlbums];
+      }
     }
 
     for (const album of albums) {
@@ -189,7 +193,6 @@ export class AlbumService {
   async createAlbumSharedLink(authUser: AuthUserDto, albumId: string): Promise<SharedLinkResponseDto> {
     const album = await this._getAlbum({ authUser, albumId });
 
-    console.log('album', album);
     const sharedLink = await this.shareCore.createSharedLink(authUser.id, {
       sharedType: SharedLinkType.ALBUM,
       album: album,

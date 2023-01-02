@@ -3,15 +3,15 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity } from '@app/database';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
-import { IAssetRepository } from '../asset/asset-repository';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
+import { ISharedLinkRepository } from '../share/shared-link.repository';
 
 describe('Album service', () => {
   let sut: AlbumService;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
-  let assetRepositoryMock: jest.Mocked<IAssetRepository>;
+  let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
 
   const authUser: AuthUserDto = Object.freeze({
@@ -113,6 +113,7 @@ describe('Album service', () => {
 
   beforeAll(() => {
     albumRepositoryMock = {
+      getPublicSharingList: jest.fn(),
       addAssets: jest.fn(),
       addSharedUsers: jest.fn(),
       create: jest.fn(),
@@ -127,31 +128,18 @@ describe('Album service', () => {
       getSharedWithUserAlbumCount: jest.fn(),
     };
 
-    assetRepositoryMock = {
+    sharedLinkRepositoryMock = {
       create: jest.fn(),
-      update: jest.fn(),
-      getAllByUserId: jest.fn(),
-      getAllByDeviceId: jest.fn(),
-      getAssetCountByTimeBucket: jest.fn(),
-      getById: jest.fn(),
-      getDetectedObjectsByUserId: jest.fn(),
-      getLocationsByUserId: jest.fn(),
-      getSearchPropertiesByUserId: jest.fn(),
-      getAssetByTimeBucket: jest.fn(),
-      getAssetByChecksum: jest.fn(),
-      getAssetCountByUserId: jest.fn(),
-      getAssetWithNoEXIF: jest.fn(),
-      getAssetWithNoThumbnail: jest.fn(),
-      getAssetWithNoSmartInfo: jest.fn(),
-      getExistingAssets: jest.fn(),
-      countByIdAndUser: jest.fn(),
+      remove: jest.fn(),
+      get: jest.fn(),
+      getbyId: jest.fn(),
     };
 
     downloadServiceMock = {
       downloadArchive: jest.fn(),
     };
 
-    sut = new AlbumService(albumRepositoryMock, assetRepositoryMock, downloadServiceMock as DownloadService);
+    sut = new AlbumService(albumRepositoryMock, sharedLinkRepositoryMock, downloadServiceMock as DownloadService);
   });
 
   it('creates album', async () => {
