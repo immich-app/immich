@@ -46,7 +46,6 @@
 
 	const handleCopy = async () => {
 		try {
-			console.log(navigator.clipboard);
 			await navigator.clipboard.writeText(sharedLink);
 			notificationController.show({
 				message: 'Copied to clipboard!',
