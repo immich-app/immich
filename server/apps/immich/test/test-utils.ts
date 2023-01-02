@@ -3,7 +3,7 @@ import { TestingModuleBuilder } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 import { IUserRepository } from '../src/api-v1/user/user-repository';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
-import { JwtAuthGuard } from '../src/modules/immich-jwt/guards/jwt-auth.guard';
+import { AuthGuard } from '../src/modules/immich-jwt/guards/auth.guard';
 
 type CustomAuthCallback = () => AuthUserDto;
 
@@ -49,5 +49,5 @@ export function authCustom(builder: TestingModuleBuilder, callback: CustomAuthCa
       return true;
     },
   };
-  return builder.overrideGuard(JwtAuthGuard).useValue(canActivate);
+  return builder.overrideGuard(AuthGuard).useValue(canActivate);
 }

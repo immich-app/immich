@@ -14,7 +14,8 @@
 	onMount(async () => {
 		const { data } = await api.userApi.getAllUsers(false);
 
-		users = data;
+		// remove soft deleted users
+		users = data.filter((user) => !user.deletedAt);
 
 		// Remove the existed shared users from the album
 		sharedUsersInAlbum.forEach((sharedUser) => {
