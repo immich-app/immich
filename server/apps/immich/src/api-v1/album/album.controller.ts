@@ -33,6 +33,7 @@ import {
   IMMICH_CONTENT_LENGTH_HINT,
 } from '../../constants/download.constant';
 import { DownloadDto } from '../asset/dto/download-library.dto';
+import { CreateAlbumShareLinkDto as CreateAlbumSharedLinkDto } from './dto/create-album-shared-link.dto';
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
 @Authenticated()
@@ -138,5 +139,13 @@ export class AlbumController {
     res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
     res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
     return stream;
+  }
+
+  @Post('/create-share-link')
+  async createAlbumSharedLink(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) createAlbumShareLinkDto: CreateAlbumSharedLinkDto,
+  ) {
+    return 'ok';
   }
 }

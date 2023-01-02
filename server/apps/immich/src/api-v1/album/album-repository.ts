@@ -203,6 +203,7 @@ export class AlbumRepository implements IAlbumRepository {
       .leftJoinAndSelect('album.assets', 'assets')
       .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
       .leftJoinAndSelect('assetInfo.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('album.sharedLinks', 'sharedLinks')
       .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC')
       .getOne();
 

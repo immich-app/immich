@@ -9,19 +9,24 @@ import { GetAlbumsDto } from './dto/get-albums.dto';
 import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from './response-dto/album-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
-import { IAssetRepository } from '../asset/asset-repository';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from '../asset/dto/download-library.dto';
+import { ShareCore } from '../share/share.core';
+import { ISharedLinkRepository } from '../share/shared-link.repository';
 
 @Injectable()
 export class AlbumService {
+  private shareCore: ShareCore;
+
   constructor(
     @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
-    @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
+    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     private downloadService: DownloadService,
-  ) {}
+  ) {
+    this.shareCore = new ShareCore(sharedLinkRepository);
+  }
 
   private async _getAlbum({
     authUser,
@@ -85,6 +90,11 @@ export class AlbumService {
 
   async deleteAlbum(authUser: AuthUserDto, albumId: string): Promise<void> {
     const album = await this._getAlbum({ authUser, albumId });
+
+    for (const sharedLink of album.sharedLinks) {
+      await this.shareCore.removeSharedLink(sharedLink.id);
+    }
+
     await this._albumRepository.delete(album);
   }
 

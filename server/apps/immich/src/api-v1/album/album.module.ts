@@ -7,6 +7,7 @@ import { AlbumRepository, IAlbumRepository } from './album-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { AssetModule } from '../asset/asset.module';
 import { UserModule } from '../user/user.module';
+import { ShareModule } from '../share/share.module';
 
 const ALBUM_REPOSITORY_PROVIDER = {
   provide: IAlbumRepository,
@@ -19,6 +20,7 @@ const ALBUM_REPOSITORY_PROVIDER = {
     DownloadModule,
     UserModule,
     forwardRef(() => AssetModule),
+    ShareModule,
   ],
   controllers: [AlbumController],
   providers: [AlbumService, ALBUM_REPOSITORY_PROVIDER],

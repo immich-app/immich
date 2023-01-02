@@ -97,7 +97,7 @@
 				{/each}
 			</div>
 		{:else}
-			<p class="text-sm px-5">
+			<p class="text-sm p-5">
 				Looks like you have shared this album with all users or you don't have any user to share
 				with.
 			</p>

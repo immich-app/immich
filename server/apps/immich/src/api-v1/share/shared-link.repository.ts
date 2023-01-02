@@ -25,7 +25,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       where: {
         userId: userId,
       },
-      relations: ['assets', 'albums'],
+      relations: ['assets', 'album'],
     });
   }
 
@@ -38,7 +38,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       where: {
         id: id,
       },
-      relations: ['assets', 'albums'],
+      relations: ['assets', 'album'],
     });
   }
 

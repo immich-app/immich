@@ -71,7 +71,7 @@ export class AssetEntity {
   tags!: TagEntity[];
 
   @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true })
-  @JoinTable({ name: 'sharedlink_asset' })
+  @JoinTable({ name: 'shared_link__asset' })
   sharedLinks!: SharedLinkEntity[];
 }
 

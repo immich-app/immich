@@ -1,5 +1,6 @@
 import { SharedLinkEntity, SharedLinkType } from '@app/database/entities/shared-link.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { AlbumResponseDto, mapAlbum } from '../../album/response-dto/album-response.dto';
 
 export class SharedLinkResponseDto {
   id!: string;
@@ -12,7 +13,7 @@ export class SharedLinkResponseDto {
   createdAt!: string;
   expiresAt?: string;
   assets!: string[];
-  albums!: string[];
+  album!: AlbumResponseDto;
 }
 
 export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
@@ -25,6 +26,6 @@ export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): Shared
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
     assets: sharedLink.assets ? sharedLink.assets.map((asset) => asset.id) : [],
-    albums: sharedLink.albums ? sharedLink.albums.map((album) => album.id) : [],
+    album: mapAlbum(sharedLink.album),
   };
 }

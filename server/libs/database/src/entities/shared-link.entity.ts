@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, ManyToOne, PrimaryColumn } from 'typeorm';
 import { AlbumEntity } from './album.entity';
 import { AssetEntity } from './asset.entity';
 
@@ -28,8 +28,8 @@ export class SharedLinkEntity {
   @ManyToMany(() => AssetEntity, (asset) => asset.sharedLinks)
   assets!: AssetEntity[];
 
-  @ManyToMany(() => AlbumEntity, (album) => album.sharedLinks)
-  albums!: AlbumEntity[];
+  @ManyToOne(() => AlbumEntity, (album) => album.sharedLinks)
+  album!: AlbumEntity;
 }
 
 export enum SharedLinkType {
