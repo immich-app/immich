@@ -598,6 +598,19 @@ export interface CreateAlbumDto {
 /**
  * 
  * @export
+ * @interface CreateAlbumShareLinkDto
+ */
+export interface CreateAlbumShareLinkDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'albumId': string;
+}
+/**
+ * 
+ * @export
  * @interface CreateProfileImageResponseDto
  */
 export interface CreateProfileImageResponseDto {
@@ -613,43 +626,6 @@ export interface CreateProfileImageResponseDto {
      * @memberof CreateProfileImageResponseDto
      */
     'profileImagePath': string;
-}
-/**
- * 
- * @export
- * @interface CreateSharedLinkDto
- */
-export interface CreateSharedLinkDto {
-    /**
-     * 
-     * @type {SharedLinkType}
-     * @memberof CreateSharedLinkDto
-     */
-    'sharedType': SharedLinkType;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof CreateSharedLinkDto
-     */
-    'assetIds': Array<string>;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateSharedLinkDto
-     */
-    'description'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateSharedLinkDto
-     */
-    'expiredAt'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateSharedLinkDto
-     */
-    'albumId': string;
 }
 /**
  * 
@@ -1494,10 +1470,10 @@ export interface SharedLinkResponseDto {
     'assets': Array<string>;
     /**
      * 
-     * @type {Array<string>}
+     * @type {AlbumResponseDto}
      * @memberof SharedLinkResponseDto
      */
-    'albums': Array<string>;
+    'album'?: AlbumResponseDto;
 }
 /**
  * 
@@ -2235,6 +2211,45 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {CreateAlbumShareLinkDto} createAlbumShareLinkDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createAlbumSharedLink: async (createAlbumShareLinkDto: CreateAlbumShareLinkDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'createAlbumShareLinkDto' is not null or undefined
+            assertParamExists('createAlbumSharedLink', 'createAlbumShareLinkDto', createAlbumShareLinkDto)
+            const localVarPath = `/album/create-shared-link`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(createAlbumShareLinkDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2596,6 +2611,16 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {CreateAlbumShareLinkDto} createAlbumShareLinkDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async createAlbumSharedLink(createAlbumShareLinkDto: CreateAlbumShareLinkDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createAlbumSharedLink(createAlbumShareLinkDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2719,6 +2744,15 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
+         * @param {CreateAlbumShareLinkDto} createAlbumShareLinkDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createAlbumSharedLink(createAlbumShareLinkDto: CreateAlbumShareLinkDto, options?: any): AxiosPromise<SharedLinkResponseDto> {
+            return localVarFp.createAlbumSharedLink(createAlbumShareLinkDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2836,6 +2870,17 @@ export class AlbumApi extends BaseAPI {
      */
     public createAlbum(createAlbumDto: CreateAlbumDto, options?: AxiosRequestConfig) {
         return AlbumApiFp(this.configuration).createAlbum(createAlbumDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {CreateAlbumShareLinkDto} createAlbumShareLinkDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AlbumApi
+     */
+    public createAlbumSharedLink(createAlbumShareLinkDto: CreateAlbumShareLinkDto, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).createAlbumSharedLink(createAlbumShareLinkDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5739,41 +5784,6 @@ export const ShareApiAxiosParamCreator = function (configuration?: Configuration
     return {
         /**
          * 
-         * @param {CreateSharedLinkDto} createSharedLinkDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createSharedLink: async (createSharedLinkDto: CreateSharedLinkDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'createSharedLinkDto' is not null or undefined
-            assertParamExists('createSharedLink', 'createSharedLinkDto', createSharedLinkDto)
-            const localVarPath = `/share`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(createSharedLinkDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5879,16 +5889,6 @@ export const ShareApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {CreateSharedLinkDto} createSharedLinkDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async createSharedLink(createSharedLinkDto: CreateSharedLinkDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createSharedLink(createSharedLinkDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5928,15 +5928,6 @@ export const ShareApiFactory = function (configuration?: Configuration, basePath
     return {
         /**
          * 
-         * @param {CreateSharedLinkDto} createSharedLinkDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createSharedLink(createSharedLinkDto: CreateSharedLinkDto, options?: any): AxiosPromise<SharedLinkResponseDto> {
-            return localVarFp.createSharedLink(createSharedLinkDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5971,17 +5962,6 @@ export const ShareApiFactory = function (configuration?: Configuration, basePath
  * @extends {BaseAPI}
  */
 export class ShareApi extends BaseAPI {
-    /**
-     * 
-     * @param {CreateSharedLinkDto} createSharedLinkDto 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof ShareApi
-     */
-    public createSharedLink(createSharedLinkDto: CreateSharedLinkDto, options?: AxiosRequestConfig) {
-        return ShareApiFp(this.configuration).createSharedLink(createSharedLinkDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
     /**
      * 
      * @param {*} [options] Override http request option.

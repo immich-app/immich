@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { AlbumEntity } from '@app/database';
+import { AlbumEntity, SharedLinkType } from '@app/database';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
@@ -15,6 +15,7 @@ import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from '../asset/dto/download-library.dto';
 import { ShareCore } from '../share/share.core';
 import { ISharedLinkRepository } from '../share/shared-link.repository';
+import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 
 @Injectable()
 export class AlbumService {
@@ -183,5 +184,18 @@ export class AlbumService {
       await this._albumRepository.updateAlbum(album, dto);
       album.albumThumbnailAssetId = dto.albumThumbnailAssetId || null;
     }
+  }
+
+  async createAlbumSharedLink(authUser: AuthUserDto, albumId: string): Promise<SharedLinkResponseDto> {
+    const album = await this._getAlbum({ authUser, albumId });
+
+    console.log('album', album);
+    const sharedLink = await this.shareCore.createSharedLink(authUser.id, {
+      sharedType: SharedLinkType.ALBUM,
+      album: album,
+      assets: album.assets?.map((asset) => asset.assetInfo) || [],
+    });
+
+    return mapSharedLinkToResponseDto(sharedLink);
   }
 }

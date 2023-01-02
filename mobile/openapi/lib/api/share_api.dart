@@ -16,53 +16,6 @@ class ShareApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /share' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [CreateSharedLinkDto] createSharedLinkDto (required):
-  Future<Response> createSharedLinkWithHttpInfo(CreateSharedLinkDto createSharedLinkDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/share';
-
-    // ignore: prefer_final_locals
-    Object? postBody = createSharedLinkDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [CreateSharedLinkDto] createSharedLinkDto (required):
-  Future<SharedLinkResponseDto?> createSharedLink(CreateSharedLinkDto createSharedLinkDto,) async {
-    final response = await createSharedLinkWithHttpInfo(createSharedLinkDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
-    
-    }
-    return null;
-  }
-
   /// Performs an HTTP 'GET /share' operation and returns the [Response].
   Future<Response> getAllSharedLinksWithHttpInfo() async {
     // ignore: prefer_const_declarations

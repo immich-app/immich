@@ -29,7 +29,7 @@ export class SharedLinkEntity {
   assets!: AssetEntity[];
 
   @ManyToOne(() => AlbumEntity, (album) => album.sharedLinks)
-  album!: AlbumEntity;
+  album?: AlbumEntity;
 }
 
 export enum SharedLinkType {

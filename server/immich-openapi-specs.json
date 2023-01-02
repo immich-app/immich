@@ -1474,7 +1474,7 @@
         ]
       }
     },
-    "/album/create-share-link": {
+    "/album/create-shared-link": {
       "post": {
         "operationId": "createAlbumSharedLink",
         "parameters": [],
@@ -1494,7 +1494,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
                 }
               }
             }
@@ -1653,35 +1653,6 @@
       }
     },
     "/share": {
-      "post": {
-        "operationId": "createSharedLink",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateSharedLinkDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      },
       "get": {
         "operationId": "getAllSharedLinks",
         "parameters": [],
@@ -3370,71 +3341,11 @@
           "albumId"
         ]
       },
-      "CreateTagDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "name"
-        ]
-      },
-      "UpdateTagDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "renameTagId": {
-            "type": "string"
-          }
-        }
-      },
       "SharedLinkType": {
         "type": "string",
         "enum": [
           "ALBUM",
           "INDIVIDUAL"
-        ]
-      },
-      "CreateSharedLinkDto": {
-        "type": "object",
-        "properties": {
-          "sharedType": {
-            "$ref": "#/components/schemas/SharedLinkType"
-          },
-          "assetIds": {
-            "title": "Array of asset IDs to add to the shared link",
-            "example": [
-              "bf973405-3f2a-48d2-a687-2ed4167164be",
-              "dd41870b-5d00-46d2-924e-1d8489a0aa0f",
-              "fad77c3f-deef-4e7e-9608-14c1aa4e559a"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "description": {
-            "type": "string"
-          },
-          "expiredAt": {
-            "type": "string"
-          },
-          "albumId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "sharedType",
-          "assetIds",
-          "albumId"
         ]
       },
       "SharedLinkResponseDto": {
@@ -3477,9 +3388,34 @@
           "userId",
           "key",
           "createdAt",
-          "assets",
-          "album"
+          "assets"
         ]
+      },
+      "CreateTagDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/TagTypeEnum"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "name"
+        ]
+      },
+      "UpdateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "renameTagId": {
+            "type": "string"
+          }
+        }
       },
       "LoginCredentialDto": {
         "type": "object",

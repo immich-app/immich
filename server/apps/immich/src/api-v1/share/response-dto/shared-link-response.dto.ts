@@ -13,7 +13,7 @@ export class SharedLinkResponseDto {
   createdAt!: string;
   expiresAt?: string;
   assets!: string[];
-  album!: AlbumResponseDto;
+  album?: AlbumResponseDto;
 }
 
 export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
@@ -26,6 +26,6 @@ export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): Shared
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
     assets: sharedLink.assets ? sharedLink.assets.map((asset) => asset.id) : [],
-    album: mapAlbum(sharedLink.album),
+    album: sharedLink.album ? mapAlbum(sharedLink.album) : undefined,
   };
 }

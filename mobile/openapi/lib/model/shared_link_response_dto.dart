@@ -21,7 +21,7 @@ class SharedLinkResponseDto {
     required this.createdAt,
     this.expiresAt,
     this.assets = const [],
-    this.albums = const [],
+    this.album,
   });
 
   SharedLinkType type;
@@ -52,7 +52,13 @@ class SharedLinkResponseDto {
 
   List<String> assets;
 
-  List<String> albums;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AlbumResponseDto? album;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkResponseDto &&
@@ -64,7 +70,7 @@ class SharedLinkResponseDto {
      other.createdAt == createdAt &&
      other.expiresAt == expiresAt &&
      other.assets == assets &&
-     other.albums == albums;
+     other.album == album;
 
   @override
   int get hashCode =>
@@ -77,10 +83,10 @@ class SharedLinkResponseDto {
     (createdAt.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (assets.hashCode) +
-    (albums.hashCode);
+    (album == null ? 0 : album!.hashCode);
 
   @override
-  String toString() => 'SharedLinkResponseDto[type=$type, id=$id, description=$description, userId=$userId, key=$key, createdAt=$createdAt, expiresAt=$expiresAt, assets=$assets, albums=$albums]';
+  String toString() => 'SharedLinkResponseDto[type=$type, id=$id, description=$description, userId=$userId, key=$key, createdAt=$createdAt, expiresAt=$expiresAt, assets=$assets, album=$album]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -100,7 +106,11 @@ class SharedLinkResponseDto {
       _json[r'expiresAt'] = null;
     }
       _json[r'assets'] = assets;
-      _json[r'albums'] = albums;
+    if (album != null) {
+      _json[r'album'] = album;
+    } else {
+      _json[r'album'] = null;
+    }
     return _json;
   }
 
@@ -133,9 +143,7 @@ class SharedLinkResponseDto {
         assets: json[r'assets'] is List
             ? (json[r'assets'] as List).cast<String>()
             : const [],
-        albums: json[r'albums'] is List
-            ? (json[r'albums'] as List).cast<String>()
-            : const [],
+        album: AlbumResponseDto.fromJson(json[r'album']),
       );
     }
     return null;
@@ -191,7 +199,6 @@ class SharedLinkResponseDto {
     'key',
     'createdAt',
     'assets',
-    'albums',
   };
 }
 

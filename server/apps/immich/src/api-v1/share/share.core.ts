@@ -20,6 +20,8 @@ export class ShareCore {
       sharedLink.createdAt = new Date().toISOString();
       sharedLink.expiresAt = dto.expiredAt;
       sharedLink.type = dto.sharedType;
+      sharedLink.assets = dto.assets;
+      sharedLink.album = dto.album;
 
       return this.sharedLinkRepository.create(sharedLink);
     } catch (error: any) {

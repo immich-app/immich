@@ -56,8 +56,8 @@ void main() {
       // TODO
     });
 
-    // List<String> albums (default value: const [])
-    test('to test the property `albums`', () async {
+    // AlbumResponseDto album
+    test('to test the property `album`', () async {
       // TODO
     });
 

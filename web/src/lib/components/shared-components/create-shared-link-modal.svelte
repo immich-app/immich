@@ -22,10 +22,8 @@
 		if (album) {
 			isLoading = true;
 			try {
-				const { data } = await api.shareApi.createSharedLink({
-					albumId: album.id,
-					sharedType: shareType,
-					assetIds: []
+				const { data } = await api.albumApi.createAlbumSharedLink({
+					albumId: album.id
 				});
 
 				buildSharedLink(data);

@@ -141,11 +141,11 @@ export class AlbumController {
     return stream;
   }
 
-  @Post('/create-share-link')
+  @Post('/create-shared-link')
   async createAlbumSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) createAlbumShareLinkDto: CreateAlbumSharedLinkDto,
   ) {
-    return 'ok';
+    return this.albumService.createAlbumSharedLink(authUser, createAlbumShareLinkDto.albumId);
   }
 }
