@@ -12,13 +12,16 @@ export const load: PageServerLoad = async ({ params }) => {
 		const { data: sharedLink } = await serverApi.shareApi.getSharedLink(sharedLinkId);
 
 		for (const assetId of sharedLink.assets) {
-			const { data: asset } = await serverApi.assetApi.getAssetById(assetId);
+			const { data: asset } = await serverApi.assetApi.getAssetById(assetId, {
+				params: {
+					key: sharedLink.key
+				}
+			});
 			assets.push(asset);
 		}
 
 		return { sharedLink, assets };
 	} catch (e) {
-		console.log(e);
 		throw error(404, {
 			message: 'Invalid shared link'
 		});

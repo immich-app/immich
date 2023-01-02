@@ -8,6 +8,7 @@ interface AuthenticatedOptions {
 
 export const Authenticated = (options?: AuthenticatedOptions) => {
   const guards: Parameters<typeof UseGuards> = [AuthGuard];
+
   options = options || {};
   if (options.admin) {
     guards.push(AdminRolesGuard);

@@ -14,6 +14,6 @@ const SHARED_LINK_REPOSITORY_PROVIDER = {
   imports: [TypeOrmModule.forFeature([SharedLinkEntity])],
   controllers: [ShareController],
   providers: [ShareService, SHARED_LINK_REPOSITORY_PROVIDER],
-  exports: [SHARED_LINK_REPOSITORY_PROVIDER],
+  exports: [SHARED_LINK_REPOSITORY_PROVIDER, ShareService],
 })
 export class ShareModule {}

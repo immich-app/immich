@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
 import { ShareCore } from './share.core';
@@ -6,6 +6,7 @@ import { ISharedLinkRepository } from './shared-link.repository';
 
 @Injectable()
 export class ShareService {
+  readonly logger = new Logger(ShareService.name);
   private shareCore: ShareCore;
 
   constructor(
@@ -27,5 +28,16 @@ export class ShareService {
   async remove(id: string) {
     const removedLink = await this.shareCore.removeSharedLink(id);
     return mapSharedLinkToResponseDto(removedLink);
+  }
+
+  async validateSharedLink(key: string): Promise<AuthUserDto> {
+    console.log('Validating shared link with key: ', key);
+    this.logger.debug(`Validating shared link with key: ${key}`);
+
+    const mock = new AuthUserDto();
+    mock.id = 'a28e00a2-6905-4416-af7c-55c7ce9ac115';
+    mock.email = 'testuser@email.com';
+    mock.isAdmin = true;
+    return mock;
   }
 }

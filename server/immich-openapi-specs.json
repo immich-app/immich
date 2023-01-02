@@ -473,6 +473,88 @@
         ]
       }
     },
+    "/share": {
+      "get": {
+        "operationId": "getAllSharedLinks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SharedLinkResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/share/{id}": {
+      "get": {
+        "operationId": "getSharedLink",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      },
+      "delete": {
+        "operationId": "removeSharedLink",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
     "/asset/upload": {
       "post": {
         "operationId": "uploadFile",
@@ -1794,88 +1876,6 @@
         ]
       }
     },
-    "/share": {
-      "get": {
-        "operationId": "getAllSharedLinks",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SharedLinkResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      }
-    },
-    "/share/{id}": {
-      "get": {
-        "operationId": "getSharedLink",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      },
-      "delete": {
-        "operationId": "removeSharedLink",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      }
-    },
     "/auth/login": {
       "post": {
         "operationId": "login",
@@ -2784,99 +2784,11 @@
           "name"
         ]
       },
-      "AssetFileUploadDto": {
-        "type": "object",
-        "properties": {
-          "assetData": {
-            "type": "string",
-            "format": "binary"
-          }
-        },
-        "required": [
-          "assetData"
-        ]
-      },
-      "AssetFileUploadResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "ThumbnailFormat": {
+      "SharedLinkType": {
         "type": "string",
         "enum": [
-          "JPEG",
-          "WEBP"
-        ]
-      },
-      "CuratedObjectsResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "object": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "resizePath",
-          "deviceAssetId",
-          "deviceId"
-        ]
-      },
-      "CuratedLocationsResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "city": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "city",
-          "resizePath",
-          "deviceAssetId",
-          "deviceId"
-        ]
-      },
-      "SearchAssetDto": {
-        "type": "object",
-        "properties": {
-          "searchTerm": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "searchTerm"
+          "ALBUM",
+          "INDIVIDUAL"
         ]
       },
       "AssetTypeEnum": {
@@ -3135,6 +3047,194 @@
           "duration",
           "webpPath",
           "tags"
+        ]
+      },
+      "AlbumResponseDto": {
+        "type": "object",
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "albumName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "albumThumbnailAssetId": {
+            "type": "string",
+            "nullable": true
+          },
+          "shared": {
+            "type": "boolean"
+          },
+          "sharedUsers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponseDto"
+            }
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          }
+        },
+        "required": [
+          "assetCount",
+          "id",
+          "ownerId",
+          "albumName",
+          "createdAt",
+          "albumThumbnailAssetId",
+          "shared",
+          "sharedUsers",
+          "assets"
+        ]
+      },
+      "SharedLinkResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/SharedLinkType"
+          },
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "album": {
+            "$ref": "#/components/schemas/AlbumResponseDto"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "userId",
+          "key",
+          "createdAt",
+          "assets"
+        ]
+      },
+      "AssetFileUploadDto": {
+        "type": "object",
+        "properties": {
+          "assetData": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "assetData"
+        ]
+      },
+      "AssetFileUploadResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "ThumbnailFormat": {
+        "type": "string",
+        "enum": [
+          "JPEG",
+          "WEBP"
+        ]
+      },
+      "CuratedObjectsResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string"
+          },
+          "resizePath": {
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "resizePath",
+          "deviceAssetId",
+          "deviceId"
+        ]
+      },
+      "CuratedLocationsResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "resizePath": {
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "city",
+          "resizePath",
+          "deviceAssetId",
+          "deviceId"
+        ]
+      },
+      "SearchAssetDto": {
+        "type": "object",
+        "properties": {
+          "searchTerm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "searchTerm"
         ]
       },
       "TimeGroupEnum": {
@@ -3405,56 +3505,6 @@
           "albumName"
         ]
       },
-      "AlbumResponseDto": {
-        "type": "object",
-        "properties": {
-          "assetCount": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "string"
-          },
-          "ownerId": {
-            "type": "string"
-          },
-          "albumName": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "albumThumbnailAssetId": {
-            "type": "string",
-            "nullable": true
-          },
-          "shared": {
-            "type": "boolean"
-          },
-          "sharedUsers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserResponseDto"
-            }
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            }
-          }
-        },
-        "required": [
-          "assetCount",
-          "id",
-          "ownerId",
-          "albumName",
-          "createdAt",
-          "albumThumbnailAssetId",
-          "shared",
-          "sharedUsers",
-          "assets"
-        ]
-      },
       "AddUsersDto": {
         "type": "object",
         "properties": {
@@ -3538,56 +3588,6 @@
         },
         "required": [
           "albumId"
-        ]
-      },
-      "SharedLinkType": {
-        "type": "string",
-        "enum": [
-          "ALBUM",
-          "INDIVIDUAL"
-        ]
-      },
-      "SharedLinkResponseDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/SharedLinkType"
-          },
-          "id": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "key": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "expiresAt": {
-            "type": "string"
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "album": {
-            "$ref": "#/components/schemas/AlbumResponseDto"
-          }
-        },
-        "required": [
-          "type",
-          "id",
-          "userId",
-          "key",
-          "createdAt",
-          "assets"
         ]
       },
       "CreateTagDto": {
