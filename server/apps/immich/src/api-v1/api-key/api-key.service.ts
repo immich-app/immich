@@ -64,7 +64,7 @@ export class APIKeyService {
 
     if (id && key) {
       const entity = await this.repository.getKey(id);
-      if (entity?.key && compareSync(key, entity.key)) {
+      if (entity?.user && entity?.key && compareSync(key, entity.key)) {
         return entity.user as UserEntity;
       }
     }

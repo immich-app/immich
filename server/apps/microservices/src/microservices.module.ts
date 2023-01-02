@@ -1,5 +1,5 @@
 import { immichAppConfig, immichBullAsyncConfig } from '@app/common/config';
-import { DatabaseModule, AssetEntity, ExifEntity, SmartInfoEntity, UserEntity } from '@app/database';
+import { DatabaseModule, AssetEntity, ExifEntity, SmartInfoEntity, UserEntity, APIKeyEntity } from '@app/database';
 import { StorageModule } from '@app/storage';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
@@ -23,7 +23,7 @@ import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.c
     ConfigModule.forRoot(immichAppConfig),
     DatabaseModule,
     ImmichConfigModule,
-    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
+    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity, APIKeyEntity]),
     StorageModule,
     BullModule.forRootAsync(immichBullAsyncConfig),
     BullModule.registerQueue(...immichSharedQueues),
