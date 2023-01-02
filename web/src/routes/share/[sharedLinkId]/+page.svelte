@@ -11,9 +11,9 @@
 </script>
 
 <section class="dark:text-immich-gray">
-	<pre class="text-xs">
+	<!-- <pre class="text-xs">
     {JSON.stringify(data, null, 2)}
-  </pre>
+  </pre> -->
 	{data.sharedLink.album?.albumName}
 
 	<div>
