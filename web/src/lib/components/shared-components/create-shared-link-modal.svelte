@@ -46,7 +46,7 @@
 
 	const handleCopy = async () => {
 		try {
-			console.log(navigator);
+			console.log(navigator.clipboard);
 			await navigator.clipboard.writeText(sharedLink);
 			notificationController.show({
 				message: 'Copied to clipboard!',
@@ -87,12 +87,13 @@
 		{/if}
 
 		{#if isShowSharedLink}
-			<div class="flex w-full">
+			<div class="flex w-full gap-4">
 				<input class="immich-form-input w-full" bind:value={sharedLink} />
+
 				<button
 					on:click={() => handleCopy()}
-					class="flex-1 transition-colors bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
-					>Copy to Clipboard</button
+					class="flex-1 transition-colors bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-2 text-white rounded-full shadow-md w-full font-medium"
+					>Copy</button
 				>
 			</div>
 		{/if}
