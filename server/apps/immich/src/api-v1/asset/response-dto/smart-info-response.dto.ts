@@ -4,6 +4,7 @@ export class SmartInfoResponseDto {
   id?: string;
   tags?: string[] | null;
   objects?: string[] | null;
+  ocr_info?: string | null;
 }
 
 export function mapSmartInfo(entity: SmartInfoEntity): SmartInfoResponseDto {
@@ -11,5 +12,6 @@ export function mapSmartInfo(entity: SmartInfoEntity): SmartInfoResponseDto {
     id: entity.id,
     tags: entity.tags,
     objects: entity.objects,
+    ocr_info: entity.ocr_info,
   };
 }

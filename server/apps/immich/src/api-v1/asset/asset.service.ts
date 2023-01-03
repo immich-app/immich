@@ -571,6 +571,7 @@ export class AssetService {
        (
          TO_TSVECTOR('english', ARRAY_TO_STRING(si.tags, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
          TO_TSVECTOR('english', ARRAY_TO_STRING(si.objects, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
+         si.ocr_string like $3 OR
          e."exifTextSearchableColumn" @@ PLAINTO_TSQUERY('english', $2)
         );
     `;
@@ -578,6 +579,7 @@ export class AssetService {
     const searchResults: AssetEntity[] = await this.assetRepository.query(query, [
       authUser.id,
       searchAssetDto.searchTerm,
+      '%'+searchAssetDto.searchTerm+'%',
     ]);
 
     return searchResults.map((asset) => mapAsset(asset));

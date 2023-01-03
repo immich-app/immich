@@ -41,6 +41,7 @@ export interface IAssetRepository {
   getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
   getAssetWithNoEXIF(): Promise<AssetEntity[]>;
   getAssetWithNoSmartInfo(): Promise<AssetEntity[]>;
+  getAssetWithNoSmartOcrInfo(): Promise<AssetEntity[]>;
   getExistingAssets(
     userId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
@@ -66,6 +67,18 @@ export class AssetRepository implements IAssetRepository {
       .where('asset.resizePath IS NOT NULL')
       .andWhere('si.id IS NULL')
       .andWhere('asset.isVisible = true')
+      .getMany();
+  }
+
+  async getAssetWithNoSmartOcrInfo(): Promise<AssetEntity[]> {
+    return await this.assetRepository
+      .createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.smartInfo', 'si')
+      .where('asset.resizePath IS NOT NULL')
+      .andWhere('si.id IS NULL')
+      .andWhere('asset.isVisible = true')
+      .andWhere("type='IMAGE'")
+      .andWhere('si.ocr_info IS NULL')
       .getMany();
   }
 
@@ -226,7 +239,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         id: assetId,
       },
-      relations: ['exifInfo', 'tags'],
+      relations: ['exifInfo', 'tags','smartInfo'],
     });
   }
 

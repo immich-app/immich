@@ -1,6 +1,7 @@
 import {
   exifExtractionProcessorName,
   generateJPEGThumbnailProcessorName,
+  ocrProcessorName,
   IMetadataExtractionJob,
   IThumbnailGenerationJob,
   IVideoTranscodeJob,
@@ -20,6 +21,8 @@ import { GetJobDto, JobId } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
 import { StorageService } from '@app/storage';
+import { IOcrJob } from '@app/job/interfaces/ocr.interface';
+
 
 @Injectable()
 export class JobService {
@@ -38,6 +41,9 @@ export class JobService {
 
     @InjectQueue(QueueNameEnum.STORAGE_MIGRATION)
     private storageMigrationQueue: Queue,
+    
+    @InjectQueue(QueueNameEnum.OCR)
+    private OcrQueue: Queue<IOcrJob>,
 
     @Inject(IAssetRepository)
     private _assetRepository: IAssetRepository,
@@ -48,6 +54,7 @@ export class JobService {
     this.metadataExtractionQueue.empty();
     this.videoConversionQueue.empty();
     this.storageMigrationQueue.empty();
+    this.OcrQueue.empty();
   }
 
   async startJob(jobDto: GetJobDto): Promise<number> {
@@ -62,6 +69,8 @@ export class JobService {
         return this.runMachineLearningPipeline();
       case JobId.STORAGE_TEMPLATE_MIGRATION:
         return this.runStorageMigration();
+      case JobId.OCR:
+        return this.runOcrPipeline();
       default:
         throw new BadRequestException('Invalid job id');
     }
@@ -73,6 +82,7 @@ export class JobService {
     const videoConversionJobCount = await this.videoConversionQueue.getJobCounts();
     const machineLearningJobCount = await this.machineLearningQueue.getJobCounts();
     const storageMigrationJobCount = await this.storageMigrationQueue.getJobCounts();
+    const ocrJobCount = await this.OcrQueue.getJobCounts();
 
     const response = new AllJobStatusResponseDto();
     response.isThumbnailGenerationActive = Boolean(thumbnailGeneratorJobCount.waiting);
@@ -83,7 +93,8 @@ export class JobService {
     response.videoConversionQueueCount = videoConversionJobCount;
     response.isMachineLearningActive = Boolean(machineLearningJobCount.waiting);
     response.machineLearningQueueCount = machineLearningJobCount;
-
+    response.isOcrActive = Boolean(ocrJobCount.waiting);
+    response.ocrQueueCount = ocrJobCount;
     response.isStorageMigrationActive = Boolean(storageMigrationJobCount.active);
     response.storageMigrationQueueCount = storageMigrationJobCount;
 
@@ -112,6 +123,11 @@ export class JobService {
       response.queueCount = await this.storageMigrationQueue.getJobCounts();
     }
 
+    if (query.jobId === JobId.OCR) {
+      response.isActive = Boolean((await this.OcrQueue.getJobCounts()).waiting);
+      response.queueCount = await this.OcrQueue.getJobCounts();
+    }
+
     return response;
   }
 
@@ -131,6 +147,9 @@ export class JobService {
         return 0;
       case JobId.STORAGE_TEMPLATE_MIGRATION:
         this.storageMigrationQueue.empty();
+        return 0;
+      case JobId.OCR:
+        this.OcrQueue.empty();
         return 0;
       default:
         throw new BadRequestException('Invalid job id');
@@ -210,5 +229,25 @@ export class JobService {
     await this.storageMigrationQueue.add(templateMigrationProcessorName, {}, { jobId: randomUUID() });
 
     return 1;
+  }
+
+  private async runOcrPipeline(): Promise<number> {
+    const jobCount = await this.OcrQueue.getJobCounts();
+
+    if (jobCount.waiting > 0) {
+      throw new BadRequestException('Metadata extraction job is already running');
+    }
+
+    const assetWithNoSmartOcrInfo = await this._assetRepository.getAssetWithNoSmartOcrInfo();
+
+    for (const asset of assetWithNoSmartOcrInfo) {
+      await this.OcrQueue.add(
+        ocrProcessorName,
+        { asset },
+        { jobId: randomUUID() }
+      );
+    }
+
+    return assetWithNoSmartOcrInfo.length;
   }
 }

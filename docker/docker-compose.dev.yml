@@ -22,6 +22,14 @@ services:
     depends_on:
       - redis
       - database
+  immich-ocr:
+    image: "immich-ocr-dev"
+    build:
+      context: ../ocr
+    container_name: immich-ocr-dev
+    volumes:
+      - ../ocr/web_service.py:/home/PaddleOCR/deploy/pdserving/web_service.py
+      - ../ocr/config.yml:/home/PaddleOCR/deploy/pdserving/config.yml
 
   immich-machine-learning:
     container_name: immich_machine_learning

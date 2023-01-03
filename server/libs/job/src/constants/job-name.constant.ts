@@ -22,6 +22,12 @@ export const videoMetadataExtractionProcessorName = 'extract-video-metadata';
 export const reverseGeocodingProcessorName = 'reverse-geocoding';
 
 /**
+ * OCR Queue Jobs
+ */
+ 
+export const ocrProcessorName = 'image-ocr';
+
+/**
  * Machine learning Queue Jobs
  */
 

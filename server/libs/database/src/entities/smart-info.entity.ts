@@ -16,6 +16,12 @@ export class SmartInfoEntity {
   @Column({ type: 'text', array: true, nullable: true })
   objects!: string[] | null;
 
+  @Column({ type: 'text', nullable: true })
+  ocr_string!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  ocr_info!: string | null;
+
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
   asset?: AssetEntity;

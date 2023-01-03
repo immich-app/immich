@@ -1,0 +1,70 @@
+#rpc端口, rpc_port和http_port不允许同时为空。当rpc_port为空且http_port不为空时，会自动将rpc_port设置为http_port+1
+rpc_port: 18091
+
+#http端口, rpc_port和http_port不允许同时为空。当rpc_port可用且http_port为空时，不自动生成http_port
+http_port: 3004
+
+#worker_num, 最大并发数。当build_dag_each_worker=True时, 框架会创建worker_num个进程，每个进程内构建grpcSever和DAG
+##当build_dag_each_worker=False时，框架会设置主线程grpc线程池的max_workers=worker_num
+worker_num: 1
+
+#build_dag_each_worker, False，框架在进程内创建一条DAG；True，框架会每个进程内创建多个独立的DAG
+build_dag_each_worker: False
+
+dag:
+  #op资源类型, True, 为线程模型；False，为进程模型
+  is_thread_op: False
+
+  #重试次数
+  retry: 10
+
+  #使用性能分析, True，生成Timeline性能数据，对性能有一定影响；False为不使用
+  use_profile: False
+
+  tracer:
+    interval_s: 10
+op:
+  det:
+    #并发数，is_thread_op=True时，为线程并发；否则为进程并发
+    concurrency: 1
+
+    #当op配置没有server_endpoints时，从local_service_conf读取本地服务配置
+    local_service_conf:
+      #client类型，包括brpc, grpc和local_predictor.local_predictor不启动Serving服务，进程内预测
+      client_type: local_predictor
+
+      #det模型路径
+      model_config: ./ppocr_det_v3_serving
+
+      #Fetch结果列表，以client_config中fetch_var的alias_name为准，不设置默认取全部输出变量
+      #fetch_list: ["sigmoid_0.tmp_0"]
+
+      #计算硬件ID，当devices为""或不写时为CPU预测；当devices为"0", "0,1,2"时为GPU预测，表示使用的GPU卡
+      devices: ""
+
+      ir_optim: True
+  rec:
+    #并发数，is_thread_op=True时，为线程并发；否则为进程并发
+    concurrency: 1
+
+    #超时时间, 单位ms
+    timeout: -1
+
+    #Serving交互重试次数，默认不重试
+    retry: 1
+
+    #当op配置没有server_endpoints时，从local_service_conf读取本地服务配置
+    local_service_conf:
+      #client类型，包括brpc, grpc和local_predictor。local_predictor不启动Serving服务，进程内预测
+      client_type: local_predictor
+
+      #rec模型路径
+      model_config: ./ppocr_rec_v3_serving
+
+      #Fetch结果列表，以client_config中fetch_var的alias_name为准, 不设置默认取全部输出变量
+      #fetch_list:
+
+      #计算硬件ID，当devices为""或不写时为CPU预测；当devices为"0", "0,1,2"时为GPU预测，表示使用的GPU卡
+      devices: ""
+
+      ir_optim: True

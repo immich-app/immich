@@ -7,6 +7,7 @@ export enum JobId {
   VIDEO_CONVERSION = 'video-conversion',
   MACHINE_LEARNING = 'machine-learning',
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
+  OCR='image-ocr'
 }
 
 export class GetJobDto {

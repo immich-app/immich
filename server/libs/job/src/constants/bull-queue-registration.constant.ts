@@ -29,4 +29,7 @@ export const immichSharedQueues: BullModuleOptions[] = [
   {
     name: QueueNameEnum.STORAGE_MIGRATION,
   },
+  {
+    name: QueueNameEnum.OCR,
+  },
 ];

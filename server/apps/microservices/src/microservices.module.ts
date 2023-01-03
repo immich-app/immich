@@ -13,6 +13,7 @@ import { GenerateChecksumProcessor } from './processors/generate-checksum.proces
 import { MachineLearningProcessor } from './processors/machine-learning.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { StorageMigrationProcessor } from './processors/storage-migration.processor';
+import { OcrProcessor } from './processors/ocr.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { UserDeletionProcessor } from './processors/user-deletion.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
@@ -40,6 +41,7 @@ import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.c
     MachineLearningProcessor,
     UserDeletionProcessor,
     StorageMigrationProcessor,
+    OcrProcessor,
   ],
   exports: [BullModule],
 })

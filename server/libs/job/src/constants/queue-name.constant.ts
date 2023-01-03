@@ -7,4 +7,5 @@ export enum QueueNameEnum {
   MACHINE_LEARNING = 'machine-learning-queue',
   USER_DELETION = 'user-deletion-queue',
   STORAGE_MIGRATION = 'storage-template-migration',
+  OCR = 'ocr-queue',
 }

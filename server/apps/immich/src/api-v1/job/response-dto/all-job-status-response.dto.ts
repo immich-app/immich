@@ -18,6 +18,7 @@ export class AllJobStatusResponseDto {
   isVideoConversionActive!: boolean;
   isMachineLearningActive!: boolean;
   isStorageMigrationActive!: boolean;
+  isOcrActive!: boolean;
 
   @ApiProperty({
     type: JobCounts,
@@ -43,4 +44,9 @@ export class AllJobStatusResponseDto {
     type: JobCounts,
   })
   storageMigrationQueueCount!: JobCounts;
+
+  @ApiProperty({
+    type: JobCounts,
+  })
+  ocrQueueCount!: JobCounts;
 }
