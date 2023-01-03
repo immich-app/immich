@@ -13,11 +13,13 @@ Name | Type | Description | Notes
 **videoConversionQueueCount** | [**JobCounts**](JobCounts.md) |  | 
 **machineLearningQueueCount** | [**JobCounts**](JobCounts.md) |  | 
 **storageMigrationQueueCount** | [**JobCounts**](JobCounts.md) |  | 
+**ocrQueueCount** | [**JobCounts**](JobCounts.md) |  | 
 **isThumbnailGenerationActive** | **bool** |  | 
 **isMetadataExtractionActive** | **bool** |  | 
 **isVideoConversionActive** | **bool** |  | 
 **isMachineLearningActive** | **bool** |  | 
 **isStorageMigrationActive** | **bool** |  | 
+**isOcrActive** | **bool** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

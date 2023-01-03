@@ -16,6 +16,7 @@ class SmartInfoResponseDto {
     this.id,
     this.tags = const [],
     this.objects = const [],
+    this.ocrInfo,
   });
 
   ///
@@ -30,21 +31,25 @@ class SmartInfoResponseDto {
 
   List<String>? objects;
 
+  String? ocrInfo;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SmartInfoResponseDto &&
      other.id == id &&
      other.tags == tags &&
-     other.objects == objects;
+     other.objects == objects &&
+     other.ocrInfo == ocrInfo;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (id == null ? 0 : id!.hashCode) +
     (tags == null ? 0 : tags!.hashCode) +
-    (objects == null ? 0 : objects!.hashCode);
+    (objects == null ? 0 : objects!.hashCode) +
+    (ocrInfo == null ? 0 : ocrInfo!.hashCode);
 
   @override
-  String toString() => 'SmartInfoResponseDto[id=$id, tags=$tags, objects=$objects]';
+  String toString() => 'SmartInfoResponseDto[id=$id, tags=$tags, objects=$objects, ocrInfo=$ocrInfo]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -62,6 +67,11 @@ class SmartInfoResponseDto {
       _json[r'objects'] = objects;
     } else {
       _json[r'objects'] = null;
+    }
+    if (ocrInfo != null) {
+      _json[r'ocr_info'] = ocrInfo;
+    } else {
+      _json[r'ocr_info'] = null;
     }
     return _json;
   }
@@ -92,6 +102,7 @@ class SmartInfoResponseDto {
         objects: json[r'objects'] is List
             ? (json[r'objects'] as List).cast<String>()
             : const [],
+        ocrInfo: mapValueOfType<String>(json, r'ocr_info'),
       );
     }
     return null;

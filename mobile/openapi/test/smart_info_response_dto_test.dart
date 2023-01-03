@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // String ocrInfo
+    test('to test the property `ocrInfo`', () async {
+      // TODO
+    });
+
 
   });
 
