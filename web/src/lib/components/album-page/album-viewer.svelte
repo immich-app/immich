@@ -77,6 +77,7 @@
 	let titleInput: HTMLInputElement;
 	let contextMenuPosition = { x: 0, y: 0 };
 
+	$: isPublicShared = publicSharedKey !== '';
 	$: isOwned = currentUser?.id == album.ownerId;
 
 	let multiSelectAsset: Set<AssetResponseDto> = new Set();
@@ -443,15 +444,35 @@
 
 	<!-- Default app bar -->
 	{#if !isMultiSelectionMode}
-		<ControlAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
+		<ControlAppBar
+			on:close-button-click={() => goto(backUrl)}
+			backIcon={ArrowLeft}
+			showBackButton={isPublicShared && isOwned}
+		>
+			<svelte:fragment slot="leading">
+				{#if isPublicShared && !isOwned}
+					<a
+						data-sveltekit-preload-data="hover"
+						class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
+						href="https://immich.app"
+					>
+						<img src="/immich-logo.svg" alt="immich logo" height="30" width="30" />
+						<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
+							IMMICH
+						</h1>
+					</a>
+				{/if}
+			</svelte:fragment>
+
 			<svelte:fragment slot="trailing">
 				{#if album.assetCount > 0}
-					<CircleIconButton
-						title="Add Photos"
-						on:click={() => (isShowAssetSelection = true)}
-						logo={FileImagePlusOutline}
-					/>
-
+					{#if !isPublicShared}
+						<CircleIconButton
+							title="Add Photos"
+							on:click={() => (isShowAssetSelection = true)}
+							logo={FileImagePlusOutline}
+						/>
+					{/if}
 					<!-- Share and remove album -->
 					{#if isOwned}
 						<CircleIconButton
@@ -467,12 +488,13 @@
 						on:click={() => downloadAlbum()}
 						logo={FolderDownloadOutline}
 					/>
-
-					<CircleIconButton
-						title="Album options"
-						on:click={(event) => showAlbumOptionsMenu(event)}
-						logo={DotsVertical}
-					/>
+					{#if !isPublicShared}
+						<CircleIconButton
+							title="Album options"
+							on:click={(event) => showAlbumOptionsMenu(event)}
+							logo={DotsVertical}
+						/>
+					{/if}
 				{/if}
 
 				{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
@@ -487,7 +509,7 @@
 		</ControlAppBar>
 	{/if}
 
-	<section class="m-auto my-[160px] w-[60%]">
+	<section class="flex flex-col my-[160px] px-6 sm:px-12 md:px-24 lg:px-40">
 		<input
 			on:keydown={(e) => {
 				if (e.key == 'Enter') {
@@ -509,7 +531,6 @@
 		{#if album.assetCount > 0}
 			<p class="my-4 text-sm text-gray-500 font-medium">{getDateRange()}</p>
 		{/if}
-
 		{#if album.shared}
 			<div class="my-6 flex">
 				{#each album.sharedUsers as user}
@@ -583,6 +604,7 @@
 {#if isShowAssetViewer}
 	<AssetViewer
 		asset={selectedAsset}
+		{publicSharedKey}
 		on:navigate-previous={navigateAssetBackward}
 		on:navigate-next={navigateAssetForward}
 		on:close={closeViewer}

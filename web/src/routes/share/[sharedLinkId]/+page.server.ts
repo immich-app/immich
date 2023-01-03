@@ -31,7 +31,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		return { sharedLink, assets };
 	} catch (e) {
-		console.log(e);
 		throw error(404, {
 			message: 'Invalid shared link'
 		});

@@ -23,7 +23,7 @@
 	export let showMotionPlayButton: boolean;
 	export let isMotionPhotoPlaying = false;
 
-	const isOwner = asset.ownerId === $page.data.user.id;
+	const isOwner = asset.ownerId === $page.data.user?.id;
 
 	const dispatch = createEventDispatcher();
 

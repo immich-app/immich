@@ -10,12 +10,7 @@
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
-	import {
-		api,
-		AssetResponseDto,
-		AssetTypeEnum,
-		AlbumResponseDto
-	} from '@api';
+	import { api, AssetResponseDto, AssetTypeEnum, AlbumResponseDto } from '@api';
 	import {
 		notificationController,
 		NotificationType
@@ -25,6 +20,7 @@
 	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 
 	export let asset: AssetResponseDto;
+	export let publicSharedKey = '';
 	$: {
 		appearsInAlbums = [];
 
@@ -279,15 +275,16 @@
 			{#if asset.type === AssetTypeEnum.Image}
 				{#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
 					<VideoViewer
+						{publicSharedKey}
 						assetId={asset.livePhotoVideoId}
 						on:close={closeViewer}
 						on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
 					/>
 				{:else}
-					<PhotoViewer assetId={asset.id} on:close={closeViewer} />
+					<PhotoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
 				{/if}
 			{:else}
-				<VideoViewer assetId={asset.id} on:close={closeViewer} />
+				<VideoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
 			{/if}
 		{/key}
 	</div>
