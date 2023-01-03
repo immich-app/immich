@@ -18,6 +18,8 @@
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected = false;
 	export let disabled = false;
+	export let publicSharedKey = '';
+
 	let imageData: string;
 
 	let mouseOver = false;
@@ -244,7 +246,7 @@
 				style:width={`${thumbnailSize}px`}
 				style:height={`${thumbnailSize}px`}
 				in:fade={{ duration: 150 }}
-				src={`/api/asset/thumbnail/${asset.id}?format=${format}`}
+				src={`/api/asset/thumbnail/${asset.id}?format=${format}&key=${publicSharedKey}`}
 				alt={asset.id}
 				class={`object-cover ${getSize()} transition-all z-0 ${getThumbnailBorderStyle()}`}
 				loading="lazy"

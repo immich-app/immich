@@ -30,14 +30,13 @@ export class ShareService {
     return mapSharedLinkToResponseDto(removedLink);
   }
 
-  async validateSharedLink(key: string): Promise<AuthUserDto> {
-    console.log('Validating shared link with key: ', key);
+  async validateSharedLink(key: string) {
     this.logger.debug(`Validating shared link with key: ${key}`);
 
-    const mock = new AuthUserDto();
-    mock.id = 'a28e00a2-6905-4416-af7c-55c7ce9ac115';
-    mock.email = 'testuser@email.com';
-    mock.isAdmin = true;
-    return mock;
+    // const mock = new AuthUserDto();
+    // mock.id = 'a28e00a2-6905-4416-af7c-55c7ce9ac115';
+    // mock.email = 'testuser@email.com';
+    // mock.isAdmin = true;
+    return 'ok';
   }
 }

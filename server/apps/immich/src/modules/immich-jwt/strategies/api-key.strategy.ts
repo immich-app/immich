@@ -16,7 +16,6 @@ export class APIKeyStrategy extends PassportStrategy(Strategy, API_KEY_STRATEGY)
   }
 
   async validate(token: string) {
-    console.log('validating api key');
     return this.apiKeyService.validate(token);
   }
 }

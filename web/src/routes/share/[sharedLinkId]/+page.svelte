@@ -20,6 +20,7 @@
 		{#each data.assets as asset}
 			<ImmichThumbnail
 				{asset}
+				publicSharedKey={data.sharedLink.key}
 				thumbnailSize={300}
 				format={ThumbnailFormat.Jpeg}
 				on:click={(e) => viewAssetHandler(e)}

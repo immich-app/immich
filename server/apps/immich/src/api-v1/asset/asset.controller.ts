@@ -207,11 +207,10 @@ export class AssetController {
    */
   @Get('/assetById/:assetId')
   async getAssetById(
-    // @GetAuthUser() authUser: AuthUserDto,
+    @GetAuthUser() authUser: AuthUserDto,
     @Param('assetId') assetId: string,
   ): Promise<AssetResponseDto> {
-    // await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    console.log('get asset by id');
+    await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return await this.assetService.getAssetById(assetId);
   }
 
