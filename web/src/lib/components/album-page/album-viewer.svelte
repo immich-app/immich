@@ -333,6 +333,9 @@
 					album.id,
 					skip || undefined,
 					{
+						params: {
+							key: publicSharedKey
+						},
 						responseType: 'blob',
 						onDownloadProgress: function (progressEvent) {
 							const request = this as XMLHttpRequest;

@@ -87,12 +87,12 @@
 
 	const handleDownload = () => {
 		if (asset.livePhotoVideoId) {
-			downloadFile(asset.livePhotoVideoId, true);
-			downloadFile(asset.id, false);
+			downloadFile(asset.livePhotoVideoId, true, publicSharedKey);
+			downloadFile(asset.id, false, publicSharedKey);
 			return;
 		}
 
-		downloadFile(asset.id, false);
+		downloadFile(asset.id, false, publicSharedKey);
 	};
 
 	/**
@@ -107,7 +107,7 @@
 		};
 	};
 
-	const downloadFile = async (assetId: string, isLivePhoto: boolean) => {
+	const downloadFile = async (assetId: string, isLivePhoto: boolean, key: string) => {
 		try {
 			const { filenameWithoutExtension } = getTemplateFilename();
 
@@ -122,6 +122,9 @@
 			$downloadAssets[imageFileName] = 0;
 
 			const { data, status } = await api.assetApi.downloadFile(assetId, false, false, {
+				params: {
+					key
+				},
 				responseType: 'blob',
 				onDownloadProgress: (progressEvent) => {
 					if (progressEvent.lengthComputable) {
