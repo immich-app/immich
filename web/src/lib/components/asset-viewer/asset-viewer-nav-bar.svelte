@@ -94,12 +94,15 @@
 				title="Favorite"
 			/>
 		{/if}
-		<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
-		<CircleIconButton
-			logo={DotsVertical}
-			on:click={(event) => showOptionsMenu(event)}
-			title="More"
-		/>
+
+		{#if isOwner}
+			<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+			<CircleIconButton
+				logo={DotsVertical}
+				on:click={(event) => showOptionsMenu(event)}
+				title="More"
+			/>
+		{/if}
 	</div>
 </div>
 
