@@ -31,7 +31,6 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appSettingService = ref.watch(appSettingsServiceProvider);
-    final assets = ref.watch(assetProvider);
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
 
@@ -214,8 +213,8 @@ class HomePage extends HookConsumerWidget {
               child: !ref.watch(assetProvider).ready()
                   ? buildLoadingIndicator()
                   : ImmichAssetGrid(
-                      renderList: assets.renderList!,
-                      allAssets: assets.allAssets,
+                      renderList: ref.watch(assetProvider).renderList!,
+                      allAssets: ref.watch(assetProvider).allAssets,
                       assetsPerRow: appSettingService
                           .getSetting(AppSettingsEnum.tilesPerRow),
                       showStorageIndicator: appSettingService
