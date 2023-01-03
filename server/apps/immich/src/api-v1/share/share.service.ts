@@ -1,3 +1,4 @@
+import { SharedLinkEntity } from '@app/database';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
@@ -30,13 +31,7 @@ export class ShareService {
     return mapSharedLinkToResponseDto(removedLink);
   }
 
-  async validateSharedLink(key: string) {
-    this.logger.debug(`Validating shared link with key: ${key}`);
-
-    // const mock = new AuthUserDto();
-    // mock.id = 'a28e00a2-6905-4416-af7c-55c7ce9ac115';
-    // mock.email = 'testuser@email.com';
-    // mock.isAdmin = true;
-    return 'ok';
+  async validateSharedLink(key: string): Promise<SharedLinkEntity> {
+    return await this.shareCore.getSharedLinkByKey(key);
   }
 }

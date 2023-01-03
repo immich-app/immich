@@ -12,12 +12,13 @@ export const load: PageServerLoad = async ({ params }) => {
 		const { data: sharedLink } = await serverApi.shareApi.getSharedLink(sharedLinkId);
 
 		for (const assetId of sharedLink.assets) {
-			const { data: asset } = await serverApi.assetApi.getAssetById(assetId, {
-				params: {
-					key: sharedLink.key
-				}
-			});
+			const { data: asset } = await serverApi.assetApi.getAssetById(assetId);
 			assets.push(asset);
+		}
+
+		if (sharedLink.album) {
+			const { data: album } = await serverApi.albumApi.getAlbumInfo(sharedLink.album.id);
+			sharedLink.album = album;
 		}
 
 		return { sharedLink, assets };

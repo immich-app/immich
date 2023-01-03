@@ -39,6 +39,8 @@
 	import CreateSharedLinkModal from '../shared-components/create-shared-link-modal.svelte';
 
 	export let album: AlbumResponseDto;
+	export let publicSharedKey = '';
+
 	const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
 
 	let isShowAssetViewer = false;
@@ -536,6 +538,7 @@
 							<ImmichThumbnail
 								{asset}
 								{thumbnailSize}
+								{publicSharedKey}
 								format={ThumbnailFormat.Jpeg}
 								on:click={(e) =>
 									isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e)}
@@ -546,6 +549,7 @@
 							<ImmichThumbnail
 								{asset}
 								{thumbnailSize}
+								{publicSharedKey}
 								on:click={(e) =>
 									isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e)}
 								on:select={selectAssetHandler}

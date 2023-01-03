@@ -7,6 +7,7 @@ import { Logger } from '@nestjs/common';
 export interface ISharedLinkRepository {
   get(userId: string): Promise<SharedLinkEntity[]>;
   getbyId(id: string): Promise<SharedLinkEntity | null>;
+  getByKey(key: string): Promise<SharedLinkEntity | null>;
   create(payload: SharedLinkEntity): Promise<SharedLinkEntity>;
   remove(entity: SharedLinkEntity): Promise<SharedLinkEntity>;
 }
@@ -37,6 +38,15 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     return await this.sharedLinkRepository.findOne({
       where: {
         id: id,
+      },
+      relations: ['assets', 'album'],
+    });
+  }
+
+  async getByKey(key: string): Promise<SharedLinkEntity | null> {
+    return await this.sharedLinkRepository.findOne({
+      where: {
+        key: key,
       },
       relations: ['assets', 'album'],
     });

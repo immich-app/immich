@@ -125,14 +125,13 @@ export class AssetController {
   @Get('/thumbnail/:assetId')
   @Header('Cache-Control', 'max-age=31536000')
   async getAssetThumbnail(
-    // @GetAuthUser() authUser: AuthUserDto,
+    @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Param('assetId') assetId: string,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ): Promise<any> {
-    console.log('getAssetThumbnail', assetId, query);
-    // await this.assetService.checkAssetsAccess(authUser, [assetId]);
+    await this.assetService.checkAssetsAccess(authUser, [assetId], false, query.key);
     return this.assetService.getAssetThumbnail(assetId, query, res, headers);
   }
 

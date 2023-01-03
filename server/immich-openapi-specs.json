@@ -752,6 +752,14 @@
             "schema": {
               "$ref": "#/components/schemas/ThumbnailFormat"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {

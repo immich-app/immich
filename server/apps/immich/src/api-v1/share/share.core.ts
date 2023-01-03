@@ -34,18 +34,8 @@ export class ShareCore {
     return this.sharedLinkRepository.get(userId);
   }
 
-  async getSharedLinkById(id: string): Promise<SharedLinkEntity> {
-    const link = await this.getSharedLink(id);
-
-    if (!link) {
-      throw new BadRequestException('Shared link not found');
-    }
-
-    return link;
-  }
-
   async removeSharedLink(id: string): Promise<SharedLinkEntity> {
-    const link = await this.getSharedLink(id);
+    const link = await this.getSharedLinkById(id);
 
     if (!link) {
       throw new BadRequestException('Shared link not found');
@@ -55,7 +45,7 @@ export class ShareCore {
   }
 
   async updateAssetInSharedLink(id: string, assetIds: string[]): Promise<SharedLinkEntity> {
-    const link = await this.getSharedLink(id);
+    const link = await this.getSharedLinkById(id);
 
     if (!link) {
       throw new BadRequestException('Shared link not found');
@@ -66,11 +56,21 @@ export class ShareCore {
     return link;
   }
 
-  async getSharedLink(id: string): Promise<SharedLinkEntity> {
+  async getSharedLinkById(id: string): Promise<SharedLinkEntity> {
     const link = await this.sharedLinkRepository.getbyId(id);
 
     if (!link) {
       throw new BadRequestException('Shared link not found');
+    }
+
+    return link;
+  }
+
+  async getSharedLinkByKey(key: string): Promise<SharedLinkEntity> {
+    const link = await this.sharedLinkRepository.getByKey(key);
+
+    if (!link) {
+      throw new BadRequestException();
     }
 
     return link;

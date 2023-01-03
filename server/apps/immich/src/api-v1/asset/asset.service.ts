@@ -61,6 +61,7 @@ const fileInfo = promisify(stat);
 
 @Injectable()
 export class AssetService {
+  readonly logger = new Logger(AssetService.name);
   constructor(
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
 
@@ -647,9 +648,19 @@ export class AssetService {
     return this._assetRepository.getAssetCountByUserId(authUser.id);
   }
 
-  async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
+  async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false, sharedKey?: string) {
     for (const assetId of assetIds) {
-      // Step 1: Check if user owns asset
+      // Step 1: Check if asset is part of a public shared
+      if (sharedKey) {
+        const asset = await this._assetRepository.getById(assetId);
+        for (const links of asset.sharedLinks) {
+          if (links.key == sharedKey) {
+            continue;
+          }
+        }
+      }
+
+      // Step 2: Check if user owns asset
       if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
         continue;
       }
@@ -660,8 +671,6 @@ export class AssetService {
         if ((await this._albumRepository.getSharedWithUserAlbumCount(authUser.id, assetId)) > 0) {
           continue;
         }
-
-        //TODO: Step 3: Check if asset is part of a public album
       }
       throw new ForbiddenException();
     }

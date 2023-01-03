@@ -16,4 +16,11 @@ export class GetAssetThumbnailDto {
     enumName: 'ThumbnailFormat',
   })
   format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
+
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  key?: string;
 }

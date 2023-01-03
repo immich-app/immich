@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import { ThumbnailFormat } from '@api';
 	import type { PageData } from './$types';
@@ -10,21 +11,12 @@
 	};
 </script>
 
-<section class="dark:text-immich-gray">
-	<!-- <pre class="text-xs">
-    {JSON.stringify(data, null, 2)}
-  </pre> -->
-	{data.sharedLink.album?.albumName}
+<svelte:head>
+	<title>{data.sharedLink.album?.albumName || 'Public Shared'} - Immich</title>
+</svelte:head>
 
-	<div>
-		{#each data.assets as asset}
-			<ImmichThumbnail
-				{asset}
-				publicSharedKey={data.sharedLink.key}
-				thumbnailSize={300}
-				format={ThumbnailFormat.Jpeg}
-				on:click={(e) => viewAssetHandler(e)}
-			/>
-		{/each}
+{#if data.sharedLink.album}
+	<div class="immich-scrollbar">
+		<AlbumViewer album={data.sharedLink.album} publicSharedKey={data.sharedLink.key} />
 	</div>
-</section>
+{/if}
