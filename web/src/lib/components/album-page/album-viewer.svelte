@@ -95,7 +95,11 @@
 		if (album.assets?.length < 6) {
 			thumbnailSize = Math.floor(viewWidth / album.assetCount - album.assetCount);
 		} else {
-			thumbnailSize = Math.floor(viewWidth / 6 - 6);
+			if (viewWidth > 600) thumbnailSize = Math.floor(viewWidth / 6 - 6);
+			else if (viewWidth > 400) thumbnailSize = Math.floor(viewWidth / 4 - 6);
+			else if (viewWidth > 300) thumbnailSize = Math.floor(viewWidth / 2 - 6);
+			else if (viewWidth > 200) thumbnailSize = Math.floor(viewWidth / 2 - 6);
+			else if (viewWidth > 100) thumbnailSize = Math.floor(viewWidth / 1 - 6);
 		}
 	}
 
@@ -466,7 +470,7 @@
 
 			<svelte:fragment slot="trailing">
 				{#if album.assetCount > 0}
-					{#if !isPublicShared}
+					{#if isOwned}
 						<CircleIconButton
 							title="Add Photos"
 							on:click={() => (isShowAssetSelection = true)}
