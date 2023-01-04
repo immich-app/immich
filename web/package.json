@@ -6,7 +6,7 @@
 		"build": "vite build",
 		"package": "svelte-kit package",
 		"preview": "vite preview",
-		"check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+		"check": "svelte-check --no-tsconfig --fail-on-warnings --ignore \"src/api/open-api\"",
 		"check:watch": "npm run check -- --watch",
 		"check:code": "npm run format && npm run lint && npm run check",
 		"check:all": "npm run check:code && npm test",

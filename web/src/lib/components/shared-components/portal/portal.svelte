@@ -47,9 +47,8 @@
 <script lang="ts">
 	/**
 	 * DOM Element or CSS Selector
-	 * @type { HTMLElement|string}
 	 */
-	export let target = 'body';
+	export let target: HTMLElement | string = 'body';
 </script>
 
 <div use:portal={target} hidden>

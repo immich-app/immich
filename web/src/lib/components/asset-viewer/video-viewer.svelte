@@ -9,7 +9,6 @@
 
 	let asset: AssetResponseDto;
 
-	let videoPlayerNode: HTMLVideoElement;
 	let isVideoLoading = true;
 	let videoUrl: string;
 	const dispatch = createEventDispatcher();
@@ -51,7 +50,6 @@
 			class="h-full object-contain"
 			on:canplay={handleCanPlay}
 			on:ended={() => dispatch('onVideoEnded')}
-			bind:this={videoPlayerNode}
 		>
 			<source src={videoUrl} type="video/mp4" />
 			<track kind="captions" />
