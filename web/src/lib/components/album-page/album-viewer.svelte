@@ -37,6 +37,7 @@
 	import { browser } from '$app/environment';
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
 	import CreateSharedLinkModal from '../shared-components/create-shared-link-modal.svelte';
+	import ThemeButton from '../shared-components/theme-button.svelte';
 
 	export let album: AlbumResponseDto;
 	export let publicSharedKey = '';
@@ -454,7 +455,7 @@
 		<ControlAppBar
 			on:close-button-click={() => goto(backUrl)}
 			backIcon={ArrowLeft}
-			showBackButton={isPublicShared && isOwned}
+			showBackButton={!isPublicShared && isOwned}
 		>
 			<svelte:fragment slot="leading">
 				{#if isPublicShared && !isOwned}
@@ -501,6 +502,10 @@
 							on:click={(event) => showAlbumOptionsMenu(event)}
 							logo={DotsVertical}
 						/>
+					{/if}
+
+					{#if isPublicShared}
+						<ThemeButton />
 					{/if}
 				{/if}
 

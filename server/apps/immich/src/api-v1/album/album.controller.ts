@@ -132,7 +132,7 @@ export class AlbumController {
     return this.albumService.updateAlbumInfo(authUser, updateAlbumInfoDto, albumId);
   }
 
-  @Authenticated()
+  @Authenticated({ isShared: true })
   @Get('/:albumId/download')
   async downloadArchive(
     @GetAuthUser() authUser: AuthUserDto,
