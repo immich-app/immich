@@ -12,7 +12,7 @@
 
 	export let user: UserResponseDto;
 
-	let config: OAuthConfigResponseDto = { enabled: false };
+	let config: OAuthConfigResponseDto = { enabled: false, passwordLoginEnabled: true };
 	let loading = true;
 
 	onMount(async () => {
