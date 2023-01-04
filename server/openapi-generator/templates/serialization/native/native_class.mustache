@@ -52,59 +52,59 @@ class {{{classname}}} {
   String toString() => '{{{classname}}}[{{#vars}}{{{name}}}=${{{name}}}{{^-last}}, {{/-last}}{{/vars}}]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
+    final json = <String, dynamic>{};
   {{#vars}}
     {{#isNullable}}
-    if ({{{name}}} != null) {
+    if (this.{{{name}}} != null) {
     {{/isNullable}}
     {{^isNullable}}
       {{^required}}
         {{^defaultValue}}
-    if ({{{name}}} != null) {
+    if (this.{{{name}}} != null) {
         {{/defaultValue}}
       {{/required}}
     {{/isNullable}}
     {{#isDateTime}}
       {{#pattern}}
-      _json[r'{{{baseName}}}'] = _dateEpochMarker == '{{{pattern}}}'
-        ? {{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
-        : {{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
+      json[r'{{{baseName}}}'] = _dateEpochMarker == '{{{pattern}}}'
+        ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
+        : this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
       {{/pattern}}
       {{^pattern}}
-      _json[r'{{{baseName}}}'] = {{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
+      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
       {{/pattern}}
     {{/isDateTime}}
     {{#isDate}}
       {{#pattern}}
-      _json[r'{{{baseName}}}'] = _dateEpochMarker == '{{{pattern}}}'
-        ? {{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
-        : _dateFormatter.format({{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
+      json[r'{{{baseName}}}'] = _dateEpochMarker == '{{{pattern}}}'
+        ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
+        : _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
       {{/pattern}}
       {{^pattern}}
-      _json[r'{{{baseName}}}'] = _dateFormatter.format({{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
+      json[r'{{{baseName}}}'] = _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
       {{/pattern}}
     {{/isDate}}
     {{^isDateTime}}
       {{^isDate}}
-      _json[r'{{{baseName}}}'] = {{{name}}};
+      json[r'{{{baseName}}}'] = this.{{{name}}};
       {{/isDate}}
     {{/isDateTime}}
     {{#isNullable}}
     } else {
-      // _json[r'{{{baseName}}}'] = null;
+      // json[r'{{{baseName}}}'] = null;
     }
     {{/isNullable}}
     {{^isNullable}}
       {{^required}}
         {{^defaultValue}}
     } else {
-      // _json[r'{{{baseName}}}'] = null;
+      // json[r'{{{baseName}}}'] = null;
     }
         {{/defaultValue}}
       {{/required}}
     {{/isNullable}}
   {{/vars}}
-    return _json;
+    return json;
   }
 
   /// Returns a new [{{{classname}}}] instance and imports its values from
@@ -139,15 +139,15 @@ class {{{classname}}} {
           {{#isArray}}
             {{#items.isArray}}
         {{{name}}}: json[r'{{{baseName}}}'] is List
-          ? (json[r'{{{baseName}}}'] as List).map(
+          ? (json[r'{{{baseName}}}'] as List).map((e) =>
               {{#items.complexType}}
-              {{items.complexType}}.listFromJson(json[r'{{{baseName}}}'])
+              {{items.complexType}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}
               {{/items.complexType}}
               {{^items.complexType}}
-              (e) => e == null ? null : (e as List).cast<{{items.items.dataType}}>()
+              e == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const  <{{items.items.dataType}}>[]{{/items.isNullable}} : (e as List).cast<{{items.items.dataType}}>()
               {{/items.complexType}}
             ).toList()
-          : null,
+          :  {{#isNullable}}null{{/isNullable}}{{^isNullable}}const []{{/isNullable}},
             {{/items.isArray}}
             {{^items.isArray}}
         {{{name}}}: {{{complexType}}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
