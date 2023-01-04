@@ -1,5 +1,5 @@
 import { APP_UPLOAD_LOCATION, userUtils } from '@app/common';
-import { AssetEntity, UserEntity } from '@app/database';
+import { APIKeyEntity, AssetEntity, UserEntity } from '@app/database';
 import { QueueNameEnum, userDeletionProcessorName } from '@app/job';
 import { IUserDeletionJob } from '@app/job/interfaces/user-deletion.interface';
 import { Process, Processor } from '@nestjs/bull';
@@ -17,6 +17,9 @@ export class UserDeletionProcessor {
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+
+    @InjectRepository(APIKeyEntity)
+    private apiKeyRepository: Repository<APIKeyEntity>,
   ) {}
 
   @Process(userDeletionProcessorName)
@@ -27,6 +30,7 @@ export class UserDeletionProcessor {
       const basePath = APP_UPLOAD_LOCATION;
       const userAssetDir = join(basePath, user.id);
       fs.rmSync(userAssetDir, { recursive: true, force: true });
+      await this.apiKeyRepository.delete({ userId: user.id });
       await this.assetRepository.delete({ userId: user.id });
       await this.userRepository.remove(user);
     }

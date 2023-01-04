@@ -77,7 +77,7 @@
 	};
 </script>
 
-<main on:dragenter={() => (showUploadCover = true)} class="fixed inset-0 w-full h-full">
+<main on:dragenter={() => (showUploadCover = true)}>
 	{#if canShow}
 		<div in:fade={{ duration: 100 }}>
 			{#if showNavigationLoadingBar}
