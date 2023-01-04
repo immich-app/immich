@@ -12,7 +12,7 @@ export class ShareRoleGuard implements CanActivate {
 
     // Inverse logic - I know it is weird
     if (user.isPublicUser) {
-      this.logger.log(`Denied access to shared link route: ${request.path}`);
+      this.logger.warn(`Denied public access attempt to link route: ${request.path}`);
       return false;
     }
 

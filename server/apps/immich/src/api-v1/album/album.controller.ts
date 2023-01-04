@@ -36,23 +36,26 @@ import { DownloadDto } from '../asset/dto/download-library.dto';
 import { CreateAlbumShareLinkDto as CreateAlbumSharedLinkDto } from './dto/create-album-shared-link.dto';
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
-@Authenticated()
+
 @ApiBearerAuth()
 @ApiTags('Album')
 @Controller('album')
 export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
+  @Authenticated()
   @Get('count-by-user-id')
   async getAlbumCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
     return this.albumService.getAlbumCountByUserId(authUser);
   }
 
+  @Authenticated()
   @Post()
   async createAlbum(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createAlbumDto: CreateAlbumDto) {
     return this.albumService.create(authUser, createAlbumDto);
   }
 
+  @Authenticated()
   @Put('/:albumId/users')
   async addUsersToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
@@ -62,6 +65,7 @@ export class AlbumController {
     return this.albumService.addUsersToAlbum(authUser, addUsersDto, albumId);
   }
 
+  @Authenticated()
   @Put('/:albumId/assets')
   async addAssetsToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
@@ -71,6 +75,7 @@ export class AlbumController {
     return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId);
   }
 
+  @Authenticated()
   @Get()
   async getAllAlbums(
     @GetAuthUser() authUser: AuthUserDto,
@@ -79,6 +84,7 @@ export class AlbumController {
     return this.albumService.getAllAlbums(authUser, query);
   }
 
+  @Authenticated({ isShared: true })
   @Get('/:albumId')
   async getAlbumInfo(
     @GetAuthUser() authUser: AuthUserDto,
@@ -87,6 +93,7 @@ export class AlbumController {
     return this.albumService.getAlbumInfo(authUser, albumId);
   }
 
+  @Authenticated()
   @Delete('/:albumId/assets')
   async removeAssetFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,
@@ -96,6 +103,7 @@ export class AlbumController {
     return this.albumService.removeAssetsFromAlbum(authUser, removeAssetsDto, albumId);
   }
 
+  @Authenticated()
   @Delete('/:albumId')
   async deleteAlbum(
     @GetAuthUser() authUser: AuthUserDto,
@@ -104,6 +112,7 @@ export class AlbumController {
     return this.albumService.deleteAlbum(authUser, albumId);
   }
 
+  @Authenticated()
   @Delete('/:albumId/user/:userId')
   async removeUserFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,
@@ -113,6 +122,7 @@ export class AlbumController {
     return this.albumService.removeUserFromAlbum(authUser, albumId, userId);
   }
 
+  @Authenticated()
   @Patch('/:albumId')
   async updateAlbumInfo(
     @GetAuthUser() authUser: AuthUserDto,
@@ -122,6 +132,7 @@ export class AlbumController {
     return this.albumService.updateAlbumInfo(authUser, updateAlbumInfoDto, albumId);
   }
 
+  @Authenticated()
   @Get('/:albumId/download')
   async downloadArchive(
     @GetAuthUser() authUser: AuthUserDto,
@@ -141,6 +152,7 @@ export class AlbumController {
     return stream;
   }
 
+  @Authenticated()
   @Post('/create-shared-link')
   async createAlbumSharedLink(
     @GetAuthUser() authUser: AuthUserDto,

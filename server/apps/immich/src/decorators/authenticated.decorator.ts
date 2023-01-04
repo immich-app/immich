@@ -18,7 +18,6 @@ export const Authenticated = (options?: AuthenticatedOptions) => {
   }
 
   if (!options.isShared) {
-    console.log('Authenticated decorator: isShared is false, pushing ShareRoleGuard');
     guards.push(ShareRoleGuard);
   }
 

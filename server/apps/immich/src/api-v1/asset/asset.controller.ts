@@ -56,7 +56,7 @@ import {
 export class AssetController {
   constructor(private assetService: AssetService, private backgroundTaskService: BackgroundTaskService) {}
 
-  @Authenticated()
+  @Authenticated({ isShared: true })
   @Post('upload')
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -84,7 +84,7 @@ export class AssetController {
     return this.assetService.handleUploadedAsset(authUser, createAssetDto, res, originalAssetData, livePhotoAssetData);
   }
 
-  @Authenticated()
+  @Authenticated({ isShared: true })
   @Get('/download/:assetId')
   async downloadFile(
     @GetAuthUser() authUser: AuthUserDto,
@@ -96,7 +96,7 @@ export class AssetController {
     return this.assetService.downloadFile(query, assetId, res);
   }
 
-  @Authenticated()
+  @Authenticated({ isShared: true })
   @Get('/download-library')
   async downloadLibrary(
     @GetAuthUser() authUser: AuthUserDto,
@@ -111,7 +111,7 @@ export class AssetController {
     return stream;
   }
 
-  @Authenticated()
+  @Authenticated({ isShared: true })
   @Get('/file/:assetId')
   @Header('Cache-Control', 'max-age=31536000')
   async serveFile(
@@ -205,6 +205,7 @@ export class AssetController {
   ): Promise<AssetResponseDto[]> {
     return await this.assetService.getAssetByTimeBucket(authUser, getAssetByTimeBucketDto);
   }
+
   /**
    * Get all asset of a device that are in the database, ID only.
    */
@@ -217,7 +218,7 @@ export class AssetController {
   /**
    * Get a single asset's information
    */
-  @Authenticated()
+  @Authenticated({ isShared: true })
   @Get('/assetById/:assetId')
   async getAssetById(
     @GetAuthUser() authUser: AuthUserDto,
