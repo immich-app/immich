@@ -50,13 +50,13 @@ import {
   IMMICH_CONTENT_LENGTH_HINT,
 } from '../../constants/download.constant';
 
-@Authenticated()
 @ApiBearerAuth()
 @ApiTags('Asset')
 @Controller('asset')
 export class AssetController {
   constructor(private assetService: AssetService, private backgroundTaskService: BackgroundTaskService) {}
 
+  @Authenticated()
   @Post('upload')
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -84,6 +84,7 @@ export class AssetController {
     return this.assetService.handleUploadedAsset(authUser, createAssetDto, res, originalAssetData, livePhotoAssetData);
   }
 
+  @Authenticated()
   @Get('/download/:assetId')
   async downloadFile(
     @GetAuthUser() authUser: AuthUserDto,
@@ -95,6 +96,7 @@ export class AssetController {
     return this.assetService.downloadFile(query, assetId, res);
   }
 
+  @Authenticated()
   @Get('/download-library')
   async downloadLibrary(
     @GetAuthUser() authUser: AuthUserDto,
@@ -109,6 +111,7 @@ export class AssetController {
     return stream;
   }
 
+  @Authenticated()
   @Get('/file/:assetId')
   @Header('Cache-Control', 'max-age=31536000')
   async serveFile(
@@ -122,6 +125,7 @@ export class AssetController {
     return this.assetService.serveFile(assetId, query, res, headers);
   }
 
+  @Authenticated({ isShared: true })
   @Get('/thumbnail/:assetId')
   @Header('Cache-Control', 'max-age=31536000')
   async getAssetThumbnail(
@@ -135,21 +139,25 @@ export class AssetController {
     return this.assetService.getAssetThumbnail(assetId, query, res, headers);
   }
 
+  @Authenticated()
   @Get('/curated-objects')
   async getCuratedObjects(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
     return this.assetService.getCuratedObject(authUser);
   }
 
+  @Authenticated()
   @Get('/curated-locations')
   async getCuratedLocations(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
     return this.assetService.getCuratedLocation(authUser);
   }
 
+  @Authenticated()
   @Get('/search-terms')
   async getAssetSearchTerms(@GetAuthUser() authUser: AuthUserDto): Promise<string[]> {
     return this.assetService.getAssetSearchTerm(authUser);
   }
 
+  @Authenticated()
   @Post('/search')
   async searchAsset(
     @GetAuthUser() authUser: AuthUserDto,
@@ -158,6 +166,7 @@ export class AssetController {
     return this.assetService.searchAsset(authUser, searchAssetDto);
   }
 
+  @Authenticated()
   @Post('/count-by-time-bucket')
   async getAssetCountByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
@@ -166,6 +175,7 @@ export class AssetController {
     return this.assetService.getAssetCountByTimeBucket(authUser, getAssetCountByTimeGroupDto);
   }
 
+  @Authenticated()
   @Get('/count-by-user-id')
   async getAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this.assetService.getAssetCountByUserId(authUser);
@@ -174,6 +184,7 @@ export class AssetController {
   /**
    * Get all AssetEntity belong to the user
    */
+  @Authenticated()
   @Get('/')
   @ApiHeader({
     name: 'if-none-match',
@@ -186,6 +197,7 @@ export class AssetController {
     return assets;
   }
 
+  @Authenticated()
   @Post('/time-bucket')
   async getAssetByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
@@ -196,6 +208,7 @@ export class AssetController {
   /**
    * Get all asset of a device that are in the database, ID only.
    */
+  @Authenticated()
   @Get('/:deviceId')
   async getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param('deviceId') deviceId: string) {
     return await this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
@@ -204,6 +217,7 @@ export class AssetController {
   /**
    * Get a single asset's information
    */
+  @Authenticated()
   @Get('/assetById/:assetId')
   async getAssetById(
     @GetAuthUser() authUser: AuthUserDto,
@@ -216,6 +230,7 @@ export class AssetController {
   /**
    * Update an asset
    */
+  @Authenticated()
   @Put('/:assetId')
   async updateAsset(
     @GetAuthUser() authUser: AuthUserDto,
@@ -226,6 +241,7 @@ export class AssetController {
     return await this.assetService.updateAsset(authUser, assetId, dto);
   }
 
+  @Authenticated()
   @Delete('/')
   async deleteAsset(
     @GetAuthUser() authUser: AuthUserDto,
@@ -265,6 +281,7 @@ export class AssetController {
   /**
    * Check duplicated asset before uploading - for Web upload used
    */
+  @Authenticated()
   @Post('/check')
   @HttpCode(200)
   async checkDuplicateAsset(
@@ -277,6 +294,7 @@ export class AssetController {
   /**
    * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
+  @Authenticated()
   @Post('/exist')
   @HttpCode(200)
   async checkExistingAssets(

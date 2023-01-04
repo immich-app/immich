@@ -12,8 +12,11 @@ export const PUBLIC_SHARE_STRATEGY = 'public-share';
 const options: IStrategyOptions = {
   header: 'x-immich-share-key',
   param: 'key',
-  passReqToCallback: true,
 };
+
+export class PublicUser extends UserEntity {
+  isPublicUser?: boolean;
+}
 
 @Injectable()
 export class PublicShareStrategy extends PassportStrategy(Strategy, PUBLIC_SHARE_STRATEGY) {
@@ -25,17 +28,19 @@ export class PublicShareStrategy extends PassportStrategy(Strategy, PUBLIC_SHARE
     super(options);
   }
 
-  async validate(req: Request, key: string): Promise<UserEntity> {
+  async validate(key: string): Promise<PublicUser> {
     const validatedLink = await this.shareService.validateSharedLink(key);
 
     const user = await this.usersRepository.findOne({ where: { id: validatedLink.userId } });
 
     if (!user) {
-      throw new BadRequestException('Failure to validate JWT payload');
+      throw new BadRequestException('Failure to validate public share payload');
     }
 
-    user.isAdmin = false;
+    let publicUser = new PublicUser();
+    publicUser = user;
+    publicUser.isPublicUser = true;
 
-    return user;
+    return publicUser;
   }
 }
