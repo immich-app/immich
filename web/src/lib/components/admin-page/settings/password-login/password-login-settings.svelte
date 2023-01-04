@@ -3,12 +3,13 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
+	import { handleError } from '$lib/utils/handle-error';
 	import { api, SystemConfigPasswordLoginDto } from '@api';
 	import _ from 'lodash';
-	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import { fade } from 'svelte/transition';
+	import ConfirmDisableLogin from '../confirm-disable-login.svelte';
+	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingSwitch from '../setting-switch.svelte';
-	import { handleError } from '../../../../utils/handle-error';
 
 	export let passwordLoginConfig: SystemConfigPasswordLoginDto; // this is the config that is being edited
 
@@ -22,22 +23,39 @@
 		]);
 	}
 
+	let isConfirmOpen = false;
+	let handleConfirm: (value: boolean) => void;
+
+	const openConfirmModal = () => {
+		return new Promise((resolve) => {
+			handleConfirm = (value: boolean) => {
+				isConfirmOpen = false;
+				resolve(value);
+			};
+			isConfirmOpen = true;
+		});
+	};
+
 	async function saveSetting() {
 		try {
-			const { data: configs } = await api.systemConfigApi.getConfig();
+			const { data: current } = await api.systemConfigApi.getConfig();
 
-			const result = await api.systemConfigApi.updateConfig({
-				...configs,
+			if (!current.oauth.enabled && current.passwordLogin.enabled && !passwordLoginConfig.enabled) {
+				const confirmed = await openConfirmModal();
+				if (!confirmed) {
+					return;
+				}
+			}
+
+			const { data: updated } = await api.systemConfigApi.updateConfig({
+				...current,
 				passwordLogin: passwordLoginConfig
 			});
 
-			passwordLoginConfig = { ...result.data.passwordLogin };
-			savedConfig = { ...result.data.passwordLogin };
+			passwordLoginConfig = { ...updated.passwordLogin };
+			savedConfig = { ...updated.passwordLogin };
 
-			notificationController.show({
-				message: 'Settings saved',
-				type: NotificationType.Info
-			});
+			notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
 		} catch (error) {
 			handleError(error, 'Unable to save settings');
 		}
@@ -62,11 +80,18 @@
 		defaultConfig = { ...configs.passwordLogin };
 
 		notificationController.show({
-			message: 'Reset FFmpeg settings to default',
+			message: 'Reset password settings to default',
 			type: NotificationType.Info
 		});
 	}
 </script>
+
+{#if isConfirmOpen}
+	<ConfirmDisableLogin
+		on:cancel={() => handleConfirm(false)}
+		on:confirm={() => handleConfirm(true)}
+	/>
+{/if}
 
 <div>
 	{#await getConfigs() then}
