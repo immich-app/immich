@@ -1,4 +1,4 @@
-import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/database/entities/system-config.entity';
+import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/database';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as _ from 'lodash';
@@ -20,6 +20,8 @@ const defaults: SystemConfig = Object.freeze({
     issuerUrl: '',
     clientId: '',
     clientSecret: '',
+    mobileOverrideEnabled: false,
+    mobileRedirectUri: '',
     scope: 'openid email profile',
     buttonText: 'Login with OAuth',
     autoRegister: true,

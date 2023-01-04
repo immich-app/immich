@@ -1,6 +1,7 @@
-import { IsBoolean, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString, IsUrl, ValidateIf } from 'class-validator';
 
 const isEnabled = (config: SystemConfigOAuthDto) => config.enabled;
+const isOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
 
 export class SystemConfigOAuthDto {
   @IsBoolean()
@@ -29,4 +30,11 @@ export class SystemConfigOAuthDto {
 
   @IsBoolean()
   autoRegister!: boolean;
+
+  @IsBoolean()
+  mobileOverrideEnabled!: boolean;
+
+  @ValidateIf(isOverrideEnabled)
+  @IsUrl()
+  mobileRedirectUri!: string;
 }

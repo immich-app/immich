@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   immich-server:
+    container_name: immich_server
     image: immich-server-dev:latest
     build:
       context: ../server
@@ -23,6 +24,7 @@ services:
       - database
 
   immich-machine-learning:
+    container_name: immich_machine_learning
     image: immich-machine-learning-dev:latest
     build:
       context: ../machine-learning
@@ -41,6 +43,7 @@ services:
       - database
 
   immich-microservices:
+    container_name: immich_microservices
     image: immich-microservices:latest
     build:
       context: ../server
@@ -60,6 +63,7 @@ services:
       - immich-server
 
   immich-web:
+    container_name: immich_web
     image: immich-web-dev:1.9.0
     build:
       context: ../web

@@ -12,6 +12,7 @@ Method | HTTP request | Description
 [**callback**](OAuthApi.md#callback) | **POST** /oauth/callback | 
 [**generateConfig**](OAuthApi.md#generateconfig) | **POST** /oauth/config | 
 [**link**](OAuthApi.md#link) | **POST** /oauth/link | 
+[**mobileRedirect**](OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
 [**unlink**](OAuthApi.md#unlink) | **POST** /oauth/unlink | 
 
 
@@ -135,6 +136,42 @@ No authorization required
 
  - **Content-Type**: application/json
  - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **mobileRedirect**
+> mobileRedirect()
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = OAuthApi();
+
+try {
+    api_instance.mobileRedirect();
+} catch (e) {
+    print('Exception when calling OAuthApi->mobileRedirect: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

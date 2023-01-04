@@ -29,7 +29,6 @@
 				</span>
 			{:else}
 				<span>{album.assetCount} items</span>
-				<span> · {new Date(album.createdAt).toLocaleDateString()}</span>
 				<span
 					>{#if album.shared} · Shared{/if}
 				</span>

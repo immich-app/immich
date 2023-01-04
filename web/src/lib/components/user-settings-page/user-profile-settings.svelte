@@ -39,27 +39,27 @@
 			<div class="flex flex-col gap-4 ml-4 mt-4">
 				<SettingInputField
 					inputType={SettingInputFieldType.TEXT}
-					label="User ID"
+					label="USER ID"
 					bind:value={user.id}
 					disabled={true}
 				/>
 
 				<SettingInputField
 					inputType={SettingInputFieldType.EMAIL}
-					label="Email"
+					label="EMAIL"
 					bind:value={user.email}
 				/>
 
 				<SettingInputField
 					inputType={SettingInputFieldType.TEXT}
-					label="First name"
+					label="FIRST NAME"
 					bind:value={user.firstName}
 					required={true}
 				/>
 
 				<SettingInputField
 					inputType={SettingInputFieldType.TEXT}
-					label="Last name"
+					label="LAST NAME"
 					bind:value={user.lastName}
 					required={true}
 				/>

@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database/entities/user.entity';
+import { UserEntity } from '@app/database';
 import { InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
@@ -19,7 +19,7 @@ export interface UserListFilter {
   excludeId?: string;
 }
 
-export const USER_REPOSITORY = 'USER_REPOSITORY';
+export const IUserRepository = 'IUserRepository';
 
 export class UserRepository implements IUserRepository {
   constructor(

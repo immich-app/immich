@@ -25,6 +25,8 @@ export enum SystemConfigKey {
   OAUTH_SCOPE = 'oauth.scope',
   OAUTH_BUTTON_TEXT = 'oauth.buttonText',
   OAUTH_AUTO_REGISTER = 'oauth.autoRegister',
+  OAUTH_MOBILE_OVERRIDE_ENABLED = 'oauth.mobileOverrideEnabled',
+  OAUTH_MOBILE_REDIRECT_URI = 'oauth.mobileRedirectUri',
   STORAGE_TEMPLATE = 'storageTemplate.template',
 }
 
@@ -44,6 +46,8 @@ export interface SystemConfig {
     scope: string;
     buttonText: string;
     autoRegister: boolean;
+    mobileOverrideEnabled: boolean;
+    mobileRedirectUri: string;
   };
   storageTemplate: {
     template: string;

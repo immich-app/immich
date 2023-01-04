@@ -2,7 +2,7 @@ import { IAssetRepository } from './asset-repository';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetService } from './asset.service';
 import { Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/database';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';

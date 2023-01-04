@@ -1,4 +1,4 @@
-import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
+import { SmartInfoEntity } from '@app/database';
 
 export class SmartInfoResponseDto {
   id?: string;

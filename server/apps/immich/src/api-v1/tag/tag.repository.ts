@@ -1,4 +1,4 @@
-import { TagEntity, TagType } from '@app/database/entities/tag.entity';
+import { TagEntity, TagType } from '@app/database';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -13,7 +13,7 @@ export interface ITagRepository {
   remove(tag: TagEntity): Promise<TagEntity>;
 }
 
-export const TAG_REPOSITORY = 'TAG_REPOSITORY';
+export const ITagRepository = 'ITagRepository';
 
 @Injectable()
 export class TagRepository implements ITagRepository {

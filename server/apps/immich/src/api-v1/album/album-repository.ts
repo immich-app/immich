@@ -1,6 +1,4 @@
-import { AlbumEntity } from '@app/database/entities/album.entity';
-import { AssetAlbumEntity } from '@app/database/entities/asset-album.entity';
-import { UserAlbumEntity } from '@app/database/entities/user-album.entity';
+import { AlbumEntity, AssetAlbumEntity, UserAlbumEntity } from '@app/database';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, SelectQueryBuilder, DataSource, Brackets } from 'typeorm';
@@ -28,7 +26,7 @@ export interface IAlbumRepository {
   getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
 }
 
-export const ALBUM_REPOSITORY = 'ALBUM_REPOSITORY';
+export const IAlbumRepository = 'IAlbumRepository';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {

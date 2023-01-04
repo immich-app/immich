@@ -6,7 +6,7 @@ import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '../../config/jwt.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@app/database/entities/user.entity';
+import { UserEntity } from '@app/database';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]), ImmichJwtModule, JwtModule.register(jwtConfig)],

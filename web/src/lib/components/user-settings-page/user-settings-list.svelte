@@ -5,6 +5,7 @@
 	import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
 	import ChangePasswordSettings from './change-password-settings.svelte';
 	import OAuthSettings from './oauth-settings.svelte';
+	import UserAPIKeyList from './user-api-key-list.svelte';
 	import UserProfileSettings from './user-profile-settings.svelte';
 
 	export let user: UserResponseDto;
@@ -30,6 +31,10 @@
 
 <SettingAccordion title="Password" subtitle="Change your password">
 	<ChangePasswordSettings />
+</SettingAccordion>
+
+<SettingAccordion title="API Keys" subtitle="View and manage your API keys">
+	<UserAPIKeyList />
 </SettingAccordion>
 
 {#if oauthEnabled}

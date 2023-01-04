@@ -39,22 +39,15 @@ Please follow the [installation procedure](#installation--usage) and then run th
 ```dart
 import 'package:openapi/api.dart';
 
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
-final api_instance = AlbumApi();
-final albumId = albumId_example; // String | 
-final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
+final api_instance = APIKeyApi();
+final aPIKeyCreateDto = APIKeyCreateDto(); // APIKeyCreateDto | 
 
 try {
-    final result = api_instance.addAssetsToAlbum(albumId, addAssetsDto);
+    final result = api_instance.createKey(aPIKeyCreateDto);
     print(result);
 } catch (e) {
-    print('Exception when calling AlbumApi->addAssetsToAlbum: $e\n');
+    print('Exception when calling APIKeyApi->createKey: $e\n');
 }
 
 ```
@@ -65,6 +58,11 @@ All URIs are relative to */api*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*APIKeyApi* | [**createKey**](doc//APIKeyApi.md#createkey) | **POST** /api-key | 
+*APIKeyApi* | [**deleteKey**](doc//APIKeyApi.md#deletekey) | **DELETE** /api-key/{id} | 
+*APIKeyApi* | [**getKey**](doc//APIKeyApi.md#getkey) | **GET** /api-key/{id} | 
+*APIKeyApi* | [**getKeys**](doc//APIKeyApi.md#getkeys) | **GET** /api-key | 
+*APIKeyApi* | [**updateKey**](doc//APIKeyApi.md#updatekey) | **PUT** /api-key/{id} | 
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{albumId}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{albumId}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
@@ -109,6 +107,7 @@ Class | Method | HTTP request | Description
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
 *OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
+*OAuthApi* | [**mobileRedirect**](doc//OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
 *OAuthApi* | [**unlink**](doc//OAuthApi.md#unlink) | **POST** /oauth/unlink | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
@@ -137,6 +136,10 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [APIKeyCreateDto](doc//APIKeyCreateDto.md)
+ - [APIKeyCreateResponseDto](doc//APIKeyCreateResponseDto.md)
+ - [APIKeyResponseDto](doc//APIKeyResponseDto.md)
+ - [APIKeyUpdateDto](doc//APIKeyUpdateDto.md)
  - [AddAssetsDto](doc//AddAssetsDto.md)
  - [AddAssetsResponseDto](doc//AddAssetsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
