@@ -37,10 +37,9 @@
 		isThumbnailVideoPlaying = false;
 
 		if (isLivePhoto && asset.livePhotoVideoId) {
-			console.log('get file url');
-			videoUrl = getFileUrl(asset.livePhotoVideoId, false, true);
+			videoUrl = getFileUrl(asset.livePhotoVideoId, false, true, publicSharedKey);
 		} else {
-			videoUrl = getFileUrl(asset.id, false, true);
+			videoUrl = getFileUrl(asset.id, false, true, publicSharedKey);
 		}
 	};
 
