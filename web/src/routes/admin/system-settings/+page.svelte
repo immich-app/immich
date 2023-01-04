@@ -6,15 +6,13 @@
 	import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
 	import StorageTemplateSettings from '$lib/components/admin-page/settings/storate-template/storage-template-settings.svelte';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-	import { api, SystemConfigDto } from '@api';
+	import { api } from '@api';
 	import type { PageData } from './$types';
 
-	let systemConfig: SystemConfigDto;
 	export let data: PageData;
+
 	const getConfig = async () => {
 		const { data } = await api.systemConfigApi.getConfig();
-		systemConfig = data;
-
 		return data;
 	};
 </script>
