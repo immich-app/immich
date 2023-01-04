@@ -31,9 +31,9 @@ class GetAssetByTimeBucketDto {
   String toString() => 'GetAssetByTimeBucketDto[timeBucket=$timeBucket]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'timeBucket'] = timeBucket;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'timeBucket'] = this.timeBucket;
+    return json;
   }
 
   /// Returns a new [GetAssetByTimeBucketDto] instance and imports its values from

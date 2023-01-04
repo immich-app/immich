@@ -51,13 +51,13 @@ class AdminSignupResponseDto {
   String toString() => 'AdminSignupResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'id'] = id;
-      _json[r'email'] = email;
-      _json[r'firstName'] = firstName;
-      _json[r'lastName'] = lastName;
-      _json[r'createdAt'] = createdAt;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'id'] = this.id;
+      json[r'email'] = this.email;
+      json[r'firstName'] = this.firstName;
+      json[r'lastName'] = this.lastName;
+      json[r'createdAt'] = this.createdAt;
+    return json;
   }
 
   /// Returns a new [AdminSignupResponseDto] instance and imports its values from

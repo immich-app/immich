@@ -31,9 +31,9 @@ class AssetFileUploadResponseDto {
   String toString() => 'AssetFileUploadResponseDto[id=$id]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'id'] = id;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'id'] = this.id;
+    return json;
   }
 
   /// Returns a new [AssetFileUploadResponseDto] instance and imports its values from

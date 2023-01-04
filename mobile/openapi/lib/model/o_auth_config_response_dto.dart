@@ -53,19 +53,19 @@ class OAuthConfigResponseDto {
   String toString() => 'OAuthConfigResponseDto[enabled=$enabled, url=$url, buttonText=$buttonText]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'enabled'] = enabled;
-    if (url != null) {
-      _json[r'url'] = url;
+    final json = <String, dynamic>{};
+      json[r'enabled'] = this.enabled;
+    if (this.url != null) {
+      json[r'url'] = this.url;
     } else {
-      // _json[r'url'] = null;
+      // json[r'url'] = null;
     }
-    if (buttonText != null) {
-      _json[r'buttonText'] = buttonText;
+    if (this.buttonText != null) {
+      json[r'buttonText'] = this.buttonText;
     } else {
-      // _json[r'buttonText'] = null;
+      // json[r'buttonText'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [OAuthConfigResponseDto] instance and imports its values from

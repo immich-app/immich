@@ -36,10 +36,10 @@ class ChangePasswordDto {
   String toString() => 'ChangePasswordDto[password=$password, newPassword=$newPassword]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'password'] = password;
-      _json[r'newPassword'] = newPassword;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'password'] = this.password;
+      json[r'newPassword'] = this.newPassword;
+    return json;
   }
 
   /// Returns a new [ChangePasswordDto] instance and imports its values from

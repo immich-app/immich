@@ -61,15 +61,15 @@ class SystemConfigTemplateStorageOptionDto {
   String toString() => 'SystemConfigTemplateStorageOptionDto[yearOptions=$yearOptions, monthOptions=$monthOptions, dayOptions=$dayOptions, hourOptions=$hourOptions, minuteOptions=$minuteOptions, secondOptions=$secondOptions, presetOptions=$presetOptions]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'yearOptions'] = yearOptions;
-      _json[r'monthOptions'] = monthOptions;
-      _json[r'dayOptions'] = dayOptions;
-      _json[r'hourOptions'] = hourOptions;
-      _json[r'minuteOptions'] = minuteOptions;
-      _json[r'secondOptions'] = secondOptions;
-      _json[r'presetOptions'] = presetOptions;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'yearOptions'] = this.yearOptions;
+      json[r'monthOptions'] = this.monthOptions;
+      json[r'dayOptions'] = this.dayOptions;
+      json[r'hourOptions'] = this.hourOptions;
+      json[r'minuteOptions'] = this.minuteOptions;
+      json[r'secondOptions'] = this.secondOptions;
+      json[r'presetOptions'] = this.presetOptions;
+    return json;
   }
 
   /// Returns a new [SystemConfigTemplateStorageOptionDto] instance and imports its values from

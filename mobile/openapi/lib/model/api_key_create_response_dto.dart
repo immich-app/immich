@@ -36,10 +36,10 @@ class APIKeyCreateResponseDto {
   String toString() => 'APIKeyCreateResponseDto[secret=$secret, apiKey=$apiKey]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'secret'] = secret;
-      _json[r'apiKey'] = apiKey;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'secret'] = this.secret;
+      json[r'apiKey'] = this.apiKey;
+    return json;
   }
 
   /// Returns a new [APIKeyCreateResponseDto] instance and imports its values from

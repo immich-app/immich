@@ -76,18 +76,18 @@ class AllJobStatusResponseDto {
   String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueueCount=$thumbnailGenerationQueueCount, metadataExtractionQueueCount=$metadataExtractionQueueCount, videoConversionQueueCount=$videoConversionQueueCount, machineLearningQueueCount=$machineLearningQueueCount, storageMigrationQueueCount=$storageMigrationQueueCount, isThumbnailGenerationActive=$isThumbnailGenerationActive, isMetadataExtractionActive=$isMetadataExtractionActive, isVideoConversionActive=$isVideoConversionActive, isMachineLearningActive=$isMachineLearningActive, isStorageMigrationActive=$isStorageMigrationActive]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'thumbnailGenerationQueueCount'] = thumbnailGenerationQueueCount;
-      _json[r'metadataExtractionQueueCount'] = metadataExtractionQueueCount;
-      _json[r'videoConversionQueueCount'] = videoConversionQueueCount;
-      _json[r'machineLearningQueueCount'] = machineLearningQueueCount;
-      _json[r'storageMigrationQueueCount'] = storageMigrationQueueCount;
-      _json[r'isThumbnailGenerationActive'] = isThumbnailGenerationActive;
-      _json[r'isMetadataExtractionActive'] = isMetadataExtractionActive;
-      _json[r'isVideoConversionActive'] = isVideoConversionActive;
-      _json[r'isMachineLearningActive'] = isMachineLearningActive;
-      _json[r'isStorageMigrationActive'] = isStorageMigrationActive;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'thumbnailGenerationQueueCount'] = this.thumbnailGenerationQueueCount;
+      json[r'metadataExtractionQueueCount'] = this.metadataExtractionQueueCount;
+      json[r'videoConversionQueueCount'] = this.videoConversionQueueCount;
+      json[r'machineLearningQueueCount'] = this.machineLearningQueueCount;
+      json[r'storageMigrationQueueCount'] = this.storageMigrationQueueCount;
+      json[r'isThumbnailGenerationActive'] = this.isThumbnailGenerationActive;
+      json[r'isMetadataExtractionActive'] = this.isMetadataExtractionActive;
+      json[r'isVideoConversionActive'] = this.isVideoConversionActive;
+      json[r'isMachineLearningActive'] = this.isMachineLearningActive;
+      json[r'isStorageMigrationActive'] = this.isStorageMigrationActive;
+    return json;
   }
 
   /// Returns a new [AllJobStatusResponseDto] instance and imports its values from

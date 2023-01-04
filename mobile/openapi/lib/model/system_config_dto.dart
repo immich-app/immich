@@ -41,11 +41,11 @@ class SystemConfigDto {
   String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, oauth=$oauth, storageTemplate=$storageTemplate]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'ffmpeg'] = ffmpeg;
-      _json[r'oauth'] = oauth;
-      _json[r'storageTemplate'] = storageTemplate;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'ffmpeg'] = this.ffmpeg;
+      json[r'oauth'] = this.oauth;
+      json[r'storageTemplate'] = this.storageTemplate;
+    return json;
   }
 
   /// Returns a new [SystemConfigDto] instance and imports its values from

@@ -46,12 +46,12 @@ class APIKeyResponseDto {
   String toString() => 'APIKeyResponseDto[id=$id, name=$name, createdAt=$createdAt, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'id'] = id;
-      _json[r'name'] = name;
-      _json[r'createdAt'] = createdAt;
-      _json[r'updatedAt'] = updatedAt;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'id'] = this.id;
+      json[r'name'] = this.name;
+      json[r'createdAt'] = this.createdAt;
+      json[r'updatedAt'] = this.updatedAt;
+    return json;
   }
 
   /// Returns a new [APIKeyResponseDto] instance and imports its values from

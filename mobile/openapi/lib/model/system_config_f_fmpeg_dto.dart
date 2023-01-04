@@ -51,13 +51,13 @@ class SystemConfigFFmpegDto {
   String toString() => 'SystemConfigFFmpegDto[crf=$crf, preset=$preset, targetVideoCodec=$targetVideoCodec, targetAudioCodec=$targetAudioCodec, targetScaling=$targetScaling]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'crf'] = crf;
-      _json[r'preset'] = preset;
-      _json[r'targetVideoCodec'] = targetVideoCodec;
-      _json[r'targetAudioCodec'] = targetAudioCodec;
-      _json[r'targetScaling'] = targetScaling;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'crf'] = this.crf;
+      json[r'preset'] = this.preset;
+      json[r'targetVideoCodec'] = this.targetVideoCodec;
+      json[r'targetAudioCodec'] = this.targetAudioCodec;
+      json[r'targetScaling'] = this.targetScaling;
+    return json;
   }
 
   /// Returns a new [SystemConfigFFmpegDto] instance and imports its values from
