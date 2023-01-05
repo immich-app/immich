@@ -106,12 +106,12 @@
 			<div>Let anyone with the link see photos and people in this album.</div>
 		{/if}
 
-		<div class="mt-6 p-4 bg-black/40 rounded-xl">
-			<p class="text-xs mb-6">OPTION</p>
-
+		<div class="mt-6 mb-2">
+			<p class="text-xs">LINK OPTIONS</p>
+		</div>
+		<div class="p-4 bg-black/40 rounded-lg">
 			<div class="flex flex-col">
-				{expirationTime} - {isAllowUpload}
-				<SettingSwitch bind:checked={isAllowUpload} title={'Allow upload'} />
+				<SettingSwitch bind:checked={isAllowUpload} title={'Allow public user to upload'} />
 
 				<div class="text-sm mt-5">
 					<p class="my-2">Expire after</p>

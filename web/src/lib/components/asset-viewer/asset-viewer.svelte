@@ -21,6 +21,8 @@
 
 	export let asset: AssetResponseDto;
 	export let publicSharedKey = '';
+	export let showNavigation = true;
+
 	$: {
 		appearsInAlbums = [];
 
@@ -250,28 +252,30 @@
 		/>
 	</div>
 
-	<div
-		class={`row-start-2 row-span-end col-start-1 col-span-2 flex place-items-center hover:cursor-pointer w-3/4 mb-[60px] ${
-			asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
-		}`}
-		on:mouseenter={() => {
-			halfLeftHover = true;
-			halfRightHover = false;
-		}}
-		on:mouseleave={() => {
-			halfLeftHover = false;
-		}}
-		on:click={navigateAssetBackward}
-		on:keydown={navigateAssetBackward}
-	>
-		<button
-			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000]  text-gray-500 mx-4"
-			class:navigation-button-hover={halfLeftHover}
+	{#if showNavigation}
+		<div
+			class={`row-start-2 row-span-end col-start-1 col-span-2 flex place-items-center hover:cursor-pointer w-3/4 mb-[60px] ${
+				asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
+			}`}
+			on:mouseenter={() => {
+				halfLeftHover = true;
+				halfRightHover = false;
+			}}
+			on:mouseleave={() => {
+				halfLeftHover = false;
+			}}
 			on:click={navigateAssetBackward}
+			on:keydown={navigateAssetBackward}
 		>
-			<ChevronLeft size="36" />
-		</button>
-	</div>
+			<button
+				class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000]  text-gray-500 mx-4"
+				class:navigation-button-hover={halfLeftHover}
+				on:click={navigateAssetBackward}
+			>
+				<ChevronLeft size="36" />
+			</button>
+		</div>
+	{/if}
 
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
@@ -292,28 +296,30 @@
 		{/key}
 	</div>
 
-	<div
-		class={`row-start-2 row-span-full col-start-3 col-span-2 flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end mb-[60px] ${
-			asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'
-		}`}
-		on:click={navigateAssetForward}
-		on:keydown={navigateAssetForward}
-		on:mouseenter={() => {
-			halfLeftHover = false;
-			halfRightHover = true;
-		}}
-		on:mouseleave={() => {
-			halfRightHover = false;
-		}}
-	>
-		<button
-			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4"
-			class:navigation-button-hover={halfRightHover}
+	{#if showNavigation}
+		<div
+			class={`row-start-2 row-span-full col-start-3 col-span-2 flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end mb-[60px] ${
+				asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'
+			}`}
 			on:click={navigateAssetForward}
+			on:keydown={navigateAssetForward}
+			on:mouseenter={() => {
+				halfLeftHover = false;
+				halfRightHover = true;
+			}}
+			on:mouseleave={() => {
+				halfRightHover = false;
+			}}
 		>
-			<ChevronRight size="36" />
-		</button>
-	</div>
+			<button
+				class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4"
+				class:navigation-button-hover={halfRightHover}
+				on:click={navigateAssetForward}
+			>
+				<ChevronRight size="36" />
+			</button>
+		</div>
+	{/if}
 
 	{#if isShowDetail}
 		<div
