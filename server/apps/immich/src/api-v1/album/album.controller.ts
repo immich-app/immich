@@ -158,6 +158,6 @@ export class AlbumController {
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) createAlbumShareLinkDto: CreateAlbumSharedLinkDto,
   ) {
-    return this.albumService.createAlbumSharedLink(authUser, createAlbumShareLinkDto.albumId);
+    return this.albumService.createAlbumSharedLink(authUser, createAlbumShareLinkDto);
   }
 }

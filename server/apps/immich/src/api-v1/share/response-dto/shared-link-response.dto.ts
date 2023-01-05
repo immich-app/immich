@@ -14,6 +14,7 @@ export class SharedLinkResponseDto {
   expiresAt?: string;
   assets!: string[];
   album?: AlbumResponseDto;
+  allowUpload!: boolean;
 }
 
 export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
@@ -27,5 +28,6 @@ export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): Shared
     expiresAt: sharedLink.expiresAt,
     assets: sharedLink.assets ? sharedLink.assets.map((asset) => asset.id) : [],
     album: sharedLink.album ? mapAlbum(sharedLink.album) : undefined,
+    allowUpload: sharedLink.allowUpload,
   };
 }

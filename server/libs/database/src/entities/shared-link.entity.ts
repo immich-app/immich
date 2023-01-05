@@ -25,6 +25,9 @@ export class SharedLinkEntity {
   @Column({ type: 'timestamptz', nullable: true })
   expiresAt?: string;
 
+  @Column({ type: 'boolean', default: false })
+  allowUpload!: boolean;
+
   @ManyToMany(() => AssetEntity, (asset) => asset.sharedLinks)
   assets!: AssetEntity[];
 

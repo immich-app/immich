@@ -22,6 +22,7 @@ export class ShareCore {
       sharedLink.type = dto.sharedType;
       sharedLink.assets = dto.assets;
       sharedLink.album = dto.album;
+      sharedLink.allowUpload = dto.allowUpload ?? false;
 
       return this.sharedLinkRepository.create(sharedLink);
     } catch (error: any) {

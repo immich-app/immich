@@ -552,7 +552,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetThumbnail**
-> Object getAssetThumbnail(assetId, format)
+> Object getAssetThumbnail(assetId, format, key)
 
 
 
@@ -569,9 +569,10 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
 final format = ; // ThumbnailFormat | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.getAssetThumbnail(assetId, format);
+    final result = api_instance.getAssetThumbnail(assetId, format, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAssetThumbnail: $e\n');
@@ -584,6 +585,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetId** | **String**|  | 
  **format** | [**ThumbnailFormat**](.md)|  | [optional] 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 

@@ -683,6 +683,18 @@ export interface CreateAlbumShareLinkDto {
      * @memberof CreateAlbumShareLinkDto
      */
     'albumId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'expiredAt'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'allowUpload'?: boolean;
 }
 /**
  * 
@@ -1550,6 +1562,12 @@ export interface SharedLinkResponseDto {
      * @memberof SharedLinkResponseDto
      */
     'album'?: AlbumResponseDto;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SharedLinkResponseDto
+     */
+    'allowUpload': boolean;
 }
 /**
  * 
@@ -3841,10 +3859,11 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * 
          * @param {string} assetId 
          * @param {ThumbnailFormat} [format] 
+         * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetThumbnail: async (assetId: string, format?: ThumbnailFormat, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAssetThumbnail: async (assetId: string, format?: ThumbnailFormat, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetId' is not null or undefined
             assertParamExists('getAssetThumbnail', 'assetId', assetId)
             const localVarPath = `/asset/thumbnail/{assetId}`
@@ -3866,6 +3885,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (format !== undefined) {
                 localVarQueryParameter['format'] = format;
+            }
+
+            if (key !== undefined) {
+                localVarQueryParameter['key'] = key;
             }
 
 
@@ -4279,11 +4302,12 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * 
          * @param {string} assetId 
          * @param {ThumbnailFormat} [format] 
+         * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAssetThumbnail(assetId: string, format?: ThumbnailFormat, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetThumbnail(assetId, format, options);
+        async getAssetThumbnail(assetId: string, format?: ThumbnailFormat, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetThumbnail(assetId, format, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4470,11 +4494,12 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * 
          * @param {string} assetId 
          * @param {ThumbnailFormat} [format] 
+         * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetThumbnail(assetId: string, format?: ThumbnailFormat, options?: any): AxiosPromise<object> {
-            return localVarFp.getAssetThumbnail(assetId, format, options).then((request) => request(axios, basePath));
+        getAssetThumbnail(assetId: string, format?: ThumbnailFormat, key?: string, options?: any): AxiosPromise<object> {
+            return localVarFp.getAssetThumbnail(assetId, format, key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4675,12 +4700,13 @@ export class AssetApi extends BaseAPI {
      * 
      * @param {string} assetId 
      * @param {ThumbnailFormat} [format] 
+     * @param {string} [key] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public getAssetThumbnail(assetId: string, format?: ThumbnailFormat, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAssetThumbnail(assetId, format, options).then((request) => request(this.axios, this.basePath));
+    public getAssetThumbnail(assetId: string, format?: ThumbnailFormat, key?: string, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getAssetThumbnail(assetId, format, key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

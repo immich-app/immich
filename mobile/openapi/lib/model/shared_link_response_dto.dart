@@ -22,6 +22,7 @@ class SharedLinkResponseDto {
     this.expiresAt,
     this.assets = const [],
     this.album,
+    required this.allowUpload,
   });
 
   SharedLinkType type;
@@ -60,6 +61,8 @@ class SharedLinkResponseDto {
   ///
   AlbumResponseDto? album;
 
+  bool allowUpload;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkResponseDto &&
      other.type == type &&
@@ -70,7 +73,8 @@ class SharedLinkResponseDto {
      other.createdAt == createdAt &&
      other.expiresAt == expiresAt &&
      other.assets == assets &&
-     other.album == album;
+     other.album == album &&
+     other.allowUpload == allowUpload;
 
   @override
   int get hashCode =>
@@ -83,10 +87,11 @@ class SharedLinkResponseDto {
     (createdAt.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (assets.hashCode) +
-    (album == null ? 0 : album!.hashCode);
+    (album == null ? 0 : album!.hashCode) +
+    (allowUpload.hashCode);
 
   @override
-  String toString() => 'SharedLinkResponseDto[type=$type, id=$id, description=$description, userId=$userId, key=$key, createdAt=$createdAt, expiresAt=$expiresAt, assets=$assets, album=$album]';
+  String toString() => 'SharedLinkResponseDto[type=$type, id=$id, description=$description, userId=$userId, key=$key, createdAt=$createdAt, expiresAt=$expiresAt, assets=$assets, album=$album, allowUpload=$allowUpload]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -111,6 +116,7 @@ class SharedLinkResponseDto {
     } else {
       _json[r'album'] = null;
     }
+      _json[r'allowUpload'] = allowUpload;
     return _json;
   }
 
@@ -144,6 +150,7 @@ class SharedLinkResponseDto {
             ? (json[r'assets'] as List).cast<String>()
             : const [],
         album: AlbumResponseDto.fromJson(json[r'album']),
+        allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
       );
     }
     return null;
@@ -199,6 +206,7 @@ class SharedLinkResponseDto {
     'key',
     'createdAt',
     'assets',
+    'allowUpload',
   };
 }
 

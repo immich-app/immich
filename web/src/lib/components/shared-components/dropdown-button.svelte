@@ -9,7 +9,7 @@
 	import { onMount } from 'svelte';
 
 	export let options: ImmichDropDownOption;
-	let selected: string;
+	export let selected: string;
 
 	onMount(() => {
 		selected = options.default;

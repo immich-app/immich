@@ -1,7 +1,15 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateAlbumShareLinkDto {
   @IsString()
   @IsNotEmpty()
   albumId!: string;
+
+  @IsString()
+  @IsOptional()
+  expiredAt?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  allowUpload?: boolean;
 }

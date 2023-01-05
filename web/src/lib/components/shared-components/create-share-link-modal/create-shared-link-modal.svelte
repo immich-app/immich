@@ -4,7 +4,7 @@
 	import Link from 'svelte-material-icons/Link.svelte';
 	import { AlbumResponseDto, api, SharedLinkResponseDto, SharedLinkType } from '@api';
 	import { notificationController, NotificationType } from '../notification/notification';
-	import ExpirationDatePicker, { ImmichDropDownOption } from '../dropdown-button.svelte';
+	import { ImmichDropDownOption } from '../dropdown-button.svelte';
 	import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
 	import DropdownButton from '../dropdown-button.svelte';
 
@@ -13,12 +13,12 @@
 
 	let isLoading = false;
 	let isShowSharedLink = false;
-	let shouldExpireLink = false;
+	let expirationTime = '';
 	let isAllowUpload = false;
 	let sharedLink = '';
 	const expiredDateOption: ImmichDropDownOption = {
 		default: 'Never',
-		options: ['Never', '1 day', '1 week', '1 month', '1 year']
+		options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days']
 	};
 	const dispatch = createEventDispatcher();
 
@@ -31,8 +31,16 @@
 		if (album) {
 			isLoading = true;
 			try {
+				const expirationTime = getExpirationTimeInMillisecond();
+				const currentTime = new Date().getTime();
+				const expirationDate = expirationTime
+					? new Date(currentTime + expirationTime).toISOString()
+					: undefined;
+
 				const { data } = await api.albumApi.createAlbumSharedLink({
-					albumId: album.id
+					albumId: album.id,
+					expiredAt: expirationDate,
+					allowUpload: isAllowUpload
 				});
 
 				buildSharedLink(data);
@@ -64,6 +72,25 @@
 			console.error('Error', error);
 		}
 	};
+
+	const getExpirationTimeInMillisecond = () => {
+		switch (expirationTime) {
+			case '30 minutes':
+				return 30 * 60 * 1000;
+			case '1 hour':
+				return 60 * 60 * 1000;
+			case '6 hours':
+				return 6 * 60 * 60 * 1000;
+			case '1 day':
+				return 24 * 60 * 60 * 1000;
+			case '7 days':
+				return 7 * 24 * 60 * 60 * 1000;
+			case '30 days':
+				return 30 * 24 * 60 * 60 * 1000;
+			default:
+				return 0;
+		}
+	};
 </script>
 
 <BaseModal on:close={() => dispatch('close')}>
@@ -83,11 +110,12 @@
 			<p class="text-xs mb-6">OPTION</p>
 
 			<div class="flex flex-col">
+				{expirationTime} - {isAllowUpload}
 				<SettingSwitch bind:checked={isAllowUpload} title={'Allow upload'} />
 
 				<div class="text-sm mt-5">
 					<p class="my-2">Expire after</p>
-					<DropdownButton options={expiredDateOption} />
+					<DropdownButton options={expiredDateOption} bind:selected={expirationTime} />
 				</div>
 			</div>
 		</div>

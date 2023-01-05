@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **expiresAt** | **String** |  | [optional] 
 **assets** | **List<String>** |  | [default to const []]
 **album** | [**AlbumResponseDto**](AlbumResponseDto.md) |  | [optional] 
+**allowUpload** | **bool** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -14,25 +14,57 @@ class CreateAlbumShareLinkDto {
   /// Returns a new [CreateAlbumShareLinkDto] instance.
   CreateAlbumShareLinkDto({
     required this.albumId,
+    this.expiredAt,
+    this.allowUpload,
   });
 
   String albumId;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? expiredAt;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? allowUpload;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateAlbumShareLinkDto &&
-     other.albumId == albumId;
+     other.albumId == albumId &&
+     other.expiredAt == expiredAt &&
+     other.allowUpload == allowUpload;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (albumId.hashCode);
+    (albumId.hashCode) +
+    (expiredAt == null ? 0 : expiredAt!.hashCode) +
+    (allowUpload == null ? 0 : allowUpload!.hashCode);
 
   @override
-  String toString() => 'CreateAlbumShareLinkDto[albumId=$albumId]';
+  String toString() => 'CreateAlbumShareLinkDto[albumId=$albumId, expiredAt=$expiredAt, allowUpload=$allowUpload]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
       _json[r'albumId'] = albumId;
+    if (expiredAt != null) {
+      _json[r'expiredAt'] = expiredAt;
+    } else {
+      _json[r'expiredAt'] = null;
+    }
+    if (allowUpload != null) {
+      _json[r'allowUpload'] = allowUpload;
+    } else {
+      _json[r'allowUpload'] = null;
+    }
     return _json;
   }
 
@@ -56,6 +88,8 @@ class CreateAlbumShareLinkDto {
 
       return CreateAlbumShareLinkDto(
         albumId: mapValueOfType<String>(json, r'albumId')!,
+        expiredAt: mapValueOfType<String>(json, r'expiredAt'),
+        allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
       );
     }
     return null;

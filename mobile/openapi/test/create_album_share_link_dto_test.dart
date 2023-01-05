@@ -21,6 +21,16 @@ void main() {
       // TODO
     });
 
+    // String expiredAt
+    test('to test the property `expiredAt`', () async {
+      // TODO
+    });
+
+    // bool allowUpload
+    test('to test the property `allowUpload`', () async {
+      // TODO
+    });
+
 
   });
 

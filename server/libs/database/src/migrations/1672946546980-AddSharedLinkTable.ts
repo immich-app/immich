@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddSharedLinkTable1672629702430 implements MigrationInterface {
-    name = 'AddSharedLinkTable1672629702430'
+export class AddSharedLinkTable1672946546980 implements MigrationInterface {
+    name = 'AddSharedLinkTable1672946546980'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE "shared_links" ("id" character varying NOT NULL, "description" character varying, "userId" character varying NOT NULL, "key" character varying NOT NULL, "type" character varying NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL, "expiresAt" TIMESTAMP WITH TIME ZONE, "albumId" uuid, CONSTRAINT "PK_642e2b0f619e4876e5f90a43465" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "shared_links" ("id" character varying NOT NULL, "description" character varying, "userId" character varying NOT NULL, "key" character varying NOT NULL, "type" character varying NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL, "expiresAt" TIMESTAMP WITH TIME ZONE, "allowUpload" boolean NOT NULL DEFAULT false, "albumId" uuid, CONSTRAINT "PK_642e2b0f619e4876e5f90a43465" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "shared_link__asset" ("assetsId" uuid NOT NULL, "sharedLinksId" character varying NOT NULL, CONSTRAINT "PK_9b4f3687f9b31d1e311336b05e3" PRIMARY KEY ("assetsId", "sharedLinksId"))`);
         await queryRunner.query(`CREATE INDEX "IDX_5b7decce6c8d3db9593d6111a6" ON "shared_link__asset" ("assetsId") `);
         await queryRunner.query(`CREATE INDEX "IDX_c9fab4aa97ffd1b034f3d6581a" ON "shared_link__asset" ("sharedLinksId") `);

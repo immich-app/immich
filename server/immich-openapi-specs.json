@@ -3139,6 +3139,9 @@
           },
           "album": {
             "$ref": "#/components/schemas/AlbumResponseDto"
+          },
+          "allowUpload": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -3147,7 +3150,8 @@
           "userId",
           "key",
           "createdAt",
-          "assets"
+          "assets",
+          "allowUpload"
         ]
       },
       "AssetFileUploadDto": {
@@ -3592,6 +3596,12 @@
         "properties": {
           "albumId": {
             "type": "string"
+          },
+          "expiredAt": {
+            "type": "string"
+          },
+          "allowUpload": {
+            "type": "boolean"
           }
         },
         "required": [

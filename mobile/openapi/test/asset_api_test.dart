@@ -80,7 +80,7 @@ void main() {
       // TODO
     });
 
-    //Future<Object> getAssetThumbnail(String assetId, { ThumbnailFormat format }) async
+    //Future<Object> getAssetThumbnail(String assetId, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
       // TODO
     });

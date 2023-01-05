@@ -7,4 +7,5 @@ export class CreateSharedLinkDto {
   sharedType!: SharedLinkType;
   assets!: AssetEntity[];
   album!: AlbumEntity | undefined;
+  allowUpload?: boolean;
 }

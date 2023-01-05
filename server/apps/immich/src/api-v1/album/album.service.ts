@@ -16,6 +16,7 @@ import { DownloadDto } from '../asset/dto/download-library.dto';
 import { ShareCore } from '../share/share.core';
 import { ISharedLinkRepository } from '../share/shared-link.repository';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { CreateAlbumShareLinkDto } from './dto/create-album-shared-link.dto';
 
 @Injectable()
 export class AlbumService {
@@ -190,11 +191,13 @@ export class AlbumService {
     }
   }
 
-  async createAlbumSharedLink(authUser: AuthUserDto, albumId: string): Promise<SharedLinkResponseDto> {
-    const album = await this._getAlbum({ authUser, albumId });
+  async createAlbumSharedLink(authUser: AuthUserDto, dto: CreateAlbumShareLinkDto): Promise<SharedLinkResponseDto> {
+    const album = await this._getAlbum({ authUser, albumId: dto.albumId });
 
     const sharedLink = await this.shareCore.createSharedLink(authUser.id, {
       sharedType: SharedLinkType.ALBUM,
+      expiredAt: dto.expiredAt,
+      allowUpload: dto.allowUpload,
       album: album,
       assets: album.assets?.map((asset) => asset.assetInfo) || [],
     });
