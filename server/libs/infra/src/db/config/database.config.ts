@@ -25,6 +25,7 @@ if(process.env.DB_SSL) {
 }
 else {
     additionalSSLDatabaseConfig = {
+        ssl: false,
     };
 }
 
