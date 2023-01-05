@@ -1,16 +1,25 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
-	import BaseModal from './base-modal.svelte';
+	import BaseModal from '../base-modal.svelte';
 	import Link from 'svelte-material-icons/Link.svelte';
 	import { AlbumResponseDto, api, SharedLinkResponseDto, SharedLinkType } from '@api';
-	import { notificationController, NotificationType } from './notification/notification';
+	import { notificationController, NotificationType } from '../notification/notification';
+	import ExpirationDatePicker, { ImmichDropDownOption } from '../dropdown-button.svelte';
+	import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
+	import DropdownButton from '../dropdown-button.svelte';
 
 	export let shareType: SharedLinkType;
 	export let album: AlbumResponseDto | undefined;
 
 	let isLoading = false;
 	let isShowSharedLink = false;
+	let shouldExpireLink = false;
+	let isAllowUpload = false;
 	let sharedLink = '';
+	const expiredDateOption: ImmichDropDownOption = {
+		default: 'Never',
+		options: ['Never', '1 day', '1 week', '1 month', '1 year']
+	};
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
@@ -69,6 +78,19 @@
 		{#if shareType == SharedLinkType.Album}
 			<div>Let anyone with the link see photos and people in this album.</div>
 		{/if}
+
+		<div class="mt-6 p-4 bg-black/40 rounded-xl">
+			<p class="text-xs mb-6">OPTION</p>
+
+			<div class="flex flex-col">
+				<SettingSwitch bind:checked={isAllowUpload} title={'Allow upload'} />
+
+				<div class="text-sm mt-5">
+					<p class="my-2">Expire after</p>
+					<DropdownButton options={expiredDateOption} />
+				</div>
+			</div>
+		</div>
 	</section>
 
 	<hr />

@@ -36,7 +36,7 @@
 	} from '../shared-components/notification/notification';
 	import { browser } from '$app/environment';
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
-	import CreateSharedLinkModal from '../shared-components/create-shared-link-modal.svelte';
+	import CreateSharedLinkModal from '../shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 	import ThemeButton from '../shared-components/theme-button.svelte';
 
 	export let album: AlbumResponseDto;
