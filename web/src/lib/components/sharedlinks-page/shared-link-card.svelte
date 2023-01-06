@@ -71,53 +71,67 @@
 				id={asset.id}
 				src={`/api/asset/thumbnail/${asset.id}?format=WEBP`}
 				alt={asset.id}
-				class={`object-cover w-[100px] h-[100px] rounded-tl-lg rounded-bl-lg`}
+				class="object-cover w-[100px] h-[100px] rounded-lg"
 				loading="lazy"
 			/>
 		{/await}
 	</div>
 
-	<div class="mt-2 pb-2">
-		<div class="text-xs font-mono font-semibold text-gray-500 dark:text-gray-400">
-			{#if link.expiresAt}
-				{#if isExpired(link.expiresAt)}
-					<p class="text-red-600 dark:text-red-400 font-bold">Expired</p>
-				{:else if expirationCountdown}
-					<p>
-						Expires in {expirationCountdown.days ?? 0}:{expirationCountdown.hours ??
-							0}:{expirationCountdown.minutes ?? 0}:{expirationCountdown.seconds?.toFixed(0) ?? 0}
-					</p>
+	<div class="flex flex-col justify-between">
+		<div class="info-top">
+			<div class="text-xs font-mono font-semibold text-gray-500 dark:text-gray-400">
+				{#if link.expiresAt}
+					{#if isExpired(link.expiresAt)}
+						<p class="text-red-600 dark:text-red-400 font-bold">Expired</p>
+					{:else if expirationCountdown}
+						<p>
+							Expires in {expirationCountdown.days ?? 0}:{expirationCountdown.hours ??
+								0}:{expirationCountdown.minutes ?? 0}:{expirationCountdown.seconds?.toFixed(0) ?? 0}
+						</p>
+					{:else}
+						<LoadingSpinner />
+					{/if}
 				{:else}
-					<LoadingSpinner />
-				{/if}
-			{:else}
-				<p>Expires ∞</p>
-			{/if}
-		</div>
-
-		<div class="text-sm">
-			<div class="flex gap-2 place-items-center text-immich-primary dark:text-immich-dark-primary">
-				{#if link.type === SharedLinkType.Album}
-					<p>
-						{link.album?.albumName.toUpperCase()}
-					</p>
-				{:else if link.type === SharedLinkType.Individual}
-					<p>INDIVIDUAL SHARE</p>
-				{/if}
-
-				{#if !link.expiresAt || !isExpired(link.expiresAt)}
-					<div
-						class="hover:cursor-pointer"
-						title="Go to share page"
-						on:click={() => goto(`/share/${link.id}`)}
-						on:keydown={() => goto(`/share/${link.id}`)}
-					>
-						<OpenInNew />
-					</div>
+					<p>Expires ∞</p>
 				{/if}
 			</div>
 
-			<p class="text-sm">{link.description ?? ''}</p>
+			<div class="text-sm">
+				<div
+					class="flex gap-2 place-items-center text-immich-primary dark:text-immich-dark-primary"
+				>
+					{#if link.type === SharedLinkType.Album}
+						<p>
+							{link.album?.albumName.toUpperCase()}
+						</p>
+					{:else if link.type === SharedLinkType.Individual}
+						<p>INDIVIDUAL SHARE</p>
+					{/if}
+
+					{#if !link.expiresAt || !isExpired(link.expiresAt)}
+						<div
+							class="hover:cursor-pointer"
+							title="Go to share page"
+							on:click={() => goto(`/share/${link.id}`)}
+							on:keydown={() => goto(`/share/${link.id}`)}
+						>
+							<OpenInNew />
+						</div>
+					{/if}
+				</div>
+
+				<p class="text-sm">{link.description ?? ''}</p>
+			</div>
+		</div>
+
+		<div class="info-bottom">
+			{#if !link.allowUpload}
+				<div
+					class="text-xs px-2 py-1 bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex place-items-center place-content-center rounded-full w-[80px]"
+				>
+					Read only
+				</div>
+			{/if}
 		</div>
 	</div>
 

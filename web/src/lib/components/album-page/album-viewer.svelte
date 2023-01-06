@@ -455,7 +455,9 @@
 		<ControlAppBar
 			on:close-button-click={() => goto(backUrl)}
 			backIcon={ArrowLeft}
-			showBackButton={!isPublicShared && isOwned}
+			showBackButton={(!isPublicShared && isOwned) ||
+				(!isPublicShared && !isOwned) ||
+				(isPublicShared && isOwned)}
 		>
 			<svelte:fragment slot="leading">
 				{#if isPublicShared && !isOwned}
