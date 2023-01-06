@@ -23,13 +23,13 @@
 </ControlAppBar>
 
 <section class="flex flex-col mt-[120px]">
-	<div class="w-[70%] m-auto mb-4">
+	<div class="w-[50%] m-auto mb-4">
 		<p>Manage shared links</p>
 	</div>
 	{#await getSharedLinks()}
 		<LoadingSpinner />
 	{:then sharedLinks}
-		<div class="flex flex-col gap-4 w-[70%] m-auto">
+		<div class="flex flex-col gap-4 w-[50%] m-auto">
 			{#each sharedLinks as link (link.id)}
 				<SharedLinkCard {link} />
 			{/each}
