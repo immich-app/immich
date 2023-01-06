@@ -109,7 +109,7 @@
 		<div class="mt-6 mb-2">
 			<p class="text-xs">LINK OPTIONS</p>
 		</div>
-		<div class="p-4 bg-black/40 rounded-lg">
+		<div class="p-4 bg-gray-200 dark:bg-black/40 rounded-lg">
 			<div class="flex flex-col">
 				<SettingSwitch bind:checked={isAllowUpload} title={'Allow public user to upload'} />
 
