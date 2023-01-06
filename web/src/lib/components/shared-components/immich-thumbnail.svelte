@@ -19,6 +19,7 @@
 	export let selected = false;
 	export let disabled = false;
 	export let publicSharedKey = '';
+	export let isRoundedCorner = false;
 
 	let imageData: string;
 
@@ -119,6 +120,8 @@
 			return 'border-[20px] border-immich-primary/20';
 		} else if (disabled) {
 			return 'border-[20px] border-gray-300';
+		} else if (isRoundedCorner) {
+			return 'rounded-[20px]';
 		} else {
 			return '';
 		}
