@@ -695,6 +695,12 @@ export interface CreateAlbumShareLinkDto {
      * @memberof CreateAlbumShareLinkDto
      */
     'allowUpload'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'description'?: string;
 }
 /**
  * 

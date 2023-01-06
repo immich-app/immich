@@ -7,6 +7,9 @@
 	import { ImmichDropDownOption } from '../dropdown-button.svelte';
 	import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
 	import DropdownButton from '../dropdown-button.svelte';
+	import SettingInputField, {
+		SettingInputFieldType
+	} from '$lib/components/admin-page/settings/setting-input-field.svelte';
 
 	export let shareType: SharedLinkType;
 	export let album: AlbumResponseDto | undefined;
@@ -16,6 +19,7 @@
 	let expirationTime = '';
 	let isAllowUpload = false;
 	let sharedLink = '';
+	let description = '';
 	const expiredDateOption: ImmichDropDownOption = {
 		default: 'Never',
 		options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days']
@@ -40,7 +44,8 @@
 				const { data } = await api.albumApi.createAlbumSharedLink({
 					albumId: album.id,
 					expiredAt: expirationDate,
-					allowUpload: isAllowUpload
+					allowUpload: isAllowUpload,
+					description: description
 				});
 
 				buildSharedLink(data);
@@ -109,11 +114,19 @@
 		<div class="mt-6 mb-2">
 			<p class="text-xs">LINK OPTIONS</p>
 		</div>
-		<div class="p-4 bg-gray-200 dark:bg-black/40 rounded-lg">
+		<div class="p-4 bg-gray-100 dark:bg-black/40 rounded-lg">
 			<div class="flex flex-col">
+				<div class="mb-4">
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="Description"
+						bind:value={description}
+					/>
+				</div>
+
 				<SettingSwitch bind:checked={isAllowUpload} title={'Allow public user to upload'} />
 
-				<div class="text-sm mt-5">
+				<div class="text-sm mt-4">
 					<p class="my-2">Expire after</p>
 					<DropdownButton options={expiredDateOption} bind:selected={expirationTime} />
 				</div>

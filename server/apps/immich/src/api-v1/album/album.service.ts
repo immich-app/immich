@@ -203,6 +203,7 @@ export class AlbumService {
       allowUpload: dto.allowUpload,
       album: album,
       assets: album.assets?.map((asset) => asset.assetInfo) || [],
+      description: dto.description,
     });
 
     return mapSharedLinkToResponseDto(sharedLink);

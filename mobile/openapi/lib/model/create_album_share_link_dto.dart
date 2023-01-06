@@ -16,6 +16,7 @@ class CreateAlbumShareLinkDto {
     required this.albumId,
     this.expiredAt,
     this.allowUpload,
+    this.description,
   });
 
   String albumId;
@@ -36,21 +37,31 @@ class CreateAlbumShareLinkDto {
   ///
   bool? allowUpload;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? description;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateAlbumShareLinkDto &&
      other.albumId == albumId &&
      other.expiredAt == expiredAt &&
-     other.allowUpload == allowUpload;
+     other.allowUpload == allowUpload &&
+     other.description == description;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumId.hashCode) +
     (expiredAt == null ? 0 : expiredAt!.hashCode) +
-    (allowUpload == null ? 0 : allowUpload!.hashCode);
+    (allowUpload == null ? 0 : allowUpload!.hashCode) +
+    (description == null ? 0 : description!.hashCode);
 
   @override
-  String toString() => 'CreateAlbumShareLinkDto[albumId=$albumId, expiredAt=$expiredAt, allowUpload=$allowUpload]';
+  String toString() => 'CreateAlbumShareLinkDto[albumId=$albumId, expiredAt=$expiredAt, allowUpload=$allowUpload, description=$description]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -64,6 +75,11 @@ class CreateAlbumShareLinkDto {
       _json[r'allowUpload'] = allowUpload;
     } else {
       _json[r'allowUpload'] = null;
+    }
+    if (description != null) {
+      _json[r'description'] = description;
+    } else {
+      _json[r'description'] = null;
     }
     return _json;
   }
@@ -90,6 +106,7 @@ class CreateAlbumShareLinkDto {
         albumId: mapValueOfType<String>(json, r'albumId')!,
         expiredAt: mapValueOfType<String>(json, r'expiredAt'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
+        description: mapValueOfType<String>(json, r'description'),
       );
     }
     return null;

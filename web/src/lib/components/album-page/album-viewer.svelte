@@ -636,6 +636,7 @@
 
 {#if isShowShareUserSelection}
 	<UserSelectionModal
+		{album}
 		on:close={() => (isShowShareUserSelection = false)}
 		on:add-user={addUserHandler}
 		on:sharedlinkclick={onSharedLinkClickHandler}

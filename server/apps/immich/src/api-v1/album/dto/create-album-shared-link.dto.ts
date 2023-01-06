@@ -12,4 +12,8 @@ export class CreateAlbumShareLinkDto {
   @IsBoolean()
   @IsOptional()
   allowUpload?: boolean;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
 }

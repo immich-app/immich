@@ -3602,6 +3602,9 @@
           },
           "allowUpload": {
             "type": "boolean"
+          },
+          "description": {
+            "type": "string"
           }
         },
         "required": [

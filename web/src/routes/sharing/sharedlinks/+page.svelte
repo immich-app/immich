@@ -4,7 +4,6 @@
 
 	import { api, SharedLinkResponseDto } from '@api';
 	import { goto } from '$app/navigation';
-	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
 	import {
 		notificationController,

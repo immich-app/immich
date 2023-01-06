@@ -1,17 +1,21 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { api, UserResponseDto } from '@api';
+	import { AlbumResponseDto, api, SharedLinkResponseDto, UserResponseDto } from '@api';
 	import BaseModal from '../shared-components/base-modal.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import Link from 'svelte-material-icons/Link.svelte';
+	import ShareCircle from 'svelte-material-icons/ShareCircle.svelte';
+	import { goto } from '$app/navigation';
 
+	export let album: AlbumResponseDto;
 	export let sharedUsersInAlbum: Set<UserResponseDto>;
 	let users: UserResponseDto[] = [];
 	let selectedUsers: UserResponseDto[] = [];
 
 	const dispatch = createEventDispatcher();
-
+	let sharedLinks: SharedLinkResponseDto[] = [];
 	onMount(async () => {
+		await getSharedLinks();
 		const { data } = await api.userApi.getAllUsers(false);
 
 		// remove soft deleted users
@@ -22,6 +26,12 @@
 			users = users.filter((user) => user.id !== sharedUser.id);
 		});
 	});
+
+	const getSharedLinks = async () => {
+		const { data } = await api.shareApi.getAllSharedLinks();
+
+		sharedLinks = data.filter((link) => link.album?.id === album.id);
+	};
 
 	const selectUser = (user: UserResponseDto) => {
 		if (selectedUsers.includes(user)) {
@@ -116,7 +126,7 @@
 	</div>
 
 	<hr />
-	<div id="shared-buttons" class="flex my-4 place-items-center place-content-center">
+	<div id="shared-buttons" class="flex my-4 justify-around place-items-center place-content-center">
 		<button
 			class="flex flex-col gap-2 place-items-center place-content-center hover:cursor-pointer"
 			on:click={onSharedLinkClick}
@@ -124,5 +134,15 @@
 			<Link size={24} />
 			<p class="text-sm">Create link</p>
 		</button>
+
+		{#if sharedLinks.length}
+			<button
+				class="flex flex-col gap-2 place-items-center place-content-center hover:cursor-pointer"
+				on:click={() => goto('/sharing/sharedlinks')}
+			>
+				<ShareCircle size={24} />
+				<p class="text-sm">View links</p>
+			</button>
+		{/if}
 	</div>
 </BaseModal>
