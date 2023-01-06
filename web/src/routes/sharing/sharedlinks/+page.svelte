@@ -2,16 +2,45 @@
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 
-	import { api } from '@api';
+	import { api, SharedLinkResponseDto } from '@api';
 	import { goto } from '$app/navigation';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
-	import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '$lib/components/shared-components/notification/notification';
+	import { onMount } from 'svelte';
 
+	let sharedLinks: SharedLinkResponseDto[] = [];
+
+	onMount(async () => {
+		sharedLinks = await getSharedLinks();
+	});
 	const getSharedLinks = async () => {
 		const { data: sharedLinks } = await api.shareApi.getAllSharedLinks();
 
 		return sharedLinks;
+	};
+
+	const handleDeleteLink = async (linkId: string) => {
+		if (window.confirm('Do you want to delete the shared link? ')) {
+			try {
+				const { data } = await api.shareApi.removeSharedLink(linkId);
+				notificationController.show({
+					message: 'Shared link deleted',
+					type: NotificationType.Info
+				});
+
+				sharedLinks = await getSharedLinks();
+			} catch (e) {
+				console.error(e);
+				notificationController.show({
+					message: 'Failed to delete shared link',
+					type: NotificationType.Error
+				});
+			}
+		}
 	};
 </script>
 
@@ -27,13 +56,17 @@
 	<div class="w-[50%] m-auto mb-4 dark:text-immich-gray">
 		<p>Manage shared links</p>
 	</div>
-	{#await getSharedLinks()}
-		<LoadingSpinner />
-	{:then sharedLinks}
+	{#if sharedLinks.length === 0}
+		<div
+			class="w-[50%] m-auto bg-gray-100 flex place-items-center place-content-center rounded-lg p-12"
+		>
+			<p>You don't have any shared links</p>
+		</div>
+	{:else}
 		<div class="flex flex-col w-[50%] m-auto">
 			{#each sharedLinks as link (link.id)}
-				<SharedLinkCard {link} />
+				<SharedLinkCard {link} on:delete={() => handleDeleteLink(link.id)} />
 			{/each}
 		</div>
-	{/await}
+	{/if}
 </section>

@@ -5,14 +5,16 @@
 	import Delete from 'svelte-material-icons/TrashCanOutline.svelte';
 	import * as luxon from 'luxon';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	export let link: SharedLinkResponseDto;
 
 	let countdownTimeInterval: NodeJS.Timeout;
 	let expirationCountdown: luxon.DurationObjectUnits;
+	const dispatch = createEventDispatcher();
 
-	onMount(() => {
+	onMount(async () => {
 		if (link.expiresAt) {
 			countdownTimeInterval = setInterval(() => getCountDownExpirationDate(link.expiresAt), 1000);
 		}
@@ -75,16 +77,15 @@
 		{/await}
 	</div>
 
-	<div class="mt-2 plex flex-col place-content-center pb-2">
+	<div class="mt-2 pb-2">
 		<div class="text-xs font-mono font-semibold text-gray-500 dark:text-gray-400">
 			{#if link.expiresAt}
 				{#if isExpired(link.expiresAt)}
 					<p class="text-red-600 dark:text-red-400 font-bold">Expired</p>
 				{:else if expirationCountdown}
 					<p>
-						Expires {expirationCountdown.days}:{expirationCountdown.hours}:{expirationCountdown.minutes}:{expirationCountdown.seconds?.toFixed(
-							0
-						)}
+						Expires in {expirationCountdown.days ?? 0}:{expirationCountdown.hours ??
+							0}:{expirationCountdown.minutes ?? 0}:{expirationCountdown.seconds?.toFixed(0) ?? 0}
 					</p>
 				{:else}
 					<LoadingSpinner />
@@ -104,9 +105,16 @@
 					<p>INDIVIDUAL SHARE</p>
 				{/if}
 
-				<div class="hover:cursor-pointer" title="Go to share page">
-					<OpenInNew />
-				</div>
+				{#if !link.expiresAt || !isExpired(link.expiresAt)}
+					<div
+						class="hover:cursor-pointer"
+						title="Go to share page"
+						on:click={() => goto(`/share/${link.id}`)}
+						on:keydown={() => goto(`/share/${link.id}`)}
+					>
+						<OpenInNew />
+					</div>
+				{/if}
 			</div>
 
 			<p class="text-sm">{link.description ?? ''}</p>
@@ -115,7 +123,7 @@
 
 	<div class="flex-auto flex flex-col place-content-center place-items-end text-right">
 		<div class="flex">
-			<CircleIconButton logo={Delete} />
+			<CircleIconButton logo={Delete} on:click={() => dispatch('delete')} />
 		</div>
 	</div>
 </div>
