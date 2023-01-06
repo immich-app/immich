@@ -106,7 +106,7 @@
 		</span>
 	</svelte:fragment>
 
-	<section class="mx-6 mt-2 mb-8">
+	<section class="mx-6 mb-6">
 		{#if shareType == SharedLinkType.Album}
 			<div>Let anyone with the link see photos and people in this album.</div>
 		{/if}
@@ -127,7 +127,7 @@
 				<SettingSwitch bind:checked={isAllowUpload} title={'Allow public user to upload'} />
 
 				<div class="text-sm mt-4">
-					<p class="my-2">Expire after</p>
+					<p class="my-2 immich-form-label">Expire after</p>
 					<DropdownButton options={expiredDateOption} bind:selected={expirationTime} />
 				</div>
 			</div>
