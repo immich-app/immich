@@ -2,6 +2,8 @@
 	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
+	import Link from 'svelte-material-icons/Link.svelte';
+
 	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
 	import { goto } from '$app/navigation';
 	import { api } from '@api';
@@ -55,7 +57,7 @@
 					<p class="font-medium">Sharing</p>
 				</div>
 
-				<div>
+				<div class="flex">
 					<button
 						on:click={createSharedAlbum}
 						class="flex place-items-center gap-1 text-sm hover:bg-immich-primary/5 p-2 rounded-lg font-medium hover:text-gray-700 dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
@@ -64,6 +66,16 @@
 							<PlusBoxOutline size="18" />
 						</span>
 						<p>Create shared album</p>
+					</button>
+
+					<button
+						on:click={() => goto('/sharing/sharedlinks')}
+						class="flex place-items-center gap-1 text-sm hover:bg-immich-primary/5 p-2 rounded-lg font-medium hover:text-gray-700 dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
+					>
+						<span>
+							<Link size="18" />
+						</span>
+						<p>Shared links</p>
 					</button>
 				</div>
 			</div>

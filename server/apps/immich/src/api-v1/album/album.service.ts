@@ -17,6 +17,7 @@ import { ShareCore } from '../share/share.core';
 import { ISharedLinkRepository } from '../share/shared-link.repository';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 import { CreateAlbumShareLinkDto } from './dto/create-album-shared-link.dto';
+import _ from 'lodash';
 
 @Injectable()
 export class AlbumService {
@@ -75,6 +76,8 @@ export class AlbumService {
         albums = [...albums, ...publicSharingAlbums];
       }
     }
+
+    albums = _.uniqBy(albums, (album) => album.id);
 
     for (const album of albums) {
       await this._checkValidThumbnail(album);
