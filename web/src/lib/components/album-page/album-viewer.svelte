@@ -239,7 +239,7 @@
 	const createAlbumHandler = async (event: CustomEvent) => {
 		const { assets }: { assets: AssetResponseDto[] } = event.detail;
 		try {
-			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
+			const { data } = await api.albumApi.addAssetsToAlbum(album.id, sharedLink?.key ?? '', {
 				assetIds: assets.map((a) => a.id)
 			});
 

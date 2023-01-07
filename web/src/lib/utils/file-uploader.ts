@@ -186,7 +186,7 @@ async function fileUploader(
 			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 		};
 
-		request.open('POST', `/api/asset/upload?key=${sharedKey}`);
+		request.open('POST', `/api/asset/upload?key=${sharedKey ?? ''}`);
 
 		request.send(formData);
 	} catch (e) {
