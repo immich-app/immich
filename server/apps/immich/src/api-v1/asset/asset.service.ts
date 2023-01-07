@@ -653,9 +653,14 @@ export class AssetService {
       // Step 1: Check if asset is part of a public shared
       if (sharedKey) {
         const asset = await this._assetRepository.getById(assetId);
+        if (asset.sharedLinks.length == 0) {
+          throw new ForbiddenException();
+        }
         for (const links of asset.sharedLinks) {
           if (links.key == sharedKey) {
             continue;
+          } else {
+            throw new ForbiddenException();
           }
         }
       }
