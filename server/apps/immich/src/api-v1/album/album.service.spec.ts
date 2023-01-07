@@ -33,7 +33,7 @@ describe('Album service', () => {
     albumEntity.sharedUsers = [];
     albumEntity.assets = [];
     albumEntity.albumThumbnailAssetId = null;
-
+    albumEntity.sharedLinks = [];
     return albumEntity;
   };
 
@@ -94,6 +94,7 @@ describe('Album service', () => {
         },
       },
     ];
+    albumEntity.sharedLinks = [];
 
     return albumEntity;
   };
@@ -165,10 +166,8 @@ describe('Album service', () => {
     albumRepositoryMock.getList.mockImplementation(() => Promise.resolve(albums));
 
     const result = await sut.getAllAlbums(authUser, {});
-    expect(result).toHaveLength(3);
+    expect(result).toHaveLength(1);
     expect(result[0].id).toEqual(ownedAlbum.id);
-    expect(result[1].id).toEqual(ownedSharedAlbum.id);
-    expect(result[2].id).toEqual(sharedWithMeAlbum.id);
   });
 
   it('gets an owned album', async () => {

@@ -2,7 +2,7 @@ import { UserEntity } from '@app/database';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ShareService } from 'apps/immich/src/api-v1/share/share.service';
+import { ShareService } from '../../../api-v1/share/share.service';
 import { IStrategyOptions, Strategy } from 'passport-http-header-strategy';
 import { Repository } from 'typeorm';
 
