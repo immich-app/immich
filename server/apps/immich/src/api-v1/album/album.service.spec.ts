@@ -133,6 +133,8 @@ describe('Album service', () => {
       remove: jest.fn(),
       get: jest.fn(),
       getbyId: jest.fn(),
+      getByKey: jest.fn(),
+      save: jest.fn(),
     };
 
     downloadServiceMock = {
