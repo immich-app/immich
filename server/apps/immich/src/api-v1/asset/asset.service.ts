@@ -665,7 +665,7 @@ export class AssetService {
           throw new ForbiddenException();
         }
 
-        const matchedLink = asset.sharedLinks.filter((x) => x.key == sharedKey);
+        const matchedLink = asset.sharedLinks.filter((x) => x.key.toString('hex') == sharedKey);
 
         if (matchedLink.length == 0) {
           throw new ForbiddenException();

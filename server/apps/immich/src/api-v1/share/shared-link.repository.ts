@@ -38,7 +38,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
   async getbyId(id: string): Promise<SharedLinkEntity | null> {
     return await this.sharedLinkRepository.findOne({
       where: {
-        id: id,
+        id: Buffer.from(id, 'hex'),
       },
       relations: ['assets', 'album'],
     });
@@ -47,7 +47,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
   async getByKey(key: string): Promise<SharedLinkEntity | null> {
     return await this.sharedLinkRepository.findOne({
       where: {
-        key: key,
+        key: Buffer.from(key, 'hex'),
       },
       relations: ['assets', 'album'],
     });

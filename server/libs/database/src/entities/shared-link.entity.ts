@@ -1,11 +1,13 @@
-import { Column, Entity, ManyToMany, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, Index, ManyToMany, ManyToOne, PrimaryColumn, Unique } from 'typeorm';
 import { AlbumEntity } from './album.entity';
 import { AssetEntity } from './asset.entity';
 
 @Entity('shared_links')
+@Unique('UQ_sharedlink_key', ['key'])
 export class SharedLinkEntity {
-  @PrimaryColumn({ type: 'varchar' })
-  id!: string;
+  @Index('IDX_sharedlink_id')
+  @PrimaryColumn({ type: 'bytea' })
+  id!: Buffer;
 
   @Column({ nullable: true })
   description?: string;
@@ -13,8 +15,9 @@ export class SharedLinkEntity {
   @Column()
   userId!: string;
 
-  @Column()
-  key!: string; // use to access the inidividual asset
+  @Index('IDX_sharedlink_key')
+  @Column({ type: 'bytea' })
+  key!: Buffer; // use to access the inidividual asset
 
   @Column()
   type!: SharedLinkType;

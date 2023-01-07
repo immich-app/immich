@@ -19,10 +19,10 @@ export class SharedLinkResponseDto {
 
 export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
   return {
-    id: sharedLink.id,
+    id: sharedLink.id.toString('hex'),
     description: sharedLink.description,
     userId: sharedLink.userId,
-    key: sharedLink.key,
+    key: sharedLink.key.toString('hex'),
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,

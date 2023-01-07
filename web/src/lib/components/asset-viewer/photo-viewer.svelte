@@ -33,12 +33,15 @@
 
 	const loadAssetData = async () => {
 		try {
-			const { data } = await api.assetApi.serveFile(assetInfo.id, false, true, {
-				responseType: 'blob',
-				params: {
-					key: publicSharedKey
+			const { data } = await api.assetApi.serveFile(
+				assetInfo.id,
+				false,
+				true,
+				publicSharedKey ?? '',
+				{
+					responseType: 'blob'
 				}
-			});
+			);
 
 			if (!(data instanceof Blob)) {
 				return;
