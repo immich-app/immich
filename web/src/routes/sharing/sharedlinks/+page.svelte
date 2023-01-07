@@ -25,7 +25,7 @@
 	const handleDeleteLink = async (linkId: string) => {
 		if (window.confirm('Do you want to delete the shared link? ')) {
 			try {
-				const { data } = await api.shareApi.removeSharedLink(linkId);
+				await api.shareApi.removeSharedLink(linkId);
 				notificationController.show({
 					message: 'Shared link deleted',
 					type: NotificationType.Info

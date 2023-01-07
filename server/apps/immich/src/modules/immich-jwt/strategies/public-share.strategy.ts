@@ -1,9 +1,8 @@
 import { UserEntity } from '@app/database';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ShareService } from 'apps/immich/src/api-v1/share/share.service';
-import { Request } from 'express';
 import { IStrategyOptions, Strategy } from 'passport-http-header-strategy';
 import { Repository } from 'typeorm';
 
@@ -29,7 +28,16 @@ export class PublicShareStrategy extends PassportStrategy(Strategy, PUBLIC_SHARE
   }
 
   async validate(key: string): Promise<PublicUser> {
-    const validatedLink = await this.shareService.validateSharedLink(key);
+    const validatedLink = await this.shareService.getSharedLinkByKey(key);
+
+    if (validatedLink.expiresAt) {
+      const now = new Date().getTime();
+      const expiresAt = new Date(validatedLink.expiresAt).getTime();
+
+      if (now > expiresAt) {
+        throw new BadRequestException('Expired link');
+      }
+    }
 
     const user = await this.usersRepository.findOne({ where: { id: validatedLink.userId } });
 

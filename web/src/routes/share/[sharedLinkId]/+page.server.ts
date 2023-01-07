@@ -11,6 +11,17 @@ export const load: PageServerLoad = async ({ params }) => {
 	try {
 		const { data: sharedLink } = await serverApi.shareApi.getSharedLink(sharedLinkId);
 
+		if (sharedLink.expiresAt) {
+			const now = new Date().getTime();
+			const expiresAt = new Date(sharedLink.expiresAt).getTime();
+
+			if (now > expiresAt) {
+				throw error(400, {
+					message: 'Expired link'
+				});
+			}
+		}
+
 		for (const assetId of sharedLink.assets) {
 			const { data: asset } = await serverApi.assetApi.getAssetById(assetId, {
 				params: {

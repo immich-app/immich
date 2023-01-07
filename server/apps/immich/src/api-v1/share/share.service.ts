@@ -31,7 +31,7 @@ export class ShareService {
     return mapSharedLinkToResponseDto(removedLink);
   }
 
-  async validateSharedLink(key: string): Promise<SharedLinkEntity> {
+  async getSharedLinkByKey(key: string): Promise<SharedLinkEntity> {
     return await this.shareCore.getSharedLinkByKey(key);
   }
 }
