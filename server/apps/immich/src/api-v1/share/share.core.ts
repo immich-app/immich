@@ -36,8 +36,8 @@ export class ShareCore {
     return this.sharedLinkRepository.get(userId);
   }
 
-  async removeSharedLink(id: string): Promise<SharedLinkEntity> {
-    const link = await this.getSharedLinkById(id);
+  async removeSharedLink(id: string, userId: string): Promise<SharedLinkEntity> {
+    const link = await this.sharedLinkRepository.getByIdAndUserId(id, userId);
 
     if (!link) {
       throw new BadRequestException('Shared link not found');

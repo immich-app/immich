@@ -19,8 +19,9 @@ export class ShareController {
     return this.shareService.findOne(id);
   }
 
+  @Authenticated()
   @Delete(':id')
-  removeSharedLink(@Param('id') id: string) {
-    return this.shareService.remove(id);
+  removeSharedLink(@Param('id') id: string, @GetAuthUser() authUser: AuthUserDto): Promise<string> {
+    return this.shareService.remove(id, authUser.id);
   }
 }

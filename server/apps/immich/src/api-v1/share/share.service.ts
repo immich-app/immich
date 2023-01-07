@@ -26,9 +26,9 @@ export class ShareService {
     return mapSharedLinkToResponseDto(link);
   }
 
-  async remove(id: string) {
-    const removedLink = await this.shareCore.removeSharedLink(id);
-    return mapSharedLinkToResponseDto(removedLink);
+  async remove(id: string, userId: string): Promise<string> {
+    await this.shareCore.removeSharedLink(id, userId);
+    return id;
   }
 
   async getSharedLinkByKey(key: string): Promise<SharedLinkEntity> {
