@@ -5,7 +5,6 @@ import { AssetEntity } from './asset.entity';
 @Entity('shared_links')
 @Unique('UQ_sharedlink_key', ['key'])
 export class SharedLinkEntity {
-  @Index('IDX_sharedlink_id')
   @PrimaryColumn({ type: 'bytea' })
   id!: Buffer;
 
