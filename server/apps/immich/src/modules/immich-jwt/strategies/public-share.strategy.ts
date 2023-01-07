@@ -1,5 +1,5 @@
 import { UserEntity } from '@app/database';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ShareService } from '../../../api-v1/share/share.service';
@@ -35,14 +35,14 @@ export class PublicShareStrategy extends PassportStrategy(Strategy, PUBLIC_SHARE
       const expiresAt = new Date(validatedLink.expiresAt).getTime();
 
       if (now > expiresAt) {
-        throw new BadRequestException('Expired link');
+        throw new UnauthorizedException('Expired link');
       }
     }
 
     const user = await this.usersRepository.findOne({ where: { id: validatedLink.userId } });
 
     if (!user) {
-      throw new BadRequestException('Failure to validate public share payload');
+      throw new UnauthorizedException('Failure to validate public share payload');
     }
 
     let publicUser = new PublicUser();
