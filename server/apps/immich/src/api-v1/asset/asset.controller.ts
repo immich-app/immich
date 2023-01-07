@@ -79,7 +79,9 @@ export class AssetController {
     @Response({ passthrough: true }) res: Res,
     @Query('key') sharedKey?: string,
   ): Promise<AssetFileUploadResponseDto> {
+    console.log('Upload file', sharedKey);
     if (sharedKey) {
+      console.log('share key available, upload asset');
       await this.assetService.checkUploadAccess(sharedKey, files.assetData[0].path);
     }
 

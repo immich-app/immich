@@ -36,7 +36,7 @@ void main() {
       // TODO
     });
 
-    //Future<Object> downloadFile(String assetId, { bool isThumb, bool isWeb }) async
+    //Future<Object> downloadFile(String assetId, { bool isThumb, bool isWeb, String key }) async
     test('test downloadFile', () async {
       // TODO
     });
@@ -107,7 +107,7 @@ void main() {
       // TODO
     });
 
-    //Future<Object> serveFile(String assetId, { bool isThumb, bool isWeb }) async
+    //Future<Object> serveFile(String assetId, { bool isThumb, bool isWeb, String key }) async
     test('test serveFile', () async {
       // TODO
     });
@@ -119,7 +119,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData) async
+    //Future<AssetFileUploadResponseDto> uploadFile(String key, MultipartFile assetData) async
     test('test uploadFile', () async {
       // TODO
     });

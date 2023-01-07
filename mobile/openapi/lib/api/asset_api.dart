@@ -178,7 +178,9 @@ class AssetApi {
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  Future<Response> downloadFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, }) async {
+  ///
+  /// * [String] key:
+  Future<Response> downloadFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -195,6 +197,9 @@ class AssetApi {
     }
     if (isWeb != null) {
       queryParams.addAll(_queryParams('', 'isWeb', isWeb));
+    }
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
     }
 
     const contentTypes = <String>[];
@@ -218,8 +223,10 @@ class AssetApi {
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  Future<Object?> downloadFile(String assetId, { bool? isThumb, bool? isWeb, }) async {
-    final response = await downloadFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, );
+  ///
+  /// * [String] key:
+  Future<Object?> downloadFile(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
+    final response = await downloadFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -845,7 +852,9 @@ class AssetApi {
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  Future<Response> serveFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, }) async {
+  ///
+  /// * [String] key:
+  Future<Response> serveFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/file/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -862,6 +871,9 @@ class AssetApi {
     }
     if (isWeb != null) {
       queryParams.addAll(_queryParams('', 'isWeb', isWeb));
+    }
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
     }
 
     const contentTypes = <String>[];
@@ -885,8 +897,10 @@ class AssetApi {
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  Future<Object?> serveFile(String assetId, { bool? isThumb, bool? isWeb, }) async {
-    final response = await serveFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, );
+  ///
+  /// * [String] key:
+  Future<Object?> serveFile(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
+    final response = await serveFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -960,8 +974,10 @@ class AssetApi {
   /// Performs an HTTP 'POST /asset/upload' operation and returns the [Response].
   /// Parameters:
   ///
+  /// * [String] key (required):
+  ///
   /// * [MultipartFile] assetData (required):
-  Future<Response> uploadFileWithHttpInfo(MultipartFile assetData,) async {
+  Future<Response> uploadFileWithHttpInfo(String key, MultipartFile assetData,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -971,6 +987,8 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'key', key));
 
     const contentTypes = <String>['multipart/form-data'];
 
@@ -998,9 +1016,11 @@ class AssetApi {
 
   /// Parameters:
   ///
+  /// * [String] key (required):
+  ///
   /// * [MultipartFile] assetData (required):
-  Future<AssetFileUploadResponseDto?> uploadFile(MultipartFile assetData,) async {
-    final response = await uploadFileWithHttpInfo(assetData,);
+  Future<AssetFileUploadResponseDto?> uploadFile(String key, MultipartFile assetData,) async {
+    final response = await uploadFileWithHttpInfo(key, assetData,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
