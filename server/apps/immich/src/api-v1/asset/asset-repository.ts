@@ -46,6 +46,7 @@ export interface IAssetRepository {
     checkDuplicateAssetDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto>;
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
+  getSharePermission(assetId: string, userId: string): Promise<boolean>;
 }
 
 export const IAssetRepository = 'IAssetRepository';
@@ -58,6 +59,23 @@ export class AssetRepository implements IAssetRepository {
 
     @Inject(ITagRepository) private _tagRepository: ITagRepository,
   ) {}
+
+  async getSharePermission(assetId: string, sharedKey: string): Promise<boolean> {
+    // Check for shared key match key in each SharedLinkEntity
+    const count = await this.assetRepository.count({
+      where: {
+        id: assetId,
+        sharedLinks: {
+          key: Buffer.from(sharedKey, 'hex'),
+        },
+      },
+      relations: {
+        sharedLinks: true,
+      },
+    });
+
+    return Boolean(count);
+  }
 
   async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
     return await this.assetRepository
