@@ -10,13 +10,7 @@ let baseDatabaseConfig: PostgresConnectionOptions = {
   migrationsRun: true,
 };
 
-let urlBasedDatabaseConfig: PostgresConnectionOptions = {
-  type: 'postgres',
-  url: process.env.DB_URL || 'postgres://postgres:postgres@immich_postgres:5432/immich?sslmode=disable',
-};
-
-let envBasedDatabaseConfig: PostgresConnectionOptions = {
-  type: 'postgres',
+let envBasedDatabaseConfig = {
   host: process.env.DB_HOSTNAME || 'immich_postgres',
   port: parseInt(process.env.DB_PORT || '5432'),
   username: process.env.DB_USERNAME,
@@ -32,12 +26,8 @@ let envBasedDatabaseConfig: PostgresConnectionOptions = {
   connectTimeoutMS: 10000, // 10 seconds
 };
 
-if(process.env.DB_URL) {
-    additionalSSLDatabaseConfig = urlBasedDatabaseConfig;
-}
-else {
-    additionalSSLDatabaseConfig = envBasedDatabaseConfig;
-}
+const url = process.env.DB_URL;
+additionalSSLDatabaseConfig = url ? ({ url }) : (envBasedDatabaseConfig)
 
 export const databaseConfig: PostgresConnectionOptions = {...baseDatabaseConfig, ...additionalSSLDatabaseConfig};
 
