@@ -5,6 +5,7 @@
 		AlbumResponseDto,
 		api,
 		AssetResponseDto,
+		SharedLinkResponseDto,
 		SharedLinkType,
 		ThumbnailFormat,
 		UserResponseDto
@@ -38,9 +39,10 @@
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
 	import CreateSharedLinkModal from '../shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 	import ThemeButton from '../shared-components/theme-button.svelte';
+	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 
 	export let album: AlbumResponseDto;
-	export let publicSharedKey = '';
+	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
 	const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
 
@@ -78,7 +80,7 @@
 	let titleInput: HTMLInputElement;
 	let contextMenuPosition = { x: 0, y: 0 };
 
-	$: isPublicShared = publicSharedKey !== '';
+	$: isPublicShared = sharedLink;
 	$: isOwned = currentUser?.id == album.ownerId;
 
 	let multiSelectAsset: Set<AssetResponseDto> = new Set();
@@ -335,7 +337,7 @@
 					skip || undefined,
 					{
 						params: {
-							key: publicSharedKey
+							key: sharedLink?.key
 						},
 						responseType: 'blob',
 						onDownloadProgress: function (progressEvent) {
@@ -476,13 +478,22 @@
 
 			<svelte:fragment slot="trailing">
 				{#if album.assetCount > 0}
-					{#if isOwned}
+					{#if !sharedLink}
 						<CircleIconButton
 							title="Add Photos"
 							on:click={() => (isShowAssetSelection = true)}
 							logo={FileImagePlusOutline}
 						/>
 					{/if}
+
+					{#if sharedLink?.allowUpload}
+						<CircleIconButton
+							title="Add Photos"
+							on:click={() => openFileUploadDialog(album.id, sharedLink?.key)}
+							logo={FileImagePlusOutline}
+						/>
+					{/if}
+
 					<!-- Share and remove album -->
 					{#if isOwned}
 						<CircleIconButton
@@ -498,6 +509,7 @@
 						on:click={() => downloadAlbum()}
 						logo={FolderDownloadOutline}
 					/>
+
 					{#if !isPublicShared}
 						<CircleIconButton
 							title="Album options"
@@ -573,7 +585,7 @@
 							<ImmichThumbnail
 								{asset}
 								{thumbnailSize}
-								{publicSharedKey}
+								publicSharedKey={sharedLink?.key}
 								format={ThumbnailFormat.Jpeg}
 								on:click={(e) =>
 									isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e)}
@@ -584,7 +596,7 @@
 							<ImmichThumbnail
 								{asset}
 								{thumbnailSize}
-								{publicSharedKey}
+								publicSharedKey={sharedLink?.key}
 								on:click={(e) =>
 									isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e)}
 								on:select={selectAssetHandler}
@@ -618,7 +630,7 @@
 {#if isShowAssetViewer}
 	<AssetViewer
 		asset={selectedAsset}
-		{publicSharedKey}
+		publicSharedKey={sharedLink?.key}
 		on:navigate-previous={navigateAssetBackward}
 		on:navigate-next={navigateAssetForward}
 		on:close={closeViewer}

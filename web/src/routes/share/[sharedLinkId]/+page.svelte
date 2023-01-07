@@ -11,6 +11,6 @@
 
 {#if data.sharedLink.album}
 	<div class="immich-scrollbar">
-		<AlbumViewer album={data.sharedLink.album} publicSharedKey={data.sharedLink.key} />
+		<AlbumViewer album={data.sharedLink.album} sharedLink={data.sharedLink} />
 	</div>
 {/if}

@@ -282,7 +282,7 @@ export class AssetController {
   /**
    * Check duplicated asset before uploading - for Web upload used
    */
-  @Authenticated()
+  @Authenticated({ isShared: true })
   @Post('/check')
   @HttpCode(200)
   async checkDuplicateAsset(

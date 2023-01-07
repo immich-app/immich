@@ -65,7 +65,7 @@ export class AlbumController {
     return this.albumService.addUsersToAlbum(authUser, addUsersDto, albumId);
   }
 
-  @Authenticated()
+  @Authenticated({ isShared: true })
   @Put('/:albumId/assets')
   async addAssetsToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
