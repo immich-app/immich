@@ -3,8 +3,8 @@ import { Request } from 'express';
 import { PublicUser } from '../modules/immich-jwt/strategies/public-share.strategy';
 
 @Injectable()
-export class ShareRoleGuard implements CanActivate {
-  logger = new Logger(ShareRoleGuard.name);
+export class RouteNotSharedGuard implements CanActivate {
+  logger = new Logger(RouteNotSharedGuard.name);
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -12,7 +12,7 @@ export class ShareRoleGuard implements CanActivate {
 
     // Inverse logic - I know it is weird
     if (user.isPublicUser) {
-      this.logger.warn(`Denied public access attempt to link route: ${request.path}`);
+      this.logger.warn(`Denied attempt to access non-shared route: ${request.path}`);
       return false;
     }
 

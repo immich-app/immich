@@ -1,6 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import { AdminRolesGuard } from '../middlewares/admin-role-guard.middleware';
-import { ShareRoleGuard } from '../middlewares/share-role-guard.middleware';
+import { RouteNotSharedGuard } from '../middlewares/route-not-shared-guard.middleware';
 import { AuthGuard } from '../modules/immich-jwt/guards/auth.guard';
 
 interface AuthenticatedOptions {
@@ -18,7 +18,7 @@ export const Authenticated = (options?: AuthenticatedOptions) => {
   }
 
   if (!options.isShared) {
-    guards.push(ShareRoleGuard);
+    guards.push(RouteNotSharedGuard);
   }
 
   return UseGuards(...guards);
