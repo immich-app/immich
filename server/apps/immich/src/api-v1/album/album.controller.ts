@@ -71,7 +71,11 @@ export class AlbumController {
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) addAssetsDto: AddAssetsDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
+    @Query('key') sharedKey?: string,
   ): Promise<AddAssetsResponseDto> {
+    if (sharedKey) {
+      await this.albumService.checkPublicUploadAccess(sharedKey);
+    }
     return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId);
   }
 

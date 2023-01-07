@@ -28,4 +28,11 @@ export class ServeFileDto {
   })
   @ApiProperty({ type: Boolean, title: 'Is request made from web' })
   isWeb?: boolean;
+
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  key?: string;
 }

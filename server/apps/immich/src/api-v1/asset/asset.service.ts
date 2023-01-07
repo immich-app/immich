@@ -56,12 +56,16 @@ import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
+import { ShareCore } from '../share/share.core';
+import { ISharedLinkRepository } from '../share/shared-link.repository';
 
 const fileInfo = promisify(stat);
 
 @Injectable()
 export class AssetService {
   readonly logger = new Logger(AssetService.name);
+  private shareCore: ShareCore;
+
   constructor(
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
 
@@ -81,7 +85,10 @@ export class AssetService {
     private downloadService: DownloadService,
 
     private storageService: StorageService,
-  ) {}
+    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
+  ) {
+    this.shareCore = new ShareCore(sharedLinkRepository);
+  }
 
   public async handleUploadedAsset(
     authUser: AuthUserDto,
@@ -677,6 +684,18 @@ export class AssetService {
           continue;
         }
       }
+      throw new ForbiddenException();
+    }
+  }
+
+  async checkUploadAccess(sharedKey: string, assetPath: string) {
+    const sharedLink = await this.shareCore.getSharedLinkByKey(sharedKey);
+    if (!sharedLink.allowUpload) {
+      await this.backgroundTaskService.deleteFileOnDisk([
+        {
+          originalPath: assetPath,
+        } as any,
+      ]); // s
       throw new ForbiddenException();
     }
   }

@@ -558,7 +558,16 @@
     "/asset/upload": {
       "post": {
         "operationId": "uploadFile",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "description": "Asset Upload Information",
@@ -612,6 +621,14 @@
             "schema": {
               "title": "Is request made from web",
               "type": "boolean"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -700,6 +717,14 @@
             "schema": {
               "title": "Is request made from web",
               "type": "boolean"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -1443,6 +1468,14 @@
             "name": "albumId",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": true,
+            "in": "query",
             "schema": {
               "type": "string"
             }
