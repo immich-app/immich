@@ -5,26 +5,14 @@
 	import Delete from 'svelte-material-icons/TrashCanOutline.svelte';
 	import * as luxon from 'luxon';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
-	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { goto } from '$app/navigation';
 
 	export let link: SharedLinkResponseDto;
 
-	let countdownTimeInterval: NodeJS.Timeout;
 	let expirationCountdown: luxon.DurationObjectUnits;
 	const dispatch = createEventDispatcher();
 
-	onMount(async () => {
-		if (link.expiresAt) {
-			countdownTimeInterval = setInterval(() => getCountDownExpirationDate(link.expiresAt), 1000);
-		}
-	});
-
-	onDestroy(() => {
-		if (countdownTimeInterval) {
-			clearInterval(countdownTimeInterval);
-		}
-	});
 	const getAssetInfo = async (): Promise<AssetResponseDto> => {
 		let assetId = '';
 
@@ -39,17 +27,27 @@
 		return data;
 	};
 
-	const getCountDownExpirationDate = (expiresAt?: string) => {
-		if (!expiresAt) {
+	const getCountDownExpirationDate = () => {
+		if (!link.expiresAt) {
 			return;
 		}
 
-		const expiresAtDate = luxon.DateTime.fromISO(new Date(expiresAt).toISOString());
+		const expiresAtDate = luxon.DateTime.fromISO(new Date(link.expiresAt).toISOString());
 		const now = luxon.DateTime.now();
 
 		expirationCountdown = expiresAtDate
 			.diff(now, ['days', 'hours', 'minutes', 'seconds'])
 			.toObject();
+
+		if (expirationCountdown.days && expirationCountdown.days > 0) {
+			return expiresAtDate.toRelativeCalendar({ base: now, locale: 'en-US', unit: 'days' });
+		} else if (expirationCountdown.hours && expirationCountdown.hours > 0) {
+			return expiresAtDate.toRelativeCalendar({ base: now, locale: 'en-US', unit: 'hours' });
+		} else if (expirationCountdown.minutes && expirationCountdown.minutes > 0) {
+			return expiresAtDate.toRelativeCalendar({ base: now, locale: 'en-US', unit: 'minutes' });
+		} else if (expirationCountdown.seconds && expirationCountdown.seconds > 0) {
+			return expiresAtDate.toRelativeCalendar({ base: now, locale: 'en-US', unit: 'seconds' });
+		}
 	};
 
 	const isExpired = (expiresAt: string) => {
@@ -83,13 +81,10 @@
 				{#if link.expiresAt}
 					{#if isExpired(link.expiresAt)}
 						<p class="text-red-600 dark:text-red-400 font-bold">Expired</p>
-					{:else if expirationCountdown}
-						<p>
-							Expires in {expirationCountdown.days ?? 0}:{expirationCountdown.hours ??
-								0}:{expirationCountdown.minutes ?? 0}:{expirationCountdown.seconds?.toFixed(0) ?? 0}
-						</p>
 					{:else}
-						<LoadingSpinner />
+						<p>
+							Expires {getCountDownExpirationDate()}
+						</p>
 					{/if}
 				{:else}
 					<p>Expires ∞</p>
@@ -125,11 +120,11 @@
 		</div>
 
 		<div class="info-bottom">
-			{#if !link.allowUpload}
+			{#if link.allowUpload}
 				<div
-					class="text-xs px-2 py-1 bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex place-items-center place-content-center rounded-full w-[80px]"
+					class="text-xs px-2 py-1 bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex place-items-center place-content-center rounded-full w-[100px]"
 				>
-					Read only
+					Allow upload
 				</div>
 			{/if}
 		</div>
