@@ -16,14 +16,21 @@ const jwtSecretValidator: Joi.CustomValidator<string> = (value) => {
   return value;
 };
 
+const WHEN_DB_URL_SET = Joi.when('DB_URL', {
+  is: Joi.exist(),
+  then: Joi.string().optional(),
+  otherwise: Joi.string().required(),
+});
+
 export const immichAppConfig: ConfigModuleOptions = {
   envFilePath: '.env',
   isGlobal: true,
   validationSchema: Joi.object({
     NODE_ENV: Joi.string().required().valid('development', 'production', 'staging').default('development'),
-    DB_USERNAME: Joi.string().required(),
-    DB_PASSWORD: Joi.string().required(),
-    DB_DATABASE_NAME: Joi.string().required(),
+    DB_USERNAME: WHEN_DB_URL_SET,
+    DB_PASSWORD: WHEN_DB_URL_SET,
+    DB_DATABASE_NAME: WHEN_DB_URL_SET,
+    DB_URL: Joi.string().optional(),
     JWT_SECRET: Joi.string().required().custom(jwtSecretValidator),
     DISABLE_REVERSE_GEOCODING: Joi.boolean().optional().valid(true, false).default(false),
     REVERSE_GEOCODING_PRECISION: Joi.number().optional().valid(0, 1, 2, 3).default(3),
