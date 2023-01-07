@@ -10,6 +10,7 @@ export interface ISharedLinkRepository {
   getByKey(key: string): Promise<SharedLinkEntity | null>;
   create(payload: SharedLinkEntity): Promise<SharedLinkEntity>;
   remove(entity: SharedLinkEntity): Promise<SharedLinkEntity>;
+  save(entity: SharedLinkEntity): Promise<SharedLinkEntity>;
 }
 
 export const ISharedLinkRepository = 'ISharedLinkRepository';
@@ -54,5 +55,9 @@ export class SharedLinkRepository implements ISharedLinkRepository {
 
   async remove(entity: SharedLinkEntity): Promise<SharedLinkEntity> {
     return await this.sharedLinkRepository.remove(entity);
+  }
+
+  async save(entity: SharedLinkEntity): Promise<SharedLinkEntity> {
+    return await this.sharedLinkRepository.save(entity);
   }
 }

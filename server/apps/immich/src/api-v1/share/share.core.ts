@@ -3,6 +3,7 @@ import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
 import { ISharedLinkRepository } from './shared-link.repository';
 import crypto from 'node:crypto';
 import { BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { AssetEntity } from '@app/database';
 
 export class ShareCore {
   readonly logger = new Logger(ShareCore.name);
@@ -45,18 +46,6 @@ export class ShareCore {
     return await this.sharedLinkRepository.remove(link);
   }
 
-  async updateAssetInSharedLink(id: string, assetIds: string[]): Promise<SharedLinkEntity> {
-    const link = await this.getSharedLinkById(id);
-
-    if (!link) {
-      throw new BadRequestException('Shared link not found');
-    }
-
-    console.log(assetIds);
-
-    return link;
-  }
-
   async getSharedLinkById(id: string): Promise<SharedLinkEntity> {
     const link = await this.sharedLinkRepository.getbyId(id);
 
@@ -75,5 +64,13 @@ export class ShareCore {
     }
 
     return link;
+  }
+
+  async updataAssetsInSharedLink(sharedLinkId: string, assets: AssetEntity[]) {
+    const link = await this.getSharedLinkById(sharedLinkId);
+
+    link.assets = assets;
+
+    return await this.sharedLinkRepository.save(link);
   }
 }
