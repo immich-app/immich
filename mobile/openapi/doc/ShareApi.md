@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getAllSharedLinks**](ShareApi.md#getallsharedlinks) | **GET** /share | 
-[**getSharedLink**](ShareApi.md#getsharedlink) | **GET** /share/{id} | 
+[**getSharedLinkByKey**](ShareApi.md#getsharedlinkbykey) | **GET** /share/{id} | 
 [**removeSharedLink**](ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
 
 
@@ -51,8 +51,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getSharedLink**
-> SharedLinkResponseDto getSharedLink(id)
+# **getSharedLinkByKey**
+> SharedLinkResponseDto getSharedLinkByKey(id)
 
 
 
@@ -64,10 +64,10 @@ final api_instance = ShareApi();
 final id = id_example; // String | 
 
 try {
-    final result = api_instance.getSharedLink(id);
+    final result = api_instance.getSharedLinkByKey(id);
     print(result);
 } catch (e) {
-    print('Exception when calling ShareApi->getSharedLink: $e\n');
+    print('Exception when calling ShareApi->getSharedLinkByKey: $e\n');
 }
 ```
 
@@ -93,7 +93,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **removeSharedLink**
-> SharedLinkResponseDto removeSharedLink(id)
+> String removeSharedLink(id)
 
 
 
@@ -120,7 +120,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+**String**
 
 ### Authorization
 

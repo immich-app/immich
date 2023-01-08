@@ -6,10 +6,10 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const assets: AssetResponseDto[] = [];
-	const { sharedLinkId } = params;
+	const { key } = params;
 
 	try {
-		const { data: sharedLink } = await serverApi.shareApi.getSharedLink(sharedLinkId);
+		const { data: sharedLink } = await serverApi.shareApi.getSharedLinkByKey(key);
 
 		if (sharedLink.expiresAt) {
 			const now = new Date().getTime();

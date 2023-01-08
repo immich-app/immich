@@ -14,7 +14,6 @@ export class ShareCore {
     try {
       const sharedLink = new SharedLinkEntity();
 
-      sharedLink.id = Buffer.from(crypto.randomBytes(70));
       sharedLink.key = Buffer.from(crypto.randomBytes(50));
       sharedLink.description = dto.description;
       sharedLink.userId = userId;

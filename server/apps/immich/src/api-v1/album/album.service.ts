@@ -101,7 +101,7 @@ export class AlbumService {
     const album = await this._getAlbum({ authUser, albumId });
 
     for (const sharedLink of album.sharedLinks) {
-      await this.shareCore.removeSharedLink(sharedLink.id.toString('hex'), authUser.id);
+      await this.shareCore.removeSharedLink(sharedLink.id, authUser.id);
     }
 
     await this._albumRepository.delete(album);
@@ -220,7 +220,7 @@ export class AlbumService {
         const assets = album.assets.map((asset) => asset.assetInfo);
 
         for (const sharedLinkId of sharedLinkIds) {
-          await this.shareCore.updataAssetsInSharedLink(sharedLinkId.toString('hex'), assets);
+          await this.shareCore.updataAssetsInSharedLink(sharedLinkId, assets);
         }
       }
     }

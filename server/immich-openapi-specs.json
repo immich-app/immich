@@ -499,7 +499,7 @@
     },
     "/share/{id}": {
       "get": {
-        "operationId": "getSharedLink",
+        "operationId": "getSharedLinkByKey",
         "parameters": [
           {
             "name": "id",

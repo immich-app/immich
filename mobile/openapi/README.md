@@ -115,7 +115,7 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *ShareApi* | [**getAllSharedLinks**](doc//ShareApi.md#getallsharedlinks) | **GET** /share | 
-*ShareApi* | [**getSharedLink**](doc//ShareApi.md#getsharedlink) | **GET** /share/{id} | 
+*ShareApi* | [**getSharedLinkByKey**](doc//ShareApi.md#getsharedlinkbykey) | **GET** /share/{id} | 
 *ShareApi* | [**removeSharedLink**](doc//ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 

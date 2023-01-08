@@ -22,12 +22,12 @@ void main() {
       // TODO
     });
 
-    //Future<SharedLinkResponseDto> getSharedLink(String id) async
-    test('test getSharedLink', () async {
+    //Future<SharedLinkResponseDto> getSharedLinkByKey(String id) async
+    test('test getSharedLinkByKey', () async {
       // TODO
     });
 
-    //Future<SharedLinkResponseDto> removeSharedLink(String id) async
+    //Future<String> removeSharedLink(String id) async
     test('test removeSharedLink', () async {
       // TODO
     });

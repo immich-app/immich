@@ -1,12 +1,12 @@
-import { Column, Entity, Index, ManyToMany, ManyToOne, PrimaryColumn, Unique } from 'typeorm';
+import { Column, Entity, Index, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { AlbumEntity } from './album.entity';
 import { AssetEntity } from './asset.entity';
 
 @Entity('shared_links')
 @Unique('UQ_sharedlink_key', ['key'])
 export class SharedLinkEntity {
-  @PrimaryColumn({ type: 'bytea' })
-  id!: Buffer;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({ nullable: true })
   description?: string;

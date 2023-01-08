@@ -31,7 +31,8 @@ export class ShareService {
     return id;
   }
 
-  async getSharedLinkByKey(key: string): Promise<SharedLinkEntity> {
-    return await this.shareCore.getSharedLinkByKey(key);
+  async getSharedLinkByKey(key: string): Promise<SharedLinkResponseDto> {
+    const link = await this.shareCore.getSharedLinkByKey(key);
+    return mapSharedLinkToResponseDto(link);
   }
 }

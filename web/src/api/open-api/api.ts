@@ -6318,9 +6318,9 @@ export const ShareApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getSharedLink: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getSharedLinkByKey: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getSharedLink', 'id', id)
+            assertParamExists('getSharedLinkByKey', 'id', id)
             const localVarPath = `/share/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6403,8 +6403,8 @@ export const ShareApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getSharedLink(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getSharedLink(id, options);
+        async getSharedLinkByKey(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSharedLinkByKey(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6413,7 +6413,7 @@ export const ShareApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async removeSharedLink(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+        async removeSharedLink(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.removeSharedLink(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6441,8 +6441,8 @@ export const ShareApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getSharedLink(id: string, options?: any): AxiosPromise<SharedLinkResponseDto> {
-            return localVarFp.getSharedLink(id, options).then((request) => request(axios, basePath));
+        getSharedLinkByKey(id: string, options?: any): AxiosPromise<SharedLinkResponseDto> {
+            return localVarFp.getSharedLinkByKey(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6450,7 +6450,7 @@ export const ShareApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeSharedLink(id: string, options?: any): AxiosPromise<SharedLinkResponseDto> {
+        removeSharedLink(id: string, options?: any): AxiosPromise<string> {
             return localVarFp.removeSharedLink(id, options).then((request) => request(axios, basePath));
         },
     };
@@ -6480,8 +6480,8 @@ export class ShareApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof ShareApi
      */
-    public getSharedLink(id: string, options?: AxiosRequestConfig) {
-        return ShareApiFp(this.configuration).getSharedLink(id, options).then((request) => request(this.axios, this.basePath));
+    public getSharedLinkByKey(id: string, options?: AxiosRequestConfig) {
+        return ShareApiFp(this.configuration).getSharedLinkByKey(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

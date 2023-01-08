@@ -107,8 +107,8 @@
 						<div
 							class="hover:cursor-pointer"
 							title="Go to share page"
-							on:click={() => goto(`/share/${link.id}`)}
-							on:keydown={() => goto(`/share/${link.id}`)}
+							on:click={() => goto(`/share/${link.key}`)}
+							on:keydown={() => goto(`/share/${link.key}`)}
 						>
 							<OpenInNew />
 						</div>

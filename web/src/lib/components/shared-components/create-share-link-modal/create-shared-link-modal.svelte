@@ -28,7 +28,6 @@
 
 	onMount(async () => {
 		const { data } = await api.shareApi.getAllSharedLinks();
-		console.log('My data', data);
 	});
 
 	const createAlbumSharedLink = async () => {
@@ -63,7 +62,7 @@
 	};
 
 	const buildSharedLink = (createdLink: SharedLinkResponseDto) => {
-		sharedLink = `${window.location.origin}/share/${createdLink.id}`;
+		sharedLink = `${window.location.origin}/share/${createdLink.key}`;
 	};
 
 	const handleCopy = async () => {
