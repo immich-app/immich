@@ -681,18 +681,6 @@ export class AssetService {
       throw new ForbiddenException();
     }
   }
-
-  async checkUploadAccess(sharedKey: string, assetPath: string) {
-    const sharedLink = await this.shareCore.getSharedLinkByKey(sharedKey);
-    if (!sharedLink.allowUpload) {
-      await this.backgroundTaskService.deleteFileOnDisk([
-        {
-          originalPath: assetPath,
-        } as any,
-      ]); // s
-      throw new ForbiddenException();
-    }
-  }
 }
 
 async function processETag(path: string, res: Res, headers: Record<string, string>): Promise<boolean> {
