@@ -56,6 +56,15 @@
 		sharedLinks = await getSharedLinks();
 		showEditForm = false;
 	};
+
+	const handleCopy = async (key: string) => {
+		const link = `${window.location.origin}/share/${key}`;
+		await navigator.clipboard.writeText(link);
+		notificationController.show({
+			message: 'Link copied to clipboard',
+			type: NotificationType.Info
+		});
+	};
 </script>
 
 <svelte:head>
@@ -83,7 +92,7 @@
 					{link}
 					on:delete={() => handleDeleteLink(link.id)}
 					on:edit={() => handleEditLink(link.key)}
-					on:edit-done={() => handleEditDone()}
+					on:copy={() => handleCopy(link.key)}
 				/>
 			{/each}
 		</div>
