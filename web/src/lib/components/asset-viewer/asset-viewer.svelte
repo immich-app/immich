@@ -10,12 +10,7 @@
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
-	import {
-		api,
-		AssetResponseDto,
-		AssetTypeEnum,
-		AlbumResponseDto
-	} from '@api';
+	import { api, AssetResponseDto, AssetTypeEnum, AlbumResponseDto } from '@api';
 	import {
 		notificationController,
 		NotificationType
@@ -209,9 +204,11 @@
 		addToSharedAlbum = shared;
 	};
 
-	const handleAddToNewAlbum = () => {
+	const handleAddToNewAlbum = (event: CustomEvent) => {
 		isShowAlbumPicker = false;
-		api.albumApi.createAlbum({ albumName: 'Untitled', assetIds: [asset.id] }).then((response) => {
+
+		const { albumName }: { albumName: string } = event.detail;
+		api.albumApi.createAlbum({ albumName, assetIds: [asset.id] }).then((response) => {
 			const album = response.data;
 			goto('/albums/' + album.id);
 		});

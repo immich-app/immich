@@ -78,11 +78,12 @@
 		addToSharedAlbum = shared;
 	};
 
-	const handleAddToNewAlbum = () => {
+	const handleAddToNewAlbum = (event: CustomEvent) => {
 		isShowAlbumPicker = false;
 
+		const { albumName }: { albumName: string } = event.detail;
 		const assetIds = Array.from($selectedAssets).map((asset) => asset.id);
-		api.albumApi.createAlbum({ albumName: 'Untitled', assetIds }).then((response) => {
+		api.albumApi.createAlbum({ albumName, assetIds }).then((response) => {
 			const { id, albumName } = response.data;
 
 			notificationController.show({

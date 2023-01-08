@@ -6,11 +6,26 @@
 
 	export let album: AlbumResponseDto;
 	export let variant: 'simple' | 'full' = 'full';
+	export let searchQuery: string = '';
+	let albumNameArray: string[] = ['', '', ''];
+
+	// This part of the code is responsible for splitting album name into 3 parts where part 2 is the search query
+	// It is used to highlight the search query in the album name
+	$: {
+		let { albumName } = album;
+		let findIndex = albumName.toLowerCase().indexOf(searchQuery.toLowerCase());
+		let findLength = searchQuery.length;
+		albumNameArray = [
+			albumName.slice(0, findIndex),
+			albumName.slice(findIndex, findIndex + findLength),
+			albumName.slice(findIndex + findLength)
+		];
+	}
 </script>
 
 <button
 	on:click={() => dispatcher('album')}
-	class="flex gap-4 px-6 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+	class="w-full flex gap-4 px-6 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
 >
 	<div class="h-12 w-12">
 		<img
@@ -21,7 +36,7 @@
 		/>
 	</div>
 	<div class="h-12 flex flex-col items-start justify-center">
-		<span>{album.albumName}</span>
+		<span>{albumNameArray[0]}<b>{albumNameArray[1]}</b>{albumNameArray[2]}</span>
 		<span class="flex gap-1 text-sm">
 			{#if variant === 'simple'}
 				<span
