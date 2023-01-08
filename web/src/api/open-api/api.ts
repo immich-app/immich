@@ -4137,14 +4137,11 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} key 
          * @param {any} assetData 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile: async (key: string, assetData: any, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'key' is not null or undefined
-            assertParamExists('uploadFile', 'key', key)
+        uploadFile: async (assetData: any, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetData' is not null or undefined
             assertParamExists('uploadFile', 'assetData', assetData)
             const localVarPath = `/asset/upload`;
@@ -4163,10 +4160,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (key !== undefined) {
-                localVarQueryParameter['key'] = key;
-            }
 
 
             if (assetData !== undefined) { 
@@ -4380,13 +4373,12 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} key 
          * @param {any} assetData 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadFile(key: string, assetData: any, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(key, assetData, options);
+        async uploadFile(assetData: any, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetData, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -4565,13 +4557,12 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} key 
          * @param {any} assetData 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile(key: string, assetData: any, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
-            return localVarFp.uploadFile(key, assetData, options).then((request) => request(axios, basePath));
+        uploadFile(assetData: any, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
+            return localVarFp.uploadFile(assetData, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -4785,14 +4776,13 @@ export class AssetApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} key 
      * @param {any} assetData 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public uploadFile(key: string, assetData: any, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).uploadFile(key, assetData, options).then((request) => request(this.axios, this.basePath));
+    public uploadFile(assetData: any, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).uploadFile(assetData, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

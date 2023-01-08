@@ -148,7 +148,7 @@ export class AlbumService {
     albumId: string,
   ): Promise<AddAssetsResponseDto> {
     if (authUser.isPublicUser && !authUser.isAllowUpload) {
-      this.logger.warn('Deny public user attempt to upload to album');
+      this.logger.warn('Deny public user attempt to add asset to album');
       throw new ForbiddenException('Public user is not allowed to upload');
     }
 

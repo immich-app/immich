@@ -12,6 +12,6 @@
 		on:navigate-previous={() => null}
 		on:navigate-next={() => null}
 		showNavigation={false}
-		on:close={() => goto(`/share/${data.sharedLink?.id}`)}
+		on:close={() => goto(`/share/${data.sharedLink?.key}`)}
 	/>
 {/if}

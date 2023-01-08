@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		for (const assetId of sharedLink.assets) {
 			const { data: asset } = await serverApi.assetApi.getAssetById(assetId, {
 				params: {
-					key: key
+					key
 				}
 			});
 			assets.push(asset);
@@ -33,7 +33,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		if (sharedLink.album) {
 			const { data: album } = await serverApi.albumApi.getAlbumInfo(sharedLink.album.id, {
 				params: {
-					key: sharedLink.key
+					key
 				}
 			});
 			sharedLink.album = album;

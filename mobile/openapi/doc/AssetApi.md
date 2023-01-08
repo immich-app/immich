@@ -885,7 +885,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(key, assetData)
+> AssetFileUploadResponseDto uploadFile(assetData)
 
 
 
@@ -900,11 +900,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final key = key_example; // String | 
 final assetData = BINARY_DATA_HERE; // MultipartFile | 
 
 try {
-    final result = api_instance.uploadFile(key, assetData);
+    final result = api_instance.uploadFile(assetData);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -915,7 +914,6 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **key** | **String**|  | 
  **assetData** | **MultipartFile**|  | 
 
 ### Return type

@@ -6,11 +6,11 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	try {
-		const { sharedLinkId, assetId } = params;
-		const { data: sharedLink } = await serverApi.shareApi.getSharedLink(sharedLinkId);
+		const { key, assetId } = params;
+		const { data: sharedLink } = await serverApi.shareApi.getSharedLinkByKey(key);
 		const { data: asset } = await serverApi.assetApi.getAssetById(assetId, {
 			params: {
-				key: sharedLink.key
+				key
 			}
 		});
 

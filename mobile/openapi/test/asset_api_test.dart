@@ -119,7 +119,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(String key, MultipartFile assetData) async
+    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData) async
     test('test uploadFile', () async {
       // TODO
     });

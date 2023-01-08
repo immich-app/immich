@@ -953,10 +953,8 @@ class AssetApi {
   /// Performs an HTTP 'POST /asset/upload' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] key (required):
-  ///
   /// * [MultipartFile] assetData (required):
-  Future<Response> uploadFileWithHttpInfo(String key, MultipartFile assetData,) async {
+  Future<Response> uploadFileWithHttpInfo(MultipartFile assetData,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -966,8 +964,6 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-      queryParams.addAll(_queryParams('', 'key', key));
 
     const contentTypes = <String>['multipart/form-data'];
 
@@ -995,11 +991,9 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [String] key (required):
-  ///
   /// * [MultipartFile] assetData (required):
-  Future<AssetFileUploadResponseDto?> uploadFile(String key, MultipartFile assetData,) async {
-    final response = await uploadFileWithHttpInfo(key, assetData,);
+  Future<AssetFileUploadResponseDto?> uploadFile(MultipartFile assetData,) async {
+    final response = await uploadFileWithHttpInfo(assetData,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

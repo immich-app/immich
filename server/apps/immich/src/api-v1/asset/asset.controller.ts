@@ -77,12 +77,7 @@ export class AssetController {
     @UploadedFiles() files: { assetData: Express.Multer.File[]; livePhotoData?: Express.Multer.File[] },
     @Body(ValidationPipe) createAssetDto: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
-    @Query('key') sharedKey?: string,
   ): Promise<AssetFileUploadResponseDto> {
-    if (sharedKey) {
-      await this.assetService.checkUploadAccess(sharedKey, files.assetData[0].path);
-    }
-
     const originalAssetData = files.assetData[0];
     const livePhotoAssetData = files.livePhotoData?.[0];
 

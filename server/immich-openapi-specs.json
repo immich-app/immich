@@ -558,16 +558,7 @@
     "/asset/upload": {
       "post": {
         "operationId": "uploadFile",
-        "parameters": [
-          {
-            "name": "key",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "description": "Asset Upload Information",
