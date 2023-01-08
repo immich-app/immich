@@ -34,7 +34,7 @@
 			return;
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Jpeg, '', {
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Jpeg, {
 			responseType: 'blob'
 		});
 

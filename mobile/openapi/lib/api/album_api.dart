@@ -21,10 +21,8 @@ class AlbumApi {
   ///
   /// * [String] albumId (required):
   ///
-  /// * [String] key (required):
-  ///
   /// * [AddAssetsDto] addAssetsDto (required):
-  Future<Response> addAssetsToAlbumWithHttpInfo(String albumId, String key, AddAssetsDto addAssetsDto,) async {
+  Future<Response> addAssetsToAlbumWithHttpInfo(String albumId, AddAssetsDto addAssetsDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{albumId}/assets'
       .replaceAll('{albumId}', albumId);
@@ -35,8 +33,6 @@ class AlbumApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-      queryParams.addAll(_queryParams('', 'key', key));
 
     const contentTypes = <String>['application/json'];
 
@@ -56,11 +52,9 @@ class AlbumApi {
   ///
   /// * [String] albumId (required):
   ///
-  /// * [String] key (required):
-  ///
   /// * [AddAssetsDto] addAssetsDto (required):
-  Future<AddAssetsResponseDto?> addAssetsToAlbum(String albumId, String key, AddAssetsDto addAssetsDto,) async {
-    final response = await addAssetsToAlbumWithHttpInfo(albumId, key, addAssetsDto,);
+  Future<AddAssetsResponseDto?> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto,) async {
+    final response = await addAssetsToAlbumWithHttpInfo(albumId, addAssetsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -5,4 +5,4 @@ import { JWT_STRATEGY } from '../strategies/jwt.strategy';
 import { PUBLIC_SHARE_STRATEGY } from '../strategies/public-share.strategy';
 
 @Injectable()
-export class AuthGuard extends PassportAuthGuard([JWT_STRATEGY, API_KEY_STRATEGY, PUBLIC_SHARE_STRATEGY]) {}
+export class AuthGuard extends PassportAuthGuard([PUBLIC_SHARE_STRATEGY, JWT_STRATEGY, API_KEY_STRATEGY]) {}

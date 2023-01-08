@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Request } from 'express';
-import { PublicUser } from '../modules/immich-jwt/strategies/public-share.strategy';
+import { AuthUserDto } from '../decorators/auth-user.decorator';
 
 @Injectable()
 export class RouteNotSharedGuard implements CanActivate {
@@ -8,7 +8,7 @@ export class RouteNotSharedGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const user = request.user as PublicUser;
+    const user = request.user as AuthUserDto;
 
     // Inverse logic - I know it is weird
     if (user.isPublicUser) {

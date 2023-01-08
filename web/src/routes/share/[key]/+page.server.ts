@@ -10,7 +10,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	try {
 		const { data: sharedLink } = await serverApi.shareApi.getSharedLinkByKey(key);
-
 		if (sharedLink.expiresAt) {
 			const now = new Date().getTime();
 			const expiresAt = new Date(sharedLink.expiresAt).getTime();
@@ -25,7 +24,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		for (const assetId of sharedLink.assets) {
 			const { data: asset } = await serverApi.assetApi.getAssetById(assetId, {
 				params: {
-					key: sharedLink.key
+					key: key
 				}
 			});
 			assets.push(asset);

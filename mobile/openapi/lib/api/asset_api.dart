@@ -178,9 +178,7 @@ class AssetApi {
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  ///
-  /// * [String] key:
-  Future<Response> downloadFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
+  Future<Response> downloadFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -197,9 +195,6 @@ class AssetApi {
     }
     if (isWeb != null) {
       queryParams.addAll(_queryParams('', 'isWeb', isWeb));
-    }
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
     }
 
     const contentTypes = <String>[];
@@ -223,10 +218,8 @@ class AssetApi {
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  ///
-  /// * [String] key:
-  Future<Object?> downloadFile(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
-    final response = await downloadFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, key: key, );
+  Future<Object?> downloadFile(String assetId, { bool? isThumb, bool? isWeb, }) async {
+    final response = await downloadFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -593,9 +586,7 @@ class AssetApi {
   /// * [String] assetId (required):
   ///
   /// * [ThumbnailFormat] format:
-  ///
-  /// * [String] key:
-  Future<Response> getAssetThumbnailWithHttpInfo(String assetId, { ThumbnailFormat? format, String? key, }) async {
+  Future<Response> getAssetThumbnailWithHttpInfo(String assetId, { ThumbnailFormat? format, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/thumbnail/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -609,9 +600,6 @@ class AssetApi {
 
     if (format != null) {
       queryParams.addAll(_queryParams('', 'format', format));
-    }
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
     }
 
     const contentTypes = <String>[];
@@ -633,10 +621,8 @@ class AssetApi {
   /// * [String] assetId (required):
   ///
   /// * [ThumbnailFormat] format:
-  ///
-  /// * [String] key:
-  Future<Object?> getAssetThumbnail(String assetId, { ThumbnailFormat? format, String? key, }) async {
-    final response = await getAssetThumbnailWithHttpInfo(assetId,  format: format, key: key, );
+  Future<Object?> getAssetThumbnail(String assetId, { ThumbnailFormat? format, }) async {
+    final response = await getAssetThumbnailWithHttpInfo(assetId,  format: format, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -852,9 +838,7 @@ class AssetApi {
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  ///
-  /// * [String] key:
-  Future<Response> serveFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
+  Future<Response> serveFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/file/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -871,9 +855,6 @@ class AssetApi {
     }
     if (isWeb != null) {
       queryParams.addAll(_queryParams('', 'isWeb', isWeb));
-    }
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
     }
 
     const contentTypes = <String>[];
@@ -897,10 +878,8 @@ class AssetApi {
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  ///
-  /// * [String] key:
-  Future<Object?> serveFile(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
-    final response = await serveFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, key: key, );
+  Future<Object?> serveFile(String assetId, { bool? isThumb, bool? isWeb, }) async {
+    final response = await serveFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

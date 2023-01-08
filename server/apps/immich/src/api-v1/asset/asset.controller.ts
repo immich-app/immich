@@ -97,7 +97,7 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
-    await this.assetService.checkAssetsAccess(authUser, [assetId]);
+    await this.assetService.checkAssetsAccess(authUser, [assetId], false, authUser.sharedLinkId);
     return this.assetService.downloadFile(query, assetId, res);
   }
 
@@ -126,7 +126,7 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
-    await this.assetService.checkAssetsAccess(authUser, [assetId], false, query.key);
+    await this.assetService.checkAssetsAccess(authUser, [assetId], false, authUser.sharedLinkId);
     return this.assetService.serveFile(assetId, query, res, headers);
   }
 
@@ -140,7 +140,7 @@ export class AssetController {
     @Param('assetId') assetId: string,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ): Promise<any> {
-    await this.assetService.checkAssetsAccess(authUser, [assetId], false, query.key);
+    await this.assetService.checkAssetsAccess(authUser, [assetId], false, authUser.sharedLinkId);
     return this.assetService.getAssetThumbnail(assetId, query, res, headers);
   }
 

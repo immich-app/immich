@@ -624,14 +624,6 @@
             }
           },
           {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "assetId",
             "required": true,
             "in": "path",
@@ -720,14 +712,6 @@
             }
           },
           {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "assetId",
             "required": true,
             "in": "path",
@@ -776,14 +760,6 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/ThumbnailFormat"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
             }
           }
         ],
@@ -1468,14 +1444,6 @@
             "name": "albumId",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": true,
-            "in": "query",
             "schema": {
               "type": "string"
             }

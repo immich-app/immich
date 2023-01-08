@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { AlbumEntity, SharedLinkType } from '@app/database';
@@ -21,6 +21,7 @@ import _ from 'lodash';
 
 @Injectable()
 export class AlbumService {
+  readonly logger = new Logger(AlbumService.name);
   private shareCore: ShareCore;
 
   constructor(
@@ -146,6 +147,11 @@ export class AlbumService {
     addAssetsDto: AddAssetsDto,
     albumId: string,
   ): Promise<AddAssetsResponseDto> {
+    if (authUser.isPublicUser && !authUser.isAllowUpload) {
+      this.logger.warn('Deny public user attempt to upload to album');
+      throw new ForbiddenException('Public user is not allowed to upload');
+    }
+
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     const result = await this._albumRepository.addAssets(album, addAssetsDto);
     const newAlbum = await this._getAlbum({ authUser, albumId, validateIsOwner: false });

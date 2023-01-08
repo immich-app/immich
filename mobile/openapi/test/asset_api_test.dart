@@ -36,7 +36,7 @@ void main() {
       // TODO
     });
 
-    //Future<Object> downloadFile(String assetId, { bool isThumb, bool isWeb, String key }) async
+    //Future<Object> downloadFile(String assetId, { bool isThumb, bool isWeb }) async
     test('test downloadFile', () async {
       // TODO
     });
@@ -80,7 +80,7 @@ void main() {
       // TODO
     });
 
-    //Future<Object> getAssetThumbnail(String assetId, { ThumbnailFormat format, String key }) async
+    //Future<Object> getAssetThumbnail(String assetId, { ThumbnailFormat format }) async
     test('test getAssetThumbnail', () async {
       // TODO
     });
@@ -107,7 +107,7 @@ void main() {
       // TODO
     });
 
-    //Future<Object> serveFile(String assetId, { bool isThumb, bool isWeb, String key }) async
+    //Future<Object> serveFile(String assetId, { bool isThumb, bool isWeb }) async
     test('test serveFile', () async {
       // TODO
     });

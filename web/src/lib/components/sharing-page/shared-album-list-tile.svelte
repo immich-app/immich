@@ -10,7 +10,7 @@
 			return '/no-thumbnail.png';
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Webp, '', {
+		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Webp, {
 			responseType: 'blob'
 		});
 		if (data instanceof Blob) {

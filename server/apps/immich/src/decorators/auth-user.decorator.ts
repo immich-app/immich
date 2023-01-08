@@ -6,18 +6,21 @@ export class AuthUserDto {
   id!: string;
   email!: string;
   isAdmin!: boolean;
+  isPublicUser?: boolean;
+  sharedLinkId?: string;
+  isAllowUpload?: boolean;
 }
 
 export const GetAuthUser = createParamDecorator((data, ctx: ExecutionContext): AuthUserDto => {
-  const req = ctx.switchToHttp().getRequest<{ user: UserEntity }>();
+  const req = ctx.switchToHttp().getRequest<{ user: AuthUserDto }>();
 
-  const { id, email, isAdmin } = req.user;
+  // const { id, email, isAdmin } = req.user;
 
-  const authUser: AuthUserDto = {
-    id: id.toString(),
-    email,
-    isAdmin,
-  };
+  // const authUser: AuthUserDto = {
+  //   id: id.toString(),
+  //   email,
+  //   isAdmin,
+  // };
 
-  return authUser;
+  return req.user;
 });

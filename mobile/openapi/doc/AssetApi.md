@@ -176,7 +176,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadFile**
-> Object downloadFile(assetId, isThumb, isWeb, key)
+> Object downloadFile(assetId, isThumb, isWeb)
 
 
 
@@ -194,10 +194,9 @@ final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
 final isThumb = true; // bool | 
 final isWeb = true; // bool | 
-final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadFile(assetId, isThumb, isWeb, key);
+    final result = api_instance.downloadFile(assetId, isThumb, isWeb);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->downloadFile: $e\n');
@@ -211,7 +210,6 @@ Name | Type | Description  | Notes
  **assetId** | **String**|  | 
  **isThumb** | **bool**|  | [optional] 
  **isWeb** | **bool**|  | [optional] 
- **key** | **String**|  | [optional] 
 
 ### Return type
 
@@ -554,7 +552,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetThumbnail**
-> Object getAssetThumbnail(assetId, format, key)
+> Object getAssetThumbnail(assetId, format)
 
 
 
@@ -571,10 +569,9 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
 final format = ; // ThumbnailFormat | 
-final key = key_example; // String | 
 
 try {
-    final result = api_instance.getAssetThumbnail(assetId, format, key);
+    final result = api_instance.getAssetThumbnail(assetId, format);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAssetThumbnail: $e\n');
@@ -587,7 +584,6 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetId** | **String**|  | 
  **format** | [**ThumbnailFormat**](.md)|  | [optional] 
- **key** | **String**|  | [optional] 
 
 ### Return type
 
@@ -787,7 +783,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **serveFile**
-> Object serveFile(assetId, isThumb, isWeb, key)
+> Object serveFile(assetId, isThumb, isWeb)
 
 
 
@@ -805,10 +801,9 @@ final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
 final isThumb = true; // bool | 
 final isWeb = true; // bool | 
-final key = key_example; // String | 
 
 try {
-    final result = api_instance.serveFile(assetId, isThumb, isWeb, key);
+    final result = api_instance.serveFile(assetId, isThumb, isWeb);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->serveFile: $e\n');
@@ -822,7 +817,6 @@ Name | Type | Description  | Notes
  **assetId** | **String**|  | 
  **isThumb** | **bool**|  | [optional] 
  **isWeb** | **bool**|  | [optional] 
- **key** | **String**|  | [optional] 
 
 ### Return type
 

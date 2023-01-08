@@ -17,7 +17,7 @@ void main() {
   // final instance = AlbumApi();
 
   group('tests for AlbumApi', () {
-    //Future<AddAssetsResponseDto> addAssetsToAlbum(String albumId, String key, AddAssetsDto addAssetsDto) async
+    //Future<AddAssetsResponseDto> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto) async
     test('test addAssetsToAlbum', () async {
       // TODO
     });

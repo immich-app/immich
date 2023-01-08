@@ -1,10 +1,11 @@
 import { UserEntity } from '@app/database';
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ShareService } from '../../../api-v1/share/share.service';
 import { IStrategyOptions, Strategy } from 'passport-http-header-strategy';
 import { Repository } from 'typeorm';
+import { AuthUserDto } from 'apps/immich/src/decorators/auth-user.decorator';
 
 export const PUBLIC_SHARE_STRATEGY = 'public-share';
 
@@ -12,10 +13,6 @@ const options: IStrategyOptions = {
   header: 'x-immich-share-key',
   param: 'key',
 };
-
-export class PublicUser extends UserEntity {
-  isPublicUser?: boolean;
-}
 
 @Injectable()
 export class PublicShareStrategy extends PassportStrategy(Strategy, PUBLIC_SHARE_STRATEGY) {
@@ -27,7 +24,7 @@ export class PublicShareStrategy extends PassportStrategy(Strategy, PUBLIC_SHARE
     super(options);
   }
 
-  async validate(key: string): Promise<PublicUser> {
+  async validate(key: string): Promise<AuthUserDto> {
     const validatedLink = await this.shareService.getSharedLinkByKey(key);
 
     if (validatedLink.expiresAt) {
@@ -45,9 +42,11 @@ export class PublicShareStrategy extends PassportStrategy(Strategy, PUBLIC_SHARE
       throw new UnauthorizedException('Failure to validate public share payload');
     }
 
-    let publicUser = new PublicUser();
+    let publicUser = new AuthUserDto();
     publicUser = user;
     publicUser.isPublicUser = true;
+    publicUser.sharedLinkId = validatedLink.id;
+    publicUser.isAllowUpload = validatedLink.allowUpload;
 
     return publicUser;
   }

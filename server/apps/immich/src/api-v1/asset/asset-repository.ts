@@ -60,13 +60,13 @@ export class AssetRepository implements IAssetRepository {
     @Inject(ITagRepository) private _tagRepository: ITagRepository,
   ) {}
 
-  async getSharePermission(assetId: string, sharedKey: string): Promise<boolean> {
+  async getSharePermission(assetId: string, sharedLinkId: string): Promise<boolean> {
     // Check for shared key match key in each SharedLinkEntity
     const count = await this.assetRepository.count({
       where: {
         id: assetId,
         sharedLinks: {
-          key: Buffer.from(sharedKey, 'hex'),
+          id: sharedLinkId,
         },
       },
       relations: {
