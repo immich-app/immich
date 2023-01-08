@@ -497,12 +497,12 @@
         ]
       }
     },
-    "/share/{id}": {
+    "/share/{key}": {
       "get": {
         "operationId": "getSharedLinkByKey",
         "parameters": [
           {
-            "name": "id",
+            "name": "key",
             "required": true,
             "in": "path",
             "schema": {
@@ -525,7 +525,9 @@
         "tags": [
           "share"
         ]
-      },
+      }
+    },
+    "/share/{id}": {
       "delete": {
         "operationId": "removeSharedLink",
         "parameters": [

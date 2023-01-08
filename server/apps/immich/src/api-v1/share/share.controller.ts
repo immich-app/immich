@@ -15,9 +15,9 @@ export class ShareController {
     return this.shareService.findAll(authUser);
   }
 
-  @Get(':id')
-  getSharedLinkByKey(@Param('id') id: string): Promise<SharedLinkResponseDto> {
-    return this.shareService.getSharedLinkByKey(id);
+  @Get(':key')
+  getSharedLinkByKey(@Param('key') key: string): Promise<SharedLinkResponseDto> {
+    return this.shareService.getSharedLinkByKey(key);
   }
 
   @Authenticated()
