@@ -19,7 +19,6 @@
 			allJobsStatus = data;
 		}, 1000);
 	});
-	1;
 
 	onDestroy(() => {
 		clearInterval(setIntervalHandler);
