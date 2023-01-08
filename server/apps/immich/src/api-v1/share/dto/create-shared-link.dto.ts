@@ -6,6 +6,6 @@ export class CreateSharedLinkDto {
   expiredAt?: string;
   sharedType!: SharedLinkType;
   assets!: AssetEntity[];
-  album!: AlbumEntity | undefined;
+  album?: AlbumEntity;
   allowUpload?: boolean;
 }
