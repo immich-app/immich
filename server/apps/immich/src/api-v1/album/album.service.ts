@@ -231,11 +231,4 @@ export class AlbumService {
       }
     }
   }
-
-  async checkPublicUploadAccess(sharedKey: string) {
-    const sharedLink = await this.shareCore.getSharedLinkByKey(sharedKey);
-    if (!sharedLink.allowUpload) {
-      throw new ForbiddenException();
-    }
-  }
 }
