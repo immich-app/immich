@@ -13,6 +13,7 @@
 
 	export let shareType: SharedLinkType;
 	export let album: AlbumResponseDto | undefined;
+	export let editingLink: SharedLinkResponseDto | undefined = undefined;
 
 	let isLoading = false;
 	let isShowSharedLink = false;
@@ -20,14 +21,21 @@
 	let isAllowUpload = false;
 	let sharedLink = '';
 	let description = '';
+
+	const dispatch = createEventDispatcher();
+
 	const expiredDateOption: ImmichDropDownOption = {
 		default: 'Never',
 		options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days']
 	};
-	const dispatch = createEventDispatcher();
 
-	onMount(async () => {
-		const { data } = await api.shareApi.getAllSharedLinks();
+	onMount(() => {
+		if (editingLink) {
+			if (editingLink.description) {
+				description = editingLink.description;
+			}
+			isAllowUpload = editingLink.allowUpload;
+		}
 	});
 
 	const createAlbumSharedLink = async () => {
@@ -95,19 +103,62 @@
 				return 0;
 		}
 	};
+
+	const handleEditLink = async () => {
+		if (editingLink) {
+			try {
+				const expirationTime = getExpirationTimeInMillisecond();
+				const currentTime = new Date().getTime();
+				const expirationDate = expirationTime
+					? new Date(currentTime + expirationTime).toISOString()
+					: undefined;
+
+				await api.shareApi.editSharedLink(editingLink.id, {
+					description: description,
+					expiredAt: expirationDate,
+					allowUpload: isAllowUpload
+				});
+
+				notificationController.show({
+					type: NotificationType.Info,
+					message: 'Edited'
+				});
+
+				dispatch('close');
+			} catch (e) {
+				console.error('[handleEditLink]', e);
+				notificationController.show({
+					type: NotificationType.Error,
+					message: 'Failed to edit shared link'
+				});
+			}
+		}
+	};
 </script>
 
 <BaseModal on:close={() => dispatch('close')}>
 	<svelte:fragment slot="title">
 		<span class="flex gap-2 place-items-center">
 			<Link size={24} />
-			<p class="font-medium text-immich-fg dark:text-immich-dark-fg">Create link to share</p>
+			{#if editingLink}
+				<p class="font-medium text-immich-fg dark:text-immich-dark-fg">Edit link</p>
+			{:else}
+				<p class="font-medium text-immich-fg dark:text-immich-dark-fg">Create link to share</p>
+			{/if}
 		</span>
 	</svelte:fragment>
 
 	<section class="mx-6 mb-6">
 		{#if shareType == SharedLinkType.Album}
-			<div>Let anyone with the link see photos and people in this album.</div>
+			{#if !editingLink}
+				<div>Let anyone with the link see photos and people in this album.</div>
+			{:else}
+				<div class="text-sm">
+					Public album | <span class="text-immich-primary dark:text-immich-dark-primary"
+						>{editingLink.album?.albumName}</span
+					>
+				</div>
+			{/if}
 		{/if}
 
 		<div class="mt-6 mb-2">
@@ -126,7 +177,11 @@
 				<SettingSwitch bind:checked={isAllowUpload} title={'Allow public user to upload'} />
 
 				<div class="text-sm mt-4">
-					<p class="my-2 immich-form-label">Expire after</p>
+					{#if editingLink}
+						<p class="my-2 immich-form-label">Set new expiration time</p>
+					{:else}
+						<p class="my-2 immich-form-label">Expire after</p>
+					{/if}
 					<DropdownButton options={expiredDateOption} bind:selected={expirationTime} />
 				</div>
 			</div>
@@ -137,14 +192,25 @@
 
 	<section class="m-6">
 		{#if !isShowSharedLink}
-			<div class="flex justify-end">
-				<button
-					on:click={createAlbumSharedLink}
-					class="text-white bg-immich-primary px-4 py-2 rounded-lg text-sm transition-colors hover:bg-immich-primary/75"
-				>
-					Create Link
-				</button>
-			</div>
+			{#if editingLink}
+				<div class="flex justify-end">
+					<button
+						on:click={handleEditLink}
+						class="text-white dark:text-black bg-immich-primary px-4 py-2 rounded-lg text-sm transition-colors hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:hover:bg-immich-dark-primary/75"
+					>
+						Confirm
+					</button>
+				</div>
+			{:else}
+				<div class="flex justify-end">
+					<button
+						on:click={createAlbumSharedLink}
+						class="text-white dark:text-black bg-immich-primary px-4 py-2 rounded-lg text-sm transition-colors hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:hover:bg-immich-dark-primary/75"
+					>
+						Create Link
+					</button>
+				</div>
+			{/if}
 		{/if}
 
 		{#if isShowSharedLink}

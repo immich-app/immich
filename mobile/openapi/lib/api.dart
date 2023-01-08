@@ -74,6 +74,7 @@ part 'model/delete_asset_response_dto.dart';
 part 'model/delete_asset_status.dart';
 part 'model/device_info_response_dto.dart';
 part 'model/device_type_enum.dart';
+part 'model/edit_shared_link_dto.dart';
 part 'model/exif_response_dto.dart';
 part 'model/get_asset_by_time_bucket_dto.dart';
 part 'model/get_asset_count_by_time_bucket_dto.dart';

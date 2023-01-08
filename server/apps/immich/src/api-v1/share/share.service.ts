@@ -1,6 +1,7 @@
 import { SharedLinkEntity } from '@app/database';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
+import { EditSharedLinkDto } from './dto/edit-shared-link.dto';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
 import { ShareCore } from './share.core';
 import { ISharedLinkRepository } from './shared-link.repository';
@@ -33,6 +34,12 @@ export class ShareService {
 
   async getSharedLinkByKey(key: string): Promise<SharedLinkResponseDto> {
     const link = await this.shareCore.getSharedLinkByKey(key);
+    return mapSharedLinkToResponseDto(link);
+  }
+
+  async edit(id: string, authUser: AuthUserDto, dto: EditSharedLinkDto) {
+    const link = await this.shareCore.updateSharedLink(id, authUser.id, dto);
+
     return mapSharedLinkToResponseDto(link);
   }
 }

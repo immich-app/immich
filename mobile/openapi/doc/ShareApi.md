@@ -9,10 +9,54 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**editSharedLink**](ShareApi.md#editsharedlink) | **PATCH** /share/{id} | 
 [**getAllSharedLinks**](ShareApi.md#getallsharedlinks) | **GET** /share | 
-[**getSharedLinkByKey**](ShareApi.md#getsharedlinkbykey) | **GET** /share/{id} | 
+[**getSharedLinkByKey**](ShareApi.md#getsharedlinkbykey) | **GET** /share/{key} | 
 [**removeSharedLink**](ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
 
+
+# **editSharedLink**
+> SharedLinkResponseDto editSharedLink(id, editSharedLinkDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = ShareApi();
+final id = id_example; // String | 
+final editSharedLinkDto = EditSharedLinkDto(); // EditSharedLinkDto | 
+
+try {
+    final result = api_instance.editSharedLink(id, editSharedLinkDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling ShareApi->editSharedLink: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
+ **editSharedLinkDto** | [**EditSharedLinkDto**](EditSharedLinkDto.md)|  | 
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllSharedLinks**
 > List<SharedLinkResponseDto> getAllSharedLinks()
@@ -52,7 +96,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getSharedLinkByKey**
-> SharedLinkResponseDto getSharedLinkByKey(id)
+> SharedLinkResponseDto getSharedLinkByKey(key)
 
 
 
@@ -61,10 +105,10 @@ No authorization required
 import 'package:openapi/api.dart';
 
 final api_instance = ShareApi();
-final id = id_example; // String | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.getSharedLinkByKey(id);
+    final result = api_instance.getSharedLinkByKey(key);
     print(result);
 } catch (e) {
     print('Exception when calling ShareApi->getSharedLinkByKey: $e\n');
@@ -75,7 +119,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
+ **key** | **String**|  | 
 
 ### Return type
 

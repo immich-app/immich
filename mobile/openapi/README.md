@@ -114,8 +114,9 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
+*ShareApi* | [**editSharedLink**](doc//ShareApi.md#editsharedlink) | **PATCH** /share/{id} | 
 *ShareApi* | [**getAllSharedLinks**](doc//ShareApi.md#getallsharedlinks) | **GET** /share | 
-*ShareApi* | [**getSharedLinkByKey**](doc//ShareApi.md#getsharedlinkbykey) | **GET** /share/{id} | 
+*ShareApi* | [**getSharedLinkByKey**](doc//ShareApi.md#getsharedlinkbykey) | **GET** /share/{key} | 
 *ShareApi* | [**removeSharedLink**](doc//ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
@@ -174,6 +175,7 @@ Class | Method | HTTP request | Description
  - [DeleteAssetStatus](doc//DeleteAssetStatus.md)
  - [DeviceInfoResponseDto](doc//DeviceInfoResponseDto.md)
  - [DeviceTypeEnum](doc//DeviceTypeEnum.md)
+ - [EditSharedLinkDto](doc//EditSharedLinkDto.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)

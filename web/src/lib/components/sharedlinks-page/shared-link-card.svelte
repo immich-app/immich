@@ -3,6 +3,7 @@
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import OpenInNew from 'svelte-material-icons/OpenInNew.svelte';
 	import Delete from 'svelte-material-icons/TrashCanOutline.svelte';
+	import CircleEditOutline from 'svelte-material-icons/CircleEditOutline.svelte';
 	import * as luxon from 'luxon';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import { createEventDispatcher } from 'svelte';
@@ -133,6 +134,7 @@
 	<div class="flex-auto flex flex-col place-content-center place-items-end text-right">
 		<div class="flex">
 			<CircleIconButton logo={Delete} on:click={() => dispatch('delete')} />
+			<CircleIconButton logo={CircleEditOutline} on:click={() => dispatch('edit')} />
 		</div>
 	</div>
 </div>

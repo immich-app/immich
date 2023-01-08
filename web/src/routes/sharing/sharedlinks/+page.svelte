@@ -10,12 +10,16 @@
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { onMount } from 'svelte';
+	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 
 	let sharedLinks: SharedLinkResponseDto[] = [];
+	let showEditForm = false;
+	let editSharedLink: SharedLinkResponseDto;
 
 	onMount(async () => {
 		sharedLinks = await getSharedLinks();
 	});
+
 	const getSharedLinks = async () => {
 		const { data: sharedLinks } = await api.shareApi.getAllSharedLinks();
 
@@ -41,6 +45,17 @@
 			}
 		}
 	};
+
+	const handleEditLink = async (shareLinkKey: string) => {
+		const { data } = await api.shareApi.getSharedLinkByKey(shareLinkKey);
+		editSharedLink = data;
+		showEditForm = true;
+	};
+
+	const handleEditDone = async () => {
+		sharedLinks = await getSharedLinks();
+		showEditForm = false;
+	};
 </script>
 
 <svelte:head>
@@ -64,8 +79,22 @@
 	{:else}
 		<div class="flex flex-col w-[50%] m-auto">
 			{#each sharedLinks as link (link.id)}
-				<SharedLinkCard {link} on:delete={() => handleDeleteLink(link.id)} />
+				<SharedLinkCard
+					{link}
+					on:delete={() => handleDeleteLink(link.id)}
+					on:edit={() => handleEditLink(link.key)}
+					on:edit-done={() => handleEditDone()}
+				/>
 			{/each}
 		</div>
 	{/if}
 </section>
+
+{#if showEditForm}
+	<CreateSharedLinkModal
+		editingLink={editSharedLink}
+		shareType={editSharedLink.type}
+		album={editSharedLink.album}
+		on:close={handleEditDone}
+	/>
+{/if}

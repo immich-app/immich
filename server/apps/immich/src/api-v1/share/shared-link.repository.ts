@@ -28,6 +28,9 @@ export class SharedLinkRepository implements ISharedLinkRepository {
         userId: userId,
         id: id,
       },
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 
@@ -37,6 +40,9 @@ export class SharedLinkRepository implements ISharedLinkRepository {
         userId: userId,
       },
       relations: ['assets', 'album'],
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 
@@ -50,6 +56,9 @@ export class SharedLinkRepository implements ISharedLinkRepository {
         id: id,
       },
       relations: ['assets', 'album'],
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 
@@ -59,6 +68,9 @@ export class SharedLinkRepository implements ISharedLinkRepository {
         key: Buffer.from(key, 'hex'),
       },
       relations: ['assets', 'album'],
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 

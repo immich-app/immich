@@ -1,9 +1,10 @@
-import { Controller, Get, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Delete, Patch, Body, ValidationPipe } from '@nestjs/common';
 import { ShareService } from './share.service';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
+import { EditSharedLinkDto } from './dto/edit-shared-link.dto';
 
 @ApiTags('share')
 @Controller('share')
@@ -24,5 +25,15 @@ export class ShareController {
   @Delete(':id')
   removeSharedLink(@Param('id') id: string, @GetAuthUser() authUser: AuthUserDto): Promise<string> {
     return this.shareService.remove(id, authUser.id);
+  }
+
+  @Authenticated()
+  @Patch(':id')
+  editSharedLink(
+    @Param('id') id: string,
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(new ValidationPipe()) dto: EditSharedLinkDto,
+  ): Promise<SharedLinkResponseDto> {
+    return this.shareService.edit(id, authUser, dto);
   }
 }

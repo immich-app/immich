@@ -555,6 +555,44 @@
         "tags": [
           "share"
         ]
+      },
+      "patch": {
+        "operationId": "editSharedLink",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditSharedLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
       }
     },
     "/asset/upload": {
@@ -3147,6 +3185,20 @@
           "assets",
           "allowUpload"
         ]
+      },
+      "EditSharedLinkDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "expiredAt": {
+            "type": "string"
+          },
+          "allowUpload": {
+            "type": "boolean"
+          }
+        }
       },
       "AssetFileUploadDto": {
         "type": "object",
