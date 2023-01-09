@@ -117,7 +117,8 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *ShareApi* | [**editSharedLink**](doc//ShareApi.md#editsharedlink) | **PATCH** /share/{id} | 
 *ShareApi* | [**getAllSharedLinks**](doc//ShareApi.md#getallsharedlinks) | **GET** /share | 
-*ShareApi* | [**getSharedLinkByKey**](doc//ShareApi.md#getsharedlinkbykey) | **GET** /share/{key} | 
+*ShareApi* | [**getMySharedLink**](doc//ShareApi.md#getmysharedlink) | **GET** /share/me | 
+*ShareApi* | [**getSharedLinkById**](doc//ShareApi.md#getsharedlinkbyid) | **GET** /share/{id} | 
 *ShareApi* | [**removeSharedLink**](doc//ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 

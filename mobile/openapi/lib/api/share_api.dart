@@ -112,14 +112,55 @@ class ShareApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /share/{key}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /share/me' operation and returns the [Response].
+  Future<Response> getMySharedLinkWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/share/me';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<SharedLinkResponseDto?> getMySharedLink() async {
+    final response = await getMySharedLinkWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /share/{id}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] key (required):
-  Future<Response> getSharedLinkByKeyWithHttpInfo(String key,) async {
+  /// * [String] id (required):
+  Future<Response> getSharedLinkByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/share/{key}'
-      .replaceAll('{key}', key);
+    final path = r'/share/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -144,9 +185,9 @@ class ShareApi {
 
   /// Parameters:
   ///
-  /// * [String] key (required):
-  Future<SharedLinkResponseDto?> getSharedLinkByKey(String key,) async {
-    final response = await getSharedLinkByKeyWithHttpInfo(key,);
+  /// * [String] id (required):
+  Future<SharedLinkResponseDto?> getSharedLinkById(String id,) async {
+    final response = await getSharedLinkByIdWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
