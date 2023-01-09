@@ -1,4 +1,3 @@
-import { SharedLinkEntity } from '@app/database';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { EditSharedLinkDto } from './dto/edit-shared-link.dto';

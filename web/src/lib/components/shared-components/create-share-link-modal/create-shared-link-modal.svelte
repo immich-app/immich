@@ -21,7 +21,7 @@
 	let isAllowUpload = false;
 	let sharedLink = '';
 	let description = '';
-
+	let shouldChangeExpirationTime = false;
 	const dispatch = createEventDispatcher();
 
 	const expiredDateOption: ImmichDropDownOption = {
@@ -109,14 +109,19 @@
 			try {
 				const expirationTime = getExpirationTimeInMillisecond();
 				const currentTime = new Date().getTime();
-				const expirationDate = expirationTime
+				let expirationDate = expirationTime
 					? new Date(currentTime + expirationTime).toISOString()
 					: undefined;
+
+				if (expirationTime === 0) {
+					expirationDate = undefined;
+				}
 
 				await api.shareApi.editSharedLink(editingLink.id, {
 					description: description,
 					expiredAt: expirationDate,
-					allowUpload: isAllowUpload
+					allowUpload: isAllowUpload,
+					isEditExpireTime: shouldChangeExpirationTime
 				});
 
 				notificationController.show({
@@ -178,11 +183,21 @@
 
 				<div class="text-sm mt-4">
 					{#if editingLink}
-						<p class="my-2 immich-form-label">Set new expiration time</p>
+						<p class="my-2 immich-form-label">
+							<SettingSwitch
+								bind:checked={shouldChangeExpirationTime}
+								title={'Change expiration time'}
+							/>
+						</p>
 					{:else}
 						<p class="my-2 immich-form-label">Expire after</p>
 					{/if}
-					<DropdownButton options={expiredDateOption} bind:selected={expirationTime} />
+
+					<DropdownButton
+						options={expiredDateOption}
+						bind:selected={expirationTime}
+						disabled={editingLink && !shouldChangeExpirationTime}
+					/>
 				</div>
 			</div>
 		</div>

@@ -3197,7 +3197,8 @@
             "type": "string"
           },
           "expiresAt": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "assets": {
             "type": "array",
@@ -3218,6 +3219,7 @@
           "userId",
           "key",
           "createdAt",
+          "expiresAt",
           "assets",
           "allowUpload"
         ]
@@ -3232,6 +3234,9 @@
             "type": "string"
           },
           "allowUpload": {
+            "type": "boolean"
+          },
+          "isEditExpireTime": {
             "type": "boolean"
           }
         }

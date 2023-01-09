@@ -19,7 +19,7 @@ export class ShareCore {
       sharedLink.description = dto.description;
       sharedLink.userId = userId;
       sharedLink.createdAt = new Date().toISOString();
-      sharedLink.expiresAt = dto.expiredAt;
+      sharedLink.expiresAt = dto.expiredAt ?? null;
       sharedLink.type = dto.sharedType;
       sharedLink.assets = dto.assets;
       sharedLink.album = dto.album;
@@ -83,7 +83,12 @@ export class ShareCore {
 
     link.description = dto.description ?? link.description;
     link.allowUpload = dto.allowUpload ?? link.allowUpload;
-    link.expiresAt = dto.expiredAt ?? link.expiresAt;
+
+    if (dto.isEditExpireTime && dto.expiredAt) {
+      link.expiresAt = dto.expiredAt;
+    } else if (dto.isEditExpireTime && !dto.expiredAt) {
+      link.expiresAt = null;
+    }
 
     return await this.sharedLinkRepository.save(link);
   }

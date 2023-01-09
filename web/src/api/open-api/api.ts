@@ -986,6 +986,12 @@ export interface EditSharedLinkDto {
      * @memberof EditSharedLinkDto
      */
     'allowUpload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof EditSharedLinkDto
+     */
+    'isEditExpireTime'?: boolean;
 }
 /**
  * 
@@ -1593,7 +1599,7 @@ export interface SharedLinkResponseDto {
      * @type {string}
      * @memberof SharedLinkResponseDto
      */
-    'expiresAt'?: string;
+    'expiresAt': string | null;
     /**
      * 
      * @type {Array<string>}

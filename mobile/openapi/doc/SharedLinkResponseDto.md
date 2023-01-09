@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **userId** | **String** |  | 
 **key** | **String** |  | 
 **createdAt** | **String** |  | 
-**expiresAt** | **String** |  | [optional] 
+**expiresAt** | **String** |  | 
 **assets** | **List<String>** |  | [default to const []]
 **album** | [**AlbumResponseDto**](AlbumResponseDto.md) |  | [optional] 
 **allowUpload** | **bool** |  | 

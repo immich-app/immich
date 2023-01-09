@@ -16,6 +16,7 @@ class EditSharedLinkDto {
     this.description,
     this.expiredAt,
     this.allowUpload,
+    this.isEditExpireTime,
   });
 
   ///
@@ -42,21 +43,31 @@ class EditSharedLinkDto {
   ///
   bool? allowUpload;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isEditExpireTime;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is EditSharedLinkDto &&
      other.description == description &&
      other.expiredAt == expiredAt &&
-     other.allowUpload == allowUpload;
+     other.allowUpload == allowUpload &&
+     other.isEditExpireTime == isEditExpireTime;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (description == null ? 0 : description!.hashCode) +
     (expiredAt == null ? 0 : expiredAt!.hashCode) +
-    (allowUpload == null ? 0 : allowUpload!.hashCode);
+    (allowUpload == null ? 0 : allowUpload!.hashCode) +
+    (isEditExpireTime == null ? 0 : isEditExpireTime!.hashCode);
 
   @override
-  String toString() => 'EditSharedLinkDto[description=$description, expiredAt=$expiredAt, allowUpload=$allowUpload]';
+  String toString() => 'EditSharedLinkDto[description=$description, expiredAt=$expiredAt, allowUpload=$allowUpload, isEditExpireTime=$isEditExpireTime]';
 
   Map<String, dynamic> toJson() {
     final _json = <String, dynamic>{};
@@ -74,6 +85,11 @@ class EditSharedLinkDto {
       _json[r'allowUpload'] = allowUpload;
     } else {
       _json[r'allowUpload'] = null;
+    }
+    if (isEditExpireTime != null) {
+      _json[r'isEditExpireTime'] = isEditExpireTime;
+    } else {
+      _json[r'isEditExpireTime'] = null;
     }
     return _json;
   }
@@ -100,6 +116,7 @@ class EditSharedLinkDto {
         description: mapValueOfType<String>(json, r'description'),
         expiredAt: mapValueOfType<String>(json, r'expiredAt'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
+        isEditExpireTime: mapValueOfType<bool>(json, r'isEditExpireTime'),
       );
     }
     return null;

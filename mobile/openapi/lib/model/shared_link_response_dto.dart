@@ -19,7 +19,7 @@ class SharedLinkResponseDto {
     required this.userId,
     required this.key,
     required this.createdAt,
-    this.expiresAt,
+    required this.expiresAt,
     this.assets = const [],
     this.album,
     required this.allowUpload,
@@ -43,12 +43,6 @@ class SharedLinkResponseDto {
 
   String createdAt;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? expiresAt;
 
   List<String> assets;
@@ -205,6 +199,7 @@ class SharedLinkResponseDto {
     'userId',
     'key',
     'createdAt',
+    'expiresAt',
     'assets',
     'allowUpload',
   };

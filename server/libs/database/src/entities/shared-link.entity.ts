@@ -25,7 +25,7 @@ export class SharedLinkEntity {
   createdAt!: string;
 
   @Column({ type: 'timestamptz', nullable: true })
-  expiresAt?: string;
+  expiresAt!: string | null;
 
   @Column({ type: 'boolean', default: false })
   allowUpload!: boolean;

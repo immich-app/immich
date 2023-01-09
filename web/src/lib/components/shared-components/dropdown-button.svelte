@@ -10,6 +10,7 @@
 
 	export let options: ImmichDropDownOption;
 	export let selected: string;
+	export let disabled = false;
 
 	onMount(() => {
 		selected = options.default;
@@ -21,9 +22,10 @@
 
 <div id="immich-dropdown" class="relative">
 	<button
+		{disabled}
 		on:click={toggle}
 		aria-expanded={isOpen}
-		class="bg-gray-200 w-full flex p-2 rounded-lg dark:bg-gray-600 place-items-center justify-between"
+		class="bg-gray-200 w-full flex p-2 rounded-lg dark:bg-gray-600 place-items-center justify-between disabled:cursor-not-allowed dark:disabled:bg-gray-300 disabled:bg-gray-600 "
 	>
 		<div>
 			{selected}
@@ -54,7 +56,7 @@
 						selected = option;
 						isOpen = false;
 					}}
-					class="bg-gray-200 dark:bg-gray-500 dark:hover:bg-gray-700 w-full flex p-2 hover:bg-gray-300 transition-all"
+					class="bg-gray-200 dark:bg-gray-500 dark:hover:bg-gray-700 w-full flex p-2 hover:bg-gray-300 transition-all "
 				>
 					{option}
 				</button>
