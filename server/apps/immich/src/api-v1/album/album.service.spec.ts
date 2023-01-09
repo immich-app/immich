@@ -136,6 +136,8 @@ describe('Album service', () => {
       getById: jest.fn(),
       getByKey: jest.fn(),
       save: jest.fn(),
+      hasAssetAccess: jest.fn(),
+      getByIdAndUserId: jest.fn(),
     };
 
     downloadServiceMock = {

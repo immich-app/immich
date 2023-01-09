@@ -2,10 +2,10 @@ import { UserEntity } from '@app/database';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ShareService } from '../../../api-v1/share/share.service';
 import { IStrategyOptions, Strategy } from 'passport-http-header-strategy';
 import { Repository } from 'typeorm';
-import { AuthUserDto } from 'apps/immich/src/decorators/auth-user.decorator';
+import { ShareService } from '../../../api-v1/share/share.service';
+import { AuthUserDto } from '../../../decorators/auth-user.decorator';
 
 export const PUBLIC_SHARE_STRATEGY = 'public-share';
 

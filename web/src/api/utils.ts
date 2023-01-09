@@ -22,6 +22,15 @@ export const oauth = {
 		const search = location.search;
 		return search.includes('code=') || search.includes('error=');
 	},
+	isAutoLaunchDisabled: (location: Location) => {
+		const values = ['autoLaunch=0', 'password=1', 'password=true'];
+		for (const value of values) {
+			if (location.search.includes(value)) {
+				return true;
+			}
+		}
+		return false;
+	},
 	getConfig: (location: Location) => {
 		const redirectUri = location.href.split('?')[0];
 		console.log(`OAuth Redirect URI: ${redirectUri}`);

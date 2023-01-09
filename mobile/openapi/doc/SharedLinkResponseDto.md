@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 **key** | **String** |  | 
 **createdAt** | **String** |  | 
 **expiresAt** | **String** |  | 
-**assets** | **List<String>** |  | [default to const []]
+**assets** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
 **album** | [**AlbumResponseDto**](AlbumResponseDto.md) |  | [optional] 
 **allowUpload** | **bool** |  | 
 

@@ -130,7 +130,6 @@ describe('AssetService', () => {
       getAssetWithNoSmartInfo: jest.fn(),
       getExistingAssets: jest.fn(),
       countByIdAndUser: jest.fn(),
-      getSharePermission: jest.fn(),
     };
 
     downloadServiceMock = {
@@ -144,6 +143,8 @@ describe('AssetService', () => {
       getByKey: jest.fn(),
       remove: jest.fn(),
       save: jest.fn(),
+      hasAssetAccess: jest.fn(),
+      getByIdAndUserId: jest.fn(),
     };
 
     sui = new AssetService(

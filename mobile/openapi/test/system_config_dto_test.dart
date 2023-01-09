@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigPasswordLoginDto passwordLogin
+    test('to test the property `passwordLogin`', () async {
+      // TODO
+    });
+
     // SystemConfigStorageTemplateDto storageTemplate
     test('to test the property `storageTemplate`', () async {
       // TODO

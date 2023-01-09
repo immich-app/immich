@@ -210,9 +210,11 @@
 		addToSharedAlbum = shared;
 	};
 
-	const handleAddToNewAlbum = () => {
+	const handleAddToNewAlbum = (event: CustomEvent) => {
 		isShowAlbumPicker = false;
-		api.albumApi.createAlbum({ albumName: 'Untitled', assetIds: [asset.id] }).then((response) => {
+
+		const { albumName }: { albumName: string } = event.detail;
+		api.albumApi.createAlbum({ albumName, assetIds: [asset.id] }).then((response) => {
 			const album = response.data;
 			goto('/albums/' + album.id);
 		});

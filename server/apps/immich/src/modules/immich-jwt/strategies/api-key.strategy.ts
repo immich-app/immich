@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { AuthUserDto } from 'apps/immich/src/decorators/auth-user.decorator';
 import { IStrategyOptions, Strategy } from 'passport-http-header-strategy';
 import { APIKeyService } from '../../../api-v1/api-key/api-key.service';
+import { AuthUserDto } from '../../../decorators/auth-user.decorator';
 
 export const API_KEY_STRATEGY = 'api-key';
 

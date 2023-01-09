@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')
-export class SystemConfigEntity<T = string> {
+export class SystemConfigEntity<T = string | boolean> {
   @PrimaryColumn()
   key!: SystemConfigKey;
 
@@ -23,10 +23,12 @@ export enum SystemConfigKey {
   OAUTH_CLIENT_ID = 'oauth.clientId',
   OAUTH_CLIENT_SECRET = 'oauth.clientSecret',
   OAUTH_SCOPE = 'oauth.scope',
+  OAUTH_AUTO_LAUNCH = 'oauth.autoLaunch',
   OAUTH_BUTTON_TEXT = 'oauth.buttonText',
   OAUTH_AUTO_REGISTER = 'oauth.autoRegister',
   OAUTH_MOBILE_OVERRIDE_ENABLED = 'oauth.mobileOverrideEnabled',
   OAUTH_MOBILE_REDIRECT_URI = 'oauth.mobileRedirectUri',
+  PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
   STORAGE_TEMPLATE = 'storageTemplate.template',
 }
 
@@ -46,8 +48,12 @@ export interface SystemConfig {
     scope: string;
     buttonText: string;
     autoRegister: boolean;
+    autoLaunch: boolean;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
+  };
+  passwordLogin: {
+    enabled: boolean;
   };
   storageTemplate: {
     template: string;

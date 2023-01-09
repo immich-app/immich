@@ -7,6 +7,7 @@
 	import { api, SystemConfigOAuthDto } from '@api';
 	import _ from 'lodash';
 	import { fade } from 'svelte/transition';
+	import ConfirmDisableLogin from '../confirm-disable-login.svelte';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	import SettingSwitch from '../setting-switch.svelte';
@@ -43,26 +44,43 @@
 		});
 	}
 
+	let isConfirmOpen = false;
+	let handleConfirm: (value: boolean) => void;
+
+	const openConfirmModal = () => {
+		return new Promise((resolve) => {
+			handleConfirm = (value: boolean) => {
+				isConfirmOpen = false;
+				resolve(value);
+			};
+			isConfirmOpen = true;
+		});
+	};
+
 	async function saveSetting() {
 		try {
-			const { data: currentConfig } = await api.systemConfigApi.getConfig();
+			const { data: current } = await api.systemConfigApi.getConfig();
+
+			if (!current.passwordLogin.enabled && current.oauth.enabled && !oauthConfig.enabled) {
+				const confirmed = await openConfirmModal();
+				if (!confirmed) {
+					return;
+				}
+			}
 
 			if (!oauthConfig.mobileOverrideEnabled) {
 				oauthConfig.mobileRedirectUri = '';
 			}
 
-			const result = await api.systemConfigApi.updateConfig({
-				...currentConfig,
+			const { data: updated } = await api.systemConfigApi.updateConfig({
+				...current,
 				oauth: oauthConfig
 			});
 
-			oauthConfig = { ...result.data.oauth };
-			savedConfig = { ...result.data.oauth };
+			oauthConfig = { ...updated.oauth };
+			savedConfig = { ...updated.oauth };
 
-			notificationController.show({
-				message: 'OAuth settings saved',
-				type: NotificationType.Info
-			});
+			notificationController.show({ message: 'OAuth settings saved', type: NotificationType.Info });
 		} catch (error) {
 			handleError(error, 'Unable to save OAuth settings');
 		}
@@ -79,6 +97,13 @@
 		});
 	}
 </script>
+
+{#if isConfirmOpen}
+	<ConfirmDisableLogin
+		on:cancel={() => handleConfirm(false)}
+		on:confirm={() => handleConfirm(true)}
+	/>
+{/if}
 
 <div class="mt-2">
 	{#await getConfigs() then}
@@ -145,6 +170,13 @@
 					subtitle="Automatically register new users after signing in with OAuth"
 					bind:checked={oauthConfig.autoRegister}
 					disabled={!oauthConfig.enabled}
+				/>
+
+				<SettingSwitch
+					title="AUTO LAUNCH"
+					subtitle="Start the OAuth login flow automatically upon navigating to the login page"
+					disabled={!oauthConfig.enabled}
+					bind:checked={oauthConfig.autoLaunch}
 				/>
 
 				<SettingSwitch

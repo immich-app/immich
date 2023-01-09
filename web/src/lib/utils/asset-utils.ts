@@ -4,7 +4,6 @@ import {
 	NotificationType
 } from '$lib/components/shared-components/notification/notification';
 import { downloadAssets } from '$lib/stores/download';
-import { get } from 'svelte/store';
 
 export const addAssetsToAlbum = async (
 	albumId: string,
@@ -34,7 +33,7 @@ export async function bulkDownload(
 	const assetIds = assets.map((asset) => asset.id);
 
 	try {
-		let skip = 0;
+		// let skip = 0;
 		let count = 0;
 		let done = false;
 
@@ -68,7 +67,7 @@ export async function bulkDownload(
 			const isNotComplete = headers['x-immich-archive-complete'] === 'false';
 			const fileCount = Number(headers['x-immich-archive-file-count']) || 0;
 			if (isNotComplete && fileCount > 0) {
-				skip += fileCount;
+				// skip += fileCount;
 			} else {
 				onDone();
 				done = true;

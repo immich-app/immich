@@ -45,7 +45,7 @@ class SharedLinkResponseDto {
 
   String? expiresAt;
 
-  List<String> assets;
+  List<AssetResponseDto> assets;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -140,9 +140,7 @@ class SharedLinkResponseDto {
         key: mapValueOfType<String>(json, r'key')!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         expiresAt: mapValueOfType<String>(json, r'expiresAt'),
-        assets: json[r'assets'] is List
-            ? (json[r'assets'] as List).cast<String>()
-            : const [],
+        assets: AssetResponseDto.listFromJson(json[r'assets'])!,
         album: AlbumResponseDto.fromJson(json[r'album']),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
       );

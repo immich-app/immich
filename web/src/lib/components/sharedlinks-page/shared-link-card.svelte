@@ -21,7 +21,7 @@
 		if (link.album?.albumThumbnailAssetId) {
 			assetId = link.album.albumThumbnailAssetId;
 		} else if (link.assets.length > 0) {
-			assetId = link.assets[0];
+			assetId = link.assets[0].id;
 		}
 
 		const { data } = await api.assetApi.getAssetById(assetId);

@@ -318,6 +318,8 @@ class ApiClient {
           return SystemConfigFFmpegDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
+        case 'SystemConfigPasswordLoginDto':
+          return SystemConfigPasswordLoginDto.fromJson(value);
         case 'SystemConfigStorageTemplateDto':
           return SystemConfigStorageTemplateDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':

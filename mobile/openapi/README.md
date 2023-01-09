@@ -206,6 +206,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
+ - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
  - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
