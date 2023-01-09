@@ -268,6 +268,12 @@ export class AssetService {
     for (const assetId of dto.assetIds) {
       const asset = await this._assetRepository.getById(assetId);
       assetToDownload.push(asset);
+
+      // Get live photo asset
+      if (asset.livePhotoVideoId) {
+        const livePhotoAsset = await this._assetRepository.getById(asset.livePhotoVideoId);
+        assetToDownload.push(livePhotoAsset);
+      }
     }
 
     const now = new Date().toISOString();

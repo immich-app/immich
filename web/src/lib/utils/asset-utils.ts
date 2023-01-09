@@ -25,7 +25,12 @@ export const addAssetsToAlbum = async (
 			return dto;
 		});
 
-export async function bulkDownload(assets: AssetResponseDto[], onDone: () => void) {
+export async function bulkDownload(
+	fileName: string,
+	assets: AssetResponseDto[],
+	onDone: () => void,
+	key?: string
+) {
 	const assetIds = assets.map((asset) => asset.id);
 
 	try {
@@ -36,7 +41,7 @@ export async function bulkDownload(assets: AssetResponseDto[], onDone: () => voi
 		while (!done) {
 			count++;
 
-			const fileName = 'immich' + `${count === 1 ? '' : count}.zip`;
+			const downloadFileName = fileName + `${count === 1 ? '' : count}.zip`;
 			downloadAssets.set({ filename: 0 });
 
 			let total = 0;
@@ -44,6 +49,7 @@ export async function bulkDownload(assets: AssetResponseDto[], onDone: () => voi
 			const { data, status, headers } = await api.assetApi.downloadFiles(
 				{ assetIds },
 				{
+					params: { key },
 					responseType: 'blob',
 					onDownloadProgress: function (progressEvent) {
 						const request = this as XMLHttpRequest;
@@ -76,7 +82,7 @@ export async function bulkDownload(assets: AssetResponseDto[], onDone: () => voi
 				const fileUrl = URL.createObjectURL(data);
 				const anchor = document.createElement('a');
 				anchor.href = fileUrl;
-				anchor.download = fileName;
+				anchor.download = downloadFileName;
 
 				document.body.appendChild(anchor);
 				anchor.click();

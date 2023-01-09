@@ -28,7 +28,6 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum, bulkDownload } from '$lib/utils/asset-utils';
-	import { downloadAssets } from '$lib/stores/download';
 
 	export let data: PageData;
 
@@ -110,7 +109,7 @@
 	};
 
 	const handleDownloadFiles = async () => {
-		await bulkDownload(Array.from($selectedAssets), () => {
+		await bulkDownload('immich', Array.from($selectedAssets), () => {
 			assetInteractionStore.clearMultiselect();
 		});
 	};

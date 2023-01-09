@@ -31,6 +31,8 @@
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import ThumbnailSelection from './thumbnail-selection.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
+	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
+
 	import {
 		notificationController,
 		NotificationType
@@ -40,6 +42,7 @@
 	import CreateSharedLinkModal from '../shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 	import ThemeButton from '../shared-components/theme-button.svelte';
 	import { openFileUploadDialog } from '$lib/utils/file-uploader';
+	import { bulkDownload } from '$lib/utils/asset-utils';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -433,6 +436,18 @@
 		isShowShareUserSelection = false;
 		isShowShareLinkModal = true;
 	};
+
+	const handleDownloadSelectedAssets = async () => {
+		await bulkDownload(
+      album.albumName,
+			Array.from(multiSelectAsset),
+			() => {
+				isMultiSelectionMode = false;
+				clearMultiSelectAssetAssetHandler();
+			},
+			sharedLink?.key
+		);
+	};
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
@@ -449,6 +464,11 @@
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
+				<CircleIconButton
+					title="Download"
+					on:click={handleDownloadSelectedAssets}
+					logo={CloudDownloadOutline}
+				/>
 				{#if isOwned}
 					<CircleIconButton
 						title="Remove from album"
