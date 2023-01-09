@@ -6,7 +6,7 @@
 
 	export let album: AlbumResponseDto;
 	export let variant: 'simple' | 'full' = 'full';
-	export let searchQuery: string = '';
+	export let searchQuery = '';
 	let albumNameArray: string[] = ['', '', ''];
 
 	// This part of the code is responsible for splitting album name into 3 parts where part 2 is the search query
