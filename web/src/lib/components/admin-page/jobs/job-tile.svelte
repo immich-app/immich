@@ -8,6 +8,7 @@
 	export let jobStatus: boolean;
 	export let waitingJobCount: number;
 	export let activeJobCount: number;
+
 	const dispatch = createEventDispatcher();
 </script>
 
@@ -36,8 +37,20 @@
 			>
 				<tr class="text-center flex place-items-center w-full h-[60px]">
 					<td class="text-sm px-2 w-1/3 text-ellipsis">{jobStatus ? 'Active' : 'Idle'}</td>
-					<td class="text-sm px-2 w-1/3 text-ellipsis">{activeJobCount}</td>
-					<td class="text-sm px-2 w-1/3 text-ellipsis">{waitingJobCount}</td>
+					<td class="flex justify-center text-sm px-2 w-1/3 text-ellipsis">
+						{#if activeJobCount !== undefined}
+							{activeJobCount}
+						{:else}
+							<LoadingSpinner />
+						{/if}
+					</td>
+					<td class="flex justify-center text-sm px-2 w-1/3 text-ellipsis">
+						{#if waitingJobCount !== undefined}
+							{waitingJobCount}
+						{:else}
+							<LoadingSpinner />
+						{/if}
+					</td>
 				</tr>
 			</tbody>
 		</table>
