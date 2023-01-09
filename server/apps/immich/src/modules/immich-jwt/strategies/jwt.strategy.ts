@@ -1,13 +1,13 @@
+import { UserEntity } from '@app/database';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExtractJwt, Strategy, StrategyOptions } from 'passport-jwt';
 import { Repository } from 'typeorm';
 import { JwtPayloadDto } from '../../../api-v1/auth/dto/jwt-payload.dto';
-import { UserEntity } from '@app/database';
 import { jwtSecret } from '../../../constants/jwt.constant';
+import { AuthUserDto } from '../../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../immich-jwt.service';
-import { AuthUserDto } from 'apps/immich/src/decorators/auth-user.decorator';
 
 export const JWT_STRATEGY = 'jwt';
 

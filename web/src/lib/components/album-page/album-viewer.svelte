@@ -439,7 +439,7 @@
 
 	const handleDownloadSelectedAssets = async () => {
 		await bulkDownload(
-      album.albumName,
+			album.albumName,
 			Array.from(multiSelectAsset),
 			() => {
 				isMultiSelectionMode = false;

@@ -3936,20 +3936,24 @@
         "type": "object",
         "properties": {
           "enabled": {
-            "type": "boolean",
-            "readOnly": true
+            "type": "boolean"
+          },
+          "passwordLoginEnabled": {
+            "type": "boolean"
           },
           "url": {
-            "type": "string",
-            "readOnly": true
+            "type": "string"
           },
           "buttonText": {
-            "type": "string",
-            "readOnly": true
+            "type": "string"
+          },
+          "autoLaunch": {
+            "type": "boolean"
           }
         },
         "required": [
-          "enabled"
+          "enabled",
+          "passwordLoginEnabled"
         ]
       },
       "OAuthCallbackDto": {
@@ -4334,6 +4338,9 @@
           "autoRegister": {
             "type": "boolean"
           },
+          "autoLaunch": {
+            "type": "boolean"
+          },
           "mobileOverrideEnabled": {
             "type": "boolean"
           },
@@ -4349,8 +4356,20 @@
           "scope",
           "buttonText",
           "autoRegister",
+          "autoLaunch",
           "mobileOverrideEnabled",
           "mobileRedirectUri"
+        ]
+      },
+      "SystemConfigPasswordLoginDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ]
       },
       "SystemConfigStorageTemplateDto": {
@@ -4373,6 +4392,9 @@
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
+          "passwordLogin": {
+            "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           }
@@ -4380,6 +4402,7 @@
         "required": [
           "ffmpeg",
           "oauth",
+          "passwordLogin",
           "storageTemplate"
         ]
       },

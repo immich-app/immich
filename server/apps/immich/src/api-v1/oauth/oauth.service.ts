@@ -39,19 +39,24 @@ export class OAuthService {
   }
 
   public async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    const { enabled, scope, buttonText } = this.config.oauth;
-    const redirectUri = this.normalize(dto.redirectUri);
+    const response = {
+      enabled: this.config.oauth.enabled,
+      passwordLoginEnabled: this.config.passwordLogin.enabled,
+    };
 
-    if (!enabled) {
-      return { enabled: false };
+    if (!response.enabled) {
+      return response;
     }
 
+    const { scope, buttonText, autoLaunch } = this.config.oauth;
+    const redirectUri = this.normalize(dto.redirectUri);
     const url = (await this.getClient()).authorizationUrl({
       redirect_uri: redirectUri,
       scope,
       state: generators.state(),
     });
-    return { enabled: true, buttonText, url };
+
+    return { ...response, buttonText, url, autoLaunch };
   }
 
   public async login(dto: OAuthCallbackDto): Promise<LoginResponseDto> {

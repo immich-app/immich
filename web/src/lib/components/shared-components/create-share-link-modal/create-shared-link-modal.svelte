@@ -15,7 +15,6 @@
 	export let album: AlbumResponseDto | undefined;
 	export let editingLink: SharedLinkResponseDto | undefined = undefined;
 
-	let isLoading = false;
 	let isShowSharedLink = false;
 	let expirationTime = '';
 	let isAllowUpload = false;
@@ -40,7 +39,6 @@
 
 	const createAlbumSharedLink = async () => {
 		if (album) {
-			isLoading = true;
 			try {
 				const expirationTime = getExpirationTimeInMillisecond();
 				const currentTime = new Date().getTime();
@@ -56,7 +54,6 @@
 				});
 
 				buildSharedLink(data);
-				isLoading = false;
 				isShowSharedLink = true;
 			} catch (e) {
 				console.error('[createAlbumSharedLink] Error: ', e);
@@ -64,7 +61,6 @@
 					type: NotificationType.Error,
 					message: 'Failed to create shared link'
 				});
-				isLoading = false;
 			}
 		}
 	};

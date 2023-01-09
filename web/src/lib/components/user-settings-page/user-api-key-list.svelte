@@ -7,7 +7,7 @@
 	import { handleError } from '../../utils/handle-error';
 	import APIKeyForm from '../forms/api-key-form.svelte';
 	import APIKeySecret from '../forms/api-key-secret.svelte';
-	import DeleteConfirmDialogue from '../shared-components/delete-confirm-dialogue.svelte';
+	import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
 	import {
 		notificationController,
 		NotificationType
@@ -114,7 +114,7 @@
 {/if}
 
 {#if deleteKey}
-	<DeleteConfirmDialogue
+	<ConfirmDialogue
 		prompt="Are you sure you want to delete this API Key?"
 		on:confirm={() => handleDelete()}
 		on:cancel={() => (deleteKey = null)}

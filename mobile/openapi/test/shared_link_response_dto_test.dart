@@ -51,7 +51,7 @@ void main() {
       // TODO
     });
 
-    // List<String> assets (default value: const [])
+    // List<AssetResponseDto> assets (default value: const [])
     test('to test the property `assets`', () async {
       // TODO
     });

@@ -32,6 +32,9 @@ export class SystemConfigOAuthDto {
   autoRegister!: boolean;
 
   @IsBoolean()
+  autoLaunch!: boolean;
+
+  @IsBoolean()
   mobileOverrideEnabled!: boolean;
 
   @ValidateIf(isOverrideEnabled)

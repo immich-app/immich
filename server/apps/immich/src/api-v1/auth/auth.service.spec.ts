@@ -1,6 +1,8 @@
 import { UserEntity } from '@app/database';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { SystemConfig } from '@app/database/entities/system-config.entity';
+import { ImmichConfigService } from '@app/immich-config';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { OAuthService } from '../oauth/oauth.service';
@@ -14,6 +16,19 @@ const fixtures = {
     email: 'test@immich.com',
     password: 'password',
   },
+};
+
+const config = {
+  enabled: {
+    passwordLogin: {
+      enabled: true,
+    },
+  } as SystemConfig,
+  disabled: {
+    passwordLogin: {
+      enabled: false,
+    },
+  } as SystemConfig,
 };
 
 const CLIENT_IP = '127.0.0.1';
@@ -35,6 +50,7 @@ describe('AuthService', () => {
   let sut: AuthService;
   let userRepositoryMock: jest.Mocked<IUserRepository>;
   let immichJwtServiceMock: jest.Mocked<ImmichJwtService>;
+  let immichConfigServiceMock: jest.Mocked<ImmichConfigService>;
   let oauthServiceMock: jest.Mocked<OAuthService>;
   let compare: jest.Mock;
 
@@ -71,14 +87,40 @@ describe('AuthService', () => {
       getLogoutEndpoint: jest.fn(),
     } as unknown as jest.Mocked<OAuthService>;
 
-    sut = new AuthService(oauthServiceMock, immichJwtServiceMock, userRepositoryMock);
+    immichConfigServiceMock = {
+      config$: { subscribe: jest.fn() },
+    } as unknown as jest.Mocked<ImmichConfigService>;
+
+    sut = new AuthService(
+      oauthServiceMock,
+      immichJwtServiceMock,
+      userRepositoryMock,
+      immichConfigServiceMock,
+      config.enabled,
+    );
   });
 
   it('should be defined', () => {
     expect(sut).toBeDefined();
   });
 
+  it('should subscribe to config changes', async () => {
+    expect(immichConfigServiceMock.config$.subscribe).toHaveBeenCalled();
+  });
+
   describe('login', () => {
+    it('should throw an error if password login is disabled', async () => {
+      sut = new AuthService(
+        oauthServiceMock,
+        immichJwtServiceMock,
+        userRepositoryMock,
+        immichConfigServiceMock,
+        config.disabled,
+      );
+
+      await expect(sut.login(fixtures.login, CLIENT_IP)).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
     it('should check the user exists', async () => {
       userRepositoryMock.getByEmail.mockResolvedValue(null);
       await expect(sut.login(fixtures.login, CLIENT_IP)).rejects.toBeInstanceOf(BadRequestException);
@@ -170,7 +212,7 @@ describe('AuthService', () => {
     it('should return the default redirect', async () => {
       await expect(sut.logout(AuthType.PASSWORD)).resolves.toEqual({
         successful: true,
-        redirectUri: '/auth/login',
+        redirectUri: '/auth/login?autoLaunch=0',
       });
       expect(oauthServiceMock.getLogoutEndpoint).not.toHaveBeenCalled();
     });

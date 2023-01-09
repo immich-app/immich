@@ -20,6 +20,8 @@ import { LoginResponseDto } from './response-dto/login-response.dto';
 import { LogoutResponseDto } from './response-dto/logout-response.dto';
 import { OAuthService } from '../oauth/oauth.service';
 import { UserCore } from '../user/user.core';
+import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
+import { SystemConfig } from '@app/database/entities/system-config.entity';
 
 @Injectable()
 export class AuthService {
@@ -30,11 +32,18 @@ export class AuthService {
     private oauthService: OAuthService,
     private immichJwtService: ImmichJwtService,
     @Inject(IUserRepository) userRepository: IUserRepository,
+    private configService: ImmichConfigService,
+    @Inject(INITIAL_SYSTEM_CONFIG) private config: SystemConfig,
   ) {
     this.userCore = new UserCore(userRepository);
+    this.configService.config$.subscribe((config) => (this.config = config));
   }
 
   public async login(loginCredential: LoginCredentialDto, clientIp: string): Promise<LoginResponseDto> {
+    if (!this.config.passwordLogin.enabled) {
+      throw new UnauthorizedException('Password login has been disabled');
+    }
+
     let user = await this.userCore.getByEmail(loginCredential.email, true);
 
     if (user) {
@@ -60,7 +69,7 @@ export class AuthService {
       }
     }
 
-    return { successful: true, redirectUri: '/auth/login' };
+    return { successful: true, redirectUri: '/auth/login?autoLaunch=0' };
   }
 
   public async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
