@@ -140,7 +140,7 @@ describe('AssetService', () => {
     sharedLinkRepositoryMock = {
       create: jest.fn(),
       get: jest.fn(),
-      getbyId: jest.fn(),
+      getById: jest.fn(),
       getByKey: jest.fn(),
       remove: jest.fn(),
       save: jest.fn(),

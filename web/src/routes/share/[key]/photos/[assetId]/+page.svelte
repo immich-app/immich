@@ -5,13 +5,13 @@
 	export let data: PageData;
 </script>
 
-{#if data.asset && data.sharedLink}
+{#if data.asset && data.key}
 	<AssetViewer
 		asset={data.asset}
-		publicSharedKey={data.sharedLink.key}
+		publicSharedKey={data.key}
 		on:navigate-previous={() => null}
 		on:navigate-next={() => null}
 		showNavigation={false}
-		on:close={() => goto(`/share/${data.sharedLink?.key}`)}
+		on:close={() => goto(`/share/${data.key}`)}
 	/>
 {/if}

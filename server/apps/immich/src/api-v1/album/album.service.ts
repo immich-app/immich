@@ -137,8 +137,6 @@ export class AlbumService {
       throw new BadRequestException('Some assets were not found in the album');
     }
 
-    await this.updateAssetInSharedLinks(newAlbum);
-
     return mapAlbum(newAlbum);
   }
 
@@ -155,7 +153,6 @@ export class AlbumService {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     const result = await this._albumRepository.addAssets(album, addAssetsDto);
     const newAlbum = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-    await this.updateAssetInSharedLinks(newAlbum);
 
     return {
       ...result,
@@ -211,24 +208,10 @@ export class AlbumService {
       expiredAt: dto.expiredAt,
       allowUpload: dto.allowUpload,
       album: album,
-      assets: album.assets?.map((asset) => asset.assetInfo) || [],
+      assets: [],
       description: dto.description,
     });
 
     return mapSharedLinkToResponseDto(sharedLink);
-  }
-
-  async updateAssetInSharedLinks(album: AlbumEntity) {
-    // Update asset in shared links
-    if (album.sharedLinks.length > 0) {
-      const sharedLinkIds = album.sharedLinks.map((link) => link.id);
-      if (album.assets && album.assets.length > 0) {
-        const assets = album.assets.map((asset) => asset.assetInfo);
-
-        for (const sharedLinkId of sharedLinkIds) {
-          await this.shareCore.updataAssetsInSharedLink(sharedLinkId, assets);
-        }
-      }
-    }
   }
 }

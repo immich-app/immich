@@ -674,12 +674,11 @@ export class AssetService {
     return this._assetRepository.getAssetCountByUserId(authUser.id);
   }
 
-  async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false, sharedLinkId?: string) {
+  async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
     for (const assetId of assetIds) {
       // Step 1: Check if asset is part of a public shared
-      if (sharedLinkId) {
-        const canAccess = await this._assetRepository.getSharePermission(assetId, sharedLinkId);
-
+      if (authUser.sharedLinkId) {
+        const canAccess = await this.shareCore.hasAssetAccess(authUser.sharedLinkId, assetId);
         if (!canAccess) {
           throw new ForbiddenException();
         }

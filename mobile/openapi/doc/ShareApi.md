@@ -11,7 +11,8 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**editSharedLink**](ShareApi.md#editsharedlink) | **PATCH** /share/{id} | 
 [**getAllSharedLinks**](ShareApi.md#getallsharedlinks) | **GET** /share | 
-[**getSharedLinkByKey**](ShareApi.md#getsharedlinkbykey) | **GET** /share/{key} | 
+[**getMySharedLink**](ShareApi.md#getmysharedlink) | **GET** /share/me | 
+[**getSharedLinkById**](ShareApi.md#getsharedlinkbyid) | **GET** /share/{id} | 
 [**removeSharedLink**](ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
 
 
@@ -95,8 +96,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getSharedLinkByKey**
-> SharedLinkResponseDto getSharedLinkByKey(key)
+# **getMySharedLink**
+> SharedLinkResponseDto getMySharedLink()
 
 
 
@@ -105,13 +106,50 @@ No authorization required
 import 'package:openapi/api.dart';
 
 final api_instance = ShareApi();
-final key = key_example; // String | 
 
 try {
-    final result = api_instance.getSharedLinkByKey(key);
+    final result = api_instance.getMySharedLink();
     print(result);
 } catch (e) {
-    print('Exception when calling ShareApi->getSharedLinkByKey: $e\n');
+    print('Exception when calling ShareApi->getMySharedLink: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getSharedLinkById**
+> SharedLinkResponseDto getSharedLinkById(id)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = ShareApi();
+final id = id_example; // String | 
+
+try {
+    final result = api_instance.getSharedLinkById(id);
+    print(result);
+} catch (e) {
+    print('Exception when calling ShareApi->getSharedLinkById: $e\n');
 }
 ```
 
@@ -119,7 +157,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **key** | **String**|  | 
+ **id** | **String**|  | 
 
 ### Return type
 

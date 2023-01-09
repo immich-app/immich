@@ -133,7 +133,7 @@ describe('Album service', () => {
       create: jest.fn(),
       remove: jest.fn(),
       get: jest.fn(),
-      getbyId: jest.fn(),
+      getById: jest.fn(),
       getByKey: jest.fn(),
       save: jest.fn(),
     };

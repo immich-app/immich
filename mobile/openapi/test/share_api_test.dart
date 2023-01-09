@@ -27,8 +27,13 @@ void main() {
       // TODO
     });
 
-    //Future<SharedLinkResponseDto> getSharedLinkByKey(String key) async
-    test('test getSharedLinkByKey', () async {
+    //Future<SharedLinkResponseDto> getMySharedLink() async
+    test('test getMySharedLink', () async {
+      // TODO
+    });
+
+    //Future<SharedLinkResponseDto> getSharedLinkById(String id) async
+    test('test getSharedLinkById', () async {
       // TODO
     });
 

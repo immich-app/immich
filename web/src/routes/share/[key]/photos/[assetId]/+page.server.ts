@@ -7,20 +7,14 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ params }) => {
 	try {
 		const { key, assetId } = params;
-		const { data: sharedLink } = await serverApi.shareApi.getSharedLinkByKey(key);
 		const { data: asset } = await serverApi.assetApi.getAssetById(assetId, {
-			params: {
-				key
-			}
+			params: { key }
 		});
 
 		if (!asset) {
 			return error(404, 'Asset not found');
 		}
-		return {
-			asset,
-			sharedLink
-		};
+		return { asset, key };
 	} catch (e) {
 		console.log('Error', e);
 	}

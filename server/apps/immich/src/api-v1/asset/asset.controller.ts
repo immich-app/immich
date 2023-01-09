@@ -93,7 +93,7 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
-    await this.assetService.checkAssetsAccess(authUser, [assetId], false, authUser.sharedLinkId);
+    await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.downloadFile(query, assetId, res);
   }
 
@@ -104,7 +104,7 @@ export class AssetController {
     @Response({ passthrough: true }) res: Res,
     @Body(new ValidationPipe()) dto: DownloadFilesDto,
   ): Promise<any> {
-    await this.assetService.checkAssetsAccess(authUser, [...dto.assetIds], false, authUser.sharedLinkId);
+    await this.assetService.checkAssetsAccess(authUser, [...dto.assetIds]);
     const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadFiles(dto);
     res.attachment(fileName);
     res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
@@ -138,7 +138,7 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
-    await this.assetService.checkAssetsAccess(authUser, [assetId], false, authUser.sharedLinkId);
+    await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.serveFile(assetId, query, res, headers);
   }
 
@@ -152,7 +152,7 @@ export class AssetController {
     @Param('assetId') assetId: string,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ): Promise<any> {
-    await this.assetService.checkAssetsAccess(authUser, [assetId], false, authUser.sharedLinkId);
+    await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.getAssetThumbnail(assetId, query, res, headers);
   }
 

@@ -1,10 +1,10 @@
-import { Controller, Get, Param, Delete, Patch, Body, ValidationPipe } from '@nestjs/common';
-import { ShareService } from './share.service';
-import { Authenticated } from '../../decorators/authenticated.decorator';
-import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
+import { Body, Controller, Delete, Get, Param, Patch, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
+import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { EditSharedLinkDto } from './dto/edit-shared-link.dto';
+import { SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
+import { ShareService } from './share.service';
 
 @ApiTags('share')
 @Controller('share')
@@ -13,12 +13,19 @@ export class ShareController {
   @Authenticated()
   @Get()
   getAllSharedLinks(@GetAuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
-    return this.shareService.findAll(authUser);
+    return this.shareService.getAll(authUser);
   }
 
-  @Get(':key')
-  getSharedLinkByKey(@Param('key') key: string): Promise<SharedLinkResponseDto> {
-    return this.shareService.getSharedLinkByKey(key);
+  @Authenticated({ isShared: true })
+  @Get('me')
+  getMySharedLink(@GetAuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
+    return this.shareService.getMine(authUser);
+  }
+
+  @Authenticated()
+  @Get(':id')
+  getSharedLinkById(@Param('id') id: string): Promise<SharedLinkResponseDto> {
+    return this.shareService.getById(id);
   }
 
   @Authenticated()
