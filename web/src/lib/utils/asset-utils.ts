@@ -42,7 +42,7 @@ export async function bulkDownload(
 			count++;
 
 			const downloadFileName = fileName + `${count === 1 ? '' : count}.zip`;
-			downloadAssets.set({ filename: 0 });
+			downloadAssets.set({ [downloadFileName]: 0 });
 
 			let total = 0;
 
@@ -59,7 +59,7 @@ export async function bulkDownload(
 
 						if (total) {
 							const current = progressEvent.loaded;
-							downloadAssets.set({ filename: Math.floor((current / total) * 100) });
+							downloadAssets.set({ [downloadFileName]: Math.floor((current / total) * 100) });
 						}
 					}
 				}
