@@ -17,6 +17,7 @@
 	} from '$lib/stores/asset-interaction.store';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
+	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
@@ -26,7 +27,7 @@
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { assetStore } from '$lib/stores/assets.store';
-	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+	import { addAssetsToAlbum, bulkDownload } from '$lib/utils/asset-utils';
 
 	export let data: PageData;
 
@@ -106,6 +107,12 @@
 			assetInteractionStore.clearMultiselect();
 		});
 	};
+
+	const handleDownloadFiles = async () => {
+		await bulkDownload('immich', Array.from($selectedAssets), () => {
+			assetInteractionStore.clearMultiselect();
+		});
+	};
 </script>
 
 <svelte:head>
@@ -125,6 +132,11 @@
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
+				<CircleIconButton
+					title="Download"
+					logo={CloudDownloadOutline}
+					on:click={handleDownloadFiles}
+				/>
 				<CircleIconButton title="Add" logo={Plus} on:click={handleShowMenu} />
 				<CircleIconButton
 					title="Delete"

@@ -1,7 +1,7 @@
 import { AlbumEntity, AssetAlbumEntity, UserAlbumEntity } from '@app/database';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository, SelectQueryBuilder, DataSource, Brackets } from 'typeorm';
+import { In, Repository, SelectQueryBuilder, DataSource, Brackets, Not, IsNull } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -14,6 +14,7 @@ import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 export interface IAlbumRepository {
   create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
   getList(ownerId: string, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]>;
+  getPublicSharingList(ownerId: string): Promise<AlbumEntity[]>;
   get(albumId: string): Promise<AlbumEntity | undefined>;
   delete(album: AlbumEntity): Promise<void>;
   addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity>;
@@ -42,6 +43,21 @@ export class AlbumRepository implements IAlbumRepository {
 
     private dataSource: DataSource,
   ) {}
+
+  async getPublicSharingList(ownerId: string): Promise<AlbumEntity[]> {
+    return this.albumRepository.find({
+      relations: {
+        sharedLinks: true,
+        assets: true,
+      },
+      where: {
+        ownerId,
+        sharedLinks: {
+          id: Not(IsNull()),
+        },
+      },
+    });
+  }
 
   async getCountByUserId(userId: string): Promise<AlbumCountResponseDto> {
     const ownedAlbums = await this.albumRepository.find({ where: { ownerId: userId }, relations: ['sharedUsers'] });
@@ -161,6 +177,9 @@ export class AlbumRepository implements IAlbumRepository {
       .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
       .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC');
 
+    // Get information of shared links in albums
+    query = query.leftJoinAndSelect('album.sharedLinks', 'sharedLink');
+
     const albums = await query.getMany();
 
     albums.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
@@ -203,6 +222,7 @@ export class AlbumRepository implements IAlbumRepository {
       .leftJoinAndSelect('album.assets', 'assets')
       .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
       .leftJoinAndSelect('assetInfo.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('album.sharedLinks', 'sharedLinks')
       .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC')
       .getOne();
 
