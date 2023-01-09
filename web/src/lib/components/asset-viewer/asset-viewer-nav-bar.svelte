@@ -23,7 +23,7 @@
 	export let showMotionPlayButton: boolean;
 	export let isMotionPhotoPlaying = false;
 
-	const isOwner = asset.ownerId === $page.data.user.id;
+	const isOwner = asset.ownerId === $page.data.user?.id;
 
 	const dispatch = createEventDispatcher();
 
@@ -94,12 +94,15 @@
 				title="Favorite"
 			/>
 		{/if}
-		<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
-		<CircleIconButton
-			logo={DotsVertical}
-			on:click={(event) => showOptionsMenu(event)}
-			title="More"
-		/>
+
+		{#if isOwner}
+			<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+			<CircleIconButton
+				logo={DotsVertical}
+				on:click={(event) => showOptionsMenu(event)}
+				title="More"
+			/>
+		{/if}
 	</div>
 </div>
 

@@ -30,6 +30,7 @@ doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
 doc/CreateAlbumDto.md
+doc/CreateAlbumShareLinkDto.md
 doc/CreateProfileImageResponseDto.md
 doc/CreateTagDto.md
 doc/CreateUserDto.md
@@ -41,6 +42,8 @@ doc/DeleteAssetStatus.md
 doc/DeviceInfoApi.md
 doc/DeviceInfoResponseDto.md
 doc/DeviceTypeEnum.md
+doc/DownloadFilesDto.md
+doc/EditSharedLinkDto.md
 doc/ExifResponseDto.md
 doc/GetAssetByTimeBucketDto.md
 doc/GetAssetCountByTimeBucketDto.md
@@ -64,6 +67,9 @@ doc/ServerInfoResponseDto.md
 doc/ServerPingResponse.md
 doc/ServerStatsResponseDto.md
 doc/ServerVersionReponseDto.md
+doc/ShareApi.md
+doc/SharedLinkResponseDto.md
+doc/SharedLinkType.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
 doc/SystemConfigApi.md
@@ -97,6 +103,7 @@ lib/api/device_info_api.dart
 lib/api/job_api.dart
 lib/api/o_auth_api.dart
 lib/api/server_info_api.dart
+lib/api/share_api.dart
 lib/api/system_config_api.dart
 lib/api/tag_api.dart
 lib/api/user_api.dart
@@ -131,6 +138,7 @@ lib/model/check_duplicate_asset_response_dto.dart
 lib/model/check_existing_assets_dto.dart
 lib/model/check_existing_assets_response_dto.dart
 lib/model/create_album_dto.dart
+lib/model/create_album_share_link_dto.dart
 lib/model/create_profile_image_response_dto.dart
 lib/model/create_tag_dto.dart
 lib/model/create_user_dto.dart
@@ -141,6 +149,8 @@ lib/model/delete_asset_response_dto.dart
 lib/model/delete_asset_status.dart
 lib/model/device_info_response_dto.dart
 lib/model/device_type_enum.dart
+lib/model/download_files_dto.dart
+lib/model/edit_shared_link_dto.dart
 lib/model/exif_response_dto.dart
 lib/model/get_asset_by_time_bucket_dto.dart
 lib/model/get_asset_count_by_time_bucket_dto.dart
@@ -161,6 +171,8 @@ lib/model/server_info_response_dto.dart
 lib/model/server_ping_response.dart
 lib/model/server_stats_response_dto.dart
 lib/model/server_version_reponse_dto.dart
+lib/model/shared_link_response_dto.dart
+lib/model/shared_link_type.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
 lib/model/system_config_dto.dart
@@ -209,6 +221,7 @@ test/check_duplicate_asset_response_dto_test.dart
 test/check_existing_assets_dto_test.dart
 test/check_existing_assets_response_dto_test.dart
 test/create_album_dto_test.dart
+test/create_album_share_link_dto_test.dart
 test/create_profile_image_response_dto_test.dart
 test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
@@ -220,6 +233,8 @@ test/delete_asset_status_test.dart
 test/device_info_api_test.dart
 test/device_info_response_dto_test.dart
 test/device_type_enum_test.dart
+test/download_files_dto_test.dart
+test/edit_shared_link_dto_test.dart
 test/exif_response_dto_test.dart
 test/get_asset_by_time_bucket_dto_test.dart
 test/get_asset_count_by_time_bucket_dto_test.dart
@@ -243,6 +258,9 @@ test/server_info_response_dto_test.dart
 test/server_ping_response_test.dart
 test/server_stats_response_dto_test.dart
 test/server_version_reponse_dto_test.dart
+test/share_api_test.dart
+test/shared_link_response_dto_test.dart
+test/shared_link_type_test.dart
 test/sign_up_dto_test.dart
 test/smart_info_response_dto_test.dart
 test/system_config_api_test.dart

@@ -674,6 +674,37 @@ export interface CreateAlbumDto {
 /**
  * 
  * @export
+ * @interface CreateAlbumShareLinkDto
+ */
+export interface CreateAlbumShareLinkDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'albumId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'expiredAt'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'allowUpload'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'description'?: string;
+}
+/**
+ * 
+ * @export
  * @interface CreateProfileImageResponseDto
  */
 export interface CreateProfileImageResponseDto {
@@ -918,6 +949,50 @@ export const DeviceTypeEnum = {
 export type DeviceTypeEnum = typeof DeviceTypeEnum[keyof typeof DeviceTypeEnum];
 
 
+/**
+ * 
+ * @export
+ * @interface DownloadFilesDto
+ */
+export interface DownloadFilesDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DownloadFilesDto
+     */
+    'assetIds': Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface EditSharedLinkDto
+ */
+export interface EditSharedLinkDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof EditSharedLinkDto
+     */
+    'description'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EditSharedLinkDto
+     */
+    'expiredAt'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof EditSharedLinkDto
+     */
+    'allowUpload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof EditSharedLinkDto
+     */
+    'isEditExpireTime'?: boolean;
+}
 /**
  * 
  * @export
@@ -1477,6 +1552,87 @@ export interface ServerVersionReponseDto {
      */
     'build': number;
 }
+/**
+ * 
+ * @export
+ * @interface SharedLinkResponseDto
+ */
+export interface SharedLinkResponseDto {
+    /**
+     * 
+     * @type {SharedLinkType}
+     * @memberof SharedLinkResponseDto
+     */
+    'type': SharedLinkType;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'description'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'userId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'key': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'expiresAt': string | null;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SharedLinkResponseDto
+     */
+    'assets': Array<string>;
+    /**
+     * 
+     * @type {AlbumResponseDto}
+     * @memberof SharedLinkResponseDto
+     */
+    'album'?: AlbumResponseDto;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SharedLinkResponseDto
+     */
+    'allowUpload': boolean;
+}
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const SharedLinkType = {
+    Album: 'ALBUM',
+    Individual: 'INDIVIDUAL'
+} as const;
+
+export type SharedLinkType = typeof SharedLinkType[keyof typeof SharedLinkType];
+
+
 /**
  * 
  * @export
@@ -2556,6 +2712,45 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {CreateAlbumShareLinkDto} createAlbumShareLinkDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createAlbumSharedLink: async (createAlbumShareLinkDto: CreateAlbumShareLinkDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'createAlbumShareLinkDto' is not null or undefined
+            assertParamExists('createAlbumSharedLink', 'createAlbumShareLinkDto', createAlbumShareLinkDto)
+            const localVarPath = `/album/create-shared-link`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(createAlbumShareLinkDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2917,6 +3112,16 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {CreateAlbumShareLinkDto} createAlbumShareLinkDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async createAlbumSharedLink(createAlbumShareLinkDto: CreateAlbumShareLinkDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createAlbumSharedLink(createAlbumShareLinkDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3040,6 +3245,15 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
+         * @param {CreateAlbumShareLinkDto} createAlbumShareLinkDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createAlbumSharedLink(createAlbumShareLinkDto: CreateAlbumShareLinkDto, options?: any): AxiosPromise<SharedLinkResponseDto> {
+            return localVarFp.createAlbumSharedLink(createAlbumShareLinkDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3157,6 +3371,17 @@ export class AlbumApi extends BaseAPI {
      */
     public createAlbum(createAlbumDto: CreateAlbumDto, options?: AxiosRequestConfig) {
         return AlbumApiFp(this.configuration).createAlbum(createAlbumDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {CreateAlbumShareLinkDto} createAlbumShareLinkDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AlbumApi
+     */
+    public createAlbumSharedLink(createAlbumShareLinkDto: CreateAlbumShareLinkDto, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).createAlbumSharedLink(createAlbumShareLinkDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3417,6 +3642,45 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {DownloadFilesDto} downloadFilesDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        downloadFiles: async (downloadFilesDto: DownloadFilesDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'downloadFilesDto' is not null or undefined
+            assertParamExists('downloadFiles', 'downloadFilesDto', downloadFilesDto)
+            const localVarPath = `/asset/download-files`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(downloadFilesDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4052,6 +4316,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {DownloadFilesDto} downloadFilesDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async downloadFiles(downloadFilesDto: DownloadFilesDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadFiles(downloadFilesDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4250,6 +4524,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
+         * @param {DownloadFilesDto} downloadFilesDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        downloadFiles(downloadFilesDto: DownloadFilesDto, options?: any): AxiosPromise<object> {
+            return localVarFp.downloadFiles(downloadFilesDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4437,6 +4720,17 @@ export class AssetApi extends BaseAPI {
      */
     public downloadFile(assetId: string, isThumb?: boolean, isWeb?: boolean, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).downloadFile(assetId, isThumb, isWeb, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {DownloadFilesDto} downloadFilesDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public downloadFiles(downloadFilesDto: DownloadFilesDto, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).downloadFiles(downloadFilesDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6048,6 +6342,354 @@ export class ServerInfoApi extends BaseAPI {
      */
     public pingServer(options?: AxiosRequestConfig) {
         return ServerInfoApiFp(this.configuration).pingServer(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * ShareApi - axios parameter creator
+ * @export
+ */
+export const ShareApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {EditSharedLinkDto} editSharedLinkDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        editSharedLink: async (id: string, editSharedLinkDto: EditSharedLinkDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('editSharedLink', 'id', id)
+            // verify required parameter 'editSharedLinkDto' is not null or undefined
+            assertParamExists('editSharedLink', 'editSharedLinkDto', editSharedLinkDto)
+            const localVarPath = `/share/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(editSharedLinkDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllSharedLinks: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/share`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMySharedLink: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/share/me`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSharedLinkById: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getSharedLinkById', 'id', id)
+            const localVarPath = `/share/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        removeSharedLink: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('removeSharedLink', 'id', id)
+            const localVarPath = `/share/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * ShareApi - functional programming interface
+ * @export
+ */
+export const ShareApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = ShareApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {EditSharedLinkDto} editSharedLinkDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async editSharedLink(id: string, editSharedLinkDto: EditSharedLinkDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.editSharedLink(id, editSharedLinkDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAllSharedLinks(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<SharedLinkResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllSharedLinks(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getMySharedLink(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMySharedLink(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getSharedLinkById(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSharedLinkById(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async removeSharedLink(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.removeSharedLink(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * ShareApi - factory interface
+ * @export
+ */
+export const ShareApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = ShareApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {EditSharedLinkDto} editSharedLinkDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        editSharedLink(id: string, editSharedLinkDto: EditSharedLinkDto, options?: any): AxiosPromise<SharedLinkResponseDto> {
+            return localVarFp.editSharedLink(id, editSharedLinkDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllSharedLinks(options?: any): AxiosPromise<Array<SharedLinkResponseDto>> {
+            return localVarFp.getAllSharedLinks(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMySharedLink(options?: any): AxiosPromise<SharedLinkResponseDto> {
+            return localVarFp.getMySharedLink(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSharedLinkById(id: string, options?: any): AxiosPromise<SharedLinkResponseDto> {
+            return localVarFp.getSharedLinkById(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        removeSharedLink(id: string, options?: any): AxiosPromise<string> {
+            return localVarFp.removeSharedLink(id, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * ShareApi - object-oriented interface
+ * @export
+ * @class ShareApi
+ * @extends {BaseAPI}
+ */
+export class ShareApi extends BaseAPI {
+    /**
+     * 
+     * @param {string} id 
+     * @param {EditSharedLinkDto} editSharedLinkDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ShareApi
+     */
+    public editSharedLink(id: string, editSharedLinkDto: EditSharedLinkDto, options?: AxiosRequestConfig) {
+        return ShareApiFp(this.configuration).editSharedLink(id, editSharedLinkDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ShareApi
+     */
+    public getAllSharedLinks(options?: AxiosRequestConfig) {
+        return ShareApiFp(this.configuration).getAllSharedLinks(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ShareApi
+     */
+    public getMySharedLink(options?: AxiosRequestConfig) {
+        return ShareApiFp(this.configuration).getMySharedLink(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ShareApi
+     */
+    public getSharedLinkById(id: string, options?: AxiosRequestConfig) {
+        return ShareApiFp(this.configuration).getSharedLinkById(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ShareApi
+     */
+    public removeSharedLink(id: string, options?: AxiosRequestConfig) {
+        return ShareApiFp(this.configuration).removeSharedLink(id, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

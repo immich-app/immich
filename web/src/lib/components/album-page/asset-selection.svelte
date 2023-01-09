@@ -51,7 +51,7 @@
 		<svelte:fragment slot="trailing">
 			<button
 				on:click={() =>
-					openFileUploadDialog(albumId, () => {
+					openFileUploadDialog(albumId, '', () => {
 						assetInteractionStore.clearMultiselect();
 						dispatch('go-back');
 					})}

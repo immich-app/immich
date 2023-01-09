@@ -12,6 +12,7 @@ Method | HTTP request | Description
 [**addAssetsToAlbum**](AlbumApi.md#addassetstoalbum) | **PUT** /album/{albumId}/assets | 
 [**addUsersToAlbum**](AlbumApi.md#adduserstoalbum) | **PUT** /album/{albumId}/users | 
 [**createAlbum**](AlbumApi.md#createalbum) | **POST** /album | 
+[**createAlbumSharedLink**](AlbumApi.md#createalbumsharedlink) | **POST** /album/create-shared-link | 
 [**deleteAlbum**](AlbumApi.md#deletealbum) | **DELETE** /album/{albumId} | 
 [**downloadArchive**](AlbumApi.md#downloadarchive) | **GET** /album/{albumId}/download | 
 [**getAlbumCountByUserId**](AlbumApi.md#getalbumcountbyuserid) | **GET** /album/count-by-user-id | 
@@ -155,6 +156,53 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AlbumResponseDto**](AlbumResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createAlbumSharedLink**
+> SharedLinkResponseDto createAlbumSharedLink(createAlbumShareLinkDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AlbumApi();
+final createAlbumShareLinkDto = CreateAlbumShareLinkDto(); // CreateAlbumShareLinkDto | 
+
+try {
+    final result = api_instance.createAlbumSharedLink(createAlbumShareLinkDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AlbumApi->createAlbumSharedLink: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createAlbumShareLinkDto** | [**CreateAlbumShareLinkDto**](CreateAlbumShareLinkDto.md)|  | 
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
 
 ### Authorization
 

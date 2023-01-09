@@ -13,6 +13,7 @@ import { IAssetUploadedJob, IVideoTranscodeJob } from '@app/job';
 import { Queue } from 'bull';
 import { IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
+import { ISharedLinkRepository } from '../share/shared-link.repository';
 
 describe('AssetService', () => {
   let sui: AssetService;
@@ -24,6 +25,7 @@ describe('AssetService', () => {
   let assetUploadedQueueMock: jest.Mocked<Queue<IAssetUploadedJob>>;
   let videoConversionQueueMock: jest.Mocked<Queue<IVideoTranscodeJob>>;
   let storageSeriveMock: jest.Mocked<StorageService>;
+  let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   const authUser: AuthUserDto = Object.freeze({
     id: 'user_id_1',
     email: 'auth@test.com',
@@ -128,10 +130,20 @@ describe('AssetService', () => {
       getAssetWithNoSmartInfo: jest.fn(),
       getExistingAssets: jest.fn(),
       countByIdAndUser: jest.fn(),
+      getSharePermission: jest.fn(),
     };
 
     downloadServiceMock = {
       downloadArchive: jest.fn(),
+    };
+
+    sharedLinkRepositoryMock = {
+      create: jest.fn(),
+      get: jest.fn(),
+      getById: jest.fn(),
+      getByKey: jest.fn(),
+      remove: jest.fn(),
+      save: jest.fn(),
     };
 
     sui = new AssetService(
@@ -143,6 +155,7 @@ describe('AssetService', () => {
       videoConversionQueueMock,
       downloadServiceMock as DownloadService,
       storageSeriveMock,
+      sharedLinkRepositoryMock,
     );
   });
 

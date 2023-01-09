@@ -93,7 +93,7 @@
 					>.
 				</p>
 
-				<SettingSwitch title="Enable" bind:checked={oauthConfig.enabled} />
+				<SettingSwitch title="ENABLE" bind:checked={oauthConfig.enabled} />
 				<hr />
 				<SettingInputField
 					inputType={SettingInputFieldType.TEXT}

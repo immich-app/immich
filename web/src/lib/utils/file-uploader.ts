@@ -11,6 +11,7 @@ import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 
 export const openFileUploadDialog = (
 	albumId: string | undefined = undefined,
+	sharedKey: string | undefined = undefined,
 	callback?: () => void
 ) => {
 	try {
@@ -27,7 +28,7 @@ export const openFileUploadDialog = (
 			}
 			const files = Array.from<File>(target.files);
 
-			await fileUploadHandler(files, albumId);
+			await fileUploadHandler(files, albumId, sharedKey);
 			callback && callback();
 		};
 
@@ -37,7 +38,11 @@ export const openFileUploadDialog = (
 	}
 };
 
-export const fileUploadHandler = async (files: File[], albumId: string | undefined = undefined) => {
+export const fileUploadHandler = async (
+	files: File[],
+	albumId: string | undefined = undefined,
+	sharedKey: string | undefined = undefined
+) => {
 	if (files.length > 50) {
 		notificationController.show({
 			type: NotificationType.Error,
@@ -49,18 +54,22 @@ export const fileUploadHandler = async (files: File[], albumId: string | undefin
 
 		return;
 	}
-
+	console.log('fileUploadHandler');
 	const acceptedFile = files.filter(
 		(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
 	);
 
 	for (const asset of acceptedFile) {
-		await fileUploader(asset, albumId);
+		await fileUploader(asset, albumId, sharedKey);
 	}
 };
 
 //TODO: should probably use the @api SDK
-async function fileUploader(asset: File, albumId: string | undefined = undefined) {
+async function fileUploader(
+	asset: File,
+	albumId: string | undefined = undefined,
+	sharedKey: string | undefined = undefined
+) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
 	const fileExtension = temp[temp.length - 1];
@@ -108,10 +117,17 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 		formData.append('assetData', asset);
 
 		// Check if asset upload on server before performing upload
-		const { data, status } = await api.assetApi.checkDuplicateAsset({
-			deviceAssetId: String(deviceAssetId),
-			deviceId: 'WEB'
-		});
+		const { data, status } = await api.assetApi.checkDuplicateAsset(
+			{
+				deviceAssetId: String(deviceAssetId),
+				deviceId: 'WEB'
+			},
+			{
+				params: {
+					key: sharedKey
+				}
+			}
+		);
 
 		if (status === 200) {
 			if (data.isExist) {
@@ -124,7 +140,6 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 		}
 
 		const request = new XMLHttpRequest();
-
 		request.upload.onloadstart = () => {
 			const newUploadAsset: UploadAsset = {
 				id: deviceAssetId,
@@ -144,7 +159,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 					try {
 						const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
 						if (res.id) {
-							addAssetsToAlbum(albumId, [res.id]);
+							addAssetsToAlbum(albumId, [res.id], sharedKey);
 						}
 					} catch (e) {
 						console.error('ERROR parsing data JSON in upload onload');
@@ -171,7 +186,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 		};
 
-		request.open('POST', `/api/asset/upload`);
+		request.open('POST', `/api/asset/upload?key=${sharedKey ?? ''}`);
 
 		request.send(formData);
 	} catch (e) {
