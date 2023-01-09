@@ -58,6 +58,7 @@ import { IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
 import { ShareCore } from '../share/share.core';
 import { ISharedLinkRepository } from '../share/shared-link.repository';
+import { DownloadFilesDto } from './dto/download-files.dto';
 
 const fileInfo = promisify(stat);
 
@@ -259,6 +260,18 @@ export class AssetService {
     const assets = await this._assetRepository.getAllByUserId(user.id, dto.skip);
 
     return this.downloadService.downloadArchive(dto.name || `library`, assets);
+  }
+
+  public async downloadFiles(dto: DownloadFilesDto) {
+    const assetToDownload = [];
+
+    for (const assetId of dto.assetIds) {
+      const asset = await this._assetRepository.getById(assetId);
+      assetToDownload.push(asset);
+    }
+
+    const now = new Date().toISOString();
+    return this.downloadService.downloadArchive(`immich-${now}`, assetToDownload);
   }
 
   public async downloadFile(query: ServeFileDto, assetId: string, res: Res) {

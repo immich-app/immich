@@ -1,4 +1,4 @@
-import { api, AddAssetsResponseDto } from '@api';
+import { api, AddAssetsResponseDto, AssetResponseDto } from '@api';
 import {
 	notificationController,
 	NotificationType

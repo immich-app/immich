@@ -17,6 +17,7 @@
 	} from '$lib/stores/asset-interaction.store';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
+	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
@@ -27,6 +28,7 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+	import { downloadAssets } from '$lib/stores/download';
 
 	export let data: PageData;
 
@@ -106,6 +108,82 @@
 			assetInteractionStore.clearMultiselect();
 		});
 	};
+
+	const handleDownloadFiles = async () => {
+		const assetIds = Array.from($selectedAssets).map((asset) => asset.id);
+		try {
+			let skip = 0;
+			let count = 0;
+			let done = false;
+
+			while (!done) {
+				count++;
+
+				const fileName = 'immich' + `${count === 1 ? '' : count}.zip`;
+
+				$downloadAssets[fileName] = 0;
+
+				let total = 0;
+
+				const { data, status, headers } = await api.assetApi.downloadFiles(
+					{ assetIds },
+					{
+						responseType: 'blob',
+						onDownloadProgress: function (progressEvent) {
+							const request = this as XMLHttpRequest;
+							if (!total) {
+								total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
+							}
+
+							if (total) {
+								const current = progressEvent.loaded;
+								$downloadAssets[fileName] = Math.floor((current / total) * 100);
+							}
+						}
+					}
+				);
+
+				const isNotComplete = headers['x-immich-archive-complete'] === 'false';
+				const fileCount = Number(headers['x-immich-archive-file-count']) || 0;
+				if (isNotComplete && fileCount > 0) {
+					skip += fileCount;
+				} else {
+					assetInteractionStore.clearMultiselect();
+					done = true;
+				}
+
+				if (!(data instanceof Blob)) {
+					return;
+				}
+
+				if (status === 201) {
+					const fileUrl = URL.createObjectURL(data);
+					const anchor = document.createElement('a');
+					anchor.href = fileUrl;
+					anchor.download = fileName;
+
+					document.body.appendChild(anchor);
+					anchor.click();
+					document.body.removeChild(anchor);
+
+					URL.revokeObjectURL(fileUrl);
+
+					// Remove item from download list
+					setTimeout(() => {
+						const copy = $downloadAssets;
+						delete copy[fileName];
+						$downloadAssets = copy;
+					}, 2000);
+				}
+			}
+		} catch (e) {
+			console.error('Error downloading file ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error downloading file, check console for more details.'
+			});
+		}
+	};
 </script>
 
 <svelte:head>
@@ -125,6 +203,11 @@
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
+				<CircleIconButton
+					title="Download"
+					logo={CloudDownloadOutline}
+					on:click={handleDownloadFiles}
+				/>
 				<CircleIconButton title="Add" logo={Plus} on:click={handleShowMenu} />
 				<CircleIconButton
 					title="Delete"

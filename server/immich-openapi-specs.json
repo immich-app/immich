@@ -685,6 +685,42 @@
         ]
       }
     },
+    "/asset/download-files": {
+      "post": {
+        "operationId": "downloadFiles",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DownloadFilesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/asset/download-library": {
       "get": {
         "operationId": "downloadLibrary",
@@ -3221,6 +3257,21 @@
         },
         "required": [
           "id"
+        ]
+      },
+      "DownloadFilesDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "title": "Array of asset ids to be downloaded",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
         ]
       },
       "ThumbnailFormat": {

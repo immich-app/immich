@@ -260,6 +260,8 @@ class ApiClient {
           return DeviceInfoResponseDto.fromJson(value);
         case 'DeviceTypeEnum':
           return DeviceTypeEnumTypeTransformer().decode(value);
+        case 'DownloadFilesDto':
+          return DownloadFilesDto.fromJson(value);
         case 'EditSharedLinkDto':
           return EditSharedLinkDto.fromJson(value);
         case 'ExifResponseDto':

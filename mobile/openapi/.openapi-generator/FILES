@@ -42,6 +42,7 @@ doc/DeleteAssetStatus.md
 doc/DeviceInfoApi.md
 doc/DeviceInfoResponseDto.md
 doc/DeviceTypeEnum.md
+doc/DownloadFilesDto.md
 doc/EditSharedLinkDto.md
 doc/ExifResponseDto.md
 doc/GetAssetByTimeBucketDto.md
@@ -148,6 +149,7 @@ lib/model/delete_asset_response_dto.dart
 lib/model/delete_asset_status.dart
 lib/model/device_info_response_dto.dart
 lib/model/device_type_enum.dart
+lib/model/download_files_dto.dart
 lib/model/edit_shared_link_dto.dart
 lib/model/exif_response_dto.dart
 lib/model/get_asset_by_time_bucket_dto.dart
@@ -231,6 +233,7 @@ test/delete_asset_status_test.dart
 test/device_info_api_test.dart
 test/device_info_response_dto_test.dart
 test/device_type_enum_test.dart
+test/download_files_dto_test.dart
 test/edit_shared_link_dto_test.dart
 test/exif_response_dto_test.dart
 test/get_asset_by_time_bucket_dto_test.dart

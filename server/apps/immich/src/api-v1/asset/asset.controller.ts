@@ -49,6 +49,7 @@ import {
   IMMICH_ARCHIVE_FILE_COUNT,
   IMMICH_CONTENT_LENGTH_HINT,
 } from '../../constants/download.constant';
+import { DownloadFilesDto } from './dto/download-files.dto';
 
 @ApiBearerAuth()
 @ApiTags('Asset')
@@ -94,6 +95,22 @@ export class AssetController {
   ): Promise<any> {
     await this.assetService.checkAssetsAccess(authUser, [assetId], false, authUser.sharedLinkId);
     return this.assetService.downloadFile(query, assetId, res);
+  }
+
+  @Authenticated({ isShared: true })
+  @Post('/download-files')
+  async downloadFiles(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Response({ passthrough: true }) res: Res,
+    @Body(new ValidationPipe()) dto: DownloadFilesDto,
+  ): Promise<any> {
+    await this.assetService.checkAssetsAccess(authUser, [...dto.assetIds], false, authUser.sharedLinkId);
+    const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadFiles(dto);
+    res.attachment(fileName);
+    res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
+    res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
+    res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
+    return stream;
   }
 
   @Authenticated({ isShared: true })
