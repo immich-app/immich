@@ -25,7 +25,7 @@ export class PublicShareStrategy extends PassportStrategy(Strategy, PUBLIC_SHARE
   }
 
   async validate(key: string): Promise<AuthUserDto> {
-    const validatedLink = await this.shareService.getSharedLinkByKey(key);
+    const validatedLink = await this.shareService.getByKey(key);
 
     if (validatedLink.expiresAt) {
       const now = new Date().getTime();

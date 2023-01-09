@@ -46,8 +46,8 @@
 		}
 	};
 
-	const handleEditLink = async (shareLinkKey: string) => {
-		const { data } = await api.shareApi.getSharedLinkByKey(shareLinkKey);
+	const handleEditLink = async (id: string) => {
+		const { data } = await api.shareApi.getSharedLinkById(id);
 		editSharedLink = data;
 		showEditForm = true;
 	};
@@ -91,7 +91,7 @@
 				<SharedLinkCard
 					{link}
 					on:delete={() => handleDeleteLink(link.id)}
-					on:edit={() => handleEditLink(link.key)}
+					on:edit={() => handleEditLink(link.id)}
 					on:copy={() => handleCopy(link.key)}
 				/>
 			{/each}

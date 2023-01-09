@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { EditSharedLinkDto } from './dto/edit-shared-link.dto';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
@@ -16,12 +16,22 @@ export class ShareService {
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository);
   }
-  async findAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
+  async getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
     const links = await this.shareCore.getSharedLinks(authUser.id);
     return links.map(mapSharedLinkToResponseDto);
   }
 
-  async findOne(id: string): Promise<SharedLinkResponseDto> {
+  async getMine(authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
+    if (!authUser.isPublicUser || !authUser.sharedLinkId) {
+      throw new ForbiddenException();
+    }
+
+    const link = await this.shareCore.getSharedLinkById(authUser.sharedLinkId);
+
+    return mapSharedLinkToResponseDto(link);
+  }
+
+  async getById(id: string): Promise<SharedLinkResponseDto> {
     const link = await this.shareCore.getSharedLinkById(id);
     return mapSharedLinkToResponseDto(link);
   }
@@ -31,7 +41,7 @@ export class ShareService {
     return id;
   }
 
-  async getSharedLinkByKey(key: string): Promise<SharedLinkResponseDto> {
+  async getByKey(key: string): Promise<SharedLinkResponseDto> {
     const link = await this.shareCore.getSharedLinkByKey(key);
     return mapSharedLinkToResponseDto(link);
   }

@@ -47,7 +47,7 @@ export class ShareCore {
   }
 
   async getSharedLinkById(id: string): Promise<SharedLinkEntity> {
-    const link = await this.sharedLinkRepository.getbyId(id);
+    const link = await this.sharedLinkRepository.getById(id);
 
     if (!link) {
       throw new BadRequestException('Shared link not found');
@@ -91,5 +91,9 @@ export class ShareCore {
     }
 
     return await this.sharedLinkRepository.save(link);
+  }
+
+  async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
+    return this.sharedLinkRepository.hasAssetAccess(id, assetId);
   }
 }

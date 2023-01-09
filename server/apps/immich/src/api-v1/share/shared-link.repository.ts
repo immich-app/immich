@@ -6,12 +6,13 @@ import { Logger } from '@nestjs/common';
 
 export interface ISharedLinkRepository {
   get(userId: string): Promise<SharedLinkEntity[]>;
-  getbyId(id: string): Promise<SharedLinkEntity | null>;
+  getById(id: string): Promise<SharedLinkEntity | null>;
   getByIdAndUserId(id: string, userId: string): Promise<SharedLinkEntity | null>;
   getByKey(key: string): Promise<SharedLinkEntity | null>;
   create(payload: SharedLinkEntity): Promise<SharedLinkEntity>;
   remove(entity: SharedLinkEntity): Promise<SharedLinkEntity>;
   save(entity: SharedLinkEntity): Promise<SharedLinkEntity>;
+  hasAssetAccess(id: string, assetId: string): Promise<boolean>;
 }
 
 export const ISharedLinkRepository = 'ISharedLinkRepository';
@@ -50,12 +51,19 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     return await this.sharedLinkRepository.save(payload);
   }
 
-  async getbyId(id: string): Promise<SharedLinkEntity | null> {
+  async getById(id: string): Promise<SharedLinkEntity | null> {
     return await this.sharedLinkRepository.findOne({
       where: {
         id: id,
       },
-      relations: ['assets', 'album'],
+      relations: {
+        assets: true,
+        album: {
+          assets: {
+            assetInfo: true,
+          },
+        },
+      },
       order: {
         createdAt: 'DESC',
       },
@@ -67,7 +75,14 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       where: {
         key: Buffer.from(key, 'hex'),
       },
-      relations: ['assets', 'album'],
+      relations: {
+        assets: true,
+        album: {
+          assets: {
+            assetInfo: true,
+          },
+        },
+      },
       order: {
         createdAt: 'DESC',
       },
@@ -80,5 +95,29 @@ export class SharedLinkRepository implements ISharedLinkRepository {
 
   async save(entity: SharedLinkEntity): Promise<SharedLinkEntity> {
     return await this.sharedLinkRepository.save(entity);
+  }
+
+  async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
+    const count1 = await this.sharedLinkRepository.count({
+      where: {
+        id,
+        assets: {
+          id: assetId,
+        },
+      },
+    });
+
+    const count2 = await this.sharedLinkRepository.count({
+      where: {
+        id,
+        album: {
+          assets: {
+            assetId,
+          },
+        },
+      },
+    });
+
+    return Boolean(count1 + count2);
   }
 }

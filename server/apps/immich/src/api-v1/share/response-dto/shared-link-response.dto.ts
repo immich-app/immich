@@ -1,6 +1,8 @@
-import { SharedLinkEntity, SharedLinkType } from '@app/database/entities/shared-link.entity';
+import { SharedLinkEntity, SharedLinkType } from '@app/database';
 import { ApiProperty } from '@nestjs/swagger';
-import { AlbumResponseDto, mapAlbum } from '../../album/response-dto/album-response.dto';
+import _ from 'lodash';
+import { AlbumResponseDto, mapAlbumExcludeAssetInfo } from '../../album/response-dto/album-response.dto';
+import { AssetResponseDto, mapAsset } from '../../asset/response-dto/asset-response.dto';
 
 export class SharedLinkResponseDto {
   id!: string;
@@ -12,12 +14,17 @@ export class SharedLinkResponseDto {
   type!: SharedLinkType;
   createdAt!: string;
   expiresAt!: string | null;
-  assets!: string[];
+  assets!: AssetResponseDto[];
   album?: AlbumResponseDto;
   allowUpload!: boolean;
 }
 
 export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
+  const linkAssets = sharedLink.assets || [];
+  const albumAssets = (sharedLink?.album?.assets || []).map((albumAsset) => albumAsset.assetInfo);
+
+  const assets = _.uniqBy([...linkAssets, ...albumAssets], (asset) => asset.id);
+
   return {
     id: sharedLink.id,
     description: sharedLink.description,
@@ -26,8 +33,8 @@ export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): Shared
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: sharedLink.assets ? sharedLink.assets.map((asset) => asset.id) : [],
-    album: sharedLink.album ? mapAlbum(sharedLink.album) : undefined,
+    assets: assets.map(mapAsset),
+    album: sharedLink.album ? mapAlbumExcludeAssetInfo(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
   };
 }

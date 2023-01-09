@@ -497,12 +497,33 @@
         ]
       }
     },
-    "/share/{key}": {
+    "/share/me": {
       "get": {
-        "operationId": "getSharedLinkByKey",
+        "operationId": "getMySharedLink",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/share/{id}": {
+      "get": {
+        "operationId": "getSharedLinkById",
         "parameters": [
           {
-            "name": "key",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -525,9 +546,7 @@
         "tags": [
           "share"
         ]
-      }
-    },
-    "/share/{id}": {
+      },
       "delete": {
         "operationId": "removeSharedLink",
         "parameters": [
@@ -3203,7 +3222,7 @@
           "assets": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/AssetResponseDto"
             }
           },
           "album": {
