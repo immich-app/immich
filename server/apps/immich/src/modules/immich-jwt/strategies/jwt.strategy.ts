@@ -7,6 +7,7 @@ import { JwtPayloadDto } from '../../../api-v1/auth/dto/jwt-payload.dto';
 import { UserEntity } from '@app/database';
 import { jwtSecret } from '../../../constants/jwt.constant';
 import { ImmichJwtService } from '../immich-jwt.service';
+import { AuthUserDto } from 'apps/immich/src/decorators/auth-user.decorator';
 
 export const JWT_STRATEGY = 'jwt';
 
@@ -27,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY) {
     } as StrategyOptions);
   }
 
-  async validate(payload: JwtPayloadDto) {
+  async validate(payload: JwtPayloadDto): Promise<AuthUserDto> {
     const { userId } = payload;
     const user = await this.usersRepository.findOne({ where: { id: userId } });
 
@@ -35,6 +36,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY) {
       throw new UnauthorizedException('Failure to validate JWT payload');
     }
 
-    return user;
+    const authUser = new AuthUserDto();
+    authUser.id = user.id;
+    authUser.email = user.email;
+    authUser.isAdmin = user.isAdmin;
+    authUser.isPublicUser = false;
+    authUser.isAllowUpload = true;
+
+    return authUser;
   }
 }

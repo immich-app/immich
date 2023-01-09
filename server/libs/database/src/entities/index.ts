@@ -9,3 +9,4 @@ export * from './system-config.entity';
 export * from './tag.entity';
 export * from './user-album.entity';
 export * from './user.entity';
+export * from './shared-link.entity';

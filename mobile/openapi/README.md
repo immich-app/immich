@@ -66,6 +66,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{albumId}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{albumId}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
+*AlbumApi* | [**createAlbumSharedLink**](doc//AlbumApi.md#createalbumsharedlink) | **POST** /album/create-shared-link | 
 *AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /album/{albumId} | 
 *AlbumApi* | [**downloadArchive**](doc//AlbumApi.md#downloadarchive) | **GET** /album/{albumId}/download | 
 *AlbumApi* | [**getAlbumCountByUserId**](doc//AlbumApi.md#getalbumcountbyuserid) | **GET** /album/count-by-user-id | 
@@ -78,6 +79,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
+*AssetApi* | [**downloadFiles**](doc//AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
 *AssetApi* | [**downloadLibrary**](doc//AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
@@ -113,6 +115,11 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
+*ShareApi* | [**editSharedLink**](doc//ShareApi.md#editsharedlink) | **PATCH** /share/{id} | 
+*ShareApi* | [**getAllSharedLinks**](doc//ShareApi.md#getallsharedlinks) | **GET** /share | 
+*ShareApi* | [**getMySharedLink**](doc//ShareApi.md#getmysharedlink) | **GET** /share/me | 
+*ShareApi* | [**getSharedLinkById**](doc//ShareApi.md#getsharedlinkbyid) | **GET** /share/{id} | 
+*ShareApi* | [**removeSharedLink**](doc//ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
@@ -159,6 +166,7 @@ Class | Method | HTTP request | Description
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
+ - [CreateAlbumShareLinkDto](doc//CreateAlbumShareLinkDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
  - [CreateUserDto](doc//CreateUserDto.md)
@@ -169,6 +177,8 @@ Class | Method | HTTP request | Description
  - [DeleteAssetStatus](doc//DeleteAssetStatus.md)
  - [DeviceInfoResponseDto](doc//DeviceInfoResponseDto.md)
  - [DeviceTypeEnum](doc//DeviceTypeEnum.md)
+ - [DownloadFilesDto](doc//DownloadFilesDto.md)
+ - [EditSharedLinkDto](doc//EditSharedLinkDto.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
@@ -189,6 +199,8 @@ Class | Method | HTTP request | Description
  - [ServerPingResponse](doc//ServerPingResponse.md)
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
+ - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)
+ - [SharedLinkType](doc//SharedLinkType.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)

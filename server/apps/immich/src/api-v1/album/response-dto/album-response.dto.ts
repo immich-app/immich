@@ -33,7 +33,7 @@ export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
     id: entity.id,
     ownerId: entity.ownerId,
     sharedUsers,
-    shared: sharedUsers.length > 0,
+    shared: sharedUsers.length > 0 || entity.sharedLinks?.length > 0,
     assets: entity.assets?.map((assetAlbum) => mapAsset(assetAlbum.assetInfo)) || [],
     assetCount: entity.assets?.length || 0,
   };
@@ -55,7 +55,7 @@ export function mapAlbumExcludeAssetInfo(entity: AlbumEntity): AlbumResponseDto 
     id: entity.id,
     ownerId: entity.ownerId,
     sharedUsers,
-    shared: sharedUsers.length > 0,
+    shared: sharedUsers.length > 0 || entity.sharedLinks?.length > 0,
     assets: [],
     assetCount: entity.assets?.length || 0,
   };

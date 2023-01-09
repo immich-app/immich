@@ -238,6 +238,8 @@ class ApiClient {
           return CheckExistingAssetsResponseDto.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
+        case 'CreateAlbumShareLinkDto':
+          return CreateAlbumShareLinkDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'CreateTagDto':
@@ -258,6 +260,10 @@ class ApiClient {
           return DeviceInfoResponseDto.fromJson(value);
         case 'DeviceTypeEnum':
           return DeviceTypeEnumTypeTransformer().decode(value);
+        case 'DownloadFilesDto':
+          return DownloadFilesDto.fromJson(value);
+        case 'EditSharedLinkDto':
+          return EditSharedLinkDto.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'GetAssetByTimeBucketDto':
@@ -298,6 +304,10 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerVersionReponseDto':
           return ServerVersionReponseDto.fromJson(value);
+        case 'SharedLinkResponseDto':
+          return SharedLinkResponseDto.fromJson(value);
+        case 'SharedLinkType':
+          return SharedLinkTypeTypeTransformer().decode(value);
         case 'SignUpDto':
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':

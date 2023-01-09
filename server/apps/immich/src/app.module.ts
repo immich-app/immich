@@ -21,6 +21,7 @@ import { SystemConfigModule } from './api-v1/system-config/system-config.module'
 import { OAuthModule } from './api-v1/oauth/oauth.module';
 import { TagModule } from './api-v1/tag/tag.module';
 import { ImmichConfigModule } from '@app/immich-config';
+import { ShareModule } from './api-v1/share/share.module';
 
 @Module({
   imports: [
@@ -60,6 +61,8 @@ import { ImmichConfigModule } from '@app/immich-config';
     SystemConfigModule,
 
     TagModule,
+
+    ShareModule,
   ],
   controllers: [AppController],
   providers: [],

@@ -6,7 +6,7 @@
 	import { api, AssetResponseDto, getFileUrl } from '@api';
 
 	export let assetId: string;
-
+	export let publicSharedKey = '';
 	let asset: AssetResponseDto;
 
 	let isVideoLoading = true;
@@ -14,7 +14,11 @@
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
-		const { data: assetInfo } = await api.assetApi.getAssetById(assetId);
+		const { data: assetInfo } = await api.assetApi.getAssetById(assetId, {
+			params: {
+				key: publicSharedKey
+			}
+		});
 
 		await loadVideoData(assetInfo);
 
@@ -24,7 +28,7 @@
 	const loadVideoData = async (assetInfo: AssetResponseDto) => {
 		isVideoLoading = true;
 
-		videoUrl = getFileUrl(assetInfo.id, false, true);
+		videoUrl = getFileUrl(assetInfo.id, false, true, publicSharedKey);
 
 		return assetInfo;
 	};

@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    //Future<Object> downloadFiles(DownloadFilesDto downloadFilesDto) async
+    test('test downloadFiles', () async {
+      // TODO
+    });
+
     //Future<Object> downloadLibrary({ num skip }) async
     test('test downloadLibrary', () async {
       // TODO

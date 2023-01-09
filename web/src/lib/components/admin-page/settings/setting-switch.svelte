@@ -8,13 +8,13 @@
 <div class="flex justify-between place-items-center">
 	<div>
 		<h2 class="immich-form-label text-sm">
-			{title.toUpperCase()}
+			{title}
 		</h2>
 
 		<p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
 	</div>
 
-	<label class="relative inline-block w-[36px] h-[10px]" {disabled}>
+	<label class="relative inline-block w-[36px] h-[10px]">
 		<input
 			class="opacity-0 w-0 h-0 disabled::cursor-not-allowed"
 			type="checkbox"

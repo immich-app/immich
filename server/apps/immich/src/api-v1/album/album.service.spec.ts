@@ -3,15 +3,15 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity } from '@app/database';
 import { AlbumResponseDto } from './response-dto/album-response.dto';
-import { IAssetRepository } from '../asset/asset-repository';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
+import { ISharedLinkRepository } from '../share/shared-link.repository';
 
 describe('Album service', () => {
   let sut: AlbumService;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
-  let assetRepositoryMock: jest.Mocked<IAssetRepository>;
+  let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
 
   const authUser: AuthUserDto = Object.freeze({
@@ -33,7 +33,7 @@ describe('Album service', () => {
     albumEntity.sharedUsers = [];
     albumEntity.assets = [];
     albumEntity.albumThumbnailAssetId = null;
-
+    albumEntity.sharedLinks = [];
     return albumEntity;
   };
 
@@ -94,6 +94,7 @@ describe('Album service', () => {
         },
       },
     ];
+    albumEntity.sharedLinks = [];
 
     return albumEntity;
   };
@@ -113,6 +114,7 @@ describe('Album service', () => {
 
   beforeAll(() => {
     albumRepositoryMock = {
+      getPublicSharingList: jest.fn(),
       addAssets: jest.fn(),
       addSharedUsers: jest.fn(),
       create: jest.fn(),
@@ -127,31 +129,20 @@ describe('Album service', () => {
       getSharedWithUserAlbumCount: jest.fn(),
     };
 
-    assetRepositoryMock = {
+    sharedLinkRepositoryMock = {
       create: jest.fn(),
-      update: jest.fn(),
-      getAllByUserId: jest.fn(),
-      getAllByDeviceId: jest.fn(),
-      getAssetCountByTimeBucket: jest.fn(),
+      remove: jest.fn(),
+      get: jest.fn(),
       getById: jest.fn(),
-      getDetectedObjectsByUserId: jest.fn(),
-      getLocationsByUserId: jest.fn(),
-      getSearchPropertiesByUserId: jest.fn(),
-      getAssetByTimeBucket: jest.fn(),
-      getAssetByChecksum: jest.fn(),
-      getAssetCountByUserId: jest.fn(),
-      getAssetWithNoEXIF: jest.fn(),
-      getAssetWithNoThumbnail: jest.fn(),
-      getAssetWithNoSmartInfo: jest.fn(),
-      getExistingAssets: jest.fn(),
-      countByIdAndUser: jest.fn(),
+      getByKey: jest.fn(),
+      save: jest.fn(),
     };
 
     downloadServiceMock = {
       downloadArchive: jest.fn(),
     };
 
-    sut = new AlbumService(albumRepositoryMock, assetRepositoryMock, downloadServiceMock as DownloadService);
+    sut = new AlbumService(albumRepositoryMock, sharedLinkRepositoryMock, downloadServiceMock as DownloadService);
   });
 
   it('creates album', async () => {
@@ -175,10 +166,8 @@ describe('Album service', () => {
     albumRepositoryMock.getList.mockImplementation(() => Promise.resolve(albums));
 
     const result = await sut.getAllAlbums(authUser, {});
-    expect(result).toHaveLength(3);
+    expect(result).toHaveLength(1);
     expect(result[0].id).toEqual(ownedAlbum.id);
-    expect(result[1].id).toEqual(ownedSharedAlbum.id);
-    expect(result[2].id).toEqual(sharedWithMeAlbum.id);
   });
 
   it('gets an owned album', async () => {
