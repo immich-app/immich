@@ -70,28 +70,28 @@ class EditSharedLinkDto {
   String toString() => 'EditSharedLinkDto[description=$description, expiredAt=$expiredAt, allowUpload=$allowUpload, isEditExpireTime=$isEditExpireTime]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-    if (description != null) {
-      _json[r'description'] = description;
+    final json = <String, dynamic>{};
+    if (this.description != null) {
+      json[r'description'] = this.description;
     } else {
-      _json[r'description'] = null;
+      // json[r'description'] = null;
     }
-    if (expiredAt != null) {
-      _json[r'expiredAt'] = expiredAt;
+    if (this.expiredAt != null) {
+      json[r'expiredAt'] = this.expiredAt;
     } else {
-      _json[r'expiredAt'] = null;
+      // json[r'expiredAt'] = null;
     }
-    if (allowUpload != null) {
-      _json[r'allowUpload'] = allowUpload;
+    if (this.allowUpload != null) {
+      json[r'allowUpload'] = this.allowUpload;
     } else {
-      _json[r'allowUpload'] = null;
+      // json[r'allowUpload'] = null;
     }
-    if (isEditExpireTime != null) {
-      _json[r'isEditExpireTime'] = isEditExpireTime;
+    if (this.isEditExpireTime != null) {
+      json[r'isEditExpireTime'] = this.isEditExpireTime;
     } else {
-      _json[r'isEditExpireTime'] = null;
+      // json[r'isEditExpireTime'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [EditSharedLinkDto] instance and imports its values from
