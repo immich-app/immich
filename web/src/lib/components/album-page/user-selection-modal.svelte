@@ -58,7 +58,7 @@
 		</span>
 	</svelte:fragment>
 
-	<div class=" max-h-[400px] overflow-y-auto immich-scrollbar">
+	<div class="max-h-[300px] overflow-y-auto immich-scrollbar">
 		{#if selectedUsers.length > 0}
 			<div class="flex gap-4 py-2 px-5 overflow-x-auto place-items-center mb-2">
 				<p class="font-medium">To</p>
