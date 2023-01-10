@@ -226,7 +226,7 @@
 
 		{#if isShowSharedLink}
 			<div class="flex w-full gap-4">
-				<input class="immich-form-input w-full" bind:value={sharedLink} />
+				<input class="immich-form-input w-full" bind:value={sharedLink} disabled />
 
 				<button
 					on:click={() => handleCopy()}
