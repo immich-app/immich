@@ -57,10 +57,14 @@ export class SharedLinkRepository implements ISharedLinkRepository {
         id: id,
       },
       relations: {
-        assets: true,
+        assets: {
+          exifInfo: true,
+        },
         album: {
           assets: {
-            assetInfo: true,
+            assetInfo: {
+              exifInfo: true,
+            },
           },
         },
       },
