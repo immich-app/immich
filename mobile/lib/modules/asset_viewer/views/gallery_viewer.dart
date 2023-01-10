@@ -162,6 +162,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   heroTag: assetList[index].id,
                   loadPreview: isLoadPreview.value,
                   loadOriginal: isLoadOriginal.value,
+                  showExifSheet: showInfo,
                 );
               }
             } else {
