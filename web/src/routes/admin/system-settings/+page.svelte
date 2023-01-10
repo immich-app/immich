@@ -1,19 +1,18 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
 	import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
+	import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
 	import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
 	import StorageTemplateSettings from '$lib/components/admin-page/settings/storate-template/storage-template-settings.svelte';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-	import { api, SystemConfigDto } from '@api';
+	import { api } from '@api';
 	import type { PageData } from './$types';
-	import { page } from '$app/stores';
 
-	let systemConfig: SystemConfigDto;
 	export let data: PageData;
+
 	const getConfig = async () => {
 		const { data } = await api.systemConfigApi.getConfig();
-		systemConfig = data;
-
 		return data;
 	};
 </script>
@@ -33,7 +32,14 @@
 			<FFmpegSettings ffmpegConfig={configs.ffmpeg} />
 		</SettingAccordion>
 
-		<SettingAccordion title="OAuth Settings" subtitle="Manage the OAuth integration to Immich app">
+		<SettingAccordion
+			title="Password Authentication"
+			subtitle="Manage login with password settings"
+		>
+			<PasswordLoginSettings passwordLoginConfig={configs.passwordLogin} />
+		</SettingAccordion>
+
+		<SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
 			<OAuthSettings oauthConfig={configs.oauth} />
 		</SettingAccordion>
 

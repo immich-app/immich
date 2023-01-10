@@ -14,11 +14,15 @@ class OAuthConfigResponseDto {
   /// Returns a new [OAuthConfigResponseDto] instance.
   OAuthConfigResponseDto({
     required this.enabled,
+    required this.passwordLoginEnabled,
     this.url,
     this.buttonText,
+    this.autoLaunch,
   });
 
   bool enabled;
+
+  bool passwordLoginEnabled;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -36,25 +40,38 @@ class OAuthConfigResponseDto {
   ///
   String? buttonText;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? autoLaunch;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is OAuthConfigResponseDto &&
      other.enabled == enabled &&
+     other.passwordLoginEnabled == passwordLoginEnabled &&
      other.url == url &&
-     other.buttonText == buttonText;
+     other.buttonText == buttonText &&
+     other.autoLaunch == autoLaunch;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (enabled.hashCode) +
+    (passwordLoginEnabled.hashCode) +
     (url == null ? 0 : url!.hashCode) +
-    (buttonText == null ? 0 : buttonText!.hashCode);
+    (buttonText == null ? 0 : buttonText!.hashCode) +
+    (autoLaunch == null ? 0 : autoLaunch!.hashCode);
 
   @override
-  String toString() => 'OAuthConfigResponseDto[enabled=$enabled, url=$url, buttonText=$buttonText]';
+  String toString() => 'OAuthConfigResponseDto[enabled=$enabled, passwordLoginEnabled=$passwordLoginEnabled, url=$url, buttonText=$buttonText, autoLaunch=$autoLaunch]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
+      json[r'passwordLoginEnabled'] = this.passwordLoginEnabled;
     if (this.url != null) {
       json[r'url'] = this.url;
     } else {
@@ -64,6 +81,11 @@ class OAuthConfigResponseDto {
       json[r'buttonText'] = this.buttonText;
     } else {
       // json[r'buttonText'] = null;
+    }
+    if (this.autoLaunch != null) {
+      json[r'autoLaunch'] = this.autoLaunch;
+    } else {
+      // json[r'autoLaunch'] = null;
     }
     return json;
   }
@@ -88,8 +110,10 @@ class OAuthConfigResponseDto {
 
       return OAuthConfigResponseDto(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
+        passwordLoginEnabled: mapValueOfType<bool>(json, r'passwordLoginEnabled')!,
         url: mapValueOfType<String>(json, r'url'),
         buttonText: mapValueOfType<String>(json, r'buttonText'),
+        autoLaunch: mapValueOfType<bool>(json, r'autoLaunch'),
       );
     }
     return null;
@@ -140,6 +164,7 @@ class OAuthConfigResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'enabled',
+    'passwordLoginEnabled',
   };
 }
 

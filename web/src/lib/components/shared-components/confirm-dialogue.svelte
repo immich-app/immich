@@ -2,8 +2,8 @@
 	import { createEventDispatcher } from 'svelte';
 	import FullScreenModal from './full-screen-modal.svelte';
 
-	export let title = 'Confirm Delete';
-	export let prompt = 'Are you sure you want to delete this item?';
+	export let title = 'Confirm';
+	export let prompt = 'Are you sure you want to do this?';
 	export let confirmText = 'Confirm';
 	export let cancelText = 'Cancel';
 
@@ -19,12 +19,14 @@
 		<div
 			class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
 		>
-			<h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">
+			<h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium pb-2">
 				{title}
 			</h1>
 		</div>
 		<div>
-			<p class="ml-4 text-md py-5 text-center">{prompt}</p>
+			<slot name="prompt">
+				<p class="ml-4 text-md py-5 text-center">{prompt}</p>
+			</slot>
 
 			<div class="flex w-full px-4 gap-4 mt-4">
 				<button

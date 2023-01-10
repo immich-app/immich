@@ -11,6 +11,7 @@
 	} from '../shared-components/notification/notification';
 
 	export let assetId: string;
+	export let publicSharedKey = '';
 
 	let assetInfo: AssetResponseDto;
 	let assetData: string;
@@ -18,7 +19,11 @@
 	let copyImageToClipboard: (src: string) => Promise<Blob>;
 
 	onMount(async () => {
-		const { data } = await api.assetApi.getAssetById(assetId);
+		const { data } = await api.assetApi.getAssetById(assetId, {
+			params: {
+				key: publicSharedKey
+			}
+		});
 		assetInfo = data;
 
 		//Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -29,6 +34,9 @@
 	const loadAssetData = async () => {
 		try {
 			const { data } = await api.assetApi.serveFile(assetInfo.id, false, true, {
+				params: {
+					key: publicSharedKey
+				},
 				responseType: 'blob'
 			});
 

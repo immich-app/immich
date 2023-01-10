@@ -34,9 +34,9 @@
 	const logOut = async () => {
 		const { data } = await api.authenticationApi.logout();
 
-		await fetch('auth/logout', { method: 'POST' });
+		await fetch('/auth/logout', { method: 'POST' });
 
-		goto(data.redirectUri || '/auth/login');
+		goto(data.redirectUri || '/auth/login?autoLaunch=0');
 	};
 </script>
 

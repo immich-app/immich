@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **scope** | **String** |  | 
 **buttonText** | **String** |  | 
 **autoRegister** | **bool** |  | 
+**autoLaunch** | **bool** |  | 
 **mobileOverrideEnabled** | **bool** |  | 
 **mobileRedirectUri** | **String** |  | 
 

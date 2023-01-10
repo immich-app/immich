@@ -70,6 +70,7 @@
     "nest-commander": "^3.3.0",
     "openid-client": "^5.2.1",
     "passport": "^0.6.0",
+    "passport-custom": "^1.1.1",
     "passport-http-header-strategy": "^1.1.0",
     "passport-jwt": "^4.0.0",
     "pg": "^8.7.1",
