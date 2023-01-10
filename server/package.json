@@ -27,9 +27,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/immich/test/jest-e2e.json",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
-    "api:typescript": "rm -rf ../web/src/api/open-api && npx openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ../web/src/api/open-api",
-    "api:dart": "rm -rf ../mobile/openapi && npx openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi",
-    "api:generate": "npm run api:typescript && npm run api:dart"
+    "api:typescript": "bash ./bin/generate-open-api.sh web",
+    "api:dart": "bash ./bin/generate-open-api.sh mobile",
+    "api:generate": "bash ./bin/generate-open-api.sh"
   },
   "dependencies": {
     "@nestjs/bull": "^0.5.5",

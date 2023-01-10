@@ -69,25 +69,25 @@ class OAuthConfigResponseDto {
   String toString() => 'OAuthConfigResponseDto[enabled=$enabled, passwordLoginEnabled=$passwordLoginEnabled, url=$url, buttonText=$buttonText, autoLaunch=$autoLaunch]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'enabled'] = enabled;
-      _json[r'passwordLoginEnabled'] = passwordLoginEnabled;
-    if (url != null) {
-      _json[r'url'] = url;
+    final json = <String, dynamic>{};
+      json[r'enabled'] = this.enabled;
+      json[r'passwordLoginEnabled'] = this.passwordLoginEnabled;
+    if (this.url != null) {
+      json[r'url'] = this.url;
     } else {
-      _json[r'url'] = null;
+      // json[r'url'] = null;
     }
-    if (buttonText != null) {
-      _json[r'buttonText'] = buttonText;
+    if (this.buttonText != null) {
+      json[r'buttonText'] = this.buttonText;
     } else {
-      _json[r'buttonText'] = null;
+      // json[r'buttonText'] = null;
     }
-    if (autoLaunch != null) {
-      _json[r'autoLaunch'] = autoLaunch;
+    if (this.autoLaunch != null) {
+      json[r'autoLaunch'] = this.autoLaunch;
     } else {
-      _json[r'autoLaunch'] = null;
+      // json[r'autoLaunch'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [OAuthConfigResponseDto] instance and imports its values from

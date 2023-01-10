@@ -31,9 +31,9 @@ class OAuthCallbackDto {
   String toString() => 'OAuthCallbackDto[url=$url]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'url'] = url;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'url'] = this.url;
+    return json;
   }
 
   /// Returns a new [OAuthCallbackDto] instance and imports its values from

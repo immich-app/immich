@@ -82,22 +82,22 @@ class UserResponseDto {
   String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt, oauthId=$oauthId]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'id'] = id;
-      _json[r'email'] = email;
-      _json[r'firstName'] = firstName;
-      _json[r'lastName'] = lastName;
-      _json[r'createdAt'] = createdAt;
-      _json[r'profileImagePath'] = profileImagePath;
-      _json[r'shouldChangePassword'] = shouldChangePassword;
-      _json[r'isAdmin'] = isAdmin;
-    if (deletedAt != null) {
-      _json[r'deletedAt'] = deletedAt!.toUtc().toIso8601String();
+    final json = <String, dynamic>{};
+      json[r'id'] = this.id;
+      json[r'email'] = this.email;
+      json[r'firstName'] = this.firstName;
+      json[r'lastName'] = this.lastName;
+      json[r'createdAt'] = this.createdAt;
+      json[r'profileImagePath'] = this.profileImagePath;
+      json[r'shouldChangePassword'] = this.shouldChangePassword;
+      json[r'isAdmin'] = this.isAdmin;
+    if (this.deletedAt != null) {
+      json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
-      _json[r'deletedAt'] = null;
+      // json[r'deletedAt'] = null;
     }
-      _json[r'oauthId'] = oauthId;
-    return _json;
+      json[r'oauthId'] = this.oauthId;
+    return json;
   }
 
   /// Returns a new [UserResponseDto] instance and imports its values from

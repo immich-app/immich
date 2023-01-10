@@ -31,9 +31,9 @@ class GetAssetCountByTimeBucketDto {
   String toString() => 'GetAssetCountByTimeBucketDto[timeGroup=$timeGroup]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'timeGroup'] = timeGroup;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'timeGroup'] = this.timeGroup;
+    return json;
   }
 
   /// Returns a new [GetAssetCountByTimeBucketDto] instance and imports its values from

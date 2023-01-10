@@ -36,10 +36,10 @@ class AssetCountByTimeBucketResponseDto {
   String toString() => 'AssetCountByTimeBucketResponseDto[totalCount=$totalCount, buckets=$buckets]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'totalCount'] = totalCount;
-      _json[r'buckets'] = buckets;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'totalCount'] = this.totalCount;
+      json[r'buckets'] = this.buckets;
+    return json;
   }
 
   /// Returns a new [AssetCountByTimeBucketResponseDto] instance and imports its values from

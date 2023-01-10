@@ -51,13 +51,13 @@ class CuratedLocationsResponseDto {
   String toString() => 'CuratedLocationsResponseDto[id=$id, city=$city, resizePath=$resizePath, deviceAssetId=$deviceAssetId, deviceId=$deviceId]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'id'] = id;
-      _json[r'city'] = city;
-      _json[r'resizePath'] = resizePath;
-      _json[r'deviceAssetId'] = deviceAssetId;
-      _json[r'deviceId'] = deviceId;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'id'] = this.id;
+      json[r'city'] = this.city;
+      json[r'resizePath'] = this.resizePath;
+      json[r'deviceAssetId'] = this.deviceAssetId;
+      json[r'deviceId'] = this.deviceId;
+    return json;
   }
 
   /// Returns a new [CuratedLocationsResponseDto] instance and imports its values from

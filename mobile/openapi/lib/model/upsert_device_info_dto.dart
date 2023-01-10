@@ -47,15 +47,15 @@ class UpsertDeviceInfoDto {
   String toString() => 'UpsertDeviceInfoDto[deviceType=$deviceType, deviceId=$deviceId, isAutoBackup=$isAutoBackup]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'deviceType'] = deviceType;
-      _json[r'deviceId'] = deviceId;
-    if (isAutoBackup != null) {
-      _json[r'isAutoBackup'] = isAutoBackup;
+    final json = <String, dynamic>{};
+      json[r'deviceType'] = this.deviceType;
+      json[r'deviceId'] = this.deviceId;
+    if (this.isAutoBackup != null) {
+      json[r'isAutoBackup'] = this.isAutoBackup;
     } else {
-      _json[r'isAutoBackup'] = null;
+      // json[r'isAutoBackup'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [UpsertDeviceInfoDto] instance and imports its values from

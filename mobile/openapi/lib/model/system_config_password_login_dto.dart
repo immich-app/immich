@@ -31,9 +31,9 @@ class SystemConfigPasswordLoginDto {
   String toString() => 'SystemConfigPasswordLoginDto[enabled=$enabled]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'enabled'] = enabled;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'enabled'] = this.enabled;
+    return json;
   }
 
   /// Returns a new [SystemConfigPasswordLoginDto] instance and imports its values from
