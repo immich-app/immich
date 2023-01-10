@@ -23,7 +23,7 @@
 		drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
 	}
 
-	export let albums: AlbumResponseDto[];
+	export let albums: AlbumResponseDto[] = [];
 
 	onMount(async () => {
 		if (browser) {

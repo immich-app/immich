@@ -48,7 +48,7 @@ export class ShareCore {
 
   async getSharedLinkById(id: string): Promise<SharedLinkEntity> {
     const link = await this.sharedLinkRepository.getById(id);
-
+    console.log(link);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
