@@ -13,5 +13,10 @@ export const load: PageServerLoad = async ({ parent }) => {
 
 	const { data: allUsers } = await serverApi.userApi.getAllUsers(false);
 
-	return { allUsers };
+	return {
+		allUsers,
+		meta: {
+			title: 'Server Status'
+		}
+	};
 };

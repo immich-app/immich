@@ -7,10 +7,6 @@
 	export let data: PageData;
 </script>
 
-<svelte:head>
-	<title>Settings - Immich</title>
-</svelte:head>
-
 <section>
 	<NavigationBar user={data.user} shouldShowUploadButton={false} />
 </section>

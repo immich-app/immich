@@ -17,10 +17,6 @@
 	};
 </script>
 
-<svelte:head>
-	<title>System Settings - Immich</title>
-</svelte:head>
-
 <section class="">
 	{#await getConfig()}
 		<LoadingSpinner />

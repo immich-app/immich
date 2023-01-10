@@ -67,10 +67,6 @@
 	};
 </script>
 
-<svelte:head>
-	<title>Shared links - Immich</title>
-</svelte:head>
-
 <ControlAppBar backIcon={ArrowLeft} on:close-button-click={() => goto('/sharing')}>
 	<svelte:fragment slot="leading">Shared links</svelte:fragment>
 </ControlAppBar>

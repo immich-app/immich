@@ -1,6 +1,8 @@
 import type { PageServerLoad } from './$types';
 import { redirect, error } from '@sveltejs/kit';
 
+export const ssr = true;
+
 export const load: PageServerLoad = async ({ parent }) => {
 	try {
 		const { user } = await parent();
@@ -9,7 +11,10 @@ export const load: PageServerLoad = async ({ parent }) => {
 		}
 
 		return {
-			user
+			user,
+			meta: {
+				title: 'Photos'
+			}
 		};
 	} catch (e) {
 		console.log('Photo page load error', e);

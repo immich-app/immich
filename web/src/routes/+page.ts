@@ -1,4 +1,3 @@
-export const prerender = false;
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
@@ -7,4 +6,11 @@ export const load: PageLoad = async ({ parent }) => {
 	if (user) {
 		throw redirect(302, '/photos');
 	}
+
+	return {
+		meta: {
+			title: 'Welcome 🎉 - Immich',
+			description: 'Immich Web Interface'
+		}
+	};
 };
