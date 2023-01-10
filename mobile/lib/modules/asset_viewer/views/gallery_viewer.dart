@@ -69,6 +69,9 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     void showInfo() {
       showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0),
+        ),
         barrierColor: Colors.transparent,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
