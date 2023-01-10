@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 
 	return {
 		meta: {
-			title: 'Job Status'
+      title: 'Job Status',
 		}
 	};
 };

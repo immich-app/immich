@@ -1,3 +1,4 @@
+export const prerender = false;
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
@@ -9,7 +10,7 @@ export const load: PageLoad = async ({ parent }) => {
 
 	return {
 		meta: {
-			title: 'Welcome 🎉 - Immich',
+			title: 'Welcome 🎉',
 			description: 'Immich Web Interface'
 		}
 	};
