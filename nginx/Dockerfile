@@ -8,4 +8,4 @@ COPY start.sh /start.sh
 
 STOPSIGNAL SIGQUIT
 
-ENTRYPOINT ["start.sh"]
+ENTRYPOINT ["/start.sh"]
