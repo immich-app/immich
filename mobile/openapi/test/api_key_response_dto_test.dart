@@ -16,7 +16,7 @@ void main() {
   // final instance = APIKeyResponseDto();
 
   group('test APIKeyResponseDto', () {
-    // num id
+    // int id
     test('to test the property `id`', () async {
       // TODO
     });

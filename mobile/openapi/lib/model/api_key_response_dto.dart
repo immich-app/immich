@@ -19,7 +19,7 @@ class APIKeyResponseDto {
     required this.updatedAt,
   });
 
-  num id;
+  int id;
 
   String name;
 
@@ -73,9 +73,7 @@ class APIKeyResponseDto {
       }());
 
       return APIKeyResponseDto(
-        id: json[r'id'] == null
-            ? null
-            : num.parse(json[r'id'].toString()),
+        id: mapValueOfType<int>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
