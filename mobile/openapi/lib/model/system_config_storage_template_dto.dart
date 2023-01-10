@@ -31,9 +31,9 @@ class SystemConfigStorageTemplateDto {
   String toString() => 'SystemConfigStorageTemplateDto[template=$template]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'template'] = template;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'template'] = this.template;
+    return json;
   }
 
   /// Returns a new [SystemConfigStorageTemplateDto] instance and imports its values from

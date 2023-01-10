@@ -108,44 +108,44 @@ class UpdateUserDto {
   String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'id'] = id;
-    if (email != null) {
-      _json[r'email'] = email;
+    final json = <String, dynamic>{};
+      json[r'id'] = this.id;
+    if (this.email != null) {
+      json[r'email'] = this.email;
     } else {
-      _json[r'email'] = null;
+      // json[r'email'] = null;
     }
-    if (password != null) {
-      _json[r'password'] = password;
+    if (this.password != null) {
+      json[r'password'] = this.password;
     } else {
-      _json[r'password'] = null;
+      // json[r'password'] = null;
     }
-    if (firstName != null) {
-      _json[r'firstName'] = firstName;
+    if (this.firstName != null) {
+      json[r'firstName'] = this.firstName;
     } else {
-      _json[r'firstName'] = null;
+      // json[r'firstName'] = null;
     }
-    if (lastName != null) {
-      _json[r'lastName'] = lastName;
+    if (this.lastName != null) {
+      json[r'lastName'] = this.lastName;
     } else {
-      _json[r'lastName'] = null;
+      // json[r'lastName'] = null;
     }
-    if (isAdmin != null) {
-      _json[r'isAdmin'] = isAdmin;
+    if (this.isAdmin != null) {
+      json[r'isAdmin'] = this.isAdmin;
     } else {
-      _json[r'isAdmin'] = null;
+      // json[r'isAdmin'] = null;
     }
-    if (shouldChangePassword != null) {
-      _json[r'shouldChangePassword'] = shouldChangePassword;
+    if (this.shouldChangePassword != null) {
+      json[r'shouldChangePassword'] = this.shouldChangePassword;
     } else {
-      _json[r'shouldChangePassword'] = null;
+      // json[r'shouldChangePassword'] = null;
     }
-    if (profileImagePath != null) {
-      _json[r'profileImagePath'] = profileImagePath;
+    if (this.profileImagePath != null) {
+      json[r'profileImagePath'] = this.profileImagePath;
     } else {
-      _json[r'profileImagePath'] = null;
+      // json[r'profileImagePath'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [UpdateUserDto] instance and imports its values from

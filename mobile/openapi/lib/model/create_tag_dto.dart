@@ -36,10 +36,10 @@ class CreateTagDto {
   String toString() => 'CreateTagDto[type=$type, name=$name]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'type'] = type;
-      _json[r'name'] = name;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'type'] = this.type;
+      json[r'name'] = this.name;
+    return json;
   }
 
   /// Returns a new [CreateTagDto] instance and imports its values from

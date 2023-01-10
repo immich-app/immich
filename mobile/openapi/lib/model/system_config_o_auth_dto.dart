@@ -76,18 +76,18 @@ class SystemConfigOAuthDto {
   String toString() => 'SystemConfigOAuthDto[enabled=$enabled, issuerUrl=$issuerUrl, clientId=$clientId, clientSecret=$clientSecret, scope=$scope, buttonText=$buttonText, autoRegister=$autoRegister, autoLaunch=$autoLaunch, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'enabled'] = enabled;
-      _json[r'issuerUrl'] = issuerUrl;
-      _json[r'clientId'] = clientId;
-      _json[r'clientSecret'] = clientSecret;
-      _json[r'scope'] = scope;
-      _json[r'buttonText'] = buttonText;
-      _json[r'autoRegister'] = autoRegister;
-      _json[r'autoLaunch'] = autoLaunch;
-      _json[r'mobileOverrideEnabled'] = mobileOverrideEnabled;
-      _json[r'mobileRedirectUri'] = mobileRedirectUri;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'enabled'] = this.enabled;
+      json[r'issuerUrl'] = this.issuerUrl;
+      json[r'clientId'] = this.clientId;
+      json[r'clientSecret'] = this.clientSecret;
+      json[r'scope'] = this.scope;
+      json[r'buttonText'] = this.buttonText;
+      json[r'autoRegister'] = this.autoRegister;
+      json[r'autoLaunch'] = this.autoLaunch;
+      json[r'mobileOverrideEnabled'] = this.mobileOverrideEnabled;
+      json[r'mobileRedirectUri'] = this.mobileRedirectUri;
+    return json;
   }
 
   /// Returns a new [SystemConfigOAuthDto] instance and imports its values from

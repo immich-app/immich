@@ -42,14 +42,14 @@ class UpdateAssetDto {
   String toString() => 'UpdateAssetDto[tagIds=$tagIds, isFavorite=$isFavorite]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'tagIds'] = tagIds;
-    if (isFavorite != null) {
-      _json[r'isFavorite'] = isFavorite;
+    final json = <String, dynamic>{};
+      json[r'tagIds'] = this.tagIds;
+    if (this.isFavorite != null) {
+      json[r'isFavorite'] = this.isFavorite;
     } else {
-      _json[r'isFavorite'] = null;
+      // json[r'isFavorite'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [UpdateAssetDto] instance and imports its values from

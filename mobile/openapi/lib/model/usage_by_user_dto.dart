@@ -51,13 +51,13 @@ class UsageByUserDto {
   String toString() => 'UsageByUserDto[userId=$userId, videos=$videos, photos=$photos, usageRaw=$usageRaw, usage=$usage]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'userId'] = userId;
-      _json[r'videos'] = videos;
-      _json[r'photos'] = photos;
-      _json[r'usageRaw'] = usageRaw;
-      _json[r'usage'] = usage;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'userId'] = this.userId;
+      json[r'videos'] = this.videos;
+      json[r'photos'] = this.photos;
+      json[r'usageRaw'] = this.usageRaw;
+      json[r'usage'] = this.usage;
+    return json;
   }
 
   /// Returns a new [UsageByUserDto] instance and imports its values from

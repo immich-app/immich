@@ -31,9 +31,9 @@ class JobCommandDto {
   String toString() => 'JobCommandDto[command=$command]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'command'] = command;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'command'] = this.command;
+    return json;
   }
 
   /// Returns a new [JobCommandDto] instance and imports its values from

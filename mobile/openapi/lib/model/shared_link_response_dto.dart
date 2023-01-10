@@ -88,30 +88,30 @@ class SharedLinkResponseDto {
   String toString() => 'SharedLinkResponseDto[type=$type, id=$id, description=$description, userId=$userId, key=$key, createdAt=$createdAt, expiresAt=$expiresAt, assets=$assets, album=$album, allowUpload=$allowUpload]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'type'] = type;
-      _json[r'id'] = id;
-    if (description != null) {
-      _json[r'description'] = description;
+    final json = <String, dynamic>{};
+      json[r'type'] = this.type;
+      json[r'id'] = this.id;
+    if (this.description != null) {
+      json[r'description'] = this.description;
     } else {
-      _json[r'description'] = null;
+      // json[r'description'] = null;
     }
-      _json[r'userId'] = userId;
-      _json[r'key'] = key;
-      _json[r'createdAt'] = createdAt;
-    if (expiresAt != null) {
-      _json[r'expiresAt'] = expiresAt;
+      json[r'userId'] = this.userId;
+      json[r'key'] = this.key;
+      json[r'createdAt'] = this.createdAt;
+    if (this.expiresAt != null) {
+      json[r'expiresAt'] = this.expiresAt;
     } else {
-      _json[r'expiresAt'] = null;
+      // json[r'expiresAt'] = null;
     }
-      _json[r'assets'] = assets;
-    if (album != null) {
-      _json[r'album'] = album;
+      json[r'assets'] = this.assets;
+    if (this.album != null) {
+      json[r'album'] = this.album;
     } else {
-      _json[r'album'] = null;
+      // json[r'album'] = null;
     }
-      _json[r'allowUpload'] = allowUpload;
-    return _json;
+      json[r'allowUpload'] = this.allowUpload;
+    return json;
   }
 
   /// Returns a new [SharedLinkResponseDto] instance and imports its values from

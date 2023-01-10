@@ -36,10 +36,10 @@ class LogoutResponseDto {
   String toString() => 'LogoutResponseDto[successful=$successful, redirectUri=$redirectUri]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'successful'] = successful;
-      _json[r'redirectUri'] = redirectUri;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'successful'] = this.successful;
+      json[r'redirectUri'] = this.redirectUri;
+    return json;
   }
 
   /// Returns a new [LogoutResponseDto] instance and imports its values from

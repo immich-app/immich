@@ -31,9 +31,9 @@ class APIKeyUpdateDto {
   String toString() => 'APIKeyUpdateDto[name=$name]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'name'] = name;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'name'] = this.name;
+    return json;
   }
 
   /// Returns a new [APIKeyUpdateDto] instance and imports its values from

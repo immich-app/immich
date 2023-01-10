@@ -51,17 +51,17 @@ class TagResponseDto {
   String toString() => 'TagResponseDto[id=$id, type=$type, name=$name, userId=$userId, renameTagId=$renameTagId]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'id'] = id;
-      _json[r'type'] = type;
-      _json[r'name'] = name;
-      _json[r'userId'] = userId;
-    if (renameTagId != null) {
-      _json[r'renameTagId'] = renameTagId;
+    final json = <String, dynamic>{};
+      json[r'id'] = this.id;
+      json[r'type'] = this.type;
+      json[r'name'] = this.name;
+      json[r'userId'] = this.userId;
+    if (this.renameTagId != null) {
+      json[r'renameTagId'] = this.renameTagId;
     } else {
-      _json[r'renameTagId'] = null;
+      // json[r'renameTagId'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [TagResponseDto] instance and imports its values from

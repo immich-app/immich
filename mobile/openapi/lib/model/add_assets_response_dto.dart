@@ -47,15 +47,15 @@ class AddAssetsResponseDto {
   String toString() => 'AddAssetsResponseDto[successfullyAdded=$successfullyAdded, alreadyInAlbum=$alreadyInAlbum, album=$album]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'successfullyAdded'] = successfullyAdded;
-      _json[r'alreadyInAlbum'] = alreadyInAlbum;
-    if (album != null) {
-      _json[r'album'] = album;
+    final json = <String, dynamic>{};
+      json[r'successfullyAdded'] = this.successfullyAdded;
+      json[r'alreadyInAlbum'] = this.alreadyInAlbum;
+    if (this.album != null) {
+      json[r'album'] = this.album;
     } else {
-      _json[r'album'] = null;
+      // json[r'album'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [AddAssetsResponseDto] instance and imports its values from

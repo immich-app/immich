@@ -36,10 +36,10 @@ class JobStatusResponseDto {
   String toString() => 'JobStatusResponseDto[isActive=$isActive, queueCount=$queueCount]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'isActive'] = isActive;
-      _json[r'queueCount'] = queueCount;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'isActive'] = this.isActive;
+      json[r'queueCount'] = this.queueCount;
+    return json;
   }
 
   /// Returns a new [JobStatusResponseDto] instance and imports its values from

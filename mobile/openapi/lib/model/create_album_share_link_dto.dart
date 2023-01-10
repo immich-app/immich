@@ -64,24 +64,24 @@ class CreateAlbumShareLinkDto {
   String toString() => 'CreateAlbumShareLinkDto[albumId=$albumId, expiredAt=$expiredAt, allowUpload=$allowUpload, description=$description]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'albumId'] = albumId;
-    if (expiredAt != null) {
-      _json[r'expiredAt'] = expiredAt;
+    final json = <String, dynamic>{};
+      json[r'albumId'] = this.albumId;
+    if (this.expiredAt != null) {
+      json[r'expiredAt'] = this.expiredAt;
     } else {
-      _json[r'expiredAt'] = null;
+      // json[r'expiredAt'] = null;
     }
-    if (allowUpload != null) {
-      _json[r'allowUpload'] = allowUpload;
+    if (this.allowUpload != null) {
+      json[r'allowUpload'] = this.allowUpload;
     } else {
-      _json[r'allowUpload'] = null;
+      // json[r'allowUpload'] = null;
     }
-    if (description != null) {
-      _json[r'description'] = description;
+    if (this.description != null) {
+      json[r'description'] = this.description;
     } else {
-      _json[r'description'] = null;
+      // json[r'description'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [CreateAlbumShareLinkDto] instance and imports its values from

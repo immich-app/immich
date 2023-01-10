@@ -31,9 +31,9 @@ class UserCountResponseDto {
   String toString() => 'UserCountResponseDto[userCount=$userCount]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'userCount'] = userCount;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'userCount'] = this.userCount;
+    return json;
   }
 
   /// Returns a new [UserCountResponseDto] instance and imports its values from
