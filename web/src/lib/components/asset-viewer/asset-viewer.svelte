@@ -23,14 +23,6 @@
 	export let publicSharedKey = '';
 	export let showNavigation = true;
 
-	$: {
-		appearsInAlbums = [];
-
-		api.albumApi.getAllAlbums(undefined, asset.id).then((result) => {
-			appearsInAlbums = result.data;
-		});
-	}
-
 	const dispatch = createEventDispatcher();
 	let halfLeftHover = false;
 	let halfRightHover = false;
@@ -41,8 +33,15 @@
 	let shouldPlayMotionPhoto = false;
 	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
-	onMount(() => {
+	onMount(async () => {
 		document.addEventListener('keydown', onKeyboardPress);
+
+		try {
+			const { data } = await api.albumApi.getAllAlbums(undefined, asset.id);
+			appearsInAlbums = data;
+		} catch (e) {
+			console.error('Error getting album that asset belong to', e);
+		}
 	});
 
 	onDestroy(() => {
