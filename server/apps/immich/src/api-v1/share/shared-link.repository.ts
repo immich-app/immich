@@ -70,6 +70,16 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       },
       order: {
         createdAt: 'DESC',
+        assets: {
+          createdAt: 'ASC',
+        },
+        album: {
+          assets: {
+            assetInfo: {
+              createdAt: 'ASC',
+            },
+          },
+        },
       },
     });
   }
