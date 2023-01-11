@@ -101,10 +101,6 @@
 	};
 </script>
 
-<svelte:head>
-	<title>User Management - Immich</title>
-</svelte:head>
-
 <section>
 	{#if shouldShowCreateUserForm}
 		<FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>

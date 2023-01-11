@@ -9,7 +9,10 @@ export const load: PageServerLoad = async ({ parent }) => {
 		}
 
 		return {
-			user
+			user,
+			meta: {
+				title: 'Photos'
+			}
 		};
 	} catch (e) {
 		console.log('Photo page load error', e);

@@ -10,7 +10,10 @@ export const load: PageServerLoad = async ({ parent }) => {
 		}
 
 		return {
-			user
+			user,
+			meta: {
+				title: 'Shared Links'
+			}
 		};
 	} catch (e) {
 		throw redirect(302, '/auth/login');

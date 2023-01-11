@@ -26,10 +26,6 @@
 	};
 </script>
 
-<svelte:head>
-	<title>Administration - Immich</title>
-</svelte:head>
-
 <NavigationBar user={$page.data.user} />
 
 <main>
