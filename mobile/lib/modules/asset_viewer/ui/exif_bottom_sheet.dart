@@ -87,9 +87,13 @@ class ExifBottomSheet extends HookConsumerWidget {
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              const CustomDraggingHandle(),
+              const Align(
+                alignment: Alignment.center,
+                child: CustomDraggingHandle(),
+              ),
               const SizedBox(height: 12),
               if (exifInfo?.dateTimeOriginal != null)
                 Text(
@@ -101,15 +105,6 @@ class ExifBottomSheet extends HookConsumerWidget {
                     fontSize: 14,
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: const Text(
-                  "exif_bottom_sheet_description",
-                  style: TextStyle(
-                    fontSize: 11,
-                  ),
-                ).tr(),
-              ),
 
               // Location
               if (assetDetail.latitude != null)
@@ -134,7 +129,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                         buildLocationText(),
                       Text(
                         "${assetDetail.latitude?.toStringAsFixed(4)}, ${assetDetail.longitude?.toStringAsFixed(4)}",
-                        style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                        style: const TextStyle(fontSize: 12),
                       )
                     ],
                   ),
@@ -164,7 +159,9 @@ class ExifBottomSheet extends HookConsumerWidget {
                         title: Text(
                           "${exifInfo.imageName!}${p.extension(assetDetail.remote!.originalPath)}",
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, color: textColor),
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
                         ),
                         subtitle: exifInfo.exifImageHeight != null
                             ? Text(
@@ -180,7 +177,9 @@ class ExifBottomSheet extends HookConsumerWidget {
                           title: Text(
                             "${exifInfo.make} ${exifInfo.model}",
                             style: TextStyle(
-                                color: textColor, fontWeight: FontWeight.bold),
+                              color: textColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           subtitle: Text(
                             "ƒ/${exifInfo.fNumber}   1/${(1 / (exifInfo.exposureTime ?? 1)).toStringAsFixed(0)}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
