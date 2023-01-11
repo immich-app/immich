@@ -1,6 +1,5 @@
 import { immichAppConfig, immichBullAsyncConfig } from '@app/common/config';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { UserModule } from './api-v1/user/user.module';
 import { AssetModule } from './api-v1/asset/asset.module';
 import { AuthModule } from './api-v1/auth/auth.module';
 import { APIKeyModule } from './api-v1/api-key/api-key.module';
@@ -24,6 +23,7 @@ import { ImmichConfigModule } from '@app/immich-config';
 import { ShareModule } from './api-v1/share/share.module';
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
+import { UserController } from './controllers';
 
 @Module({
   imports: [
@@ -34,7 +34,6 @@ import { InfraModule } from '@app/infra';
     }),
 
     DatabaseModule,
-    UserModule,
 
     APIKeyModule,
 
@@ -70,7 +69,11 @@ import { InfraModule } from '@app/infra';
 
     ShareModule,
   ],
-  controllers: [AppController],
+  controllers: [
+    //
+    AppController,
+    UserController,
+  ],
   providers: [],
 })
 export class AppModule implements NestModule {

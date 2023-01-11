@@ -11,7 +11,6 @@ import { AssetRepository, IAssetRepository } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { TagModule } from '../tag/tag.module';
 import { AlbumModule } from '../album/album.module';
-import { UserModule } from '../user/user.module';
 import { StorageModule } from '@app/storage';
 import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.constant';
 import { ShareModule } from '../share/share.module';
@@ -27,7 +26,6 @@ const ASSET_REPOSITORY_PROVIDER = {
     CommunicationModule,
     BackgroundTaskModule,
     DownloadModule,
-    UserModule,
     AlbumModule,
     TagModule,
     StorageModule,

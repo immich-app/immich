@@ -6,9 +6,7 @@ import { clearDb, authCustom } from './test-utils';
 import { databaseConfig } from '@app/database/config/database.config';
 import { UserModule } from '../src/api-v1/user/user.module';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
-import { UserService } from '../src/api-v1/user/user.service';
-import { CreateAdminDto, CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
-import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
+import { CreateAdminDto, CreateUserDto, UserResponseDto, UserService } from '@app/domain';
 import { DataSource } from 'typeorm';
 
 function _createUser(userService: UserService, data: CreateUserDto | CreateAdminDto) {

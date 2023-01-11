@@ -15,20 +15,20 @@ import {
   StreamableFile,
   Header,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { Authenticated } from '../../decorators/authenticated.decorator';
-import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UserService } from '@app/domain';
+import { Authenticated } from '../decorators/authenticated.decorator';
+import { AuthUserDto, GetAuthUser } from '../decorators/auth-user.decorator';
+import { CreateUserDto } from '@app/domain';
+import { UpdateUserDto } from '@app/domain';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { profileImageUploadOption } from '../../config/profile-image-upload.config';
+import { profileImageUploadOption } from '../config/profile-image-upload.config';
 import { Response as Res } from 'express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { UserResponseDto } from './response-dto/user-response.dto';
-import { UserCountResponseDto } from './response-dto/user-count-response.dto';
-import { CreateProfileImageDto } from './dto/create-profile-image.dto';
-import { CreateProfileImageResponseDto } from './response-dto/create-profile-image-response.dto';
-import { UserCountDto } from './dto/user-count.dto';
+import { UserResponseDto } from '@app/domain';
+import { UserCountResponseDto } from '@app/domain';
+import { CreateProfileImageDto } from '@app/domain';
+import { CreateProfileImageResponseDto } from '@app/domain';
+import { UserCountDto } from '@app/domain';
 
 @ApiTags('User')
 @Controller('user')

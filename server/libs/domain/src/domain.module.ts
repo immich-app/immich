@@ -1,17 +1,20 @@
 import { DynamicModule, Global, Module, ModuleMetadata, Provider } from '@nestjs/common';
+import { UserService } from './user';
 
-const providers: Provider[] = [];
+const providers: Provider[] = [
+  //
+  UserService,
+];
 
 @Global()
 @Module({})
 export class DomainModule {
   static register(options: Pick<ModuleMetadata, 'imports'>): DynamicModule {
-    const imports = options.imports || [];
     return {
       module: DomainModule,
-      imports: [...imports],
+      imports: options.imports,
       providers: [...providers],
-      exports: [...providers, ...imports],
+      exports: [...providers],
     };
   }
 }

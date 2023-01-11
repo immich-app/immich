@@ -1,7 +1,6 @@
 import { UserEntity } from '@app/database';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { newUserRepositoryMock } from '../../../test/test-utils';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
+import { AuthUserDto } from '../auth';
 import { IUserRepository } from '@app/domain';
 import { when } from 'jest-when';
 import { UserService } from './user.service';
@@ -66,7 +65,17 @@ describe('UserService', () => {
   });
 
   beforeEach(() => {
-    userRepositoryMock = newUserRepositoryMock();
+    userRepositoryMock = {
+      get: jest.fn(),
+      getAdmin: jest.fn(),
+      getByEmail: jest.fn(),
+      getByOAuthId: jest.fn(),
+      getList: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      restore: jest.fn(),
+    };
     when(userRepositoryMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);
     when(userRepositoryMock.get).calledWith(adminUser.id, undefined).mockResolvedValue(adminUser);
     when(userRepositoryMock.get).calledWith(immichUser.id, undefined).mockResolvedValue(immichUser);

@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Request } from 'express';
-import { UserResponseDto } from '../api-v1/user/response-dto/user-response.dto';
+import { UserResponseDto } from '@app/domain';
 
 interface UserRequest extends Request {
   user: UserResponseDto;

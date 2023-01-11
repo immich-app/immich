@@ -19,7 +19,7 @@ import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/a
 import { LoginResponseDto } from './response-dto/login-response.dto';
 import { LogoutResponseDto } from './response-dto/logout-response.dto';
 import { OAuthService } from '../oauth/oauth.service';
-import { UserCore } from '../user/user.core';
+import { UserCore } from '@app/domain';
 import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
 import { SystemConfig } from '@app/database/entities/system-config.entity';
 

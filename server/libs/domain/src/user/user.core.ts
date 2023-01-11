@@ -8,11 +8,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { hash } from 'bcrypt';
-import { createReadStream, constants, ReadStream } from 'fs';
+import { constants, createReadStream, ReadStream } from 'fs';
 import fs from 'fs/promises';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
+import { AuthUserDto } from '../auth';
 import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './dto/create-user.dto';
-import { IUserRepository, UserListFilter } from '@app/domain';
+import { IUserRepository, UserListFilter } from './user.repository';
 
 const SALT_ROUNDS = 10;
 
