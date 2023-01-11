@@ -17,7 +17,7 @@ import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { UserDeletionProcessor } from './processors/user-deletion.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
 import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.constant';
-import { DomainModule } from '../../../libs/domain/src';
+import { DomainModule } from '@app/domain';
 
 @Module({
   imports: [
