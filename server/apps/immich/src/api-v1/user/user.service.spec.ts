@@ -2,7 +2,7 @@ import { UserEntity } from '@app/database';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { newUserRepositoryMock } from '../../../test/test-utils';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { IUserRepository } from './user-repository';
+import { IUserRepository } from '@app/domain';
 import { when } from 'jest-when';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';

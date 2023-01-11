@@ -10,7 +10,7 @@ import {
 } from './response-dto/create-profile-image-response.dto';
 import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
 import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
-import { IUserRepository } from './user-repository';
+import { IUserRepository } from '@app/domain';
 import { UserCore } from './user.core';
 
 @Injectable()

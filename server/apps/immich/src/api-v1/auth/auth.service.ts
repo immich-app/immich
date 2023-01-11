@@ -11,7 +11,7 @@ import { UserEntity } from '@app/database';
 import { AuthType } from '../../constants/jwt.constant';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
-import { IUserRepository } from '../user/user-repository';
+import { IUserRepository } from '@app/domain';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';

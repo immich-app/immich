@@ -6,7 +6,7 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
 import { UserResponseDto } from '../user/response-dto/user-response.dto';
-import { IUserRepository } from '../user/user-repository';
+import { IUserRepository } from '@app/domain';
 import { UserCore } from '../user/user.core';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';

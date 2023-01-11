@@ -22,10 +22,16 @@ import { OAuthModule } from './api-v1/oauth/oauth.module';
 import { TagModule } from './api-v1/tag/tag.module';
 import { ImmichConfigModule } from '@app/immich-config';
 import { ShareModule } from './api-v1/share/share.module';
+import { DomainModule } from '@app/domain';
+import { InfraModule } from '@app/infra';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
+
+    DomainModule.register({
+      imports: [InfraModule],
+    }),
 
     DatabaseModule,
     UserModule,

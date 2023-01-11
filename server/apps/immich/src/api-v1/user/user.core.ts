@@ -12,7 +12,7 @@ import { createReadStream, constants, ReadStream } from 'fs';
 import fs from 'fs/promises';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './dto/create-user.dto';
-import { IUserRepository, UserListFilter } from './user-repository';
+import { IUserRepository, UserListFilter } from '@app/domain';
 
 const SALT_ROUNDS = 10;
 

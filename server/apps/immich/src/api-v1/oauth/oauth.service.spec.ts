@@ -6,7 +6,7 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
 import { OAuthService } from '../oauth/oauth.service';
-import { IUserRepository } from '../user/user-repository';
+import { IUserRepository } from '@app/domain';
 
 const email = 'user@immich.com';
 const sub = 'my-auth-user-sub';

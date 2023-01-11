@@ -6,7 +6,7 @@ import { ImmichConfigService } from '@app/immich-config';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { OAuthService } from '../oauth/oauth.service';
-import { IUserRepository } from '../user/user-repository';
+import { IUserRepository } from '@app/domain';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { LoginResponseDto } from './response-dto/login-response.dto';
