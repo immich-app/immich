@@ -1,4 +1,4 @@
-import { SystemConfigEntity, SystemConfigKey } from '@app/database';
+import { SystemConfigEntity, SystemConfigKey } from '@app/infra';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { Command, CommandRunner } from 'nest-commander';

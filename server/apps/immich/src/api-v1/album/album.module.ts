@@ -2,7 +2,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { AlbumController } from './album.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AlbumEntity, AssetAlbumEntity, UserAlbumEntity } from '@app/database';
+import { AlbumEntity, AssetAlbumEntity, UserAlbumEntity } from '@app/infra';
 import { AlbumRepository, IAlbumRepository } from './album-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { AssetModule } from '../asset/asset.module';

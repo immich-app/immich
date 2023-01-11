@@ -3,7 +3,7 @@ import { JobService } from './job.service';
 import { JobController } from './job.controller';
 import { ImmichJwtModule } from '../../modules/immich-jwt/immich-jwt.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ExifEntity } from '@app/database';
+import { ExifEntity } from '@app/infra';
 import { TagModule } from '../tag/tag.module';
 import { AssetModule } from '../asset/asset.module';
 

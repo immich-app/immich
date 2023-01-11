@@ -1,4 +1,4 @@
-import { TagEntity, TagType } from '@app/database';
+import { TagEntity, TagType } from '@app/infra';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';

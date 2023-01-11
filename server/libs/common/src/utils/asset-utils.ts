@@ -1,4 +1,4 @@
-import { AssetEntity } from '@app/database';
+import { AssetEntity } from '@app/infra';
 import { AssetResponseDto } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
 import fs from 'fs';
 

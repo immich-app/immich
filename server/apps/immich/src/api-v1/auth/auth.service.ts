@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserEntity } from '@app/database';
+import { UserEntity } from '@app/infra';
 import { AuthType } from '../../constants/jwt.constant';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
@@ -21,7 +21,7 @@ import { LogoutResponseDto } from './response-dto/logout-response.dto';
 import { OAuthService } from '../oauth/oauth.service';
 import { UserCore } from '@app/domain';
 import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
-import { SystemConfig } from '@app/database/entities/system-config.entity';
+import { SystemConfig } from '@app/infra';
 
 @Injectable()
 export class AuthService {

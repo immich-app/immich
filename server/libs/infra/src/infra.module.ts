@@ -1,8 +1,8 @@
-import { UserEntity } from '@app/database';
+import { databaseConfig, UserEntity } from '@app/infra';
 import { IUserRepository } from '@app/domain';
 import { Global, Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserRepository } from './repository';
+import { UserRepository } from './db';
 
 const providers: Provider[] = [
   //
@@ -11,7 +11,11 @@ const providers: Provider[] = [
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [
+    //
+    TypeOrmModule.forRoot(databaseConfig),
+    TypeOrmModule.forFeature([UserEntity]),
+  ],
   providers: [...providers],
   exports: [...providers],
 })

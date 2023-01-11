@@ -1,4 +1,4 @@
-import { SystemConfigEntity } from '@app/database';
+import { SystemConfigEntity } from '@app/infra';
 import { Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ImmichConfigService } from './immich-config.service';

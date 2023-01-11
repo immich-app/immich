@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database';
+import { UserEntity } from '@app/infra';
 import { InjectRepository } from '@nestjs/typeorm';
 import bcrypt from 'bcrypt';
 import { Command, CommandRunner, InquirerService, Question, QuestionSet } from 'nest-commander';

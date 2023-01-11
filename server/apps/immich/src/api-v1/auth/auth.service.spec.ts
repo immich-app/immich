@@ -1,7 +1,7 @@
-import { UserEntity } from '@app/database';
+import { UserEntity } from '@app/infra';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { SystemConfig } from '@app/database/entities/system-config.entity';
+import { SystemConfig } from '@app/infra';
 import { ImmichConfigService } from '@app/immich-config';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';

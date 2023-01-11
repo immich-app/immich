@@ -1,4 +1,4 @@
-import { DeviceInfoEntity } from '@app/database';
+import { DeviceInfoEntity } from '@app/infra';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

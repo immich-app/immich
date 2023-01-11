@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
-import { AssetType } from '@app/database';
+import { AssetType } from '@app/infra';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAssetDto {

@@ -14,7 +14,6 @@ import { AlbumModule } from './api-v1/album/album.module';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
-import { DatabaseModule } from '@app/database';
 import { JobModule } from './api-v1/job/job.module';
 import { SystemConfigModule } from './api-v1/system-config/system-config.module';
 import { OAuthModule } from './api-v1/oauth/oauth.module';
@@ -32,8 +31,6 @@ import { UserController } from './controllers';
     DomainModule.register({
       imports: [InfraModule],
     }),
-
-    DatabaseModule,
 
     APIKeyModule,
 

@@ -1,4 +1,4 @@
-import { APIKeyEntity } from '@app/database';
+import { APIKeyEntity } from '@app/infra';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APIKeyController } from './api-key.controller';

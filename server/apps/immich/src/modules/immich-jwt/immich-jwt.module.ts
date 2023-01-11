@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '../../config/jwt.config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@app/database';
+import { UserEntity } from '@app/infra';
 import { APIKeyModule } from '../../api-v1/api-key/api-key.module';
 import { APIKeyStrategy } from './strategies/api-key.strategy';
 import { ShareModule } from '../../api-v1/share/share.module';

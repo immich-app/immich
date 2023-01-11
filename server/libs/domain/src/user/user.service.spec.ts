@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database';
+import { UserEntity } from '@app/infra';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
 import { IUserRepository } from '@app/domain';

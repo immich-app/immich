@@ -1,4 +1,4 @@
-import { TagEntity } from '@app/database';
+import { TagEntity } from '@app/infra';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateTagDto } from './dto/create-tag.dto';

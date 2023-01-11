@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
-import { DeviceType } from '@app/database';
+import { DeviceType } from '@app/infra';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpsertDeviceInfoDto {

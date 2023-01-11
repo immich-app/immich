@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { UserEntity } from '../../../../../libs/database/src/entities/user.entity';
+import { UserEntity } from '@app/infra';
 import { LoginResponseDto } from '../../api-v1/auth/response-dto/login-response.dto';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from './immich-jwt.service';

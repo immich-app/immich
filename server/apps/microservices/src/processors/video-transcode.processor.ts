@@ -1,5 +1,5 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
-import { AssetEntity } from '@app/database';
+import { AssetEntity } from '@app/infra';
 import { QueueNameEnum } from '@app/job';
 import { mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
 import { IMp4ConversionProcessor } from '@app/job/interfaces/video-transcode.interface';

@@ -1,4 +1,4 @@
-import { SystemConfig } from '@app/database/entities/system-config.entity';
+import { SystemConfig } from '@app/infra';
 import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';

@@ -1,9 +1,9 @@
-import { SharedLinkEntity } from '@app/database/entities/shared-link.entity';
+import { SharedLinkEntity } from '@app/infra';
 import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
 import { ISharedLinkRepository } from './shared-link.repository';
 import crypto from 'node:crypto';
 import { BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
-import { AssetEntity } from '@app/database';
+import { AssetEntity } from '@app/infra';
 import { EditSharedLinkDto } from './dto/edit-shared-link.dto';
 
 export class ShareCore {
