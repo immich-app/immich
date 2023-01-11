@@ -8,8 +8,7 @@ import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
-import { UserService } from '../src/api-v1/user/user.service';
-import { UserModule } from '../src/api-v1/user/user.module';
+import { UserService } from '@app/domain';
 import { DataSource } from 'typeorm';
 
 function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
@@ -52,7 +51,7 @@ describe('Album', () => {
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [AlbumModule, UserModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [AlbumModule, TypeOrmModule.forRoot(databaseConfig)],
       });
       authUser = getAuthUser(); // set default auth user
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
