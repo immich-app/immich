@@ -9,9 +9,7 @@ import { Repository } from 'typeorm';
   description: 'Enable password login',
 })
 export class EnablePasswordLoginCommand extends CommandRunner {
-  constructor(
-    @InjectRepository(SystemConfigEntity) private repository: Repository<SystemConfigEntity>, //
-  ) {
+  constructor(@InjectRepository(SystemConfigEntity) private repository: Repository<SystemConfigEntity>) {
     super();
   }
 
