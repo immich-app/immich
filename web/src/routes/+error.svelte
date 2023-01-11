@@ -3,7 +3,7 @@
 </script>
 
 <div class="h-screen w-screen  flex place-items-center place-content-center flex-col">
-	<div class="min-w-[500px]  bg-gray-300 rounded-2xl my-4 p-4">
+	<div class="min-w-[500px] max-w-[95vw]  bg-gray-300 rounded-2xl my-4 p-4">
 		<code class="text-xs text-red-500">Error code {$page.status}</code>
 		<br />
 		<code class="text-sm">
