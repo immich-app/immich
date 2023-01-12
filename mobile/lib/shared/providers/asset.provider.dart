@@ -27,7 +27,8 @@ class AssetsState {
   Future<AssetsState> withRenderDataStructure(int groupSize) async {
     return AssetsState(
       allAssets,
-      renderList: await RenderList.fromAssetGroups(await _groupByDate(), groupSize),
+      renderList:
+          await RenderList.fromAssetGroups(await _groupByDate(), groupSize),
     );
   }
 
@@ -40,7 +41,6 @@ class AssetsState {
   }
 
   _groupByDate() async {
-
     sortCompare(List<Asset> assets) {
       assets.sortByCompare<DateTime>(
         (e) => e.createdAt,
@@ -61,6 +61,14 @@ class AssetsState {
   static empty() {
     return AssetsState([]);
   }
+}
+
+class _CombineAssetsComputeParameters {
+  final Iterable<Asset> local;
+  final Iterable<Asset> remote;
+  final String deviceId;
+
+  _CombineAssetsComputeParameters(this.local, this.remote, this.deviceId);
 }
 
 class AssetNotifier extends StateNotifier<AssetsState> {
@@ -127,7 +135,8 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       newRemote ??= state.allAssets.slice(remoteBegin);
       newLocal ??= [];
 
-      final combinedAssets = await _combineLocalAndRemoteAssets(local: newLocal, remote: newRemote);
+      final combinedAssets = await _combineLocalAndRemoteAssets(
+          local: newLocal, remote: newRemote);
       await _updateAssetsState(combinedAssets, cache: false);
 
       log.info("Combining assets: ${stopwatch.elapsedMilliseconds}ms");
@@ -142,11 +151,10 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     required Iterable<Asset> local,
     required List<Asset> remote,
   }) async {
-
-    combine(Map<String, Object> data) {
-      var local = data["local"]! as Iterable<Asset>;
-      var remote = data["remote"]! as Iterable<Asset>;
-      final deviceId = data["device_id"]! as String;
+    combine(_CombineAssetsComputeParameters data) {
+      var local = data.local;
+      var remote = data.remote;
+      final deviceId = data.deviceId;
 
       final List<Asset> assets = [];
       if (remote.isNotEmpty && local.isNotEmpty) {
@@ -163,7 +171,8 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     }
 
     final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
-    return await compute(combine, {"local": local, "remote": remote, "device_id": deviceId});
+    return await compute(
+        combine, _CombineAssetsComputeParameters(local, remote, deviceId));
   }
 
   clearAllAsset() {
