@@ -36,7 +36,7 @@ class ApiService {
   ///  host   - required
   ///  port   - optional (default: based on schema)
   ///  path   - optional (default: /)
-  resolveEndpoint(String serverUrl) async {
+  Future<String> resolveEndpoint(String serverUrl) async {
     // Add schema if none is set
     final urlWithSchema = serverUrl.startsWith(RegExp(r"https?://"))
         ? serverUrl
@@ -51,14 +51,14 @@ class ApiService {
     if (path.isEmpty) {
       // No path provided, lets check for /.well-known/immich
       final wellKnownEndpoint = await getWellKnownEndpoint(origin);
-      if (wellKnownEndpoint) return wellKnownEndpoint;
+      if (wellKnownEndpoint.isNotEmpty) return wellKnownEndpoint;
     }
 
     // Otherwise, assume the URL provided is the api endpoint
     return "$origin$path";
   }
 
-  getWellKnownEndpoint(String baseUrl) async {
+  Future<String> getWellKnownEndpoint(String baseUrl) async {
     final Client client = Client();
 
     try {
@@ -69,7 +69,7 @@ class ApiService {
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        final endpoint = data['api']['endpoint'] as String;
+        final endpoint = data['api']['endpoint'].toString();
 
         if (endpoint.startsWith('/')) {
           // Full URL is relative to base
@@ -81,7 +81,7 @@ class ApiService {
       debugPrint("Could not locate /.well-known/immich at $baseUrl");
     }
 
-    return null;
+    return "";
   }
 
   setAccessToken(String accessToken) {

@@ -25,7 +25,7 @@ class LoginForm extends HookConsumerWidget {
     final passwordController =
         useTextEditingController.fromValue(TextEditingValue.empty);
     final serverEndpointController =
-        useTextEditingController(text: 'login_form_endpoint_hint'.tr());
+        useTextEditingController.fromValue(TextEditingValue.empty);
     final apiService = ref.watch(apiServiceProvider);
     final serverEndpointFocusNode = useFocusNode();
     final isSaveLoginInfo = useState<bool>(false);
