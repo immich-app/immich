@@ -71,10 +71,11 @@ class RenderList {
 
           var monthTitleText = groupName;
 
-          try {
-            monthTitleText = monthFormat.format(DateTime.parse(groupName));
-          } catch (e) {
-            log.severe("Failed to format date for month title: $groupName");
+          var groupDate = DateTime.tryParse(groupName);
+          if (groupDate != null) {
+            monthTitleText = monthFormat.format(groupDate);
+          } else {
+            log.severe("Failed to format date for day title: $groupName");
           }
 
           elements.add(
@@ -94,9 +95,10 @@ class RenderList {
 
         var dateText = groupName;
 
-        try {
-          dateText = formatDate.format(DateTime.parse(groupName));
-        } catch (e) {
+        var groupDate = DateTime.tryParse(groupName);
+        if (groupDate != null) {
+          dateText = formatDate.format(groupDate);
+        } else {
           log.severe("Failed to format date for day title: $groupName");
         }
 
