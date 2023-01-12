@@ -2,7 +2,13 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import BaseModal from '../base-modal.svelte';
 	import Link from 'svelte-material-icons/Link.svelte';
-	import { AlbumResponseDto, api, SharedLinkResponseDto, SharedLinkType } from '@api';
+	import {
+		AlbumResponseDto,
+		api,
+		AssetResponseDto,
+		SharedLinkResponseDto,
+		SharedLinkType
+	} from '@api';
 	import { notificationController, NotificationType } from '../notification/notification';
 	import { ImmichDropDownOption } from '../dropdown-button.svelte';
 	import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
@@ -12,7 +18,8 @@
 	} from '$lib/components/admin-page/settings/setting-input-field.svelte';
 
 	export let shareType: SharedLinkType;
-	export let album: AlbumResponseDto | undefined;
+	export let sharedAssets: AssetResponseDto[] = [];
+	export let album: AlbumResponseDto | undefined = undefined;
 	export let editingLink: SharedLinkResponseDto | undefined = undefined;
 
 	let isShowSharedLink = false;
@@ -65,6 +72,9 @@
 		}
 	};
 
+	const createIndividualAssetSharedLink = async () => {
+		console.log('create shared link for ', sharedAssets);
+	};
 	const buildSharedLink = (createdLink: SharedLinkResponseDto) => {
 		sharedLink = `${window.location.origin}/share/${createdLink.key}`;
 	};
@@ -162,6 +172,18 @@
 			{/if}
 		{/if}
 
+		{#if shareType == SharedLinkType.Individual}
+			{#if !editingLink}
+				<div>Let anyone with the link see the selected photo(s)</div>
+			{:else}
+				<div class="text-sm">
+					Individual shared | <span class="text-immich-primary dark:text-immich-dark-primary"
+						>{editingLink.description}</span
+					>
+				</div>
+			{/if}
+		{/if}
+
 		<div class="mt-6 mb-2">
 			<p class="text-xs">LINK OPTIONS</p>
 		</div>
@@ -215,7 +237,10 @@
 			{:else}
 				<div class="flex justify-end">
 					<button
-						on:click={createAlbumSharedLink}
+						on:click={() =>
+							shareType === SharedLinkType.Album
+								? createAlbumSharedLink()
+								: createIndividualAssetSharedLink()}
 						class="text-white dark:text-black bg-immich-primary px-4 py-2 rounded-lg text-sm transition-colors hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:hover:bg-immich-dark-primary/75"
 					>
 						Create Link
