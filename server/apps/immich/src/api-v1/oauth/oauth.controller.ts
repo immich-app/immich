@@ -6,7 +6,7 @@ import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
-import { UserResponseDto } from '../user/response-dto/user-response.dto';
+import { UserResponseDto } from '@app/domain';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
 import { MOBILE_REDIRECT, OAuthService } from './oauth.service';

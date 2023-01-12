@@ -1,6 +1,6 @@
 // create unit test for user utils
 
-import { UserEntity } from '@app/database';
+import { UserEntity } from '@app/infra';
 import { userUtils } from './user-utils';
 
 describe('User Utilities', () => {

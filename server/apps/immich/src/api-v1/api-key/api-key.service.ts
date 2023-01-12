@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/database';
+import { UserEntity } from '@app/infra';
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
 import { randomBytes } from 'node:crypto';

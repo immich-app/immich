@@ -3,7 +3,7 @@ import { Socket, Server } from 'socket.io';
 import { ImmichJwtService, JwtValidationResult } from '../../modules/immich-jwt/immich-jwt.service';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from '@app/database';
+import { UserEntity } from '@app/infra';
 import { Repository } from 'typeorm';
 import cookieParser from 'cookie';
 import { IMMICH_ACCESS_COOKIE } from '../../constants/jwt.constant';

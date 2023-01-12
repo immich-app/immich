@@ -1,4 +1,4 @@
-import { AssetEntity } from '@app/database';
+import { AssetEntity } from '@app/infra';
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, StreamableFile } from '@nestjs/common';
 import archiver from 'archiver';
 import { extname } from 'path';

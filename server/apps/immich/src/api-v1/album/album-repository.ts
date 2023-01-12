@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetAlbumEntity, UserAlbumEntity } from '@app/database';
+import { AlbumEntity, AssetAlbumEntity, UserAlbumEntity } from '@app/infra';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, SelectQueryBuilder, DataSource, Brackets, Not, IsNull } from 'typeorm';

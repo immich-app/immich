@@ -1,4 +1,4 @@
-import { APIKeyEntity } from '@app/database';
+import { APIKeyEntity } from '@app/infra';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { TestingModuleBuilder } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
-import { IUserRepository } from '../src/api-v1/user/user-repository';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
 import { AuthGuard } from '../src/modules/immich-jwt/guards/auth.guard';
 
@@ -13,20 +12,6 @@ export async function clearDb(db: DataSource) {
     const repository = db.getRepository(entity.name);
     await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
   }
-}
-
-export function newUserRepositoryMock(): jest.Mocked<IUserRepository> {
-  return {
-    get: jest.fn(),
-    getAdmin: jest.fn(),
-    getByEmail: jest.fn(),
-    getByOAuthId: jest.fn(),
-    getList: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
 }
 
 export function getAuthUser(): AuthUserDto {

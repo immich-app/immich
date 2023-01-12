@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ShareService } from './share.service';
 import { ShareController } from './share.controller';
-import { SharedLinkEntity } from '@app/database/entities/shared-link.entity';
+import { SharedLinkEntity } from '@app/infra';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SharedLinkRepository, ISharedLinkRepository } from './shared-link.repository';
 

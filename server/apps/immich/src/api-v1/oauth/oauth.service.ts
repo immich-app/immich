@@ -1,13 +1,11 @@
-import { SystemConfig } from '@app/database/entities/system-config.entity';
+import { SystemConfig } from '@app/infra';
 import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
-import { UserResponseDto } from '../user/response-dto/user-response.dto';
-import { IUserRepository } from '../user/user-repository';
-import { UserCore } from '../user/user.core';
+import { IUserRepository, UserResponseDto, UserCore } from '@app/domain';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
 import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto';

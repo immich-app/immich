@@ -16,41 +16,21 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
-      "@app/common": [
-        "libs/common/src"
-      ],
-      "@app/common/*": [
-        "libs/common/src/*"
-      ],
-      "@app/database": [
-        "libs/database/src"
-      ],
-      "@app/database/*": [
-        "libs/database/src/*"
-      ],
-      "@app/job": [
-        "libs/job/src"
-      ],
-      "@app/job/*": [
-        "libs/job/src/*"
-      ],
-      "@app/immich-config": [
-        "libs/immich-config/src"
-      ],
-      "@app/immich-config/*": [
-        "libs/immich-config/src/*"
-      ],
-      "@app/storage": [
-        "libs/storage/src"
-      ],
-      "@app/storage/*": [
-        "libs/storage/src/*"
-      ]
+      "@app/common": ["libs/common/src"],
+      "@app/common/*": ["libs/common/src/*"],
+      "@app/infra": ["libs/database/src"],
+      "@app/infra/*": ["libs/database/src/*"],
+      "@app/job": ["libs/job/src"],
+      "@app/job/*": ["libs/job/src/*"],
+      "@app/immich-config": ["libs/immich-config/src"],
+      "@app/immich-config/*": ["libs/immich-config/src/*"],
+      "@app/storage": ["libs/storage/src"],
+      "@app/storage/*": ["libs/storage/src/*"],
+      "@app/infra": ["libs/infra/src"],
+      "@app/infra/*": ["libs/infra/src/*"],
+      "@app/domain": ["libs/domain/src"],
+      "@app/domain/*": ["libs/domain/src/*"]
     }
   },
-  "exclude": [
-    "dist",
-    "node_modules",
-    "upload"
-  ]
+  "exclude": ["dist", "node_modules", "upload"]
 }

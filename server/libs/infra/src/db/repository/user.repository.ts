@@ -1,26 +1,10 @@
-import { UserEntity } from '@app/database';
-import { InternalServerErrorException } from '@nestjs/common';
+import { UserEntity } from '../entities';
+import { IUserRepository, UserListFilter } from '@app/domain';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 
-export interface IUserRepository {
-  get(id: string, withDeleted?: boolean): Promise<UserEntity | null>;
-  getAdmin(): Promise<UserEntity | null>;
-  getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null>;
-  getByOAuthId(oauthId: string): Promise<UserEntity | null>;
-  getList(filter?: UserListFilter): Promise<UserEntity[]>;
-  create(user: Partial<UserEntity>): Promise<UserEntity>;
-  update(id: string, user: Partial<UserEntity>): Promise<UserEntity>;
-  delete(user: UserEntity): Promise<UserEntity>;
-  restore(user: UserEntity): Promise<UserEntity>;
-}
-
-export interface UserListFilter {
-  excludeId?: string;
-}
-
-export const IUserRepository = 'IUserRepository';
-
+@Injectable()
 export class UserRepository implements IUserRepository {
   constructor(
     @InjectRepository(UserEntity)

@@ -1,4 +1,4 @@
-import { DeviceInfoEntity, DeviceType } from '@app/database';
+import { DeviceInfoEntity, DeviceType } from '@app/infra';
 import { Repository } from 'typeorm';
 import { DeviceInfoService } from './device-info.service';
 

@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ReadStream } from 'fs';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
+import { AuthUserDto } from '../auth';
+import { IUserRepository } from '../user';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserCountDto } from './dto/user-count.dto';
@@ -10,7 +11,6 @@ import {
 } from './response-dto/create-profile-image-response.dto';
 import { mapUserCountResponse, UserCountResponseDto } from './response-dto/user-count-response.dto';
 import { mapUser, UserResponseDto } from './response-dto/user-response.dto';
-import { IUserRepository } from './user-repository';
 import { UserCore } from './user.core';
 
 @Injectable()

@@ -15,7 +15,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
 import { randomUUID } from 'crypto';
 import { IAssetRepository } from '../asset/asset-repository';
-import { AssetType } from '@app/database';
+import { AssetType } from '@app/infra';
 import { GetJobDto, JobId } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';

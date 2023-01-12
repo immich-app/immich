@@ -1,5 +1,5 @@
 import { immichAppConfig, immichBullAsyncConfig } from '@app/common/config';
-import { DatabaseModule, AssetEntity, ExifEntity, SmartInfoEntity, UserEntity, APIKeyEntity } from '@app/database';
+import { AssetEntity, ExifEntity, SmartInfoEntity, UserEntity, APIKeyEntity, InfraModule } from '@app/infra';
 import { StorageModule } from '@app/storage';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
@@ -17,11 +17,14 @@ import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { UserDeletionProcessor } from './processors/user-deletion.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
 import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.constant';
+import { DomainModule } from '@app/domain';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
-    DatabaseModule,
+    DomainModule.register({
+      imports: [InfraModule],
+    }),
     ImmichConfigModule,
     TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity, APIKeyEntity]),
     StorageModule,

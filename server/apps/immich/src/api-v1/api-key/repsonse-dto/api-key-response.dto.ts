@@ -1,4 +1,4 @@
-import { APIKeyEntity } from '@app/database';
+import { APIKeyEntity } from '@app/infra';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class APIKeyResponseDto {

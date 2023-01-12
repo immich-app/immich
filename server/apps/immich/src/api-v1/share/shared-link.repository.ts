@@ -1,4 +1,4 @@
-import { SharedLinkEntity } from '@app/database/entities/shared-link.entity';
+import { SharedLinkEntity } from '@app/infra';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 

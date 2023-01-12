@@ -7,11 +7,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserEntity } from '@app/database';
+import { UserEntity } from '@app/infra';
 import { AuthType } from '../../constants/jwt.constant';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
-import { IUserRepository } from '../user/user-repository';
+import { IUserRepository } from '@app/domain';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -19,9 +19,9 @@ import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/a
 import { LoginResponseDto } from './response-dto/login-response.dto';
 import { LogoutResponseDto } from './response-dto/logout-response.dto';
 import { OAuthService } from '../oauth/oauth.service';
-import { UserCore } from '../user/user.core';
+import { UserCore } from '@app/domain';
 import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
-import { SystemConfig } from '@app/database/entities/system-config.entity';
+import { SystemConfig } from '@app/infra';
 
 @Injectable()
 export class AuthService {

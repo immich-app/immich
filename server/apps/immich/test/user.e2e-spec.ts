@@ -3,12 +3,9 @@ import { INestApplication } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 import { clearDb, authCustom } from './test-utils';
-import { databaseConfig } from '@app/database/config/database.config';
-import { UserModule } from '../src/api-v1/user/user.module';
+import { databaseConfig } from '@app/infra';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
-import { UserService } from '../src/api-v1/user/user.service';
-import { CreateAdminDto, CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
-import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
+import { CreateAdminDto, CreateUserDto, UserResponseDto, UserService } from '@app/domain';
 import { DataSource } from 'typeorm';
 
 function _createUser(userService: UserService, data: CreateUserDto | CreateAdminDto) {
@@ -27,7 +24,7 @@ describe('User', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [UserModule, ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
       }).compile();
 
       app = moduleFixture.createNestApplication();
@@ -51,7 +48,7 @@ describe('User', () => {
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [UserModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [TypeOrmModule.forRoot(databaseConfig)],
       });
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 

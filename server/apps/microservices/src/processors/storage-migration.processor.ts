@@ -1,5 +1,5 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
-import { AssetEntity } from '@app/database';
+import { AssetEntity } from '@app/infra';
 import { ImmichConfigService } from '@app/immich-config';
 import { QueueNameEnum, templateMigrationProcessorName, updateTemplateProcessorName } from '@app/job';
 import { StorageService } from '@app/storage';

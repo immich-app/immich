@@ -1,5 +1,5 @@
-import { AssetEntity } from '@app/database';
-import { SmartInfoEntity } from '@app/database';
+import { AssetEntity } from '@app/infra';
+import { SmartInfoEntity } from '@app/infra';
 import { MachineLearningJobNameEnum, QueueNameEnum } from '@app/job';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
 import { Process, Processor } from '@nestjs/bull';

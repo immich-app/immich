@@ -1,6 +1,5 @@
 import { immichAppConfig, immichBullAsyncConfig } from '@app/common/config';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { UserModule } from './api-v1/user/user.module';
 import { AssetModule } from './api-v1/asset/asset.module';
 import { AuthModule } from './api-v1/auth/auth.module';
 import { APIKeyModule } from './api-v1/api-key/api-key.module';
@@ -15,20 +14,23 @@ import { AlbumModule } from './api-v1/album/album.module';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
-import { DatabaseModule } from '@app/database';
 import { JobModule } from './api-v1/job/job.module';
 import { SystemConfigModule } from './api-v1/system-config/system-config.module';
 import { OAuthModule } from './api-v1/oauth/oauth.module';
 import { TagModule } from './api-v1/tag/tag.module';
 import { ImmichConfigModule } from '@app/immich-config';
 import { ShareModule } from './api-v1/share/share.module';
+import { DomainModule } from '@app/domain';
+import { InfraModule } from '@app/infra';
+import { UserController } from './controllers';
 
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
 
-    DatabaseModule,
-    UserModule,
+    DomainModule.register({
+      imports: [InfraModule],
+    }),
 
     APIKeyModule,
 
@@ -64,7 +66,11 @@ import { ShareModule } from './api-v1/share/share.module';
 
     ShareModule,
   ],
-  controllers: [AppController],
+  controllers: [
+    //
+    AppController,
+    UserController,
+  ],
   providers: [],
 })
 export class AppModule implements NestModule {

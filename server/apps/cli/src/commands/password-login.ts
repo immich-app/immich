@@ -1,4 +1,4 @@
-import { SystemConfigEntity, SystemConfigKey } from '@app/database';
+import { SystemConfigEntity, SystemConfigKey } from '@app/infra';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { Command, CommandRunner } from 'nest-commander';
@@ -9,9 +9,7 @@ import { Repository } from 'typeorm';
   description: 'Enable password login',
 })
 export class EnablePasswordLoginCommand extends CommandRunner {
-  constructor(
-    @InjectRepository(SystemConfigEntity) private repository: Repository<SystemConfigEntity>, //
-  ) {
+  constructor(@InjectRepository(SystemConfigEntity) private repository: Repository<SystemConfigEntity>) {
     super();
   }
 
