@@ -116,7 +116,6 @@
   "login_form_email_hint": "deine@email.de",
   "login_form_endpoint_hint": "http://deine-server-ip:port/api",
   "login_form_endpoint_url": "Server URL",
-  "login_form_err_http": "Bitte gebe http:// oder https:// an",
   "login_form_err_invalid_email": "Ungültige E-Mail",
   "login_form_err_leading_whitespace": "Führendes Leerzichen",
   "login_form_err_trailing_whitespace": "Folgendes Leerzeichen",

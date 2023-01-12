@@ -116,7 +116,6 @@
   "login_form_email_hint": "din-email@email.com",
   "login_form_endpoint_hint": "http://din-server-ip:port/api",
   "login_form_endpoint_url": "Server Endpoint URL",
-  "login_form_err_http": "Angiv venligst http:// eller https://",
   "login_form_err_invalid_email": "Ugyldig email",
   "login_form_err_leading_whitespace": "Mellemrum før",
   "login_form_err_trailing_whitespace": "Mellemrum efter",

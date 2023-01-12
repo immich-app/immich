@@ -217,11 +217,8 @@ class ServerEndpointInput extends StatelessWidget {
   }) : super(key: key);
 
   String? _validateInput(String? url) {
-    if (url?.startsWith(RegExp(r'https?://')) == true) {
-      return null;
-    } else {
-      return 'login_form_err_http'.tr();
-    }
+    // Can we do any other validation here instead?
+    return null;
   }
 
   @override

@@ -116,7 +116,6 @@
   "login_form_email_hint": "tucorreo@correo.com",
   "login_form_endpoint_hint": "http://tu-ip-de-servidor:puerto/api",
   "login_form_endpoint_url": "URL del servidor",
-  "login_form_err_http": "Por favor, especifique http:// o https://",
   "login_form_err_invalid_email": "Correo electrónico no válido",
   "login_form_err_leading_whitespace": "Espacio en blanco inicial",
   "login_form_err_trailing_whitespace": "Espacio en blanco al final",

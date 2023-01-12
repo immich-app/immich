@@ -116,7 +116,6 @@
   "login_form_email_hint": "tvůjmail@email.com",
   "login_form_endpoint_hint": "http://ip-tvého-serveru:port/api",
   "login_form_endpoint_url": "URL adresa serveru",
-  "login_form_err_http": "Prosím, uveďte http:// nebo https://",
   "login_form_err_invalid_email": "Neplatný e-mail",
   "login_form_err_leading_whitespace": "Úvodní mezera",
   "login_form_err_trailing_whitespace": "Koncová mezera",

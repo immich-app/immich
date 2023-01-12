@@ -116,7 +116,6 @@
   "login_form_email_hint": "example@email.com",
   "login_form_endpoint_hint": "https://example.com:port/api",
   "login_form_endpoint_url": "サーバーエンドポイントURL",
-  "login_form_err_http": "http://かhttps://かを指定してね",
   "login_form_err_invalid_email": "メールアドレスが有効じゃないよ",
   "login_form_err_leading_whitespace": "最初に半角スペースが含まれてるよ",
   "login_form_err_trailing_whitespace": "最後に半角スペースが含まれてるよ",

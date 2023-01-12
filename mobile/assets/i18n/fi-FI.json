@@ -116,7 +116,6 @@
   "login_form_email_hint": "sahkopostisi@esimerkki.fi",
   "login_form_endpoint_hint": "http://palvelimesi-osoite:portti/api",
   "login_form_endpoint_url": "Palvelimen URL",
-  "login_form_err_http": "Lisää http:// tai https://",
   "login_form_err_invalid_email": "Virheellinen sähköpostiosoite",
   "login_form_err_leading_whitespace": "Alussa välilyönti",
   "login_form_err_trailing_whitespace": "Lopussa välilyönti",

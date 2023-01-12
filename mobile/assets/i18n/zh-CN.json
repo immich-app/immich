@@ -116,7 +116,6 @@
   "login_form_email_hint": "youremail@email.com",
   "login_form_endpoint_hint": "http://your-server-ip:port/api",
   "login_form_endpoint_url": "服务器地址",
-  "login_form_err_http": "请检查http://或https://",
   "login_form_err_invalid_email": "请输入正确的邮箱",
   "login_form_err_leading_whitespace": "前面空格",
   "login_form_err_trailing_whitespace": "后面空格",

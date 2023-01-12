@@ -76,7 +76,6 @@
     "login_form_email_hint": "youremail@email.com",
     "login_form_endpoint_hint": "http://your-server-ip:port/api",
     "login_form_endpoint_url": "Server Endpoint URL",
-    "login_form_err_http": "Please specify http:// or https://",
     "login_form_err_invalid_email": "E-mail inválido",
     "login_form_err_leading_whitespace": "Leading whitespace",
     "login_form_err_trailing_whitespace": "Trailing whitespace",

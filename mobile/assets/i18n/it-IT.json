@@ -116,7 +116,6 @@
   "login_form_email_hint": "tuaemail@email.com",
   "login_form_endpoint_hint": "http://ip-del-tuo-server:port/api",
   "login_form_endpoint_url": "Server Endpoint URL",
-  "login_form_err_http": "Per favore specificare http:// o https://",
   "login_form_err_invalid_email": "Email non valida",
   "login_form_err_leading_whitespace": "Whitespace all'inizio ",
   "login_form_err_trailing_whitespace": "Whitespace alla fine",

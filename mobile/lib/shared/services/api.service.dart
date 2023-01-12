@@ -26,19 +26,33 @@ class ApiService {
     deviceInfoApi = DeviceInfoApi(_apiClient);
   }
 
+  /// Takes a server URL and attempts to resolve the API endpoint.
+  ///
+  /// Input: [schema://]host[:port][/path]
+  ///  schema - optional (default: https)
+  ///  host   - required
+  ///  port   - optional (default: based on schema)
+  ///  path   - optional (default: /.well-known/immich)
   resolveEndpoint(String serverUrl) async {
-    // Sanitize URL to only include origin+path
-    final url = Uri.parse(serverUrl);
-    final baseUrl = "${url.origin}${url.path}";
+    // Add schema if none is set
+    final urlWithSchema = serverUrl.startsWith(RegExp(r"https?://"))
+        ? serverUrl
+        : "https://$serverUrl";
 
-    // Remove trailing slash, if exists
-    final endpoint = baseUrl[baseUrl.length - 1] == "/"
-        ? baseUrl.substring(0, baseUrl.length - 1)
-        : baseUrl;
+    final url = Uri.parse(urlWithSchema);
+    final origin = url.origin;
 
-    // Check for .well-known definition, otherwise assume endpoint is full API address
-    final apiEndpoint = await getWellKnownEndpoint(endpoint) ?? endpoint;
-    return apiEndpoint;
+    // Trim trailing slash(es) from path
+    final path = url.path.replaceFirst(RegExp(r"/+$"), "");
+
+    if (path.isEmpty) {
+      // No path provided, lets check for /.well-known/immich
+      final wellKnownEndpoint = await getWellKnownEndpoint(origin);
+      if (wellKnownEndpoint) return wellKnownEndpoint;
+    }
+
+    // Otherwise, assume the URL provided is the api endpoint
+    return "$origin$path";
   }
 
   getWellKnownEndpoint(String baseUrl) async {
@@ -61,7 +75,7 @@ class ApiService {
         return endpoint;
       }
     } catch (e) {
-      debugPrint("Could not locate .well-known at $baseUrl: $e");
+      debugPrint("Could not locate /.well-known/immich at $baseUrl");
     }
 
     return null;

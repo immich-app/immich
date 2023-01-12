@@ -79,7 +79,6 @@
   "login_form_email_hint": "jouwemail@email.com",
   "login_form_endpoint_hint": "http://jouw-server-ip:port/api",
   "login_form_endpoint_url": "Server URL",
-  "login_form_err_http": "Voer http:// of https:// in",
   "login_form_err_invalid_email": "Ongeldige Email",
   "login_form_err_leading_whitespace": "Spatie aan het begin",
   "login_form_err_trailing_whitespace": "Spatie aan het eind",

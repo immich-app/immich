@@ -116,7 +116,6 @@
   "login_form_email_hint": "twojmail@email.com",
   "login_form_endpoint_hint": "http://ip-twojego-serwera:port/api",
   "login_form_endpoint_url": "URL Serwera",
-  "login_form_err_http": "Proszę określić http:// lub https://",
   "login_form_err_invalid_email": "Niepoprawny Email",
   "login_form_err_leading_whitespace": "Białe znaki",
   "login_form_err_trailing_whitespace": "Białe znaki po przecinku",

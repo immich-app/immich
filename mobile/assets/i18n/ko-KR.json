@@ -113,7 +113,6 @@
   "login_form_email_hint": "youremail@email.com",
   "login_form_endpoint_hint": "https://your-server-ip:port/api",
   "login_form_endpoint_url": "서버 엔드포인트 URL",
-  "login_form_err_http": "엔드포인트는 http:// 또는 https://로 시작해야 합니다",
   "login_form_err_invalid_email": "잘못된 이메일 형식입니다",
   "login_form_err_leading_whitespace": "이메일 앞에 공백문자가 포함되어 있습니다",
   "login_form_err_trailing_whitespace": "이메일 뒤에 공백문자가 포함되어 있습니다",
