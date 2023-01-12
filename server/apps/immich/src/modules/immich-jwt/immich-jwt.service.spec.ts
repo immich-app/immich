@@ -5,9 +5,11 @@ import { UserEntity } from '@app/infra';
 import { LoginResponseDto } from '../../api-v1/auth/response-dto/login-response.dto';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from './immich-jwt.service';
+import { UserService } from '@app/domain';
 
 describe('ImmichJwtService', () => {
   let jwtServiceMock: jest.Mocked<JwtService>;
+  let userServiceMock: jest.Mocked<UserService>;
   let sut: ImmichJwtService;
 
   beforeEach(() => {
@@ -16,7 +18,11 @@ describe('ImmichJwtService', () => {
       verifyAsync: jest.fn(),
     } as unknown as jest.Mocked<JwtService>;
 
-    sut = new ImmichJwtService(jwtServiceMock);
+    userServiceMock = {
+      getUserById: jest.fn(),
+    } as unknown as jest.Mocked<UserService>;
+
+    sut = new ImmichJwtService(jwtServiceMock, userServiceMock);
   });
 
   afterEach(() => {

@@ -5,6 +5,9 @@ import { IncomingHttpHeaders } from 'http';
 import { JwtPayloadDto } from '../../api-v1/auth/dto/jwt-payload.dto';
 import { LoginResponseDto, mapLoginResponse } from '../../api-v1/auth/response-dto/login-response.dto';
 import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE, jwtSecret } from '../../constants/jwt.constant';
+import { Socket } from 'socket.io';
+import cookieParser from 'cookie';
+import { UserResponseDto, UserService } from '@app/domain';
 
 export type JwtValidationResult = {
   status: boolean;
@@ -13,7 +16,7 @@ export type JwtValidationResult = {
 
 @Injectable()
 export class ImmichJwtService {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService, private userService: UserService) {}
 
   public getCookieNames() {
     return [IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE];
@@ -65,6 +68,24 @@ export class ImmichJwtService {
 
   public extractJwtFromCookie(cookies: Record<string, string>) {
     return cookies?.[IMMICH_ACCESS_COOKIE] || null;
+  }
+
+  public async validateSocket(client: Socket): Promise<UserResponseDto | null> {
+    const headers = client.handshake.headers;
+    const accessToken =
+      this.extractJwtFromCookie(cookieParser.parse(headers.cookie || '')) || this.extractJwtFromHeader(headers);
+
+    if (accessToken) {
+      const { userId, status } = await this.validateToken(accessToken);
+      if (userId && status) {
+        const user = await this.userService.getUserById(userId).catch(() => null);
+        if (user) {
+          return user;
+        }
+      }
+    }
+
+    return null;
   }
 
   private async generateToken(payload: JwtPayloadDto) {
