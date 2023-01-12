@@ -24,6 +24,12 @@ export default {
 
 	// The directory where Jest should output its coverage files
 	// coverageDirectory: undefined,
+	coverageThreshold: {
+		global: {
+			lines: 4,
+			statements: 4
+		}
+	},
 
 	// An array of regexp pattern strings used to skip coverage collection
 	// coveragePathIgnorePatterns: [
@@ -76,7 +82,7 @@ export default {
 	// ],
 
 	// An array of file extensions your modules use
-	moduleFileExtensions: ['js', 'mjs', 'cjs', 'jsx', 'ts', 'tsx', 'json', 'node'],
+	moduleFileExtensions: ['svelte', 'js', 'ts'],
 
 	// A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
 	moduleNameMapper: {
