@@ -7,13 +7,18 @@ import 'package:immich_mobile/shared/services/json_cache.dart';
 class AssetCacheService extends JsonCache<List<Asset>> {
   AssetCacheService() : super("asset_cache");
 
+  static Future<List<Map<String, dynamic>>> _computeSerialize(
+      List<Asset> assets) async {
+    return assets.map((e) => e.toJson()).toList();
+  }
+
   @override
   void put(List<Asset> data) async {
-    serialize(List<Asset> assets) {
-      return data.map((e) => e.toJson()).toList();
-    }
+    putRawData(await compute(_computeSerialize, data));
+  }
 
-    putRawData(await compute(serialize, data));
+  static Future<List<Asset>> _computeEncode(List<dynamic> data) async {
+    return data.map((e) => Asset.fromJson(e)).whereNotNull().toList();
   }
 
   @override
@@ -21,11 +26,7 @@ class AssetCacheService extends JsonCache<List<Asset>> {
     try {
       final mapList = await readRawData() as List<dynamic>;
 
-      decodeJson(List<dynamic> data) {
-        return data.map((e) => Asset.fromJson(e)).whereNotNull().toList();
-      }
-
-      final responseData = await compute(decodeJson, mapList);
+      final responseData = await compute(_computeEncode, mapList);
 
       return responseData;
     } catch (e) {

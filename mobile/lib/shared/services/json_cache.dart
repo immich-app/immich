@@ -32,12 +32,12 @@ abstract class JsonCache<T> {
     }
   }
 
-  Future<void> putRawData(dynamic data) async {
-    encodeJson(dynamic toEncode) {
-      return json.encode(toEncode);
-    }
+  static Future<String> _computeEncodeJson(dynamic toEncode) async {
+    return json.encode(toEncode);
+  }
 
-    final jsonString = await compute(encodeJson, data);
+  Future<void> putRawData(dynamic data) async {
+    final jsonString = await compute(_computeEncodeJson, data);
 
     final file = await _getCacheFile();
 
@@ -48,15 +48,15 @@ abstract class JsonCache<T> {
     await file.writeAsString(jsonString);
   }
 
+  static Future<String> _computeDecodeJson(String jsonString) async {
+    return json.decode(jsonString);
+  }
+
   dynamic readRawData() async {
     final file = await _getCacheFile();
     final data = await file.readAsString();
 
-    decodeJson(String jsonData) {
-      return json.decode(jsonData);
-    }
-
-    return await compute(decodeJson, data);
+    return await compute(_computeDecodeJson, data);
   }
 
   void put(T data);
