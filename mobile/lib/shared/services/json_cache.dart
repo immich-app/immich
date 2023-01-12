@@ -48,11 +48,11 @@ abstract class JsonCache<T> {
     await file.writeAsString(jsonString);
   }
 
-  static Future<String> _computeDecodeJson(String jsonString) async {
+  static Future<dynamic> _computeDecodeJson(String jsonString) async {
     return json.decode(jsonString);
   }
 
-  dynamic readRawData() async {
+  Future<dynamic> readRawData() async {
     final file = await _getCacheFile();
     final data = await file.readAsString();
 

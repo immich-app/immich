@@ -112,7 +112,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       if (isCacheValid && state.allAssets.isEmpty) {
         await _updateAssetsState(await _assetCacheService.get(), cache: false);
         log.info(
-          "Reading assets from cache: ${stopwatch.elapsedMilliseconds}ms",
+          "Reading assets ${state.allAssets.length} from cache: ${stopwatch.elapsedMilliseconds}ms",
         );
         stopwatch.reset();
       }
@@ -137,7 +137,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
       final combinedAssets = await _combineLocalAndRemoteAssets(
           local: newLocal, remote: newRemote);
-      await _updateAssetsState(combinedAssets, cache: false);
+      await _updateAssetsState(combinedAssets);
 
       log.info("Combining assets: ${stopwatch.elapsedMilliseconds}ms");
 
