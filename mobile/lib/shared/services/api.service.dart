@@ -27,12 +27,15 @@ class ApiService {
   }
 
   /// Takes a server URL and attempts to resolve the API endpoint.
+  /// If no path is provided, a lookup for /.well-known/immich will
+  /// attempt to resolve the API endpoint. Otherwise, we assume the
+  /// input points to the API directly.
   ///
   /// Input: [schema://]host[:port][/path]
   ///  schema - optional (default: https)
   ///  host   - required
   ///  port   - optional (default: based on schema)
-  ///  path   - optional (default: /.well-known/immich)
+  ///  path   - optional (default: /)
   resolveEndpoint(String serverUrl) async {
     // Add schema if none is set
     final urlWithSchema = serverUrl.startsWith(RegExp(r"https?://"))
