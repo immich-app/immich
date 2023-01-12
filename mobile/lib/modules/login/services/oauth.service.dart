@@ -11,8 +11,10 @@ class OAuthService {
   OAuthService(this._apiService);
 
   Future<OAuthConfigResponseDto?> getOAuthServerConfig(
-    String serverEndpoint,
+    String serverUrl,
   ) async {
+    // Resolve API server endpoint from user provided serverUrl
+    final serverEndpoint = await _apiService.resolveEndpoint(serverUrl);
     _apiService.setEndpoint(serverEndpoint);
 
     return await _apiService.oAuthApi.generateConfig(

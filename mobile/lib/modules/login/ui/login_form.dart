@@ -38,13 +38,17 @@ class LoginForm extends HookConsumerWidget {
         var urlText = serverEndpointController.text.trim();
 
         try {
-          var endpointUrl = Uri.tryParse(urlText);
+          var serverUrl = Uri.tryParse(urlText);
 
-          if (endpointUrl != null) {
+          if (serverUrl != null) {
             isLoading.value = true;
-            apiService.setEndpoint(endpointUrl.toString());
+            final serverEndpoint =
+                await apiService.resolveEndpoint(serverUrl.toString());
+            apiService.setEndpoint(serverEndpoint);
+            Hive.box(userInfoBox).put(serverEndpointKey, serverEndpoint);
+
             var loginConfig = await apiService.oAuthApi.generateConfig(
-              OAuthConfigDto(redirectUri: endpointUrl.toString()),
+              OAuthConfigDto(redirectUri: serverEndpoint),
             );
 
             if (loginConfig != null) {
