@@ -7,7 +7,7 @@ const redisHost = process.env.REDIS_HOSTNAME || 'immich_redis';
 const redisPort = parseInt(process.env.REDIS_PORT || '6379');
 const redisDb = parseInt(process.env.REDIS_DBINDEX || '0');
 const redisPassword = process.env.REDIS_PASSWORD || undefined;
-const redisSocket = process.env.REDIS_SOCKET || undefined;
+// const redisSocket = process.env.REDIS_SOCKET || undefined;
 
 export class RedisIoAdapter extends IoAdapter {
   private adapterConstructor: any;
