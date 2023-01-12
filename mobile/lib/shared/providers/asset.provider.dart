@@ -147,32 +147,33 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     }
   }
 
+  static Future<List<Asset>> _computeCombine(
+      _CombineAssetsComputeParameters data) async {
+    var local = data.local;
+    var remote = data.remote;
+    final deviceId = data.deviceId;
+
+    final List<Asset> assets = [];
+    if (remote.isNotEmpty && local.isNotEmpty) {
+      final Set<String> existingIds = remote
+          .where((e) => e.deviceId == deviceId)
+          .map((e) => e.deviceAssetId)
+          .toSet();
+      local = local.where((e) => !existingIds.contains(e.id));
+    }
+    assets.addAll(local);
+    // the order (first all local, then remote assets) is important!
+    assets.addAll(remote);
+    return assets;
+  }
+
   Future<List<Asset>> _combineLocalAndRemoteAssets({
     required Iterable<Asset> local,
     required List<Asset> remote,
   }) async {
-    combine(_CombineAssetsComputeParameters data) {
-      var local = data.local;
-      var remote = data.remote;
-      final deviceId = data.deviceId;
-
-      final List<Asset> assets = [];
-      if (remote.isNotEmpty && local.isNotEmpty) {
-        final Set<String> existingIds = remote
-            .where((e) => e.deviceId == deviceId)
-            .map((e) => e.deviceAssetId)
-            .toSet();
-        local = local.where((e) => !existingIds.contains(e.id));
-      }
-      assets.addAll(local);
-      // the order (first all local, then remote assets) is important!
-      assets.addAll(remote);
-      return assets;
-    }
-
     final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
-    return await compute(
-        combine, _CombineAssetsComputeParameters(local, remote, deviceId));
+    return await compute(_computeCombine,
+        _CombineAssetsComputeParameters(local, remote, deviceId));
   }
 
   clearAllAsset() {
