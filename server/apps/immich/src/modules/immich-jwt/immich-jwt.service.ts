@@ -1,7 +1,7 @@
 import { UserEntity } from '@app/infra';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+import { IncomingHttpHeaders } from 'http';
 import { JwtPayloadDto } from '../../api-v1/auth/dto/jwt-payload.dto';
 import { LoginResponseDto, mapLoginResponse } from '../../api-v1/auth/response-dto/login-response.dto';
 import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE, jwtSecret } from '../../constants/jwt.constant';
@@ -51,20 +51,20 @@ export class ImmichJwtService {
     }
   }
 
-  public extractJwtFromHeader(req: Request) {
-    if (
-      req.headers.authorization &&
-      (req.headers.authorization.split(' ')[0] === 'Bearer' || req.headers.authorization.split(' ')[0] === 'bearer')
-    ) {
-      const accessToken = req.headers.authorization.split(' ')[1];
-      return accessToken;
+  public extractJwtFromHeader(headers: IncomingHttpHeaders) {
+    if (!headers.authorization) {
+      return null;
+    }
+    const [type, accessToken] = headers.authorization.split(' ');
+    if (type.toLowerCase() !== 'bearer') {
+      return null;
     }
 
-    return null;
+    return accessToken;
   }
 
-  public extractJwtFromCookie(req: Request) {
-    return req.cookies?.[IMMICH_ACCESS_COOKIE] || null;
+  public extractJwtFromCookie(cookies: Record<string, string>) {
+    return cookies?.[IMMICH_ACCESS_COOKIE] || null;
   }
 
   private async generateToken(payload: JwtPayloadDto) {

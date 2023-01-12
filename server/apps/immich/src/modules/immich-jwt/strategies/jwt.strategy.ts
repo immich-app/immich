@@ -1,9 +1,7 @@
-import { UserEntity } from '@app/infra';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { InjectRepository } from '@nestjs/typeorm';
 import { ExtractJwt, Strategy, StrategyOptions } from 'passport-jwt';
-import { Repository } from 'typeorm';
+import { UserService } from '@app/domain';
 import { JwtPayloadDto } from '../../../api-v1/auth/dto/jwt-payload.dto';
 import { jwtSecret } from '../../../constants/jwt.constant';
 import { AuthUserDto } from '../../../decorators/auth-user.decorator';
@@ -13,15 +11,11 @@ export const JWT_STRATEGY = 'jwt';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY) {
-  constructor(
-    @InjectRepository(UserEntity)
-    private usersRepository: Repository<UserEntity>,
-    immichJwtService: ImmichJwtService,
-  ) {
+  constructor(private userService: UserService, immichJwtService: ImmichJwtService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        immichJwtService.extractJwtFromCookie,
-        immichJwtService.extractJwtFromHeader,
+        (req) => immichJwtService.extractJwtFromCookie(req.cookies),
+        (req) => immichJwtService.extractJwtFromHeader(req.headers),
       ]),
       ignoreExpiration: false,
       secretOrKey: jwtSecret,
@@ -30,8 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY) {
 
   async validate(payload: JwtPayloadDto): Promise<AuthUserDto> {
     const { userId } = payload;
-    const user = await this.usersRepository.findOne({ where: { id: userId } });
-
+    const user = await this.userService.getUserById(userId).catch(() => null);
     if (!user) {
       throw new UnauthorizedException('Failure to validate JWT payload');
     }

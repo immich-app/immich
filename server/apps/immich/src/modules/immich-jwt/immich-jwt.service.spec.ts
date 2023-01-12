@@ -102,7 +102,7 @@ describe('ImmichJwtService', () => {
       const request = {
         headers: {},
       } as Request;
-      const token = sut.extractJwtFromHeader(request);
+      const token = sut.extractJwtFromHeader(request.headers);
       expect(token).toBe(null);
     });
 
@@ -119,15 +119,15 @@ describe('ImmichJwtService', () => {
         },
       } as Request;
 
-      expect(sut.extractJwtFromHeader(upper)).toBe('token');
-      expect(sut.extractJwtFromHeader(lower)).toBe('token');
+      expect(sut.extractJwtFromHeader(upper.headers)).toBe('token');
+      expect(sut.extractJwtFromHeader(lower.headers)).toBe('token');
     });
   });
 
   describe('extracJwtFromCookie', () => {
     it('should handle no cookie', () => {
       const request = {} as Request;
-      const token = sut.extractJwtFromCookie(request);
+      const token = sut.extractJwtFromCookie(request.cookies);
       expect(token).toBe(null);
     });
 
@@ -137,7 +137,7 @@ describe('ImmichJwtService', () => {
           immich_access_token: 'cookie',
         },
       } as Request;
-      const token = sut.extractJwtFromCookie(request);
+      const token = sut.extractJwtFromCookie(request.cookies);
       expect(token).toBe('cookie');
     });
   });
