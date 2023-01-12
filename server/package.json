@@ -22,7 +22,7 @@
     "lint:fix": "npm run lint -- --fix",
     "check": "tsc --noEmit",
     "check:code": "npm run format && npm run lint && npm run check",
-    "check:all": "npm run check:code && npm run test",
+    "check:all": "npm run check:code && npm run test:cov",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
