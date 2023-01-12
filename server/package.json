@@ -83,7 +83,6 @@
     "rxjs": "^7.2.0",
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.28.0",
-    "swagger-ui-express": "^4.4.0",
     "systeminformation": "^5.11.0",
     "typeorm": "^0.3.11"
   },
