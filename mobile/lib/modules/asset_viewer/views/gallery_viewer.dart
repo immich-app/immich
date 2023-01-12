@@ -69,9 +69,12 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     void showInfo() {
       showModalBottomSheet(
-        backgroundColor: Colors.black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0),
+        ),
         barrierColor: Colors.transparent,
-        isScrollControlled: false,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
         context: context,
         builder: (context) {
           return ExifBottomSheet(assetDetail: assetDetail!);
@@ -162,6 +165,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   heroTag: assetList[index].id,
                   loadPreview: isLoadPreview.value,
                   loadOriginal: isLoadOriginal.value,
+                  showExifSheet: showInfo,
                 );
               }
             } else {

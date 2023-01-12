@@ -7,4 +7,11 @@ export const load: PageLoad = async ({ parent }) => {
 	if (user) {
 		throw redirect(302, '/photos');
 	}
+
+	return {
+		meta: {
+			title: 'Welcome 🎉',
+			description: 'Immich Web Interface'
+		}
+	};
 };

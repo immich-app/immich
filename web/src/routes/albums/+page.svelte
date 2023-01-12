@@ -34,10 +34,6 @@
 	};
 </script>
 
-<svelte:head>
-	<title>Albums - Immich</title>
-</svelte:head>
-
 <section>
 	<NavigationBar user={data.user} shouldShowUploadButton={false} />
 </section>

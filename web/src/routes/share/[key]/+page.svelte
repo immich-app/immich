@@ -1,22 +1,20 @@
 <script lang="ts">
 	import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
-	import { AlbumResponseDto } from '../../../api';
+	import { AlbumResponseDto } from '@api';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
+	const { sharedLink } = data;
+
 	let album: AlbumResponseDto | null = null;
-	if (data.sharedLink.album) {
-		album = { ...data.sharedLink.album, assets: data.sharedLink.assets };
+	if (sharedLink.album) {
+		album = { ...sharedLink.album, assets: sharedLink.assets };
 	}
 </script>
 
-<svelte:head>
-	<title>{data.sharedLink.album?.albumName || 'Public Shared'} - Immich</title>
-</svelte:head>
-
 {#if album}
 	<div class="immich-scrollbar">
-		<AlbumViewer {album} sharedLink={data.sharedLink} />
+		<AlbumViewer {album} {sharedLink} />
 	</div>
 {/if}

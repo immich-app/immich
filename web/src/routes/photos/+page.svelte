@@ -116,10 +116,6 @@
 	};
 </script>
 
-<svelte:head>
-	<title>Photos - Immich</title>
-</svelte:head>
-
 <section>
 	{#if $isMultiSelectStoreState}
 		<ControlAppBar

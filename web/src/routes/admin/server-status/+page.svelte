@@ -3,10 +3,6 @@
 	import { page } from '$app/stores';
 </script>
 
-<svelte:head>
-	<title>Server Status - Immich</title>
-</svelte:head>
-
 {#if $page.data.allUsers}
 	<ServerStatsPanel allUsers={$page.data.allUsers} />
 {/if}
