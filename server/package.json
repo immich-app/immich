@@ -22,7 +22,7 @@
     "lint:fix": "npm run lint -- --fix",
     "check": "tsc --noEmit",
     "check:code": "npm run format && npm run lint && npm run check",
-    "check:all": "npm run check:code && npm run test",
+    "check:all": "npm run check:code && npm run test:cov",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -139,6 +139,18 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "./coverage",
+    "coverageThreshold": {
+      "global": {
+        "lines": 20,
+        "statements": 20
+      },
+      "./libs/domain/": {
+        "branches": 60,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    },
     "testEnvironment": "node",
     "roots": [
       "<rootDir>/apps/",
