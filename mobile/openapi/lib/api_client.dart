@@ -240,6 +240,8 @@ class ApiClient {
           return CreateAlbumDto.fromJson(value);
         case 'CreateAlbumShareLinkDto':
           return CreateAlbumShareLinkDto.fromJson(value);
+        case 'CreateAssetsShareLinkDto':
+          return CreateAssetsShareLinkDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'CreateTagDto':

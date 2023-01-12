@@ -50,6 +50,8 @@ import {
   IMMICH_CONTENT_LENGTH_HINT,
 } from '../../constants/download.constant';
 import { DownloadFilesDto } from './dto/download-files.dto';
+import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
+import { SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 
 @ApiBearerAuth()
 @ApiTags('Asset')
@@ -320,5 +322,14 @@ export class AssetController {
     @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
     return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
+  }
+
+  @Authenticated()
+  @Post('/create-assets-shared-link')
+  async createAssetsSharedLink(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) dto: CreateAssetsShareLinkDto,
+  ): Promise<SharedLinkResponseDto> {
+    return await this.assetService.createAssetsSharedLink(authUser, dto);
   }
 }

@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    //Future<SharedLinkResponseDto> createAssetsSharedLink(CreateAssetsShareLinkDto createAssetsShareLinkDto) async
+    test('test createAssetsSharedLink', () async {
+      // TODO
+    });
+
     //Future<List<DeleteAssetResponseDto>> deleteAsset(DeleteAssetDto deleteAssetDto) async
     test('test deleteAsset', () async {
       // TODO

@@ -73,7 +73,29 @@
 	};
 
 	const createIndividualAssetSharedLink = async () => {
-		console.log('create shared link for ', sharedAssets);
+		try {
+			const expirationTime = getExpirationTimeInMillisecond();
+			const currentTime = new Date().getTime();
+			const expirationDate = expirationTime
+				? new Date(currentTime + expirationTime).toISOString()
+				: undefined;
+
+			const { data } = await api.assetApi.createAssetsSharedLink({
+				assetIds: sharedAssets.map((a) => a.id),
+				expiredAt: expirationDate,
+				allowUpload: isAllowUpload,
+				description: description
+			});
+
+			buildSharedLink(data);
+			isShowSharedLink = true;
+		} catch (e) {
+			console.error('[createAssetSharedLink] Error: ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Failed to create shared link'
+			});
+		}
 	};
 	const buildSharedLink = (createdLink: SharedLinkResponseDto) => {
 		sharedLink = `${window.location.origin}/share/${createdLink.key}`;
