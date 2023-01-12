@@ -6,7 +6,7 @@ RUN apk add --update-cache build-base python3 libheif vips-dev ffmpeg
 
 COPY package.json package-lock.json ./
 
-RUN npm ci --ignore-scripts
+RUN npm ci
 
 COPY . .
 
