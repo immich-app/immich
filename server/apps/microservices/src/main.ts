@@ -9,7 +9,9 @@ const logger = new Logger('ImmichMicroservice');
 async function bootstrap() {
   const app = await NestFactory.create(MicroservicesModule);
 
-  app.useWebSocketAdapter(new RedisIoAdapter(app));
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
 
   await app.listen(3002, () => {
     const envName = (process.env.NODE_ENV || 'development').toUpperCase();
