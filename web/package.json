@@ -9,12 +9,13 @@
 		"check": "svelte-check --no-tsconfig --fail-on-warnings --ignore \"src/api/open-api\"",
 		"check:watch": "npm run check -- --watch",
 		"check:code": "npm run format && npm run lint && npm run check",
-		"check:all": "npm run check:code && npm test",
+		"check:all": "npm run check:code && npm run test:cov",
 		"lint": "eslint . --max-warnings 0",
 		"lint:fix": "npm run lint -- --fix",
 		"format": "prettier --check --plugin-search-dir=. .",
 		"format:fix": "prettier --write --plugin-search-dir=. .",
 		"test": "jest",
+		"test:cov": "jest --coverage",
 		"test:watch": "npm test -- --watch"
 	},
 	"devDependencies": {

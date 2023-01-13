@@ -24,7 +24,9 @@ async function bootstrap() {
     app.enableCors();
   }
 
-  app.useWebSocketAdapter(new RedisIoAdapter(app));
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
 
   const config = new DocumentBuilder()
     .setTitle('Immich')
