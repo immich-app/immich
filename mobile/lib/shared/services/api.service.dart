@@ -27,35 +27,27 @@ class ApiService {
   }
 
   /// Takes a server URL and attempts to resolve the API endpoint.
-  /// If no path is provided, a lookup for /.well-known/immich will
-  /// attempt to resolve the API endpoint. Otherwise, we assume the
-  /// input points to the API directly.
   ///
   /// Input: [schema://]host[:port][/path]
   ///  schema - optional (default: https)
   ///  host   - required
   ///  port   - optional (default: based on schema)
-  ///  path   - optional (default: /)
+  ///  path   - optional
   Future<String> resolveEndpoint(String serverUrl) async {
     // Add schema if none is set
     final urlWithSchema = serverUrl.startsWith(RegExp(r"https?://"))
         ? serverUrl
         : "https://$serverUrl";
 
-    final url = Uri.parse(urlWithSchema);
-    final origin = url.origin;
+    // Remove trailing slash(es)
+    final url = urlWithSchema.replaceFirst(RegExp(r"/+$"), "");
 
-    // Trim trailing slash(es) from path
-    final path = url.path.replaceFirst(RegExp(r"/+$"), "");
-
-    if (path.isEmpty) {
-      // No path provided, lets check for /.well-known/immich
-      final wellKnownEndpoint = await getWellKnownEndpoint(origin);
-      if (wellKnownEndpoint.isNotEmpty) return wellKnownEndpoint;
-    }
+    // Check for /.well-known/immich
+    final wellKnownEndpoint = await getWellKnownEndpoint(url);
+    if (wellKnownEndpoint.isNotEmpty) return wellKnownEndpoint;
 
     // Otherwise, assume the URL provided is the api endpoint
-    return "$origin$path";
+    return url;
   }
 
   Future<String> getWellKnownEndpoint(String baseUrl) async {

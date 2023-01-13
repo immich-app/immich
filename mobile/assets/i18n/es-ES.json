@@ -114,7 +114,7 @@
   "library_page_new_album": "Nuevo álbum",
   "login_form_button_text": "Iniciar Sesión",
   "login_form_email_hint": "tucorreo@correo.com",
-  "login_form_endpoint_hint": "http://tu-ip-de-servidor:puerto/api",
+  "login_form_endpoint_hint": "http://tu-ip-de-servidor:puerto/",
   "login_form_endpoint_url": "URL del servidor",
   "login_form_err_invalid_email": "Correo electrónico no válido",
   "login_form_err_leading_whitespace": "Espacio en blanco inicial",

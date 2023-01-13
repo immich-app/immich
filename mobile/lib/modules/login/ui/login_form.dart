@@ -35,12 +35,10 @@ class LoginForm extends HookConsumerWidget {
 
     getServeLoginConfig() async {
       if (!serverEndpointFocusNode.hasFocus) {
-        var urlText = serverEndpointController.text.trim();
+        var serverUrl = serverEndpointController.text.trim();
 
         try {
-          var serverUrl = Uri.tryParse(urlText);
-
-          if (serverUrl != null) {
+          if (serverUrl.isNotEmpty) {
             isLoading.value = true;
             final serverEndpoint =
                 await apiService.resolveEndpoint(serverUrl.toString());

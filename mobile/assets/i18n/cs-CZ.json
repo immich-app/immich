@@ -114,7 +114,7 @@
   "library_page_new_album": "Nové album",
   "login_form_button_text": "Přihlášení",
   "login_form_email_hint": "tvůjmail@email.com",
-  "login_form_endpoint_hint": "http://ip-tvého-serveru:port/api",
+  "login_form_endpoint_hint": "http://ip-tvého-serveru:port/",
   "login_form_endpoint_url": "URL adresa serveru",
   "login_form_err_invalid_email": "Neplatný e-mail",
   "login_form_err_leading_whitespace": "Úvodní mezera",

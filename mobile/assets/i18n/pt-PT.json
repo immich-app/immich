@@ -114,7 +114,7 @@
   "library_page_new_album": "Novo Album",
   "login_form_button_text": "Login",
   "login_form_email_hint": "seuemail@email.com",
-  "login_form_endpoint_hint": "http://ip-do-seu-servidor:porta/api",
+  "login_form_endpoint_hint": "http://ip-do-seu-servidor:porta/",
   "login_form_endpoint_url": "URL do endpoint do servidor",
   "login_form_err_invalid_email": "Email Inválido",
   "login_form_err_leading_whitespace": "Espaço em branco no início",
