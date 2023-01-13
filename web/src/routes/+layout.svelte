@@ -78,7 +78,7 @@
 </script>
 
 <svelte:head>
-	<title>{$page.data.meta?.title} - Immich</title>
+	<title>{$page.data.meta?.title || 'Web'} - Immich</title>
 	{#if $page.data.meta}
 		<meta name="description" content={$page.data.meta.description} />
 

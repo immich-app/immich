@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import { loginPageMessage } from '$lib/constants';
+	import { handleError } from '$lib/utils/handle-error';
 	import { api, oauth, OAuthConfigResponseDto } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 
@@ -9,7 +10,7 @@
 	let email = '';
 	let password = '';
 	let oauthError: string;
-	let oauthConfig: OAuthConfigResponseDto = { enabled: false, passwordLoginEnabled: false };
+	let authConfig: OAuthConfigResponseDto = { enabled: false, passwordLoginEnabled: false };
 	let loading = true;
 
 	const dispatch = createEventDispatcher();
@@ -30,17 +31,18 @@
 
 		try {
 			const { data } = await oauth.getConfig(window.location);
-			oauthConfig = data;
+			authConfig = data;
 
-			const { enabled, url, autoLaunch } = oauthConfig;
+			const { enabled, url, autoLaunch } = authConfig;
 
 			if (enabled && url && autoLaunch && !oauth.isAutoLaunchDisabled(window.location)) {
 				await goto('/auth/login?autoLaunch=0', { replaceState: true });
 				await goto(url);
 				return;
 			}
-		} catch (e) {
-			console.error('Error [login-form] [oauth.generateConfig]', e);
+		} catch (error) {
+			authConfig.passwordLoginEnabled = true;
+			handleError(error, 'Unable to connect!');
 		}
 
 		loading = false;
@@ -92,7 +94,7 @@
 			<LoadingSpinner />
 		</div>
 	{:else}
-		{#if oauthConfig.passwordLoginEnabled}
+		{#if authConfig.passwordLoginEnabled}
 			<form on:submit|preventDefault={login} autocomplete="off">
 				<div class="m-4 flex flex-col gap-2">
 					<label class="immich-form-label" for="email">Email</label>
@@ -133,26 +135,26 @@
 			</form>
 		{/if}
 
-		{#if oauthConfig.enabled}
+		{#if authConfig.enabled}
 			<div class="flex flex-col gap-4 px-4">
-				{#if oauthConfig.passwordLoginEnabled}
+				{#if authConfig.passwordLoginEnabled}
 					<hr />
 				{/if}
 				{#if oauthError}
 					<p class="text-red-400">{oauthError}</p>
 				{/if}
-				<a href={oauthConfig.url} class="flex w-full">
+				<a href={authConfig.url} class="flex w-full">
 					<button
 						type="button"
 						disabled={loading}
 						class="bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80 hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full font-semibold"
-						>{oauthConfig.buttonText || 'Login with OAuth'}</button
+						>{authConfig.buttonText || 'Login with OAuth'}</button
 					>
 				</a>
 			</div>
 		{/if}
 
-		{#if !oauthConfig.enabled && !oauthConfig.passwordLoginEnabled}
+		{#if !authConfig.enabled && !authConfig.passwordLoginEnabled}
 			<p class="text-center dark:text-immich-dark-fg p-4">Login has been disabled.</p>
 		{/if}
 	{/if}
