@@ -12,6 +12,8 @@
 	import { page } from '$app/stores';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
 	import { bulkDownload } from '$lib/utils/asset-utils';
+	import Close from 'svelte-material-icons/Close.svelte';
+	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 
 	export let sharedLink: SharedLinkResponseDto;
 
@@ -97,10 +99,10 @@
 		}
 	};
 
-	const downloadAllAssets = async () => {
+	const downloadAssets = async (isAll: boolean) => {
 		await bulkDownload(
 			'immich-shared',
-			assets,
+			isAll ? assets : Array.from(multiSelectAsset),
 			() => {
 				isMultiSelectionMode = false;
 				clearMultiSelectAssetAssetHandler();
@@ -111,40 +113,62 @@
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
-	<ControlAppBar
-		on:close-button-click={() => goto('/photos')}
-		backIcon={ArrowLeft}
-		showBackButton={false}
-	>
-		<svelte:fragment slot="leading">
-			<a
-				data-sveltekit-preload-data="hover"
-				class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
-				href="https://immich.app"
-			>
-				<img src="/immich-logo.svg" alt="immich logo" height="30" width="30" />
-				<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
-					IMMICH
-				</h1>
-			</a>
-		</svelte:fragment>
-
-		<svelte:fragment slot="trailing">
-			{#if sharedLink?.allowUpload}
+	{#if isMultiSelectionMode}
+		<ControlAppBar
+			on:close-button-click={clearMultiSelectAssetAssetHandler}
+			backIcon={Close}
+			tailwindClasses={'bg-white shadow-md'}
+		>
+			<svelte:fragment slot="leading">
+				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
+					Selected {multiSelectAsset.size}
+				</p>
+			</svelte:fragment>
+			<svelte:fragment slot="trailing">
 				<CircleIconButton
-					title="Add Photos"
-					on:click={() => openFileUploadDialog(undefined, sharedLink?.key)}
-					logo={FileImagePlusOutline}
+					title="Download"
+					on:click={() => downloadAssets(false)}
+					logo={CloudDownloadOutline}
 				/>
-			{/if}
+			</svelte:fragment>
+		</ControlAppBar>
+	{:else}
+		<ControlAppBar
+			on:close-button-click={() => goto('/photos')}
+			backIcon={ArrowLeft}
+			showBackButton={false}
+		>
+			<svelte:fragment slot="leading">
+				<a
+					data-sveltekit-preload-data="hover"
+					class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
+					href="https://immich.app"
+				>
+					<img src="/immich-logo.svg" alt="immich logo" height="30" width="30" />
+					<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
+						IMMICH
+					</h1>
+				</a>
+			</svelte:fragment>
 
-			<CircleIconButton
-				title="Download"
-				on:click={downloadAllAssets}
-				logo={FolderDownloadOutline}
-			/>
-		</svelte:fragment>
-	</ControlAppBar>
+			<svelte:fragment slot="trailing">
+				{#if sharedLink?.allowUpload}
+					<CircleIconButton
+						title="Add Photos"
+						on:click={() => openFileUploadDialog(undefined, sharedLink?.key)}
+						logo={FileImagePlusOutline}
+					/>
+				{/if}
+
+				<CircleIconButton
+					title="Download"
+					on:click={() => downloadAssets(true)}
+					logo={FolderDownloadOutline}
+				/>
+			</svelte:fragment>
+		</ControlAppBar>
+	{/if}
+
 	<section class="flex flex-col my-[160px] px-6 sm:px-12 md:px-24 lg:px-40">
 		{#if assets.length > 0}
 			<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
