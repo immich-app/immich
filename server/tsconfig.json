@@ -18,8 +18,6 @@
     "paths": {
       "@app/common": ["libs/common/src"],
       "@app/common/*": ["libs/common/src/*"],
-      "@app/infra": ["libs/database/src"],
-      "@app/infra/*": ["libs/database/src/*"],
       "@app/job": ["libs/job/src"],
       "@app/job/*": ["libs/job/src/*"],
       "@app/immich-config": ["libs/immich-config/src"],
