@@ -559,10 +559,10 @@ export class AssetService {
     const rows = await this._assetRepository.getSearchPropertiesByUserId(authUser.id);
     rows.forEach((row: SearchPropertiesDto) => {
       // tags
-      row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
+      row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase() || ''));
 
       // objects
-      row.objects?.map((object: string) => possibleSearchTerm.add(object?.toLowerCase()));
+      row.objects?.map((object: string) => possibleSearchTerm.add(object.toLowerCase() || ''));
 
       // asset's tyoe
       possibleSearchTerm.add(row.assetType?.toLowerCase() || '');

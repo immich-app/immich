@@ -1,11 +1,17 @@
-import { Module } from '@nestjs/common';
+import { StorageModule } from '@app/storage';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { AssetModule } from '../../api-v1/asset/asset.module';
-import { UserModule } from '../../api-v1/user/user.module';
 import { ImportTaskService } from './import-task.service';
 
 @Module({
-  imports: [AssetModule, UserModule],
+  imports: [AssetModule, StorageModule],
   providers: [ImportTaskService],
   exports: [ImportTaskService],
 })
-export class ImportTaskModule {}
+export class ImportTaskModule implements OnModuleInit {
+  constructor(private importTaskService: ImportTaskService) {}
+
+  onModuleInit() {
+    this.importTaskService.start();
+  }
+}
