@@ -192,6 +192,14 @@ class ApiClient {
           return valueString == 'true' || valueString == '1';
         case 'DateTime':
           return value is DateTime ? value : DateTime.tryParse(value);
+        case 'APIKeyCreateDto':
+          return APIKeyCreateDto.fromJson(value);
+        case 'APIKeyCreateResponseDto':
+          return APIKeyCreateResponseDto.fromJson(value);
+        case 'APIKeyResponseDto':
+          return APIKeyResponseDto.fromJson(value);
+        case 'APIKeyUpdateDto':
+          return APIKeyUpdateDto.fromJson(value);
         case 'AddAssetsDto':
           return AddAssetsDto.fromJson(value);
         case 'AddAssetsResponseDto':
@@ -230,6 +238,8 @@ class ApiClient {
           return CheckExistingAssetsResponseDto.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
+        case 'CreateAlbumShareLinkDto':
+          return CreateAlbumShareLinkDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'CreateTagDto':
@@ -250,6 +260,10 @@ class ApiClient {
           return DeviceInfoResponseDto.fromJson(value);
         case 'DeviceTypeEnum':
           return DeviceTypeEnumTypeTransformer().decode(value);
+        case 'DownloadFilesDto':
+          return DownloadFilesDto.fromJson(value);
+        case 'EditSharedLinkDto':
+          return EditSharedLinkDto.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'GetAssetByTimeBucketDto':
@@ -290,6 +304,10 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerVersionReponseDto':
           return ServerVersionReponseDto.fromJson(value);
+        case 'SharedLinkResponseDto':
+          return SharedLinkResponseDto.fromJson(value);
+        case 'SharedLinkType':
+          return SharedLinkTypeTypeTransformer().decode(value);
         case 'SignUpDto':
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
@@ -300,6 +318,8 @@ class ApiClient {
           return SystemConfigFFmpegDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
+        case 'SystemConfigPasswordLoginDto':
+          return SystemConfigPasswordLoginDto.fromJson(value);
         case 'SystemConfigStorageTemplateDto':
           return SystemConfigStorageTemplateDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':

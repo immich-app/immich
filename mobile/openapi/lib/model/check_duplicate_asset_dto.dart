@@ -36,10 +36,10 @@ class CheckDuplicateAssetDto {
   String toString() => 'CheckDuplicateAssetDto[deviceAssetId=$deviceAssetId, deviceId=$deviceId]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'deviceAssetId'] = deviceAssetId;
-      _json[r'deviceId'] = deviceId;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'deviceAssetId'] = this.deviceAssetId;
+      json[r'deviceId'] = this.deviceId;
+    return json;
   }
 
   /// Returns a new [CheckDuplicateAssetDto] instance and imports its values from

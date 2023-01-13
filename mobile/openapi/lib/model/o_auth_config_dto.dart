@@ -31,9 +31,9 @@ class OAuthConfigDto {
   String toString() => 'OAuthConfigDto[redirectUri=$redirectUri]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'redirectUri'] = redirectUri;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'redirectUri'] = this.redirectUri;
+    return json;
   }
 
   /// Returns a new [OAuthConfigDto] instance and imports its values from

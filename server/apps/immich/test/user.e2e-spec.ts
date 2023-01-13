@@ -3,15 +3,12 @@ import { INestApplication } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 import { clearDb, authCustom } from './test-utils';
-import { databaseConfig } from '@app/database/config/database.config';
-import { UserModule } from '../src/api-v1/user/user.module';
+import { databaseConfig } from '@app/infra';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
-import { UserService } from '../src/api-v1/user/user.service';
-import { CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
-import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
+import { CreateAdminDto, CreateUserDto, UserResponseDto, UserService } from '@app/domain';
 import { DataSource } from 'typeorm';
 
-function _createUser(userService: UserService, data: CreateUserDto) {
+function _createUser(userService: UserService, data: CreateUserDto | CreateAdminDto) {
   return userService.createUser(data);
 }
 
@@ -27,7 +24,7 @@ describe('User', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [UserModule, ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
       }).compile();
 
       app = moduleFixture.createNestApplication();
@@ -51,7 +48,7 @@ describe('User', () => {
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [UserModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [TypeOrmModule.forRoot(databaseConfig)],
       });
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 
@@ -67,13 +64,15 @@ describe('User', () => {
       const userTwoEmail = 'two@test.com';
 
       beforeAll(async () => {
+        // first user must be admin
+        authUser = await _createUser(userService, {
+          firstName: 'auth-user',
+          lastName: 'test',
+          email: authUserEmail,
+          password: '1234',
+          isAdmin: true,
+        });
         await Promise.allSettled([
-          _createUser(userService, {
-            firstName: 'auth-user',
-            lastName: 'test',
-            email: authUserEmail,
-            password: '1234',
-          }).then((user) => (authUser = user)),
           _createUser(userService, {
             firstName: 'one',
             lastName: 'test',
@@ -105,6 +104,7 @@ describe('User', () => {
               shouldChangePassword: true,
               profileImagePath: '',
               deletedAt: null,
+              oauthId: '',
             },
             {
               email: userTwoEmail,
@@ -116,6 +116,7 @@ describe('User', () => {
               shouldChangePassword: true,
               profileImagePath: '',
               deletedAt: null,
+              oauthId: '',
             },
           ]),
         );

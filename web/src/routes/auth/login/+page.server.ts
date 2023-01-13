@@ -9,5 +9,9 @@ export const load: PageServerLoad = async () => {
 		throw redirect(302, '/auth/register');
 	}
 
-	return;
+	return {
+		meta: {
+			title: 'Login'
+		}
+	};
 };

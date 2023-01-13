@@ -5,7 +5,7 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { mapTag, TagResponseDto } from "./response-dto/tag-response.dto";
+import { mapTag, TagResponseDto } from './response-dto/tag-response.dto';
 
 @Authenticated()
 @ApiTags('Tag')
@@ -14,7 +14,10 @@ export class TagController {
   constructor(private readonly tagService: TagService) {}
 
   @Post()
-  create(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createTagDto: CreateTagDto): Promise<TagResponseDto> {
+  create(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) createTagDto: CreateTagDto,
+  ): Promise<TagResponseDto> {
     return this.tagService.create(authUser, createTagDto);
   }
 
@@ -34,7 +37,7 @@ export class TagController {
     @GetAuthUser() authUser: AuthUserDto,
     @Param('id') id: string,
     @Body(ValidationPipe) updateTagDto: UpdateTagDto,
-  ): Promise<TagResponseDto>  {
+  ): Promise<TagResponseDto> {
     return this.tagService.update(authUser, id, updateTagDto);
   }
 

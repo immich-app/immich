@@ -61,15 +61,15 @@ class ServerInfoResponseDto {
   String toString() => 'ServerInfoResponseDto[diskSizeRaw=$diskSizeRaw, diskUseRaw=$diskUseRaw, diskAvailableRaw=$diskAvailableRaw, diskUsagePercentage=$diskUsagePercentage, diskSize=$diskSize, diskUse=$diskUse, diskAvailable=$diskAvailable]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'diskSizeRaw'] = diskSizeRaw;
-      _json[r'diskUseRaw'] = diskUseRaw;
-      _json[r'diskAvailableRaw'] = diskAvailableRaw;
-      _json[r'diskUsagePercentage'] = diskUsagePercentage;
-      _json[r'diskSize'] = diskSize;
-      _json[r'diskUse'] = diskUse;
-      _json[r'diskAvailable'] = diskAvailable;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'diskSizeRaw'] = this.diskSizeRaw;
+      json[r'diskUseRaw'] = this.diskUseRaw;
+      json[r'diskAvailableRaw'] = this.diskAvailableRaw;
+      json[r'diskUsagePercentage'] = this.diskUsagePercentage;
+      json[r'diskSize'] = this.diskSize;
+      json[r'diskUse'] = this.diskUse;
+      json[r'diskAvailable'] = this.diskAvailable;
+    return json;
   }
 
   /// Returns a new [ServerInfoResponseDto] instance and imports its values from

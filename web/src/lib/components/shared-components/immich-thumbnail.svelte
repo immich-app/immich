@@ -18,6 +18,9 @@
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected = false;
 	export let disabled = false;
+	export let publicSharedKey = '';
+	export let isRoundedCorner = false;
+
 	let imageData: string;
 
 	let mouseOver = false;
@@ -35,10 +38,9 @@
 		isThumbnailVideoPlaying = false;
 
 		if (isLivePhoto && asset.livePhotoVideoId) {
-			console.log('get file url');
-			videoUrl = getFileUrl(asset.livePhotoVideoId, false, true);
+			videoUrl = getFileUrl(asset.livePhotoVideoId, false, true, publicSharedKey);
 		} else {
-			videoUrl = getFileUrl(asset.id, false, true);
+			videoUrl = getFileUrl(asset.id, false, true, publicSharedKey);
 		}
 	};
 
@@ -118,6 +120,8 @@
 			return 'border-[20px] border-immich-primary/20';
 		} else if (disabled) {
 			return 'border-[20px] border-gray-300';
+		} else if (isRoundedCorner) {
+			return 'rounded-[20px]';
 		} else {
 			return '';
 		}
@@ -244,7 +248,7 @@
 				style:width={`${thumbnailSize}px`}
 				style:height={`${thumbnailSize}px`}
 				in:fade={{ duration: 150 }}
-				src={`/api/asset/thumbnail/${asset.id}?format=${format}`}
+				src={`/api/asset/thumbnail/${asset.id}?format=${format}&key=${publicSharedKey}`}
 				alt={asset.id}
 				class={`object-cover ${getSize()} transition-all z-0 ${getThumbnailBorderStyle()}`}
 				loading="lazy"

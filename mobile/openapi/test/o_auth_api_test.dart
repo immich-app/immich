@@ -27,5 +27,20 @@ void main() {
       // TODO
     });
 
+    //Future<UserResponseDto> link(OAuthCallbackDto oAuthCallbackDto) async
+    test('test link', () async {
+      // TODO
+    });
+
+    //Future mobileRedirect() async
+    test('test mobileRedirect', () async {
+      // TODO
+    });
+
+    //Future<UserResponseDto> unlink() async
+    test('test unlink', () async {
+      // TODO
+    });
+
   });
 }

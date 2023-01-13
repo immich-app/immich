@@ -1,12 +1,31 @@
 <script lang="ts">
-	import { ServerStatsResponseDto, UserResponseDto } from '@api';
+	import { api, ServerStatsResponseDto, UserResponseDto } from '@api';
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
 	import PlayCircle from 'svelte-material-icons/PlayCircle.svelte';
 	import Memory from 'svelte-material-icons/Memory.svelte';
 	import StatsCard from './stats-card.svelte';
 	import { getBytesWithUnit, asByteUnitString } from '../../../utils/byte-units';
-	export let stats: ServerStatsResponseDto;
+	import { onMount, onDestroy } from 'svelte';
+	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+
 	export let allUsers: Array<UserResponseDto>;
+
+	let stats: ServerStatsResponseDto;
+	let setIntervalHandler: NodeJS.Timer;
+
+	onMount(async () => {
+		const { data } = await api.serverInfoApi.getStats();
+		stats = data;
+
+		setIntervalHandler = setInterval(async () => {
+			const { data } = await api.serverInfoApi.getStats();
+			stats = data;
+		}, 5000);
+	});
+
+	onDestroy(() => {
+		clearInterval(setIntervalHandler);
+	});
 
 	const getFullName = (userId: string) => {
 		let name = 'Admin'; // since we do not have admin user in allUsers
@@ -16,7 +35,8 @@
 		return name;
 	};
 
-	$: [spaceUsage, spaceUnit] = getBytesWithUnit(stats.usageRaw);
+	// Stats are unavailable if data is not loaded yet
+	$: [spaceUsage, spaceUnit] = getBytesWithUnit(stats ? stats.usageRaw : 0);
 
 	const locale = navigator.language;
 </script>
@@ -26,9 +46,14 @@
 		<p class="text-sm dark:text-immich-dark-fg">TOTAL USAGE</p>
 
 		<div class="flex mt-5 justify-between">
-			<StatsCard logo={CameraIris} title={'PHOTOS'} value={stats.photos.toString()} />
-			<StatsCard logo={PlayCircle} title={'VIDEOS'} value={stats.videos.toString()} />
-			<StatsCard logo={Memory} title={'STORAGE'} value={spaceUsage.toString()} unit={spaceUnit} />
+			<StatsCard logo={CameraIris} title={'PHOTOS'} value={stats && stats.photos.toString()} />
+			<StatsCard logo={PlayCircle} title={'VIDEOS'} value={stats && stats.videos.toString()} />
+			<StatsCard
+				logo={Memory}
+				title={'STORAGE'}
+				value={stats && spaceUsage.toString()}
+				unit={spaceUnit}
+			/>
 		</div>
 	</div>
 
@@ -48,20 +73,30 @@
 			<tbody
 				class="overflow-y-auto rounded-md w-full max-h-[320px] block border dark:border-immich-dark-gray dark:text-immich-dark-fg"
 			>
-				{#each stats.usageByUser as user, i}
+				{#if stats}
+					{#each stats.usageByUser as user, i}
+						<tr
+							class={`text-center flex place-items-center w-full h-[50px] ${
+								i % 2 == 0
+									? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+									: 'bg-immich-bg dark:bg-immich-dark-gray/50'
+							}`}
+						>
+							<td class="text-sm px-2 w-1/4 text-ellipsis">{getFullName(user.userId)}</td>
+							<td class="text-sm px-2 w-1/4 text-ellipsis">{user.photos.toLocaleString(locale)}</td>
+							<td class="text-sm px-2 w-1/4 text-ellipsis">{user.videos.toLocaleString(locale)}</td>
+							<td class="text-sm px-2 w-1/4 text-ellipsis">{asByteUnitString(user.usageRaw)}</td>
+						</tr>
+					{/each}
+				{:else}
 					<tr
-						class={`text-center flex place-items-center w-full h-[50px] ${
-							i % 2 == 0
-								? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-								: 'bg-immich-bg dark:bg-immich-dark-gray/50'
-						}`}
+						class="text-center flex place-items-center w-full h-[50px] bg-immich-gray dark:bg-immich-dark-gray/75"
 					>
-						<td class="text-sm px-2 w-1/4 text-ellipsis">{getFullName(user.userId)}</td>
-						<td class="text-sm px-2 w-1/4 text-ellipsis">{user.photos.toLocaleString(locale)}</td>
-						<td class="text-sm px-2 w-1/4 text-ellipsis">{user.videos.toLocaleString(locale)}</td>
-						<td class="text-sm px-2 w-1/4 text-ellipsis">{asByteUnitString(user.usageRaw)}</td>
+						<td class="w-full flex justify-center">
+							<LoadingSpinner />
+						</td>
 					</tr>
-				{/each}
+				{/if}
 			</tbody>
 		</table>
 	</div>

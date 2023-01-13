@@ -51,6 +51,21 @@ void main() {
       // TODO
     });
 
+    // bool autoLaunch
+    test('to test the property `autoLaunch`', () async {
+      // TODO
+    });
+
+    // bool mobileOverrideEnabled
+    test('to test the property `mobileOverrideEnabled`', () async {
+      // TODO
+    });
+
+    // String mobileRedirectUri
+    test('to test the property `mobileRedirectUri`', () async {
+      // TODO
+    });
+
 
   });
 

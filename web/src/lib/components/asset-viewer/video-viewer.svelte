@@ -6,16 +6,19 @@
 	import { api, AssetResponseDto, getFileUrl } from '@api';
 
 	export let assetId: string;
-
+	export let publicSharedKey = '';
 	let asset: AssetResponseDto;
 
-	let videoPlayerNode: HTMLVideoElement;
 	let isVideoLoading = true;
 	let videoUrl: string;
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
-		const { data: assetInfo } = await api.assetApi.getAssetById(assetId);
+		const { data: assetInfo } = await api.assetApi.getAssetById(assetId, {
+			params: {
+				key: publicSharedKey
+			}
+		});
 
 		await loadVideoData(assetInfo);
 
@@ -25,7 +28,7 @@
 	const loadVideoData = async (assetInfo: AssetResponseDto) => {
 		isVideoLoading = true;
 
-		videoUrl = getFileUrl(assetInfo.id, false, true);
+		videoUrl = getFileUrl(assetInfo.id, false, true, publicSharedKey);
 
 		return assetInfo;
 	};
@@ -51,7 +54,6 @@
 			class="h-full object-contain"
 			on:canplay={handleCanPlay}
 			on:ended={() => dispatch('onVideoEnded')}
-			bind:this={videoPlayerNode}
 		>
 			<source src={videoUrl} type="video/mp4" />
 			<track kind="captions" />

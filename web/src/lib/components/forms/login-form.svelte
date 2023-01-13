@@ -1,24 +1,24 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import { loginPageMessage } from '$lib/constants';
-	import { api, OAuthConfigResponseDto } from '@api';
+	import { api, oauth, OAuthConfigResponseDto } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 
 	let error: string;
 	let email = '';
 	let password = '';
 	let oauthError: string;
-	let oauthConfig: OAuthConfigResponseDto = { enabled: false };
+	let oauthConfig: OAuthConfigResponseDto = { enabled: false, passwordLoginEnabled: false };
 	let loading = true;
 
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
-		const search = window.location.search;
-		if (search.includes('code=') || search.includes('error=')) {
+		if (oauth.isCallback(window.location)) {
 			try {
 				loading = true;
-				await api.oauthApi.callback({ url: window.location.href });
+				await oauth.login(window.location);
 				dispatch('success');
 				return;
 			} catch (e) {
@@ -29,10 +29,16 @@
 		}
 
 		try {
-			const redirectUri = window.location.href.split('?')[0];
-			console.log(`OAuth Redirect URI: ${redirectUri}`);
-			const { data } = await api.oauthApi.generateConfig({ redirectUri });
+			const { data } = await oauth.getConfig(window.location);
 			oauthConfig = data;
+
+			const { enabled, url, autoLaunch } = oauthConfig;
+
+			if (enabled && url && autoLaunch && !oauth.isAutoLaunchDisabled(window.location)) {
+				await goto('/auth/login?autoLaunch=0', { replaceState: true });
+				await goto(url);
+				return;
+			}
 		} catch (e) {
 			console.error('Error [login-form] [oauth.generateConfig]', e);
 		}
@@ -66,7 +72,7 @@
 </script>
 
 <div
-	class="border bg-white dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] rounded-md py-8"
+	class="border bg-white dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-md py-8"
 >
 	<div class="flex flex-col place-items-center place-content-center gap-4 px-4">
 		<img class="text-center" src="/immich-logo.svg" height="100" width="100" alt="immich-logo" />
@@ -86,60 +92,68 @@
 			<LoadingSpinner />
 		</div>
 	{:else}
-		<form on:submit|preventDefault={login} autocomplete="off">
-			<div class="m-4 flex flex-col gap-2">
-				<label class="immich-form-label" for="email">Email</label>
-				<input
-					class="immich-form-input"
-					id="email"
-					name="email"
-					type="email"
-					bind:value={email}
-					required
-				/>
-			</div>
-
-			<div class="m-4 flex flex-col gap-2">
-				<label class="immich-form-label" for="password">Password</label>
-				<input
-					class="immich-form-input"
-					id="password"
-					name="password"
-					type="password"
-					bind:value={password}
-					required
-				/>
-			</div>
-
-			{#if error}
-				<p class="text-red-400 pl-4">{error}</p>
-			{/if}
-
-			<div class="flex w-full">
-				<button
-					type="submit"
-					disabled={loading}
-					class="m-4 p-2 bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80 hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full font-semibold"
-					>Login</button
-				>
-			</div>
-
-			{#if oauthConfig.enabled}
-				<div class="flex flex-col gap-4 px-4">
-					<hr />
-					{#if oauthError}
-						<p class="text-red-400">{oauthError}</p>
-					{/if}
-					<a href={oauthConfig.url} class="flex w-full">
-						<button
-							type="button"
-							disabled={loading}
-							class="bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80 hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full font-semibold"
-							>{oauthConfig.buttonText || 'Login with OAuth'}</button
-						>
-					</a>
+		{#if oauthConfig.passwordLoginEnabled}
+			<form on:submit|preventDefault={login} autocomplete="off">
+				<div class="m-4 flex flex-col gap-2">
+					<label class="immich-form-label" for="email">Email</label>
+					<input
+						class="immich-form-input"
+						id="email"
+						name="email"
+						type="email"
+						bind:value={email}
+						required
+					/>
 				</div>
-			{/if}
-		</form>
+
+				<div class="m-4 flex flex-col gap-2">
+					<label class="immich-form-label" for="password">Password</label>
+					<input
+						class="immich-form-input"
+						id="password"
+						name="password"
+						type="password"
+						bind:value={password}
+						required
+					/>
+				</div>
+
+				{#if error}
+					<p class="text-red-400 pl-4">{error}</p>
+				{/if}
+
+				<div class="flex w-full">
+					<button
+						type="submit"
+						disabled={loading}
+						class="m-4 p-2 bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80 hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full font-semibold"
+						>Login</button
+					>
+				</div>
+			</form>
+		{/if}
+
+		{#if oauthConfig.enabled}
+			<div class="flex flex-col gap-4 px-4">
+				{#if oauthConfig.passwordLoginEnabled}
+					<hr />
+				{/if}
+				{#if oauthError}
+					<p class="text-red-400">{oauthError}</p>
+				{/if}
+				<a href={oauthConfig.url} class="flex w-full">
+					<button
+						type="button"
+						disabled={loading}
+						class="bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80 hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full font-semibold"
+						>{oauthConfig.buttonText || 'Login with OAuth'}</button
+					>
+				</a>
+			</div>
+		{/if}
+
+		{#if !oauthConfig.enabled && !oauthConfig.passwordLoginEnabled}
+			<p class="text-center dark:text-immich-dark-fg p-4">Login has been disabled.</p>
+		{/if}
 	{/if}
 </div>

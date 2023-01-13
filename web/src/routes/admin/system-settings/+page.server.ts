@@ -10,5 +10,10 @@ export const load: PageServerLoad = async ({ parent }) => {
 		throw redirect(302, '/photos');
 	}
 
-	return { user };
+	return {
+		user,
+		meta: {
+			title: 'System Settings'
+		}
+	};
 };

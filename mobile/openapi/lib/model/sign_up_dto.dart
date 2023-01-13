@@ -46,12 +46,12 @@ class SignUpDto {
   String toString() => 'SignUpDto[email=$email, password=$password, firstName=$firstName, lastName=$lastName]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'email'] = email;
-      _json[r'password'] = password;
-      _json[r'firstName'] = firstName;
-      _json[r'lastName'] = lastName;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'email'] = this.email;
+      json[r'password'] = this.password;
+      json[r'firstName'] = this.firstName;
+      json[r'lastName'] = this.lastName;
+    return json;
   }
 
   /// Returns a new [SignUpDto] instance and imports its values from

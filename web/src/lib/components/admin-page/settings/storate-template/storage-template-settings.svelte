@@ -197,7 +197,7 @@
 					</div>
 					<div class="flex gap-2 align-bottom">
 						<SettingInputField
-							label="template"
+							label="TEMPLATE"
 							required
 							inputType={SettingInputFieldType.TEXT}
 							bind:value={storageConfig.template}
@@ -206,7 +206,7 @@
 
 						<div class="flex-0">
 							<SettingInputField
-								label="Extension"
+								label="EXTENSION"
 								inputType={SettingInputFieldType.TEXT}
 								value={'.jpeg'}
 								disabled

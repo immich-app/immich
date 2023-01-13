@@ -13,7 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { createHash, randomUUID } from 'node:crypto';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/infra';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -28,7 +28,7 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
+import { IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import {
   AssetCountByTimeBucketResponseDto,
@@ -54,19 +54,23 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
-import { ALBUM_REPOSITORY, IAlbumRepository } from '../album/album-repository';
+import { IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
+import { ShareCore } from '../share/share.core';
+import { ISharedLinkRepository } from '../share/shared-link.repository';
+import { DownloadFilesDto } from './dto/download-files.dto';
 
 const fileInfo = promisify(stat);
 
 @Injectable()
 export class AssetService {
-  constructor(
-    @Inject(ASSET_REPOSITORY)
-    private _assetRepository: IAssetRepository,
+  readonly logger = new Logger(AssetService.name);
+  private shareCore: ShareCore;
 
-    @Inject(ALBUM_REPOSITORY)
-    private _albumRepository: IAlbumRepository,
+  constructor(
+    @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
+
+    @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
@@ -82,7 +86,10 @@ export class AssetService {
     private downloadService: DownloadService,
 
     private storageService: StorageService,
-  ) {}
+    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
+  ) {
+    this.shareCore = new ShareCore(sharedLinkRepository);
+  }
 
   public async handleUploadedAsset(
     authUser: AuthUserDto,
@@ -253,6 +260,24 @@ export class AssetService {
     const assets = await this._assetRepository.getAllByUserId(user.id, dto.skip);
 
     return this.downloadService.downloadArchive(dto.name || `library`, assets);
+  }
+
+  public async downloadFiles(dto: DownloadFilesDto) {
+    const assetToDownload = [];
+
+    for (const assetId of dto.assetIds) {
+      const asset = await this._assetRepository.getById(assetId);
+      assetToDownload.push(asset);
+
+      // Get live photo asset
+      if (asset.livePhotoVideoId) {
+        const livePhotoAsset = await this._assetRepository.getById(asset.livePhotoVideoId);
+        assetToDownload.push(livePhotoAsset);
+      }
+    }
+
+    const now = new Date().toISOString();
+    return this.downloadService.downloadArchive(`immich-${now}`, assetToDownload);
   }
 
   public async downloadFile(query: ServeFileDto, assetId: string, res: Res) {
@@ -651,7 +676,15 @@ export class AssetService {
 
   async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
     for (const assetId of assetIds) {
-      // Step 1: Check if user owns asset
+      // Step 1: Check if asset is part of a public shared
+      if (authUser.sharedLinkId) {
+        const canAccess = await this.shareCore.hasAssetAccess(authUser.sharedLinkId, assetId);
+        if (!canAccess) {
+          throw new ForbiddenException();
+        }
+      }
+
+      // Step 2: Check if user owns asset
       if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
         continue;
       }
@@ -662,8 +695,6 @@ export class AssetService {
         if ((await this._albumRepository.getSharedWithUserAlbumCount(authUser.id, assetId)) > 0) {
           continue;
         }
-
-        //TODO: Step 3: Check if asset is part of a public album
       }
       throw new ForbiddenException();
     }

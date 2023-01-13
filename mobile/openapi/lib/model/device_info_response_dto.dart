@@ -56,14 +56,14 @@ class DeviceInfoResponseDto {
   String toString() => 'DeviceInfoResponseDto[id=$id, deviceType=$deviceType, userId=$userId, deviceId=$deviceId, createdAt=$createdAt, isAutoBackup=$isAutoBackup]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'id'] = id;
-      _json[r'deviceType'] = deviceType;
-      _json[r'userId'] = userId;
-      _json[r'deviceId'] = deviceId;
-      _json[r'createdAt'] = createdAt;
-      _json[r'isAutoBackup'] = isAutoBackup;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'id'] = this.id;
+      json[r'deviceType'] = this.deviceType;
+      json[r'userId'] = this.userId;
+      json[r'deviceId'] = this.deviceId;
+      json[r'createdAt'] = this.createdAt;
+      json[r'isAutoBackup'] = this.isAutoBackup;
+    return json;
   }
 
   /// Returns a new [DeviceInfoResponseDto] instance and imports its values from

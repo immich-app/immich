@@ -30,6 +30,7 @@
 ## Content
 
 - [Official Documentation](https://immich.app/docs)
+- [Roadmap](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Features](#features)
 - [Introduction](https://immich.app/docs/overview/introduction)
