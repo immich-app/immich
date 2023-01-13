@@ -1,4 +1,3 @@
-import { ImmichLogLevel } from '@app/common/constants/log-level.constant';
 import { AssetEntity, ExifEntity } from '@app/infra';
 import {
   IExifExtractionProcessor,
@@ -76,8 +75,8 @@ export type GeoData = {
 
 @Processor(QueueNameEnum.METADATA_EXTRACTION)
 export class MetadataExtractionProcessor {
+  private logger = new Logger(MetadataExtractionProcessor.name);
   private isGeocodeInitialized = false;
-  private logLevel: ImmichLogLevel;
 
   constructor(
     @InjectRepository(AssetEntity)
@@ -86,10 +85,10 @@ export class MetadataExtractionProcessor {
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
-    private configService: ConfigService,
+    configService: ConfigService,
   ) {
     if (!configService.get('DISABLE_REVERSE_GEOCODING')) {
-      Logger.log('Initialising Reverse Geocoding');
+      this.logger.log('Initializing Reverse Geocoding');
       geocoderInit({
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -108,8 +107,6 @@ export class MetadataExtractionProcessor {
         Logger.log('Reverse Geocoding Initialised');
       });
     }
-
-    this.logLevel = this.configService.get('LOG_LEVEL') || ImmichLogLevel.SIMPLE;
   }
 
   private async reverseGeocodeExif(
@@ -260,12 +257,8 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.save(newExif);
-    } catch (e) {
-      Logger.error(`Error extracting EXIF ${String(e)}`, 'extractExif');
-
-      if (this.logLevel === ImmichLogLevel.VERBOSE) {
-        console.trace('Error extracting EXIF', e);
-      }
+    } catch (error: any) {
+      this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
     }
   }
 

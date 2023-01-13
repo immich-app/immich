@@ -10,11 +10,14 @@ import { SERVER_VERSION } from './constants/server_version.constant';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 import { json } from 'body-parser';
 import { patchOpenAPI } from './utils/patch-open-api.util';
+import { getLogLevels } from '@app/common';
 
 const logger = new Logger('ImmichServer');
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: getLogLevels(),
+  });
 
   app.set('trust proxy');
   app.set('etag', 'strong');
