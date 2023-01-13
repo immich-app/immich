@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { afterNavigate, goto } from '$app/navigation';
-	import { page } from '$app/stores';
 	import {
 		AlbumResponseDto,
 		api,
 		AssetResponseDto,
 		SharedLinkResponseDto,
 		SharedLinkType,
-		ThumbnailFormat,
 		UserResponseDto
 	} from '@api';
 	import { onMount } from 'svelte';
@@ -15,9 +13,7 @@
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
-	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
-	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import AssetSelection from './asset-selection.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import ShareInfoModal from './share-info-modal.svelte';
@@ -43,13 +39,12 @@
 	import ThemeButton from '../shared-components/theme-button.svelte';
 	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import { bulkDownload } from '$lib/utils/asset-utils';
+	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
 	const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
-
-	let isShowAssetViewer = false;
 
 	let isShowAssetSelection = false;
 
@@ -72,11 +67,6 @@
 	let isShowAlbumOptions = false;
 	let isShowThumbnailSelection = false;
 
-	let selectedAsset: AssetResponseDto;
-	let currentViewAssetIndex = 0;
-
-	let viewWidth: number;
-	let thumbnailSize = 300;
 	let backUrl = '/albums';
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;
@@ -96,18 +86,6 @@
 			isCreatingSharedAlbum = true;
 		}
 	});
-
-	$: {
-		if (album.assets?.length < 6) {
-			thumbnailSize = Math.floor(viewWidth / album.assetCount - album.assetCount);
-		} else {
-			if (viewWidth > 600) thumbnailSize = Math.floor(viewWidth / 6 - 6);
-			else if (viewWidth > 400) thumbnailSize = Math.floor(viewWidth / 4 - 6);
-			else if (viewWidth > 300) thumbnailSize = Math.floor(viewWidth / 2 - 6);
-			else if (viewWidth > 200) thumbnailSize = Math.floor(viewWidth / 2 - 6);
-			else if (viewWidth > 100) thumbnailSize = Math.floor(viewWidth / 1 - 6);
-		}
-	}
 
 	const locale = navigator.language;
 	const albumDateFormat: Intl.DateTimeFormatOptions = {
@@ -140,28 +118,6 @@
 		}
 	});
 
-	const viewAssetHandler = (event: CustomEvent) => {
-		const { asset }: { asset: AssetResponseDto } = event.detail;
-
-		currentViewAssetIndex = album.assets.findIndex((a) => a.id == asset.id);
-		selectedAsset = album.assets[currentViewAssetIndex];
-		isShowAssetViewer = true;
-		pushState(selectedAsset.id);
-	};
-
-	const selectAssetHandler = (event: CustomEvent) => {
-		const { asset }: { asset: AssetResponseDto } = event.detail;
-		let temp = new Set(multiSelectAsset);
-
-		if (multiSelectAsset.has(asset)) {
-			temp.delete(asset);
-		} else {
-			temp.add(asset);
-		}
-
-		multiSelectAsset = temp;
-	};
-
 	const clearMultiSelectAssetAssetHandler = () => {
 		multiSelectAsset = new Set();
 	};
@@ -183,40 +139,6 @@
 				});
 			}
 		}
-	};
-	const navigateAssetForward = () => {
-		try {
-			if (currentViewAssetIndex < album.assetCount - 1) {
-				currentViewAssetIndex++;
-				selectedAsset = album.assets[currentViewAssetIndex];
-				pushState(selectedAsset.id);
-			}
-		} catch (e) {
-			console.error(e);
-		}
-	};
-
-	const navigateAssetBackward = () => {
-		try {
-			if (currentViewAssetIndex > 0) {
-				currentViewAssetIndex--;
-				selectedAsset = album.assets[currentViewAssetIndex];
-				pushState(selectedAsset.id);
-			}
-		} catch (e) {
-			console.error(e);
-		}
-	};
-
-	const pushState = (assetId: string) => {
-		// add a URL to the browser's history
-		// changes the current URL in the address bar but doesn't perform any SvelteKit navigation
-		history.pushState(null, '', `${$page.url.pathname}/photos/${assetId}`);
-	};
-
-	const closeViewer = () => {
-		isShowAssetViewer = false;
-		history.pushState(null, '', `${$page.url.pathname}`);
 	};
 
 	// Update Album Name
@@ -606,34 +528,11 @@
 		{/if}
 
 		{#if album.assetCount > 0}
-			<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
-				{#each album.assets as asset}
-					{#key asset.id}
-						{#if album.assetCount < 7}
-							<ImmichThumbnail
-								{asset}
-								{thumbnailSize}
-								publicSharedKey={sharedLink?.key}
-								format={ThumbnailFormat.Jpeg}
-								on:click={(e) =>
-									isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e)}
-								on:select={selectAssetHandler}
-								selected={multiSelectAsset.has(asset)}
-							/>
-						{:else}
-							<ImmichThumbnail
-								{asset}
-								{thumbnailSize}
-								publicSharedKey={sharedLink?.key}
-								on:click={(e) =>
-									isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e)}
-								on:select={selectAssetHandler}
-								selected={multiSelectAsset.has(asset)}
-							/>
-						{/if}
-					{/key}
-				{/each}
-			</div>
+			<GalleryViewer
+				assets={album.assets}
+				key={sharedLink?.key ?? ''}
+				bind:selectedAssets={multiSelectAsset}
+			/>
 		{:else}
 			<!-- Album is empty - Show asset selectection buttons -->
 			<section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
@@ -653,17 +552,6 @@
 		{/if}
 	</section>
 </section>
-
-<!-- Overlay Asset Viewer -->
-{#if isShowAssetViewer}
-	<AssetViewer
-		asset={selectedAsset}
-		publicSharedKey={sharedLink?.key}
-		on:navigate-previous={navigateAssetBackward}
-		on:navigate-next={navigateAssetForward}
-		on:close={closeViewer}
-	/>
-{/if}
 
 {#if isShowAssetSelection}
 	<AssetSelection

@@ -12,7 +12,7 @@ import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 export const openFileUploadDialog = (
 	albumId: string | undefined = undefined,
 	sharedKey: string | undefined = undefined,
-	callback?: () => void
+	onDone?: () => void
 ) => {
 	try {
 		const fileSelector = document.createElement('input');
@@ -29,7 +29,7 @@ export const openFileUploadDialog = (
 			const files = Array.from<File>(target.files);
 
 			await fileUploadHandler(files, albumId, sharedKey);
-			callback && callback();
+			onDone && onDone();
 		};
 
 		fileSelector.click();
@@ -54,7 +54,7 @@ export const fileUploadHandler = async (
 
 		return;
 	}
-	console.log('fileUploadHandler');
+
 	const acceptedFile = files.filter(
 		(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
 	);
