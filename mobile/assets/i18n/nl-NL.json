@@ -80,6 +80,7 @@
   "login_form_endpoint_hint": "http://jouw-server-ip:port/",
   "login_form_endpoint_url": "Server URL",
   "login_form_err_invalid_email": "Ongeldige Email",
+  "login_form_err_invalid_url": "Ongeldige URL",
   "login_form_err_leading_whitespace": "Spatie aan het begin",
   "login_form_err_trailing_whitespace": "Spatie aan het eind",
   "login_form_failed_login": "Fout bij inloggen, controleer server url, email en wachtwoord",

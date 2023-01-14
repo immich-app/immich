@@ -117,6 +117,7 @@
   "login_form_endpoint_hint": "http://din-server-ip:port/",
   "login_form_endpoint_url": "Server Endpoint URL",
   "login_form_err_invalid_email": "Ugyldig email",
+  "login_form_err_invalid_url": "Ugyldig URL",
   "login_form_err_leading_whitespace": "Mellemrum før",
   "login_form_err_trailing_whitespace": "Mellemrum efter",
   "login_form_failed_get_oauth_server_config": "Fejl med at logge på med OAuth. Tjek serveres URL",

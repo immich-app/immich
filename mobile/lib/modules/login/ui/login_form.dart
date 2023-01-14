@@ -13,6 +13,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
 
 class LoginForm extends HookConsumerWidget {
@@ -215,7 +216,15 @@ class ServerEndpointInput extends StatelessWidget {
   }) : super(key: key);
 
   String? _validateInput(String? url) {
-    // Can we do any other validation here instead?
+    if (url == null || url.isEmpty) return null;
+
+    final validate = Uri.tryParse(sanitizeUrl(url));
+    if (validate == null ||
+        !validate.isAbsolute ||
+        !validate.scheme.startsWith("http") ||
+        validate.host.isEmpty) {
+      return 'login_form_err_invalid_url'.tr();
+    }
     return null;
   }
 

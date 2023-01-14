@@ -117,6 +117,7 @@
   "login_form_endpoint_hint": "http://ip-tvojho-servera:port/",
   "login_form_endpoint_url": "URL adresa servera",
   "login_form_err_invalid_email": "Neplatný e-mail",
+  "login_form_err_invalid_url": "Neplatný URL",
   "login_form_err_leading_whitespace": "Úvodná medzera",
   "login_form_err_trailing_whitespace": "Koncové medzera",
   "login_form_failed_get_oauth_server_config": "Chyba prihlásenia pomocou OAuth, skontrolujte adresu URL servera",

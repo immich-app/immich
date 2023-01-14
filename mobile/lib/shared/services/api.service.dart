@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
 
@@ -34,13 +35,7 @@ class ApiService {
   ///  port   - optional (default: based on schema)
   ///  path   - optional
   Future<String> resolveEndpoint(String serverUrl) async {
-    // Add schema if none is set
-    final urlWithSchema = serverUrl.startsWith(RegExp(r"https?://"))
-        ? serverUrl
-        : "https://$serverUrl";
-
-    // Remove trailing slash(es)
-    final url = urlWithSchema.replaceFirst(RegExp(r"/+$"), "");
+    final url = sanitizeUrl(serverUrl);
 
     // Check for /.well-known/immich
     final wellKnownEndpoint = await getWellKnownEndpoint(url);

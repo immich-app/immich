@@ -117,6 +117,7 @@
   "login_form_endpoint_hint": "http://ip-do-seu-servidor:porta/",
   "login_form_endpoint_url": "URL do endpoint do servidor",
   "login_form_err_invalid_email": "Email Inválido",
+  "login_form_err_invalid_url": "URL Inválido",
   "login_form_err_leading_whitespace": "Espaço em branco no início",
   "login_form_err_trailing_whitespace": "Espaço em branco no fim",
   "login_form_failed_get_oauth_server_config": "Error logging using OAuth, check server URL",

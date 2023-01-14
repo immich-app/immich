@@ -114,6 +114,7 @@
   "login_form_endpoint_hint": "https://your-server-ip:port/",
   "login_form_endpoint_url": "서버 엔드포인트 URL",
   "login_form_err_invalid_email": "잘못된 이메일 형식입니다",
+  "login_form_err_invalid_url": "Invalid URL",
   "login_form_err_leading_whitespace": "이메일 앞에 공백문자가 포함되어 있습니다",
   "login_form_err_trailing_whitespace": "이메일 뒤에 공백문자가 포함되어 있습니다",
   "login_form_failed_login": "로그인 오류, 서버 URL, 이메일 및 비밀번호를 확인하세요",
