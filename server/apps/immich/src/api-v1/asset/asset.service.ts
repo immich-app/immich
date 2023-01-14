@@ -61,6 +61,7 @@ import { ISharedLinkRepository } from '../share/shared-link.repository';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 
 const fileInfo = promisify(stat);
 
@@ -719,6 +720,22 @@ export class AssetService {
     });
 
     return mapSharedLinkToResponseDto(sharedLink);
+  }
+
+  async updateAssetsInSharedLink(
+    authUser: AuthUserDto,
+    dto: UpdateAssetsToSharedLinkDto,
+  ): Promise<SharedLinkResponseDto> {
+    if (!authUser.sharedLinkId) throw new ForbiddenException();
+    const assets = [];
+
+    for (const assetId of dto.assetIds) {
+      const asset = await this._assetRepository.getById(assetId);
+      assets.push(asset);
+    }
+
+    const updatedLink = await this.shareCore.updateAssetsInSharedLink(authUser.sharedLinkId, assets);
+    return mapSharedLinkToResponseDto(updatedLink);
   }
 }
 

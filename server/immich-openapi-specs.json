@@ -1293,6 +1293,41 @@
             "bearer": []
           }
         ]
+      },
+      "patch": {
+        "operationId": "updateAssetsInSharedLink",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetsToSharedLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/share": {
@@ -3718,6 +3753,20 @@
           "expiresAt",
           "assets",
           "allowUpload"
+        ]
+      },
+      "UpdateAssetsToSharedLinkDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
         ]
       },
       "EditSharedLinkDto": {

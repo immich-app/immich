@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 
-	import { AssetResponseDto, SharedLinkResponseDto } from '@api';
+	import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 	import { goto } from '$app/navigation';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
@@ -12,11 +12,18 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
+	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '../shared-components/notification/notification';
 
 	export let sharedLink: SharedLinkResponseDto;
+	export let isOwned: boolean;
 
 	let assets = sharedLink.assets;
 	let selectedAssets: Set<AssetResponseDto> = new Set();
+
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 
 	const clearMultiSelectAssetAssetHandler = () => {
@@ -36,9 +43,41 @@
 	};
 
 	const handleUploadAssets = () => {
-		openFileUploadDialog(undefined, sharedLink?.key, (assetId) => {
-			console.log('New asset', assetId);
+		openFileUploadDialog(undefined, sharedLink?.key, async (assetId) => {
+			await api.assetApi.updateAssetsInSharedLink(
+				{
+					assetIds: [...assets.map((a) => a.id), assetId]
+				},
+				{
+					params: {
+						key: sharedLink?.key
+					}
+				}
+			);
+
+			notificationController.show({
+				message: 'Add asset to shared link successfully',
+				type: NotificationType.Info
+			});
 		});
+	};
+
+	const handleRemoveAssetsFromSharedLink = async () => {
+		if (window.confirm('Do you want to remove selected assets from the shared link?')) {
+			const { data } = await api.assetApi.updateAssetsInSharedLink(
+				{
+					assetIds: assets.filter((a) => !selectedAssets.has(a)).map((a) => a.id)
+				},
+				{
+					params: {
+						key: sharedLink?.key
+					}
+				}
+			);
+
+			assets = assets.filter((a) => !selectedAssets.has(a));
+			clearMultiSelectAssetAssetHandler();
+		}
 	};
 </script>
 
@@ -60,6 +99,13 @@
 					on:click={() => downloadAssets(false)}
 					logo={CloudDownloadOutline}
 				/>
+				{#if isOwned}
+					<CircleIconButton
+						title="Remove from album"
+						on:click={handleRemoveAssetsFromSharedLink}
+						logo={DeleteOutline}
+					/>
+				{/if}
 			</svelte:fragment>
 		</ControlAppBar>
 	{:else}

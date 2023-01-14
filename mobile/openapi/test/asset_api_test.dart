@@ -159,6 +159,13 @@ void main() {
 
     // 
     //
+    //Future<SharedLinkResponseDto> updateAssetsInSharedLink(UpdateAssetsToSharedLinkDto updateAssetsToSharedLinkDto) async
+    test('test updateAssetsInSharedLink', () async {
+      // TODO
+    });
+
+    // 
+    //
     //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData) async
     test('test uploadFile', () async {
       // TODO

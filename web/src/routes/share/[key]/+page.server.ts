@@ -5,7 +5,9 @@ import { getThumbnailUrl } from '$lib/utils/asset-utils';
 import { serverApi, ThumbnailFormat } from '@api';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, parent }) => {
+	const { user } = await parent();
+
 	const { key } = params;
 
 	try {
@@ -22,7 +24,8 @@ export const load: PageServerLoad = async ({ params }) => {
 				imageUrl: assetId
 					? getThumbnailUrl(assetId, ThumbnailFormat.Webp, sharedLink.key)
 					: 'feature-panel.png'
-			}
+			},
+			user
 		};
 	} catch (e) {
 		throw error(404, {

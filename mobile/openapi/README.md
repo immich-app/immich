@@ -95,6 +95,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{assetId} | 
+*AssetApi* | [**updateAssetsInSharedLink**](doc//AssetApi.md#updateassetsinsharedlink) | **PATCH** /asset/shared-link | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
@@ -217,6 +218,7 @@ Class | Method | HTTP request | Description
  - [TimeGroupEnum](doc//TimeGroupEnum.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
+ - [UpdateAssetsToSharedLinkDto](doc//UpdateAssetsToSharedLinkDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UpsertDeviceInfoDto](doc//UpsertDeviceInfoDto.md)

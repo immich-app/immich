@@ -29,6 +29,7 @@ Method | HTTP request | Description
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
 [**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{assetId} | 
+[**updateAssetsInSharedLink**](AssetApi.md#updateassetsinsharedlink) | **PATCH** /asset/shared-link | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
 
@@ -996,6 +997,55 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AssetResponseDto**](AssetResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updateAssetsInSharedLink**
+> SharedLinkResponseDto updateAssetsInSharedLink(updateAssetsToSharedLinkDto)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final updateAssetsToSharedLinkDto = UpdateAssetsToSharedLinkDto(); // UpdateAssetsToSharedLinkDto | 
+
+try {
+    final result = api_instance.updateAssetsInSharedLink(updateAssetsToSharedLinkDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->updateAssetsInSharedLink: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **updateAssetsToSharedLinkDto** | [**UpdateAssetsToSharedLinkDto**](UpdateAssetsToSharedLinkDto.md)|  | 
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
 
 ### Authorization
 

@@ -136,6 +136,7 @@ async function fileUploader(
 				if (albumId && dataId) {
 					addAssetsToAlbum(albumId, [dataId]);
 				}
+				onDone && dataId && onDone(dataId);
 				return;
 			}
 		}

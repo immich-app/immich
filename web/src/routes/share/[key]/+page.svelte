@@ -9,7 +9,7 @@
 	const { sharedLink } = data;
 
 	let album: AlbumResponseDto | null = null;
-
+	let isOwned = data.user ? data.user.id === sharedLink.userId : false;
 	if (sharedLink.album) {
 		album = { ...sharedLink.album, assets: sharedLink.assets };
 	}
@@ -23,6 +23,6 @@
 
 {#if sharedLink.type == SharedLinkType.Individual}
 	<div class="immich-scrollbar">
-		<IndividualSharedViewer {sharedLink} />
+		<IndividualSharedViewer {sharedLink} {isOwned} />
 	</div>
 {/if}
