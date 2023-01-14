@@ -13,7 +13,7 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
-import exifr from 'exifr';
+//import exifr from 'exifr';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import sharp from 'sharp';
@@ -144,29 +144,19 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
-      const exifData = await exifr.parse(asset.originalPath, {
-        tiff: true,
-        ifd0: true as any,
-        ifd1: true,
-        exif: true,
-        gps: true,
-        interop: true,
-        xmp: true,
-        icc: true,
-        iptc: true,
-        jfif: true,
-        ihdr: true,
-      });
+      const exiftool = require("exiftool-vendored").exiftool;
+      await exiftool.version().then((version: any) => Logger.log(`We are running ExifTool v${version}`))
+      const exifData = await exiftool.read(asset.originalPath);
+      Logger.log(exifData);
 
       if (!exifData) {
         throw new Error(`can not parse exif data from file ${asset.originalPath}`);
       }
 
-      const createdAt = new Date(exifData.DateTimeOriginal || exifData.CreateDate || new Date(asset.createdAt));
-
+      const createdAt = new Date(exifData.DateTimeOriginal || exifData.CreateDate);
+      Logger.log("Hmm", createdAt);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
-
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.make = exifData['Make'] || null;
@@ -185,43 +175,6 @@ export class MetadataExtractionProcessor {
       newExif.exposureTime = exifData['ExposureTime'] || null;
       newExif.latitude = exifData['latitude'] || null;
       newExif.longitude = exifData['longitude'] || null;
-
-      /**
-       * Correctly store UTC time based on timezone
-       * The timestamp being extracted from EXIF is based on the timezone
-       * of the container. We need to correct it to UTC time based on the
-       * timezone of the location.
-       *
-       * The timezone of the location can be exracted from the lat/lon
-       * GPS coordinates.
-       *
-       * Any assets that doesn't have this information will used the
-       * createdAt timestamp of the asset instead.
-       *
-       * The updated/corrected timestamp will be used to update the
-       * createdAt timestamp in the asset table. So that the information
-       * is consistent across the database.
-       *  */
-      if (newExif.longitude && newExif.latitude) {
-        const tz = find(newExif.latitude, newExif.longitude)[0];
-        const localTimeWithTimezone = createdAt.toISOString();
-
-        if (localTimeWithTimezone.length == 24) {
-          // Remove the last character
-          const localTimeWithoutTimezone = localTimeWithTimezone.slice(0, -1);
-          const correctUTCTime = luxon.DateTime.fromISO(localTimeWithoutTimezone, { zone: tz }).toUTC().toISO();
-          newExif.dateTimeOriginal = new Date(correctUTCTime);
-          await this.assetRepository.save({
-            id: asset.id,
-            createdAt: correctUTCTime,
-          });
-        }
-      } else {
-        await this.assetRepository.save({
-          id: asset.id,
-          createdAt: createdAt.toISOString(),
-        });
-      }
 
       /**
        * Reverse Geocoding

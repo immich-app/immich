@@ -21,7 +21,7 @@ FROM node:16-alpine3.14
 
 WORKDIR /usr/src/app
 
-RUN apk add --no-cache libheif vips ffmpeg
+RUN apk add --no-cache libheif vips ffmpeg exiftool
 
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
