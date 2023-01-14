@@ -16,13 +16,6 @@ let envBasedDatabaseConfig = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE_NAME,
-  entities: [__dirname + '/../**/*.entity.{js,ts}'],
-  synchronize: false,
-  migrations: [__dirname + '/../migrations/*.{js,ts}'],
-  migrationsRun: true,
-  ssl:  process.env.DB_SSL === 'True'
-    ? { rejectUnauthorized: false }
-    : false,
   connectTimeoutMS: 10000, // 10 seconds
 };
 
