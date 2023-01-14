@@ -34,6 +34,10 @@
 			sharedLink?.key
 		);
 	};
+
+	const handleUploadAssets = () => {
+		openFileUploadDialog(undefined, sharedLink?.key);
+	};
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
@@ -79,7 +83,7 @@
 				{#if sharedLink?.allowUpload}
 					<CircleIconButton
 						title="Add Photos"
-						on:click={() => openFileUploadDialog(undefined, sharedLink?.key)}
+						on:click={handleUploadAssets}
 						logo={FileImagePlusOutline}
 					/>
 				{/if}

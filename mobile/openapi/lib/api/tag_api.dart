@@ -16,7 +16,10 @@ class TagApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /tag' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [CreateTagDto] createTagDto (required):
@@ -45,6 +48,8 @@ class TagApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [CreateTagDto] createTagDto (required):
@@ -63,7 +68,10 @@ class TagApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /tag/{id}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -93,6 +101,8 @@ class TagApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -103,7 +113,9 @@ class TagApi {
     }
   }
 
-  /// Performs an HTTP 'GET /tag' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> findAllWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/tag';
@@ -129,6 +141,7 @@ class TagApi {
     );
   }
 
+  /// 
   Future<List<TagResponseDto>?> findAll() async {
     final response = await findAllWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -147,7 +160,10 @@ class TagApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /tag/{id}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -177,6 +193,8 @@ class TagApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -195,7 +213,10 @@ class TagApi {
     return null;
   }
 
-  /// Performs an HTTP 'PATCH /tag/{id}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -227,6 +248,8 @@ class TagApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

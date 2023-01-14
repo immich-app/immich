@@ -30,7 +30,7 @@
 	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 
 	export let data: PageData;
-	let shouldShowCreateSharedLinkModal = false;
+	let isShowCreateSharedLinkModal = false;
 	const deleteSelectedAssetHandler = async () => {
 		try {
 			if (
@@ -116,12 +116,12 @@
 	};
 
 	const handleCreateSharedLink = async () => {
-		shouldShowCreateSharedLinkModal = true;
+		isShowCreateSharedLinkModal = true;
 	};
 
 	const handleCloseSharedLinkModal = () => {
 		assetInteractionStore.clearMultiselect();
-		shouldShowCreateSharedLinkModal = false;
+		isShowCreateSharedLinkModal = false;
 	};
 </script>
 
@@ -179,7 +179,7 @@
 		/>
 	{/if}
 
-	{#if shouldShowCreateSharedLinkModal}
+	{#if isShowCreateSharedLinkModal}
 		<CreateSharedLinkModal
 			sharedAssets={Array.from($selectedAssets)}
 			shareType={SharedLinkType.Individual}

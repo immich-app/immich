@@ -21,6 +21,8 @@ Method | HTTP request | Description
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -62,6 +64,8 @@ No authorization required
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -99,6 +103,8 @@ No authorization required
 
 # **getKey**
 > APIKeyResponseDto getKey(id)
+
+
 
 
 
@@ -143,6 +149,8 @@ No authorization required
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -177,6 +185,8 @@ No authorization required
 
 # **updateKey**
 > APIKeyResponseDto updateKey(id, aPIKeyUpdateDto)
+
+
 
 
 

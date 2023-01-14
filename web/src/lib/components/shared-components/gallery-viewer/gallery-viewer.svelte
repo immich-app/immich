@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { handleError } from '$lib/utils/handle-error';
 	import { AssetResponseDto, ThumbnailFormat } from '@api';
 
 	import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
@@ -61,7 +62,7 @@
 				pushState(selectedAsset.id);
 			}
 		} catch (e) {
-			console.error(e);
+			handleError(e, 'Cannot navigate to the next asset');
 		}
 	};
 
@@ -73,7 +74,7 @@
 				pushState(selectedAsset.id);
 			}
 		} catch (e) {
-			console.error(e);
+			handleError(e, 'Cannot navigate to previous asset');
 		}
 	};
 

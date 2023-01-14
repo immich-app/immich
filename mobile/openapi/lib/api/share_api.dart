@@ -16,7 +16,10 @@ class ShareApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PATCH /share/{id}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -48,6 +51,8 @@ class ShareApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -68,7 +73,9 @@ class ShareApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /share' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAllSharedLinksWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/share';
@@ -94,6 +101,7 @@ class ShareApi {
     );
   }
 
+  /// 
   Future<List<SharedLinkResponseDto>?> getAllSharedLinks() async {
     final response = await getAllSharedLinksWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -112,7 +120,9 @@ class ShareApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /share/me' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getMySharedLinkWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/share/me';
@@ -138,6 +148,7 @@ class ShareApi {
     );
   }
 
+  /// 
   Future<SharedLinkResponseDto?> getMySharedLink() async {
     final response = await getMySharedLinkWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -153,7 +164,10 @@ class ShareApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /share/{id}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -183,6 +197,8 @@ class ShareApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -201,7 +217,10 @@ class ShareApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /share/{id}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -231,6 +250,8 @@ class ShareApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

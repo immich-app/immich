@@ -31,26 +31,36 @@ void main() {
       // TODO
     });
 
+    // 
+    //
     //Future<SharedLinkResponseDto> createAssetsSharedLink(CreateAssetsShareLinkDto createAssetsShareLinkDto) async
     test('test createAssetsSharedLink', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<List<DeleteAssetResponseDto>> deleteAsset(DeleteAssetDto deleteAssetDto) async
     test('test deleteAsset', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<Object> downloadFile(String assetId, { bool isThumb, bool isWeb }) async
     test('test downloadFile', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<Object> downloadFiles(DownloadFilesDto downloadFilesDto) async
     test('test downloadFiles', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<Object> downloadLibrary({ num skip }) async
     test('test downloadLibrary', () async {
       // TODO
@@ -70,36 +80,50 @@ void main() {
       // TODO
     });
 
+    // 
+    //
     //Future<List<AssetResponseDto>> getAssetByTimeBucket(GetAssetByTimeBucketDto getAssetByTimeBucketDto) async
     test('test getAssetByTimeBucket', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<AssetCountByTimeBucketResponseDto> getAssetCountByTimeBucket(GetAssetCountByTimeBucketDto getAssetCountByTimeBucketDto) async
     test('test getAssetCountByTimeBucket', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<AssetCountByUserIdResponseDto> getAssetCountByUserId() async
     test('test getAssetCountByUserId', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<List<String>> getAssetSearchTerms() async
     test('test getAssetSearchTerms', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<Object> getAssetThumbnail(String assetId, { ThumbnailFormat format }) async
     test('test getAssetThumbnail', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<List<CuratedLocationsResponseDto>> getCuratedLocations() async
     test('test getCuratedLocations', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<List<CuratedObjectsResponseDto>> getCuratedObjects() async
     test('test getCuratedObjects', () async {
       // TODO
@@ -112,11 +136,15 @@ void main() {
       // TODO
     });
 
+    // 
+    //
     //Future<List<AssetResponseDto>> searchAsset(SearchAssetDto searchAssetDto) async
     test('test searchAsset', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<Object> serveFile(String assetId, { bool isThumb, bool isWeb }) async
     test('test serveFile', () async {
       // TODO
@@ -129,6 +157,8 @@ void main() {
       // TODO
     });
 
+    // 
+    //
     //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData) async
     test('test uploadFile', () async {
       // TODO

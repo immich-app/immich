@@ -3639,7 +3639,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         createAssetsSharedLink: async (createAssetsShareLinkDto: CreateAssetsShareLinkDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'createAssetsShareLinkDto' is not null or undefined
             assertParamExists('createAssetsSharedLink', 'createAssetsShareLinkDto', createAssetsShareLinkDto)
-            const localVarPath = `/asset/create-assets-shared-link`;
+            const localVarPath = `/asset/shared-link`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5400,6 +5400,7 @@ export const DeviceInfoApiAxiosParamCreator = function (configuration?: Configur
          * @deprecated
          * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
          * @param {*} [options] Override http request option.
+         * @deprecated
          * @throws {RequiredError}
          */
         createDeviceInfo: async (upsertDeviceInfoDto: UpsertDeviceInfoDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
@@ -5439,6 +5440,7 @@ export const DeviceInfoApiAxiosParamCreator = function (configuration?: Configur
          * @deprecated
          * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
          * @param {*} [options] Override http request option.
+         * @deprecated
          * @throws {RequiredError}
          */
         updateDeviceInfo: async (upsertDeviceInfoDto: UpsertDeviceInfoDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
@@ -5527,6 +5529,7 @@ export const DeviceInfoApiFp = function(configuration?: Configuration) {
          * @deprecated
          * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
          * @param {*} [options] Override http request option.
+         * @deprecated
          * @throws {RequiredError}
          */
         async createDeviceInfo(upsertDeviceInfoDto: UpsertDeviceInfoDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeviceInfoResponseDto>> {
@@ -5537,6 +5540,7 @@ export const DeviceInfoApiFp = function(configuration?: Configuration) {
          * @deprecated
          * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
          * @param {*} [options] Override http request option.
+         * @deprecated
          * @throws {RequiredError}
          */
         async updateDeviceInfo(upsertDeviceInfoDto: UpsertDeviceInfoDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeviceInfoResponseDto>> {
@@ -5567,6 +5571,7 @@ export const DeviceInfoApiFactory = function (configuration?: Configuration, bas
          * @deprecated
          * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
          * @param {*} [options] Override http request option.
+         * @deprecated
          * @throws {RequiredError}
          */
         createDeviceInfo(upsertDeviceInfoDto: UpsertDeviceInfoDto, options?: any): AxiosPromise<DeviceInfoResponseDto> {
@@ -5576,6 +5581,7 @@ export const DeviceInfoApiFactory = function (configuration?: Configuration, bas
          * @deprecated
          * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
          * @param {*} [options] Override http request option.
+         * @deprecated
          * @throws {RequiredError}
          */
         updateDeviceInfo(upsertDeviceInfoDto: UpsertDeviceInfoDto, options?: any): AxiosPromise<DeviceInfoResponseDto> {
@@ -5604,6 +5610,7 @@ export class DeviceInfoApi extends BaseAPI {
      * @deprecated
      * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
      * @param {*} [options] Override http request option.
+     * @deprecated
      * @throws {RequiredError}
      * @memberof DeviceInfoApi
      */
@@ -5615,6 +5622,7 @@ export class DeviceInfoApi extends BaseAPI {
      * @deprecated
      * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
      * @param {*} [options] Override http request option.
+     * @deprecated
      * @throws {RequiredError}
      * @memberof DeviceInfoApi
      */

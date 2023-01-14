@@ -21,6 +21,8 @@ Method | HTTP request | Description
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -64,6 +66,8 @@ No authorization required
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -101,6 +105,8 @@ No authorization required
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -135,6 +141,8 @@ No authorization required
 
 # **getSharedLinkById**
 > SharedLinkResponseDto getSharedLinkById(id)
+
+
 
 
 
@@ -176,6 +184,8 @@ No authorization required
 
 # **removeSharedLink**
 > String removeSharedLink(id)
+
+
 
 
 

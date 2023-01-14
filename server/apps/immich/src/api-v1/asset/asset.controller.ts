@@ -325,7 +325,7 @@ export class AssetController {
   }
 
   @Authenticated()
-  @Post('/create-assets-shared-link')
+  @Post('/shared-link')
   async createAssetsSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: CreateAssetsShareLinkDto,

@@ -1258,7 +1258,7 @@
         ]
       }
     },
-    "/asset/create-assets-shared-link": {
+    "/asset/shared-link": {
       "post": {
         "operationId": "createAssetsSharedLink",
         "description": "",

@@ -11,7 +11,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-[**createAssetsSharedLink**](AssetApi.md#createassetssharedlink) | **POST** /asset/create-assets-shared-link | 
+[**createAssetsSharedLink**](AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
 [**downloadFiles**](AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
@@ -135,6 +135,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -182,6 +184,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -226,6 +230,8 @@ Name | Type | Description  | Notes
 
 # **downloadFile**
 > Object downloadFile(assetId, isThumb, isWeb)
+
+
 
 
 
@@ -280,6 +286,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -324,6 +332,8 @@ Name | Type | Description  | Notes
 
 # **downloadLibrary**
 > Object downloadLibrary(skip)
+
+
 
 
 
@@ -472,6 +482,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -516,6 +528,8 @@ Name | Type | Description  | Notes
 
 # **getAssetCountByTimeBucket**
 > AssetCountByTimeBucketResponseDto getAssetCountByTimeBucket(getAssetCountByTimeBucketDto)
+
+
 
 
 
@@ -566,6 +580,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -609,6 +625,8 @@ This endpoint does not need any parameter.
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -649,6 +667,8 @@ This endpoint does not need any parameter.
 
 # **getAssetThumbnail**
 > Object getAssetThumbnail(assetId, format)
+
+
 
 
 
@@ -701,6 +721,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -741,6 +763,8 @@ This endpoint does not need any parameter.
 
 # **getCuratedObjects**
 > List<CuratedObjectsResponseDto> getCuratedObjects()
+
+
 
 
 
@@ -836,6 +860,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -880,6 +906,8 @@ Name | Type | Description  | Notes
 
 # **serveFile**
 > Object serveFile(assetId, isThumb, isWeb)
+
+
 
 
 
@@ -982,6 +1010,8 @@ Name | Type | Description  | Notes
 
 # **uploadFile**
 > AssetFileUploadResponseDto uploadFile(assetData)
+
+
 
 
 

@@ -77,7 +77,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{albumId} | 
 *AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-*AssetApi* | [**createAssetsSharedLink**](doc//AssetApi.md#createassetssharedlink) | **POST** /asset/create-assets-shared-link | 
+*AssetApi* | [**createAssetsSharedLink**](doc//AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 *AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
 *AssetApi* | [**downloadFiles**](doc//AssetApi.md#downloadfiles) | **POST** /asset/download-files | 

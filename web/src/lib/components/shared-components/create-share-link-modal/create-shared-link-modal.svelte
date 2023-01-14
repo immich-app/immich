@@ -16,6 +16,7 @@
 	import SettingInputField, {
 		SettingInputFieldType
 	} from '$lib/components/admin-page/settings/setting-input-field.svelte';
+	import { handleError } from '$lib/utils/handle-error';
 
 	export let shareType: SharedLinkType;
 	export let sharedAssets: AssetResponseDto[] = [];
@@ -44,59 +45,38 @@
 		}
 	});
 
-	const createAlbumSharedLink = async () => {
-		if (album) {
-			try {
-				const expirationTime = getExpirationTimeInMillisecond();
-				const currentTime = new Date().getTime();
-				const expirationDate = expirationTime
-					? new Date(currentTime + expirationTime).toISOString()
-					: undefined;
+	const handleCreateSharedLink = async () => {
+		const expirationTime = getExpirationTimeInMillisecond();
+		const currentTime = new Date().getTime();
+		const expirationDate = expirationTime
+			? new Date(currentTime + expirationTime).toISOString()
+			: undefined;
 
+		try {
+			if (shareType === SharedLinkType.Album && album) {
 				const { data } = await api.albumApi.createAlbumSharedLink({
 					albumId: album.id,
 					expiredAt: expirationDate,
 					allowUpload: isAllowUpload,
 					description: description
 				});
-
 				buildSharedLink(data);
-				isShowSharedLink = true;
-			} catch (e) {
-				console.error('[createAlbumSharedLink] Error: ', e);
-				notificationController.show({
-					type: NotificationType.Error,
-					message: 'Failed to create shared link'
+			} else {
+				const { data } = await api.assetApi.createAssetsSharedLink({
+					assetIds: sharedAssets.map((a) => a.id),
+					expiredAt: expirationDate,
+					allowUpload: isAllowUpload,
+					description: description
 				});
+				buildSharedLink(data);
 			}
-		}
-	};
-
-	const createIndividualAssetSharedLink = async () => {
-		try {
-			const expirationTime = getExpirationTimeInMillisecond();
-			const currentTime = new Date().getTime();
-			const expirationDate = expirationTime
-				? new Date(currentTime + expirationTime).toISOString()
-				: undefined;
-
-			const { data } = await api.assetApi.createAssetsSharedLink({
-				assetIds: sharedAssets.map((a) => a.id),
-				expiredAt: expirationDate,
-				allowUpload: isAllowUpload,
-				description: description
-			});
-
-			buildSharedLink(data);
-			isShowSharedLink = true;
 		} catch (e) {
-			console.error('[createAssetSharedLink] Error: ', e);
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Failed to create shared link'
-			});
+			handleError(e, 'Failed to create shared link');
 		}
+
+		isShowSharedLink = true;
 	};
+
 	const buildSharedLink = (createdLink: SharedLinkResponseDto) => {
 		sharedLink = `${window.location.origin}/share/${createdLink.key}`;
 	};
@@ -108,8 +88,11 @@
 				message: 'Copied to clipboard!',
 				type: NotificationType.Info
 			});
-		} catch (error) {
-			console.error('Error', error);
+		} catch (e) {
+			handleError(
+				e,
+				'Cannot copy to clipboard, make sure you are accessing the page through https'
+			);
 		}
 	};
 
@@ -159,11 +142,7 @@
 
 				dispatch('close');
 			} catch (e) {
-				console.error('[handleEditLink]', e);
-				notificationController.show({
-					type: NotificationType.Error,
-					message: 'Failed to edit shared link'
-				});
+				handleError(e, 'Failed to edit shared link');
 			}
 		}
 	};
@@ -259,10 +238,7 @@
 			{:else}
 				<div class="flex justify-end">
 					<button
-						on:click={() =>
-							shareType === SharedLinkType.Album
-								? createAlbumSharedLink()
-								: createIndividualAssetSharedLink()}
+						on:click={handleCreateSharedLink}
 						class="text-white dark:text-black bg-immich-primary px-4 py-2 rounded-lg text-sm transition-colors hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:hover:bg-immich-dark-primary/75"
 					>
 						Create Link

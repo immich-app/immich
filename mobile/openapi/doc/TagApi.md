@@ -21,6 +21,8 @@ Method | HTTP request | Description
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -59,6 +61,8 @@ No authorization required
 
 # **delete**
 > delete(id)
+
+
 
 
 
@@ -102,6 +106,8 @@ No authorization required
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -136,6 +142,8 @@ No authorization required
 
 # **findOne**
 > TagResponseDto findOne(id)
+
+
 
 
 
@@ -177,6 +185,8 @@ No authorization required
 
 # **update**
 > TagResponseDto update(id, updateTagDto)
+
+
 
 
 
