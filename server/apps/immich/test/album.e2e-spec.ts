@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 import { clearDb, getAuthUser, authCustom } from './test-utils';
-import { databaseConfig, InfraModule } from '@app/infra';
+import { InfraModule } from '@app/infra';
 import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
@@ -24,12 +23,7 @@ describe('Album', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [
-          DomainModule.register({ imports: [InfraModule] }),
-          AlbumModule,
-          ImmichJwtModule,
-          TypeOrmModule.forRoot(databaseConfig),
-        ],
+        imports: [DomainModule.register({ imports: [InfraModule] }), AlbumModule, ImmichJwtModule],
       }).compile();
 
       app = moduleFixture.createNestApplication();
@@ -55,12 +49,7 @@ describe('Album', () => {
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [
-          DomainModule.register({ imports: [InfraModule] }),
-          AuthModule,
-          AlbumModule,
-          TypeOrmModule.forRoot(databaseConfig),
-        ],
+        imports: [DomainModule.register({ imports: [InfraModule] }), AuthModule, AlbumModule],
       });
       authUser = getAuthUser(); // set default auth user
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();

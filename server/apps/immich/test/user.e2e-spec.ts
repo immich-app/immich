@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 import { clearDb, authCustom } from './test-utils';
-import { databaseConfig, InfraModule } from '@app/infra';
+import { InfraModule } from '@app/infra';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { DomainModule, CreateUserDto, UserService, AuthUserDto } from '@app/domain';
 import { DataSource } from 'typeorm';
@@ -27,11 +26,7 @@ describe('User', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [
-          DomainModule.register({ imports: [InfraModule] }),
-          ImmichJwtModule,
-          TypeOrmModule.forRoot(databaseConfig),
-        ],
+        imports: [DomainModule.register({ imports: [InfraModule] }), ImmichJwtModule],
         controllers: [UserController],
       }).compile();
 
@@ -57,7 +52,7 @@ describe('User', () => {
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [DomainModule.register({ imports: [InfraModule] }), AuthModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [DomainModule.register({ imports: [InfraModule] }), AuthModule],
         controllers: [UserController],
       });
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
