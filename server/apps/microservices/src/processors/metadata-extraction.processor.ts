@@ -13,7 +13,6 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
-//import exifr from 'exifr';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import sharp from 'sharp';
@@ -23,6 +22,7 @@ import { getName } from 'i18n-iso-countries';
 import { find } from 'geo-tz';
 import * as luxon from 'luxon';
 import fs from 'node:fs';
+import { ExifDateTime, exiftool } from 'exiftool-vendored';
 
 function geocoderInit(init: InitOptions) {
   return new Promise<void>(function (resolve) {
@@ -144,8 +144,7 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
-      const exiftool = require("exiftool-vendored").exiftool;
-      await exiftool.version().then((version: any) => Logger.log(`We are running ExifTool v${version}`))
+      await exiftool.version().then((version: any) => Logger.debug(`We are running ExifTool v${version}`));
       const exifData = await exiftool.read(asset.originalPath);
       Logger.log(exifData);
 
@@ -153,8 +152,12 @@ export class MetadataExtractionProcessor {
         throw new Error(`can not parse exif data from file ${asset.originalPath}`);
       }
 
-      const createdAt = new Date(exifData.DateTimeOriginal || exifData.CreateDate);
-      Logger.log("Hmm", createdAt);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const exifToDate = (exifDate: string | ExifDateTime | undefined) =>
+        exifDate ? new Date(exifDate.toString()!) : null;
+
+      const createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate);
+      const modifyDate = exifToDate(exifData.ModifyDate);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
       const newExif = new ExifEntity();
@@ -165,16 +168,14 @@ export class MetadataExtractionProcessor {
       newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
       newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
       newExif.fileSizeInByte = fileSizeInBytes || null;
-      newExif.orientation = exifData['Orientation'] || null;
+      newExif.orientation = exifData['Orientation']?.toString() || null;
       newExif.dateTimeOriginal = createdAt;
-      newExif.modifyDate = exifData['ModifyDate'] || null;
+      newExif.modifyDate = modifyDate || null;
       newExif.lensModel = exifData['LensModel'] || null;
       newExif.fNumber = exifData['FNumber'] || null;
-      newExif.focalLength = exifData['FocalLength'] || null;
       newExif.iso = exifData['ISO'] || null;
-      newExif.exposureTime = exifData['ExposureTime'] || null;
-      newExif.latitude = exifData['latitude'] || null;
-      newExif.longitude = exifData['longitude'] || null;
+      newExif.latitude = exifData['GPSLatitude'] || null;
+      newExif.longitude = exifData['GPSLongitude'] || null;
 
       /**
        * Reverse Geocoding
