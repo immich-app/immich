@@ -36,7 +36,9 @@
 	};
 
 	const handleUploadAssets = () => {
-		openFileUploadDialog(undefined, sharedLink?.key);
+		openFileUploadDialog(undefined, sharedLink?.key, (assetId) => {
+			console.log('New asset', assetId);
+		});
 	};
 </script>
 
