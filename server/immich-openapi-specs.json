@@ -1476,6 +1476,153 @@
         ]
       }
     },
+    "/tag": {
+      "post": {
+        "operationId": "create",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      },
+      "get": {
+        "operationId": "findAll",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      }
+    },
+    "/tag/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      },
+      "patch": {
+        "operationId": "update",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      },
+      "delete": {
+        "operationId": "delete",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      }
+    },
     "/album/count-by-user-id": {
       "get": {
         "operationId": "getAlbumCountByUserId",
@@ -1944,153 +2091,6 @@
           {
             "bearer": []
           }
-        ]
-      }
-    },
-    "/tag": {
-      "post": {
-        "operationId": "create",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTagDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "get": {
-        "operationId": "findAll",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TagResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      }
-    },
-    "/tag/{id}": {
-      "get": {
-        "operationId": "findOne",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "patch": {
-        "operationId": "update",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTagDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "delete": {
-        "operationId": "delete",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Tag"
         ]
       }
     },
@@ -3786,6 +3786,32 @@
           }
         }
       },
+      "CreateTagDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/TagTypeEnum"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "name"
+        ]
+      },
+      "UpdateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "renameTagId": {
+            "type": "string"
+          }
+        }
+      },
       "AlbumCountResponseDto": {
         "type": "object",
         "properties": {
@@ -3921,32 +3947,6 @@
         "required": [
           "albumId"
         ]
-      },
-      "CreateTagDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "name"
-        ]
-      },
-      "UpdateTagDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "renameTagId": {
-            "type": "string"
-          }
-        }
       },
       "LoginCredentialDto": {
         "type": "object",

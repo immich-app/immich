@@ -41,6 +41,7 @@
 				src={imageData}
 				alt={album.id}
 				class={`object-cover w-[75px] h-[75px] transition-all z-0 rounded-xl duration-300 `}
+				draggable="false"
 			/>
 		{/await}
 	</div>
