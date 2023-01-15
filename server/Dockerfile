@@ -2,7 +2,7 @@ FROM node:16-alpine3.14 as builder
 
 WORKDIR /usr/src/app
 
-RUN apk add --update-cache build-base python3 libheif vips-dev ffmpeg exiftool
+RUN apk add --update-cache build-base python3 libheif vips-dev ffmpeg
 
 COPY package.json package-lock.json ./
 
