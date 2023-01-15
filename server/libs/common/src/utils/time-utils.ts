@@ -22,6 +22,7 @@ function createTimeUtils() {
       const exifData = await exiftool.read(originalPath);
 
       if (exifData && exifData['DateTimeOriginal']) {
+        await exiftool.end();
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return exifData['DateTimeOriginal'].toString()!;
       } else {
