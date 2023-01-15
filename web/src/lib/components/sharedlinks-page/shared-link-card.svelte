@@ -73,6 +73,7 @@
 				alt={asset.id}
 				class="object-cover w-[100px] h-[100px] rounded-lg"
 				loading="lazy"
+				draggable="false"
 			/>
 		{/await}
 	</div>

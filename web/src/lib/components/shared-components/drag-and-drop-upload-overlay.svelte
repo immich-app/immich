@@ -20,6 +20,7 @@
 		height="200"
 		width="200"
 		class="animate-bounce pb-16"
+		draggable="false"
 	/>
 	<div class="text-2xl">Drop files anywhere to upload</div>
 </div>

@@ -252,6 +252,7 @@
 				alt={asset.id}
 				class={`object-cover ${getSize()} transition-all z-0 ${getThumbnailBorderStyle()}`}
 				loading="lazy"
+				draggable="false"
 			/>
 		{/if}
 

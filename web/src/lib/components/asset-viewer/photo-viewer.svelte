@@ -85,6 +85,7 @@
 				alt={assetId}
 				class="object-contain h-full transition-all"
 				loading="lazy"
+				draggable="false"
 			/>
 		{/await}
 	{/if}

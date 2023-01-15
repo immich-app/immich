@@ -94,7 +94,7 @@
 				<div
 					class="border dark:border-immich-dark-gray p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center dark:text-immich-dark-fg"
 				>
-					<img src="/empty-2.svg" alt="Empty shared album" width="500" />
+					<img src="/empty-2.svg" alt="Empty shared album" width="500" draggable="false" />
 					<p class="text-center text-immich-text-gray-500">
 						Create a shared album to share photos and videos with people in your network
 					</p>

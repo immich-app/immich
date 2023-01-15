@@ -208,6 +208,7 @@
 							alt={album.albumName}
 							class="w-[50px] h-[50px] object-cover rounded"
 							src={`/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=JPEG`}
+							draggable="false"
 						/>
 					</div>
 
