@@ -14,8 +14,7 @@ class OAuthService {
     String serverUrl,
   ) async {
     // Resolve API server endpoint from user provided serverUrl
-    final serverEndpoint = await _apiService.resolveEndpoint(serverUrl);
-    _apiService.setEndpoint(serverEndpoint);
+    await _apiService.resolveAndSetEndpoint(serverUrl);
 
     return await _apiService.oAuthApi.generateConfig(
       OAuthConfigDto(redirectUri: '$callbackUrlScheme:/'),

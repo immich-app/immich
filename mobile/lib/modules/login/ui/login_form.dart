@@ -42,9 +42,7 @@ class LoginForm extends HookConsumerWidget {
           if (serverUrl.isNotEmpty) {
             isLoading.value = true;
             final serverEndpoint =
-                await apiService.resolveEndpoint(serverUrl.toString());
-            apiService.setEndpoint(serverEndpoint);
-            Hive.box(userInfoBox).put(serverEndpointKey, serverEndpoint);
+                await apiService.resolveAndSetEndpoint(serverUrl.toString());
 
             var loginConfig = await apiService.oAuthApi.generateConfig(
               OAuthConfigDto(redirectUri: serverEndpoint),
@@ -218,11 +216,11 @@ class ServerEndpointInput extends StatelessWidget {
   String? _validateInput(String? url) {
     if (url == null || url.isEmpty) return null;
 
-    final validate = Uri.tryParse(sanitizeUrl(url));
-    if (validate == null ||
-        !validate.isAbsolute ||
-        !validate.scheme.startsWith("http") ||
-        validate.host.isEmpty) {
+    final parsedUrl = Uri.tryParse(sanitizeUrl(url));
+    if (parsedUrl == null ||
+        !parsedUrl.isAbsolute ||
+        !parsedUrl.scheme.startsWith("http") ||
+        parsedUrl.host.isEmpty) {
       return 'login_form_err_invalid_url'.tr();
     }
     return null;

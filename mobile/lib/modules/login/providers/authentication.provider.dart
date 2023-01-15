@@ -59,10 +59,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   ) async {
     try {
       // Resolve API server endpoint from user provided serverUrl
-      final serverEndpoint = await _apiService.resolveEndpoint(serverUrl);
-      _apiService.setEndpoint(serverEndpoint);
+      await _apiService.resolveAndSetEndpoint(serverUrl);
       await _apiService.serverInfoApi.pingServer();
-      Hive.box(userInfoBox).put(serverEndpointKey, serverEndpoint);
     } catch (e) {
       debugPrint('Invalid Server Endpoint Url $e');
       return false;
