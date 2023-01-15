@@ -64,7 +64,7 @@
 
 	const handleRemoveAssetsFromSharedLink = async () => {
 		if (window.confirm('Do you want to remove selected assets from the shared link?')) {
-			const { data } = await api.assetApi.updateAssetsInSharedLink(
+			await api.assetApi.updateAssetsInSharedLink(
 				{
 					assetIds: assets.filter((a) => !selectedAssets.has(a)).map((a) => a.id)
 				},
