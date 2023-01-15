@@ -8,6 +8,12 @@ declare namespace App {
 	}
 
 	// interface Platform {}
+
+	interface Error {
+		message: string;
+		stack?: string;
+		code?: string;
+	}
 }
 
 // Source: https://stackoverflow.com/questions/63814432/typescript-typing-of-non-standard-window-event-in-svelte

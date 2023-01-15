@@ -6,8 +6,14 @@ import {
 
 export function handleError(error: unknown, message: string) {
 	console.error(`[handleError]: ${message}`, error);
+
+	let serverMessage = (error as ApiError)?.response?.data?.message;
+	if (serverMessage) {
+		serverMessage = `${String(serverMessage).slice(0, 50)}\n<i>(Immich Server Error)<i>`;
+	}
+
 	notificationController.show({
-		message: (error as ApiError)?.response?.data?.message || message,
+		message: serverMessage || message,
 		type: NotificationType.Error
 	});
 }
