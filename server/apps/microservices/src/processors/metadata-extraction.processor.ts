@@ -144,9 +144,7 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
-      await exiftool.version().then((version: any) => Logger.debug(`We are running ExifTool v${version}`));
       const exifData = await exiftool.read(asset.originalPath);
-      Logger.log(exifData);
 
       if (!exifData) {
         throw new Error(`can not parse exif data from file ${asset.originalPath}`);
@@ -176,6 +174,11 @@ export class MetadataExtractionProcessor {
       newExif.iso = exifData['ISO'] || null;
       newExif.latitude = exifData['GPSLatitude'] || null;
       newExif.longitude = exifData['GPSLongitude'] || null;
+
+      await this.assetRepository.save({
+        id: asset.id,
+        createdAt: createdAt?.toISOString(),
+      });
 
       /**
        * Reverse Geocoding
