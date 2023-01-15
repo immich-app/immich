@@ -31,7 +31,19 @@ function createTimeUtils() {
       return new Date().toISOString();
     }
   };
-  return { checkValidTimestamp, getTimestampFromExif };
+
+  // @ts-ignore
+  const getTimestampFromFilename = async (originalPath: string): Promise<string> => {
+    const match = originalPath.match(/(\d{4})(\d{2})(\d{2})/);
+    if (match) {
+      const year = match[1];
+      const month = match[2];
+      const day = match[3];
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).toISOString();
+    }
+  };
+
+  return { checkValidTimestamp, getTimestampFromExif, getTimestampFromFilename };
 }
 
 export const timeUtils = createTimeUtils();
