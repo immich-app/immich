@@ -19,8 +19,6 @@ import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import { getName } from 'i18n-iso-countries';
-import { find } from 'geo-tz';
-import * as luxon from 'luxon';
 import fs from 'node:fs';
 import { ExifDateTime, exiftool } from 'exiftool-vendored';
 
@@ -150,8 +148,8 @@ export class MetadataExtractionProcessor {
         throw new Error(`can not parse exif data from file ${asset.originalPath}`);
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const exifToDate = (exifDate: string | ExifDateTime | undefined) =>
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         exifDate ? new Date(exifDate.toString()!) : null;
 
       const createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate);
