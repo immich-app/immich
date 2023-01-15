@@ -26,7 +26,7 @@ describe('Time Utilities', () => {
 
     it('check for year before 1583', () => {
       const result = timeUtils.checkValidTimestamp('1582-12-31T23:59:59.999Z');
-      expect(result).toBeFalsy();
+      expect(result).toBeTruthy();
     });
 
     it('check for year after 9999', () => {

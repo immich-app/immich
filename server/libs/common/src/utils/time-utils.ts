@@ -1,4 +1,4 @@
-import exifr from 'exifr';
+import { exiftool } from 'exiftool-vendored';
 
 function createTimeUtils() {
   const checkValidTimestamp = (timestamp: string): boolean => {
@@ -19,22 +19,11 @@ function createTimeUtils() {
 
   const getTimestampFromExif = async (originalPath: string): Promise<string> => {
     try {
-      const exifData = await exifr.parse(originalPath, {
-        tiff: true,
-        ifd0: true as any,
-        ifd1: true,
-        exif: true,
-        gps: true,
-        interop: true,
-        xmp: true,
-        icc: true,
-        iptc: true,
-        jfif: true,
-        ihdr: true,
-      });
+      const exifData = await exiftool.read(originalPath);
 
       if (exifData && exifData['DateTimeOriginal']) {
-        return exifData['DateTimeOriginal'];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return exifData['DateTimeOriginal'].toString()!;
       } else {
         return new Date().toISOString();
       }
