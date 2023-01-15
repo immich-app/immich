@@ -146,7 +146,7 @@ export class MetadataExtractionProcessor {
       const exifData = await exiftool.read(asset.originalPath);
       const timestampFromFilename = await timeUtils.getTimestampFromFilename(asset.originalPath);
 
-      if (!exifData) {
+      if (!exifData || !timestampFromFilename) {
         throw new Error(`can not parse exif data from file ${asset.originalPath}`);
       }
 
