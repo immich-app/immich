@@ -1258,6 +1258,78 @@
         ]
       }
     },
+    "/asset/shared-link": {
+      "post": {
+        "operationId": "createAssetsSharedLink",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssetsShareLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateAssetsInSharedLink",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetsToSharedLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/share": {
       "get": {
         "operationId": "getAllSharedLinks",
@@ -3548,6 +3620,35 @@
           "existingIds"
         ]
       },
+      "CreateAssetsShareLinkDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "title": "Array asset IDs to be shared",
+            "example": [
+              "bf973405-3f2a-48d2-a687-2ed4167164be",
+              "dd41870b-5d00-46d2-924e-1d8489a0aa0f",
+              "fad77c3f-deef-4e7e-9608-14c1aa4e559a"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expiredAt": {
+            "type": "string"
+          },
+          "allowUpload": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetIds"
+        ]
+      },
       "SharedLinkType": {
         "type": "string",
         "enum": [
@@ -3652,6 +3753,20 @@
           "expiresAt",
           "assets",
           "allowUpload"
+        ]
+      },
+      "UpdateAssetsToSharedLinkDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
         ]
       },
       "EditSharedLinkDto": {

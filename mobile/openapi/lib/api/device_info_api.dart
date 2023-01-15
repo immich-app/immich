@@ -120,7 +120,10 @@ class DeviceInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /device-info' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [UpsertDeviceInfoDto] upsertDeviceInfoDto (required):
@@ -149,6 +152,8 @@ class DeviceInfoApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [UpsertDeviceInfoDto] upsertDeviceInfoDto (required):

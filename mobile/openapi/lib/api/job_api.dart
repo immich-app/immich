@@ -16,7 +16,9 @@ class JobApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /jobs' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAllJobsStatusWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/jobs';
@@ -42,6 +44,7 @@ class JobApi {
     );
   }
 
+  /// 
   Future<AllJobStatusResponseDto?> getAllJobsStatus() async {
     final response = await getAllJobsStatusWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -57,7 +60,10 @@ class JobApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /jobs/{jobId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [JobId] jobId (required):
@@ -87,6 +93,8 @@ class JobApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [JobId] jobId (required):
@@ -105,7 +113,10 @@ class JobApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /jobs/{jobId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [JobId] jobId (required):
@@ -137,6 +148,8 @@ class JobApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [JobId] jobId (required):

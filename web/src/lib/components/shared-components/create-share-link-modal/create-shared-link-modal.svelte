@@ -2,7 +2,13 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import BaseModal from '../base-modal.svelte';
 	import Link from 'svelte-material-icons/Link.svelte';
-	import { AlbumResponseDto, api, SharedLinkResponseDto, SharedLinkType } from '@api';
+	import {
+		AlbumResponseDto,
+		api,
+		AssetResponseDto,
+		SharedLinkResponseDto,
+		SharedLinkType
+	} from '@api';
 	import { notificationController, NotificationType } from '../notification/notification';
 	import { ImmichDropDownOption } from '../dropdown-button.svelte';
 	import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
@@ -10,9 +16,11 @@
 	import SettingInputField, {
 		SettingInputFieldType
 	} from '$lib/components/admin-page/settings/setting-input-field.svelte';
+	import { handleError } from '$lib/utils/handle-error';
 
 	export let shareType: SharedLinkType;
-	export let album: AlbumResponseDto | undefined;
+	export let sharedAssets: AssetResponseDto[] = [];
+	export let album: AlbumResponseDto | undefined = undefined;
 	export let editingLink: SharedLinkResponseDto | undefined = undefined;
 
 	let isShowSharedLink = false;
@@ -37,32 +45,36 @@
 		}
 	});
 
-	const createAlbumSharedLink = async () => {
-		if (album) {
-			try {
-				const expirationTime = getExpirationTimeInMillisecond();
-				const currentTime = new Date().getTime();
-				const expirationDate = expirationTime
-					? new Date(currentTime + expirationTime).toISOString()
-					: undefined;
+	const handleCreateSharedLink = async () => {
+		const expirationTime = getExpirationTimeInMillisecond();
+		const currentTime = new Date().getTime();
+		const expirationDate = expirationTime
+			? new Date(currentTime + expirationTime).toISOString()
+			: undefined;
 
+		try {
+			if (shareType === SharedLinkType.Album && album) {
 				const { data } = await api.albumApi.createAlbumSharedLink({
 					albumId: album.id,
 					expiredAt: expirationDate,
 					allowUpload: isAllowUpload,
 					description: description
 				});
-
 				buildSharedLink(data);
-				isShowSharedLink = true;
-			} catch (e) {
-				console.error('[createAlbumSharedLink] Error: ', e);
-				notificationController.show({
-					type: NotificationType.Error,
-					message: 'Failed to create shared link'
+			} else {
+				const { data } = await api.assetApi.createAssetsSharedLink({
+					assetIds: sharedAssets.map((a) => a.id),
+					expiredAt: expirationDate,
+					allowUpload: isAllowUpload,
+					description: description
 				});
+				buildSharedLink(data);
 			}
+		} catch (e) {
+			handleError(e, 'Failed to create shared link');
 		}
+
+		isShowSharedLink = true;
 	};
 
 	const buildSharedLink = (createdLink: SharedLinkResponseDto) => {
@@ -76,8 +88,11 @@
 				message: 'Copied to clipboard!',
 				type: NotificationType.Info
 			});
-		} catch (error) {
-			console.error('Error', error);
+		} catch (e) {
+			handleError(
+				e,
+				'Cannot copy to clipboard, make sure you are accessing the page through https'
+			);
 		}
 	};
 
@@ -127,11 +142,7 @@
 
 				dispatch('close');
 			} catch (e) {
-				console.error('[handleEditLink]', e);
-				notificationController.show({
-					type: NotificationType.Error,
-					message: 'Failed to edit shared link'
-				});
+				handleError(e, 'Failed to edit shared link');
 			}
 		}
 	};
@@ -157,6 +168,18 @@
 				<div class="text-sm">
 					Public album | <span class="text-immich-primary dark:text-immich-dark-primary"
 						>{editingLink.album?.albumName}</span
+					>
+				</div>
+			{/if}
+		{/if}
+
+		{#if shareType == SharedLinkType.Individual}
+			{#if !editingLink}
+				<div>Let anyone with the link see the selected photo(s)</div>
+			{:else}
+				<div class="text-sm">
+					Individual shared | <span class="text-immich-primary dark:text-immich-dark-primary"
+						>{editingLink.description}</span
 					>
 				</div>
 			{/if}
@@ -215,7 +238,7 @@
 			{:else}
 				<div class="flex justify-end">
 					<button
-						on:click={createAlbumSharedLink}
+						on:click={handleCreateSharedLink}
 						class="text-white dark:text-black bg-immich-primary px-4 py-2 rounded-lg text-sm transition-colors hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:hover:bg-immich-dark-primary/75"
 					>
 						Create Link

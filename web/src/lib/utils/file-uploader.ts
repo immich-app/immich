@@ -12,7 +12,7 @@ import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 export const openFileUploadDialog = (
 	albumId: string | undefined = undefined,
 	sharedKey: string | undefined = undefined,
-	callback?: () => void
+	onDone?: (id: string) => void
 ) => {
 	try {
 		const fileSelector = document.createElement('input');
@@ -28,8 +28,7 @@ export const openFileUploadDialog = (
 			}
 			const files = Array.from<File>(target.files);
 
-			await fileUploadHandler(files, albumId, sharedKey);
-			callback && callback();
+			await fileUploadHandler(files, albumId, sharedKey, onDone);
 		};
 
 		fileSelector.click();
@@ -41,7 +40,8 @@ export const openFileUploadDialog = (
 export const fileUploadHandler = async (
 	files: File[],
 	albumId: string | undefined = undefined,
-	sharedKey: string | undefined = undefined
+	sharedKey: string | undefined = undefined,
+	onDone?: (id: string) => void
 ) => {
 	if (files.length > 50) {
 		notificationController.show({
@@ -54,13 +54,13 @@ export const fileUploadHandler = async (
 
 		return;
 	}
-	console.log('fileUploadHandler');
+
 	const acceptedFile = files.filter(
 		(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
 	);
 
 	for (const asset of acceptedFile) {
-		await fileUploader(asset, albumId, sharedKey);
+		await fileUploader(asset, albumId, sharedKey, onDone);
 	}
 };
 
@@ -68,7 +68,8 @@ export const fileUploadHandler = async (
 async function fileUploader(
 	asset: File,
 	albumId: string | undefined = undefined,
-	sharedKey: string | undefined = undefined
+	sharedKey: string | undefined = undefined,
+	onDone?: (id: string) => void
 ) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
@@ -135,6 +136,7 @@ async function fileUploader(
 				if (albumId && dataId) {
 					addAssetsToAlbum(albumId, [dataId]);
 				}
+				onDone && dataId && onDone(dataId);
 				return;
 			}
 		}
@@ -154,10 +156,9 @@ async function fileUploader(
 		request.upload.onload = () => {
 			setTimeout(() => {
 				uploadAssetsStore.removeUploadAsset(deviceAssetId);
-
+				const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
 				if (albumId) {
 					try {
-						const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
 						if (res.id) {
 							addAssetsToAlbum(albumId, [res.id], sharedKey);
 						}
@@ -165,6 +166,7 @@ async function fileUploader(
 						console.error('ERROR parsing data JSON in upload onload');
 					}
 				}
+				onDone && onDone(res.id);
 			}, 1000);
 		};
 

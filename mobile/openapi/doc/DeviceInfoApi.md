@@ -117,6 +117,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
