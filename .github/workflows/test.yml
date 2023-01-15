@@ -6,17 +6,17 @@ on:
     branches: [main]
 
 jobs:
-  # e2e-tests:
-  #   name: Run end-to-end test suites
+  e2e-tests:
+    name: Run end-to-end test suites
 
-  #   runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-  #     - name: Run Immich Server E2E Test
-  #       run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --abort-on-container-exit --exit-code-from immich-server-test
+      - name: Run Immich Server E2E Test
+        run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --abort-on-container-exit --exit-code-from immich-server-test
 
   server-unit-tests:
     name: Run server unit test suites and checks
