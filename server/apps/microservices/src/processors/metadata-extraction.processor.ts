@@ -1,12 +1,12 @@
 import { AssetEntity, ExifEntity } from '@app/infra';
 import {
-  IExifExtractionProcessor,
-  IVideoLengthExtractionProcessor,
   exifExtractionProcessorName,
-  videoMetadataExtractionProcessorName,
-  reverseGeocodingProcessorName,
+  IExifExtractionProcessor,
   IReverseGeocodingProcessor,
+  IVideoLengthExtractionProcessor,
   QueueNameEnum,
+  reverseGeocodingProcessorName,
+  videoMetadataExtractionProcessorName,
 } from '@app/job';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -165,12 +165,14 @@ export class MetadataExtractionProcessor {
       newExif.imageName = path.parse(fileName).name || null;
       newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
       newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
+      newExif.exposureTime = (await timeUtils.parseStringToNumber(exifData['ExposureTime'])) || null;
       newExif.fileSizeInByte = fileSizeInBytes || null;
       newExif.orientation = exifData['Orientation']?.toString() || null;
       newExif.dateTimeOriginal = createdAt;
       newExif.modifyDate = modifyDate || null;
       newExif.lensModel = exifData['LensModel'] || null;
       newExif.fNumber = exifData['FNumber'] || null;
+      newExif.focalLength = (await timeUtils.parseStringToNumber(exifData['FocalLength'])) || null;
       newExif.iso = exifData['ISO'] || null;
       newExif.latitude = exifData['GPSLatitude'] || null;
       newExif.longitude = exifData['GPSLongitude'] || null;
