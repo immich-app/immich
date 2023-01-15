@@ -33,6 +33,7 @@ function createTimeUtils() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const getTimestampFromFilename = async (originalPath: string): Promise<string> => {
     const match = originalPath.match(/(\d{4})(\d{2})(\d{2})/);
