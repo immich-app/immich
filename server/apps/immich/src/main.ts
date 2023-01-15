@@ -27,7 +27,7 @@ async function bootstrap() {
     app.enableCors();
   } else if (process.env.ALLOW_CORS_ORIGIN) {
     app.enableCors({
-      origin: process.env.ALLOW_CORS_ORIGIN
+      origin: process.env.ALLOW_CORS_ORIGIN,
     });
   }
 
