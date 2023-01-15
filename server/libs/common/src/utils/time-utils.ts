@@ -1,6 +1,7 @@
 import { exiftool } from 'exiftool-vendored';
 
 function createTimeUtils() {
+  const floatRegex = /[+-]?([0-9]*[.])?[0-9]+/;
   const checkValidTimestamp = (timestamp: string): boolean => {
     const parsedTimestamp = Date.parse(timestamp);
 
@@ -39,13 +40,25 @@ function createTimeUtils() {
       const year = match[1];
       const month = match[2];
       const day = match[3];
-      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).toISOString();
+      const newDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).toISOString();
+      if (checkValidTimestamp(newDate)) {
+        return newDate;
+      }
     } else {
       return undefined;
     }
   };
 
-  return { checkValidTimestamp, getTimestampFromExif, getTimestampFromFilename };
+  const parseStringToNumber = async (original: string | undefined): Promise<number | null> => {
+    const match = original?.match(floatRegex)?.[0];
+    if (match) {
+      return parseFloat(match);
+    } else {
+      return null;
+    }
+  };
+
+  return { checkValidTimestamp, getTimestampFromExif, getTimestampFromFilename, parseStringToNumber };
 }
 
 export const timeUtils = createTimeUtils();
