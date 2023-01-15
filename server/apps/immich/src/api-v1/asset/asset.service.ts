@@ -706,7 +706,7 @@ export class AssetService {
   async createAssetsSharedLink(authUser: AuthUserDto, dto: CreateAssetsShareLinkDto): Promise<SharedLinkResponseDto> {
     const assets = [];
 
-    this.checkAssetsAccess(authUser, dto.assetIds);
+    await this.checkAssetsAccess(authUser, dto.assetIds);
     for (const assetId of dto.assetIds) {
       const asset = await this._assetRepository.getById(assetId);
       assets.push(asset);
