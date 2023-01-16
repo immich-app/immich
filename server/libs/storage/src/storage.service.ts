@@ -1,5 +1,5 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
-import { AssetEntity, SystemConfig } from '@app/infra';
+import { AssetEntity, AssetType, SystemConfig } from '@app/infra';
 import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -128,19 +128,19 @@ export class StorageService {
   private validateStorageTemplate(templateString: string) {
     try {
       const template = this.compile(templateString);
-
       // test render an asset
       this.render(
         template,
         {
           createdAt: new Date().toISOString(),
           originalPath: '/upload/test/IMG_123.jpg',
+          type: AssetType.IMAGE,
         } as AssetEntity,
         'IMG_123',
         'jpg',
       );
     } catch (e) {
-      this.logger.warn(`Storage template validation failed: ${e}`);
+      this.logger.warn(`Storage template validation failed: ${JSON.stringify(e)}`);
       throw new Error(`Invalid storage template: ${e}`);
     }
   }
@@ -158,6 +158,9 @@ export class StorageService {
       ext,
     };
 
+    const fileType = asset.type == AssetType.IMAGE ? 'IMG' : 'VID';
+    const fileTypeFull = asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO';
+
     const dt = luxon.DateTime.fromISO(new Date(asset.createdAt).toISOString());
 
     const dateTokens = [
@@ -172,6 +175,10 @@ export class StorageService {
     for (const token of dateTokens) {
       substitutions[token] = dt.toFormat(token);
     }
+
+    // Support file type token
+    substitutions.filetype = fileType;
+    substitutions.filetypefull = fileTypeFull;
 
     return template(substitutions);
   }
