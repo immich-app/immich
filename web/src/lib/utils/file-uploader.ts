@@ -134,7 +134,7 @@ async function fileUploader(
 			if (data.isExist) {
 				const dataId = data.id;
 				if (albumId && dataId) {
-					addAssetsToAlbum(albumId, [dataId]);
+					addAssetsToAlbum(albumId, [dataId], sharedKey);
 				}
 				onDone && dataId && onDone(dataId);
 				return;
