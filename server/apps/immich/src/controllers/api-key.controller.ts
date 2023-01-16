@@ -1,12 +1,15 @@
+import {
+  APIKeyCreateDto,
+  APIKeyCreateResponseDto,
+  APIKeyResponseDto,
+  APIKeyService,
+  APIKeyUpdateDto,
+  AuthUserDto,
+} from '@app/domain';
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { Authenticated } from '../../decorators/authenticated.decorator';
-import { APIKeyService } from './api-key.service';
-import { APIKeyCreateDto } from './dto/api-key-create.dto';
-import { APIKeyUpdateDto } from './dto/api-key-update.dto';
-import { APIKeyCreateResponseDto } from './repsonse-dto/api-key-create-response.dto';
-import { APIKeyResponseDto } from './repsonse-dto/api-key-response.dto';
+import { GetAuthUser } from '../decorators/auth-user.decorator';
+import { Authenticated } from '../decorators/authenticated.decorator';
 
 @ApiTags('API Key')
 @Controller('api-key')

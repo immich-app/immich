@@ -2,7 +2,6 @@ import { immichAppConfig, immichBullAsyncConfig } from '@app/common/config';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AssetModule } from './api-v1/asset/asset.module';
 import { AuthModule } from './api-v1/auth/auth.module';
-import { APIKeyModule } from './api-v1/api-key/api-key.module';
 import { ImmichJwtModule } from './modules/immich-jwt/immich-jwt.module';
 import { DeviceInfoModule } from './api-v1/device-info/device-info.module';
 import { ConfigModule } from '@nestjs/config';
@@ -22,7 +21,7 @@ import { ImmichConfigModule } from '@app/immich-config';
 import { ShareModule } from './api-v1/share/share.module';
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
-import { UserController } from './controllers';
+import { APIKeyController, UserController } from './controllers';
 
 @Module({
   imports: [
@@ -31,8 +30,6 @@ import { UserController } from './controllers';
     DomainModule.register({
       imports: [InfraModule],
     }),
-
-    APIKeyModule,
 
     AssetModule,
 
@@ -69,6 +66,7 @@ import { UserController } from './controllers';
   controllers: [
     //
     AppController,
+    APIKeyController,
     UserController,
   ],
   providers: [],
