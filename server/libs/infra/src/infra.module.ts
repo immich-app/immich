@@ -1,4 +1,4 @@
-import { IKeyRepository, IUserRepository } from '@app/domain';
+import { ICryptoRepository, IKeyRepository, IUserRepository } from '@app/domain';
 import { databaseConfig, UserEntity } from '@app/infra';
 import { Global, Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { APIKeyRepository } from './db/repository';
 
 const providers: Provider[] = [
   //
+  { provide: ICryptoRepository, useValue: ICryptoRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IUserRepository, useClass: UserRepository },
 ];

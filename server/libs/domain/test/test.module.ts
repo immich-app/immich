@@ -1,7 +1,15 @@
-import { DomainModule, IKeyRepository, IUserRepository } from '@app/domain';
+import { DomainModule, ICryptoRepository, IKeyRepository, IUserRepository } from '@app/domain';
 import { Global, Module, Provider } from '@nestjs/common';
 
 class MockFactory {
+  static crypto(): jest.Mocked<ICryptoRepository> {
+    return {
+      randomBytes: jest.fn().mockReturnValue(Buffer.from('random-bytes', 'utf8')),
+      compareSync: jest.fn().mockReturnValue(true),
+      hash: jest.fn().mockImplementation((input) => Promise.resolve(`${input} (hashed)`)),
+    };
+  }
+
   static key(): jest.Mocked<IKeyRepository> {
     return {
       create: jest.fn(),
@@ -29,6 +37,7 @@ class MockFactory {
 }
 
 const providers: Provider[] = [
+  { provide: ICryptoRepository, useFactory: MockFactory.crypto },
   { provide: IKeyRepository, useFactory: MockFactory.key },
   { provide: IUserRepository, useFactory: MockFactory.user },
 ];
