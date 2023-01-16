@@ -3,20 +3,6 @@
 import { timeUtils } from './time-utils';
 
 describe('Time Utilities', () => {
-  describe('getTimestampFromFilename', () => {
-    it('should return a timestamp in ISO format, test 1', async () => {
-      const filePath = 'IMG_20160311_220930.jpg';
-      const timestamp = await timeUtils.getTimestampFromFilename(filePath);
-      expect(timestamp).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
-    });
-
-    it('should return the timestamp in ISO format, test 2', async () => {
-      const filePath = '20150311_244456.jpg';
-      const timestamp = await timeUtils.getTimestampFromFilename(filePath);
-      expect(timestamp).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
-    });
-  });
-
   describe('checkValidTimestamp', () => {
     it('check for year 0000', () => {
       const result = timeUtils.checkValidTimestamp('0000-00-00T00:00:00.000Z');

@@ -144,9 +144,8 @@ export class MetadataExtractionProcessor {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
       const exifData = await exiftool.read(asset.originalPath);
-      const timestampFromFilename = await timeUtils.getTimestampFromFilename(asset.originalPath);
 
-      if (!exifData || !timestampFromFilename) {
+      if (!exifData) {
         throw new Error(`can not parse exif data from file ${asset.originalPath}`);
       }
 
@@ -154,7 +153,7 @@ export class MetadataExtractionProcessor {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         exifDate ? new Date(exifDate.toString()!) : null;
 
-      const createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate ?? timestampFromFilename);
+      const createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate ?? asset.createdAt);
       const modifyDate = exifToDate(exifData.ModifyDate);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;

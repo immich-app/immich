@@ -34,21 +34,6 @@ function createTimeUtils() {
     }
   };
 
-  const getTimestampFromFilename = async (originalPath: string): Promise<string | undefined> => {
-    const match = originalPath.match(/(\d{4})(\d{2})(\d{2})/);
-    if (match) {
-      const year = match[1];
-      const month = match[2];
-      const day = match[3];
-      const newDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).toISOString();
-      if (checkValidTimestamp(newDate)) {
-        return newDate;
-      }
-    } else {
-      return undefined;
-    }
-  };
-
   const parseStringToNumber = async (original: string | undefined): Promise<number | null> => {
     const match = original?.match(floatRegex)?.[0];
     if (match) {
@@ -58,7 +43,7 @@ function createTimeUtils() {
     }
   };
 
-  return { checkValidTimestamp, getTimestampFromExif, getTimestampFromFilename, parseStringToNumber };
+  return { checkValidTimestamp, getTimestampFromExif, parseStringToNumber };
 }
 
 export const timeUtils = createTimeUtils();
