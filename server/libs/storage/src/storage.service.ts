@@ -178,8 +178,6 @@ export class StorageService {
     // Support file type token
     substitutions['filetype'] = fileType;
 
-    console.log('template: ', template);
-
     return template(substitutions);
   }
 
