@@ -1,8 +1,7 @@
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { DataSource } from 'typeorm';
 
-let additionalSSLDatabaseConfig;
-let baseDatabaseConfig: PostgresConnectionOptions = {
+const baseDatabaseConfig: PostgresConnectionOptions = {
   type: 'postgres',
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
   synchronize: false,
@@ -11,7 +10,7 @@ let baseDatabaseConfig: PostgresConnectionOptions = {
   connectTimeoutMS: 10000, // 10 seconds
 };
 
-let envBasedDatabaseConfig = {
+const envBasedDatabaseConfig = {
   host: process.env.DB_HOSTNAME || 'immich_postgres',
   port: parseInt(process.env.DB_PORT || '5432'),
   username: process.env.DB_USERNAME,
@@ -20,7 +19,7 @@ let envBasedDatabaseConfig = {
 };
 
 const url = process.env.DB_URL;
-additionalSSLDatabaseConfig = url ? { url } : envBasedDatabaseConfig;
+const additionalSSLDatabaseConfig = url ? { url } : envBasedDatabaseConfig;
 
 export const databaseConfig: PostgresConnectionOptions = { ...baseDatabaseConfig, ...additionalSSLDatabaseConfig };
 
