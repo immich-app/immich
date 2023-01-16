@@ -128,19 +128,19 @@ export class StorageService {
   private validateStorageTemplate(templateString: string) {
     try {
       const template = this.compile(templateString);
-
       // test render an asset
       this.render(
         template,
         {
           createdAt: new Date().toISOString(),
           originalPath: '/upload/test/IMG_123.jpg',
+          type: AssetType.IMAGE,
         } as AssetEntity,
         'IMG_123',
         'jpg',
       );
     } catch (e) {
-      this.logger.warn(`Storage template validation failed: ${e}`);
+      this.logger.warn(`Storage template validation failed: ${JSON.stringify(e)}`);
       throw new Error(`Invalid storage template: ${e}`);
     }
   }
@@ -159,6 +159,7 @@ export class StorageService {
     };
 
     const fileType = asset.type == AssetType.IMAGE ? 'IMG' : 'VID';
+    const fileTypeFull = asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO';
 
     const dt = luxon.DateTime.fromISO(new Date(asset.createdAt).toISOString());
 
@@ -176,7 +177,8 @@ export class StorageService {
     }
 
     // Support file type token
-    substitutions['filetype'] = fileType;
+    substitutions.filetype = fileType;
+    substitutions.filetypefull = fileTypeFull;
 
     return template(substitutions);
   }
