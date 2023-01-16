@@ -1,5 +1,5 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
-import { AssetEntity, SystemConfig } from '@app/infra';
+import { AssetEntity, AssetType, SystemConfig } from '@app/infra';
 import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -158,6 +158,8 @@ export class StorageService {
       ext,
     };
 
+    const fileType = asset.type == AssetType.IMAGE ? 'IMG' : 'VID';
+
     const dt = luxon.DateTime.fromISO(new Date(asset.createdAt).toISOString());
 
     const dateTokens = [
@@ -172,6 +174,11 @@ export class StorageService {
     for (const token of dateTokens) {
       substitutions[token] = dt.toFormat(token);
     }
+
+    // Support file type token
+    substitutions['filetype'] = fileType;
+
+    console.log('template: ', template);
 
     return template(substitutions);
   }

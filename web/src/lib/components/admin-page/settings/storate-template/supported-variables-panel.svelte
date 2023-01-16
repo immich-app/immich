@@ -17,5 +17,12 @@
 				<li>{`{{ext}}`}</li>
 			</ul>
 		</div>
+
+		<div>
+			<p class="text-immich-primary font-medium dark:text-immich-dark-primary">FILE TYPE</p>
+			<ul>
+				<li>{`{{filetype}}`} - VID or IMG</li>
+			</ul>
+		</div>
 	</div>
 </div>
