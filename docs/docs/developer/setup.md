@@ -99,7 +99,7 @@ After making any changes in the `server/libs/database/src/entities`, a database 
 2. Run
 
 ```bash
-npm run typeorm -- migration:generate ./libs/database/src/<migration-name> -d libs/database/src/config/database.config.ts
+npm run typeorm -- migration:generate ./libs/infra/src/db/<migration-name> -d ./libs/infra/src/db/config/database.config.ts
 ```
 
 3. Check if the migration file makes sense.

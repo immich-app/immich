@@ -30,6 +30,12 @@ export class SharedLinkEntity {
   @Column({ type: 'boolean', default: false })
   allowUpload!: boolean;
 
+  @Column({ type: 'boolean', default: true })
+  allowDownload!: boolean;
+
+  @Column({ type: 'boolean', default: true })
+  showExif!: boolean;
+
   @ManyToMany(() => AssetEntity, (asset) => asset.sharedLinks)
   assets!: AssetEntity[];
 
@@ -47,4 +53,4 @@ export enum SharedLinkType {
   INDIVIDUAL = 'INDIVIDUAL',
 }
 
-// npm run typeorm -- migration:generate ./libs/database/src/AddSharedLinkTable -d libs/database/src/config/database.config.ts
+// npm run typeorm -- migration:generate ./libs/infra/src/db/AddMorePermissionToSharedLink -d ./libs/infra/src/db/config/database.config.ts
