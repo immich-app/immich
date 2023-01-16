@@ -11,29 +11,18 @@ The `immich-server` docker image comes preinstalled with an administrative CLI (
 
 ## How to run a command
 
-To run a command, connect to the container and then execute it by running `immich <command>`.
+To run a command, [connect](/docs/guides/docker-help.md#attach-to-a-container) to the `immich_server` container and then execute the command via `immich <command>`.
 
 ## Examples
 
-```bash title="Reset Admin Password"
-docker exec -it immich_server sh
+Reset Admin Password
 
-/usr/src/app$ immich reset-admin-password
-? Please choose a new password (optional) immich-is-awesome-unlike-this-password
-New password:
-immich-is-awesome-unlike-this-password
-```
+![Reset Admin Password](./img/reset-admin-password.png)
 
-```bash title="Disable Password Login"
-docker exec -it immich_server sh
+Disable Password Login
 
-/usr/src/app$ immich disable-password-login
-Password login has been disabled.
-```
+![Disable Password Login](./img/disable-password-login.png)
 
-```bash title="Enable Password Login"
-docker exec -it immich_server sh
+Enabled Password Login
 
-/usr/src/app$ immich enable-password-login
-Password login has been enabled.
-```
+![Enable Password Login](./img/enable-password-login.png)
