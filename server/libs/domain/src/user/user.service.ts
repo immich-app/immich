@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
 import { AuthUserDto } from '../auth';
 import { IUserRepository } from '../user';
@@ -103,5 +104,19 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
     return this.userCore.getUserProfileImage(user);
+  }
+
+  async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
+    const admin = await this.userCore.getAdmin();
+    if (!admin) {
+      throw new BadRequestException('Admin account does not exist');
+    }
+
+    const providedPassword = await ask(admin);
+    const password = providedPassword || randomBytes(24).toString('base64').replace(/\W/g, '');
+
+    await this.userCore.updateUser(admin, admin.id, { password });
+
+    return { admin, password, provided: !!providedPassword };
   }
 }
