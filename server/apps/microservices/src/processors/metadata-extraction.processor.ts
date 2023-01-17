@@ -173,6 +173,7 @@ export class MetadataExtractionProcessor {
         newExif.longitude = exifData['GPSLongitude'] || null;
       } else {
         newExif.dateTimeOriginal = createdAt;
+        newExif.modifyDate = exifToDate(asset.modifiedAt);
       }
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
