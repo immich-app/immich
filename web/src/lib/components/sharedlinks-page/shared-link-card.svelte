@@ -5,7 +5,6 @@
 	import Delete from 'svelte-material-icons/TrashCanOutline.svelte';
 	import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
 	import CircleEditOutline from 'svelte-material-icons/CircleEditOutline.svelte';
-	import Download from 'svelte-material-icons/Download.svelte';
 	import * as luxon from 'luxon';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import { createEventDispatcher } from 'svelte';
