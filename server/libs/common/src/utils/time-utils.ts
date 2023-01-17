@@ -1,6 +1,12 @@
-import exifr from 'exifr';
+// This is needed as resolving for the vendored
+// exiftool fails in tests otherwise but as it's not meant to be a requirement
+// of a project directly I had to include the line below the comment.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { exiftool } from 'exiftool-vendored.pl';
 
 function createTimeUtils() {
+  const floatRegex = /[+-]?([0-9]*[.])?[0-9]+/;
   const checkValidTimestamp = (timestamp: string): boolean => {
     const parsedTimestamp = Date.parse(timestamp);
 
@@ -19,22 +25,12 @@ function createTimeUtils() {
 
   const getTimestampFromExif = async (originalPath: string): Promise<string> => {
     try {
-      const exifData = await exifr.parse(originalPath, {
-        tiff: true,
-        ifd0: true as any,
-        ifd1: true,
-        exif: true,
-        gps: true,
-        interop: true,
-        xmp: true,
-        icc: true,
-        iptc: true,
-        jfif: true,
-        ihdr: true,
-      });
+      const exifData = await exiftool.read(originalPath);
 
       if (exifData && exifData['DateTimeOriginal']) {
-        return exifData['DateTimeOriginal'];
+        await exiftool.end();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return exifData['DateTimeOriginal'].toString()!;
       } else {
         return new Date().toISOString();
       }
@@ -42,7 +38,17 @@ function createTimeUtils() {
       return new Date().toISOString();
     }
   };
-  return { checkValidTimestamp, getTimestampFromExif };
+
+  const parseStringToNumber = async (original: string | undefined): Promise<number | null> => {
+    const match = original?.match(floatRegex)?.[0];
+    if (match) {
+      return parseFloat(match);
+    } else {
+      return null;
+    }
+  };
+
+  return { checkValidTimestamp, getTimestampFromExif, parseStringToNumber };
 }
 
 export const timeUtils = createTimeUtils();

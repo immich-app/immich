@@ -1,8 +1,8 @@
 import { AssetEntity, ExifEntity } from '@app/infra';
 import {
   IExifExtractionProcessor,
-  IVideoLengthExtractionProcessor,
   IReverseGeocodingProcessor,
+  IVideoLengthExtractionProcessor,
   QueueName,
   JobName,
 } from '@app/job';
@@ -11,16 +11,15 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
-import exifr from 'exifr';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import { getName } from 'i18n-iso-countries';
-import { find } from 'geo-tz';
-import * as luxon from 'luxon';
 import fs from 'node:fs';
+import { ExifDateTime, ExifTool } from 'exiftool-vendored';
+import { timeUtils } from '@app/common';
 
 function geocoderInit(init: InitOptions) {
   return new Promise<void>(function (resolve) {
@@ -75,7 +74,6 @@ export type GeoData = {
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private isGeocodeInitialized = false;
-
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
@@ -102,7 +100,7 @@ export class MetadataExtractionProcessor {
           configService.get('REVERSE_GEOCODING_DUMP_DIRECTORY') || process.cwd() + '/.reverse-geocoding-dump/',
       }).then(() => {
         this.isGeocodeInitialized = true;
-        Logger.log('Reverse Geocoding Initialised');
+        this.logger.log('Reverse Geocoding Initialised');
       });
     }
   }
@@ -142,84 +140,48 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
-      const exifData = await exifr.parse(asset.originalPath, {
-        tiff: true,
-        ifd0: true as any,
-        ifd1: true,
-        exif: true,
-        gps: true,
-        interop: true,
-        xmp: true,
-        icc: true,
-        iptc: true,
-        jfif: true,
-        ihdr: true,
+      const exiftool = new ExifTool();
+      const exifData = await exiftool.read(asset.originalPath).catch((e) => {
+        this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
       });
 
-      if (!exifData) {
-        throw new Error(`can not parse exif data from file ${asset.originalPath}`);
+      const exifToDate = (exifDate: string | ExifDateTime | undefined) =>
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        exifDate ? new Date(exifDate.toString()!) : null;
+
+      let createdAt = exifToDate(asset.createdAt);
+      const newExif = new ExifEntity();
+      if (exifData) {
+        createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate ?? asset.createdAt);
+        const modifyDate = exifToDate(exifData.ModifyDate);
+        newExif.make = exifData['Make'] || null;
+        newExif.model = exifData['Model'] || null;
+        newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
+        newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
+        newExif.exposureTime = (await timeUtils.parseStringToNumber(exifData['ExposureTime'])) || null;
+        newExif.orientation = exifData['Orientation']?.toString() || null;
+        newExif.dateTimeOriginal = createdAt;
+        newExif.modifyDate = modifyDate || null;
+        newExif.lensModel = exifData['LensModel'] || null;
+        newExif.fNumber = exifData['FNumber'] || null;
+        newExif.focalLength = (await timeUtils.parseStringToNumber(exifData['FocalLength'])) || null;
+        newExif.iso = exifData['ISO'] || null;
+        newExif.latitude = exifData['GPSLatitude'] || null;
+        newExif.longitude = exifData['GPSLongitude'] || null;
+      } else {
+        newExif.dateTimeOriginal = createdAt;
+        newExif.modifyDate = exifToDate(asset.modifiedAt);
       }
-
-      const createdAt = new Date(exifData.DateTimeOriginal || exifData.CreateDate || new Date(asset.createdAt));
-
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
-
-      const newExif = new ExifEntity();
       newExif.assetId = asset.id;
-      newExif.make = exifData['Make'] || null;
-      newExif.model = exifData['Model'] || null;
       newExif.imageName = path.parse(fileName).name || null;
-      newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
-      newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
       newExif.fileSizeInByte = fileSizeInBytes || null;
-      newExif.orientation = exifData['Orientation'] || null;
-      newExif.dateTimeOriginal = createdAt;
-      newExif.modifyDate = exifData['ModifyDate'] || null;
-      newExif.lensModel = exifData['LensModel'] || null;
-      newExif.fNumber = exifData['FNumber'] || null;
-      newExif.focalLength = exifData['FocalLength'] || null;
-      newExif.iso = exifData['ISO'] || null;
-      newExif.exposureTime = exifData['ExposureTime'] || null;
-      newExif.latitude = exifData['latitude'] || null;
-      newExif.longitude = exifData['longitude'] || null;
 
-      /**
-       * Correctly store UTC time based on timezone
-       * The timestamp being extracted from EXIF is based on the timezone
-       * of the container. We need to correct it to UTC time based on the
-       * timezone of the location.
-       *
-       * The timezone of the location can be exracted from the lat/lon
-       * GPS coordinates.
-       *
-       * Any assets that doesn't have this information will used the
-       * createdAt timestamp of the asset instead.
-       *
-       * The updated/corrected timestamp will be used to update the
-       * createdAt timestamp in the asset table. So that the information
-       * is consistent across the database.
-       *  */
-      if (newExif.longitude && newExif.latitude) {
-        const tz = find(newExif.latitude, newExif.longitude)[0];
-        const localTimeWithTimezone = createdAt.toISOString();
-
-        if (localTimeWithTimezone.length == 24) {
-          // Remove the last character
-          const localTimeWithoutTimezone = localTimeWithTimezone.slice(0, -1);
-          const correctUTCTime = luxon.DateTime.fromISO(localTimeWithoutTimezone, { zone: tz }).toUTC().toISO();
-          newExif.dateTimeOriginal = new Date(correctUTCTime);
-          await this.assetRepository.save({
-            id: asset.id,
-            createdAt: correctUTCTime,
-          });
-        }
-      } else {
-        await this.assetRepository.save({
-          id: asset.id,
-          createdAt: createdAt.toISOString(),
-        });
-      }
+      await this.assetRepository.save({
+        id: asset.id,
+        createdAt: createdAt?.toISOString(),
+      });
 
       /**
        * Reverse Geocoding
@@ -255,6 +217,7 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.save(newExif);
+      await exiftool.end();
     } catch (error: any) {
       this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
     }
