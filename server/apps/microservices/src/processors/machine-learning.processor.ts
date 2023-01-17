@@ -1,6 +1,6 @@
 import { AssetEntity } from '@app/infra';
 import { SmartInfoEntity } from '@app/infra';
-import { MachineLearningJobNameEnum, QueueNameEnum } from '@app/job';
+import { QueueName, JobName } from '@app/job';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -11,14 +11,14 @@ import { Repository } from 'typeorm';
 
 const immich_machine_learning_url = process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003';
 
-@Processor(QueueNameEnum.MACHINE_LEARNING)
+@Processor(QueueName.MACHINE_LEARNING)
 export class MachineLearningProcessor {
   constructor(
     @InjectRepository(SmartInfoEntity)
     private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {}
 
-  @Process({ name: MachineLearningJobNameEnum.IMAGE_TAGGING, concurrency: 2 })
+  @Process({ name: JobName.IMAGE_TAGGING, concurrency: 2 })
   async tagImage(job: Job<IMachineLearningJob>) {
     const { asset } = job.data;
 
@@ -37,7 +37,7 @@ export class MachineLearningProcessor {
     }
   }
 
-  @Process({ name: MachineLearningJobNameEnum.OBJECT_DETECTION, concurrency: 2 })
+  @Process({ name: JobName.OBJECT_DETECTION, concurrency: 2 })
   async detectObject(job: Job<IMachineLearningJob>) {
     try {
       const { asset }: { asset: AssetEntity } = job.data;

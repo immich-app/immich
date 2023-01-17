@@ -5,18 +5,7 @@ import { IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType, ExifEntity, UserEntity } from '@app/infra';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { randomUUID } from 'crypto';
-import {
-  userDeletionProcessorName,
-  exifExtractionProcessorName,
-  generateWEBPThumbnailProcessorName,
-  IMetadataExtractionJob,
-  IVideoTranscodeJob,
-  mp4ConversionProcessorName,
-  QueueNameEnum,
-  reverseGeocodingProcessorName,
-  videoMetadataExtractionProcessorName,
-} from '@app/job';
+import { IMetadataExtractionJob, IVideoTranscodeJob, QueueName, JobName } from '@app/job';
 import { ConfigService } from '@nestjs/config';
 import { IUserDeletionJob } from '@app/job/interfaces/user-deletion.interface';
 import { userUtils } from '@app/common';
@@ -33,16 +22,16 @@ export class ScheduleTasksService {
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
-    @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
+    @InjectQueue(QueueName.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue,
 
-    @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
+    @InjectQueue(QueueName.VIDEO_CONVERSION)
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
 
-    @InjectQueue(QueueNameEnum.METADATA_EXTRACTION)
+    @InjectQueue(QueueName.METADATA_EXTRACTION)
     private metadataExtractionQueue: Queue<IMetadataExtractionJob>,
 
-    @InjectQueue(QueueNameEnum.USER_DELETION)
+    @InjectQueue(QueueName.USER_DELETION)
     private userDeletionQueue: Queue<IUserDeletionJob>,
 
     private configService: ConfigService,
@@ -62,11 +51,7 @@ export class ScheduleTasksService {
     }
 
     for (const asset of assets) {
-      await this.thumbnailGeneratorQueue.add(
-        generateWEBPThumbnailProcessorName,
-        { asset: asset },
-        { jobId: randomUUID() },
-      );
+      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset: asset });
     }
   }
 
@@ -84,7 +69,7 @@ export class ScheduleTasksService {
     });
 
     for (const asset of assets) {
-      await this.videoConversionQueue.add(mp4ConversionProcessorName, { asset }, { jobId: randomUUID() });
+      await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset });
     }
   }
 
@@ -103,10 +88,9 @@ export class ScheduleTasksService {
 
       for (const exif of exifInfo) {
         await this.metadataExtractionQueue.add(
-          reverseGeocodingProcessorName,
+          JobName.REVERSE_GEOCODING,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           { exifId: exif.id, latitude: exif.latitude!, longitude: exif.longitude! },
-          { jobId: randomUUID() },
         );
       }
     }
@@ -122,17 +106,9 @@ export class ScheduleTasksService {
 
     for (const asset of exifAssets) {
       if (asset.type === AssetType.VIDEO) {
-        await this.metadataExtractionQueue.add(
-          videoMetadataExtractionProcessorName,
-          { asset, fileName: asset.id },
-          { jobId: randomUUID() },
-        );
+        await this.metadataExtractionQueue.add(JobName.EXTRACT_VIDEO_METADATA, { asset, fileName: asset.id });
       } else {
-        await this.metadataExtractionQueue.add(
-          exifExtractionProcessorName,
-          { asset, fileName: asset.id },
-          { jobId: randomUUID() },
-        );
+        await this.metadataExtractionQueue.add(JobName.EXIF_EXTRACTION, { asset, fileName: asset.id });
       }
     }
   }
@@ -142,7 +118,7 @@ export class ScheduleTasksService {
     const usersToDelete = await this.userRepository.find({ withDeleted: true, where: { deletedAt: Not(IsNull()) } });
     for (const user of usersToDelete) {
       if (userUtils.isReadyForDeletion(user)) {
-        await this.userDeletionQueue.add(userDeletionProcessorName, { user: user }, { jobId: randomUUID() });
+        await this.userDeletionQueue.add(JobName.USER_DELETION, { user });
       }
     }
   }
