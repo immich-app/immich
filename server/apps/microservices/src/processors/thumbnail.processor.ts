@@ -7,7 +7,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
 import { Job, Queue } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
-import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync } from 'node:fs';
 import sanitize from 'sanitize-filename';
 import sharp from 'sharp';
@@ -63,9 +62,9 @@ export class ThumbnailGeneratorProcessor {
       // Update resize path to send to generate webp queue
       asset.resizePath = jpegThumbnailPath;
 
-      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset }, { jobId: randomUUID() });
-      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset }, { jobId: randomUUID() });
-      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset }, { jobId: randomUUID() });
+      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset });
+      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
+      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
 
       this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
@@ -94,9 +93,9 @@ export class ThumbnailGeneratorProcessor {
       // Update resize path to send to generate webp queue
       asset.resizePath = jpegThumbnailPath;
 
-      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset }, { jobId: randomUUID() });
-      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset }, { jobId: randomUUID() });
-      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset }, { jobId: randomUUID() });
+      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset });
+      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
+      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
 
       this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }

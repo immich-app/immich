@@ -3,7 +3,6 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
-import { randomUUID } from 'crypto';
 import { IAssetRepository } from '../asset/asset-repository';
 import { AssetType } from '@app/infra';
 import { GetJobDto, JobId } from './dto/get-job.dto';
@@ -137,7 +136,7 @@ export class JobService {
     const assetsWithNoThumbnail = await this._assetRepository.getAssetWithNoThumbnail();
 
     for (const asset of assetsWithNoThumbnail) {
-      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_JPEG_THUMBNAIL, { asset }, { jobId: randomUUID() });
+      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_JPEG_THUMBNAIL, { asset });
     }
 
     return assetsWithNoThumbnail.length;
@@ -153,17 +152,9 @@ export class JobService {
     const assetsWithNoExif = await this._assetRepository.getAssetWithNoEXIF();
     for (const asset of assetsWithNoExif) {
       if (asset.type === AssetType.VIDEO) {
-        await this.metadataExtractionQueue.add(
-          JobName.EXTRACT_VIDEO_METADATA,
-          { asset, fileName: asset.id },
-          { jobId: randomUUID() },
-        );
+        await this.metadataExtractionQueue.add(JobName.EXTRACT_VIDEO_METADATA, { asset, fileName: asset.id });
       } else {
-        await this.metadataExtractionQueue.add(
-          JobName.EXIF_EXTRACTION,
-          { asset, fileName: asset.id },
-          { jobId: randomUUID() },
-        );
+        await this.metadataExtractionQueue.add(JobName.EXIF_EXTRACTION, { asset, fileName: asset.id });
       }
     }
     return assetsWithNoExif.length;
@@ -179,8 +170,8 @@ export class JobService {
     const assetWithNoSmartInfo = await this._assetRepository.getAssetWithNoSmartInfo();
 
     for (const asset of assetWithNoSmartInfo) {
-      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset }, { jobId: randomUUID() });
-      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset }, { jobId: randomUUID() });
+      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
+      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
     }
 
     return assetWithNoSmartInfo.length;
@@ -193,7 +184,7 @@ export class JobService {
       throw new BadRequestException('Storage migration job is already running');
     }
 
-    await this.configQueue.add(JobName.TEMPLATE_MIGRATION, {}, { jobId: randomUUID() });
+    await this.configQueue.add(JobName.TEMPLATE_MIGRATION, {});
 
     return 1;
   }

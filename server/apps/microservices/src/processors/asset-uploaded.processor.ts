@@ -9,7 +9,6 @@ import {
 } from '@app/job';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Job, Queue } from 'bull';
-import { randomUUID } from 'crypto';
 
 @Processor(QueueName.ASSET_UPLOADED)
 export class AssetUploadedProcessor {
@@ -37,19 +36,15 @@ export class AssetUploadedProcessor {
   async processUploadedVideo(job: Job<IAssetUploadedJob>) {
     const { asset, fileName } = job.data;
 
-    await this.thumbnailGeneratorQueue.add(JobName.GENERATE_JPEG_THUMBNAIL, { asset }, { jobId: randomUUID() });
+    await this.thumbnailGeneratorQueue.add(JobName.GENERATE_JPEG_THUMBNAIL, { asset });
 
     // Video Conversion
     if (asset.type == AssetType.VIDEO) {
-      await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset }, { jobId: randomUUID() });
-      await this.metadataExtractionQueue.add(
-        JobName.EXTRACT_VIDEO_METADATA,
-        { asset, fileName },
-        { jobId: randomUUID() },
-      );
+      await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset });
+      await this.metadataExtractionQueue.add(JobName.EXTRACT_VIDEO_METADATA, { asset, fileName });
     } else {
       // Extract Metadata/Exif for Images - Currently the EXIF library on the web cannot extract EXIF for video yet
-      await this.metadataExtractionQueue.add(JobName.EXIF_EXTRACTION, { asset, fileName }, { jobId: randomUUID() });
+      await this.metadataExtractionQueue.add(JobName.EXIF_EXTRACTION, { asset, fileName });
     }
   }
 }

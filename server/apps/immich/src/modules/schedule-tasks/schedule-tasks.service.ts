@@ -5,7 +5,6 @@ import { IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType, ExifEntity, UserEntity } from '@app/infra';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { randomUUID } from 'crypto';
 import { IMetadataExtractionJob, IVideoTranscodeJob, QueueName, JobName } from '@app/job';
 import { ConfigService } from '@nestjs/config';
 import { IUserDeletionJob } from '@app/job/interfaces/user-deletion.interface';
@@ -52,11 +51,7 @@ export class ScheduleTasksService {
     }
 
     for (const asset of assets) {
-      await this.thumbnailGeneratorQueue.add(
-        JobName.GENERATE_WEBP_THUMBNAIL,
-        { asset: asset },
-        { jobId: randomUUID() },
-      );
+      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset: asset });
     }
   }
 
@@ -74,7 +69,7 @@ export class ScheduleTasksService {
     });
 
     for (const asset of assets) {
-      await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset }, { jobId: randomUUID() });
+      await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset });
     }
   }
 
@@ -96,7 +91,6 @@ export class ScheduleTasksService {
           JobName.REVERSE_GEOCODING,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           { exifId: exif.id, latitude: exif.latitude!, longitude: exif.longitude! },
-          { jobId: randomUUID() },
         );
       }
     }
@@ -112,17 +106,9 @@ export class ScheduleTasksService {
 
     for (const asset of exifAssets) {
       if (asset.type === AssetType.VIDEO) {
-        await this.metadataExtractionQueue.add(
-          JobName.EXTRACT_VIDEO_METADATA,
-          { asset, fileName: asset.id },
-          { jobId: randomUUID() },
-        );
+        await this.metadataExtractionQueue.add(JobName.EXTRACT_VIDEO_METADATA, { asset, fileName: asset.id });
       } else {
-        await this.metadataExtractionQueue.add(
-          JobName.EXIF_EXTRACTION,
-          { asset, fileName: asset.id },
-          { jobId: randomUUID() },
-        );
+        await this.metadataExtractionQueue.add(JobName.EXIF_EXTRACTION, { asset, fileName: asset.id });
       }
     }
   }
@@ -132,7 +118,7 @@ export class ScheduleTasksService {
     const usersToDelete = await this.userRepository.find({ withDeleted: true, where: { deletedAt: Not(IsNull()) } });
     for (const user of usersToDelete) {
       if (userUtils.isReadyForDeletion(user)) {
-        await this.userDeletionQueue.add(JobName.USER_DELETION, { user }, { jobId: randomUUID() });
+        await this.userDeletionQueue.add(JobName.USER_DELETION, { user });
       }
     }
   }
