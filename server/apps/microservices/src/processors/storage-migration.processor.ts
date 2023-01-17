@@ -1,14 +1,14 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity } from '@app/infra';
 import { ImmichConfigService } from '@app/immich-config';
-import { QueueNameEnum, templateMigrationProcessorName, updateTemplateProcessorName } from '@app/job';
+import { QueueName, JobName } from '@app/job';
 import { StorageService } from '@app/storage';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-@Processor(QueueNameEnum.STORAGE_MIGRATION)
+@Processor(QueueName.CONFIG)
 export class StorageMigrationProcessor {
   readonly logger: Logger = new Logger(StorageMigrationProcessor.name);
 
@@ -24,7 +24,7 @@ export class StorageMigrationProcessor {
    * Migration process when a new user set a new storage template.
    * @param job
    */
-  @Process({ name: templateMigrationProcessorName, concurrency: 100 })
+  @Process({ name: JobName.TEMPLATE_MIGRATION, concurrency: 100 })
   async templateMigration() {
     console.time('migrating-time');
     const assets = await this.assetRepository.find({
@@ -54,7 +54,7 @@ export class StorageMigrationProcessor {
    * This is to ensure the synchronization between processes.
    * @param job
    */
-  @Process({ name: updateTemplateProcessorName, concurrency: 1 })
+  @Process({ name: JobName.CONFIG_CHANGE, concurrency: 1 })
   async updateTemplate() {
     await this.immichConfigService.refreshConfig();
   }

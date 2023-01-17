@@ -1,20 +1,12 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity, AssetType } from '@app/infra';
-import {
-  WebpGeneratorProcessor,
-  generateJPEGThumbnailProcessorName,
-  generateWEBPThumbnailProcessorName,
-  JpegGeneratorProcessor,
-  QueueNameEnum,
-  MachineLearningJobNameEnum,
-} from '@app/job';
+import { WebpGeneratorProcessor, JpegGeneratorProcessor, QueueName, JobName } from '@app/job';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
 import { Job, Queue } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
-import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync } from 'node:fs';
 import sanitize from 'sanitize-filename';
 import sharp from 'sharp';
@@ -23,7 +15,7 @@ import { join } from 'path';
 import { CommunicationGateway } from 'apps/immich/src/api-v1/communication/communication.gateway';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
 
-@Processor(QueueNameEnum.THUMBNAIL_GENERATION)
+@Processor(QueueName.THUMBNAIL_GENERATION)
 export class ThumbnailGeneratorProcessor {
   readonly logger: Logger = new Logger(ThumbnailGeneratorProcessor.name);
 
@@ -31,16 +23,16 @@ export class ThumbnailGeneratorProcessor {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
 
-    @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
+    @InjectQueue(QueueName.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue,
 
     private wsCommunicationGateway: CommunicationGateway,
 
-    @InjectQueue(QueueNameEnum.MACHINE_LEARNING)
+    @InjectQueue(QueueName.MACHINE_LEARNING)
     private machineLearningQueue: Queue<IMachineLearningJob>,
   ) {}
 
-  @Process({ name: generateJPEGThumbnailProcessorName, concurrency: 3 })
+  @Process({ name: JobName.GENERATE_JPEG_THUMBNAIL, concurrency: 3 })
   async generateJPEGThumbnail(job: Job<JpegGeneratorProcessor>) {
     const basePath = APP_UPLOAD_LOCATION;
 
@@ -70,13 +62,10 @@ export class ThumbnailGeneratorProcessor {
       // Update resize path to send to generate webp queue
       asset.resizePath = jpegThumbnailPath;
 
-      await this.thumbnailGeneratorQueue.add(generateWEBPThumbnailProcessorName, { asset }, { jobId: randomUUID() });
-      await this.machineLearningQueue.add(MachineLearningJobNameEnum.IMAGE_TAGGING, { asset }, { jobId: randomUUID() });
-      await this.machineLearningQueue.add(
-        MachineLearningJobNameEnum.OBJECT_DETECTION,
-        { asset },
-        { jobId: randomUUID() },
-      );
+      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset });
+      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
+      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
+
       this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
 
@@ -104,19 +93,15 @@ export class ThumbnailGeneratorProcessor {
       // Update resize path to send to generate webp queue
       asset.resizePath = jpegThumbnailPath;
 
-      await this.thumbnailGeneratorQueue.add(generateWEBPThumbnailProcessorName, { asset }, { jobId: randomUUID() });
-      await this.machineLearningQueue.add(MachineLearningJobNameEnum.IMAGE_TAGGING, { asset }, { jobId: randomUUID() });
-      await this.machineLearningQueue.add(
-        MachineLearningJobNameEnum.OBJECT_DETECTION,
-        { asset },
-        { jobId: randomUUID() },
-      );
+      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset });
+      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
+      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
 
       this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
   }
 
-  @Process({ name: generateWEBPThumbnailProcessorName, concurrency: 3 })
+  @Process({ name: JobName.GENERATE_WEBP_THUMBNAIL, concurrency: 3 })
   async generateWepbThumbnail(job: Job<WebpGeneratorProcessor>) {
     const { asset } = job.data;
 

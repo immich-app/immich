@@ -1,6 +1,6 @@
 import { APP_UPLOAD_LOCATION, userUtils } from '@app/common';
 import { APIKeyEntity, AssetEntity, UserEntity } from '@app/infra';
-import { QueueNameEnum, userDeletionProcessorName } from '@app/job';
+import { QueueName, JobName } from '@app/job';
 import { IUserDeletionJob } from '@app/job/interfaces/user-deletion.interface';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -10,7 +10,7 @@ import { join } from 'path';
 import fs from 'fs';
 import { Repository } from 'typeorm';
 
-@Processor(QueueNameEnum.USER_DELETION)
+@Processor(QueueName.USER_DELETION)
 export class UserDeletionProcessor {
   private logger = new Logger(UserDeletionProcessor.name);
 
@@ -25,7 +25,7 @@ export class UserDeletionProcessor {
     private apiKeyRepository: Repository<APIKeyEntity>,
   ) {}
 
-  @Process(userDeletionProcessorName)
+  @Process(JobName.USER_DELETION)
   async processUserDeletion(job: Job<IUserDeletionJob>) {
     const { user } = job.data;
 
