@@ -188,16 +188,12 @@ export class AssetService {
     isVisible: boolean,
     livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity> {
-    // Check valid time.
-    const createdAt = createAssetDto.createdAt;
-    const modifiedAt = createAssetDto.modifiedAt;
-
-    if (!timeUtils.checkValidTimestamp(createdAt)) {
-      createAssetDto.createdAt = await timeUtils.getTimestampFromExif(originalPath);
+    if (!timeUtils.checkValidTimestamp(createAssetDto.createdAt)) {
+      createAssetDto.createdAt = new Date().toISOString();
     }
 
-    if (!timeUtils.checkValidTimestamp(modifiedAt)) {
-      createAssetDto.modifiedAt = await timeUtils.getTimestampFromExif(originalPath);
+    if (!timeUtils.checkValidTimestamp(createAssetDto.modifiedAt)) {
+      createAssetDto.modifiedAt = new Date().toISOString();
     }
 
     const assetEntity = await this._assetRepository.create(
