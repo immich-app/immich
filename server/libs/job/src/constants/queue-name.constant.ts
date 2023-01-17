@@ -1,4 +1,4 @@
-export enum QueueNameEnum {
+export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnail-generation-queue',
   METADATA_EXTRACTION = 'metadata-extraction-queue',
   VIDEO_CONVERSION = 'video-conversion-queue',
@@ -6,5 +6,6 @@ export enum QueueNameEnum {
   ASSET_UPLOADED = 'asset-uploaded-queue',
   MACHINE_LEARNING = 'machine-learning-queue',
   USER_DELETION = 'user-deletion-queue',
-  STORAGE_MIGRATION = 'storage-template-migration',
+  CONFIG = 'config-queue',
+  BACKGROUND_TASK = 'background-task',
 }

@@ -1,7 +1,6 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
 import { AssetEntity } from '@app/infra';
-import { QueueNameEnum } from '@app/job';
-import { mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
+import { QueueName, JobName } from '@app/job';
 import { IMp4ConversionProcessor } from '@app/job/interfaces/video-transcode.interface';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -12,7 +11,7 @@ import { existsSync, mkdirSync } from 'fs';
 import { ImmichConfigService } from 'libs/immich-config/src';
 import { Repository } from 'typeorm';
 
-@Processor(QueueNameEnum.VIDEO_CONVERSION)
+@Processor(QueueName.VIDEO_CONVERSION)
 export class VideoTranscodeProcessor {
   constructor(
     @InjectRepository(AssetEntity)
@@ -20,7 +19,7 @@ export class VideoTranscodeProcessor {
     private immichConfigService: ImmichConfigService,
   ) {}
 
-  @Process({ name: mp4ConversionProcessorName, concurrency: 2 })
+  @Process({ name: JobName.MP4_CONVERSION, concurrency: 2 })
   async mp4Conversion(job: Job<IMp4ConversionProcessor>) {
     const { asset } = job.data;
 

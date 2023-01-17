@@ -1,23 +1,12 @@
-import { Process, Processor } from '@nestjs/bull';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AssetEntity, SmartInfoEntity } from '@app/infra';
-import { Job } from 'bull';
-import { AssetResponseDto } from '../../api-v1/asset/response-dto/asset-response.dto';
 import { assetUtils } from '@app/common/utils';
+import { Process, Processor } from '@nestjs/bull';
+import { Job } from 'bull';
+import { JobName, QueueName } from '@app/job';
+import { AssetResponseDto } from '../../api-v1/asset/response-dto/asset-response.dto';
 
-@Processor('background-task')
+@Processor(QueueName.BACKGROUND_TASK)
 export class BackgroundTaskProcessor {
-  constructor(
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
-
-    @InjectRepository(SmartInfoEntity)
-    private smartInfoRepository: Repository<SmartInfoEntity>,
-  ) {}
-
-  // TODO: Should probably use constants / Interfaces for Queue names / data
-  @Process('delete-file-on-disk')
+  @Process(JobName.DELETE_FILE_ON_DISK)
   async deleteFileOnDisk(job: Job<{ assets: AssetResponseDto[] }>) {
     const { assets } = job.data;
 

@@ -4,27 +4,22 @@ import {
   IMetadataExtractionJob,
   IThumbnailGenerationJob,
   IVideoTranscodeJob,
-  assetUploadedProcessorName,
-  exifExtractionProcessorName,
-  generateJPEGThumbnailProcessorName,
-  mp4ConversionProcessorName,
-  videoMetadataExtractionProcessorName,
-  QueueNameEnum,
+  QueueName,
+  JobName,
 } from '@app/job';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Job, Queue } from 'bull';
-import { randomUUID } from 'crypto';
 
-@Processor(QueueNameEnum.ASSET_UPLOADED)
+@Processor(QueueName.ASSET_UPLOADED)
 export class AssetUploadedProcessor {
   constructor(
-    @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
+    @InjectQueue(QueueName.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue<IThumbnailGenerationJob>,
 
-    @InjectQueue(QueueNameEnum.METADATA_EXTRACTION)
+    @InjectQueue(QueueName.METADATA_EXTRACTION)
     private metadataExtractionQueue: Queue<IMetadataExtractionJob>,
 
-    @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
+    @InjectQueue(QueueName.VIDEO_CONVERSION)
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
   ) {}
 
@@ -37,30 +32,19 @@ export class AssetUploadedProcessor {
    *
    * @param job asset-uploaded
    */
-  @Process(assetUploadedProcessorName)
+  @Process(JobName.ASSET_UPLOADED)
   async processUploadedVideo(job: Job<IAssetUploadedJob>) {
     const { asset, fileName } = job.data;
 
-    await this.thumbnailGeneratorQueue.add(generateJPEGThumbnailProcessorName, { asset }, { jobId: randomUUID() });
+    await this.thumbnailGeneratorQueue.add(JobName.GENERATE_JPEG_THUMBNAIL, { asset });
 
     // Video Conversion
     if (asset.type == AssetType.VIDEO) {
-      await this.videoConversionQueue.add(mp4ConversionProcessorName, { asset }, { jobId: randomUUID() });
-      await this.metadataExtractionQueue.add(
-        videoMetadataExtractionProcessorName,
-        { asset, fileName },
-        { jobId: randomUUID() },
-      );
+      await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset });
+      await this.metadataExtractionQueue.add(JobName.EXTRACT_VIDEO_METADATA, { asset, fileName });
     } else {
       // Extract Metadata/Exif for Images - Currently the EXIF library on the web cannot extract EXIF for video yet
-      await this.metadataExtractionQueue.add(
-        exifExtractionProcessorName,
-        {
-          asset,
-          fileName,
-        },
-        { jobId: randomUUID() },
-      );
+      await this.metadataExtractionQueue.add(JobName.EXIF_EXTRACTION, { asset, fileName });
     }
   }
 }
