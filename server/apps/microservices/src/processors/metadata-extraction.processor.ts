@@ -2,11 +2,9 @@ import { AssetEntity, ExifEntity } from '@app/infra';
 import {
   IExifExtractionProcessor,
   IVideoLengthExtractionProcessor,
-  exifExtractionProcessorName,
-  videoMetadataExtractionProcessorName,
-  reverseGeocodingProcessorName,
   IReverseGeocodingProcessor,
-  QueueNameEnum,
+  QueueName,
+  JobName,
 } from '@app/job';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -73,7 +71,7 @@ export type GeoData = {
   distance: number;
 };
 
-@Processor(QueueNameEnum.METADATA_EXTRACTION)
+@Processor(QueueName.METADATA_EXTRACTION)
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private isGeocodeInitialized = false;
@@ -140,7 +138,7 @@ export class MetadataExtractionProcessor {
     return { country, state, city };
   }
 
-  @Process(exifExtractionProcessorName)
+  @Process(JobName.EXIF_EXTRACTION)
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
@@ -262,7 +260,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: reverseGeocodingProcessorName })
+  @Process({ name: JobName.REVERSE_GEOCODING })
   async reverseGeocoding(job: Job<IReverseGeocodingProcessor>) {
     if (this.isGeocodeInitialized) {
       const { latitude, longitude } = job.data;
@@ -271,7 +269,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: videoMetadataExtractionProcessorName, concurrency: 2 })
+  @Process({ name: JobName.EXTRACT_VIDEO_METADATA, concurrency: 2 })
   async extractVideoMetadata(job: Job<IVideoLengthExtractionProcessor>) {
     const { asset, fileName } = job.data;
 

@@ -43,13 +43,7 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-import {
-  assetUploadedProcessorName,
-  IAssetUploadedJob,
-  IVideoTranscodeJob,
-  mp4ConversionProcessorName,
-  QueueNameEnum,
-} from '@app/job';
+import { IAssetUploadedJob, IVideoTranscodeJob, QueueName, JobName } from '@app/job';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
@@ -80,16 +74,16 @@ export class AssetService {
 
     private backgroundTaskService: BackgroundTaskService,
 
-    @InjectQueue(QueueNameEnum.ASSET_UPLOADED)
+    @InjectQueue(QueueName.ASSET_UPLOADED)
     private assetUploadedQueue: Queue<IAssetUploadedJob>,
 
-    @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
+    @InjectQueue(QueueName.VIDEO_CONVERSION)
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
 
     private downloadService: DownloadService,
 
     private storageService: StorageService,
-    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
+    @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository);
   }
@@ -129,7 +123,7 @@ export class AssetService {
         await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
 
         await this.videoConversionQueue.add(
-          mp4ConversionProcessorName,
+          JobName.MP4_CONVERSION,
           { asset: livePhotoAssetEntity },
           { jobId: randomUUID() },
         );
@@ -157,7 +151,7 @@ export class AssetService {
       const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
 
       await this.assetUploadedQueue.add(
-        assetUploadedProcessorName,
+        JobName.ASSET_UPLOADED,
         { asset: movedAsset, fileName: originalAssetData.originalname },
         { jobId: movedAsset.id },
       );
