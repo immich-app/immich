@@ -20,7 +20,7 @@ import { Repository } from 'typeorm/repository/Repository';
 import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import { getName } from 'i18n-iso-countries';
 import fs from 'node:fs';
-import { ExifDateTime, exiftool } from 'exiftool-vendored';
+import { ExifDateTime, ExifTool } from 'exiftool-vendored';
 import { timeUtils } from '@app/common';
 
 function geocoderInit(init: InitOptions) {
@@ -72,10 +72,48 @@ export type GeoData = {
   distance: number;
 };
 
+class WrapperLogger {
+  logger = new Logger(WrapperLogger.name);
+  level: string;
+
+  constructor(level: string) {
+    this.level = level;
+  }
+
+  trace(message: string, context?: string): void {
+    if (this.level === 'trace') {
+      this.logger.debug(message, context);
+    }
+  }
+
+  debug(message: string, context?: string): void {
+    if (['trace', 'debug'].includes(this.level)) {
+      this.logger.debug(message, context);
+    }
+  }
+
+  info(message: string, context?: string): void {
+    if (['trace', 'debug', 'info'].includes(this.level)) {
+      this.logger.log(message, context);
+    }
+  }
+
+  warn(message: string, context?: string): void {
+    if (['trace', 'debug', 'info', 'warning'].includes(this.level)) {
+      this.logger.warn(message, context);
+    }
+  }
+
+  error(message: string, trace?: string, context?: string): void {
+    this.logger.error(message, trace, context);
+  }
+}
+
 @Processor(QueueNameEnum.METADATA_EXTRACTION)
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private isGeocodeInitialized = false;
+  private readonly wrapperLogger: WrapperLogger;
 
   constructor(
     @InjectRepository(AssetEntity)
@@ -86,6 +124,9 @@ export class MetadataExtractionProcessor {
 
     configService: ConfigService,
   ) {
+    this.wrapperLogger = new WrapperLogger('warning');
+    this.wrapperLogger.logger = this.logger;
+
     if (!configService.get('DISABLE_REVERSE_GEOCODING')) {
       this.logger.log('Initializing Reverse Geocoding');
       geocoderInit({
@@ -103,7 +144,7 @@ export class MetadataExtractionProcessor {
           configService.get('REVERSE_GEOCODING_DUMP_DIRECTORY') || process.cwd() + '/.reverse-geocoding-dump/',
       }).then(() => {
         this.isGeocodeInitialized = true;
-        Logger.log('Reverse Geocoding Initialised');
+        this.logger.log('Reverse Geocoding Initialised');
       });
     }
   }
@@ -143,6 +184,7 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
+      const exiftool = new ExifTool({ logger: () => this.wrapperLogger });
       const exifData = await exiftool.read(asset.originalPath).catch((e) => {
         this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
       });
@@ -151,10 +193,10 @@ export class MetadataExtractionProcessor {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         exifDate ? new Date(exifDate.toString()!) : null;
 
-      const createdAt = exifToDate(asset.createdAt);
+      let createdAt = exifToDate(asset.createdAt);
       const newExif = new ExifEntity();
       if (exifData) {
-        const createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate ?? asset.createdAt);
+        createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate ?? asset.createdAt);
         const modifyDate = exifToDate(exifData.ModifyDate);
         newExif.make = exifData['Make'] || null;
         newExif.model = exifData['Model'] || null;
