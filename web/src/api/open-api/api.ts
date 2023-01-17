@@ -1022,6 +1022,18 @@ export interface EditSharedLinkDto {
      * @type {boolean}
      * @memberof EditSharedLinkDto
      */
+    'allowDownload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof EditSharedLinkDto
+     */
+    'showExif'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof EditSharedLinkDto
+     */
     'isEditExpireTime'?: boolean;
 }
 /**
@@ -1661,6 +1673,18 @@ export interface SharedLinkResponseDto {
      * @memberof SharedLinkResponseDto
      */
     'allowUpload': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SharedLinkResponseDto
+     */
+    'allowDownload': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SharedLinkResponseDto
+     */
+    'showExif': boolean;
 }
 /**
  * 
