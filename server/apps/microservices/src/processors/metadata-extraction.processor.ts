@@ -156,13 +156,19 @@ export class MetadataExtractionProcessor {
         return exifDate.toDate();
       };
 
+      const getExposureTimeDenominator = (exposureTime: string | undefined) => {
+        if (!exposureTime) return null;
+
+        const exposureTimeSplit = exposureTime.split('/');
+        return exposureTimeSplit.length === 2 ? parseInt(exposureTimeSplit[1]) : null;
+      };
+
       const createdAt = exifToDate(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.createdAt);
       const modifyDate = exifToDate(exifData?.ModifyDate ?? asset.modifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
 
       const newExif = new ExifEntity();
-      console.log(exifData);
       newExif.assetId = asset.id;
       newExif.imageName = path.parse(fileName).name;
       newExif.fileSizeInByte = fileSizeInBytes;
@@ -170,7 +176,7 @@ export class MetadataExtractionProcessor {
       newExif.model = exifData?.Model || null;
       newExif.exifImageHeight = exifData?.ExifImageHeight || exifData?.ImageHeight || null;
       newExif.exifImageWidth = exifData?.ExifImageWidth || exifData?.ImageWidth || null;
-      newExif.exposureTime = timeUtils.parseStringToNumber(exifData?.ExposureTime) || null;
+      newExif.exposureTime = getExposureTimeDenominator(exifData?.ExposureTime);
       newExif.orientation = exifData?.Orientation?.toString() || null;
       newExif.dateTimeOriginal = createdAt;
       newExif.modifyDate = modifyDate;
@@ -180,8 +186,6 @@ export class MetadataExtractionProcessor {
       newExif.iso = exifData?.ISO || null;
       newExif.latitude = exifData?.GPSLatitude || null;
       newExif.longitude = exifData?.GPSLongitude || null;
-      newExif.dateTimeOriginal = createdAt;
-      newExif.modifyDate = exifToDate(asset.modifiedAt);
 
       await this.assetRepository.save({
         id: asset.id,

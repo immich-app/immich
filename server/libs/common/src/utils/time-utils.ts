@@ -1,5 +1,4 @@
 function createTimeUtils() {
-  const floatRegex = /[+-]?([0-9]*[.])?[0-9]+/;
   const checkValidTimestamp = (timestamp: string): boolean => {
     const parsedTimestamp = Date.parse(timestamp);
 
@@ -16,16 +15,7 @@ function createTimeUtils() {
     return date.getFullYear() > 0;
   };
 
-  const parseStringToNumber = (original: string | undefined) => {
-    const match = original?.match(floatRegex)?.[0];
-    if (match) {
-      return parseFloat(match);
-    } else {
-      return null;
-    }
-  };
-
-  return { checkValidTimestamp, parseStringToNumber };
+  return { checkValidTimestamp };
 }
 
 export const timeUtils = createTimeUtils();
