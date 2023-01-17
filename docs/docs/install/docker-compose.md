@@ -126,5 +126,10 @@ When a new version of Immich is [released](https://github.com/immich-app/immich/
 docker-compose pull && docker-compose up -d # Or `docker compose`
 ```
 
+:::caution Automatic Updates
+Immich is currently under heavy development, which means you can expect breaking changes and bugs. Therefore, we recommend reading the release notes prior to updating and to take special care when using automated tools like [Watchtower][watchtower].
+:::
+
 [compose-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml
 [env-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
+[watchtower]: https://containrrr.dev/watchtower/
