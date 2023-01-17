@@ -232,14 +232,14 @@ export class AssetService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async getAssetById(assetId: string): Promise<AssetResponseDto> {
-    const asset = await this._assetRepository.getById(assetId);
+  public async getAssetById(assetId: string, allowExif = true): Promise<AssetResponseDto> {
+    const asset = await this._assetRepository.getById(assetId, allowExif);
 
     return mapAsset(asset);
   }
 
   public async updateAsset(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    const asset = await this._assetRepository.getById(assetId);
+    const asset = await this._assetRepository.getById(assetId, true);
     if (!asset) {
       throw new BadRequestException('Asset not found');
     }
@@ -259,12 +259,12 @@ export class AssetService {
     const assetToDownload = [];
 
     for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
+      const asset = await this._assetRepository.getById(assetId, true);
       assetToDownload.push(asset);
 
       // Get live photo asset
       if (asset.livePhotoVideoId) {
-        const livePhotoAsset = await this._assetRepository.getById(asset.livePhotoVideoId);
+        const livePhotoAsset = await this._assetRepository.getById(asset.livePhotoVideoId, true);
         assetToDownload.push(livePhotoAsset);
       }
     }
@@ -276,7 +276,7 @@ export class AssetService {
   public async downloadFile(query: ServeFileDto, assetId: string, res: Res) {
     try {
       let fileReadStream = null;
-      const asset = await this._assetRepository.getById(assetId);
+      const asset = await this._assetRepository.getById(assetId, true);
 
       // Download Video
       if (asset.type === AssetType.VIDEO) {
@@ -373,9 +373,15 @@ export class AssetService {
     }
   }
 
-  public async serveFile(assetId: string, query: ServeFileDto, res: Res, headers: Record<string, string>) {
+  public async serveFile(
+    assetId: string,
+    query: ServeFileDto,
+    res: Res,
+    headers: Record<string, string>,
+    allowOriginalFile = true,
+  ) {
     let fileReadStream: ReadStream;
-    const asset = await this._assetRepository.getById(assetId);
+    const asset = await this._assetRepository.getById(assetId, true);
 
     if (!asset) {
       throw new NotFoundException('Asset does not exist');
@@ -407,7 +413,7 @@ export class AssetService {
         /**
          * Serve thumbnail image for both web and mobile app
          */
-        if (!query.isThumb) {
+        if (!query.isThumb && allowOriginalFile) {
           res.set({
             'Content-Type': asset.mimeType,
           });
@@ -693,12 +699,18 @@ export class AssetService {
     }
   }
 
+  async checkDownloadAccess(authUser: AuthUserDto) {
+    if (authUser.isPublicUser && !authUser.isAllowDownload) {
+      throw new ForbiddenException();
+    }
+  }
+
   async createAssetsSharedLink(authUser: AuthUserDto, dto: CreateAssetsShareLinkDto): Promise<SharedLinkResponseDto> {
     const assets = [];
 
     await this.checkAssetsAccess(authUser, dto.assetIds);
     for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
+      const asset = await this._assetRepository.getById(assetId, true);
       assets.push(asset);
     }
 
@@ -721,12 +733,21 @@ export class AssetService {
     const assets = [];
 
     for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
+      const asset = await this._assetRepository.getById(assetId, true);
       assets.push(asset);
     }
 
     const updatedLink = await this.shareCore.updateAssetsInSharedLink(authUser.sharedLinkId, assets);
     return mapSharedLinkToResponseDto(updatedLink);
+  }
+
+  getExifPermission(authUser: AuthUserDto) {
+    let allowExif = true;
+    if (authUser.isPublicUser && !authUser.isShowExif) {
+      allowExif = false;
+    }
+
+    return allowExif;
   }
 }
 

@@ -49,7 +49,6 @@ export class ShareCore {
   }
 
   getSharedLinkById(id: string, allowExif: boolean): Promise<SharedLinkEntity | null> {
-    console.log('getSharedLinkById', id, allowExif);
     return this.sharedLinkRepository.getById(id, allowExif);
   }
 

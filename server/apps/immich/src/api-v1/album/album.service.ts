@@ -216,7 +216,7 @@ export class AlbumService {
   }
 
   checkDownloadAccess(authUser: AuthUserDto) {
-    if (authUser.isAllowDownload != undefined && !authUser.isAllowDownload) {
+    if (authUser.isPublicUser && !authUser.isAllowDownload) {
       throw new ForbiddenException('User is not allowed to download');
     }
   }

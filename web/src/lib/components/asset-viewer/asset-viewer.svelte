@@ -160,6 +160,7 @@
 				}, 2000);
 			}
 		} catch (e) {
+			$downloadAssets = {};
 			console.error('Error downloading file ', e);
 			notificationController.show({
 				type: NotificationType.Error,

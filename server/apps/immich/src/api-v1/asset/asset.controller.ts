@@ -97,6 +97,7 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
+    await this.assetService.checkDownloadAccess(authUser);
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.downloadFile(query, assetId, res);
   }
@@ -108,6 +109,7 @@ export class AssetController {
     @Response({ passthrough: true }) res: Res,
     @Body(new ValidationPipe()) dto: DownloadFilesDto,
   ): Promise<any> {
+    await this.assetService.checkDownloadAccess(authUser);
     await this.assetService.checkAssetsAccess(authUser, [...dto.assetIds]);
     const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadFiles(dto);
     res.attachment(fileName);
@@ -124,6 +126,7 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<any> {
+    await this.assetService.checkDownloadAccess(authUser);
     const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadLibrary(authUser, dto);
     res.attachment(fileName);
     res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
@@ -142,8 +145,13 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
+    let allowOriginalFile = true;
+    if (authUser.isPublicUser && !authUser.isAllowDownload) {
+      allowOriginalFile = false;
+    }
+
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return this.assetService.serveFile(assetId, query, res, headers);
+    return this.assetService.serveFile(assetId, query, res, headers, allowOriginalFile);
   }
 
   @Authenticated({ isShared: true })
@@ -245,8 +253,9 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Param('assetId') assetId: string,
   ): Promise<AssetResponseDto> {
+    const allowExif = this.assetService.getExifPermission(authUser);
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return await this.assetService.getAssetById(assetId);
+    return await this.assetService.getAssetById(assetId, allowExif);
   }
 
   /**
