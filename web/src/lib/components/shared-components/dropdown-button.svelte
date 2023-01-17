@@ -25,7 +25,7 @@
 		{disabled}
 		on:click={toggle}
 		aria-expanded={isOpen}
-		class="bg-gray-200 w-full flex p-2 rounded-lg dark:bg-gray-600 place-items-center justify-between disabled:cursor-not-allowed dark:disabled:bg-gray-300 disabled:bg-gray-600 "
+		class="bg-gray-200 w-full flex p-2 rounded-lg dark:bg-gray-600 place-items-center justify-between disabled:cursor-not-allowed dark:disabled:bg-gray-300 disabled:bg-gray-600"
 	>
 		<div>
 			{selected}

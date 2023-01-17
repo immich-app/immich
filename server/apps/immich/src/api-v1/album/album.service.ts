@@ -210,6 +210,8 @@ export class AlbumService {
       album: album,
       assets: [],
       description: dto.description,
+      allowDownload: dto.allowDownload,
+      showExif: dto.showExif,
     });
 
     return mapSharedLinkToResponseDto(sharedLink);

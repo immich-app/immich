@@ -697,6 +697,18 @@ export interface CreateAlbumShareLinkDto {
     'allowUpload'?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'allowDownload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'showExif'?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof CreateAlbumShareLinkDto
      */
@@ -726,6 +738,18 @@ export interface CreateAssetsShareLinkDto {
      * @memberof CreateAssetsShareLinkDto
      */
     'allowUpload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateAssetsShareLinkDto
+     */
+    'allowDownload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateAssetsShareLinkDto
+     */
+    'showExif'?: boolean;
     /**
      * 
      * @type {string}

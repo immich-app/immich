@@ -76,6 +76,8 @@ export class ShareCore {
 
     link.description = dto.description ?? link.description;
     link.allowUpload = dto.allowUpload ?? link.allowUpload;
+    link.allowDownload = dto.allowDownload ?? link.allowDownload;
+    link.showExif = dto.showExif ?? link.showExif;
 
     if (dto.isEditExpireTime && dto.expiredAt) {
       link.expiresAt = dto.expiredAt;

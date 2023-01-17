@@ -3641,6 +3641,12 @@
           "allowUpload": {
             "type": "boolean"
           },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
+          },
           "description": {
             "type": "string"
           }
@@ -3952,6 +3958,12 @@
             "type": "string"
           },
           "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
             "type": "boolean"
           },
           "description": {

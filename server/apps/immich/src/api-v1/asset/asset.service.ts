@@ -720,6 +720,8 @@ export class AssetService {
       allowUpload: dto.allowUpload,
       assets: assets,
       description: dto.description,
+      allowDownload: dto.allowDownload,
+      showExif: dto.showExif,
     });
 
     return mapSharedLinkToResponseDto(sharedLink);
