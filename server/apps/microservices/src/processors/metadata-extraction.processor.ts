@@ -143,37 +143,42 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
-      const exifData = await exiftool.read(asset.originalPath).catch(e => {
-        this.logger.debug(`The exifData parsing failed due to: ${e}`);
-        throw new Error(`Can not parse exif data from file ${asset.originalPath}`);
+      const exifData = await exiftool.read(asset.originalPath).catch((e) => {
+        this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
       });
 
       const exifToDate = (exifDate: string | ExifDateTime | undefined) =>
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         exifDate ? new Date(exifDate.toString()!) : null;
 
-      const createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate ?? asset.createdAt);
-      const modifyDate = exifToDate(exifData.ModifyDate);
+      const createdAt = exifToDate(asset.createdAt);
+      const newExif = new ExifEntity();
+      if (exifData) {
+        const createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate ?? asset.createdAt);
+        const modifyDate = exifToDate(exifData.ModifyDate);
+        const fileStats = fs.statSync(asset.originalPath);
+        const fileSizeInBytes = fileStats.size;
+        newExif.make = exifData['Make'] || null;
+        newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
+        newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
+        newExif.exposureTime = (await timeUtils.parseStringToNumber(exifData['ExposureTime'])) || null;
+        newExif.orientation = exifData['Orientation']?.toString() || null;
+        newExif.dateTimeOriginal = createdAt;
+        newExif.modifyDate = modifyDate || null;
+        newExif.lensModel = exifData['LensModel'] || null;
+        newExif.fNumber = exifData['FNumber'] || null;
+        newExif.focalLength = (await timeUtils.parseStringToNumber(exifData['FocalLength'])) || null;
+        newExif.iso = exifData['ISO'] || null;
+        newExif.latitude = exifData['GPSLatitude'] || null;
+        newExif.longitude = exifData['GPSLongitude'] || null;
+      } else {
+        newExif.dateTimeOriginal = createdAt;
+      }
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
-      const newExif = new ExifEntity();
       newExif.assetId = asset.id;
-      newExif.make = exifData['Make'] || null;
-      newExif.model = exifData['Model'] || null;
       newExif.imageName = path.parse(fileName).name || null;
-      newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
-      newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
-      newExif.exposureTime = (await timeUtils.parseStringToNumber(exifData['ExposureTime'])) || null;
       newExif.fileSizeInByte = fileSizeInBytes || null;
-      newExif.orientation = exifData['Orientation']?.toString() || null;
-      newExif.dateTimeOriginal = createdAt;
-      newExif.modifyDate = modifyDate || null;
-      newExif.lensModel = exifData['LensModel'] || null;
-      newExif.fNumber = exifData['FNumber'] || null;
-      newExif.focalLength = (await timeUtils.parseStringToNumber(exifData['FocalLength'])) || null;
-      newExif.iso = exifData['ISO'] || null;
-      newExif.latitude = exifData['GPSLatitude'] || null;
-      newExif.longitude = exifData['GPSLongitude'] || null;
 
       await this.assetRepository.save({
         id: asset.id,
