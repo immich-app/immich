@@ -1,4 +1,9 @@
-import { exiftool } from 'exiftool-vendored';
+// This is needed as resolving for the vendored
+// exiftool fails in tests otherwise but as it's not meant to be a requirement
+// of a project directly I had to include the line below the comment.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { exiftool } from 'exiftool-vendored.pl';
 
 function createTimeUtils() {
   const floatRegex = /[+-]?([0-9]*[.])?[0-9]+/;
