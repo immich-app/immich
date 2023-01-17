@@ -24,6 +24,8 @@ export class ShareCore {
       sharedLink.assets = dto.assets;
       sharedLink.album = dto.album;
       sharedLink.allowUpload = dto.allowUpload ?? false;
+      sharedLink.allowDownload = dto.allowDownload ?? true;
+      sharedLink.showExif = dto.showExif ?? true;
 
       return this.sharedLinkRepository.create(sharedLink);
     } catch (error: any) {
@@ -46,8 +48,9 @@ export class ShareCore {
     return await this.sharedLinkRepository.remove(link);
   }
 
-  getSharedLinkById(id: string): Promise<SharedLinkEntity | null> {
-    return this.sharedLinkRepository.getById(id);
+  getSharedLinkById(id: string, allowExif: boolean): Promise<SharedLinkEntity | null> {
+    console.log('getSharedLinkById', id, allowExif);
+    return this.sharedLinkRepository.getById(id, allowExif);
   }
 
   getSharedLinkByKey(key: string): Promise<SharedLinkEntity | null> {
@@ -55,7 +58,7 @@ export class ShareCore {
   }
 
   async updateAssetsInSharedLink(sharedLinkId: string, assets: AssetEntity[]) {
-    const link = await this.getSharedLinkById(sharedLinkId);
+    const link = await this.getSharedLinkById(sharedLinkId, true);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }

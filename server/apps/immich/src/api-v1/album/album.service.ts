@@ -214,4 +214,10 @@ export class AlbumService {
 
     return mapSharedLinkToResponseDto(sharedLink);
   }
+
+  checkDownloadAccess(authUser: AuthUserDto) {
+    if (authUser.isAllowDownload != undefined && !authUser.isAllowDownload) {
+      throw new ForbiddenException('User is not allowed to download');
+    }
+  }
 }

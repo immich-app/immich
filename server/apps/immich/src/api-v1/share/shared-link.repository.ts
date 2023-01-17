@@ -6,7 +6,7 @@ import { Logger } from '@nestjs/common';
 
 export interface ISharedLinkRepository {
   get(userId: string): Promise<SharedLinkEntity[]>;
-  getById(id: string): Promise<SharedLinkEntity | null>;
+  getById(id: string, allowExif: boolean): Promise<SharedLinkEntity | null>;
   getByIdAndUserId(id: string, userId: string): Promise<SharedLinkEntity | null>;
   getByKey(key: string): Promise<SharedLinkEntity | null>;
   create(payload: SharedLinkEntity): Promise<SharedLinkEntity>;
@@ -51,19 +51,19 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     return await this.sharedLinkRepository.save(payload);
   }
 
-  async getById(id: string): Promise<SharedLinkEntity | null> {
+  async getById(id: string, allowExif: boolean): Promise<SharedLinkEntity | null> {
     return await this.sharedLinkRepository.findOne({
       where: {
         id: id,
       },
       relations: {
         assets: {
-          exifInfo: true,
+          exifInfo: allowExif,
         },
         album: {
           assets: {
             assetInfo: {
-              exifInfo: true,
+              exifInfo: allowExif,
             },
           },
         },

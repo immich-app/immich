@@ -17,6 +17,8 @@ export class SharedLinkResponseDto {
   assets!: AssetResponseDto[];
   album?: AlbumResponseDto;
   allowUpload!: boolean;
+  allowDownload!: boolean;
+  showExif!: boolean;
 }
 
 export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
@@ -36,5 +38,7 @@ export function mapSharedLinkToResponseDto(sharedLink: SharedLinkEntity): Shared
     assets: assets.map(mapAsset),
     album: sharedLink.album ? mapAlbumExcludeAssetInfo(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
+    allowDownload: sharedLink.allowDownload,
+    showExif: sharedLink.showExif,
   };
 }

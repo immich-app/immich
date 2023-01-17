@@ -21,7 +21,7 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
-	import { downloadAssets } from '$lib/stores/download';
+	import { downloadAssets, isDownloading } from '$lib/stores/download';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
@@ -320,6 +320,7 @@
 				}
 			}
 		} catch (e) {
+			$downloadAssets = {};
 			console.error('Error downloading file ', e);
 			notificationController.show({
 				type: NotificationType.Error,

@@ -3742,6 +3742,12 @@
           },
           "allowUpload": {
             "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -3752,7 +3758,9 @@
           "createdAt",
           "expiresAt",
           "assets",
-          "allowUpload"
+          "allowUpload",
+          "allowDownload",
+          "showExif"
         ]
       },
       "UpdateAssetsToSharedLinkDto": {
@@ -3779,6 +3787,12 @@
             "type": "string"
           },
           "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
             "type": "boolean"
           },
           "isEditExpireTime": {

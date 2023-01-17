@@ -39,6 +39,8 @@ export class ShareService {
             isPublicUser: true,
             sharedLinkId: link.id,
             isAllowUpload: link.allowUpload,
+            isAllowDownload: link.allowDownload,
+            isShowExif: link.showExif,
           };
         }
       }
@@ -56,11 +58,16 @@ export class ShareService {
       throw new ForbiddenException();
     }
 
-    return this.getById(authUser.sharedLinkId);
+    let allowExif = true;
+    if (authUser.isShowExif != undefined) {
+      allowExif = authUser.isShowExif;
+    }
+
+    return this.getById(authUser.sharedLinkId, allowExif);
   }
 
-  async getById(id: string): Promise<SharedLinkResponseDto> {
-    const link = await this.shareCore.getSharedLinkById(id);
+  async getById(id: string, allowExif: boolean): Promise<SharedLinkResponseDto> {
+    const link = await this.shareCore.getSharedLinkById(id, allowExif);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }

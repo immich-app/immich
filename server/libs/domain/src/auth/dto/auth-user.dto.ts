@@ -5,4 +5,6 @@ export class AuthUserDto {
   isPublicUser?: boolean;
   sharedLinkId?: string;
   isAllowUpload?: boolean;
+  isAllowDownload?: boolean;
+  isShowExif?: boolean;
 }
