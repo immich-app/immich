@@ -26,7 +26,6 @@ const ASSET_REPOSITORY_PROVIDER = {
     CommunicationModule,
     BackgroundTaskModule,
     DownloadModule,
-    AlbumModule,
     TagModule,
     StorageModule,
     forwardRef(() => AlbumModule),

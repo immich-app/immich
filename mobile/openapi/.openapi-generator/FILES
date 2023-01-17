@@ -31,6 +31,7 @@ doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
 doc/CreateAlbumDto.md
 doc/CreateAlbumShareLinkDto.md
+doc/CreateAssetsShareLinkDto.md
 doc/CreateProfileImageResponseDto.md
 doc/CreateTagDto.md
 doc/CreateUserDto.md
@@ -86,6 +87,7 @@ doc/ThumbnailFormat.md
 doc/TimeGroupEnum.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
+doc/UpdateAssetsToSharedLinkDto.md
 doc/UpdateTagDto.md
 doc/UpdateUserDto.md
 doc/UpsertDeviceInfoDto.md
@@ -140,6 +142,7 @@ lib/model/check_existing_assets_dto.dart
 lib/model/check_existing_assets_response_dto.dart
 lib/model/create_album_dto.dart
 lib/model/create_album_share_link_dto.dart
+lib/model/create_assets_share_link_dto.dart
 lib/model/create_profile_image_response_dto.dart
 lib/model/create_tag_dto.dart
 lib/model/create_user_dto.dart
@@ -188,6 +191,7 @@ lib/model/thumbnail_format.dart
 lib/model/time_group_enum.dart
 lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
+lib/model/update_assets_to_shared_link_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/upsert_device_info_dto.dart
@@ -224,6 +228,7 @@ test/check_existing_assets_dto_test.dart
 test/check_existing_assets_response_dto_test.dart
 test/create_album_dto_test.dart
 test/create_album_share_link_dto_test.dart
+test/create_assets_share_link_dto_test.dart
 test/create_profile_image_response_dto_test.dart
 test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
@@ -279,6 +284,7 @@ test/thumbnail_format_test.dart
 test/time_group_enum_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart
+test/update_assets_to_shared_link_dto_test.dart
 test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
 test/upsert_device_info_dto_test.dart

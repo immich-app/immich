@@ -340,4 +340,43 @@ describe('UserService', () => {
       expect(userRepositoryMock.get).toHaveBeenCalledWith(adminUserAuth.id, undefined);
     });
   });
+
+  describe('resetAdminPassword', () => {
+    it('should only work when there is an admin account', async () => {
+      userRepositoryMock.getAdmin.mockResolvedValue(null);
+      const ask = jest.fn().mockResolvedValue('new-password');
+
+      await expect(sut.resetAdminPassword(ask)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(ask).not.toHaveBeenCalled();
+    });
+
+    it('should default to a random password', async () => {
+      userRepositoryMock.getAdmin.mockResolvedValue(adminUser);
+      const ask = jest.fn().mockResolvedValue(undefined);
+
+      const response = await sut.resetAdminPassword(ask);
+
+      const [id, update] = userRepositoryMock.update.mock.calls[0];
+
+      expect(response.provided).toBe(false);
+      expect(ask).toHaveBeenCalled();
+      expect(id).toEqual(adminUser.id);
+      expect(update.password).toBeDefined();
+    });
+
+    it('should use the supplied password', async () => {
+      userRepositoryMock.getAdmin.mockResolvedValue(adminUser);
+      const ask = jest.fn().mockResolvedValue('new-password');
+
+      const response = await sut.resetAdminPassword(ask);
+
+      const [id, update] = userRepositoryMock.update.mock.calls[0];
+
+      expect(response.provided).toBe(true);
+      expect(ask).toHaveBeenCalled();
+      expect(id).toEqual(adminUser.id);
+      expect(update.password).toBeDefined();
+    });
+  });
 });

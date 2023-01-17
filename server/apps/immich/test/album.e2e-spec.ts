@@ -1,15 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 import { clearDb, getAuthUser, authCustom } from './test-utils';
-import { databaseConfig } from '@app/infra';
+import { InfraModule } from '@app/infra';
 import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
-import { UserService } from '@app/domain';
+import { DomainModule, UserService } from '@app/domain';
 import { DataSource } from 'typeorm';
+import { AuthService } from '../src/api-v1/auth/auth.service';
+import { AuthModule } from '../src/api-v1/auth/auth.module';
 
 function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   return request(app.getHttpServer()).post('/album').send(data);
@@ -19,15 +20,10 @@ describe('Album', () => {
   let app: INestApplication;
   let database: DataSource;
 
-  afterAll(async () => {
-    await clearDb(database);
-    await app.close();
-  });
-
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [AlbumModule, ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [DomainModule.register({ imports: [InfraModule] }), AlbumModule, ImmichJwtModule],
       }).compile();
 
       app = moduleFixture.createNestApplication();
@@ -36,6 +32,7 @@ describe('Album', () => {
     });
 
     afterAll(async () => {
+      await clearDb(database);
       await app.close();
     });
 
@@ -48,19 +45,25 @@ describe('Album', () => {
   describe('with auth', () => {
     let authUser: AuthUserDto;
     let userService: UserService;
+    let authService: AuthService;
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [AlbumModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [DomainModule.register({ imports: [InfraModule] }), AuthModule, AlbumModule],
       });
       authUser = getAuthUser(); // set default auth user
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 
       app = moduleFixture.createNestApplication();
       userService = app.get(UserService);
+      authService = app.get(AuthService);
       database = app.get(DataSource);
 
       await app.init();
+    });
+
+    afterAll(async () => {
+      await app.close();
     });
 
     describe('with empty DB', () => {
@@ -93,22 +96,21 @@ describe('Album', () => {
 
       beforeAll(async () => {
         // setup users
-        const result = await Promise.all([
-          userService.createUser({
-            email: 'one@test.com',
-            password: '1234',
-            firstName: 'one',
-            lastName: 'test',
-          }),
-          userService.createUser({
-            email: 'two@test.com',
-            password: '1234',
-            firstName: 'two',
-            lastName: 'test',
-          }),
-        ]);
-        userOne = result[0];
-        userTwo = result[1];
+        const adminSignUpDto = await authService.adminSignUp({
+          email: 'one@test.com',
+          password: '1234',
+          firstName: 'one',
+          lastName: 'test',
+        });
+        userOne = { ...adminSignUpDto, isAdmin: true }; // TODO: find out why adminSignUp doesn't have isAdmin (maybe can just return UserResponseDto)
+
+        userTwo = await userService.createUser({
+          email: 'two@test.com',
+          password: '1234',
+          firstName: 'two',
+          lastName: 'test',
+        });
+
         // add user one albums
         authUser = userOne;
         await Promise.all([
@@ -123,6 +125,10 @@ describe('Album', () => {
         ]);
         // set user one as authed for next requests
         authUser = userOne;
+      });
+
+      afterAll(async () => {
+        await clearDb(database);
       });
 
       it('returns the album collection including owned and shared', async () => {

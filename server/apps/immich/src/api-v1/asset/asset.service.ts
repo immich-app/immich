@@ -13,7 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { createHash, randomUUID } from 'node:crypto';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType } from '@app/infra';
+import { AssetEntity, AssetType, SharedLinkType } from '@app/infra';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -59,6 +59,9 @@ import { StorageService } from '@app/storage';
 import { ShareCore } from '../share/share.core';
 import { ISharedLinkRepository } from '../share/shared-link.repository';
 import { DownloadFilesDto } from './dto/download-files.dto';
+import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
+import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 
 const fileInfo = promisify(stat);
 
@@ -698,6 +701,42 @@ export class AssetService {
       }
       throw new ForbiddenException();
     }
+  }
+
+  async createAssetsSharedLink(authUser: AuthUserDto, dto: CreateAssetsShareLinkDto): Promise<SharedLinkResponseDto> {
+    const assets = [];
+
+    await this.checkAssetsAccess(authUser, dto.assetIds);
+    for (const assetId of dto.assetIds) {
+      const asset = await this._assetRepository.getById(assetId);
+      assets.push(asset);
+    }
+
+    const sharedLink = await this.shareCore.createSharedLink(authUser.id, {
+      sharedType: SharedLinkType.INDIVIDUAL,
+      expiredAt: dto.expiredAt,
+      allowUpload: dto.allowUpload,
+      assets: assets,
+      description: dto.description,
+    });
+
+    return mapSharedLinkToResponseDto(sharedLink);
+  }
+
+  async updateAssetsInSharedLink(
+    authUser: AuthUserDto,
+    dto: UpdateAssetsToSharedLinkDto,
+  ): Promise<SharedLinkResponseDto> {
+    if (!authUser.sharedLinkId) throw new ForbiddenException();
+    const assets = [];
+
+    for (const assetId of dto.assetIds) {
+      const asset = await this._assetRepository.getById(assetId);
+      assets.push(asset);
+    }
+
+    const updatedLink = await this.shareCore.updateAssetsInSharedLink(authUser.sharedLinkId, assets);
+    return mapSharedLinkToResponseDto(updatedLink);
   }
 }
 

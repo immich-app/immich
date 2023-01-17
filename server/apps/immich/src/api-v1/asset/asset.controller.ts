@@ -14,6 +14,7 @@ import {
   Header,
   Put,
   UploadedFiles,
+  Patch,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
@@ -50,6 +51,9 @@ import {
   IMMICH_CONTENT_LENGTH_HINT,
 } from '../../constants/download.constant';
 import { DownloadFilesDto } from './dto/download-files.dto';
+import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
+import { SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 
 @ApiBearerAuth()
 @ApiTags('Asset')
@@ -320,5 +324,23 @@ export class AssetController {
     @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
     return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
+  }
+
+  @Authenticated()
+  @Post('/shared-link')
+  async createAssetsSharedLink(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) dto: CreateAssetsShareLinkDto,
+  ): Promise<SharedLinkResponseDto> {
+    return await this.assetService.createAssetsSharedLink(authUser, dto);
+  }
+
+  @Authenticated({ isShared: true })
+  @Patch('/shared-link')
+  async updateAssetsInSharedLink(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) dto: UpdateAssetsToSharedLinkDto,
+  ): Promise<SharedLinkResponseDto> {
+    return await this.assetService.updateAssetsInSharedLink(authUser, dto);
   }
 }

@@ -40,6 +40,7 @@
 		data-sveltekit-noscroll
 		href={AppRoute.PHOTOS}
 		class="relative"
+		draggable="false"
 	>
 		<SideBarButton
 			title={`Photos`}
@@ -71,7 +72,7 @@
 		</div>
 	</a>
 
-	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} class="relative">
+	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} class="relative" draggable="false">
 		<SideBarButton
 			title="Sharing"
 			logo={AccountMultipleOutline}
@@ -103,7 +104,7 @@
 	<div class="text-xs ml-5 my-4 dark:text-immich-dark-fg">
 		<p>LIBRARY</p>
 	</div>
-	<a data-sveltekit-preload-data="hover" href={AppRoute.ALBUMS} class="relative">
+	<a data-sveltekit-preload-data="hover" href={AppRoute.ALBUMS} class="relative" draggable="false">
 		<SideBarButton
 			title="Albums"
 			logo={ImageAlbum}

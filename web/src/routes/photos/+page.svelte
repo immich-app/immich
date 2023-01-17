@@ -6,9 +6,8 @@
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import AlbumSelectionModal from '$lib/components/shared-components/album-selection-modal.svelte';
 	import { goto } from '$app/navigation';
-
 	import type { PageData } from './$types';
-
+	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import {
 		assetInteractionStore,
@@ -21,16 +20,17 @@
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
-	import { AlbumResponseDto, api } from '@api';
+	import { AlbumResponseDto, api, SharedLinkType } from '@api';
 	import {
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum, bulkDownload } from '$lib/utils/asset-utils';
+	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 
 	export let data: PageData;
-
+	let isShowCreateSharedLinkModal = false;
 	const deleteSelectedAssetHandler = async () => {
 		try {
 			if (
@@ -114,6 +114,15 @@
 			assetInteractionStore.clearMultiselect();
 		});
 	};
+
+	const handleCreateSharedLink = async () => {
+		isShowCreateSharedLinkModal = true;
+	};
+
+	const handleCloseSharedLinkModal = () => {
+		assetInteractionStore.clearMultiselect();
+		isShowCreateSharedLinkModal = false;
+	};
 </script>
 
 <section>
@@ -129,6 +138,11 @@
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
+				<CircleIconButton
+					title="Share"
+					logo={ShareVariantOutline}
+					on:click={handleCreateSharedLink}
+				/>
 				<CircleIconButton
 					title="Download"
 					logo={CloudDownloadOutline}
@@ -162,6 +176,14 @@
 			on:newSharedAlbum={handleAddToNewAlbum}
 			on:album={handleAddToAlbum}
 			on:close={() => (isShowAlbumPicker = false)}
+		/>
+	{/if}
+
+	{#if isShowCreateSharedLinkModal}
+		<CreateSharedLinkModal
+			sharedAssets={Array.from($selectedAssets)}
+			shareType={SharedLinkType.Individual}
+			on:close={handleCloseSharedLinkModal}
 		/>
 	{/if}
 </section>

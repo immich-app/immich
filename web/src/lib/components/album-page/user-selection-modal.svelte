@@ -53,7 +53,7 @@
 <BaseModal on:close={() => dispatch('close')}>
 	<svelte:fragment slot="title">
 		<span class="flex gap-2 place-items-center">
-			<img src="/immich-logo.svg" width="24" alt="Immich" />
+			<img src="/immich-logo.svg" width="24" alt="Immich" draggable="false" />
 			<p class="font-medium">Invite to album</p>
 		</span>
 	</svelte:fragment>

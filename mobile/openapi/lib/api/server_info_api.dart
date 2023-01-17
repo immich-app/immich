@@ -16,7 +16,9 @@ class ServerInfoApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /server-info' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getServerInfoWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info';
@@ -42,6 +44,7 @@ class ServerInfoApi {
     );
   }
 
+  /// 
   Future<ServerInfoResponseDto?> getServerInfo() async {
     final response = await getServerInfoWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -57,7 +60,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/version' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getServerVersionWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/version';
@@ -83,6 +88,7 @@ class ServerInfoApi {
     );
   }
 
+  /// 
   Future<ServerVersionReponseDto?> getServerVersion() async {
     final response = await getServerVersionWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -98,7 +104,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/stats' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getStatsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/stats';
@@ -124,6 +132,7 @@ class ServerInfoApi {
     );
   }
 
+  /// 
   Future<ServerStatsResponseDto?> getStats() async {
     final response = await getStatsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -139,7 +148,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/ping' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> pingServerWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/ping';
@@ -165,6 +176,7 @@ class ServerInfoApi {
     );
   }
 
+  /// 
   Future<ServerPingResponse?> pingServer() async {
     final response = await pingServerWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

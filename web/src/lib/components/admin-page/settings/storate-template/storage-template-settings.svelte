@@ -56,8 +56,10 @@
 		});
 
 		const substitutions: Record<string, string> = {
-			filename: 'IMG_10041123',
-			ext: 'jpeg'
+			filename: 'IMAGE_56437',
+			ext: 'jpeg',
+			filetype: 'IMG',
+			filetypefull: 'IMAGE'
 		};
 
 		const dt = luxon.DateTime.fromISO(new Date('2022-09-04T20:03:05.250').toISOString());

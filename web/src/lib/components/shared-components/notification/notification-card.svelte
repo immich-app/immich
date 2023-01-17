@@ -90,7 +90,7 @@
 		</button>
 	</div>
 
-	<p class="whitespace-pre text-sm pl-[28px] pr-[16px]" data-testid="message">
+	<p class="whitespace-pre-wrap text-sm pl-[28px] pr-[16px]" data-testid="message">
 		{@html notificationInfo.message}
 	</p>
 </div>
