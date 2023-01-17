@@ -8,6 +8,7 @@ The `immich-server` docker image comes preinstalled with an administrative CLI (
 | `reset-admin-password`   | Reset the password for the admin user |
 | `disable-password-login` | Disable password login                |
 | `enable-password-login`  | Enable password login                 |
+| `list-users`             | List Immich users                     |
 
 ## How to run a command
 
@@ -26,3 +27,7 @@ Disable Password Login
 Enabled Password Login
 
 ![Enable Password Login](./img/enable-password-login.png)
+
+List Users
+
+![List Users](./img/list-users.png)
