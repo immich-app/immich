@@ -143,11 +143,10 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
-      const exifData = await exiftool.read(asset.originalPath);
-
-      if (!exifData) {
-        throw new Error(`can not parse exif data from file ${asset.originalPath}`);
-      }
+      const exifData = await exiftool.read(asset.originalPath).catch(e => {
+        this.logger.debug(`The exifData parsing failed due to: ${e}`);
+        throw new Error(`Can not parse exif data from file ${asset.originalPath}`);
+      });
 
       const exifToDate = (exifDate: string | ExifDateTime | undefined) =>
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
