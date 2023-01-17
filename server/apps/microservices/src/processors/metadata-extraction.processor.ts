@@ -156,9 +156,8 @@ export class MetadataExtractionProcessor {
       if (exifData) {
         const createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate ?? asset.createdAt);
         const modifyDate = exifToDate(exifData.ModifyDate);
-        const fileStats = fs.statSync(asset.originalPath);
-        const fileSizeInBytes = fileStats.size;
         newExif.make = exifData['Make'] || null;
+        newExif.model = exifData['Model'] || null;
         newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
         newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
         newExif.exposureTime = (await timeUtils.parseStringToNumber(exifData['ExposureTime'])) || null;
