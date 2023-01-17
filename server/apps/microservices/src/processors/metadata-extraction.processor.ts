@@ -72,49 +72,10 @@ export type GeoData = {
   distance: number;
 };
 
-class WrapperLogger {
-  logger = new Logger(WrapperLogger.name);
-  level: string;
-
-  constructor(level: string) {
-    this.level = level;
-  }
-
-  trace(message: string, context?: string): void {
-    if (this.level === 'trace') {
-      this.logger.debug(message, context);
-    }
-  }
-
-  debug(message: string, context?: string): void {
-    if (['trace', 'debug'].includes(this.level)) {
-      this.logger.debug(message, context);
-    }
-  }
-
-  info(message: string, context?: string): void {
-    if (['trace', 'debug', 'info'].includes(this.level)) {
-      this.logger.log(message, context);
-    }
-  }
-
-  warn(message: string, context?: string): void {
-    if (['trace', 'debug', 'info', 'warning'].includes(this.level)) {
-      this.logger.warn(message, context);
-    }
-  }
-
-  error(message: string, trace?: string, context?: string): void {
-    this.logger.error(message, trace, context);
-  }
-}
-
 @Processor(QueueNameEnum.METADATA_EXTRACTION)
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private isGeocodeInitialized = false;
-  private readonly wrapperLogger: WrapperLogger;
-
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
@@ -124,9 +85,6 @@ export class MetadataExtractionProcessor {
 
     configService: ConfigService,
   ) {
-    this.wrapperLogger = new WrapperLogger('warning');
-    this.wrapperLogger.logger = this.logger;
-
     if (!configService.get('DISABLE_REVERSE_GEOCODING')) {
       this.logger.log('Initializing Reverse Geocoding');
       geocoderInit({
@@ -184,7 +142,7 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
-      const exiftool = new ExifTool({ logger: () => this.wrapperLogger });
+      const exiftool = new ExifTool();
       const exifData = await exiftool.read(asset.originalPath).catch((e) => {
         this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
       });
