@@ -22,6 +22,7 @@
 	export let showCopyButton: boolean;
 	export let showMotionPlayButton: boolean;
 	export let isMotionPhotoPlaying = false;
+	export let showDownloadButton: boolean;
 
 	const isOwner = asset.ownerId === $page.data.user?.id;
 
@@ -77,11 +78,14 @@
 				}}
 			/>
 		{/if}
-		<CircleIconButton
-			logo={CloudDownloadOutline}
-			on:click={() => dispatch('download')}
-			title="Download"
-		/>
+
+		{#if showDownloadButton}
+			<CircleIconButton
+				logo={CloudDownloadOutline}
+				on:click={() => dispatch('download')}
+				title="Download"
+			/>
+		{/if}
 		<CircleIconButton
 			logo={InformationOutline}
 			on:click={() => dispatch('showDetail')}

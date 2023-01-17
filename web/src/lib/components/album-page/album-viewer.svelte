@@ -21,7 +21,7 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
-	import { downloadAssets, isDownloading } from '$lib/stores/download';
+	import { downloadAssets } from '$lib/stores/download';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
@@ -461,11 +461,13 @@
 						<CircleIconButton title="Remove album" on:click={removeAlbum} logo={DeleteOutline} />
 					{/if}
 
-					<CircleIconButton
-						title="Download"
-						on:click={() => downloadAlbum()}
-						logo={FolderDownloadOutline}
-					/>
+					{#if !isPublicShared || (isPublicShared && sharedLink?.allowDownload)}
+						<CircleIconButton
+							title="Download"
+							on:click={() => downloadAlbum()}
+							logo={FolderDownloadOutline}
+						/>
+					{/if}
 
 					{#if !isPublicShared}
 						<CircleIconButton
@@ -535,11 +537,7 @@
 		{/if}
 
 		{#if album.assetCount > 0}
-			<GalleryViewer
-				assets={album.assets}
-				key={sharedLink?.key ?? ''}
-				bind:selectedAssets={multiSelectAsset}
-			/>
+			<GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
 		{:else}
 			<!-- Album is empty - Show asset selectection buttons -->
 			<section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
