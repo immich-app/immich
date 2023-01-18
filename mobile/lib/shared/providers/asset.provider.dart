@@ -36,10 +36,6 @@ class AssetsState {
     return AssetsState([...allAssets, ...toAdd]);
   }
 
-  bool ready() {
-    return renderList != null;
-  }
-
   _groupByDate() async {
     sortCompare(List<Asset> assets) {
       assets.sortByCompare<DateTime>(
@@ -81,17 +77,20 @@ class AssetNotifier extends StateNotifier<AssetsState> {
   bool _deleteInProgress = false;
 
   AssetNotifier(
-      this._assetService, this._assetCacheService, this._settingsService)
-      : super(AssetsState.fromAssetList([]));
+    this._assetService,
+    this._assetCacheService,
+    this._settingsService,
+  ) : super(AssetsState.fromAssetList([]));
 
   _updateAssetsState(List<Asset> newAssetList, {bool cache = true}) async {
     if (cache) {
       _assetCacheService.put(newAssetList);
     }
 
-    state = await AssetsState.fromAssetList(newAssetList)
-        .withRenderDataStructure(
-            _settingsService.getSetting(AppSettingsEnum.tilesPerRow));
+    state =
+        await AssetsState.fromAssetList(newAssetList).withRenderDataStructure(
+      _settingsService.getSetting(AppSettingsEnum.tilesPerRow),
+    );
   }
 
   getAllAsset() async {
@@ -136,7 +135,9 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       newLocal ??= [];
 
       final combinedAssets = await _combineLocalAndRemoteAssets(
-          local: newLocal, remote: newRemote);
+        local: newLocal,
+        remote: newRemote,
+      );
       await _updateAssetsState(combinedAssets);
 
       log.info("Combining assets: ${stopwatch.elapsedMilliseconds}ms");
@@ -148,7 +149,8 @@ class AssetNotifier extends StateNotifier<AssetsState> {
   }
 
   static Future<List<Asset>> _computeCombine(
-      _CombineAssetsComputeParameters data) async {
+    _CombineAssetsComputeParameters data,
+  ) async {
     var local = data.local;
     var remote = data.remote;
     final deviceId = data.deviceId;
@@ -172,8 +174,10 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     required List<Asset> remote,
   }) async {
     final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
-    return await compute(_computeCombine,
-        _CombineAssetsComputeParameters(local, remote, deviceId));
+    return await compute(
+      _computeCombine,
+      _CombineAssetsComputeParameters(local, remote, deviceId),
+    );
   }
 
   clearAllAsset() {
@@ -211,7 +215,8 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       deleted.addAll(remoteDeleted);
       if (deleted.isNotEmpty) {
         _updateAssetsState(
-            state.allAssets.where((a) => !deleted.contains(a.id)).toList());
+          state.allAssets.where((a) => !deleted.contains(a.id)).toList(),
+        );
       }
     } finally {
       _deleteInProgress = false;

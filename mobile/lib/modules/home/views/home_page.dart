@@ -210,7 +210,7 @@ class HomePage extends HookConsumerWidget {
                 top: selectionEnabledHook.value ? 0 : 60,
                 bottom: 0.0,
               ),
-              child: !ref.watch(assetProvider).ready()
+              child: ref.watch(assetProvider).renderList == null
                   ? buildLoadingIndicator()
                   : ImmichAssetGrid(
                       renderList: ref.watch(assetProvider).renderList!,
