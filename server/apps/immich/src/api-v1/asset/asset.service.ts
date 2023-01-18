@@ -381,10 +381,7 @@ export class AssetService {
     res: Res,
     headers: Record<string, string>,
   ) {
-    let allowOriginalFile = true;
-    if (authUser.isPublicUser && !authUser.isAllowDownload) {
-      allowOriginalFile = false;
-    }
+    const allowOriginalFile = !authUser.isPublicUser || authUser.isAllowDownload;
 
     let fileReadStream: ReadStream;
     const asset = await this._assetRepository.getById(assetId);
