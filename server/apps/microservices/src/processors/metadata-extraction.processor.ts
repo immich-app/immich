@@ -18,8 +18,7 @@ import { Repository } from 'typeorm/repository/Repository';
 import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import { getName } from 'i18n-iso-countries';
 import fs from 'node:fs';
-import { ExifDateTime, ExifTool } from 'exiftool-vendored';
-import { timeUtils } from '@app/common';
+import { ExifDateTime, exiftool } from 'exiftool-vendored';
 
 function geocoderInit(init: InitOptions) {
   return new Promise<void>(function (resolve) {
@@ -140,43 +139,52 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
-      const exiftool = new ExifTool();
+
       const exifData = await exiftool.read(asset.originalPath).catch((e) => {
         this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
+        return null;
       });
 
-      const exifToDate = (exifDate: string | ExifDateTime | undefined) =>
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        exifDate ? new Date(exifDate.toString()!) : null;
+      const exifToDate = (exifDate: string | ExifDateTime | undefined) => {
+        if (!exifDate) return null;
 
-      let createdAt = exifToDate(asset.createdAt);
-      const newExif = new ExifEntity();
-      if (exifData) {
-        createdAt = exifToDate(exifData.DateTimeOriginal ?? exifData.CreateDate ?? asset.createdAt);
-        const modifyDate = exifToDate(exifData.ModifyDate);
-        newExif.make = exifData['Make'] || null;
-        newExif.model = exifData['Model'] || null;
-        newExif.exifImageHeight = exifData['ExifImageHeight'] || exifData['ImageHeight'] || null;
-        newExif.exifImageWidth = exifData['ExifImageWidth'] || exifData['ImageWidth'] || null;
-        newExif.exposureTime = (await timeUtils.parseStringToNumber(exifData['ExposureTime'])) || null;
-        newExif.orientation = exifData['Orientation']?.toString() || null;
-        newExif.dateTimeOriginal = createdAt;
-        newExif.modifyDate = modifyDate || null;
-        newExif.lensModel = exifData['LensModel'] || null;
-        newExif.fNumber = exifData['FNumber'] || null;
-        newExif.focalLength = (await timeUtils.parseStringToNumber(exifData['FocalLength'])) || null;
-        newExif.iso = exifData['ISO'] || null;
-        newExif.latitude = exifData['GPSLatitude'] || null;
-        newExif.longitude = exifData['GPSLongitude'] || null;
-      } else {
-        newExif.dateTimeOriginal = createdAt;
-        newExif.modifyDate = exifToDate(asset.modifiedAt);
-      }
+        if (typeof exifDate === 'string') {
+          return new Date(exifDate);
+        }
+
+        return exifDate.toDate();
+      };
+
+      const getExposureTimeDenominator = (exposureTime: string | undefined) => {
+        if (!exposureTime) return null;
+
+        const exposureTimeSplit = exposureTime.split('/');
+        return exposureTimeSplit.length === 2 ? parseInt(exposureTimeSplit[1]) : null;
+      };
+
+      const createdAt = exifToDate(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.createdAt);
+      const modifyDate = exifToDate(exifData?.ModifyDate ?? asset.modifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
+
+      const newExif = new ExifEntity();
       newExif.assetId = asset.id;
-      newExif.imageName = path.parse(fileName).name || null;
-      newExif.fileSizeInByte = fileSizeInBytes || null;
+      newExif.imageName = path.parse(fileName).name;
+      newExif.fileSizeInByte = fileSizeInBytes;
+      newExif.make = exifData?.Make || null;
+      newExif.model = exifData?.Model || null;
+      newExif.exifImageHeight = exifData?.ExifImageHeight || exifData?.ImageHeight || null;
+      newExif.exifImageWidth = exifData?.ExifImageWidth || exifData?.ImageWidth || null;
+      newExif.exposureTime = getExposureTimeDenominator(exifData?.ExposureTime);
+      newExif.orientation = exifData?.Orientation?.toString() || null;
+      newExif.dateTimeOriginal = createdAt;
+      newExif.modifyDate = modifyDate;
+      newExif.lensModel = exifData?.LensModel || null;
+      newExif.fNumber = exifData?.FNumber || null;
+      newExif.focalLength = exifData?.FocalLength ? parseFloat(exifData.FocalLength) : null;
+      newExif.iso = exifData?.ISO || null;
+      newExif.latitude = exifData?.GPSLatitude || null;
+      newExif.longitude = exifData?.GPSLongitude || null;
 
       await this.assetRepository.save({
         id: asset.id,
@@ -217,7 +225,6 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.save(newExif);
-      await exiftool.end();
     } catch (error: any) {
       this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
     }
