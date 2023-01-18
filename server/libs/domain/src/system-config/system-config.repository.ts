@@ -1,4 +1,4 @@
-import { SystemConfigEntity } from '@app/infra';
+import { SystemConfigEntity } from '@app/infra/db/entities';
 
 export const ISystemConfigRepository = 'ISystemConfigRepository';
 

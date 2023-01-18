@@ -1,4 +1,4 @@
-import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/infra';
+import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/infra/db/entities';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
