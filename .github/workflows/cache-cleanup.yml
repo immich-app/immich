@@ -1,9 +1,8 @@
-name: Clean up actions cache when a PR is closed
+name: Clean up actions cache on PR close
 on:
   pull_request:
     types:
       - closed
-  workflow_dispatch:
 
 jobs:
   cleanup:
@@ -19,8 +18,8 @@ jobs:
           REPO=${{ github.repository }}
           BRANCH=${{ github.ref }}
 
-          echo "Fetching list of cache key"
-          cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1 )
+          echo "Fetching list of cache keys"
+          cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH -L 100 | cut -f 1 )
 
           ## Setting this to not fail the workflow while deleting cache keys. 
           set +e
