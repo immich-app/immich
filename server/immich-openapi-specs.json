@@ -1,9 +1,157 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api-key": {
+      "post": {
+        "operationId": "createKey",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/APIKeyCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyCreateResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "API Key"
+        ]
+      },
+      "get": {
+        "operationId": "getKeys",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/APIKeyResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "API Key"
+        ]
+      }
+    },
+    "/api-key/{id}": {
+      "get": {
+        "operationId": "getKey",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "API Key"
+        ]
+      },
+      "put": {
+        "operationId": "updateKey",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/APIKeyUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "API Key"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteKey",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API Key"
+        ]
+      }
+    },
     "/user": {
       "get": {
         "operationId": "getAllUsers",
+        "description": "",
         "parameters": [
           {
             "name": "isAll",
@@ -40,6 +188,7 @@
       },
       "post": {
         "operationId": "createUser",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -74,6 +223,7 @@
       },
       "put": {
         "operationId": "updateUser",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -110,6 +260,7 @@
     "/user/info/{userId}": {
       "get": {
         "operationId": "getUserById",
+        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -140,6 +291,7 @@
     "/user/me": {
       "get": {
         "operationId": "getMyUserInfo",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -166,6 +318,7 @@
     "/user/count": {
       "get": {
         "operationId": "getUserCount",
+        "description": "",
         "parameters": [
           {
             "name": "admin",
@@ -197,6 +350,7 @@
     "/user/{userId}": {
       "delete": {
         "operationId": "deleteUser",
+        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -232,6 +386,7 @@
     "/user/{userId}/restore": {
       "post": {
         "operationId": "restoreUser",
+        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -267,6 +422,7 @@
     "/user/profile-image": {
       "post": {
         "operationId": "createProfileImage",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -304,6 +460,7 @@
     "/user/profile-image/{userId}": {
       "get": {
         "operationId": "getProfileImage",
+        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -334,6 +491,7 @@
     "/asset/upload": {
       "post": {
         "operationId": "uploadFile",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -371,6 +529,7 @@
     "/asset/download/{assetId}": {
       "get": {
         "operationId": "downloadFile",
+        "description": "",
         "parameters": [
           {
             "name": "isThumb",
@@ -421,9 +580,47 @@
         ]
       }
     },
+    "/asset/download-files": {
+      "post": {
+        "operationId": "downloadFiles",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DownloadFilesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/asset/download-library": {
       "get": {
         "operationId": "downloadLibrary",
+        "description": "",
         "parameters": [
           {
             "name": "skip",
@@ -459,6 +656,7 @@
     "/asset/file/{assetId}": {
       "get": {
         "operationId": "serveFile",
+        "description": "",
         "parameters": [
           {
             "name": "isThumb",
@@ -512,6 +710,7 @@
     "/asset/thumbnail/{assetId}": {
       "get": {
         "operationId": "getAssetThumbnail",
+        "description": "",
         "parameters": [
           {
             "name": "assetId",
@@ -555,6 +754,7 @@
     "/asset/curated-objects": {
       "get": {
         "operationId": "getCuratedObjects",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -584,6 +784,7 @@
     "/asset/curated-locations": {
       "get": {
         "operationId": "getCuratedLocations",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -613,6 +814,7 @@
     "/asset/search-terms": {
       "get": {
         "operationId": "getAssetSearchTerms",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -642,6 +844,7 @@
     "/asset/search": {
       "post": {
         "operationId": "searchAsset",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -681,6 +884,7 @@
     "/asset/count-by-time-bucket": {
       "post": {
         "operationId": "getAssetCountByTimeBucket",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -717,6 +921,7 @@
     "/asset/count-by-user-id": {
       "get": {
         "operationId": "getAssetCountByUserId",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -781,6 +986,7 @@
       },
       "delete": {
         "operationId": "deleteAsset",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -820,6 +1026,7 @@
     "/asset/time-bucket": {
       "post": {
         "operationId": "getAssetByTimeBucket",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1051,9 +1258,375 @@
         ]
       }
     },
+    "/asset/shared-link": {
+      "post": {
+        "operationId": "createAssetsSharedLink",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssetsShareLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateAssetsInSharedLink",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetsToSharedLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/share": {
+      "get": {
+        "operationId": "getAllSharedLinks",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SharedLinkResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/share/me": {
+      "get": {
+        "operationId": "getMySharedLink",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/share/{id}": {
+      "get": {
+        "operationId": "getSharedLinkById",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      },
+      "delete": {
+        "operationId": "removeSharedLink",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      },
+      "patch": {
+        "operationId": "editSharedLink",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditSharedLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/tag": {
+      "post": {
+        "operationId": "create",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      },
+      "get": {
+        "operationId": "findAll",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      }
+    },
+    "/tag/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      },
+      "patch": {
+        "operationId": "update",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      },
+      "delete": {
+        "operationId": "delete",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tag"
+        ]
+      }
+    },
     "/album/count-by-user-id": {
       "get": {
         "operationId": "getAlbumCountByUserId",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1080,6 +1653,7 @@
     "/album": {
       "post": {
         "operationId": "createAlbum",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1114,6 +1688,7 @@
       },
       "get": {
         "operationId": "getAllAlbums",
+        "description": "",
         "parameters": [
           {
             "name": "shared",
@@ -1161,6 +1736,7 @@
     "/album/{albumId}/users": {
       "put": {
         "operationId": "addUsersToAlbum",
+        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -1206,6 +1782,7 @@
     "/album/{albumId}/assets": {
       "put": {
         "operationId": "addAssetsToAlbum",
+        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -1249,6 +1826,7 @@
       },
       "delete": {
         "operationId": "removeAssetFromAlbum",
+        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -1294,6 +1872,7 @@
     "/album/{albumId}": {
       "get": {
         "operationId": "getAlbumInfo",
+        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -1327,6 +1906,7 @@
       },
       "delete": {
         "operationId": "deleteAlbum",
+        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -1353,6 +1933,7 @@
       },
       "patch": {
         "operationId": "updateAlbumInfo",
+        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -1398,6 +1979,7 @@
     "/album/{albumId}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
+        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -1434,6 +2016,7 @@
     "/album/{albumId}/download": {
       "get": {
         "operationId": "downloadArchive",
+        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -1474,16 +2057,17 @@
         ]
       }
     },
-    "/tag": {
+    "/album/create-shared-link": {
       "post": {
-        "operationId": "create",
+        "operationId": "createAlbumSharedLink",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTagDto"
+                "$ref": "#/components/schemas/CreateAlbumShareLinkDto"
               }
             }
           }
@@ -1494,131 +2078,26 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TagResponseDto"
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
                 }
               }
             }
           }
         },
         "tags": [
-          "Tag"
-        ]
-      },
-      "get": {
-        "operationId": "findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TagResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      }
-    },
-    "/tag/{id}": {
-      "get": {
-        "operationId": "findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
+          "Album"
         ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "patch": {
-        "operationId": "update",
-        "parameters": [
+        "security": [
           {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "bearer": []
           }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTagDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ]
-      },
-      "delete": {
-        "operationId": "delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Tag"
         ]
       }
     },
     "/auth/login": {
       "post": {
         "operationId": "login",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1650,6 +2129,7 @@
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "adminSignUp",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1684,6 +2164,7 @@
     "/auth/validateToken": {
       "post": {
         "operationId": "validateAccessToken",
+        "description": "",
         "parameters": [],
         "responses": {
           "201": {
@@ -1710,6 +2191,7 @@
     "/auth/change-password": {
       "post": {
         "operationId": "changePassword",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1746,6 +2228,7 @@
     "/auth/logout": {
       "post": {
         "operationId": "logout",
+        "description": "",
         "parameters": [],
         "responses": {
           "201": {
@@ -1764,9 +2247,25 @@
         ]
       }
     },
+    "/oauth/mobile-redirect": {
+      "get": {
+        "operationId": "mobileRedirect",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
     "/oauth/config": {
       "post": {
         "operationId": "generateConfig",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1798,6 +2297,7 @@
     "/oauth/callback": {
       "post": {
         "operationId": "callback",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1826,10 +2326,65 @@
         ]
       }
     },
+    "/oauth/link": {
+      "post": {
+        "operationId": "link",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthCallbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
+    "/oauth/unlink": {
+      "post": {
+        "operationId": "unlink",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
     "/device-info": {
       "post": {
         "operationId": "createDeviceInfo",
         "description": "@deprecated",
+        "deprecated": true,
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1865,6 +2420,7 @@
       "patch": {
         "operationId": "updateDeviceInfo",
         "description": "@deprecated",
+        "deprecated": true,
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1899,6 +2455,7 @@
       },
       "put": {
         "operationId": "upsertDeviceInfo",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1935,6 +2492,7 @@
     "/server-info": {
       "get": {
         "operationId": "getServerInfo",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1956,6 +2514,7 @@
     "/server-info/ping": {
       "get": {
         "operationId": "pingServer",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1977,6 +2536,7 @@
     "/server-info/version": {
       "get": {
         "operationId": "getServerVersion",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1998,6 +2558,7 @@
     "/server-info/stats": {
       "get": {
         "operationId": "getStats",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2019,6 +2580,7 @@
     "/jobs": {
       "get": {
         "operationId": "getAllJobsStatus",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2045,6 +2607,7 @@
     "/jobs/{jobId}": {
       "get": {
         "operationId": "getJobStatus",
+        "description": "",
         "parameters": [
           {
             "name": "jobId",
@@ -2078,6 +2641,7 @@
       },
       "put": {
         "operationId": "sendJobCommand",
+        "description": "",
         "parameters": [
           {
             "name": "jobId",
@@ -2123,6 +2687,7 @@
     "/system-config": {
       "get": {
         "operationId": "getConfig",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2147,6 +2712,7 @@
       },
       "put": {
         "operationId": "updateConfig",
+        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2183,6 +2749,7 @@
     "/system-config/defaults": {
       "get": {
         "operationId": "getDefaults",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2209,6 +2776,7 @@
     "/system-config/storage-template-options": {
       "get": {
         "operationId": "getStorageTemplateOptions",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2236,7 +2804,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.39.0",
+    "version": "1.41.1",
     "contact": {}
   },
   "tags": [],
@@ -2257,6 +2825,63 @@
       }
     },
     "schemas": {
+      "APIKeyCreateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "APIKeyResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "APIKeyCreateResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string"
+          },
+          "apiKey": {
+            "$ref": "#/components/schemas/APIKeyResponseDto"
+          }
+        },
+        "required": [
+          "secret",
+          "apiKey"
+        ]
+      },
+      "APIKeyUpdateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
       "UserResponseDto": {
         "type": "object",
         "properties": {
@@ -2287,6 +2912,9 @@
           "deletedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "oauthId": {
+            "type": "string"
           }
         },
         "required": [
@@ -2297,7 +2925,8 @@
           "createdAt",
           "profileImagePath",
           "shouldChangePassword",
-          "isAdmin"
+          "isAdmin",
+          "oauthId"
         ]
       },
       "CreateUserDto": {
@@ -2342,6 +2971,9 @@
         "type": "object",
         "properties": {
           "id": {
+            "type": "string"
+          },
+          "email": {
             "type": "string"
           },
           "password": {
@@ -2415,6 +3047,21 @@
         },
         "required": [
           "id"
+        ]
+      },
+      "DownloadFilesDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "title": "Array of asset ids to be downloaded",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
         ]
       },
       "ThumbnailFormat": {
@@ -2973,46 +3620,40 @@
           "existingIds"
         ]
       },
-      "AlbumCountResponseDto": {
+      "CreateAssetsShareLinkDto": {
         "type": "object",
         "properties": {
-          "owned": {
-            "type": "integer"
+          "assetIds": {
+            "title": "Array asset IDs to be shared",
+            "example": [
+              "bf973405-3f2a-48d2-a687-2ed4167164be",
+              "dd41870b-5d00-46d2-924e-1d8489a0aa0f",
+              "fad77c3f-deef-4e7e-9608-14c1aa4e559a"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
-          "shared": {
-            "type": "integer"
-          },
-          "sharing": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "owned",
-          "shared",
-          "sharing"
-        ]
-      },
-      "CreateAlbumDto": {
-        "type": "object",
-        "properties": {
-          "albumName": {
+          "expiredAt": {
             "type": "string"
           },
-          "sharedWithUserIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "allowUpload": {
+            "type": "boolean"
           },
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "description": {
+            "type": "string"
           }
         },
         "required": [
-          "albumName"
+          "assetIds"
+        ]
+      },
+      "SharedLinkType": {
+        "type": "string",
+        "enum": [
+          "ALBUM",
+          "INDIVIDUAL"
         ]
       },
       "AlbumResponseDto": {
@@ -3063,6 +3704,154 @@
           "shared",
           "sharedUsers",
           "assets"
+        ]
+      },
+      "SharedLinkResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/SharedLinkType"
+          },
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          },
+          "album": {
+            "$ref": "#/components/schemas/AlbumResponseDto"
+          },
+          "allowUpload": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "userId",
+          "key",
+          "createdAt",
+          "expiresAt",
+          "assets",
+          "allowUpload"
+        ]
+      },
+      "UpdateAssetsToSharedLinkDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
+        ]
+      },
+      "EditSharedLinkDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "expiredAt": {
+            "type": "string"
+          },
+          "allowUpload": {
+            "type": "boolean"
+          },
+          "isEditExpireTime": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateTagDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/TagTypeEnum"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "name"
+        ]
+      },
+      "UpdateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "renameTagId": {
+            "type": "string"
+          }
+        }
+      },
+      "AlbumCountResponseDto": {
+        "type": "object",
+        "properties": {
+          "owned": {
+            "type": "integer"
+          },
+          "shared": {
+            "type": "integer"
+          },
+          "sharing": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "owned",
+          "shared",
+          "sharing"
+        ]
+      },
+      "CreateAlbumDto": {
+        "type": "object",
+        "properties": {
+          "albumName": {
+            "type": "string"
+          },
+          "sharedWithUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "albumName"
         ]
       },
       "AddUsersDto": {
@@ -3139,31 +3928,25 @@
           }
         }
       },
-      "CreateTagDto": {
+      "CreateAlbumShareLinkDto": {
         "type": "object",
         "properties": {
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
+          "albumId": {
+            "type": "string"
           },
-          "name": {
+          "expiredAt": {
+            "type": "string"
+          },
+          "allowUpload": {
+            "type": "boolean"
+          },
+          "description": {
             "type": "string"
           }
         },
         "required": [
-          "type",
-          "name"
+          "albumId"
         ]
-      },
-      "UpdateTagDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "renameTagId": {
-            "type": "string"
-          }
-        }
       },
       "LoginCredentialDto": {
         "type": "object",
@@ -3343,20 +4126,24 @@
         "type": "object",
         "properties": {
           "enabled": {
-            "type": "boolean",
-            "readOnly": true
+            "type": "boolean"
+          },
+          "passwordLoginEnabled": {
+            "type": "boolean"
           },
           "url": {
-            "type": "string",
-            "readOnly": true
+            "type": "string"
           },
           "buttonText": {
-            "type": "string",
-            "readOnly": true
+            "type": "string"
+          },
+          "autoLaunch": {
+            "type": "boolean"
           }
         },
         "required": [
-          "enabled"
+          "enabled",
+          "passwordLoginEnabled"
         ]
       },
       "OAuthCallbackDto": {
@@ -3740,6 +4527,15 @@
           },
           "autoRegister": {
             "type": "boolean"
+          },
+          "autoLaunch": {
+            "type": "boolean"
+          },
+          "mobileOverrideEnabled": {
+            "type": "boolean"
+          },
+          "mobileRedirectUri": {
+            "type": "string"
           }
         },
         "required": [
@@ -3749,7 +4545,21 @@
           "clientSecret",
           "scope",
           "buttonText",
-          "autoRegister"
+          "autoRegister",
+          "autoLaunch",
+          "mobileOverrideEnabled",
+          "mobileRedirectUri"
+        ]
+      },
+      "SystemConfigPasswordLoginDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ]
       },
       "SystemConfigStorageTemplateDto": {
@@ -3772,6 +4582,9 @@
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
+          "passwordLogin": {
+            "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           }
@@ -3779,6 +4592,7 @@
         "required": [
           "ffmpeg",
           "oauth",
+          "passwordLogin",
           "storageTemplate"
         ]
       },

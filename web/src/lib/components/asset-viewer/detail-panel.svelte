@@ -23,7 +23,7 @@
 		drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
 	}
 
-	export let albums: AlbumResponseDto[];
+	export let albums: AlbumResponseDto[] = [];
 
 	onMount(async () => {
 		if (browser) {
@@ -152,7 +152,7 @@
 						<p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString(locale)}` || ''}</p>
 
 						{#if asset.exifInfo.exposureTime}
-							<p>{`1/${Math.floor(1 / asset.exifInfo.exposureTime)}`}</p>
+							<p>{`1/${asset.exifInfo.exposureTime}`}</p>
 						{/if}
 
 						{#if asset.exifInfo.focalLength}
@@ -208,6 +208,7 @@
 							alt={album.albumName}
 							class="w-[50px] h-[50px] object-cover rounded"
 							src={`/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=JPEG`}
+							draggable="false"
 						/>
 					</div>
 

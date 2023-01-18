@@ -16,7 +16,10 @@ class OAuthApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /oauth/callback' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
@@ -45,6 +48,8 @@ class OAuthApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
@@ -63,7 +68,10 @@ class OAuthApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /oauth/config' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [OAuthConfigDto] oAuthConfigDto (required):
@@ -92,6 +100,8 @@ class OAuthApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [OAuthConfigDto] oAuthConfigDto (required):
@@ -105,6 +115,138 @@ class OAuthApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'OAuthConfigResponseDto',) as OAuthConfigResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [OAuthCallbackDto] oAuthCallbackDto (required):
+  Future<Response> linkWithHttpInfo(OAuthCallbackDto oAuthCallbackDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/oauth/link';
+
+    // ignore: prefer_final_locals
+    Object? postBody = oAuthCallbackDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// 
+  ///
+  /// Parameters:
+  ///
+  /// * [OAuthCallbackDto] oAuthCallbackDto (required):
+  Future<UserResponseDto?> link(OAuthCallbackDto oAuthCallbackDto,) async {
+    final response = await linkWithHttpInfo(oAuthCallbackDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> mobileRedirectWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/oauth/mobile-redirect';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// 
+  Future<void> mobileRedirect() async {
+    final response = await mobileRedirectWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> unlinkWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/oauth/unlink';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// 
+  Future<UserResponseDto?> unlink() async {
+    final response = await unlinkWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
     
     }
     return null;

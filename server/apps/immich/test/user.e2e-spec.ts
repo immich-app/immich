@@ -1,17 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 import { clearDb, authCustom } from './test-utils';
-import { databaseConfig } from '@app/database/config/database.config';
-import { UserModule } from '../src/api-v1/user/user.module';
+import { InfraModule } from '@app/infra';
 import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
-import { UserService } from '../src/api-v1/user/user.service';
-import { CreateAdminDto, CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
-import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
+import { DomainModule, CreateUserDto, UserService, AuthUserDto } from '@app/domain';
 import { DataSource } from 'typeorm';
+import { UserController } from '../src/controllers';
+import { AuthModule } from '../src/api-v1/auth/auth.module';
+import { AuthService } from '../src/api-v1/auth/auth.service';
 
-function _createUser(userService: UserService, data: CreateUserDto | CreateAdminDto) {
+function _createUser(userService: UserService, data: CreateUserDto) {
   return userService.createUser(data);
 }
 
@@ -27,7 +26,8 @@ describe('User', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [UserModule, ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [DomainModule.register({ imports: [InfraModule] }), ImmichJwtModule],
+        controllers: [UserController],
       }).compile();
 
       app = moduleFixture.createNestApplication();
@@ -47,16 +47,19 @@ describe('User', () => {
 
   describe('with auth', () => {
     let userService: UserService;
-    let authUser: UserResponseDto;
+    let authService: AuthService;
+    let authUser: AuthUserDto;
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [UserModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [DomainModule.register({ imports: [InfraModule] }), AuthModule],
+        controllers: [UserController],
       });
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 
       app = moduleFixture.createNestApplication();
       userService = app.get(UserService);
+      authService = app.get(AuthService);
       database = app.get(DataSource);
       await app.init();
     });
@@ -68,13 +71,13 @@ describe('User', () => {
 
       beforeAll(async () => {
         // first user must be admin
-        authUser = await _createUser(userService, {
+        const adminSignupResponseDto = await authService.adminSignUp({
           firstName: 'auth-user',
           lastName: 'test',
           email: authUserEmail,
           password: '1234',
-          isAdmin: true,
         });
+        authUser = { ...adminSignupResponseDto, isAdmin: true }; // TODO: find out why adminSignUp doesn't have isAdmin (maybe can just return UserResponseDto)
         await Promise.allSettled([
           _createUser(userService, {
             firstName: 'one',
@@ -107,6 +110,7 @@ describe('User', () => {
               shouldChangePassword: true,
               profileImagePath: '',
               deletedAt: null,
+              oauthId: '',
             },
             {
               email: userTwoEmail,
@@ -118,6 +122,7 @@ describe('User', () => {
               shouldChangePassword: true,
               profileImagePath: '',
               deletedAt: null,
+              oauthId: '',
             },
           ]),
         );

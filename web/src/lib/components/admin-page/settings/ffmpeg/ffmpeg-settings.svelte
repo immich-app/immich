@@ -77,7 +77,7 @@
 				<div class="flex flex-col gap-4 ml-4 mt-4">
 					<SettingInputField
 						inputType={SettingInputFieldType.NUMBER}
-						label="CRF"
+						label="CONSTANT RATE FACTOR (-crf)"
 						bind:value={ffmpegConfig.crf}
 						required={true}
 						isEdited={!(ffmpegConfig.crf == savedConfig.crf)}
@@ -85,7 +85,7 @@
 
 					<SettingInputField
 						inputType={SettingInputFieldType.TEXT}
-						label="PRESET"
+						label="PRESET (-preset)"
 						bind:value={ffmpegConfig.preset}
 						required={true}
 						isEdited={!(ffmpegConfig.preset == savedConfig.preset)}
@@ -93,7 +93,7 @@
 
 					<SettingInputField
 						inputType={SettingInputFieldType.TEXT}
-						label="AUDIO CODEC"
+						label="AUDIO CODEC (-acodec)"
 						bind:value={ffmpegConfig.targetAudioCodec}
 						required={true}
 						isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
@@ -101,7 +101,7 @@
 
 					<SettingInputField
 						inputType={SettingInputFieldType.TEXT}
-						label="VIDEO CODEC"
+						label="VIDEO CODEC (-vcodec)"
 						bind:value={ffmpegConfig.targetVideoCodec}
 						required={true}
 						isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
@@ -109,7 +109,7 @@
 
 					<SettingInputField
 						inputType={SettingInputFieldType.TEXT}
-						label="SCALING"
+						label="SCALING (-vf scale=)"
 						bind:value={ffmpegConfig.targetScaling}
 						required={true}
 						isEdited={!(ffmpegConfig.targetScaling == savedConfig.targetScaling)}

@@ -15,7 +15,10 @@ export const load: PageServerLoad = async ({ parent }) => {
 
 		return {
 			user: user,
-			sharedAlbums: sharedAlbums
+			sharedAlbums,
+			meta: {
+				title: 'Albums'
+			}
 		};
 	} catch (e) {
 		throw redirect(302, '/auth/login');

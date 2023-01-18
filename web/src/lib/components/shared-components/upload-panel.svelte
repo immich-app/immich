@@ -100,6 +100,7 @@
 										src="/immich-logo.svg"
 										alt=""
 										class="h-[70px] w-[70px] object-cover rounded-tl-lg rounded-bl-lg "
+										draggable="false"
 									/>
 
 									<div class="bottom-0 left-0 absolute w-full h-[25px] bg-immich-primary/30">

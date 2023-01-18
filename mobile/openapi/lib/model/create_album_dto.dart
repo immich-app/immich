@@ -41,11 +41,11 @@ class CreateAlbumDto {
   String toString() => 'CreateAlbumDto[albumName=$albumName, sharedWithUserIds=$sharedWithUserIds, assetIds=$assetIds]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'albumName'] = albumName;
-      _json[r'sharedWithUserIds'] = sharedWithUserIds;
-      _json[r'assetIds'] = assetIds;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'albumName'] = this.albumName;
+      json[r'sharedWithUserIds'] = this.sharedWithUserIds;
+      json[r'assetIds'] = this.assetIds;
+    return json;
   }
 
   /// Returns a new [CreateAlbumDto] instance and imports its values from

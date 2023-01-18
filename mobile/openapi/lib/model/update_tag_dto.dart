@@ -48,18 +48,18 @@ class UpdateTagDto {
   String toString() => 'UpdateTagDto[name=$name, renameTagId=$renameTagId]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-    if (name != null) {
-      _json[r'name'] = name;
+    final json = <String, dynamic>{};
+    if (this.name != null) {
+      json[r'name'] = this.name;
     } else {
-      _json[r'name'] = null;
+      // json[r'name'] = null;
     }
-    if (renameTagId != null) {
-      _json[r'renameTagId'] = renameTagId;
+    if (this.renameTagId != null) {
+      json[r'renameTagId'] = this.renameTagId;
     } else {
-      _json[r'renameTagId'] = null;
+      // json[r'renameTagId'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [UpdateTagDto] instance and imports its values from

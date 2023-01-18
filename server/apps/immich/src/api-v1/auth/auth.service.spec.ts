@@ -1,11 +1,12 @@
-import { UserEntity } from '@app/database/entities/user.entity';
-import { BadRequestException } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { UserEntity } from '@app/infra';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { SystemConfig } from '@app/infra';
+import { ImmichConfigService } from '@app/immich-config';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { OAuthService } from '../oauth/oauth.service';
-import { IUserRepository, USER_REPOSITORY } from '../user/user-repository';
+import { IUserRepository } from '@app/domain';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { LoginResponseDto } from './response-dto/login-response.dto';
@@ -17,14 +18,39 @@ const fixtures = {
   },
 };
 
+const config = {
+  enabled: {
+    passwordLogin: {
+      enabled: true,
+    },
+  } as SystemConfig,
+  disabled: {
+    passwordLogin: {
+      enabled: false,
+    },
+  } as SystemConfig,
+};
+
 const CLIENT_IP = '127.0.0.1';
 
 jest.mock('bcrypt');
+jest.mock('@nestjs/common', () => ({
+  ...jest.requireActual('@nestjs/common'),
+  Logger: jest.fn().mockReturnValue({
+    verbose: jest.fn(),
+    debug: jest.fn(),
+    log: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  }),
+}));
 
 describe('AuthService', () => {
   let sut: AuthService;
   let userRepositoryMock: jest.Mocked<IUserRepository>;
   let immichJwtServiceMock: jest.Mocked<ImmichJwtService>;
+  let immichConfigServiceMock: jest.Mocked<ImmichConfigService>;
   let oauthServiceMock: jest.Mocked<OAuthService>;
   let compare: jest.Mock;
 
@@ -61,26 +87,40 @@ describe('AuthService', () => {
       getLogoutEndpoint: jest.fn(),
     } as unknown as jest.Mocked<OAuthService>;
 
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        AuthService,
-        { provide: ImmichJwtService, useValue: immichJwtServiceMock },
-        { provide: OAuthService, useValue: oauthServiceMock },
-        {
-          provide: USER_REPOSITORY,
-          useValue: userRepositoryMock,
-        },
-      ],
-    }).compile();
+    immichConfigServiceMock = {
+      config$: { subscribe: jest.fn() },
+    } as unknown as jest.Mocked<ImmichConfigService>;
 
-    sut = moduleRef.get(AuthService);
+    sut = new AuthService(
+      oauthServiceMock,
+      immichJwtServiceMock,
+      userRepositoryMock,
+      immichConfigServiceMock,
+      config.enabled,
+    );
   });
 
   it('should be defined', () => {
     expect(sut).toBeDefined();
   });
 
+  it('should subscribe to config changes', async () => {
+    expect(immichConfigServiceMock.config$.subscribe).toHaveBeenCalled();
+  });
+
   describe('login', () => {
+    it('should throw an error if password login is disabled', async () => {
+      sut = new AuthService(
+        oauthServiceMock,
+        immichJwtServiceMock,
+        userRepositoryMock,
+        immichConfigServiceMock,
+        config.disabled,
+      );
+
+      await expect(sut.login(fixtures.login, CLIENT_IP)).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
     it('should check the user exists', async () => {
       userRepositoryMock.getByEmail.mockResolvedValue(null);
       await expect(sut.login(fixtures.login, CLIENT_IP)).rejects.toBeInstanceOf(BadRequestException);
@@ -104,6 +144,62 @@ describe('AuthService', () => {
     });
   });
 
+  describe('changePassword', () => {
+    it('should change the password', async () => {
+      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      compare.mockResolvedValue(true);
+
+      userRepositoryMock.getByEmail.mockResolvedValue({
+        email: 'test@immich.com',
+        password: 'hash-password',
+      } as UserEntity);
+
+      await sut.changePassword(authUser, dto);
+
+      expect(userRepositoryMock.getByEmail).toHaveBeenCalledWith(authUser.email, true);
+      expect(compare).toHaveBeenCalledWith('old-password', 'hash-password');
+    });
+
+    it('should throw when auth user email is not found', async () => {
+      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      userRepositoryMock.getByEmail.mockResolvedValue(null);
+
+      await expect(sut.changePassword(authUser, dto)).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should throw when password does not match existing password', async () => {
+      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      compare.mockResolvedValue(false);
+
+      userRepositoryMock.getByEmail.mockResolvedValue({
+        email: 'test@immich.com',
+        password: 'hash-password',
+      } as UserEntity);
+
+      await expect(sut.changePassword(authUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should throw when user does not have a password', async () => {
+      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const dto = { password: 'old-password', newPassword: 'new-password' };
+
+      compare.mockResolvedValue(false);
+
+      userRepositoryMock.getByEmail.mockResolvedValue({
+        email: 'test@immich.com',
+        password: '',
+      } as UserEntity);
+
+      await expect(sut.changePassword(authUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
+
   describe('logout', () => {
     it('should return the end session endpoint', async () => {
       oauthServiceMock.getLogoutEndpoint.mockResolvedValue('end-session-endpoint');
@@ -116,7 +212,7 @@ describe('AuthService', () => {
     it('should return the default redirect', async () => {
       await expect(sut.logout(AuthType.PASSWORD)).resolves.toEqual({
         successful: true,
-        redirectUri: '/auth/login',
+        redirectUri: '/auth/login?autoLaunch=0',
       });
       expect(oauthServiceMock.getLogoutEndpoint).not.toHaveBeenCalled();
     });

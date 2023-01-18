@@ -9,4 +9,10 @@ export const load: PageServerLoad = async ({ parent }) => {
 	} else if (!user.isAdmin) {
 		throw redirect(302, '/photos');
 	}
+
+	return {
+		meta: {
+			title: 'Job Status'
+		}
+	};
 };

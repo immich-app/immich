@@ -10,28 +10,18 @@
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
-	import {
-		api,
-		AddAssetsResponseDto,
-		AssetResponseDto,
-		AssetTypeEnum,
-		AlbumResponseDto
-	} from '@api';
+	import { api, AssetResponseDto, AssetTypeEnum, AlbumResponseDto } from '@api';
 	import {
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
 
 	import { assetStore } from '$lib/stores/assets.store';
+	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 
 	export let asset: AssetResponseDto;
-	$: {
-		appearsInAlbums = [];
-
-		api.albumApi.getAllAlbums(undefined, asset.id).then((result) => {
-			appearsInAlbums = result.data;
-		});
-	}
+	export let publicSharedKey = '';
+	export let showNavigation = true;
 
 	const dispatch = createEventDispatcher();
 	let halfLeftHover = false;
@@ -43,8 +33,15 @@
 	let shouldPlayMotionPhoto = false;
 	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
-	onMount(() => {
+	onMount(async () => {
 		document.addEventListener('keydown', onKeyboardPress);
+
+		try {
+			const { data } = await api.albumApi.getAllAlbums(undefined, asset.id);
+			appearsInAlbums = data;
+		} catch (e) {
+			console.error('Error getting album that asset belong to', e);
+		}
 	});
 
 	onDestroy(() => {
@@ -91,12 +88,12 @@
 
 	const handleDownload = () => {
 		if (asset.livePhotoVideoId) {
-			downloadFile(asset.livePhotoVideoId, true);
-			downloadFile(asset.id, false);
+			downloadFile(asset.livePhotoVideoId, true, publicSharedKey);
+			downloadFile(asset.id, false, publicSharedKey);
 			return;
 		}
 
-		downloadFile(asset.id, false);
+		downloadFile(asset.id, false, publicSharedKey);
 	};
 
 	/**
@@ -111,7 +108,7 @@
 		};
 	};
 
-	const downloadFile = async (assetId: string, isLivePhoto: boolean) => {
+	const downloadFile = async (assetId: string, isLivePhoto: boolean, key: string) => {
 		try {
 			const { filenameWithoutExtension } = getTemplateFilename();
 
@@ -126,6 +123,9 @@
 			$downloadAssets[imageFileName] = 0;
 
 			const { data, status } = await api.assetApi.downloadFile(assetId, false, false, {
+				params: {
+					key
+				},
 				responseType: 'blob',
 				onDownloadProgress: (progressEvent) => {
 					if (progressEvent.lengthComputable) {
@@ -209,20 +209,11 @@
 		addToSharedAlbum = shared;
 	};
 
-	const showAddNotification = (dto: AddAssetsResponseDto) => {
-		notificationController.show({
-			message: `Added ${dto.successfullyAdded} to ${dto.album?.albumName}`,
-			type: NotificationType.Info
-		});
-
-		if (dto.successfullyAdded === 1 && dto.album) {
-			appearsInAlbums = [...appearsInAlbums, dto.album];
-		}
-	};
-
-	const handleAddToNewAlbum = () => {
+	const handleAddToNewAlbum = (event: CustomEvent) => {
 		isShowAlbumPicker = false;
-		api.albumApi.createAlbum({ albumName: 'Untitled', assetIds: [asset.id] }).then((response) => {
+
+		const { albumName }: { albumName: string } = event.detail;
+		api.albumApi.createAlbum({ albumName, assetIds: [asset.id] }).then((response) => {
 			const album = response.data;
 			goto('/albums/' + album.id);
 		});
@@ -232,15 +223,17 @@
 		isShowAlbumPicker = false;
 		const album = event.detail.album;
 
-		api.albumApi
-			.addAssetsToAlbum(album.id, { assetIds: [asset.id] })
-			.then((response) => showAddNotification(response.data));
+		addAssetsToAlbum(album.id, [asset.id]).then((dto) => {
+			if (dto.successfullyAdded === 1 && dto.album) {
+				appearsInAlbums = [...appearsInAlbums, dto.album];
+			}
+		});
 	};
 </script>
 
 <section
 	id="immich-asset-viewer"
-	class="fixed h-screen w-screen top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4"
+	class="fixed h-screen w-screen left-0 top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4"
 >
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
 		<AssetViewerNavBar
@@ -260,69 +253,74 @@
 		/>
 	</div>
 
-	<div
-		class={`row-start-2 row-span-end col-start-1 col-span-2 flex place-items-center hover:cursor-pointer w-3/4 mb-[60px] ${
-			asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
-		}`}
-		on:mouseenter={() => {
-			halfLeftHover = true;
-			halfRightHover = false;
-		}}
-		on:mouseleave={() => {
-			halfLeftHover = false;
-		}}
-		on:click={navigateAssetBackward}
-		on:keydown={navigateAssetBackward}
-	>
-		<button
-			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000]  text-gray-500 mx-4"
-			class:navigation-button-hover={halfLeftHover}
+	{#if showNavigation}
+		<div
+			class={`row-start-2 row-span-end col-start-1 col-span-2 flex place-items-center hover:cursor-pointer w-3/4 mb-[60px] ${
+				asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
+			}`}
+			on:mouseenter={() => {
+				halfLeftHover = true;
+				halfRightHover = false;
+			}}
+			on:mouseleave={() => {
+				halfLeftHover = false;
+			}}
 			on:click={navigateAssetBackward}
+			on:keydown={navigateAssetBackward}
 		>
-			<ChevronLeft size="36" />
-		</button>
-	</div>
+			<button
+				class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000]  text-gray-500 mx-4"
+				class:navigation-button-hover={halfLeftHover}
+				on:click={navigateAssetBackward}
+			>
+				<ChevronLeft size="36" />
+			</button>
+		</div>
+	{/if}
 
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
 			{#if asset.type === AssetTypeEnum.Image}
 				{#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
 					<VideoViewer
+						{publicSharedKey}
 						assetId={asset.livePhotoVideoId}
 						on:close={closeViewer}
 						on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
 					/>
 				{:else}
-					<PhotoViewer assetId={asset.id} on:close={closeViewer} />
+					<PhotoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
 				{/if}
 			{:else}
-				<VideoViewer assetId={asset.id} on:close={closeViewer} />
+				<VideoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
 			{/if}
 		{/key}
 	</div>
 
-	<div
-		class={`row-start-2 row-span-full col-start-3 col-span-2 flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end mb-[60px] ${
-			asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'
-		}`}
-		on:click={navigateAssetForward}
-		on:keydown={navigateAssetForward}
-		on:mouseenter={() => {
-			halfLeftHover = false;
-			halfRightHover = true;
-		}}
-		on:mouseleave={() => {
-			halfRightHover = false;
-		}}
-	>
-		<button
-			class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4"
-			class:navigation-button-hover={halfRightHover}
+	{#if showNavigation}
+		<div
+			class={`row-start-2 row-span-full col-start-3 col-span-2 flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end mb-[60px] ${
+				asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'
+			}`}
 			on:click={navigateAssetForward}
+			on:keydown={navigateAssetForward}
+			on:mouseenter={() => {
+				halfLeftHover = false;
+				halfRightHover = true;
+			}}
+			on:mouseleave={() => {
+				halfRightHover = false;
+			}}
 		>
-			<ChevronRight size="36" />
-		</button>
-	</div>
+			<button
+				class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4"
+				class:navigation-button-hover={halfRightHover}
+				on:click={navigateAssetForward}
+			>
+				<ChevronRight size="36" />
+			</button>
+		</div>
+	{/if}
 
 	{#if isShowDetail}
 		<div

@@ -56,8 +56,10 @@
 		});
 
 		const substitutions: Record<string, string> = {
-			filename: 'IMG_10041123',
-			ext: 'jpeg'
+			filename: 'IMAGE_56437',
+			ext: 'jpeg',
+			filetype: 'IMG',
+			filetypefull: 'IMAGE'
 		};
 
 		const dt = luxon.DateTime.fromISO(new Date('2022-09-04T20:03:05.250').toISOString());
@@ -197,7 +199,7 @@
 					</div>
 					<div class="flex gap-2 align-bottom">
 						<SettingInputField
-							label="template"
+							label="TEMPLATE"
 							required
 							inputType={SettingInputFieldType.TEXT}
 							bind:value={storageConfig.template}
@@ -206,7 +208,7 @@
 
 						<div class="flex-0">
 							<SettingInputField
-								label="Extension"
+								label="EXTENSION"
 								inputType={SettingInputFieldType.TEXT}
 								value={'.jpeg'}
 								disabled

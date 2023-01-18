@@ -1,4 +1,4 @@
-import { AssetEntity } from '@app/database/entities/asset.entity';
+import { AssetEntity } from '@app/infra';
 
 export interface IMachineLearningJob {
   /**

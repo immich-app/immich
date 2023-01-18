@@ -41,11 +41,11 @@ class AlbumCountResponseDto {
   String toString() => 'AlbumCountResponseDto[owned=$owned, shared=$shared, sharing=$sharing]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'owned'] = owned;
-      _json[r'shared'] = shared;
-      _json[r'sharing'] = sharing;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'owned'] = this.owned;
+      json[r'shared'] = this.shared;
+      json[r'sharing'] = this.sharing;
+    return json;
   }
 
   /// Returns a new [AlbumCountResponseDto] instance and imports its values from

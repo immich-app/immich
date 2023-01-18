@@ -7,6 +7,7 @@ import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import sanitize from 'sanitize-filename';
+import { AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
 
 const logger = new Logger('AssetUploadConfig');
@@ -42,9 +43,15 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
     return cb(new UnauthorizedException());
   }
 
+  const user = req.user as AuthUserDto;
+
+  if (user.isPublicUser && !user.isAllowUpload) {
+    return cb(new UnauthorizedException());
+  }
+
   const basePath = APP_UPLOAD_LOCATION;
   const sanitizedDeviceId = sanitize(String(req.body['deviceId']));
-  const originalUploadFolder = join(basePath, req.user.id, 'original', sanitizedDeviceId);
+  const originalUploadFolder = join(basePath, user.id, 'original', sanitizedDeviceId);
 
   if (!existsSync(originalUploadFolder)) {
     mkdirSync(originalUploadFolder, { recursive: true });

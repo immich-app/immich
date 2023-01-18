@@ -1,5 +1,4 @@
-import { SystemConfig } from '@app/database/entities/system-config.entity';
-import { UserEntity } from '@app/database/entities/user.entity';
+import { SystemConfig, UserEntity } from '@app/infra';
 import { ImmichConfigService } from '@app/immich-config';
 import { BadRequestException } from '@nestjs/common';
 import { generators, Issuer } from 'openid-client';
@@ -7,10 +6,50 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
 import { OAuthService } from '../oauth/oauth.service';
-import { IUserRepository } from '../user/user-repository';
+import { IUserRepository } from '@app/domain';
 
 const email = 'user@immich.com';
 const sub = 'my-auth-user-sub';
+
+const config = {
+  disabled: {
+    oauth: {
+      enabled: false,
+      buttonText: 'OAuth',
+      issuerUrl: 'http://issuer,',
+      autoLaunch: false,
+    },
+    passwordLogin: { enabled: true },
+  } as SystemConfig,
+  enabled: {
+    oauth: {
+      enabled: true,
+      autoRegister: true,
+      buttonText: 'OAuth',
+      autoLaunch: false,
+    },
+    passwordLogin: { enabled: true },
+  } as SystemConfig,
+  noAutoRegister: {
+    oauth: {
+      enabled: true,
+      autoRegister: false,
+      autoLaunch: false,
+    },
+    passwordLogin: { enabled: true },
+  } as SystemConfig,
+  override: {
+    oauth: {
+      enabled: true,
+      autoRegister: true,
+      autoLaunch: false,
+      buttonText: 'OAuth',
+      mobileOverrideEnabled: true,
+      mobileRedirectUri: 'http://mobile-redirect',
+    },
+    passwordLogin: { enabled: true },
+  } as SystemConfig,
+};
 
 const user = {
   id: 'user_id',
@@ -32,13 +71,28 @@ const loginResponse = {
   userEmail: 'user@immich.com,',
 } as LoginResponseDto;
 
+jest.mock('@nestjs/common', () => ({
+  ...jest.requireActual('@nestjs/common'),
+  Logger: jest.fn().mockReturnValue({
+    verbose: jest.fn(),
+    debug: jest.fn(),
+    log: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  }),
+}));
+
 describe('OAuthService', () => {
   let sut: OAuthService;
   let userRepositoryMock: jest.Mocked<IUserRepository>;
   let immichConfigServiceMock: jest.Mocked<ImmichConfigService>;
   let immichJwtServiceMock: jest.Mocked<ImmichJwtService>;
+  let callbackMock: jest.Mock;
 
   beforeEach(async () => {
+    callbackMock = jest.fn().mockReturnValue({ access_token: 'access-token' });
+
     jest.spyOn(generators, 'state').mockReturnValue('state');
     jest.spyOn(Issuer, 'discover').mockResolvedValue({
       id_token_signing_alg_values_supported: ['HS256'],
@@ -50,7 +104,7 @@ describe('OAuthService', () => {
         },
         authorizationUrl: jest.fn().mockReturnValue('http://authorization-url'),
         callbackParams: jest.fn().mockReturnValue({ state: 'state' }),
-        callback: jest.fn().mockReturnValue({ access_token: 'access-token' }),
+        callback: callbackMock,
         userinfo: jest.fn().mockResolvedValue({ sub, email }),
       }),
     } as any);
@@ -77,10 +131,10 @@ describe('OAuthService', () => {
     } as unknown as jest.Mocked<ImmichJwtService>;
 
     immichConfigServiceMock = {
-      getConfig: jest.fn().mockResolvedValue({ oauth: { enabled: false } }),
+      config$: { subscribe: jest.fn() },
     } as unknown as jest.Mocked<ImmichConfigService>;
 
-    sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
+    sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.disabled);
   });
 
   it('should be defined', () => {
@@ -89,92 +143,109 @@ describe('OAuthService', () => {
 
   describe('generateConfig', () => {
     it('should work when oauth is not configured', async () => {
-      await expect(sut.generateConfig({ redirectUri: 'http://callback' })).resolves.toEqual({ enabled: false });
-      expect(immichConfigServiceMock.getConfig).toHaveBeenCalled();
+      await expect(sut.generateConfig({ redirectUri: 'http://callback' })).resolves.toEqual({
+        enabled: false,
+        passwordLoginEnabled: true,
+      });
     });
 
     it('should generate the config', async () => {
-      immichConfigServiceMock.getConfig.mockResolvedValue({
-        oauth: {
-          enabled: true,
-          buttonText: 'OAuth',
-        },
-      } as SystemConfig);
-      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
+      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.enabled);
       await expect(sut.generateConfig({ redirectUri: 'http://redirect' })).resolves.toEqual({
         enabled: true,
         buttonText: 'OAuth',
         url: 'http://authorization-url',
+        autoLaunch: false,
+        passwordLoginEnabled: true,
       });
     });
   });
 
-  describe('callback', () => {
+  describe('login', () => {
     it('should throw an error if OAuth is not enabled', async () => {
-      await expect(sut.callback(authUser, { url: '' })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.login({ url: '' })).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should not allow auto registering', async () => {
-      immichConfigServiceMock.getConfig.mockResolvedValue({
-        oauth: {
-          enabled: true,
-          autoRegister: false,
-        },
-      } as SystemConfig);
-      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
-      jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
-      jest.spyOn(sut['logger'], 'warn').mockImplementation(() => null);
+      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.noAutoRegister);
       userRepositoryMock.getByEmail.mockResolvedValue(null);
-      await expect(sut.callback(authUser, { url: 'http://immich/auth/login?code=abc123' })).rejects.toBeInstanceOf(
+      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
     });
 
     it('should link an existing user', async () => {
-      immichConfigServiceMock.getConfig.mockResolvedValue({
-        oauth: {
-          enabled: true,
-          autoRegister: false,
-        },
-      } as SystemConfig);
-      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
-      jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
-      jest.spyOn(sut['logger'], 'warn').mockImplementation(() => null);
+      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.noAutoRegister);
       userRepositoryMock.getByEmail.mockResolvedValue(user);
       userRepositoryMock.update.mockResolvedValue(user);
       immichJwtServiceMock.createLoginResponse.mockResolvedValue(loginResponse);
 
-      await expect(sut.callback(authUser, { url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(
-        loginResponse,
-      );
+      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(loginResponse);
 
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(1);
       expect(userRepositoryMock.update).toHaveBeenCalledWith(user.id, { oauthId: sub });
     });
 
     it('should allow auto registering by default', async () => {
-      immichConfigServiceMock.getConfig.mockResolvedValue({
-        oauth: {
-          enabled: true,
-          autoRegister: true,
-        },
-      } as SystemConfig);
-      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
-      jest.spyOn(sut['logger'], 'debug').mockImplementation(() => null);
-      jest.spyOn(sut['logger'], 'log').mockImplementation(() => null);
+      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.enabled);
+
       userRepositoryMock.getByEmail.mockResolvedValue(null);
       userRepositoryMock.getAdmin.mockResolvedValue(user);
       userRepositoryMock.create.mockResolvedValue(user);
       immichJwtServiceMock.createLoginResponse.mockResolvedValue(loginResponse);
 
-      await expect(sut.callback(authUser, { url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(
-        loginResponse,
-      );
+      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' })).resolves.toEqual(loginResponse);
 
       expect(userRepositoryMock.getByEmail).toHaveBeenCalledTimes(2); // second call is for domain check before create
       expect(userRepositoryMock.create).toHaveBeenCalledTimes(1);
       expect(immichJwtServiceMock.createLoginResponse).toHaveBeenCalledTimes(1);
+    });
+
+    it('should use the mobile redirect override', async () => {
+      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.override);
+
+      userRepositoryMock.getByOAuthId.mockResolvedValue(user);
+
+      await sut.login({ url: `app.immich:/?code=abc123` });
+
+      expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
+    });
+  });
+
+  describe('link', () => {
+    it('should link an account', async () => {
+      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.enabled);
+
+      userRepositoryMock.update.mockResolvedValue(user);
+
+      await sut.link(authUser, { url: 'http://immich/user-settings?code=abc123' });
+
+      expect(userRepositoryMock.update).toHaveBeenCalledWith(authUser.id, { oauthId: sub });
+    });
+
+    it('should not link an already linked oauth.sub', async () => {
+      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.enabled);
+
+      userRepositoryMock.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserEntity);
+
+      await expect(sut.link(authUser, { url: 'http://immich/user-settings?code=abc123' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(userRepositoryMock.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('unlink', () => {
+    it('should unlink an account', async () => {
+      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.enabled);
+
+      userRepositoryMock.update.mockResolvedValue(user);
+
+      await sut.unlink(authUser);
+
+      expect(userRepositoryMock.update).toHaveBeenCalledWith(authUser.id, { oauthId: '' });
     });
   });
 
@@ -184,13 +255,7 @@ describe('OAuthService', () => {
     });
 
     it('should get the session endpoint from the discovery document', async () => {
-      immichConfigServiceMock.getConfig.mockResolvedValue({
-        oauth: {
-          enabled: true,
-          issuerUrl: 'http://issuer,',
-        },
-      } as SystemConfig);
-      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock);
+      sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.enabled);
 
       await expect(sut.getLogoutEndpoint()).resolves.toBe('http://end-session-endpoint');
     });

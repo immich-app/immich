@@ -1,42 +1,15 @@
-/**
- * Asset Uploaded Queue Jobs
- */
-export const assetUploadedProcessorName = 'asset-uploaded';
-
-/**
- *  Video Conversion Queue Jobs
- **/
-export const mp4ConversionProcessorName = 'mp4-conversion';
-
-/**
- * Thumbnail Generator Queue Jobs
- */
-export const generateJPEGThumbnailProcessorName = 'generate-jpeg-thumbnail';
-export const generateWEBPThumbnailProcessorName = 'generate-webp-thumbnail';
-
-/**
- * Metadata Extraction Queue Jobs
- */
-export const exifExtractionProcessorName = 'exif-extraction';
-export const videoMetadataExtractionProcessorName = 'extract-video-metadata';
-export const reverseGeocodingProcessorName = 'reverse-geocoding';
-
-/**
- * Machine learning Queue Jobs
- */
-
-export enum MachineLearningJobNameEnum {
+export enum JobName {
+  ASSET_UPLOADED = 'asset-uploaded',
+  MP4_CONVERSION = 'mp4-conversion',
+  GENERATE_JPEG_THUMBNAIL = 'generate-jpeg-thumbnail',
+  GENERATE_WEBP_THUMBNAIL = 'generate-webp-thumbnail',
+  EXIF_EXTRACTION = 'exif-extraction',
+  EXTRACT_VIDEO_METADATA = 'extract-video-metadata',
+  REVERSE_GEOCODING = 'reverse-geocoding',
+  USER_DELETION = 'user-deletion',
+  TEMPLATE_MIGRATION = 'template-migration',
+  CONFIG_CHANGE = 'config-change',
   OBJECT_DETECTION = 'detect-object',
   IMAGE_TAGGING = 'tag-image',
+  DELETE_FILE_ON_DISK = 'delete-file-on-disk',
 }
-
-/**
- * User deletion Queue Jobs
- */
-export const userDeletionProcessorName = 'user-deletion';
-
-/**
- * Storage Template Migration Queue Jobs
- */
-export const templateMigrationProcessorName = 'template-migration';
-export const updateTemplateProcessorName = 'update-template';

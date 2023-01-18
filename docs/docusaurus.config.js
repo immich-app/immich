@@ -106,13 +106,13 @@ const config = {
             label: "API",
           },
           {
-            to: "/blog",
-            position: "right",
-            label: "Blog",
-          },
-          {
             href: "https://github.com/immich-app/immich",
             label: "GitHub",
+            position: "right",
+          },
+          {
+            href: "https://github.com/orgs/immich-app/projects/1",
+            label: "Roadmap",
             position: "right",
           },
         ],
@@ -143,15 +143,19 @@ const config = {
             ],
           },
           {
-            title: "More",
+            title: "Links",
             items: [
-              {
-                label: "Blog",
-                to: "/blog",
-              },
+              // {
+              //   label: "Blog",
+              //   to: "/blog",
+              // },
               {
                 label: "GitHub",
                 href: "https://github.com/immich-app/immich",
+              },
+              {
+                label: "Roadmap",
+                href: "https://github.com/orgs/immich-app/projects/1",
               },
             ],
           },

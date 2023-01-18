@@ -71,21 +71,21 @@ class AlbumResponseDto {
   String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'assetCount'] = assetCount;
-      _json[r'id'] = id;
-      _json[r'ownerId'] = ownerId;
-      _json[r'albumName'] = albumName;
-      _json[r'createdAt'] = createdAt;
-    if (albumThumbnailAssetId != null) {
-      _json[r'albumThumbnailAssetId'] = albumThumbnailAssetId;
+    final json = <String, dynamic>{};
+      json[r'assetCount'] = this.assetCount;
+      json[r'id'] = this.id;
+      json[r'ownerId'] = this.ownerId;
+      json[r'albumName'] = this.albumName;
+      json[r'createdAt'] = this.createdAt;
+    if (this.albumThumbnailAssetId != null) {
+      json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
-      _json[r'albumThumbnailAssetId'] = null;
+      // json[r'albumThumbnailAssetId'] = null;
     }
-      _json[r'shared'] = shared;
-      _json[r'sharedUsers'] = sharedUsers;
-      _json[r'assets'] = assets;
-    return _json;
+      json[r'shared'] = this.shared;
+      json[r'sharedUsers'] = this.sharedUsers;
+      json[r'assets'] = this.assets;
+    return json;
   }
 
   /// Returns a new [AlbumResponseDto] instance and imports its values from

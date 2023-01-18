@@ -31,9 +31,9 @@ class ValidateAccessTokenResponseDto {
   String toString() => 'ValidateAccessTokenResponseDto[authStatus=$authStatus]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'authStatus'] = authStatus;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'authStatus'] = this.authStatus;
+    return json;
   }
 
   /// Returns a new [ValidateAccessTokenResponseDto] instance and imports its values from

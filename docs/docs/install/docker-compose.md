@@ -120,11 +120,16 @@ For more information on how to use the application, please refer to the [Post In
 
 ### Step 4 - Upgrading
 
-When a new version of Immich is (released)[], the application can be upgraded with the following commands, run in the directory with the `docker-compose.yml` file:
+When a new version of Immich is [released](https://github.com/immich-app/immich/releases), the application can be upgraded with the following commands, run in the directory with the `docker-compose.yml` file:
 
 ```bash title="Upgrade Immich"
 docker-compose pull && docker-compose up -d # Or `docker compose`
 ```
 
+:::caution Automatic Updates
+Immich is currently under heavy development, which means you can expect breaking changes and bugs. Therefore, we recommend reading the release notes prior to updating and to take special care when using automated tools like [Watchtower][watchtower].
+:::
+
 [compose-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml
 [env-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
+[watchtower]: https://containrrr.dev/watchtower/

@@ -1,21 +1,33 @@
 # Server Commands
 
-The `immich-server` docker image comes preinstalled with an administrative CLI that supports the following commands:
+The `immich-server` docker image comes preinstalled with an administrative CLI (`immich`) that supports the following commands:
 
-| Command                       | Description                           |
-| ----------------------------- | ------------------------------------- |
-| `immich help`                 | Display help                          |
-| `immich reset-admin-password` | Reset the password for the admin user |
+| Command                  | Description                           |
+| ------------------------ | ------------------------------------- |
+| `help`                   | Display help                          |
+| `reset-admin-password`   | Reset the password for the admin user |
+| `disable-password-login` | Disable password login                |
+| `enable-password-login`  | Enable password login                 |
+| `list-users`             | List Immich users                     |
 
 ## How to run a command
 
-To run a command, connect to the container and then execute it. For example:
+To run a command, [connect](/docs/guides/docker-help.md#attach-to-a-container) to the `immich_server` container and then execute the command via `immich <command>`.
 
-```bash
-docker exec -it immich-server_1 sh
+## Examples
 
-/usr/src/app$ immich reset-admin-password
-? Please choose a new password (optional) immich-is-awesome-unlike-this-password
-New password:
-immich-is-awesome-unlike-this-password
-```
+Reset Admin Password
+
+![Reset Admin Password](./img/reset-admin-password.png)
+
+Disable Password Login
+
+![Disable Password Login](./img/disable-password-login.png)
+
+Enabled Password Login
+
+![Enable Password Login](./img/enable-password-login.png)
+
+List Users
+
+![List Users](./img/list-users.png)

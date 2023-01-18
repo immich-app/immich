@@ -34,9 +34,9 @@
 	const logOut = async () => {
 		const { data } = await api.authenticationApi.logout();
 
-		await fetch('auth/logout', { method: 'POST' });
+		await fetch('/auth/logout', { method: 'POST' });
 
-		goto(data.redirectUri || '/auth/login');
+		goto(data.redirectUri || '/auth/login?autoLaunch=0');
 	};
 </script>
 
@@ -50,7 +50,7 @@
 			class="flex gap-2 place-items-center hover:cursor-pointer"
 			href="/photos"
 		>
-			<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" />
+			<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" draggable="false" />
 			<h1 class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary">
 				IMMICH
 			</h1>
@@ -102,6 +102,7 @@
 							src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 							alt="profile-img"
 							class="inline rounded-full h-12 w-12 object-cover shadow-md"
+							draggable="false"
 						/>
 					{:catch}
 						{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}

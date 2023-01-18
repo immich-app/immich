@@ -5,10 +5,6 @@
 	import LoginForm from '$lib/components/forms/login-form.svelte';
 </script>
 
-<svelte:head>
-	<title>Login - Immich</title>
-</svelte:head>
-
 <section class="h-screen w-screen flex place-items-center place-content-center">
 	<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
 		<LoginForm

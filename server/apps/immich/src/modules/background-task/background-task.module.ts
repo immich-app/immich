@@ -1,19 +1,11 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { ExifEntity } from '@app/database/entities/exif.entity';
-import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
+import { QueueName } from '@app/job';
 import { BackgroundTaskProcessor } from './background-task.processor';
 import { BackgroundTaskService } from './background-task.service';
 
 @Module({
-  imports: [
-    BullModule.registerQueue({
-      name: 'background-task',
-    }),
-    TypeOrmModule.forFeature([AssetEntity, ExifEntity, SmartInfoEntity]),
-  ],
+  imports: [BullModule.registerQueue({ name: QueueName.BACKGROUND_TASK })],
   providers: [BackgroundTaskService, BackgroundTaskProcessor],
   exports: [BackgroundTaskService, BullModule],
 })

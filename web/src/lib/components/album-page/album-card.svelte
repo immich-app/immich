@@ -79,6 +79,7 @@
 			alt={album.id}
 			class={`object-cover h-full w-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
 			data-testid="album-image"
+			draggable="false"
 		/>
 	</div>
 

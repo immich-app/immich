@@ -2,7 +2,7 @@ import { IAssetRepository } from './asset-repository';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetService } from './asset.service';
 import { Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/infra';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
@@ -13,6 +13,7 @@ import { IAssetUploadedJob, IVideoTranscodeJob } from '@app/job';
 import { Queue } from 'bull';
 import { IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
+import { ISharedLinkRepository } from '../share/shared-link.repository';
 
 describe('AssetService', () => {
   let sui: AssetService;
@@ -24,6 +25,7 @@ describe('AssetService', () => {
   let assetUploadedQueueMock: jest.Mocked<Queue<IAssetUploadedJob>>;
   let videoConversionQueueMock: jest.Mocked<Queue<IVideoTranscodeJob>>;
   let storageSeriveMock: jest.Mocked<StorageService>;
+  let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   const authUser: AuthUserDto = Object.freeze({
     id: 'user_id_1',
     email: 'auth@test.com',
@@ -134,6 +136,17 @@ describe('AssetService', () => {
       downloadArchive: jest.fn(),
     };
 
+    sharedLinkRepositoryMock = {
+      create: jest.fn(),
+      get: jest.fn(),
+      getById: jest.fn(),
+      getByKey: jest.fn(),
+      remove: jest.fn(),
+      save: jest.fn(),
+      hasAssetAccess: jest.fn(),
+      getByIdAndUserId: jest.fn(),
+    };
+
     sui = new AssetService(
       assetRepositoryMock,
       albumRepositoryMock,
@@ -143,6 +156,7 @@ describe('AssetService', () => {
       videoConversionQueueMock,
       downloadServiceMock as DownloadService,
       storageSeriveMock,
+      sharedLinkRepositoryMock,
     );
   });
 

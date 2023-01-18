@@ -51,13 +51,13 @@ class AssetCountByUserIdResponseDto {
   String toString() => 'AssetCountByUserIdResponseDto[audio=$audio, photos=$photos, videos=$videos, other=$other, total=$total]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'audio'] = audio;
-      _json[r'photos'] = photos;
-      _json[r'videos'] = videos;
-      _json[r'other'] = other;
-      _json[r'total'] = total;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'audio'] = this.audio;
+      json[r'photos'] = this.photos;
+      json[r'videos'] = this.videos;
+      json[r'other'] = this.other;
+      json[r'total'] = this.total;
+    return json;
   }
 
   /// Returns a new [AssetCountByUserIdResponseDto] instance and imports its values from
