@@ -253,9 +253,8 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Param('assetId') assetId: string,
   ): Promise<AssetResponseDto> {
-    const allowExif = this.assetService.getExifPermission(authUser);
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return await this.assetService.getAssetById(assetId, allowExif);
+    return await this.assetService.getAssetById(authUser, assetId);
   }
 
   /**
@@ -283,14 +282,14 @@ export class AssetController {
     const deleteAssetList: AssetResponseDto[] = [];
 
     for (const id of assetIds.ids) {
-      const assets = await this.assetService.getAssetById(id);
+      const assets = await this.assetService.getAssetById(authUser, id);
       if (!assets) {
         continue;
       }
       deleteAssetList.push(assets);
 
       if (assets.livePhotoVideoId) {
-        const livePhotoVideo = await this.assetService.getAssetById(assets.livePhotoVideoId);
+        const livePhotoVideo = await this.assetService.getAssetById(authUser, assets.livePhotoVideoId);
         if (livePhotoVideo) {
           deleteAssetList.push(livePhotoVideo);
           assetIds.ids = [...assetIds.ids, livePhotoVideo.id];

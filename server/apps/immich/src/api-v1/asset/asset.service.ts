@@ -228,7 +228,8 @@ export class AssetService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async getAssetById(assetId: string, allowExif = true): Promise<AssetResponseDto> {
+  public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
+    const allowExif = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
 
     if (allowExif) {
