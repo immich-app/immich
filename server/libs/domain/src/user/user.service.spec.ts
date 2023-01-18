@@ -1,10 +1,11 @@
+import { IUserRepository } from '@app/domain';
 import { UserEntity } from '@app/infra';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { AuthUserDto } from '../auth';
-import { IUserRepository } from '@app/domain';
 import { when } from 'jest-when';
-import { UserService } from './user.service';
+import { newUserRepositoryMock } from '../../test';
+import { AuthUserDto } from '../auth';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserService } from './user.service';
 
 const adminUserAuth: AuthUserDto = Object.freeze({
   id: 'admin_id',
@@ -73,28 +74,18 @@ const adminUserResponse = Object.freeze({
   createdAt: '2021-01-01',
 });
 
-describe('UserService', () => {
+describe(UserService.name, () => {
   let sut: UserService;
   let userRepositoryMock: jest.Mocked<IUserRepository>;
 
-  beforeEach(() => {
-    userRepositoryMock = {
-      get: jest.fn(),
-      getAdmin: jest.fn(),
-      getByEmail: jest.fn(),
-      getByOAuthId: jest.fn(),
-      getList: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      restore: jest.fn(),
-    };
+  beforeEach(async () => {
+    userRepositoryMock = newUserRepositoryMock();
+    sut = new UserService(userRepositoryMock);
+
     when(userRepositoryMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);
     when(userRepositoryMock.get).calledWith(adminUser.id, undefined).mockResolvedValue(adminUser);
     when(userRepositoryMock.get).calledWith(immichUser.id).mockResolvedValue(immichUser);
     when(userRepositoryMock.get).calledWith(immichUser.id, undefined).mockResolvedValue(immichUser);
-
-    sut = new UserService(userRepositoryMock);
   });
 
   describe('getAllUsers', () => {
@@ -285,9 +276,7 @@ describe('UserService', () => {
 
   describe('deleteUser', () => {
     it('cannot delete admin user', async () => {
-      const result = sut.deleteUser(adminUserAuth, adminUserAuth.id);
-
-      await expect(result).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.deleteUser(adminUserAuth, adminUserAuth.id)).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('should require the auth user be an admin', async () => {

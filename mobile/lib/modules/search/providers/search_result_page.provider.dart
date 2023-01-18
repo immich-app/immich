@@ -70,11 +70,11 @@ final searchResultGroupByDateTimeProvider = StateProvider((ref) {
   );
 });
 
-final searchRenderListProvider = StateProvider((ref) {
+final searchRenderListProvider = FutureProvider((ref) {
   var assetGroups = ref.watch(searchResultGroupByDateTimeProvider);
 
   var settings = ref.watch(appSettingsServiceProvider);
   final assetsPerRow = settings.getSetting(AppSettingsEnum.tilesPerRow);
 
-  return assetGroupsToRenderList(assetGroups, assetsPerRow);
+  return RenderList.fromAssetGroups(assetGroups, assetsPerRow);
 });
