@@ -9,7 +9,7 @@ import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { DownloadService } from '../../modules/download/download.service';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-import { IAssetUploadedJob, IVideoTranscodeJob } from '@app/job';
+import { IAssetUploadedJob, IVideoTranscodeJob } from '@app/domain';
 import { Queue } from 'bull';
 import { IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';

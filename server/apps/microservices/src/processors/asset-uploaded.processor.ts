@@ -6,7 +6,7 @@ import {
   IVideoTranscodeJob,
   QueueName,
   JobName,
-} from '@app/job';
+} from '@app/domain';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Job, Queue } from 'bull';
 

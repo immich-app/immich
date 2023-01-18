@@ -1,7 +1,7 @@
 import { APP_UPLOAD_LOCATION, userUtils } from '@app/common';
 import { APIKeyEntity, AssetEntity, UserEntity } from '@app/infra';
-import { QueueName, JobName } from '@app/job';
-import { IUserDeletionJob } from '@app/job/interfaces/user-deletion.interface';
+import { QueueName, JobName } from '@app/domain';
+import { IUserDeletionJob } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';

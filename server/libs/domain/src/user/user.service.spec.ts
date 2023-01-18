@@ -1,4 +1,4 @@
-import { IUserRepository } from '@app/domain';
+import { IUserRepository } from './user.repository';
 import { UserEntity } from '@app/infra';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { when } from 'jest-when';

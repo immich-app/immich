@@ -1,7 +1,7 @@
 import { assetUtils } from '@app/common/utils';
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
-import { JobName, QueueName } from '@app/job';
+import { JobName, QueueName } from '@app/domain';
 import { AssetResponseDto } from '../../api-v1/asset/response-dto/asset-response.dto';
 
 @Processor(QueueName.BACKGROUND_TASK)

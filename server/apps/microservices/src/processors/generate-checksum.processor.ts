@@ -1,5 +1,5 @@
 import { AssetEntity } from '@app/infra';
-import { QueueName } from '@app/job';
+import { QueueName } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';

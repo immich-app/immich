@@ -20,7 +20,7 @@ import { LoginResponseDto } from './response-dto/login-response.dto';
 import { LogoutResponseDto } from './response-dto/logout-response.dto';
 import { OAuthService } from '../oauth/oauth.service';
 import { UserCore } from '@app/domain';
-import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
+import { SystemConfigService, INITIAL_SYSTEM_CONFIG } from '@app/domain';
 import { SystemConfig } from '@app/infra';
 
 @Injectable()
@@ -32,7 +32,7 @@ export class AuthService {
     private oauthService: OAuthService,
     private immichJwtService: ImmichJwtService,
     @Inject(IUserRepository) userRepository: IUserRepository,
-    private configService: ImmichConfigService,
+    private configService: SystemConfigService,
     @Inject(INITIAL_SYSTEM_CONFIG) private config: SystemConfig,
   ) {
     this.userCore = new UserCore(userRepository);

@@ -1,4 +1,4 @@
-import { QueueName } from '@app/job';
+import { QueueName } from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bull';
