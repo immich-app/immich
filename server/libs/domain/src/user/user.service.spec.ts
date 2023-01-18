@@ -1,12 +1,11 @@
+import { IUserRepository } from '@app/domain';
 import { UserEntity } from '@app/infra';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { AuthUserDto } from '../auth';
-import { IUserRepository } from '@app/domain';
 import { when } from 'jest-when';
-import { UserService } from './user.service';
+import { newUserRepositoryMock } from '../../test';
+import { AuthUserDto } from '../auth';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Test } from '@nestjs/testing';
-import { TestModule } from '../../test/test.module';
+import { UserService } from './user.service';
 
 const adminUserAuth: AuthUserDto = Object.freeze({
   id: 'admin_id',
@@ -80,10 +79,8 @@ describe(UserService.name, () => {
   let userRepositoryMock: jest.Mocked<IUserRepository>;
 
   beforeEach(async () => {
-    const module = await Test.createTestingModule({ imports: [TestModule] }).compile();
-
-    userRepositoryMock = module.get(IUserRepository);
-    sut = module.get(UserService);
+    userRepositoryMock = newUserRepositoryMock();
+    sut = new UserService(userRepositoryMock);
 
     when(userRepositoryMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);
     when(userRepositoryMock.get).calledWith(adminUser.id, undefined).mockResolvedValue(adminUser);

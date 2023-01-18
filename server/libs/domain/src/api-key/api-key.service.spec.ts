@@ -1,18 +1,16 @@
-import { Test } from '@nestjs/testing';
 import { APIKeyEntity } from '@app/infra';
-import { ADMIN_AUTH_DTO, ADMIN_ENTITY } from '../../test';
-import { TestModule } from '../../test/test.module';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { authStub, entityStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
 import { ICryptoRepository } from '../auth';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyService } from './api-key.service';
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 
-const ADMIN_KEY = Object.freeze({
+const adminKey = Object.freeze({
   id: 1,
   name: 'My Key',
   key: 'my-api-key (hashed)',
-  userId: ADMIN_ENTITY.id,
-  user: ADMIN_ENTITY,
+  userId: authStub.admin.id,
+  user: entityStub.admin,
 } as APIKeyEntity);
 
 const token = Buffer.from('1:my-api-key', 'utf8').toString('base64');
@@ -23,37 +21,35 @@ describe(APIKeyService.name, () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
 
   beforeEach(async () => {
-    const module = await Test.createTestingModule({ imports: [TestModule] }).compile();
-
-    cryptoMock = module.get(ICryptoRepository);
-    keyMock = module.get(IKeyRepository);
-    sut = module.get(APIKeyService);
+    cryptoMock = newCryptoRepositoryMock();
+    keyMock = newKeyRepositoryMock();
+    sut = new APIKeyService(cryptoMock, keyMock);
   });
 
   describe('create', () => {
     it('should create a new key', async () => {
-      keyMock.create.mockResolvedValue(ADMIN_KEY);
+      keyMock.create.mockResolvedValue(adminKey);
 
-      await sut.create(ADMIN_AUTH_DTO, { name: 'Test Key' });
+      await sut.create(authStub.admin, { name: 'Test Key' });
 
       expect(keyMock.create).toHaveBeenCalledWith({
         key: 'cmFuZG9tLWJ5dGVz (hashed)',
         name: 'Test Key',
-        userId: ADMIN_AUTH_DTO.id,
+        userId: authStub.admin.id,
       });
       expect(cryptoMock.randomBytes).toHaveBeenCalled();
       expect(cryptoMock.hash).toHaveBeenCalled();
     });
 
     it('should not require a name', async () => {
-      keyMock.create.mockResolvedValue(ADMIN_KEY);
+      keyMock.create.mockResolvedValue(adminKey);
 
-      await sut.create(ADMIN_AUTH_DTO, {});
+      await sut.create(authStub.admin, {});
 
       expect(keyMock.create).toHaveBeenCalledWith({
         key: 'cmFuZG9tLWJ5dGVz (hashed)',
         name: 'API Key',
-        userId: ADMIN_AUTH_DTO.id,
+        userId: authStub.admin.id,
       });
       expect(cryptoMock.randomBytes).toHaveBeenCalled();
       expect(cryptoMock.hash).toHaveBeenCalled();
@@ -64,17 +60,17 @@ describe(APIKeyService.name, () => {
     it('should throw an error if the key is not found', async () => {
       keyMock.getById.mockResolvedValue(null);
 
-      await expect(sut.update(ADMIN_AUTH_DTO, 1, { name: 'New Name' })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(authStub.admin, 1, { name: 'New Name' })).rejects.toBeInstanceOf(BadRequestException);
 
       expect(keyMock.update).not.toHaveBeenCalledWith(1);
     });
 
     it('should update a key', async () => {
-      keyMock.getById.mockResolvedValue(ADMIN_KEY);
+      keyMock.getById.mockResolvedValue(adminKey);
 
-      await sut.update(ADMIN_AUTH_DTO, 1, { name: 'New Name' });
+      await sut.update(authStub.admin, 1, { name: 'New Name' });
 
-      expect(keyMock.update).toHaveBeenCalledWith(ADMIN_AUTH_DTO.id, 1, { name: 'New Name' });
+      expect(keyMock.update).toHaveBeenCalledWith(authStub.admin.id, 1, { name: 'New Name' });
     });
   });
 
@@ -82,17 +78,17 @@ describe(APIKeyService.name, () => {
     it('should throw an error if the key is not found', async () => {
       keyMock.getById.mockResolvedValue(null);
 
-      await expect(sut.delete(ADMIN_AUTH_DTO, 1)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.delete(authStub.admin, 1)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(keyMock.delete).not.toHaveBeenCalledWith(1);
     });
 
     it('should delete a key', async () => {
-      keyMock.getById.mockResolvedValue(ADMIN_KEY);
+      keyMock.getById.mockResolvedValue(adminKey);
 
-      await sut.delete(ADMIN_AUTH_DTO, 1);
+      await sut.delete(authStub.admin, 1);
 
-      expect(keyMock.delete).toHaveBeenCalledWith(ADMIN_AUTH_DTO.id, 1);
+      expect(keyMock.delete).toHaveBeenCalledWith(authStub.admin.id, 1);
     });
   });
 
@@ -100,27 +96,27 @@ describe(APIKeyService.name, () => {
     it('should throw an error if the key is not found', async () => {
       keyMock.getById.mockResolvedValue(null);
 
-      await expect(sut.getById(ADMIN_AUTH_DTO, 1)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.getById(authStub.admin, 1)).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(keyMock.getById).toHaveBeenCalledWith(ADMIN_AUTH_DTO.id, 1);
+      expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.id, 1);
     });
 
     it('should get a key by id', async () => {
-      keyMock.getById.mockResolvedValue(ADMIN_KEY);
+      keyMock.getById.mockResolvedValue(adminKey);
 
-      await sut.getById(ADMIN_AUTH_DTO, 1);
+      await sut.getById(authStub.admin, 1);
 
-      expect(keyMock.getById).toHaveBeenCalledWith(ADMIN_AUTH_DTO.id, 1);
+      expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.id, 1);
     });
   });
 
   describe('getAll', () => {
     it('should return all the keys for a user', async () => {
-      keyMock.getByUserId.mockResolvedValue([ADMIN_KEY]);
+      keyMock.getByUserId.mockResolvedValue([adminKey]);
 
-      await expect(sut.getAll(ADMIN_AUTH_DTO)).resolves.toHaveLength(1);
+      await expect(sut.getAll(authStub.admin)).resolves.toHaveLength(1);
 
-      expect(keyMock.getByUserId).toHaveBeenCalledWith(ADMIN_AUTH_DTO.id);
+      expect(keyMock.getByUserId).toHaveBeenCalledWith(authStub.admin.id);
     });
   });
 
@@ -135,9 +131,9 @@ describe(APIKeyService.name, () => {
     });
 
     it('should validate the token', async () => {
-      keyMock.getKey.mockResolvedValue(ADMIN_KEY);
+      keyMock.getKey.mockResolvedValue(adminKey);
 
-      await expect(sut.validate(token)).resolves.toEqual(ADMIN_AUTH_DTO);
+      await expect(sut.validate(token)).resolves.toEqual(authStub.admin);
 
       expect(keyMock.getKey).toHaveBeenCalledWith(1);
       expect(cryptoMock.compareSync).toHaveBeenCalledWith('my-api-key', 'my-api-key (hashed)');
