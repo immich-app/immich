@@ -209,7 +209,7 @@
 				</div>
 
 				<div class="my-3">
-					<SettingSwitch bind:checked={shouldShowExif} title={'Show EXIF'} />
+					<SettingSwitch bind:checked={shouldShowExif} title={'Show metadata'} />
 				</div>
 
 				<div class="my-3">
