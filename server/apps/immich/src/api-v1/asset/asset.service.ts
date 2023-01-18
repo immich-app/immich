@@ -375,12 +375,17 @@ export class AssetService {
   }
 
   public async serveFile(
+    authUser: AuthUserDto,
     assetId: string,
     query: ServeFileDto,
     res: Res,
     headers: Record<string, string>,
-    allowOriginalFile = true,
   ) {
+    let allowOriginalFile = true;
+    if (authUser.isPublicUser && !authUser.isAllowDownload) {
+      allowOriginalFile = false;
+    }
+
     let fileReadStream: ReadStream;
     const asset = await this._assetRepository.getById(assetId);
 

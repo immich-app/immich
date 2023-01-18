@@ -119,6 +119,9 @@ export class AssetController {
     return stream;
   }
 
+  /**
+   * Current this is not used in any UI element
+   */
   @Authenticated({ isShared: true })
   @Get('/download-library')
   async downloadLibrary(
@@ -145,13 +148,8 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
-    let allowOriginalFile = true;
-    if (authUser.isPublicUser && !authUser.isAllowDownload) {
-      allowOriginalFile = false;
-    }
-
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return this.assetService.serveFile(assetId, query, res, headers, allowOriginalFile);
+    return this.assetService.serveFile(authUser, assetId, query, res, headers);
   }
 
   @Authenticated({ isShared: true })

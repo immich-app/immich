@@ -620,7 +620,7 @@
     "/asset/download-library": {
       "get": {
         "operationId": "downloadLibrary",
-        "description": "",
+        "description": "Current this is not used in any UI element",
         "parameters": [
           {
             "name": "skip",
