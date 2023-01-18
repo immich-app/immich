@@ -57,6 +57,7 @@ void main() async {
   if (kReleaseMode && Platform.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
+      debugPrint("Enabled high refresh mode");
     } catch (e) {
       debugPrint("Error setting high refresh rate: $e");
     }

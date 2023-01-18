@@ -111,6 +111,7 @@ class SearchResultPage extends HookConsumerWidget {
     buildSearchResult() {
       var searchResultPageState = ref.watch(searchResultPageProvider);
       var searchResultRenderList = ref.watch(searchRenderListProvider);
+      var allSearchAssets = ref.watch(searchResultPageProvider).searchResult;
 
       var settings = ref.watch(appSettingsServiceProvider);
       final assetsPerRow = settings.getSetting(AppSettingsEnum.tilesPerRow);
@@ -126,10 +127,21 @@ class SearchResultPage extends HookConsumerWidget {
       }
 
       if (searchResultPageState.isSuccess) {
-        return ImmichAssetGrid(
-          renderList: searchResultRenderList,
-          assetsPerRow: assetsPerRow,
-          showStorageIndicator: showStorageIndicator,
+        return searchResultRenderList.when(
+          data: (result) {
+            return ImmichAssetGrid(
+              allAssets: allSearchAssets,
+              renderList: result,
+              assetsPerRow: assetsPerRow,
+              showStorageIndicator: showStorageIndicator,
+            );
+          },
+          error: (err, stack) {
+            return Text("$err");
+          },
+          loading: () {
+            return const CircularProgressIndicator();
+          },
         );
       }
 

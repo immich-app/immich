@@ -83,6 +83,12 @@ class ExifBottomSheet extends HookConsumerWidget {
 
     return SingleChildScrollView(
       child: Card(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15),
+            topRight: Radius.circular(15),
+          ),
+        ),
         margin: const EdgeInsets.all(0),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 8.0),

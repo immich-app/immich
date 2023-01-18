@@ -8,7 +8,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/modules/home/providers/home_page_render_list_provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
@@ -32,7 +31,6 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appSettingService = ref.watch(appSettingsServiceProvider);
-    var renderList = ref.watch(renderListProvider);
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
 
@@ -212,10 +210,12 @@ class HomePage extends HookConsumerWidget {
                 top: selectionEnabledHook.value ? 0 : 60,
                 bottom: 0.0,
               ),
-              child: ref.watch(assetProvider).isEmpty
+              child: ref.watch(assetProvider).renderList == null ||
+                      ref.watch(assetProvider).allAssets.isEmpty
                   ? buildLoadingIndicator()
                   : ImmichAssetGrid(
-                      renderList: renderList,
+                      renderList: ref.watch(assetProvider).renderList!,
+                      allAssets: ref.watch(assetProvider).allAssets,
                       assetsPerRow: appSettingService
                           .getSetting(AppSettingsEnum.tilesPerRow),
                       showStorageIndicator: appSettingService
