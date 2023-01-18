@@ -15,7 +15,7 @@ import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from '../asset/dto/download-library.dto';
 import { ShareCore } from '../share/share.core';
 import { ISharedLinkRepository } from '../share/shared-link.repository';
-import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { mapSharedLink, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 import { CreateAlbumShareLinkDto } from './dto/create-album-shared-link.dto';
 import _ from 'lodash';
 
@@ -214,12 +214,10 @@ export class AlbumService {
       showExif: dto.showExif,
     });
 
-    return mapSharedLinkToResponseDto(sharedLink);
+    return mapSharedLink(sharedLink);
   }
 
   checkDownloadAccess(authUser: AuthUserDto) {
-    if (authUser.isPublicUser && !authUser.isAllowDownload) {
-      throw new ForbiddenException('User is not allowed to download');
-    }
+    this.shareCore.checkDownloadAccess(authUser);
   }
 }

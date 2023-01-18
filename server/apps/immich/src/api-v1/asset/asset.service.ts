@@ -23,7 +23,7 @@ import { SearchAssetDto } from './dto/search-asset.dto';
 import fs from 'fs/promises';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { AssetResponseDto, mapAsset } from './response-dto/asset-response.dto';
+import { AssetResponseDto, mapAsset, mapAssetWithoutExif } from './response-dto/asset-response.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -54,7 +54,7 @@ import { ShareCore } from '../share/share.core';
 import { ISharedLinkRepository } from '../share/shared-link.repository';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { mapSharedLink, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 
 const fileInfo = promisify(stat);
@@ -233,13 +233,17 @@ export class AssetService {
   }
 
   public async getAssetById(assetId: string, allowExif = true): Promise<AssetResponseDto> {
-    const asset = await this._assetRepository.getById(assetId, allowExif);
+    const asset = await this._assetRepository.getById(assetId);
 
-    return mapAsset(asset);
+    if (allowExif) {
+      return mapAsset(asset);
+    } else {
+      return mapAssetWithoutExif(asset);
+    }
   }
 
   public async updateAsset(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    const asset = await this._assetRepository.getById(assetId, true);
+    const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
       throw new BadRequestException('Asset not found');
     }
@@ -259,12 +263,12 @@ export class AssetService {
     const assetToDownload = [];
 
     for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId, true);
+      const asset = await this._assetRepository.getById(assetId);
       assetToDownload.push(asset);
 
       // Get live photo asset
       if (asset.livePhotoVideoId) {
-        const livePhotoAsset = await this._assetRepository.getById(asset.livePhotoVideoId, true);
+        const livePhotoAsset = await this._assetRepository.getById(asset.livePhotoVideoId);
         assetToDownload.push(livePhotoAsset);
       }
     }
@@ -276,7 +280,7 @@ export class AssetService {
   public async downloadFile(query: ServeFileDto, assetId: string, res: Res) {
     try {
       let fileReadStream = null;
-      const asset = await this._assetRepository.getById(assetId, true);
+      const asset = await this._assetRepository.getById(assetId);
 
       // Download Video
       if (asset.type === AssetType.VIDEO) {
@@ -381,7 +385,7 @@ export class AssetService {
     allowOriginalFile = true,
   ) {
     let fileReadStream: ReadStream;
-    const asset = await this._assetRepository.getById(assetId, true);
+    const asset = await this._assetRepository.getById(assetId);
 
     if (!asset) {
       throw new NotFoundException('Asset does not exist');
@@ -699,10 +703,8 @@ export class AssetService {
     }
   }
 
-  async checkDownloadAccess(authUser: AuthUserDto) {
-    if (authUser.isPublicUser && !authUser.isAllowDownload) {
-      throw new ForbiddenException();
-    }
+  checkDownloadAccess(authUser: AuthUserDto) {
+    this.shareCore.checkDownloadAccess(authUser);
   }
 
   async createAssetsSharedLink(authUser: AuthUserDto, dto: CreateAssetsShareLinkDto): Promise<SharedLinkResponseDto> {
@@ -710,7 +712,7 @@ export class AssetService {
 
     await this.checkAssetsAccess(authUser, dto.assetIds);
     for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId, true);
+      const asset = await this._assetRepository.getById(assetId);
       assets.push(asset);
     }
 
@@ -724,7 +726,7 @@ export class AssetService {
       showExif: dto.showExif,
     });
 
-    return mapSharedLinkToResponseDto(sharedLink);
+    return mapSharedLink(sharedLink);
   }
 
   async updateAssetsInSharedLink(
@@ -735,21 +737,16 @@ export class AssetService {
     const assets = [];
 
     for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId, true);
+      const asset = await this._assetRepository.getById(assetId);
       assets.push(asset);
     }
 
     const updatedLink = await this.shareCore.updateAssetsInSharedLink(authUser.sharedLinkId, assets);
-    return mapSharedLinkToResponseDto(updatedLink);
+    return mapSharedLink(updatedLink);
   }
 
   getExifPermission(authUser: AuthUserDto) {
-    let allowExif = true;
-    if (authUser.isPublicUser && !authUser.isShowExif) {
-      allowExif = false;
-    }
-
-    return allowExif;
+    return !authUser.isPublicUser || authUser.isShowExif;
   }
 }
 

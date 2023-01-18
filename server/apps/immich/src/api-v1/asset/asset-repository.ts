@@ -30,7 +30,7 @@ export interface IAssetRepository {
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
   getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
-  getById(assetId: string, includeExif: boolean): Promise<AssetEntity>;
+  getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
@@ -221,12 +221,12 @@ export class AssetRepository implements IAssetRepository {
    * - include exif info
    * @param assetId
    */
-  async getById(assetId: string, includeExif: boolean): Promise<AssetEntity> {
+  async getById(assetId: string): Promise<AssetEntity> {
     return await this.assetRepository.findOneOrFail({
       where: {
         id: assetId,
       },
-      relations: includeExif ? ['exifInfo', 'tags', 'sharedLinks'] : ['tags', 'sharedLinks'],
+      relations: ['exifInfo', 'tags', 'sharedLinks'],
     });
   }
 

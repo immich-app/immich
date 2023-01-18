@@ -9,7 +9,7 @@ import {
 import { UserService } from '@app/domain';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { EditSharedLinkDto } from './dto/edit-shared-link.dto';
-import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
+import { mapSharedLink, mapSharedLinkWithNoExif, SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
 import { ShareCore } from './share.core';
 import { ISharedLinkRepository } from './shared-link.repository';
 
@@ -50,7 +50,7 @@ export class ShareService {
 
   async getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
     const links = await this.shareCore.getSharedLinks(authUser.id);
-    return links.map(mapSharedLinkToResponseDto);
+    return links.map(mapSharedLink);
   }
 
   async getMine(authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
@@ -67,11 +67,16 @@ export class ShareService {
   }
 
   async getById(id: string, allowExif: boolean): Promise<SharedLinkResponseDto> {
-    const link = await this.shareCore.getSharedLinkById(id, allowExif);
+    const link = await this.shareCore.getSharedLinkById(id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
-    return mapSharedLinkToResponseDto(link);
+
+    if (allowExif) {
+      return mapSharedLink(link);
+    } else {
+      return mapSharedLinkWithNoExif(link);
+    }
   }
 
   async remove(id: string, userId: string): Promise<string> {
@@ -84,11 +89,11 @@ export class ShareService {
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
-    return mapSharedLinkToResponseDto(link);
+    return mapSharedLink(link);
   }
 
   async edit(id: string, authUser: AuthUserDto, dto: EditSharedLinkDto) {
     const link = await this.shareCore.updateSharedLink(id, authUser.id, dto);
-    return mapSharedLinkToResponseDto(link);
+    return mapSharedLink(link);
   }
 }

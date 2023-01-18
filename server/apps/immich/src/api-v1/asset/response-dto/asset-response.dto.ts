@@ -49,3 +49,26 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     tags: entity.tags?.map(mapTag),
   };
 }
+
+export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
+  return {
+    id: entity.id,
+    deviceAssetId: entity.deviceAssetId,
+    ownerId: entity.userId,
+    deviceId: entity.deviceId,
+    type: entity.type,
+    originalPath: entity.originalPath,
+    resizePath: entity.resizePath,
+    createdAt: entity.createdAt,
+    modifiedAt: entity.modifiedAt,
+    isFavorite: entity.isFavorite,
+    mimeType: entity.mimeType,
+    webpPath: entity.webpPath,
+    encodedVideoPath: entity.encodedVideoPath,
+    duration: entity.duration ?? '0:00:00.00000',
+    exifInfo: undefined,
+    smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
+    livePhotoVideoId: entity.livePhotoVideoId,
+    tags: entity.tags?.map(mapTag),
+  };
+}

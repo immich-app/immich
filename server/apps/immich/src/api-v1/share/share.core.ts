@@ -2,9 +2,10 @@ import { SharedLinkEntity } from '@app/infra';
 import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
 import { ISharedLinkRepository } from './shared-link.repository';
 import crypto from 'node:crypto';
-import { BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { AssetEntity } from '@app/infra';
 import { EditSharedLinkDto } from './dto/edit-shared-link.dto';
+import { AuthUserDto } from '../../decorators/auth-user.decorator';
 
 export class ShareCore {
   readonly logger = new Logger(ShareCore.name);
@@ -48,8 +49,8 @@ export class ShareCore {
     return await this.sharedLinkRepository.remove(link);
   }
 
-  getSharedLinkById(id: string, allowExif: boolean): Promise<SharedLinkEntity | null> {
-    return this.sharedLinkRepository.getById(id, allowExif);
+  getSharedLinkById(id: string): Promise<SharedLinkEntity | null> {
+    return this.sharedLinkRepository.getById(id);
   }
 
   getSharedLinkByKey(key: string): Promise<SharedLinkEntity | null> {
@@ -57,7 +58,7 @@ export class ShareCore {
   }
 
   async updateAssetsInSharedLink(sharedLinkId: string, assets: AssetEntity[]) {
-    const link = await this.getSharedLinkById(sharedLinkId, true);
+    const link = await this.getSharedLinkById(sharedLinkId);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
@@ -90,5 +91,11 @@ export class ShareCore {
 
   async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
     return this.sharedLinkRepository.hasAssetAccess(id, assetId);
+  }
+
+  checkDownloadAccess(user: AuthUserDto) {
+    if (user.isPublicUser && !user.isAllowDownload) {
+      throw new ForbiddenException();
+    }
   }
 }
