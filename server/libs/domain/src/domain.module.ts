@@ -1,8 +1,10 @@
 import { DynamicModule, Global, Module, ModuleMetadata, Provider } from '@nestjs/common';
+import { APIKeyService } from './api-key';
 import { UserService } from './user';
 
 const providers: Provider[] = [
   //
+  APIKeyService,
   UserService,
 ];
 

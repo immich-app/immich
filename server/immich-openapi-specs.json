@@ -1,6 +1,153 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api-key": {
+      "post": {
+        "operationId": "createKey",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/APIKeyCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyCreateResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "API Key"
+        ]
+      },
+      "get": {
+        "operationId": "getKeys",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/APIKeyResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "API Key"
+        ]
+      }
+    },
+    "/api-key/{id}": {
+      "get": {
+        "operationId": "getKey",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "API Key"
+        ]
+      },
+      "put": {
+        "operationId": "updateKey",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/APIKeyUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "API Key"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteKey",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API Key"
+        ]
+      }
+    },
     "/user": {
       "get": {
         "operationId": "getAllUsers",
@@ -338,153 +485,6 @@
         },
         "tags": [
           "User"
-        ]
-      }
-    },
-    "/api-key": {
-      "post": {
-        "operationId": "createKey",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/APIKeyCreateDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/APIKeyCreateResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "API Key"
-        ]
-      },
-      "get": {
-        "operationId": "getKeys",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/APIKeyResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "API Key"
-        ]
-      }
-    },
-    "/api-key/{id}": {
-      "get": {
-        "operationId": "getKey",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/APIKeyResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "API Key"
-        ]
-      },
-      "put": {
-        "operationId": "updateKey",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/APIKeyUpdateDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/APIKeyResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "API Key"
-        ]
-      },
-      "delete": {
-        "operationId": "deleteKey",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "API Key"
         ]
       }
     },
@@ -2825,6 +2825,63 @@
       }
     },
     "schemas": {
+      "APIKeyCreateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "APIKeyResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "APIKeyCreateResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string"
+          },
+          "apiKey": {
+            "$ref": "#/components/schemas/APIKeyResponseDto"
+          }
+        },
+        "required": [
+          "secret",
+          "apiKey"
+        ]
+      },
+      "APIKeyUpdateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
       "UserResponseDto": {
         "type": "object",
         "properties": {
@@ -2967,63 +3024,6 @@
         "required": [
           "userId",
           "profileImagePath"
-        ]
-      },
-      "APIKeyCreateDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "APIKeyResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "APIKeyCreateResponseDto": {
-        "type": "object",
-        "properties": {
-          "secret": {
-            "type": "string"
-          },
-          "apiKey": {
-            "$ref": "#/components/schemas/APIKeyResponseDto"
-          }
-        },
-        "required": [
-          "secret",
-          "apiKey"
-        ]
-      },
-      "APIKeyUpdateDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
         ]
       },
       "AssetFileUploadDto": {
