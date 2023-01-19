@@ -58,14 +58,15 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
     if (authenticationState.isAuthenticated) {
       var accessToken = Hive.box(userInfoBox).get(accessTokenKey);
-      var endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
       try {
+        var endpoint = Uri.parse(Hive.box(userInfoBox).get(serverEndpointKey));
+
         debugPrint("Attempting to connect to websocket");
         // Configure socket transports must be specified
         Socket socket = io(
-          endpoint.toString().replaceAll('/api', ''),
+          endpoint.origin,
           OptionBuilder()
-              .setPath('/api/socket.io')
+              .setPath("${endpoint.path}/socket.io")
               .setTransports(['websocket'])
               .enableReconnection()
               .enableForceNew()

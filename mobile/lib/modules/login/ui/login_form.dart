@@ -13,6 +13,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
 
 class LoginForm extends HookConsumerWidget {
@@ -25,7 +26,7 @@ class LoginForm extends HookConsumerWidget {
     final passwordController =
         useTextEditingController.fromValue(TextEditingValue.empty);
     final serverEndpointController =
-        useTextEditingController(text: 'login_form_endpoint_hint'.tr());
+        useTextEditingController.fromValue(TextEditingValue.empty);
     final apiService = ref.watch(apiServiceProvider);
     final serverEndpointFocusNode = useFocusNode();
     final isSaveLoginInfo = useState<bool>(false);
@@ -35,16 +36,16 @@ class LoginForm extends HookConsumerWidget {
 
     getServeLoginConfig() async {
       if (!serverEndpointFocusNode.hasFocus) {
-        var urlText = serverEndpointController.text.trim();
+        var serverUrl = serverEndpointController.text.trim();
 
         try {
-          var endpointUrl = Uri.tryParse(urlText);
-
-          if (endpointUrl != null) {
+          if (serverUrl.isNotEmpty) {
             isLoading.value = true;
-            apiService.setEndpoint(endpointUrl.toString());
+            final serverEndpoint =
+                await apiService.resolveAndSetEndpoint(serverUrl.toString());
+
             var loginConfig = await apiService.oAuthApi.generateConfig(
-              OAuthConfigDto(redirectUri: endpointUrl.toString()),
+              OAuthConfigDto(redirectUri: serverEndpoint),
             );
 
             if (loginConfig != null) {
@@ -213,11 +214,16 @@ class ServerEndpointInput extends StatelessWidget {
   }) : super(key: key);
 
   String? _validateInput(String? url) {
-    if (url?.startsWith(RegExp(r'https?://')) == true) {
-      return null;
-    } else {
-      return 'login_form_err_http'.tr();
+    if (url == null || url.isEmpty) return null;
+
+    final parsedUrl = Uri.tryParse(sanitizeUrl(url));
+    if (parsedUrl == null ||
+        !parsedUrl.isAbsolute ||
+        !parsedUrl.scheme.startsWith("http") ||
+        parsedUrl.host.isEmpty) {
+      return 'login_form_err_invalid_url'.tr();
     }
+    return null;
   }
 
   @override

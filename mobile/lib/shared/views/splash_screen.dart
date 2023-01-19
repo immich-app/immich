@@ -22,8 +22,8 @@ class SplashScreenPage extends HookConsumerWidget {
     void performLoggingIn() async {
       try {
         if (loginInfo != null) {
-          // Make sure API service is initialized
-          apiService.setEndpoint(loginInfo.serverUrl);
+          // Resolve API server endpoint from user provided serverUrl
+          await apiService.resolveAndSetEndpoint(loginInfo.serverUrl);
 
           var isSuccess = await ref
               .read(authenticationProvider.notifier)
