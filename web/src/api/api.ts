@@ -62,7 +62,7 @@ class ImmichApi {
 
 // Browser side (public) API client
 export const api = new ImmichApi();
-api.setBaseUrl(env.PUBLIC_IMMICH_SERVER_PUBLIC_URL || '/api');
+api.setBaseUrl(env.PUBLIC_IMMICH_API_URL_EXTERNAL || '/api');
 
 // Server side API client
 export const serverApi = new ImmichApi();
