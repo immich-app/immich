@@ -57,6 +57,8 @@ dev_dependencies:
   build_runner: ^2.2.1
   auto_route_generator: ^5.0.2
   flutter_launcher_icons: "^0.9.2"
+  integration_test:
+    sdk: flutter
 
 flutter:
   uses-material-design: true

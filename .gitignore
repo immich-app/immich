@@ -5,3 +5,5 @@
 
 docker/upload
 coverage
+
+mobile/gradle.properties
