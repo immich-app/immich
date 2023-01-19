@@ -33,6 +33,7 @@ jobs:
         with:
           working-directory: ./mobile
           api-level: 29
+          profile: pixel
           script: |
             flutter doctor -v
             flutter test integration_test --verbose
