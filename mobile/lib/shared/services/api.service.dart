@@ -20,8 +20,8 @@ class ApiService {
 
   ApiService() {
     if (Hive.isBoxOpen(userInfoBox)) {
-      final endpoint = Hive.box(userInfoBox).get(serverEndpointKey) as String;
-      if (endpoint.isNotEmpty) {
+      final endpoint = Hive.box(userInfoBox).get(serverEndpointKey) as String?;
+      if (endpoint != null && endpoint.isNotEmpty) {
         setEndpoint(endpoint);
       }
     } else {
