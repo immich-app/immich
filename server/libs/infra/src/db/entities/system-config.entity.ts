@@ -30,6 +30,8 @@ export enum SystemConfigKey {
   OAUTH_MOBILE_REDIRECT_URI = 'oauth.mobileRedirectUri',
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
   STORAGE_TEMPLATE = 'storageTemplate.template',
+  RECYCLE_BIN_ENABLED = 'recycleBin.enabled',
+  RECYCLE_BIN_DAYS = 'recycleBin.days',
 }
 
 export interface SystemConfig {
@@ -57,5 +59,9 @@ export interface SystemConfig {
   };
   storageTemplate: {
     template: string;
+  };
+  recycleBin: {
+    enabled: boolean;
+    days: number;
   };
 }
