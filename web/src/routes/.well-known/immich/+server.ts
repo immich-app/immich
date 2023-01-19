@@ -1,9 +1,8 @@
+import { env } from '$env/dynamic/public';
 import { json } from '@sveltejs/kit';
-import { api } from '@api';
 
-const endpoint = api.getBaseUrl();
+const endpoint = env.PUBLIC_IMMICH_API_URL_EXTERNAL || '/api';
 
-export const prerender = true;
 export const GET = async () => {
 	return json({
 		api: {

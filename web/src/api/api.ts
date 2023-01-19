@@ -54,15 +54,10 @@ class ImmichApi {
 	public setBaseUrl(baseUrl: string) {
 		this.config.basePath = baseUrl;
 	}
-
-	public getBaseUrl() {
-		return this.config.basePath;
-	}
 }
 
 // Browser side (public) API client
 export const api = new ImmichApi();
-api.setBaseUrl(env.PUBLIC_IMMICH_API_URL_EXTERNAL || '/api');
 
 // Server side API client
 export const serverApi = new ImmichApi();

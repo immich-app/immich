@@ -25,10 +25,6 @@ async function bootstrap() {
   app.use(json({ limit: '10mb' }));
   if (process.env.NODE_ENV === 'development') {
     app.enableCors();
-  } else if (process.env.ALLOW_CORS_ORIGIN) {
-    app.enableCors({
-      origin: process.env.ALLOW_CORS_ORIGIN,
-    });
   }
 
   const redisIoAdapter = new RedisIoAdapter(app);
