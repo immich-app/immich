@@ -1,6 +1,8 @@
 <script lang="ts">
 	import '../app.css';
 
+	import { api } from '@api';
+	import * as cookieParser from 'cookie';
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
@@ -22,6 +24,7 @@
 	let showUploadCover = false;
 
 	onMount(async () => {
+		initApiAccessToken();
 		checkUserTheme();
 		const res = await checkAppVersion();
 
@@ -29,6 +32,14 @@
 		localVersion = res.localVersion ?? 'unknown';
 		remoteVersion = res.remoteVersion ?? 'unknown';
 	});
+
+	const initApiAccessToken = () => {
+		const cookies = cookieParser.parse(document.cookie);
+		const accessToken = cookies['immich_access_token'];
+		if (accessToken) {
+			api.setAccessToken(accessToken);
+		}
+	};
 
 	const checkUserTheme = () => {
 		// On page load or when changing themes, best to add inline in `head` to avoid FOUC

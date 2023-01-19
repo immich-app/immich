@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as cookieParse from 'cookie';
 	import { goto } from '$app/navigation';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import { loginPageMessage } from '$lib/constants';
@@ -19,8 +20,11 @@
 		if (oauth.isCallback(window.location)) {
 			try {
 				loading = true;
-				await oauth.login(window.location);
+				const { data } = await oauth.login(window.location);
 				dispatch('success');
+
+				// Set the access token
+				saveAccessToken(data.accessToken);
 				return;
 			} catch (e) {
 				console.error('Error [login-form] [oauth.callback]', e);
@@ -63,6 +67,9 @@
 				return;
 			}
 
+			// Set the access token
+			saveAccessToken(data.accessToken);
+
 			dispatch('success');
 			return;
 		} catch (e) {
@@ -71,6 +78,14 @@
 			return;
 		}
 	};
+
+	function saveAccessToken(accessToken: string) {
+		// Set client requests to include access token
+		api.setAccessToken(accessToken);
+
+		// Save the access token cookie
+		document.cookie = cookieParse.serialize('immich_access_token', accessToken);
+	}
 </script>
 
 <div
