@@ -31,6 +31,7 @@ jobs:
       - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
+          working-directory: ./mobile
           api-level: 29
           script: |
             flutter doctor -v
