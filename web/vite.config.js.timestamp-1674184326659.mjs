@@ -1,0 +1,17 @@
+// vite.config.js
+import { sveltekit } from "file:///usr/src/app/node_modules/@sveltejs/kit/src/exports/vite/index.js";
+import path from "path";
+var config = {
+  resolve: {
+    alias: {
+      "xmlhttprequest-ssl": "./node_modules/engine.io-client/lib/xmlhttprequest.js",
+      "@api": path.resolve("./src/api")
+    }
+  },
+  plugins: [sveltekit()]
+};
+var vite_config_default = config;
+export {
+  vite_config_default as default
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsidml0ZS5jb25maWcuanMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbImNvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9kaXJuYW1lID0gXCIvdXNyL3NyYy9hcHBcIjtjb25zdCBfX3ZpdGVfaW5qZWN0ZWRfb3JpZ2luYWxfZmlsZW5hbWUgPSBcIi91c3Ivc3JjL2FwcC92aXRlLmNvbmZpZy5qc1wiO2NvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9pbXBvcnRfbWV0YV91cmwgPSBcImZpbGU6Ly8vdXNyL3NyYy9hcHAvdml0ZS5jb25maWcuanNcIjtpbXBvcnQgeyBzdmVsdGVraXQgfSBmcm9tICdAc3ZlbHRlanMva2l0L3ZpdGUnO1xuaW1wb3J0IHBhdGggZnJvbSAncGF0aCc7XG5cbi8qKiBAdHlwZSB7aW1wb3J0KCd2aXRlJykuVXNlckNvbmZpZ30gKi9cbmNvbnN0IGNvbmZpZyA9IHtcblx0cmVzb2x2ZToge1xuXHRcdGFsaWFzOiB7XG5cdFx0XHQneG1saHR0cHJlcXVlc3Qtc3NsJzogJy4vbm9kZV9tb2R1bGVzL2VuZ2luZS5pby1jbGllbnQvbGliL3htbGh0dHByZXF1ZXN0LmpzJyxcblx0XHRcdCdAYXBpJzogcGF0aC5yZXNvbHZlKCcuL3NyYy9hcGknKVxuXHRcdH1cblx0fSxcblx0cGx1Z2luczogW3N2ZWx0ZWtpdCgpXVxufTtcblxuZXhwb3J0IGRlZmF1bHQgY29uZmlnO1xuIl0sCiAgIm1hcHBpbmdzIjogIjtBQUFzTixTQUFTLGlCQUFpQjtBQUNoUCxPQUFPLFVBQVU7QUFHakIsSUFBTSxTQUFTO0FBQUEsRUFDZCxTQUFTO0FBQUEsSUFDUixPQUFPO0FBQUEsTUFDTixzQkFBc0I7QUFBQSxNQUN0QixRQUFRLEtBQUssUUFBUSxXQUFXO0FBQUEsSUFDakM7QUFBQSxFQUNEO0FBQUEsRUFDQSxTQUFTLENBQUMsVUFBVSxDQUFDO0FBQ3RCO0FBRUEsSUFBTyxzQkFBUTsiLAogICJuYW1lcyI6IFtdCn0K
