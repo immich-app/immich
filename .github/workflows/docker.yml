@@ -13,7 +13,6 @@ on:
 # This lets pull requests from forks push images to pr- tags
 permissions:
   contents: read
-  metadata: read
   packages: write
 
 jobs:
