@@ -19,7 +19,7 @@ jobs:
         with:
           key: android-sdk
           path: |
-            /usr/local/lib/android/adk
+            /usr/local/lib/android/
             ~/.android
       - name: Setup Android SDK
         if: steps.android-sdk.outputs.cache-hit != 'true'
