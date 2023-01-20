@@ -9,5 +9,6 @@ export enum AppRoute {
 
 	ALBUMS = '/albums',
 	PHOTOS = '/photos',
-	SHARING = '/sharing'
+	SHARING = '/sharing',
+	RECYCLEBIN = '/bin'
 }

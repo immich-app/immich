@@ -17,6 +17,7 @@ class SystemConfigDto {
     required this.oauth,
     required this.passwordLogin,
     required this.storageTemplate,
+    required this.recycleBin,
   });
 
   SystemConfigFFmpegDto ffmpeg;
@@ -27,12 +28,15 @@ class SystemConfigDto {
 
   SystemConfigStorageTemplateDto storageTemplate;
 
+  SystemConfigRecycleBinDto recycleBin;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
      other.ffmpeg == ffmpeg &&
      other.oauth == oauth &&
      other.passwordLogin == passwordLogin &&
-     other.storageTemplate == storageTemplate;
+     other.storageTemplate == storageTemplate &&
+     other.recycleBin == recycleBin;
 
   @override
   int get hashCode =>
@@ -40,10 +44,11 @@ class SystemConfigDto {
     (ffmpeg.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
-    (storageTemplate.hashCode);
+    (storageTemplate.hashCode) +
+    (recycleBin.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, recycleBin=$recycleBin]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -51,6 +56,7 @@ class SystemConfigDto {
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'storageTemplate'] = this.storageTemplate;
+      json[r'recycleBin'] = this.recycleBin;
     return json;
   }
 
@@ -77,6 +83,7 @@ class SystemConfigDto {
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
+        recycleBin: SystemConfigRecycleBinDto.fromJson(json[r'recycleBin'])!,
       );
     }
     return null;
@@ -130,6 +137,7 @@ class SystemConfigDto {
     'oauth',
     'passwordLogin',
     'storageTemplate',
+    'recycleBin',
   };
 }
 

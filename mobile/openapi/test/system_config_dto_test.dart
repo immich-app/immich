@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigRecycleBinDto recycleBin
+    test('to test the property `recycleBin`', () async {
+      // TODO
+    });
+
 
   });
 

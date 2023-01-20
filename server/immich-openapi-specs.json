@@ -1023,6 +1023,36 @@
         ]
       }
     },
+    "/asset/bin": {
+      "get": {
+        "operationId": "getAllDeletedAssets",
+        "description": "Get all AssetEntity deleted by user",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/asset/time-bucket": {
       "post": {
         "operationId": "getAssetByTimeBucket",
@@ -4573,6 +4603,21 @@
           "template"
         ]
       },
+      "SystemConfigRecycleBinDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "days": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "days"
+        ]
+      },
       "SystemConfigDto": {
         "type": "object",
         "properties": {
@@ -4587,13 +4632,17 @@
           },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+          },
+          "recycleBin": {
+            "$ref": "#/components/schemas/SystemConfigRecycleBinDto"
           }
         },
         "required": [
           "ffmpeg",
           "oauth",
           "passwordLogin",
-          "storageTemplate"
+          "storageTemplate",
+          "recycleBin"
         ]
       },
       "SystemConfigTemplateStorageOptionDto": {

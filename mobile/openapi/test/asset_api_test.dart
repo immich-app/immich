@@ -73,6 +73,13 @@ void main() {
       // TODO
     });
 
+    // Get all AssetEntity deleted by user
+    //
+    //Future<List<AssetResponseDto>> getAllDeletedAssets() async
+    test('test getAllDeletedAssets', () async {
+      // TODO
+    });
+
     // Get a single asset's information
     //
     //Future<AssetResponseDto> getAssetById(String assetId) async
