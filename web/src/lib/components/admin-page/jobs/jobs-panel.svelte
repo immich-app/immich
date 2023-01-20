@@ -3,6 +3,7 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
+	import { handleError } from '$lib/utils/handle-error';
 	import { AllJobStatusResponseDto, api, JobCommand, JobId } from '@api';
 	import { onDestroy, onMount } from 'svelte';
 	import JobTile from './job-tile.svelte';
@@ -95,13 +96,8 @@
 					type: NotificationType.Info
 				});
 			}
-		} catch (e) {
-			console.log('[ERROR] runMachineLearning', e);
-
-			notificationController.show({
-				message: `Error running machine learning job, check console for more detail`,
-				type: NotificationType.Error
-			});
+		} catch (error) {
+			handleError(error, `Error running machine learning job, check console for more detail`);
 		}
 	};
 
