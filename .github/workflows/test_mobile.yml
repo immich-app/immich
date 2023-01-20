@@ -35,6 +35,7 @@ jobs:
           api-level: 29
           arch: x86_64
           profile: pixel
+          target: default
           script: |
-            flutter doctor
+            flutter pub get
             flutter test integration_test

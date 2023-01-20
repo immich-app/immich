@@ -29,6 +29,6 @@ void main() {
       );
 
       expect(find.text("login_form_err_http_insecure".tr()), findsOneWidget);
-    }, timeout: const Timeout(Duration(minutes: 2)));
+    });
   });
 }
