@@ -9,10 +9,19 @@ on:
   release:
     types: [published]
 
+# Explicitly configure permissions
+# This lets pull requests from forks push images to pr- tags
+permissions:
+  contents: read
+  metadata: read
+  packages: write
+
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
     strategy:
+      # Prevent a failure in one image from stopping the other builds
+      fail-fast: false
       matrix:
         include:
           - context: "server"
@@ -71,9 +80,6 @@ jobs:
             type=ref,event=tag
             type=raw,value=release,enable=${{ github.event_name == 'release' }}
 
-      - name: Debug tags
-        run: echo "${{ steps.metadata.outputs.tags }}"
-        
       - name: Build and push image
         uses: docker/build-push-action@v3.3.0
         with:
