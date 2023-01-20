@@ -12,7 +12,7 @@ const defaults: SystemConfig = Object.freeze({
     crf: '23',
     preset: 'ultrafast',
     targetVideoCodec: 'h264',
-    targetAudioCodec: 'mp3',
+    targetAudioCodec: 'aac',
     targetScaling: '1280:-2',
     transcodeAll: false,
   },
