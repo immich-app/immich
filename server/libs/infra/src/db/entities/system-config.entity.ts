@@ -62,6 +62,6 @@ export interface SystemConfig {
   };
   recycleBin: {
     enabled: boolean;
-    days: number;
+    days: string;
   };
 }

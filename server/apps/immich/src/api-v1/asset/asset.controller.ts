@@ -218,6 +218,17 @@ export class AssetController {
     return assets;
   }
 
+  //TODO - WIP
+  /**
+   * Get all AssetEntity deleted by user
+   */
+  @Authenticated()
+  @Get('/bin')
+  async getAllDeletedAssets(@GetAuthUser() authUser: AuthUserDto): Promise<AssetResponseDto[]> {
+    const assets = await this.assetService.getAllAssets(authUser);
+    return assets;
+  }
+
   @Authenticated()
   @Post('/time-bucket')
   async getAssetByTimeBucket(
@@ -273,6 +284,7 @@ export class AssetController {
 
     const deleteAssetList: AssetResponseDto[] = [];
 
+    // TODO need to check if recylebin has been enabled
     for (const id of assetIds.ids) {
       const assets = await this.assetService.getAssetById(id);
       if (!assets) {
@@ -291,11 +303,11 @@ export class AssetController {
 
     const result = await this.assetService.deleteAssetById(assetIds);
 
-    result.forEach((res) => {
-      deleteAssetList.filter((a) => a.id == res.id && res.status == DeleteAssetStatusEnum.SUCCESS);
-    });
+    // result.forEach((res) => {
+    //   deleteAssetList.filter((a) => a.id == res.id && res.status == DeleteAssetStatusEnum.SUCCESS);
+    // });
 
-    await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
+    // await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
 
     return result;
   }

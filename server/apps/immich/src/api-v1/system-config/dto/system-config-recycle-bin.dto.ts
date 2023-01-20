@@ -1,9 +1,9 @@
-import { IsBoolean, IsNumber } from 'class-validator';
+import { IsBoolean, IsString } from 'class-validator';
 
 export class SystemConfigRecycleBinDto {
   @IsBoolean()
   enabled!: boolean;
 
-  @IsNumber()
-  days!: number;
+  @IsString()
+  days!: string;
 }

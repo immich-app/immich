@@ -522,11 +522,13 @@ export class AssetService {
 
     const target = assetIds.ids;
     for (const assetId of target) {
-      const res = await this.assetRepository.delete({
-        id: assetId,
-      });
+      const asset = await this._assetRepository.getById(assetId);
+      asset.isVisible = false;
+      asset.deletedAt = new Date().toISOString();
 
-      if (res.affected) {
+      const res = await this.assetRepository.save(asset);
+
+      if (res) {
         result.push({
           id: assetId,
           status: DeleteAssetStatusEnum.SUCCESS,

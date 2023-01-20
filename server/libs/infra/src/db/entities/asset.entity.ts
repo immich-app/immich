@@ -40,6 +40,12 @@ export class AssetEntity {
   @Column({ type: 'timestamptz' })
   modifiedAt!: string;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  deletedAt?: string;
+
+  @Column({ type: 'boolean', default: false })
+  isDeleted!: boolean;
+
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;
 

@@ -34,6 +34,11 @@ const defaults: SystemConfig = Object.freeze({
   storageTemplate: {
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
+
+  recycleBin: {
+    enabled: false,
+    days: '14',
+  },
 });
 
 @Injectable()
