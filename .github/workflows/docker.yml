@@ -59,8 +59,8 @@ jobs:
             # Disable latest tag
             latest=false
           images: |
-            ghcr.io/${{ github.repository_owner }}/${{matrix.image}}
-            altran1502/${{matrix.image}}
+            name=ghcr.io/${{ github.repository_owner }}/${{matrix.image}}
+            name=altran1502/${{matrix.image}},enable=${{ github.event_name == 'release' }}
           tags: |
             # Tag with branch name
             type=ref,event=branch
