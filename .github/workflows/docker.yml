@@ -43,12 +43,14 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2.2.1
-        # Workaround to fix error:
-        # failed to push: failed to copy: io: read/write on closed pipe
+        # Workaround to fix two buildkit regressions
+        # first one: failed to push: failed to copy: io: read/write on closed pipe
         # See https://github.com/docker/build-push-action/issues/761
+        # second one: random cache misses
+        # See https://github.com/docker/build-push-action/issues/735
         with:
           driver-opts: |
-            image=moby/buildkit:v0.10.6
+            image=moby/buildkit:v0.9.3
 
       - name: Login to Docker Hub
         # Only push to Docker Hub when making a release
