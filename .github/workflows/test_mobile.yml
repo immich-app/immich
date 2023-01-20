@@ -33,6 +33,7 @@ jobs:
         with:
           working-directory: ./mobile
           api-level: 29
+          arch: x86_64
           profile: pixel
           script: |
             flutter doctor

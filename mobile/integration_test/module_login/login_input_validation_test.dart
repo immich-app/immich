@@ -22,11 +22,6 @@ void main() {
 
       expect(find.text("login_form_err_http_insecure".tr()), findsNothing);
 
-      // Clear inputs
-      await ImmichTestLoginHelper.enterLoginCredentials(tester,);
-
-      await tester.pump(const Duration(seconds: 2));
-
       // Test http URL
       await ImmichTestLoginHelper.enterLoginCredentials(
         tester,

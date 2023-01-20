@@ -41,10 +41,15 @@ class ImmichTestLoginHelper {
   }) async {
     final loginForms = find.byType(TextFormField);
 
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.enterText(loginForms.at(0), email);
+
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.enterText(loginForms.at(1), password);
+
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.enterText(loginForms.at(2), server);
 
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(milliseconds: 500));
   }
 }
