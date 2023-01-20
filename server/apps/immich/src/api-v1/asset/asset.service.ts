@@ -456,7 +456,7 @@ export class AssetService {
 
         await fs.access(videoPath, constants.R_OK | constants.W_OK);
 
-        if (query.isWeb && asset.mimeType == 'video/quicktime') {
+        if (query.isWeb && asset.mimeType == 'video/quicktime' || query.isWeb && asset.mimeType == "video/x-msvideo") {
           videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
           mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
         }
