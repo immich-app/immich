@@ -60,6 +60,8 @@ jobs:
         
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
+        # Skip when PR from a fork
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -90,7 +92,8 @@ jobs:
         with:
           context: ${{ matrix.context }}
           platforms: linux/arm/v7,linux/amd64,linux/arm64
-          push: true
+          # Skip when PR from a fork
+          push: ${{ !github.event.pull_request.head.repo.fork }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ${{ steps.metadata.outputs.tags }}
