@@ -6,6 +6,7 @@
 	import { api, SystemConfigFFmpegDto } from '@api';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
+	import SettingSwitch from '../setting-switch.svelte';
 	import _ from 'lodash';
 	export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
 	import { fade } from 'svelte/transition';
@@ -113,6 +114,13 @@
 						bind:value={ffmpegConfig.targetScaling}
 						required={true}
 						isEdited={!(ffmpegConfig.targetScaling == savedConfig.targetScaling)}
+					/>
+
+					<SettingSwitch
+							title="TRANSCODE ALL"
+							subtitle="Transcode all files, even if they already match the specified format?"
+							bind:checked={ffmpegConfig.transcodeAll}
+							isEdited={!(ffmpegConfig.transcodeAll == savedConfig.transcodeAll)}
 					/>
 				</div>
 

@@ -31,7 +31,7 @@ export class VideoTranscodeProcessor {
         mkdirSync(encodedVideoPath, { recursive: true });
       }
 
-      const savedEncodedPath = encodedVideoPath + '/' + asset.id + '.mp4';
+    const savedEncodedPath = `${encodedVideoPath}/${asset.id}.mp4`;
 
       if (asset.encodedVideoPath == '' || !asset.encodedVideoPath) {
         // Put the processing into its own async function to prevent the job exist right away

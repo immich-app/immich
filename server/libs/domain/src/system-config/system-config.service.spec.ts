@@ -17,7 +17,8 @@ const updatedConfig = Object.freeze({
     preset: 'ultrafast',
     targetAudioCodec: 'mp3',
     targetScaling: '1280:-2',
-    targetVideoCodec: 'libx264',
+    targetVideoCodec: 'h264',
+    transcodeAll: false,
   },
   oauth: {
     autoLaunch: true,

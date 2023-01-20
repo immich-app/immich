@@ -18,6 +18,7 @@ class SystemConfigFFmpegDto {
     required this.targetVideoCodec,
     required this.targetAudioCodec,
     required this.targetScaling,
+    required this.transcodeAll,
   });
 
   String crf;
@@ -30,13 +31,16 @@ class SystemConfigFFmpegDto {
 
   String targetScaling;
 
+  bool transcodeAll;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigFFmpegDto &&
      other.crf == crf &&
      other.preset == preset &&
      other.targetVideoCodec == targetVideoCodec &&
      other.targetAudioCodec == targetAudioCodec &&
-     other.targetScaling == targetScaling;
+     other.targetScaling == targetScaling &&
+     other.transcodeAll == transcodeAll;
 
   @override
   int get hashCode =>
@@ -45,10 +49,11 @@ class SystemConfigFFmpegDto {
     (preset.hashCode) +
     (targetVideoCodec.hashCode) +
     (targetAudioCodec.hashCode) +
-    (targetScaling.hashCode);
+    (targetScaling.hashCode) +
+    (transcodeAll.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[crf=$crf, preset=$preset, targetVideoCodec=$targetVideoCodec, targetAudioCodec=$targetAudioCodec, targetScaling=$targetScaling]';
+  String toString() => 'SystemConfigFFmpegDto[crf=$crf, preset=$preset, targetVideoCodec=$targetVideoCodec, targetAudioCodec=$targetAudioCodec, targetScaling=$targetScaling, transcodeAll=$transcodeAll]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -57,6 +62,7 @@ class SystemConfigFFmpegDto {
       json[r'targetVideoCodec'] = this.targetVideoCodec;
       json[r'targetAudioCodec'] = this.targetAudioCodec;
       json[r'targetScaling'] = this.targetScaling;
+      json[r'transcodeAll'] = this.transcodeAll;
     return json;
   }
 
@@ -84,6 +90,7 @@ class SystemConfigFFmpegDto {
         targetVideoCodec: mapValueOfType<String>(json, r'targetVideoCodec')!,
         targetAudioCodec: mapValueOfType<String>(json, r'targetAudioCodec')!,
         targetScaling: mapValueOfType<String>(json, r'targetScaling')!,
+        transcodeAll: mapValueOfType<bool>(json, r'transcodeAll')!,
       );
     }
     return null;
@@ -138,6 +145,7 @@ class SystemConfigFFmpegDto {
     'targetVideoCodec',
     'targetAudioCodec',
     'targetScaling',
+    'transcodeAll',
   };
 }
 
