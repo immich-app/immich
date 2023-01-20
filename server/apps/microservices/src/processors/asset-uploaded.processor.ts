@@ -40,9 +40,7 @@ export class AssetUploadedProcessor {
 
     // Video Conversion
     if (asset.type == AssetType.VIDEO) {
-      if (asset.mimeType == 'video/quicktime' || asset.mimeType == 'video/x-msvideo') {
-        await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset });
-      }
+      await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset });
       await this.metadataExtractionQueue.add(JobName.EXTRACT_VIDEO_METADATA, { asset, fileName });
     } else {
       // Extract Metadata/Exif for Images - Currently the EXIF library on the web cannot extract EXIF for video yet
