@@ -4,6 +4,6 @@
     "declaration": false,
     "outDir": "../../dist/apps/immich"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../../libs/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

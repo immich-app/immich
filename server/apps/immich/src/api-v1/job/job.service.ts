@@ -15,6 +15,7 @@ import { AssetType } from '@app/infra';
 import { GetJobDto, JobId } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 import { StorageService } from '@app/storage';
+import { MACHINE_LEARNING_ENABLED } from '@app/common';
 
 @Injectable()
 export class JobService {
@@ -167,6 +168,10 @@ export class JobService {
   }
 
   private async runMachineLearningPipeline(): Promise<number> {
+    if (!MACHINE_LEARNING_ENABLED) {
+      throw new BadRequestException('Machine learning is not enabled.');
+    }
+
     const jobCount = await this.machineLearningQueue.getJobCounts();
 
     if (jobCount.waiting > 0) {
