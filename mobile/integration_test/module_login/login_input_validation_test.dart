@@ -7,8 +7,8 @@ import '../test_utils/login_helper.dart';
 void main() {
   ImmichTestHelper.initialize();
 
-  group('Login input validation test', () {
-    testWidgets('Test http warning message', (tester) async {
+  group("Login input validation test", () {
+    testWidgets("Test http warning message", (tester) async {
       await ImmichTestHelper.loadApp(tester);
 
       await ImmichTestLoginHelper.waitForLoginScreen(tester);
