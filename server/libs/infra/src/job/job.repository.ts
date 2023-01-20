@@ -14,6 +14,7 @@ export class JobRepository implements IJobRepository {
         await this.configQueue.add(JobName.CONFIG_CHANGE, {});
         break;
       default:
+        // TODO inject remaining queues and map job to queue
         this.logger.error('Invalid job', item);
     }
   }
