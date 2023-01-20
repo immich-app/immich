@@ -9,12 +9,6 @@ on:
   release:
     types: [published]
 
-# Explicitly configure permissions
-# This lets pull requests from forks push images to pr- tags
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
