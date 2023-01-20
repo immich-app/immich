@@ -4,6 +4,7 @@
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
+	import TrashCan from 'svelte-material-icons/TrashCan.svelte';
 	import SideBarButton from './side-bar-button.svelte';
 	import StatusBox from '../status-box.svelte';
 	import { api } from '@api';
@@ -113,6 +114,42 @@
 
 		<div
 			id="album-count-info"
+			class="absolute right-4 top-[15px] z-40 text-xs hover:cursor-help"
+			on:mouseenter={() => (showAlbumsCount = true)}
+			on:mouseleave={() => (showAlbumsCount = false)}
+		>
+			<InformationOutline size={18} color="#989a9f" />
+			{#if showAlbumsCount}
+				<div
+					transition:fade={{ duration: 200 }}
+					id="asset-count-info-detail"
+					class="w-24 rounded-lg p-4 shadow-lg bg-white absolute -right-[105px] top-0 z-[9999] flex place-items-center place-content-center"
+				>
+					{#await getAlbumCount()}
+						<LoadingSpinner />
+					{:then data}
+						<div>
+							<p>{data.owned} Albums</p>
+						</div>
+					{/await}
+				</div>
+			{/if}
+		</div>
+	</a>
+	<a
+		data-sveltekit-preload-data="hover"
+		href={AppRoute.RECYCLEBIN}
+		class="relative"
+		draggable="false"
+	>
+		<SideBarButton
+			title="Bin"
+			logo={TrashCan}
+			isSelected={$page.route.id === AppRoute.RECYCLEBIN}
+		/>
+
+		<div
+			id="bin-count-info"
 			class="absolute right-4 top-[15px] z-40 text-xs hover:cursor-help"
 			on:mouseenter={() => (showAlbumsCount = true)}
 			on:mouseleave={() => (showAlbumsCount = false)}

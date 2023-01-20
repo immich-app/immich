@@ -11,10 +11,11 @@ export const load: PageServerLoad = async ({ parent }) => {
 		return {
 			user,
 			meta: {
-				title: 'Photos'
+				title: 'Bin'
 			}
 		};
 	} catch (e) {
+		console.log('Bin page load error', e);
 		throw redirect(302, '/auth/login');
 	}
 };

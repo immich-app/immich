@@ -3,6 +3,7 @@
 	import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
 	import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
 	import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
+	import RecycleBinSettings from '$lib/components/admin-page/settings/recycle-bin/recycle-bin-settings.svelte';
 	import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
 	import StorageTemplateSettings from '$lib/components/admin-page/settings/storate-template/storage-template-settings.svelte';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
@@ -45,6 +46,10 @@
 			isOpen={$page.url.searchParams.get('open') === 'storage-template'}
 		>
 			<StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
+		</SettingAccordion>
+
+		<SettingAccordion title="Recycle Bin" subtitle="Manage recycle bin when files gets deleted">
+			<RecycleBinSettings recycleBinConfig={configs.recycleBin} />
 		</SettingAccordion>
 	{/await}
 </section>
