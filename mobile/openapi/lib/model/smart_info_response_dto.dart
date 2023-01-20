@@ -47,23 +47,23 @@ class SmartInfoResponseDto {
   String toString() => 'SmartInfoResponseDto[id=$id, tags=$tags, objects=$objects]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-    if (id != null) {
-      _json[r'id'] = id;
+    final json = <String, dynamic>{};
+    if (this.id != null) {
+      json[r'id'] = this.id;
     } else {
-      _json[r'id'] = null;
+      // json[r'id'] = null;
     }
-    if (tags != null) {
-      _json[r'tags'] = tags;
+    if (this.tags != null) {
+      json[r'tags'] = this.tags;
     } else {
-      _json[r'tags'] = null;
+      // json[r'tags'] = null;
     }
-    if (objects != null) {
-      _json[r'objects'] = objects;
+    if (this.objects != null) {
+      json[r'objects'] = this.objects;
     } else {
-      _json[r'objects'] = null;
+      // json[r'objects'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [SmartInfoResponseDto] instance and imports its values from

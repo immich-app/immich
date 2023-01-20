@@ -42,14 +42,14 @@ class CheckDuplicateAssetResponseDto {
   String toString() => 'CheckDuplicateAssetResponseDto[isExist=$isExist, id=$id]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'isExist'] = isExist;
-    if (id != null) {
-      _json[r'id'] = id;
+    final json = <String, dynamic>{};
+      json[r'isExist'] = this.isExist;
+    if (this.id != null) {
+      json[r'id'] = this.id;
     } else {
-      _json[r'id'] = null;
+      // json[r'id'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [CheckDuplicateAssetResponseDto] instance and imports its values from

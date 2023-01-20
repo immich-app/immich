@@ -15,7 +15,7 @@
 
 <div class="absolute top-0 left-0 w-screen h-screen">
 	<FullScreenModal on:clickOutside={() => console.log('Click outside')}>
-		<div class="max-w-[500px] z-[99999] border bg-immich-bg p-10 rounded-xl">
+		<div class="max-w-[500px] max-w-[95vw] z-[99999] border bg-immich-bg p-10 rounded-xl">
 			<p class="text-2xl ">🎉 NEW VERSION AVAILABLE 🎉</p>
 			<br />
 
@@ -26,7 +26,7 @@
 					>, please take your time to visit the
 					<span class="underline font-medium"
 						><a
-							href="https://github.com/alextran1502/immich/releases/latest"
+							href="https://github.com/immich-app/immich/releases/latest"
 							target="_blank"
 							rel="noopener noreferrer">release note</a
 						></span

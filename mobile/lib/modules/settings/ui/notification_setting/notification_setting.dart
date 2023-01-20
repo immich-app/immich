@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/modules/settings/ui/common.dart';
 
 class NotificationSetting extends HookConsumerWidget {
   const NotificationSetting({
@@ -50,7 +51,7 @@ class NotificationSetting extends HookConsumerWidget {
         ),
       ).tr(),
       children: [
-        _buildSwitchListTile(
+        buildSwitchListTile(
           context,
           appSettingService,
           totalProgressValue,
@@ -58,7 +59,7 @@ class NotificationSetting extends HookConsumerWidget {
           title: 'setting_notifications_total_progress_title'.tr(),
           subtitle: 'setting_notifications_total_progress_subtitle'.tr(),
         ),
-        _buildSwitchListTile(
+        buildSwitchListTile(
           context,
           appSettingService,
           singleProgressValue,
@@ -89,28 +90,6 @@ class NotificationSetting extends HookConsumerWidget {
       ],
     );
   }
-}
-
-SwitchListTile _buildSwitchListTile(
-  BuildContext context,
-  AppSettingsService appSettingService,
-  ValueNotifier<bool> valueNotifier,
-  AppSettingsEnum settingsEnum, {
-  required String title,
-  String? subtitle,
-}) {
-  return SwitchListTile(
-    key: Key(settingsEnum.name),
-    value: valueNotifier.value,
-    onChanged: (value) {
-      valueNotifier.value = value;
-      appSettingService.setSetting(settingsEnum, value);
-    },
-    activeColor: Theme.of(context).primaryColor,
-    dense: true,
-    title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-    subtitle: subtitle != null ? Text(subtitle) : null,
-  );
 }
 
 String _formatSliderValue(double v) {

@@ -11,8 +11,11 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
+[**createAssetsSharedLink**](AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
-[**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download | 
+[**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
+[**downloadFiles**](AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
+[**downloadLibrary**](AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 [**getAssetByTimeBucket**](AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
@@ -24,8 +27,9 @@ Method | HTTP request | Description
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
-[**serveFile**](AssetApi.md#servefile) | **GET** /asset/file | 
-[**updateAssetById**](AssetApi.md#updateassetbyid) | **PUT** /asset/assetById/{assetId} | 
+[**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
+[**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{assetId} | 
+[**updateAssetsInSharedLink**](AssetApi.md#updateassetsinsharedlink) | **PATCH** /asset/shared-link | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
 
@@ -127,8 +131,59 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **createAssetsSharedLink**
+> SharedLinkResponseDto createAssetsSharedLink(createAssetsShareLinkDto)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final createAssetsShareLinkDto = CreateAssetsShareLinkDto(); // CreateAssetsShareLinkDto | 
+
+try {
+    final result = api_instance.createAssetsSharedLink(createAssetsShareLinkDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->createAssetsSharedLink: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createAssetsShareLinkDto** | [**CreateAssetsShareLinkDto**](CreateAssetsShareLinkDto.md)|  | 
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **deleteAsset**
 > List<DeleteAssetResponseDto> deleteAsset(deleteAssetDto)
+
+
 
 
 
@@ -175,7 +230,9 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadFile**
-> Object downloadFile(aid, did, isThumb, isWeb)
+> Object downloadFile(assetId, isThumb, isWeb)
+
+
 
 
 
@@ -190,13 +247,12 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final aid = aid_example; // String | 
-final did = did_example; // String | 
+final assetId = assetId_example; // String | 
 final isThumb = true; // bool | 
 final isWeb = true; // bool | 
 
 try {
-    final result = api_instance.downloadFile(aid, did, isThumb, isWeb);
+    final result = api_instance.downloadFile(assetId, isThumb, isWeb);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->downloadFile: $e\n');
@@ -207,8 +263,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **aid** | **String**|  | 
- **did** | **String**|  | 
+ **assetId** | **String**|  | 
  **isThumb** | **bool**|  | [optional] 
  **isWeb** | **bool**|  | [optional] 
 
@@ -227,8 +282,106 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **downloadFiles**
+> Object downloadFiles(downloadFilesDto)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final downloadFilesDto = DownloadFilesDto(); // DownloadFilesDto | 
+
+try {
+    final result = api_instance.downloadFiles(downloadFilesDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->downloadFiles: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **downloadFilesDto** | [**DownloadFilesDto**](DownloadFilesDto.md)|  | 
+
+### Return type
+
+[**Object**](Object.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **downloadLibrary**
+> Object downloadLibrary(skip)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final skip = 8.14; // num | 
+
+try {
+    final result = api_instance.downloadLibrary(skip);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->downloadLibrary: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **skip** | **num**|  | [optional] 
+
+### Return type
+
+[**Object**](Object.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **getAllAssets**
-> List<AssetResponseDto> getAllAssets()
+> List<AssetResponseDto> getAllAssets(ifNoneMatch)
 
 
 
@@ -245,9 +398,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
+final ifNoneMatch = ifNoneMatch_example; // String | ETag of data already cached on the client
 
 try {
-    final result = api_instance.getAllAssets();
+    final result = api_instance.getAllAssets(ifNoneMatch);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAllAssets: $e\n');
@@ -255,7 +409,10 @@ try {
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ifNoneMatch** | **String**| ETag of data already cached on the client | [optional] 
 
 ### Return type
 
@@ -326,6 +483,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -370,6 +529,8 @@ Name | Type | Description  | Notes
 
 # **getAssetCountByTimeBucket**
 > AssetCountByTimeBucketResponseDto getAssetCountByTimeBucket(getAssetCountByTimeBucketDto)
+
+
 
 
 
@@ -420,6 +581,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -463,6 +626,8 @@ This endpoint does not need any parameter.
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -503,6 +668,8 @@ This endpoint does not need any parameter.
 
 # **getAssetThumbnail**
 > Object getAssetThumbnail(assetId, format)
+
+
 
 
 
@@ -555,6 +722,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -595,6 +764,8 @@ This endpoint does not need any parameter.
 
 # **getCuratedObjects**
 > List<CuratedObjectsResponseDto> getCuratedObjects()
+
+
 
 
 
@@ -690,6 +861,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -733,7 +906,9 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **serveFile**
-> Object serveFile(aid, did, isThumb, isWeb)
+> Object serveFile(assetId, isThumb, isWeb)
+
+
 
 
 
@@ -748,13 +923,12 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final aid = aid_example; // String | 
-final did = did_example; // String | 
+final assetId = assetId_example; // String | 
 final isThumb = true; // bool | 
 final isWeb = true; // bool | 
 
 try {
-    final result = api_instance.serveFile(aid, did, isThumb, isWeb);
+    final result = api_instance.serveFile(assetId, isThumb, isWeb);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->serveFile: $e\n');
@@ -765,8 +939,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **aid** | **String**|  | 
- **did** | **String**|  | 
+ **assetId** | **String**|  | 
  **isThumb** | **bool**|  | [optional] 
  **isWeb** | **bool**|  | [optional] 
 
@@ -785,8 +958,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **updateAssetById**
-> AssetResponseDto updateAssetById(assetId, updateAssetDto)
+# **updateAsset**
+> AssetResponseDto updateAsset(assetId, updateAssetDto)
 
 
 
@@ -807,10 +980,10 @@ final assetId = assetId_example; // String |
 final updateAssetDto = UpdateAssetDto(); // UpdateAssetDto | 
 
 try {
-    final result = api_instance.updateAssetById(assetId, updateAssetDto);
+    final result = api_instance.updateAsset(assetId, updateAssetDto);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->updateAssetById: $e\n');
+    print('Exception when calling AssetApi->updateAsset: $e\n');
 }
 ```
 
@@ -836,8 +1009,59 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **updateAssetsInSharedLink**
+> SharedLinkResponseDto updateAssetsInSharedLink(updateAssetsToSharedLinkDto)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final updateAssetsToSharedLinkDto = UpdateAssetsToSharedLinkDto(); // UpdateAssetsToSharedLinkDto | 
+
+try {
+    final result = api_instance.updateAssetsInSharedLink(updateAssetsToSharedLinkDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->updateAssetsInSharedLink: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **updateAssetsToSharedLinkDto** | [**UpdateAssetsToSharedLinkDto**](UpdateAssetsToSharedLinkDto.md)|  | 
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **uploadFile**
 > AssetFileUploadResponseDto uploadFile(assetData)
+
+
 
 
 

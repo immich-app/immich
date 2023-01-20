@@ -59,13 +59,18 @@ class _$AppRouter extends RootStackRouter {
               authToken: args.authToken,
               isZoomedFunction: args.isZoomedFunction,
               isZoomedListener: args.isZoomedListener,
-              threeStageLoading: args.threeStageLoading));
+              loadPreview: args.loadPreview,
+              loadOriginal: args.loadOriginal));
     },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
       return MaterialPageX<dynamic>(
           routeData: routeData,
-          child: VideoViewerPage(key: args.key, asset: args.asset));
+          child: VideoViewerPage(
+              key: args.key,
+              asset: args.asset,
+              isMotionVideo: args.isMotionVideo,
+              onVideoEnded: args.onVideoEnded));
     },
     BackupControllerRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
@@ -137,6 +142,14 @@ class _$AppRouter extends RootStackRouter {
     SettingsRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const SettingsPage());
+    },
+    AppLogRoute.name: (routeData) {
+      return CustomPage<dynamic>(
+          routeData: routeData,
+          child: const AppLogPage(),
+          transitionsBuilder: TransitionsBuilders.slideBottom,
+          opaque: true,
+          barrierDismissible: false);
     },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
@@ -214,7 +227,8 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(FailedBackupStatusRoute.name,
             path: '/failed-backup-status-page', guards: [authGuard]),
         RouteConfig(SettingsRoute.name,
-            path: '/settings-page', guards: [authGuard])
+            path: '/settings-page', guards: [authGuard]),
+        RouteConfig(AppLogRoute.name, path: '/app-log-page')
       ];
 }
 
@@ -292,7 +306,8 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
       required String authToken,
       required void Function() isZoomedFunction,
       required ValueNotifier<bool> isZoomedListener,
-      required bool threeStageLoading})
+      required bool loadPreview,
+      required bool loadOriginal})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
             args: ImageViewerRouteArgs(
@@ -302,7 +317,8 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
                 authToken: authToken,
                 isZoomedFunction: isZoomedFunction,
                 isZoomedListener: isZoomedListener,
-                threeStageLoading: threeStageLoading));
+                loadPreview: loadPreview,
+                loadOriginal: loadOriginal));
 
   static const String name = 'ImageViewerRoute';
 }
@@ -315,7 +331,8 @@ class ImageViewerRouteArgs {
       required this.authToken,
       required this.isZoomedFunction,
       required this.isZoomedListener,
-      required this.threeStageLoading});
+      required this.loadPreview,
+      required this.loadOriginal});
 
   final Key? key;
 
@@ -329,35 +346,53 @@ class ImageViewerRouteArgs {
 
   final ValueNotifier<bool> isZoomedListener;
 
-  final bool threeStageLoading;
+  final bool loadPreview;
+
+  final bool loadOriginal;
 
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, threeStageLoading: $threeStageLoading}';
+    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, loadPreview: $loadPreview, loadOriginal: $loadOriginal}';
   }
 }
 
 /// generated route for
 /// [VideoViewerPage]
 class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
-  VideoViewerRoute({Key? key, required Asset asset})
+  VideoViewerRoute(
+      {Key? key,
+      required Asset asset,
+      required bool isMotionVideo,
+      required void Function() onVideoEnded})
       : super(VideoViewerRoute.name,
             path: '/video-viewer-page',
-            args: VideoViewerRouteArgs(key: key, asset: asset));
+            args: VideoViewerRouteArgs(
+                key: key,
+                asset: asset,
+                isMotionVideo: isMotionVideo,
+                onVideoEnded: onVideoEnded));
 
   static const String name = 'VideoViewerRoute';
 }
 
 class VideoViewerRouteArgs {
-  const VideoViewerRouteArgs({this.key, required this.asset});
+  const VideoViewerRouteArgs(
+      {this.key,
+      required this.asset,
+      required this.isMotionVideo,
+      required this.onVideoEnded});
 
   final Key? key;
 
   final Asset asset;
 
+  final bool isMotionVideo;
+
+  final void Function() onVideoEnded;
+
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded}';
   }
 }
 
@@ -538,6 +573,14 @@ class SettingsRoute extends PageRouteInfo<void> {
   const SettingsRoute() : super(SettingsRoute.name, path: '/settings-page');
 
   static const String name = 'SettingsRoute';
+}
+
+/// generated route for
+/// [AppLogPage]
+class AppLogRoute extends PageRouteInfo<void> {
+  const AppLogRoute() : super(AppLogRoute.name, path: '/app-log-page');
+
+  static const String name = 'AppLogRoute';
 }
 
 /// generated route for

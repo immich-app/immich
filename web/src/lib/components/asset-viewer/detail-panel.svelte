@@ -4,10 +4,10 @@
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
 	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
-	import moment from 'moment';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
+	import { asByteUnitString } from '../../utils/byte-units';
 
 	type Leaflet = typeof import('leaflet');
 	type LeafletMap = import('leaflet').Map;
@@ -23,7 +23,7 @@
 		drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
 	}
 
-	export let albums: AlbumResponseDto[];
+	export let albums: AlbumResponseDto[] = [];
 
 	onMount(async () => {
 		if (browser) {
@@ -59,32 +59,6 @@
 	}
 
 	const dispatch = createEventDispatcher();
-	const getHumanReadableString = (sizeInByte: number) => {
-		const pepibyte = 1.126 * Math.pow(10, 15);
-		const tebibyte = 1.1 * Math.pow(10, 12);
-		const gibibyte = 1.074 * Math.pow(10, 9);
-		const mebibyte = 1.049 * Math.pow(10, 6);
-		const kibibyte = 1024;
-		// Pebibyte
-		if (sizeInByte >= pepibyte) {
-			// Pe
-			return `${(sizeInByte / pepibyte).toFixed(1)}PB`;
-		} else if (tebibyte <= sizeInByte && sizeInByte < pepibyte) {
-			// Te
-			return `${(sizeInByte / tebibyte).toFixed(1)}TB`;
-		} else if (gibibyte <= sizeInByte && sizeInByte < tebibyte) {
-			// Gi
-			return `${(sizeInByte / gibibyte).toFixed(1)}GB`;
-		} else if (mebibyte <= sizeInByte && sizeInByte < gibibyte) {
-			// Mega
-			return `${(sizeInByte / mebibyte).toFixed(1)}MB`;
-		} else if (kibibyte <= sizeInByte && sizeInByte < mebibyte) {
-			// Kibi
-			return `${(sizeInByte / kibibyte).toFixed(1)}KB`;
-		} else {
-			return `${sizeInByte}B`;
-		}
-	};
 
 	const getMegapixel = (width: number, height: number): number | undefined => {
 		const megapixel = Math.round((height * width) / 1_000_000);
@@ -95,6 +69,8 @@
 
 		return undefined;
 	};
+
+	const locale = navigator.language;
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -117,18 +93,29 @@
 		{/if}
 
 		{#if asset.exifInfo?.dateTimeOriginal}
+			{@const assetDateTimeOriginal = new Date(asset.exifInfo.dateTimeOriginal)}
 			<div class="flex gap-4 py-4">
 				<div>
 					<Calendar size="24" />
 				</div>
 
 				<div>
-					<p>{moment(asset.exifInfo.dateTimeOriginal).format('MMM DD, YYYY')}</p>
+					<p>
+						{assetDateTimeOriginal.toLocaleDateString(locale, {
+							month: 'short',
+							day: 'numeric',
+							year: 'numeric'
+						})}
+					</p>
 					<div class="flex gap-2 text-sm">
 						<p>
-							{moment(asset.exifInfo.dateTimeOriginal).format('ddd, hh:mm A')}
+							{assetDateTimeOriginal.toLocaleString(locale, {
+								weekday: 'short',
+								hour: 'numeric',
+								minute: '2-digit',
+								timeZoneName: 'longOffset'
+							})}
 						</p>
-						<p>GMT{moment(asset.exifInfo.dateTimeOriginal).format('Z')}</p>
 					</div>
 				</div>
 			</div>{/if}
@@ -143,13 +130,13 @@
 						{#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
 							{#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
 								<p>
-									{getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}MP
+									{getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
 								</p>
 							{/if}
 
 							<p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
 						{/if}
-						<p>{getHumanReadableString(asset.exifInfo.fileSizeInByte)}</p>
+						<p>{asByteUnitString(asset.exifInfo.fileSizeInByte)}</p>
 					</div>
 				</div>
 			</div>
@@ -162,14 +149,14 @@
 				<div>
 					<p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
 					<div class="flex text-sm gap-2">
-						<p>{`f/${asset.exifInfo.fNumber}` || ''}</p>
+						<p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString(locale)}` || ''}</p>
 
 						{#if asset.exifInfo.exposureTime}
-							<p>{`1/${Math.floor(1 / asset.exifInfo.exposureTime)}`}</p>
+							<p>{`1/${asset.exifInfo.exposureTime}`}</p>
 						{/if}
 
 						{#if asset.exifInfo.focalLength}
-							<p>{`${asset.exifInfo.focalLength} mm`}</p>
+							<p>{`${asset.exifInfo.focalLength.toLocaleString(locale)} mm`}</p>
 						{/if}
 
 						{#if asset.exifInfo.iso}
@@ -189,7 +176,9 @@
 				<div>
 					<p>{asset.exifInfo.city}</p>
 					<div class="flex text-sm gap-2">
-						<p>{asset.exifInfo.state},</p>
+						<p>{asset.exifInfo.state}</p>
+					</div>
+					<div class="flex text-sm gap-2">
 						<p>{asset.exifInfo.country}</p>
 					</div>
 				</div>
@@ -208,13 +197,18 @@
 			<p class="text-sm pb-4 ">APPEARS IN</p>
 		{/if}
 		{#each albums as album}
-			<a data-sveltekit-prefetch href={`/albums/${album.id}`}>
-				<div class="flex gap-4 py-2 hover:cursor-pointer" on:click={() => dispatch('click', album)}>
+			<a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
+				<div
+					class="flex gap-4 py-2 hover:cursor-pointer"
+					on:click={() => dispatch('click', album)}
+					on:keydown={() => dispatch('click', album)}
+				>
 					<div>
 						<img
 							alt={album.albumName}
 							class="w-[50px] h-[50px] object-cover rounded"
 							src={`/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=JPEG`}
+							draggable="false"
 						/>
 					</div>
 

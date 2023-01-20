@@ -70,6 +70,42 @@
       "compilerOptions": {
         "tsConfigPath": "libs/job/tsconfig.lib.json"
       }
+    },
+    "immich-config": {
+      "type": "library",
+      "root": "libs/immich-config",
+      "entryFile": "index",
+      "sourceRoot": "libs/immich-config/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/immich-config/tsconfig.lib.json"
+      }
+    },
+    "storage": {
+      "type": "library",
+      "root": "libs/storage",
+      "entryFile": "index",
+      "sourceRoot": "libs/storage/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/storage/tsconfig.lib.json"
+      }
+    },
+    "infra": {
+      "type": "library",
+      "root": "libs/infra",
+      "entryFile": "index",
+      "sourceRoot": "libs/infra/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/infra/tsconfig.lib.json"
+      }
+    },
+    "domain": {
+      "type": "library",
+      "root": "libs/domain",
+      "entryFile": "index",
+      "sourceRoot": "libs/domain/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/domain/tsconfig.lib.json"
+      }
     }
   }
 }

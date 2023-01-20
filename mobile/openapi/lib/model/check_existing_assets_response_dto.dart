@@ -31,9 +31,9 @@ class CheckExistingAssetsResponseDto {
   String toString() => 'CheckExistingAssetsResponseDto[existingIds=$existingIds]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'existingIds'] = existingIds;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'existingIds'] = this.existingIds;
+    return json;
   }
 
   /// Returns a new [CheckExistingAssetsResponseDto] instance and imports its values from

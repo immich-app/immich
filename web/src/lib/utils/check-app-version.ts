@@ -9,7 +9,7 @@ type GithubRelease = {
 };
 
 export const checkAppVersion = async (): Promise<CheckAppVersionReponse> => {
-	const res = await fetch('https://api.github.com/repos/alextran1502/immich/releases/latest', {
+	const res = await fetch('https://api.github.com/repos/immich-app/immich/releases/latest', {
 		headers: {
 			Accept: 'application/vnd.github.v3+json'
 		}

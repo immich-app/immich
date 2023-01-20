@@ -45,6 +45,7 @@
 			style:height={`${size}px`}
 			class={`inline rounded-full  object-cover border shadow-md`}
 			title={user.email}
+			draggable="false"
 		/>
 	</button>
 {:catch}

@@ -5,9 +5,13 @@
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import { api, AssetResponseDto } from '@api';
 	import Keydown from 'svelte-keydown';
+	import {
+		notificationController,
+		NotificationType
+	} from '../shared-components/notification/notification';
 
 	export let assetId: string;
-	export let deviceId: string;
+	export let publicSharedKey = '';
 
 	let assetInfo: AssetResponseDto;
 	let assetData: string;
@@ -15,7 +19,11 @@
 	let copyImageToClipboard: (src: string) => Promise<Blob>;
 
 	onMount(async () => {
-		const { data } = await api.assetApi.getAssetById(assetId);
+		const { data } = await api.assetApi.getAssetById(assetId, {
+			params: {
+				key: publicSharedKey
+			}
+		});
 		assetInfo = data;
 
 		//Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -25,15 +33,12 @@
 
 	const loadAssetData = async () => {
 		try {
-			const { data } = await api.assetApi.serveFile(
-				assetInfo.deviceAssetId,
-				deviceId,
-				false,
-				true,
-				{
-					responseType: 'blob'
-				}
-			);
+			const { data } = await api.assetApi.serveFile(assetInfo.id, false, true, {
+				params: {
+					key: publicSharedKey
+				},
+				responseType: 'blob'
+			});
 
 			if (!(data instanceof Blob)) {
 				return;
@@ -46,14 +51,25 @@
 		}
 	};
 
-	const handleCopy = async (keyEvent: CustomEvent<string>) => {
+	const handleKeypress = async (keyEvent: CustomEvent<string>) => {
 		if (keyEvent.detail == 'Control-c' || keyEvent.detail == 'Meta-c') {
-			await copyImageToClipboard(assetData);
+			await doCopy();
 		}
+	};
+
+	export const doCopy = async () => {
+		await copyImageToClipboard(assetData);
+		notificationController.show({
+			type: NotificationType.Info,
+			message: 'Copied image to clipboard.',
+			timeout: 3000
+		});
 	};
 </script>
 
-<Keydown on:combo={handleCopy} />
+<Keydown on:combo={handleKeypress} />
+
+<svelte:window on:copyImage={async () => await doCopy()} />
 
 <div
 	transition:fade={{ duration: 150 }}
@@ -69,6 +85,7 @@
 				alt={assetId}
 				class="object-contain h-full transition-all"
 				loading="lazy"
+				draggable="false"
 			/>
 		{/await}
 	{/if}

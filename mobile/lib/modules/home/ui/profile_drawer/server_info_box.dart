@@ -17,7 +17,7 @@ class ServerInfoBox extends HookConsumerWidget {
 
     final appInfo = useState({});
 
-    _getPackageInfo() async {
+    getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
       appInfo.value = {
@@ -28,7 +28,7 @@ class ServerInfoBox extends HookConsumerWidget {
 
     useEffect(
       () {
-        _getPackageInfo();
+        getPackageInfo();
         return null;
       },
       [],

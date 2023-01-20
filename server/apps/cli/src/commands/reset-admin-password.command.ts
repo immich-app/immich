@@ -1,42 +1,39 @@
-import { UserEntity } from '@app/database/entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import bcrypt from 'bcrypt';
+import { UserResponseDto, UserService } from '@app/domain';
 import { Command, CommandRunner, InquirerService, Question, QuestionSet } from 'nest-commander';
-import { randomBytes } from 'node:crypto';
-import { Repository } from 'typeorm';
 
 @Command({
   name: 'reset-admin-password',
   description: 'Reset the admin password',
 })
 export class ResetAdminPasswordCommand extends CommandRunner {
-  constructor(
-    private readonly inquirer: InquirerService,
-    @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
-  ) {
+  constructor(private userService: UserService, private readonly inquirer: InquirerService) {
     super();
   }
 
   async run(): Promise<void> {
-    let { password } = await this.inquirer.ask<{ password: string }>('prompt-password', undefined);
-    password = password || randomBytes(24).toString('base64').replace(/\W/g, '');
+    const ask = (admin: UserResponseDto) => {
+      const { id, oauthId, email, firstName, lastName } = admin;
+      console.log(`Found Admin: 
+- ID=${id}
+- OAuth ID=${oauthId}
+- Email=${email}
+- Name=${firstName} ${lastName}`);
 
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
+      return this.inquirer.ask<{ password: string }>('prompt-password', undefined).then(({ password }) => password);
+    };
 
-    const user = await this.userRepository.findOne({ where: { isAdmin: true } });
-    if (!user) {
-      console.log('Unable to reset password: no admin user.');
-      return;
+    try {
+      const { password, provided } = await this.userService.resetAdminPassword(ask);
+
+      if (provided) {
+        console.log(`The admin password has been updated.`);
+      } else {
+        console.log(`The admin password has been updated to:\n${password}`);
+      }
+    } catch (error) {
+      console.error(error);
+      console.error('Unable to reset admin password');
     }
-
-    user.salt = salt;
-    user.password = hashedPassword;
-    user.shouldChangePassword = true;
-
-    await this.userRepository.save(user);
-
-    console.log(`New password:\n${password}`);
   }
 }
 

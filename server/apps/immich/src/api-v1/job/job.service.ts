@@ -1,45 +1,43 @@
-import {
-  exifExtractionProcessorName,
-  generateJPEGThumbnailProcessorName,
-  IMetadataExtractionJob,
-  IThumbnailGenerationJob,
-  IVideoTranscodeJob,
-  MachineLearningJobNameEnum,
-  QueueNameEnum,
-  videoMetadataExtractionProcessorName,
-} from '@app/job';
+import { IMetadataExtractionJob, IThumbnailGenerationJob, IVideoTranscodeJob, QueueName, JobName } from '@app/job';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
-import { randomUUID } from 'crypto';
-import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
-import { AssetType } from '@app/database/entities/asset.entity';
+import { IAssetRepository } from '../asset/asset-repository';
+import { AssetType } from '@app/infra';
 import { GetJobDto, JobId } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
+import { StorageService } from '@app/storage';
+import { MACHINE_LEARNING_ENABLED } from '@app/common';
 
 @Injectable()
 export class JobService {
   constructor(
-    @InjectQueue(QueueNameEnum.THUMBNAIL_GENERATION)
+    @InjectQueue(QueueName.THUMBNAIL_GENERATION)
     private thumbnailGeneratorQueue: Queue<IThumbnailGenerationJob>,
 
-    @InjectQueue(QueueNameEnum.METADATA_EXTRACTION)
+    @InjectQueue(QueueName.METADATA_EXTRACTION)
     private metadataExtractionQueue: Queue<IMetadataExtractionJob>,
 
-    @InjectQueue(QueueNameEnum.VIDEO_CONVERSION)
+    @InjectQueue(QueueName.VIDEO_CONVERSION)
     private videoConversionQueue: Queue<IVideoTranscodeJob>,
 
-    @InjectQueue(QueueNameEnum.MACHINE_LEARNING)
+    @InjectQueue(QueueName.MACHINE_LEARNING)
     private machineLearningQueue: Queue<IMachineLearningJob>,
 
-    @Inject(ASSET_REPOSITORY)
+    @InjectQueue(QueueName.CONFIG)
+    private configQueue: Queue,
+
+    @Inject(IAssetRepository)
     private _assetRepository: IAssetRepository,
+
+    private storageService: StorageService,
   ) {
     this.thumbnailGeneratorQueue.empty();
     this.metadataExtractionQueue.empty();
     this.videoConversionQueue.empty();
+    this.configQueue.empty();
   }
 
   async startJob(jobDto: GetJobDto): Promise<number> {
@@ -52,6 +50,8 @@ export class JobService {
         return 0;
       case JobId.MACHINE_LEARNING:
         return this.runMachineLearningPipeline();
+      case JobId.STORAGE_TEMPLATE_MIGRATION:
+        return this.runStorageMigration();
       default:
         throw new BadRequestException('Invalid job id');
     }
@@ -62,6 +62,7 @@ export class JobService {
     const metadataExtractionJobCount = await this.metadataExtractionQueue.getJobCounts();
     const videoConversionJobCount = await this.videoConversionQueue.getJobCounts();
     const machineLearningJobCount = await this.machineLearningQueue.getJobCounts();
+    const storageMigrationJobCount = await this.configQueue.getJobCounts();
 
     const response = new AllJobStatusResponseDto();
     response.isThumbnailGenerationActive = Boolean(thumbnailGeneratorJobCount.waiting);
@@ -72,6 +73,9 @@ export class JobService {
     response.videoConversionQueueCount = videoConversionJobCount;
     response.isMachineLearningActive = Boolean(machineLearningJobCount.waiting);
     response.machineLearningQueueCount = machineLearningJobCount;
+
+    response.isStorageMigrationActive = Boolean(storageMigrationJobCount.active);
+    response.storageMigrationQueueCount = storageMigrationJobCount;
 
     return response;
   }
@@ -93,6 +97,11 @@ export class JobService {
       response.queueCount = await this.videoConversionQueue.getJobCounts();
     }
 
+    if (query.jobId === JobId.STORAGE_TEMPLATE_MIGRATION) {
+      response.isActive = Boolean((await this.configQueue.getJobCounts()).waiting);
+      response.queueCount = await this.configQueue.getJobCounts();
+    }
+
     return response;
   }
 
@@ -110,6 +119,9 @@ export class JobService {
       case JobId.MACHINE_LEARNING:
         this.machineLearningQueue.empty();
         return 0;
+      case JobId.STORAGE_TEMPLATE_MIGRATION:
+        this.configQueue.empty();
+        return 0;
       default:
         throw new BadRequestException('Invalid job id');
     }
@@ -125,7 +137,7 @@ export class JobService {
     const assetsWithNoThumbnail = await this._assetRepository.getAssetWithNoThumbnail();
 
     for (const asset of assetsWithNoThumbnail) {
-      await this.thumbnailGeneratorQueue.add(generateJPEGThumbnailProcessorName, { asset }, { jobId: randomUUID() });
+      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_JPEG_THUMBNAIL, { asset });
     }
 
     return assetsWithNoThumbnail.length;
@@ -141,23 +153,19 @@ export class JobService {
     const assetsWithNoExif = await this._assetRepository.getAssetWithNoEXIF();
     for (const asset of assetsWithNoExif) {
       if (asset.type === AssetType.VIDEO) {
-        await this.metadataExtractionQueue.add(
-          videoMetadataExtractionProcessorName,
-          { asset, fileName: asset.id },
-          { jobId: randomUUID() },
-        );
+        await this.metadataExtractionQueue.add(JobName.EXTRACT_VIDEO_METADATA, { asset, fileName: asset.id });
       } else {
-        await this.metadataExtractionQueue.add(
-          exifExtractionProcessorName,
-          { asset, fileName: asset.id },
-          { jobId: randomUUID() },
-        );
+        await this.metadataExtractionQueue.add(JobName.EXIF_EXTRACTION, { asset, fileName: asset.id });
       }
     }
     return assetsWithNoExif.length;
   }
 
   private async runMachineLearningPipeline(): Promise<number> {
+    if (!MACHINE_LEARNING_ENABLED) {
+      throw new BadRequestException('Machine learning is not enabled.');
+    }
+
     const jobCount = await this.machineLearningQueue.getJobCounts();
 
     if (jobCount.waiting > 0) {
@@ -167,14 +175,22 @@ export class JobService {
     const assetWithNoSmartInfo = await this._assetRepository.getAssetWithNoSmartInfo();
 
     for (const asset of assetWithNoSmartInfo) {
-      await this.machineLearningQueue.add(MachineLearningJobNameEnum.IMAGE_TAGGING, { asset }, { jobId: randomUUID() });
-      await this.machineLearningQueue.add(
-        MachineLearningJobNameEnum.OBJECT_DETECTION,
-        { asset },
-        { jobId: randomUUID() },
-      );
+      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
+      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
     }
 
     return assetWithNoSmartInfo.length;
+  }
+
+  async runStorageMigration() {
+    const jobCount = await this.configQueue.getJobCounts();
+
+    if (jobCount.active > 0) {
+      throw new BadRequestException('Storage migration job is already running');
+    }
+
+    await this.configQueue.add(JobName.TEMPLATE_MIGRATION, {});
+
+    return 1;
   }
 }

@@ -46,12 +46,12 @@ class ServerVersionReponseDto {
   String toString() => 'ServerVersionReponseDto[major=$major, minor=$minor, patch_=$patch_, build=$build]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'major'] = major;
-      _json[r'minor'] = minor;
-      _json[r'patch'] = patch_;
-      _json[r'build'] = build;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'major'] = this.major;
+      json[r'minor'] = this.minor;
+      json[r'patch'] = this.patch_;
+      json[r'build'] = this.build;
+    return json;
   }
 
   /// Returns a new [ServerVersionReponseDto] instance and imports its values from

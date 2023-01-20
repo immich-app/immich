@@ -1,16 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@app/database/entities/user.entity';
-import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
+import { ImmichConfigModule } from '@app/immich-config';
 import { ImmichJwtModule } from '../../modules/immich-jwt/immich-jwt.module';
-import { JwtModule } from '@nestjs/jwt';
-import { jwtConfig } from '../../config/jwt.config';
+import { OAuthModule } from '../oauth/oauth.module';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity]), ImmichJwtModule, JwtModule.register(jwtConfig)],
+  imports: [ImmichJwtModule, OAuthModule, ImmichConfigModule],
   controllers: [AuthController],
-  providers: [AuthService, ImmichJwtService],
+  providers: [AuthService],
 })
 export class AuthModule {}

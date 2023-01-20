@@ -3,12 +3,14 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
+	import { handleError } from '$lib/utils/handle-error';
 	import { AllJobStatusResponseDto, api, JobCommand, JobId } from '@api';
 	import { onDestroy, onMount } from 'svelte';
 	import JobTile from './job-tile.svelte';
 
 	let allJobsStatus: AllJobStatusResponseDto;
 	let setIntervalHandler: NodeJS.Timer;
+
 	onMount(async () => {
 		const { data } = await api.jobApi.getAllJobsStatus();
 		allJobsStatus = data;
@@ -18,7 +20,6 @@
 			allJobsStatus = data;
 		}, 1000);
 	});
-	1;
 
 	onDestroy(() => {
 		clearInterval(setIntervalHandler);
@@ -95,11 +96,33 @@
 					type: NotificationType.Info
 				});
 			}
+		} catch (error) {
+			handleError(error, `Error running machine learning job, check console for more detail`);
+		}
+	};
+
+	const runTemplateMigration = async () => {
+		try {
+			const { data } = await api.jobApi.sendJobCommand(JobId.StorageTemplateMigration, {
+				command: JobCommand.Start
+			});
+
+			if (data) {
+				notificationController.show({
+					message: `Storage migration started`,
+					type: NotificationType.Info
+				});
+			} else {
+				notificationController.show({
+					message: `All files have been migrated to the new storage template`,
+					type: NotificationType.Info
+				});
+			}
 		} catch (e) {
-			console.log('[ERROR] runMachineLearning', e);
+			console.log('[ERROR] runTemplateMigration', e);
 
 			notificationController.show({
-				message: `Error running machine learning job, check console for more detail`,
+				message: `Error running template migration job, check console for more detail`,
 				type: NotificationType.Error
 			});
 		}
@@ -133,6 +156,22 @@
 		waitingJobCount={allJobsStatus?.machineLearningQueueCount.waiting}
 		activeJobCount={allJobsStatus?.machineLearningQueueCount.active}
 	>
-		Note that some asset does not have any object detected, this is normal.
+		Note that some assets may not have any objects detected, this is normal.
+	</JobTile>
+
+	<JobTile
+		title={'Storage migration'}
+		subtitle={''}
+		on:click={runTemplateMigration}
+		jobStatus={allJobsStatus?.isStorageMigrationActive}
+		waitingJobCount={allJobsStatus?.storageMigrationQueueCount.waiting}
+		activeJobCount={allJobsStatus?.storageMigrationQueueCount.active}
+	>
+		Apply the current
+		<a
+			href="/admin/system-settings?open=storage-template"
+			class="text-immich-primary dark:text-immich-dark-primary">Storage template</a
+		>
+		to previously uploaded assets
 	</JobTile>
 </div>

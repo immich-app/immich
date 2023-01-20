@@ -17,11 +17,11 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.34.0</string>
+    <string>1.42.0</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>68</string>
+    <string>79</string>
     <key>LSRequiresIPhoneOS</key>
     <true />
     <key>MGLMapboxMetricsEnabledSettingShownInApp</key>
@@ -58,7 +58,7 @@
       <string>UIInterfaceOrientationPortrait</string>
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
-  </array>
+    </array>
     <key>UISupportedInterfaceOrientations~ipad</key>
     <array>
       <string>UIInterfaceOrientationPortrait</string>
@@ -66,7 +66,7 @@
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
- 
+
     <key>UIViewControllerBasedStatusBarAppearance</key>
     <true />
     <key>io.flutter.embedded_views_preview</key>
@@ -84,18 +84,22 @@
 
     <key>CFBundleLocalizations</key>
     <array>
-      <string>en</string>
-      <string>de</string>
+      <string>cs</string>
       <string>da</string>
+      <string>de</string>
+      <string>en</string>
       <string>es</string>
+      <string>fi</string>
       <string>fr</string>
       <string>it</string>
-      <string>fi</string>
       <string>ja</string>
       <string>ko</string>
       <string>nl</string>
       <string>pl</string>
       <string>pt</string>
+      <string>ru</string>
+      <string>sk</string>
+      <string>zh</string>
     </array>
   </dict>
 </plist>

@@ -1,8 +1,13 @@
+import { UserEntity } from '@app/infra';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+import { IncomingHttpHeaders } from 'http';
 import { JwtPayloadDto } from '../../api-v1/auth/dto/jwt-payload.dto';
-import { jwtSecret } from '../../constants/jwt.constant';
+import { LoginResponseDto, mapLoginResponse } from '../../api-v1/auth/response-dto/login-response.dto';
+import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE, jwtSecret } from '../../constants/jwt.constant';
+import { Socket } from 'socket.io';
+import cookieParser from 'cookie';
+import { UserResponseDto, UserService } from '@app/domain';
 
 export type JwtValidationResult = {
   status: boolean;
@@ -11,12 +16,26 @@ export type JwtValidationResult = {
 
 @Injectable()
 export class ImmichJwtService {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService, private userService: UserService) {}
 
-  public async generateToken(payload: JwtPayloadDto) {
-    return this.jwtService.sign({
-      ...payload,
-    });
+  public getCookieNames() {
+    return [IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE];
+  }
+
+  public getCookies(loginResponse: LoginResponseDto, authType: AuthType) {
+    const maxAge = 7 * 24 * 3600; // 7 days
+
+    const accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}`;
+    const authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; Path=/; Max-Age=${maxAge}`;
+
+    return [accessTokenCookie, authTypeCookie];
+  }
+
+  public async createLoginResponse(user: UserEntity): Promise<LoginResponseDto> {
+    const payload = new JwtPayloadDto(user.id, user.email);
+    const accessToken = await this.generateToken(payload);
+
+    return mapLoginResponse(user, accessToken);
   }
 
   public async validateToken(accessToken: string): Promise<JwtValidationResult> {
@@ -35,23 +54,43 @@ export class ImmichJwtService {
     }
   }
 
-  public extractJwtFromHeader(req: Request) {
-    if (
-      req.headers.authorization &&
-      (req.headers.authorization.split(' ')[0] === 'Bearer' || req.headers.authorization.split(' ')[0] === 'bearer')
-    ) {
-      const accessToken = req.headers.authorization.split(' ')[1];
-      return accessToken;
+  public extractJwtFromHeader(headers: IncomingHttpHeaders) {
+    if (!headers.authorization) {
+      return null;
+    }
+    const [type, accessToken] = headers.authorization.split(' ');
+    if (type.toLowerCase() !== 'bearer') {
+      return null;
+    }
+
+    return accessToken;
+  }
+
+  public extractJwtFromCookie(cookies: Record<string, string>) {
+    return cookies?.[IMMICH_ACCESS_COOKIE] || null;
+  }
+
+  public async validateSocket(client: Socket): Promise<UserResponseDto | null> {
+    const headers = client.handshake.headers;
+    const accessToken =
+      this.extractJwtFromCookie(cookieParser.parse(headers.cookie || '')) || this.extractJwtFromHeader(headers);
+
+    if (accessToken) {
+      const { userId, status } = await this.validateToken(accessToken);
+      if (userId && status) {
+        const user = await this.userService.getUserById(userId).catch(() => null);
+        if (user) {
+          return user;
+        }
+      }
     }
 
     return null;
   }
 
-  public extractJwtFromCookie(req: Request) {
-    if (req.cookies?.immich_access_token) {
-      return req.cookies.immich_access_token;
-    }
-
-    return null;
+  private async generateToken(payload: JwtPayloadDto) {
+    return this.jwtService.sign({
+      ...payload,
+    });
   }
 }

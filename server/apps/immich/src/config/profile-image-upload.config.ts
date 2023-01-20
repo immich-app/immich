@@ -6,6 +6,8 @@ import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
+import { AuthUserDto } from '../decorators/auth-user.decorator';
+import { patchFormData } from '../utils/path-form-data.util';
 
 export const profileImageUploadOption: MulterOptions = {
   fileFilter,
@@ -34,8 +36,10 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
     return cb(new UnauthorizedException());
   }
 
+  const user = req.user as AuthUserDto;
+
   const basePath = APP_UPLOAD_LOCATION;
-  const profileImageLocation = `${basePath}/${req.user.id}/profile`;
+  const profileImageLocation = `${basePath}/${user.id}/profile`;
 
   if (!existsSync(profileImageLocation)) {
     mkdirSync(profileImageLocation, { recursive: true });
@@ -48,6 +52,8 @@ function filename(req: Request, file: Express.Multer.File, cb: any) {
   if (!req.user) {
     return cb(new UnauthorizedException());
   }
+
+  file.originalname = patchFormData(file.originalname);
 
   const userId = req.user.id;
   const fileName = `${userId}${extname(file.originalname)}`;

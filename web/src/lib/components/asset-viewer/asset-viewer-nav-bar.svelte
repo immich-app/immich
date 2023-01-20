@@ -11,12 +11,19 @@
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import Star from 'svelte-material-icons/Star.svelte';
 	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
+	import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
+	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
+	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
+
 	import { page } from '$app/stores';
 	import { AssetResponseDto } from '../../../api';
 
 	export let asset: AssetResponseDto;
+	export let showCopyButton: boolean;
+	export let showMotionPlayButton: boolean;
+	export let isMotionPhotoPlaying = false;
 
-	const isOwner = asset.ownerId === $page.data.user.id;
+	const isOwner = asset.ownerId === $page.data.user?.id;
 
 	const dispatch = createEventDispatcher();
 
@@ -39,14 +46,47 @@
 </script>
 
 <div
-	class="h-16 bg-black/5 flex justify-between place-items-center px-3 transition-transform duration-200 z-[9999]"
+	class="h-16 flex justify-between place-items-center px-3 transition-transform duration-200 z-[9999]"
 >
 	<div>
 		<CircleIconButton logo={ArrowLeft} on:click={() => dispatch('goBack')} />
 	</div>
 	<div class="text-white flex gap-2">
-		<CircleIconButton logo={CloudDownloadOutline} on:click={() => dispatch('download')} />
-		<CircleIconButton logo={InformationOutline} on:click={() => dispatch('showDetail')} />
+		{#if showMotionPlayButton}
+			{#if isMotionPhotoPlaying}
+				<CircleIconButton
+					logo={MotionPauseOutline}
+					title="Stop Motion Photo"
+					on:click={() => dispatch('stopMotionPhoto')}
+				/>
+			{:else}
+				<CircleIconButton
+					logo={MotionPlayOutline}
+					title="Play Motion Photo"
+					on:click={() => dispatch('playMotionPhoto')}
+				/>
+			{/if}
+		{/if}
+		{#if showCopyButton}
+			<CircleIconButton
+				logo={ContentCopy}
+				title="Copy Image"
+				on:click={() => {
+					const copyEvent = new CustomEvent('copyImage');
+					window.dispatchEvent(copyEvent);
+				}}
+			/>
+		{/if}
+		<CircleIconButton
+			logo={CloudDownloadOutline}
+			on:click={() => dispatch('download')}
+			title="Download"
+		/>
+		<CircleIconButton
+			logo={InformationOutline}
+			on:click={() => dispatch('showDetail')}
+			title="Info"
+		/>
 		{#if isOwner}
 			<CircleIconButton
 				logo={asset.isFavorite ? Star : StarOutline}
@@ -54,8 +94,15 @@
 				title="Favorite"
 			/>
 		{/if}
-		<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} />
-		<CircleIconButton logo={DotsVertical} on:click={(event) => showOptionsMenu(event)} />
+
+		{#if isOwner}
+			<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+			<CircleIconButton
+				logo={DotsVertical}
+				on:click={(event) => showOptionsMenu(event)}
+				title="More"
+			/>
+		{/if}
 	</div>
 </div>
 

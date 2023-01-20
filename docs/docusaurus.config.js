@@ -28,10 +28,23 @@ const config = {
     locales: ["en"],
   },
 
+  plugins: [
+    async function myPlugin(context, options) {
+      return {
+        name: "docusaurus-tailwindcss",
+        configurePostCss(postcssOptions) {
+          // Appends TailwindCSS and AutoPrefixer.
+          postcssOptions.plugins.push(require("tailwindcss"));
+          postcssOptions.plugins.push(require("autoprefixer"));
+          return postcssOptions;
+        },
+      };
+    },
+  ],
   presets: [
     [
-      "classic",
-      /** @type {import('@docusaurus/preset-classic').Options} */
+      "docusaurus-preset-openapi",
+      /** @type {import('docusaurus-preset-openapi').Options} */
       ({
         docs: {
           showLastUpdateAuthor: true,
@@ -41,6 +54,10 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: "https://github.com/immich-app/immich/tree/main/docs/",
+        },
+        api: {
+          path: "../server/immich-openapi-specs.json",
+          routeBasePath: "/docs/api",
         },
         // blog: {
         //   showReadingTime: true,
@@ -56,6 +73,9 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      colorMode: {
+        defaultMode: "dark",
+      },
       announcementBar: {
         id: "site_announcement_immich",
         content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
@@ -78,12 +98,21 @@ const config = {
           {
             to: "/docs/overview/introduction",
             position: "right",
-            label: "Documentation",
+            label: "Docs",
           },
-          // { to: "/blog", label: "Blog", position: "right" },
+          {
+            to: "/docs/api",
+            position: "right",
+            label: "API",
+          },
           {
             href: "https://github.com/immich-app/immich",
             label: "GitHub",
+            position: "right",
+          },
+          {
+            href: "https://github.com/orgs/immich-app/projects/1",
+            label: "Roadmap",
             position: "right",
           },
         ],
@@ -100,7 +129,7 @@ const config = {
               },
               {
                 label: "Installation",
-                to: "/docs/installation/requirements",
+                to: "/docs/install/requirements",
               },
             ],
           },
@@ -114,15 +143,19 @@ const config = {
             ],
           },
           {
-            title: "More",
+            title: "Links",
             items: [
-              {
-                label: "Blog",
-                to: "/blog",
-              },
+              // {
+              //   label: "Blog",
+              //   to: "/blog",
+              // },
               {
                 label: "GitHub",
                 href: "https://github.com/immich-app/immich",
+              },
+              {
+                label: "Roadmap",
+                href: "https://github.com/orgs/immich-app/projects/1",
               },
             ],
           },
@@ -133,6 +166,7 @@ const config = {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
+      image: "overview/img/feature-panel.png",
     }),
 };
 

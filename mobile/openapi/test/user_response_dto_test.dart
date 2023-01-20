@@ -56,6 +56,16 @@ void main() {
       // TODO
     });
 
+    // DateTime deletedAt
+    test('to test the property `deletedAt`', () async {
+      // TODO
+    });
+
+    // String oauthId
+    test('to test the property `oauthId`', () async {
+      // TODO
+    });
+
 
   });
 

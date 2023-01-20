@@ -6,26 +6,35 @@ import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { AppModule } from './app.module';
-import { serverVersion } from './constants/server_version.constant';
+import { SERVER_VERSION } from './constants/server_version.constant';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 import { json } from 'body-parser';
+import { patchOpenAPI } from './utils/patch-open-api.util';
+import { getLogLevels, MACHINE_LEARNING_ENABLED } from '@app/common';
+
+const logger = new Logger('ImmichServer');
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: getLogLevels(),
+  });
 
   app.set('trust proxy');
+  app.set('etag', 'strong');
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   if (process.env.NODE_ENV === 'development') {
     app.enableCors();
   }
 
-  app.useWebSocketAdapter(new RedisIoAdapter(app));
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
 
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
-    .setVersion('1.17.0')
+    .setVersion(SERVER_VERSION)
     .addBearerAuth({
       type: 'http',
       scheme: 'Bearer',
@@ -54,19 +63,13 @@ async function bootstrap() {
     if (process.env.NODE_ENV == 'development') {
       // Generate API Documentation only in development mode
       const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
-      writeFileSync(outputPath, JSON.stringify(apiDocument), { encoding: 'utf8' });
-      Logger.log(
-        `Running Immich Server in DEVELOPMENT environment - version ${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`,
-        'ImmichServer',
-      );
+      writeFileSync(outputPath, JSON.stringify(patchOpenAPI(apiDocument), null, 2), { encoding: 'utf8' });
     }
 
-    if (process.env.NODE_ENV == 'production') {
-      Logger.log(
-        `Running Immich Server in PRODUCTION environment - version ${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`,
-        'ImmichServer',
-      );
-    }
+    const envName = (process.env.NODE_ENV || 'development').toUpperCase();
+    logger.log(`Running Immich Server in ${envName} environment - version ${SERVER_VERSION}`);
   });
+
+  logger.warn(`Machine learning is ${MACHINE_LEARNING_ENABLED ? 'enabled' : 'disabled'}`);
 }
 bootstrap();

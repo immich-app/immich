@@ -1,7 +1,7 @@
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { AssetEntity, AssetType } from '@app/infra';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -14,6 +14,8 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
+import { ITagRepository } from '../tag/tag.repository';
+import { IsNull } from 'typeorm';
 
 export interface IAssetRepository {
   create(
@@ -21,10 +23,12 @@ export interface IAssetRepository {
     ownerId: string,
     originalPath: string,
     mimeType: string,
+    isVisible: boolean,
     checksum?: Buffer,
+    livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity>;
-  update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
-  getAllByUserId(userId: string): Promise<AssetEntity[]>;
+  update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
+  getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
@@ -41,15 +45,18 @@ export interface IAssetRepository {
     userId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto>;
+  countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
 
-export const ASSET_REPOSITORY = 'ASSET_REPOSITORY';
+export const IAssetRepository = 'IAssetRepository';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+
+    @Inject(ITagRepository) private _tagRepository: ITagRepository,
   ) {}
 
   async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
@@ -58,17 +65,19 @@ export class AssetRepository implements IAssetRepository {
       .leftJoinAndSelect('asset.smartInfo', 'si')
       .where('asset.resizePath IS NOT NULL')
       .andWhere('si.id IS NULL')
+      .andWhere('asset.isVisible = true')
       .getMany();
   }
 
   async getAssetWithNoThumbnail(): Promise<AssetEntity[]> {
-    return await this.assetRepository
-      .createQueryBuilder('asset')
-      .where('asset.resizePath IS NULL')
-      .orWhere('asset.resizePath = :resizePath', { resizePath: '' })
-      .orWhere('asset.webpPath IS NULL')
-      .orWhere('asset.webpPath = :webpPath', { webpPath: '' })
-      .getMany();
+    return await this.assetRepository.find({
+      where: [
+        { resizePath: IsNull(), isVisible: true },
+        { resizePath: '', isVisible: true },
+        { webpPath: IsNull(), isVisible: true },
+        { webpPath: '', isVisible: true },
+      ],
+    });
   }
 
   async getAssetWithNoEXIF(): Promise<AssetEntity[]> {
@@ -76,27 +85,39 @@ export class AssetRepository implements IAssetRepository {
       .createQueryBuilder('asset')
       .leftJoinAndSelect('asset.exifInfo', 'ei')
       .where('ei."assetId" IS NULL')
+      .andWhere('asset.isVisible = true')
       .getMany();
   }
 
   async getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {
     // Get asset count by AssetType
-    const res = await this.assetRepository
+    const items = await this.assetRepository
       .createQueryBuilder('asset')
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')
       .where('"userId" = :userId', { userId: userId })
+      .andWhere('asset.isVisible = true')
       .groupBy('asset.type')
       .getRawMany();
 
-    const assetCountByUserId = new AssetCountByUserIdResponseDto(0, 0);
-    res.map((item) => {
-      if (item.type === 'IMAGE') {
-        assetCountByUserId.photos = item.count;
-      } else if (item.type === 'VIDEO') {
-        assetCountByUserId.videos = item.count;
-      }
-    });
+    const assetCountByUserId = new AssetCountByUserIdResponseDto();
+
+    // asset type to dto property mapping
+    const map: Record<AssetType, keyof AssetCountByUserIdResponseDto> = {
+      [AssetType.AUDIO]: 'audio',
+      [AssetType.IMAGE]: 'photos',
+      [AssetType.VIDEO]: 'videos',
+      [AssetType.OTHER]: 'other',
+    };
+
+    for (const item of items) {
+      const count = Number(item.count) || 0;
+      const assetType = item.type as AssetType;
+      const type = map[assetType];
+
+      assetCountByUserId[type] = count;
+      assetCountByUserId.total += count;
+    }
 
     return assetCountByUserId;
   }
@@ -110,6 +131,7 @@ export class AssetRepository implements IAssetRepository {
         buckets: [...getAssetByTimeBucketDto.timeBucket],
       })
       .andWhere('asset.resizePath is not NULL')
+      .andWhere('asset.isVisible = true')
       .orderBy('asset.createdAt', 'DESC')
       .getMany();
   }
@@ -124,6 +146,7 @@ export class AssetRepository implements IAssetRepository {
         .addSelect(`date_trunc('month', "createdAt")`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
         .andWhere('asset.resizePath is not NULL')
+        .andWhere('asset.isVisible = true')
         .groupBy(`date_trunc('month', "createdAt")`)
         .orderBy(`date_trunc('month', "createdAt")`, 'DESC')
         .getRawMany();
@@ -134,6 +157,7 @@ export class AssetRepository implements IAssetRepository {
         .addSelect(`date_trunc('day', "createdAt")`, 'timeBucket')
         .where('"userId" = :userId', { userId: userId })
         .andWhere('asset.resizePath is not NULL')
+        .andWhere('asset.isVisible = true')
         .groupBy(`date_trunc('day', "createdAt")`)
         .orderBy(`date_trunc('day', "createdAt")`, 'DESC')
         .getRawMany();
@@ -146,6 +170,7 @@ export class AssetRepository implements IAssetRepository {
     return await this.assetRepository
       .createQueryBuilder('asset')
       .where('asset.userId = :userId', { userId: userId })
+      .andWhere('asset.isVisible = true')
       .leftJoin('asset.exifInfo', 'ei')
       .leftJoin('asset.smartInfo', 'si')
       .select('si.tags', 'tags')
@@ -169,6 +194,7 @@ export class AssetRepository implements IAssetRepository {
         FROM assets a
         LEFT JOIN smart_info si ON a.id = si."assetId"
         WHERE a."userId" = $1
+        AND a."isVisible" = true
         AND si.objects IS NOT NULL
       `,
       [userId],
@@ -182,6 +208,7 @@ export class AssetRepository implements IAssetRepository {
         FROM assets a
         LEFT JOIN exif e ON a.id = e."assetId"
         WHERE a."userId" = $1
+        AND a."isVisible" = true
         AND e.city IS NOT NULL
         AND a.type = 'IMAGE';
       `,
@@ -199,7 +226,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         id: assetId,
       },
-      relations: ['exifInfo'],
+      relations: ['exifInfo', 'tags', 'sharedLinks'],
     });
   }
 
@@ -207,14 +234,16 @@ export class AssetRepository implements IAssetRepository {
    * Get all assets belong to the user on the database
    * @param userId
    */
-  async getAllByUserId(userId: string): Promise<AssetEntity[]> {
+  async getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]> {
     const query = this.assetRepository
       .createQueryBuilder('asset')
       .where('asset.userId = :userId', { userId: userId })
       .andWhere('asset.resizePath is not NULL')
+      .andWhere('asset.isVisible = true')
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.tags', 'tags')
+      .skip(skip || 0)
       .orderBy('asset.createdAt', 'DESC');
-
     return await query.getMany();
   }
 
@@ -231,13 +260,15 @@ export class AssetRepository implements IAssetRepository {
     ownerId: string,
     originalPath: string,
     mimeType: string,
+    isVisible: boolean,
     checksum?: Buffer,
+    livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity> {
     const asset = new AssetEntity();
     asset.deviceAssetId = createAssetDto.deviceAssetId;
     asset.userId = ownerId;
     asset.deviceId = createAssetDto.deviceId;
-    asset.type = createAssetDto.assetType || AssetType.OTHER;
+    asset.type = !isVisible ? AssetType.VIDEO : createAssetDto.assetType || AssetType.OTHER; // If an asset is not visible, it is a LivePhotos video portion, therefore we can confidently assign the type as VIDEO here
     asset.originalPath = originalPath;
     asset.createdAt = createAssetDto.createdAt;
     asset.modifiedAt = createAssetDto.modifiedAt;
@@ -245,6 +276,8 @@ export class AssetRepository implements IAssetRepository {
     asset.mimeType = mimeType;
     asset.duration = createAssetDto.duration || null;
     asset.checksum = checksum || null;
+    asset.isVisible = isVisible;
+    asset.livePhotoVideoId = livePhotoAssetEntity ? livePhotoAssetEntity.id : null;
 
     const createdAsset = await this.assetRepository.save(asset);
 
@@ -257,8 +290,13 @@ export class AssetRepository implements IAssetRepository {
   /**
    * Update asset
    */
-  async update(asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
+  async update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
     asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
+
+    if (dto.tagIds) {
+      const tags = await this._tagRepository.getByIds(userId, dto.tagIds);
+      asset.tags = tags;
+    }
 
     return await this.assetRepository.save(asset);
   }
@@ -275,6 +313,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         userId: userId,
         deviceId: deviceId,
+        isVisible: true,
       },
       select: ['deviceAssetId'],
     });
@@ -313,5 +352,14 @@ export class AssetRepository implements IAssetRepository {
       },
     });
     return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
+  }
+
+  async countByIdAndUser(assetId: string, userId: string): Promise<number> {
+    return await this.assetRepository.count({
+      where: {
+        id: assetId,
+        userId,
+      },
+    });
   }
 }

@@ -10,8 +10,10 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/utils/openapi_extensions.dart';
+import 'package:immich_mobile/utils/tuple.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
-import 'package:photo_manager/src/types/entity.dart';
 
 final assetServiceProvider = Provider(
   (ref) => AssetService(
@@ -25,42 +27,31 @@ class AssetService {
   final ApiService _apiService;
   final BackupService _backupService;
   final BackgroundService _backgroundService;
+  final log = Logger('AssetService');
 
   AssetService(this._apiService, this._backupService, this._backgroundService);
 
-  /// Returns all local, remote assets in that order
-  Future<List<Asset>> getAllAsset({bool urgent = false}) async {
-    final List<Asset> assets = [];
+  /// Returns `null` if the server state did not change, else list of assets
+  Future<Pair<List<Asset>?, String?>> getRemoteAssets({String? etag}) async {
     try {
-      // not using `await` here to fetch local & remote assets concurrently
-      final Future<List<AssetResponseDto>?> remoteTask =
-          _apiService.assetApi.getAllAssets();
-      final Iterable<AssetEntity> newLocalAssets;
-      final List<AssetEntity> localAssets = await _getLocalAssets(urgent);
-      final List<AssetResponseDto> remoteAssets = await remoteTask ?? [];
-      if (remoteAssets.isNotEmpty && localAssets.isNotEmpty) {
-        final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
-        final Set<String> existingIds = remoteAssets
-            .where((e) => e.deviceId == deviceId)
-            .map((e) => e.deviceAssetId)
-            .toSet();
-        newLocalAssets = localAssets.where((e) => !existingIds.contains(e.id));
-      } else {
-        newLocalAssets = localAssets;
+      final Pair<List<AssetResponseDto>, String?>? remote =
+          await _apiService.assetApi.getAllAssetsWithETag(eTag: etag);
+      if (remote == null) {
+        return const Pair(null, null);
       }
-
-      assets.addAll(newLocalAssets.map((e) => Asset.local(e)));
-      // the order (first all local, then remote assets) is important!
-      assets.addAll(remoteAssets.map((e) => Asset.remote(e)));
-    } catch (e) {
-      debugPrint("Error [getAllAsset]  ${e.toString()}");
+      return Pair(
+        remote.first.map(Asset.remote).toList(growable: false),
+        remote.second,
+      );
+    } catch (e, stack) {
+      log.severe('Error while getting remote assets', e, stack);
+      return const Pair(null, null);
     }
-    return assets;
   }
 
   /// if [urgent] is `true`, do not block by waiting on the background service
-  /// to finish running. Returns an empty list instead after a timeout.
-  Future<List<AssetEntity>> _getLocalAssets(bool urgent) async {
+  /// to finish running. Returns `null` instead after a timeout.
+  Future<List<Asset>?> getLocalAssets({bool urgent = false}) async {
     try {
       final Future<bool> hasAccess = urgent
           ? _backgroundService.hasAccess
@@ -71,15 +62,16 @@ class AssetService {
       }
       final box = await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
       final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
-
-      return backupAlbumInfo != null
-          ? await _backupService
-              .buildUploadCandidates(backupAlbumInfo.deepCopy())
-          : [];
+      if (backupAlbumInfo != null) {
+        return (await _backupService
+                .buildUploadCandidates(backupAlbumInfo.deepCopy()))
+            .map(Asset.local)
+            .toList(growable: false);
+      }
     } catch (e) {
       debugPrint("Error [_getLocalAssets] ${e.toString()}");
-      return [];
     }
+    return null;
   }
 
   Future<Asset?> getAssetById(String assetId) async {

@@ -17,17 +17,37 @@ void main() {
   // final instance = AuthenticationApi();
 
   group('tests for AuthenticationApi', () {
+    // 
+    //
     //Future<AdminSignupResponseDto> adminSignUp(SignUpDto signUpDto) async
     test('test adminSignUp', () async {
       // TODO
     });
 
+    // 
+    //
+    //Future<UserResponseDto> changePassword(ChangePasswordDto changePasswordDto) async
+    test('test changePassword', () async {
+      // TODO
+    });
+
+    // 
+    //
     //Future<LoginResponseDto> login(LoginCredentialDto loginCredentialDto) async
     test('test login', () async {
       // TODO
     });
 
-    //Future<Object> validateAccessToken() async
+    // 
+    //
+    //Future<LogoutResponseDto> logout() async
+    test('test logout', () async {
+      // TODO
+    });
+
+    // 
+    //
+    //Future<ValidateAccessTokenResponseDto> validateAccessToken() async
     test('test validateAccessToken', () async {
       // TODO
     });

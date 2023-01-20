@@ -4,6 +4,9 @@ dev:
 dev-new:
 	rm -rf ./server/dist && docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
+dev-new-update:
+	rm -rf ./server/dist && docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
+
 dev-update:
 	rm -rf ./server/dist && docker-compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
@@ -27,3 +30,6 @@ prod-scale:
 
 api:
 	cd ./server && npm run api:generate
+
+attach-server:
+	docker exec -it docker_immich-server_1 sh

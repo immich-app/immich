@@ -54,7 +54,9 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 val args = call.arguments<ArrayList<*>>()!!
                 val requireUnmeteredNetwork = args.get(0) as Boolean
                 val requireCharging = args.get(1) as Boolean
-                ContentObserverWorker.configureWork(ctx, requireUnmeteredNetwork, requireCharging)
+                val triggerUpdateDelay = (args.get(2) as Number).toLong()
+                val triggerMaxDelay = (args.get(3) as Number).toLong()
+                ContentObserverWorker.configureWork(ctx, requireUnmeteredNetwork, requireCharging, triggerUpdateDelay, triggerMaxDelay)
                 result.success(true)
             }
             "disable" -> {

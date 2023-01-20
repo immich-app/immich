@@ -4,11 +4,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/download_loading_indicator.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 // ignore: must_be_immutable
 class ImageViewerPage extends HookConsumerWidget {
@@ -17,7 +16,9 @@ class ImageViewerPage extends HookConsumerWidget {
   final String authToken;
   final ValueNotifier<bool> isZoomedListener;
   final void Function() isZoomedFunction;
-  final bool threeStageLoading;
+  final void Function()? showExifSheet;
+  final bool loadPreview;
+  final bool loadOriginal;
 
   ImageViewerPage({
     Key? key,
@@ -26,7 +27,9 @@ class ImageViewerPage extends HookConsumerWidget {
     required this.authToken,
     required this.isZoomedFunction,
     required this.isZoomedListener,
-    required this.threeStageLoading,
+    required this.loadPreview,
+    required this.loadOriginal,
+    this.showExifSheet,
   }) : super(key: key);
 
   Asset? assetDetail;
@@ -54,18 +57,6 @@ class ImageViewerPage extends HookConsumerWidget {
       [],
     );
 
-    showInfo() {
-      showModalBottomSheet(
-        backgroundColor: Colors.black,
-        barrierColor: Colors.transparent,
-        isScrollControlled: false,
-        context: context,
-        builder: (context) {
-          return ExifBottomSheet(assetDetail: assetDetail ?? asset);
-        },
-      );
-    }
-
     return Stack(
       children: [
         Center(
@@ -74,17 +65,18 @@ class ImageViewerPage extends HookConsumerWidget {
             child: RemotePhotoView(
               asset: asset,
               authToken: authToken,
-              threeStageLoading: threeStageLoading,
+              loadPreview: loadPreview,
+              loadOriginal: loadOriginal,
               isZoomedFunction: isZoomedFunction,
               isZoomedListener: isZoomedListener,
               onSwipeDown: () => AutoRouter.of(context).pop(),
-              onSwipeUp: asset.isRemote ? showInfo : () {},
+              onSwipeUp: (asset.isRemote && showExifSheet  != null) ? showExifSheet! : () {},
             ),
           ),
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
           const Center(
-            child: DownloadLoadingIndicator(),
+            child: ImmichLoadingIndicator(),
           ),
       ],
     );

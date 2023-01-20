@@ -1,6 +1,11 @@
 import 'dart:math';
 
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:logging/logging.dart';
+
+final log = Logger('AssetGridDataStructure');
 
 enum RenderAssetGridElementType {
   assetRow,
@@ -30,81 +35,122 @@ class RenderAssetGridElement {
   });
 }
 
-List<RenderAssetGridElement> assetsToRenderList(
-  List<Asset> assets,
-  int assetsPerRow,
-) {
-  List<RenderAssetGridElement> elements = [];
+class _AssetGroupsToRenderListComputeParameters {
+  final String monthFormat;
+  final String dayFormat;
+  final String dayFormatYear;
+  final Map<String, List<Asset>> groups;
+  final int perRow;
 
-  int cursor = 0;
-  while (cursor < assets.length) {
-    int rowElements = min(assets.length - cursor, assetsPerRow);
-    final date = assets[cursor].createdAt;
-
-    final rowElement = RenderAssetGridElement(
-      RenderAssetGridElementType.assetRow,
-      date: date,
-      assetRow: RenderAssetGridRow(
-        assets.sublist(cursor, cursor + rowElements),
-      ),
-    );
-
-    elements.add(rowElement);
-    cursor += rowElements;
-  }
-
-  return elements;
+  _AssetGroupsToRenderListComputeParameters(this.monthFormat, this.dayFormat,
+      this.dayFormatYear, this.groups, this.perRow);
 }
 
-List<RenderAssetGridElement> assetGroupsToRenderList(
-  Map<String, List<Asset>> assetGroups,
-  int assetsPerRow,
-) {
-  List<RenderAssetGridElement> elements = [];
-  DateTime? lastDate;
+class RenderList {
+  final List<RenderAssetGridElement> elements;
 
-  assetGroups.forEach((groupName, assets) {
-    final date = DateTime.parse(groupName);
+  RenderList(this.elements);
 
-    if (lastDate == null || lastDate!.month != date.month) {
-      elements.add(
-        RenderAssetGridElement(
-          RenderAssetGridElementType.monthTitle,
-          title: groupName,
-          date: date,
-        ),
-      );
-    }
+  static Future<RenderList> _processAssetGroupData(
+      _AssetGroupsToRenderListComputeParameters data) async {
+    final monthFormat = DateFormat(data.monthFormat);
+    final dayFormatSameYear = DateFormat(data.dayFormat);
+    final dayFormatOtherYear = DateFormat(data.dayFormatYear);
+    final groups = data.groups;
+    final perRow = data.perRow;
 
-    // Add group title
-    elements.add(
-      RenderAssetGridElement(
-        RenderAssetGridElementType.dayTitle,
-        title: groupName,
-        date: date,
-        relatedAssetList: assets,
+    List<RenderAssetGridElement> elements = [];
+    DateTime? lastDate;
+
+    groups.forEach((groupName, assets) {
+      try {
+        final date = DateTime.parse(groupName);
+
+        if (lastDate == null || lastDate!.month != date.month) {
+          // Month title
+
+          var monthTitleText = groupName;
+
+          var groupDate = DateTime.tryParse(groupName);
+          if (groupDate != null) {
+            monthTitleText = monthFormat.format(groupDate);
+          } else {
+            log.severe("Failed to format date for day title: $groupName");
+          }
+
+          elements.add(
+            RenderAssetGridElement(
+              RenderAssetGridElementType.monthTitle,
+              title: monthTitleText,
+              date: date,
+            ),
+          );
+        }
+
+        // Add group title
+        var currentYear = DateTime.now().year;
+        var groupYear = DateTime.parse(groupName).year;
+        var formatDate =
+            currentYear == groupYear ? dayFormatSameYear : dayFormatOtherYear;
+
+        var dateText = groupName;
+
+        var groupDate = DateTime.tryParse(groupName);
+        if (groupDate != null) {
+          dateText = formatDate.format(groupDate);
+        } else {
+          log.severe("Failed to format date for day title: $groupName");
+        }
+
+        elements.add(
+          RenderAssetGridElement(
+            RenderAssetGridElementType.dayTitle,
+            title: dateText,
+            date: date,
+            relatedAssetList: assets,
+          ),
+        );
+
+        // Add rows
+        int cursor = 0;
+        while (cursor < assets.length) {
+          int rowElements = min(assets.length - cursor, perRow);
+
+          final rowElement = RenderAssetGridElement(
+            RenderAssetGridElementType.assetRow,
+            date: date,
+            assetRow: RenderAssetGridRow(
+              assets.sublist(cursor, cursor + rowElements),
+            ),
+          );
+
+          elements.add(rowElement);
+          cursor += rowElements;
+        }
+
+        lastDate = date;
+      } catch (e, stackTrace) {
+        log.severe(e, stackTrace);
+      }
+    });
+
+    return RenderList(elements);
+  }
+
+  static Future<RenderList> fromAssetGroups(
+    Map<String, List<Asset>> assetGroups,
+    int assetsPerRow,
+  ) async {
+    // Compute only allows for one parameter. Therefore we pass all parameters in a map
+    return compute(
+      _processAssetGroupData,
+      _AssetGroupsToRenderListComputeParameters(
+        "monthly_title_text_date_format".tr(),
+        "daily_title_text_date".tr(),
+        "daily_title_text_date_year".tr(),
+        assetGroups,
+        assetsPerRow,
       ),
     );
-
-    // Add rows
-    int cursor = 0;
-    while (cursor < assets.length) {
-      int rowElements = min(assets.length - cursor, assetsPerRow);
-
-      final rowElement = RenderAssetGridElement(
-        RenderAssetGridElementType.assetRow,
-        date: date,
-        assetRow: RenderAssetGridRow(
-          assets.sublist(cursor, cursor + rowElements),
-        ),
-      );
-
-      elements.add(rowElement);
-      cursor += rowElements;
-    }
-
-    lastDate = date;
-  });
-
-  return elements;
+  }
 }

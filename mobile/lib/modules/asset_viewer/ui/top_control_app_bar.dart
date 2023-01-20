@@ -3,21 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 
-class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
+class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
   const TopControlAppBar({
     Key? key,
     required this.asset,
     required this.onMoreInfoPressed,
     required this.onDownloadPressed,
     required this.onSharePressed,
-    this.loading = false,
+    required this.onDeletePressed,
+    required this.onToggleMotionVideo,
+    required this.isPlayingMotionVideo,
   }) : super(key: key);
 
   final Asset asset;
   final Function onMoreInfoPressed;
   final VoidCallback? onDownloadPressed;
+  final VoidCallback onToggleMotionVideo;
+  final VoidCallback onDeletePressed;
   final Function onSharePressed;
-  final bool loading;
+  final bool isPlayingMotionVideo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,14 +42,22 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
         ),
       ),
       actions: [
-        if (loading)
-          Center(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 15.0),
-              width: iconSize,
-              height: iconSize,
-              child: const CircularProgressIndicator(strokeWidth: 2.0),
-            ),
+        if (asset.remote?.livePhotoVideoId != null)
+          IconButton(
+            iconSize: iconSize,
+            splashRadius: iconSize,
+            onPressed: () {
+              onToggleMotionVideo();
+            },
+            icon: isPlayingMotionVideo
+                ? Icon(
+                    Icons.motion_photos_pause_outlined,
+                    color: Colors.grey[200],
+                  )
+                : Icon(
+                    Icons.play_circle_outline_rounded,
+                    color: Colors.grey[200],
+                  ),
           ),
         if (!asset.isLocal)
           IconButton(
@@ -64,7 +76,18 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
             onSharePressed();
           },
           icon: Icon(
-            Icons.share,
+            Icons.ios_share_rounded,
+            color: Colors.grey[200],
+          ),
+        ),
+        IconButton(
+          iconSize: iconSize,
+          splashRadius: iconSize,
+          onPressed: () {
+            onDeletePressed();
+          },
+          icon: Icon(
+            Icons.delete_outline_rounded,
             color: Colors.grey[200],
           ),
         ),
@@ -79,7 +102,7 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
               Icons.more_horiz_rounded,
               color: Colors.grey[200],
             ),
-          )
+          ),
       ],
     );
   }

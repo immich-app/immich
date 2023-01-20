@@ -1,35 +1,36 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  Logger,
-  InternalServerErrorException,
-  StreamableFile,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { AlbumEntity } from '@app/database/entities/album.entity';
+import { AlbumEntity, SharedLinkType } from '@app/infra';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
 import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from './response-dto/album-response.dto';
-import { ALBUM_REPOSITORY, IAlbumRepository } from './album-repository';
+import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
-import { ASSET_REPOSITORY, IAssetRepository } from '../asset/asset-repository';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { AddAssetsDto } from './dto/add-assets.dto';
-import archiver from 'archiver';
-import { extname } from 'path';
+import { DownloadService } from '../../modules/download/download.service';
+import { DownloadDto } from '../asset/dto/download-library.dto';
+import { ShareCore } from '../share/share.core';
+import { ISharedLinkRepository } from '../share/shared-link.repository';
+import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { CreateAlbumShareLinkDto } from './dto/create-album-shared-link.dto';
+import _ from 'lodash';
 
 @Injectable()
 export class AlbumService {
+  readonly logger = new Logger(AlbumService.name);
+  private shareCore: ShareCore;
+
   constructor(
-    @Inject(ALBUM_REPOSITORY) private _albumRepository: IAlbumRepository,
-    @Inject(ASSET_REPOSITORY) private _assetRepository: IAssetRepository,
-  ) {}
+    @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
+    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
+    private downloadService: DownloadService,
+  ) {
+    this.shareCore = new ShareCore(sharedLinkRepository);
+  }
 
   private async _getAlbum({
     authUser,
@@ -71,7 +72,13 @@ export class AlbumService {
       albums = await this._albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
     } else {
       albums = await this._albumRepository.getList(authUser.id, getAlbumsDto);
+      if (getAlbumsDto.shared) {
+        const publicSharingAlbums = await this._albumRepository.getPublicSharingList(authUser.id);
+        albums = [...albums, ...publicSharingAlbums];
+      }
     }
+
+    albums = _.uniqBy(albums, (album) => album.id);
 
     for (const album of albums) {
       await this._checkValidThumbnail(album);
@@ -93,6 +100,11 @@ export class AlbumService {
 
   async deleteAlbum(authUser: AuthUserDto, albumId: string): Promise<void> {
     const album = await this._getAlbum({ authUser, albumId });
+
+    for (const sharedLink of album.sharedLinks) {
+      await this.shareCore.removeSharedLink(sharedLink.id, authUser.id);
+    }
+
     await this._albumRepository.delete(album);
   }
 
@@ -133,6 +145,11 @@ export class AlbumService {
     addAssetsDto: AddAssetsDto,
     albumId: string,
   ): Promise<AddAssetsResponseDto> {
+    if (authUser.isPublicUser && !authUser.isAllowUpload) {
+      this.logger.warn('Deny public user attempt to add asset to album');
+      throw new ForbiddenException('Public user is not allowed to upload');
+    }
+
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     const result = await this._albumRepository.addAssets(album, addAssetsDto);
     const newAlbum = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
@@ -162,35 +179,11 @@ export class AlbumService {
     return this._albumRepository.getCountByUserId(authUser.id);
   }
 
-  async downloadArchive(authUser: AuthUserDto, albumId: string) {
+  async downloadArchive(authUser: AuthUserDto, albumId: string, dto: DownloadDto) {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-    if (!album.assets || album.assets.length === 0) {
-      throw new BadRequestException('Cannot download an empty album.');
-    }
+    const assets = (album.assets || []).map((asset) => asset.assetInfo).slice(dto.skip || 0);
 
-    try {
-      const archive = archiver('zip', { store: true });
-      const stream = new StreamableFile(archive);
-      let totalSize = 0;
-
-      for (const { assetInfo } of album.assets) {
-        const { originalPath } = assetInfo;
-        const name = `${assetInfo.exifInfo?.imageName || assetInfo.id}${extname(originalPath)}`;
-        archive.file(originalPath, { name });
-        totalSize += Number(assetInfo.exifInfo?.fileSizeInByte || 0);
-      }
-
-      archive.finalize();
-
-      return {
-        stream,
-        filename: `${album.albumName}.zip`,
-        filesize: totalSize,
-      };
-    } catch (e) {
-      Logger.error(`Error downloading album ${e}`, 'downloadArchive');
-      throw new InternalServerErrorException(`Failed to download album ${e}`, 'DownloadArchive');
-    }
+    return this.downloadService.downloadArchive(album.albumName, assets);
   }
 
   async _checkValidThumbnail(album: AlbumEntity) {
@@ -205,5 +198,20 @@ export class AlbumService {
       await this._albumRepository.updateAlbum(album, dto);
       album.albumThumbnailAssetId = dto.albumThumbnailAssetId || null;
     }
+  }
+
+  async createAlbumSharedLink(authUser: AuthUserDto, dto: CreateAlbumShareLinkDto): Promise<SharedLinkResponseDto> {
+    const album = await this._getAlbum({ authUser, albumId: dto.albumId });
+
+    const sharedLink = await this.shareCore.createSharedLink(authUser.id, {
+      sharedType: SharedLinkType.ALBUM,
+      expiredAt: dto.expiredAt,
+      allowUpload: dto.allowUpload,
+      album: album,
+      assets: [],
+      description: dto.description,
+    });
+
+    return mapSharedLinkToResponseDto(sharedLink);
   }
 }

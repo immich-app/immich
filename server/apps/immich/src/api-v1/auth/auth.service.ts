@@ -1,106 +1,119 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UserEntity } from '@app/database/entities/user.entity';
-import { LoginCredentialDto } from './dto/login-credential.dto';
-import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
-import { JwtPayloadDto } from './dto/jwt-payload.dto';
-import { SignUpDto } from './dto/sign-up.dto';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { LoginResponseDto, mapLoginResponse } from './response-dto/login-response.dto';
+import { UserEntity } from '@app/infra';
+import { AuthType } from '../../constants/jwt.constant';
+import { AuthUserDto } from '../../decorators/auth-user.decorator';
+import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
+import { IUserRepository } from '@app/domain';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { LoginCredentialDto } from './dto/login-credential.dto';
+import { SignUpDto } from './dto/sign-up.dto';
 import { AdminSignupResponseDto, mapAdminSignupResponse } from './response-dto/admin-signup-response.dto';
+import { LoginResponseDto } from './response-dto/login-response.dto';
+import { LogoutResponseDto } from './response-dto/logout-response.dto';
+import { OAuthService } from '../oauth/oauth.service';
+import { UserCore } from '@app/domain';
+import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
+import { SystemConfig } from '@app/infra';
 
 @Injectable()
 export class AuthService {
+  private userCore: UserCore;
+  private logger = new Logger(AuthService.name);
+
   constructor(
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
+    private oauthService: OAuthService,
     private immichJwtService: ImmichJwtService,
-  ) {}
-
-  private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity | null> {
-    const user = await this.userRepository.findOne({
-      where: {
-        email: loginCredential.email,
-      },
-      select: [
-        'id',
-        'email',
-        'password',
-        'salt',
-        'firstName',
-        'lastName',
-        'isAdmin',
-        'profileImagePath',
-        'shouldChangePassword',
-      ],
-    });
-
-    if (!user) {
-      return null;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const isAuthenticated = await this.validatePassword(user.password!, loginCredential.password, user.salt!);
-
-    if (isAuthenticated) {
-      return user;
-    }
-
-    return null;
+    @Inject(IUserRepository) userRepository: IUserRepository,
+    private configService: ImmichConfigService,
+    @Inject(INITIAL_SYSTEM_CONFIG) private config: SystemConfig,
+  ) {
+    this.userCore = new UserCore(userRepository);
+    this.configService.config$.subscribe((config) => (this.config = config));
   }
 
   public async login(loginCredential: LoginCredentialDto, clientIp: string): Promise<LoginResponseDto> {
-    const validatedUser = await this.validateUser(loginCredential);
+    if (!this.config.passwordLogin.enabled) {
+      throw new UnauthorizedException('Password login has been disabled');
+    }
 
-    if (!validatedUser) {
-      Logger.warn(`Failed login attempt for user ${loginCredential.email} from ip address ${clientIp}`);
+    let user = await this.userCore.getByEmail(loginCredential.email, true);
+
+    if (user) {
+      const isAuthenticated = await this.validatePassword(loginCredential.password, user);
+      if (!isAuthenticated) {
+        user = null;
+      }
+    }
+
+    if (!user) {
+      this.logger.warn(`Failed login attempt for user ${loginCredential.email} from ip address ${clientIp}`);
       throw new BadRequestException('Incorrect email or password');
     }
 
-    const payload = new JwtPayloadDto(validatedUser.id, validatedUser.email);
-    const accessToken = await this.immichJwtService.generateToken(payload);
-
-    return mapLoginResponse(validatedUser, accessToken);
+    return this.immichJwtService.createLoginResponse(user);
   }
 
-  public getCookieWithJwtToken(authLoginInfo: LoginResponseDto) {
-    const maxAge = 7 * 24 * 3600; // 7 days
-    return `immich_access_token=${authLoginInfo.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}`;
+  public async logout(authType: AuthType): Promise<LogoutResponseDto> {
+    if (authType === AuthType.OAUTH) {
+      const url = await this.oauthService.getLogoutEndpoint();
+      if (url) {
+        return { successful: true, redirectUri: url };
+      }
+    }
+
+    return { successful: true, redirectUri: '/auth/login?autoLaunch=0' };
   }
 
-  // !TODO: refactor this method to use the userService createUser method
-  public async adminSignUp(signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
-    const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
+  public async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
+    const { password, newPassword } = dto;
+    const user = await this.userCore.getByEmail(authUser.email, true);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const valid = await this.validatePassword(password, user);
+    if (!valid) {
+      throw new BadRequestException('Wrong password');
+    }
+
+    return this.userCore.updateUser(authUser, authUser.id, { password: newPassword });
+  }
+
+  public async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {
+    const adminUser = await this.userCore.getAdmin();
 
     if (adminUser) {
       throw new BadRequestException('The server already has an admin');
     }
 
-    const newAdminUser = new UserEntity();
-    newAdminUser.email = signUpCredential.email;
-    newAdminUser.salt = await bcrypt.genSalt();
-    newAdminUser.password = await this.hashPassword(signUpCredential.password, newAdminUser.salt);
-    newAdminUser.firstName = signUpCredential.firstName;
-    newAdminUser.lastName = signUpCredential.lastName;
-    newAdminUser.isAdmin = true;
-
     try {
-      const savedNewAdminUserUser = await this.userRepository.save(newAdminUser);
+      const admin = await this.userCore.createUser({
+        isAdmin: true,
+        email: dto.email,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        password: dto.password,
+      });
 
-      return mapAdminSignupResponse(savedNewAdminUserUser);
-    } catch (e) {
-      Logger.error('e', 'signUp');
+      return mapAdminSignupResponse(admin);
+    } catch (error) {
+      this.logger.error(`Unable to register admin user: ${error}`, (error as Error).stack);
       throw new InternalServerErrorException('Failed to register new admin user');
     }
   }
 
-  private async hashPassword(password: string, salt: string): Promise<string> {
-    return bcrypt.hash(password, salt);
-  }
-
-  private async validatePassword(hasedPassword: string, inputPassword: string, salt: string): Promise<boolean> {
-    const hash = await bcrypt.hash(inputPassword, salt);
-    return hash === hasedPassword;
+  private async validatePassword(inputPassword: string, user: UserEntity): Promise<boolean> {
+    if (!user || !user.password) {
+      return false;
+    }
+    return await bcrypt.compare(inputPassword, user.password);
   }
 }

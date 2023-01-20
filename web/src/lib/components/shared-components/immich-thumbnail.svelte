@@ -5,6 +5,8 @@
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
+	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
+	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
 	import LoadingSpinner from './loading-spinner.svelte';
 	import { AssetResponseDto, AssetTypeEnum, getFileUrl, ThumbnailFormat } from '@api';
 
@@ -16,9 +18,13 @@
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected = false;
 	export let disabled = false;
+	export let publicSharedKey = '';
+	export let isRoundedCorner = false;
+
 	let imageData: string;
 
 	let mouseOver = false;
+	let playMotionVideo = false;
 	$: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
 	let mouseOverIcon = false;
@@ -28,10 +34,14 @@
 	let videoProgress = '00:00';
 	let videoUrl: string;
 
-	const loadVideoData = async () => {
+	const loadVideoData = async (isLivePhoto: boolean) => {
 		isThumbnailVideoPlaying = false;
 
-		videoUrl = getFileUrl(asset.deviceAssetId, asset.deviceId, false, true);
+		if (isLivePhoto && asset.livePhotoVideoId) {
+			videoUrl = getFileUrl(asset.livePhotoVideoId, false, true, publicSharedKey);
+		} else {
+			videoUrl = getFileUrl(asset.id, false, true, publicSharedKey);
+		}
 	};
 
 	const getVideoDurationInString = (currentTime: number) => {
@@ -110,6 +120,8 @@
 			return 'border-[20px] border-immich-primary/20';
 		} else if (disabled) {
 			return 'border-[20px] border-gray-300';
+		} else if (isRoundedCorner) {
+			return 'rounded-[20px]';
 		} else {
 			return '';
 		}
@@ -146,6 +158,7 @@
 		on:mouseenter={handleMouseOverThumbnail}
 		on:mouseleave={handleMouseLeaveThumbnail}
 		on:click={thumbnailClickedHandler}
+		on:keydown={thumbnailClickedHandler}
 	>
 		{#if mouseOver || selected || disabled}
 			<div
@@ -202,6 +215,32 @@
 			</div>
 		{/if}
 
+		{#if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
+			<div
+				class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10"
+			>
+				<span
+					in:fade={{ duration: 500 }}
+					on:mouseenter={() => {
+						playMotionVideo = true;
+						loadVideoData(true);
+					}}
+					on:mouseleave={() => (playMotionVideo = false)}
+				>
+					{#if playMotionVideo}
+						<span in:fade={{ duration: 500 }}>
+							<MotionPauseOutline size="24" />
+						</span>
+					{:else}
+						<span in:fade={{ duration: 500 }}>
+							<MotionPlayOutline size="24" />
+						</span>
+					{/if}
+				</span>
+				<!-- {/if} -->
+			</div>
+		{/if}
+
 		<!-- Thumbnail -->
 		{#if intersecting}
 			<img
@@ -209,15 +248,36 @@
 				style:width={`${thumbnailSize}px`}
 				style:height={`${thumbnailSize}px`}
 				in:fade={{ duration: 150 }}
-				src={`/api/asset/thumbnail/${asset.id}?format=${format}`}
+				src={`/api/asset/thumbnail/${asset.id}?format=${format}&key=${publicSharedKey}`}
 				alt={asset.id}
 				class={`object-cover ${getSize()} transition-all z-0 ${getThumbnailBorderStyle()}`}
 				loading="lazy"
+				draggable="false"
 			/>
 		{/if}
 
 		{#if mouseOver && asset.type === AssetTypeEnum.Video}
-			<div class="absolute w-full h-full top-0" on:mouseenter={loadVideoData}>
+			<div class="absolute w-full h-full top-0" on:mouseenter={() => loadVideoData(false)}>
+				{#if videoUrl}
+					<video
+						muted
+						autoplay
+						preload="none"
+						class="h-full object-cover"
+						width="250px"
+						style:width={`${thumbnailSize}px`}
+						on:canplay={handleCanPlay}
+						bind:this={videoPlayerNode}
+					>
+						<source src={videoUrl} type="video/mp4" />
+						<track kind="captions" />
+					</video>
+				{/if}
+			</div>
+		{/if}
+
+		{#if playMotionVideo && asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
+			<div class="absolute w-full h-full top-0">
 				{#if videoUrl}
 					<video
 						muted

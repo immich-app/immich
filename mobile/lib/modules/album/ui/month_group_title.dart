@@ -21,7 +21,7 @@ class MonthGroupTitle extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
     final isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
-    _handleTitleIconClick() {
+    handleTitleIconClick() {
       HapticFeedback.heavyImpact();
 
       if (isAlbumExist) {
@@ -61,7 +61,7 @@ class MonthGroupTitle extends HookConsumerWidget {
       }
     }
 
-    _getSimplifiedMonth() {
+    getSimplifiedMonth() {
       var monthAndYear = month.split(',');
       var yearText = monthAndYear[1].trim();
       var monthText = monthAndYear[0].trim();
@@ -85,7 +85,7 @@ class MonthGroupTitle extends HookConsumerWidget {
         child: Row(
           children: [
             GestureDetector(
-              onTap: _handleTitleIconClick,
+              onTap: handleTitleIconClick,
               child: selectedDateGroup.contains(month)
                   ? Icon(
                       Icons.check_circle_rounded,
@@ -97,11 +97,11 @@ class MonthGroupTitle extends HookConsumerWidget {
                     ),
             ),
             GestureDetector(
-              onTap: _handleTitleIconClick,
+              onTap: handleTitleIconClick,
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
-                  _getSimplifiedMonth(),
+                  getSimplifiedMonth(),
                   style: TextStyle(
                     fontSize: 24,
                     color: Theme.of(context).primaryColor,

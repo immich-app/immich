@@ -2,20 +2,34 @@ import { IAssetRepository } from './asset-repository';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetService } from './asset.service';
 import { Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType } from '@app/infra';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { DownloadService } from '../../modules/download/download.service';
+import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
+import { IAssetUploadedJob, IVideoTranscodeJob } from '@app/job';
+import { Queue } from 'bull';
+import { IAlbumRepository } from '../album/album-repository';
+import { StorageService } from '@app/storage';
+import { ISharedLinkRepository } from '../share/shared-link.repository';
 
 describe('AssetService', () => {
   let sui: AssetService;
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
-
+  let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
+  let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
+  let backgroundTaskServiceMock: jest.Mocked<BackgroundTaskService>;
+  let assetUploadedQueueMock: jest.Mocked<Queue<IAssetUploadedJob>>;
+  let videoConversionQueueMock: jest.Mocked<Queue<IVideoTranscodeJob>>;
+  let storageSeriveMock: jest.Mocked<StorageService>;
+  let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   const authUser: AuthUserDto = Object.freeze({
     id: 'user_id_1',
     email: 'auth@test.com',
+    isAdmin: false,
   });
 
   const _getCreateAssetDto = (): CreateAssetDto => {
@@ -89,7 +103,10 @@ describe('AssetService', () => {
   };
 
   const _getAssetCountByUserId = (): AssetCountByUserIdResponseDto => {
-    const result = new AssetCountByUserIdResponseDto(2, 2);
+    const result = new AssetCountByUserIdResponseDto();
+
+    result.videos = 2;
+    result.photos = 2;
 
     return result;
   };
@@ -112,9 +129,35 @@ describe('AssetService', () => {
       getAssetWithNoThumbnail: jest.fn(),
       getAssetWithNoSmartInfo: jest.fn(),
       getExistingAssets: jest.fn(),
+      countByIdAndUser: jest.fn(),
     };
 
-    sui = new AssetService(assetRepositoryMock, a);
+    downloadServiceMock = {
+      downloadArchive: jest.fn(),
+    };
+
+    sharedLinkRepositoryMock = {
+      create: jest.fn(),
+      get: jest.fn(),
+      getById: jest.fn(),
+      getByKey: jest.fn(),
+      remove: jest.fn(),
+      save: jest.fn(),
+      hasAssetAccess: jest.fn(),
+      getByIdAndUserId: jest.fn(),
+    };
+
+    sui = new AssetService(
+      assetRepositoryMock,
+      albumRepositoryMock,
+      a,
+      backgroundTaskServiceMock,
+      assetUploadedQueueMock,
+      videoConversionQueueMock,
+      downloadServiceMock as DownloadService,
+      storageSeriveMock,
+      sharedLinkRepositoryMock,
+    );
   });
 
   // Currently failing due to calculate checksum from a file
@@ -132,6 +175,7 @@ describe('AssetService', () => {
       originalPath,
       mimeType,
       Buffer.from('0x5041E6328F7DF8AFF650BEDAED9251897D9A6241', 'hex'),
+      true,
     );
 
     expect(result.userId).toEqual(authUser.id);

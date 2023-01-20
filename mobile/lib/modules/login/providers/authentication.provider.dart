@@ -54,34 +54,17 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   Future<bool> login(
     String email,
     String password,
-    String serverEndpoint,
+    String serverUrl,
     bool isSavedLoginInfo,
   ) async {
-    // Store server endpoint to Hive and test endpoint
-    if (serverEndpoint[serverEndpoint.length - 1] == "/") {
-      var validUrl = serverEndpoint.substring(0, serverEndpoint.length - 1);
-      Hive.box(userInfoBox).put(serverEndpointKey, validUrl);
-    } else {
-      Hive.box(userInfoBox).put(serverEndpointKey, serverEndpoint);
-    }
-
-    // Check Server URL validity
     try {
-      _apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
+      // Resolve API server endpoint from user provided serverUrl
+      await _apiService.resolveAndSetEndpoint(serverUrl);
       await _apiService.serverInfoApi.pingServer();
     } catch (e) {
       debugPrint('Invalid Server Endpoint Url $e');
       return false;
     }
-
-    // Store device id to local storage
-    var deviceInfo = await _deviceInfoService.getDeviceInfo();
-    Hive.box(userInfoBox).put(deviceIdKey, deviceInfo["deviceId"]);
-
-    state = state.copyWith(
-      deviceId: deviceInfo["deviceId"],
-      deviceType: deviceInfo["deviceType"],
-    );
 
     // Make sign-in request
     try {
@@ -97,73 +80,27 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         return false;
       }
 
-      Hive.box(userInfoBox).put(accessTokenKey, loginResponse.accessToken);
-
-      state = state.copyWith(
-        isAuthenticated: true,
-        userId: loginResponse.userId,
-        userEmail: loginResponse.userEmail,
-        firstName: loginResponse.firstName,
-        lastName: loginResponse.lastName,
-        profileImagePath: loginResponse.profileImagePath,
-        isAdmin: loginResponse.isAdmin,
-        shouldChangePassword: loginResponse.shouldChangePassword,
+      return setSuccessLoginInfo(
+        accessToken: loginResponse.accessToken,
+        serverUrl: serverUrl,
+        isSavedLoginInfo: isSavedLoginInfo,
       );
-
-      // Login Success - Set Access Token to API Client
-      _apiService.setAccessToken(loginResponse.accessToken);
-
-      if (isSavedLoginInfo) {
-        // Save login info to local storage
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
-          savedLoginInfoKey,
-          HiveSavedLoginInfo(
-            email: email,
-            password: password,
-            isSaveLogin: true,
-            serverUrl: Hive.box(userInfoBox).get(serverEndpointKey),
-          ),
-        );
-      } else {
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
-            .delete(savedLoginInfoKey);
-      }
     } catch (e) {
       HapticFeedback.vibrate();
       debugPrint("Error logging in $e");
       return false;
     }
-
-    // Register device info
-    try {
-      DeviceInfoResponseDto? deviceInfo =
-          await _apiService.deviceInfoApi.createDeviceInfo(
-        CreateDeviceInfoDto(
-          deviceId: state.deviceId,
-          deviceType: state.deviceType,
-        ),
-      );
-
-      if (deviceInfo == null) {
-        debugPrint('Device Info Response is null');
-        return false;
-      }
-
-      state = state.copyWith(deviceInfo: deviceInfo);
-    } catch (e) {
-      debugPrint("ERROR Register Device Info: $e");
-      return false;
-    }
-
-    return true;
   }
 
   Future<bool> logout() async {
-    Hive.box(userInfoBox).delete(accessTokenKey);
     state = state.copyWith(isAuthenticated: false);
-    _assetCacheService.invalidate();
-    _albumCacheService.invalidate();
-    _sharedAlbumCacheService.invalidate();
+    await Future.wait([
+      Hive.box(userInfoBox).delete(accessTokenKey),
+      Hive.box(userInfoBox).delete(assetEtagKey),
+      _assetCacheService.invalidate(),
+      _albumCacheService.invalidate(),
+      _sharedAlbumCacheService.invalidate(),
+    ]);
 
     // Remove login info from local storage
     var loginInfo =
@@ -173,7 +110,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       loginInfo.password = "";
       loginInfo.isSaveLogin = false;
 
-      Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
+      await Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
         savedLoginInfoKey,
         loginInfo,
       );
@@ -214,6 +151,75 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       debugPrint("Error changing password $e");
       return false;
     }
+  }
+
+  Future<bool> setSuccessLoginInfo({
+    required String accessToken,
+    required String serverUrl,
+    required bool isSavedLoginInfo,
+  }) async {
+    _apiService.setAccessToken(accessToken);
+    var userResponseDto = await _apiService.userApi.getMyUserInfo();
+
+    if (userResponseDto != null) {
+      var userInfoHiveBox = await Hive.openBox(userInfoBox);
+      var deviceInfo = await _deviceInfoService.getDeviceInfo();
+      userInfoHiveBox.put(deviceIdKey, deviceInfo["deviceId"]);
+      userInfoHiveBox.put(accessTokenKey, accessToken);
+
+      state = state.copyWith(
+        isAuthenticated: true,
+        userId: userResponseDto.id,
+        userEmail: userResponseDto.email,
+        firstName: userResponseDto.firstName,
+        lastName: userResponseDto.lastName,
+        profileImagePath: userResponseDto.profileImagePath,
+        isAdmin: userResponseDto.isAdmin,
+        shouldChangePassword: userResponseDto.shouldChangePassword,
+        deviceId: deviceInfo["deviceId"],
+        deviceType: deviceInfo["deviceType"],
+      );
+
+      if (isSavedLoginInfo) {
+        // Save login info to local storage
+        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
+          savedLoginInfoKey,
+          HiveSavedLoginInfo(
+            email: "",
+            password: "",
+            isSaveLogin: true,
+            serverUrl: serverUrl,
+            accessToken: accessToken,
+          ),
+        );
+      } else {
+        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
+            .delete(savedLoginInfoKey);
+      }
+    }
+
+    // Register device info
+    try {
+      DeviceInfoResponseDto? deviceInfo =
+          await _apiService.deviceInfoApi.upsertDeviceInfo(
+        UpsertDeviceInfoDto(
+          deviceId: state.deviceId,
+          deviceType: state.deviceType,
+        ),
+      );
+
+      if (deviceInfo == null) {
+        debugPrint('Device Info Response is null');
+        return false;
+      }
+
+      state = state.copyWith(deviceInfo: deviceInfo);
+    } catch (e) {
+      debugPrint("ERROR Register Device Info: $e");
+      return false;
+    }
+
+    return true;
   }
 }
 

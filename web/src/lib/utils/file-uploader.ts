@@ -7,25 +7,13 @@ import * as exifr from 'exifr';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
-import { albumUploadAssetStore } from '$lib/stores/album-upload-asset';
-/**
- * Determine if the upload is for album or for the user general backup
- * @variant GENERAL - Upload assets to the server for general backup
- * @variant ALBUM - Upload assets to the server for backup and add to the album
- */
-export enum UploadType {
-	/**
-	 * Upload assets to the server
-	 */
-	GENERAL = 'GENERAL',
+import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 
-	/**
-	 * Upload assets to the server and add to album
-	 */
-	ALBUM = 'ALBUM'
-}
-
-export const openFileUploadDialog = (uploadType: UploadType) => {
+export const openFileUploadDialog = (
+	albumId: string | undefined = undefined,
+	sharedKey: string | undefined = undefined,
+	onDone?: (id: string) => void
+) => {
 	try {
 		const fileSelector = document.createElement('input');
 
@@ -40,29 +28,7 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 			}
 			const files = Array.from<File>(target.files);
 
-			if (files.length > 50) {
-				notificationController.show({
-					type: NotificationType.Error,
-					message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files. 
-          Please use the CLI tool if you need to upload more than 50 files.`,
-					timeout: 5000
-				});
-
-				return;
-			}
-
-			const acceptedFile = files.filter(
-				(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
-			);
-
-			if (uploadType === UploadType.ALBUM) {
-				albumUploadAssetStore.asset.set([]);
-				albumUploadAssetStore.count.set(acceptedFile.length);
-			}
-
-			for (const asset of acceptedFile) {
-				await fileUploader(asset, uploadType);
-			}
+			await fileUploadHandler(files, albumId, sharedKey, onDone);
 		};
 
 		fileSelector.click();
@@ -71,8 +37,40 @@ export const openFileUploadDialog = (uploadType: UploadType) => {
 	}
 };
 
+export const fileUploadHandler = async (
+	files: File[],
+	albumId: string | undefined = undefined,
+	sharedKey: string | undefined = undefined,
+	onDone?: (id: string) => void
+) => {
+	if (files.length > 50) {
+		notificationController.show({
+			type: NotificationType.Error,
+			message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files. 
+			Please check out <u>the bulk upload documentation</u> if you need to upload more than 50 files.`,
+			timeout: 10000,
+			action: { type: 'link', target: 'https://immich.app/docs/features/bulk-upload' }
+		});
+
+		return;
+	}
+
+	const acceptedFile = files.filter(
+		(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
+	);
+
+	for (const asset of acceptedFile) {
+		await fileUploader(asset, albumId, sharedKey, onDone);
+	}
+};
+
 //TODO: should probably use the @api SDK
-async function fileUploader(asset: File, uploadType: UploadType) {
+async function fileUploader(
+	asset: File,
+	albumId: string | undefined = undefined,
+	sharedKey: string | undefined = undefined,
+	onDone?: (id: string) => void
+) {
 	const assetType = asset.type.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
 	const fileExtension = temp[temp.length - 1];
@@ -120,26 +118,30 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		formData.append('assetData', asset);
 
 		// Check if asset upload on server before performing upload
-
-		const { data, status } = await api.assetApi.checkDuplicateAsset({
-			deviceAssetId: String(deviceAssetId),
-			deviceId: 'WEB'
-		});
+		const { data, status } = await api.assetApi.checkDuplicateAsset(
+			{
+				deviceAssetId: String(deviceAssetId),
+				deviceId: 'WEB'
+			},
+			{
+				params: {
+					key: sharedKey
+				}
+			}
+		);
 
 		if (status === 200) {
 			if (data.isExist) {
 				const dataId = data.id;
-				if (uploadType === UploadType.ALBUM && dataId) {
-					albumUploadAssetStore.asset.update((a) => {
-						return [...a, dataId];
-					});
+				if (albumId && dataId) {
+					addAssetsToAlbum(albumId, [dataId], sharedKey);
 				}
+				onDone && dataId && onDone(dataId);
 				return;
 			}
 		}
 
 		const request = new XMLHttpRequest();
-
 		request.upload.onloadstart = () => {
 			const newUploadAsset: UploadAsset = {
 				id: deviceAssetId,
@@ -154,35 +156,30 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 		request.upload.onload = () => {
 			setTimeout(() => {
 				uploadAssetsStore.removeUploadAsset(deviceAssetId);
-			}, 1000);
-		};
-
-		request.onreadystatechange = () => {
-			try {
-				if (request.readyState === 4 && uploadType === UploadType.ALBUM) {
-					const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
-
-					albumUploadAssetStore.asset.update((assets) => {
-						return [...assets, res?.id || ''];
-					});
-
-					if (request.status !== 201) {
-						handleUploadError(asset, res);
+				const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
+				if (albumId) {
+					try {
+						if (res.id) {
+							addAssetsToAlbum(albumId, [res.id], sharedKey);
+						}
+					} catch (e) {
+						console.error('ERROR parsing data JSON in upload onload');
 					}
 				}
-			} catch (e) {
-				console.error('ERROR parsing data JSON in upload onreadystatechange');
-			}
+				onDone && onDone(res.id);
+			}, 1000);
 		};
 
 		// listen for `error` event
 		request.upload.onerror = () => {
 			uploadAssetsStore.removeUploadAsset(deviceAssetId);
+			handleUploadError(asset, request.response);
 		};
 
 		// listen for `abort` event
 		request.upload.onabort = () => {
 			uploadAssetsStore.removeUploadAsset(deviceAssetId);
+			handleUploadError(asset, request.response);
 		};
 
 		// listen for `progress` event
@@ -191,21 +188,26 @@ async function fileUploader(asset: File, uploadType: UploadType) {
 			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 		};
 
-		request.open('POST', `/api/asset/upload`);
+		request.open('POST', `/api/asset/upload?key=${sharedKey ?? ''}`);
 
 		request.send(formData);
 	} catch (e) {
 		console.log('error uploading file ', e);
 	}
 }
-// TODO: This should have a proper type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleUploadError(asset: File, respBody: any, extraMessage?: string) {
-	const extraMsg = respBody ? ' ' + respBody?.message : '';
 
-	notificationController.show({
-		type: NotificationType.Error,
-		message: `Cannot upload file ${asset.name} ${extraMsg}${extraMessage}`,
-		timeout: 5000
-	});
+function handleUploadError(asset: File, respBody = '{}', extraMessage?: string) {
+	try {
+		const res = JSON.parse(respBody);
+
+		const extraMsg = res ? ' ' + res?.message : '';
+
+		notificationController.show({
+			type: NotificationType.Error,
+			message: `Cannot upload file ${asset.name} ${extraMsg}${extraMessage}`,
+			timeout: 5000
+		});
+	} catch (e) {
+		console.error('ERROR parsing data JSON in handleUploadError');
+	}
 }

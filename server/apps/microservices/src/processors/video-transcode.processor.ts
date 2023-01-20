@@ -1,7 +1,6 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { QueueNameEnum } from '@app/job';
-import { mp4ConversionProcessorName } from '@app/job/constants/job-name.constant';
+import { AssetEntity } from '@app/infra';
+import { QueueName, JobName } from '@app/job';
 import { IMp4ConversionProcessor } from '@app/job/interfaces/video-transcode.interface';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -9,16 +8,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'fs';
+import { ImmichConfigService } from 'libs/immich-config/src';
 import { Repository } from 'typeorm';
 
-@Processor(QueueNameEnum.VIDEO_CONVERSION)
+@Processor(QueueName.VIDEO_CONVERSION)
 export class VideoTranscodeProcessor {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
+    private immichConfigService: ImmichConfigService,
   ) {}
 
-  @Process({ name: mp4ConversionProcessorName, concurrency: 1 })
+  @Process({ name: JobName.MP4_CONVERSION, concurrency: 2 })
   async mp4Conversion(job: Job<IMp4ConversionProcessor>) {
     const { asset } = job.data;
 
@@ -40,9 +41,17 @@ export class VideoTranscodeProcessor {
   }
 
   async runFFMPEGPipeLine(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
+    const config = await this.immichConfigService.getConfig();
+
     return new Promise((resolve, reject) => {
       ffmpeg(asset.originalPath)
-        .outputOptions(['-crf 23', '-preset ultrafast', '-vcodec libx264', '-acodec mp3', '-vf scale=1280:-2'])
+        .outputOptions([
+          `-crf ${config.ffmpeg.crf}`,
+          `-preset ${config.ffmpeg.preset}`,
+          `-vcodec ${config.ffmpeg.targetVideoCodec}`,
+          `-acodec ${config.ffmpeg.targetAudioCodec}`,
+          `-vf scale=${config.ffmpeg.targetScaling}`,
+        ])
         .output(savedEncodedPath)
         .on('start', () => {
           Logger.log('Start Converting Video', 'mp4Conversion');

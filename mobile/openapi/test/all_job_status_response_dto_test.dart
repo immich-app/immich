@@ -16,13 +16,33 @@ void main() {
   // final instance = AllJobStatusResponseDto();
 
   group('test AllJobStatusResponseDto', () {
-    // bool isThumbnailGenerationActive
-    test('to test the property `isThumbnailGenerationActive`', () async {
+    // JobCounts thumbnailGenerationQueueCount
+    test('to test the property `thumbnailGenerationQueueCount`', () async {
       // TODO
     });
 
-    // Object thumbnailGenerationQueueCount
-    test('to test the property `thumbnailGenerationQueueCount`', () async {
+    // JobCounts metadataExtractionQueueCount
+    test('to test the property `metadataExtractionQueueCount`', () async {
+      // TODO
+    });
+
+    // JobCounts videoConversionQueueCount
+    test('to test the property `videoConversionQueueCount`', () async {
+      // TODO
+    });
+
+    // JobCounts machineLearningQueueCount
+    test('to test the property `machineLearningQueueCount`', () async {
+      // TODO
+    });
+
+    // JobCounts storageMigrationQueueCount
+    test('to test the property `storageMigrationQueueCount`', () async {
+      // TODO
+    });
+
+    // bool isThumbnailGenerationActive
+    test('to test the property `isThumbnailGenerationActive`', () async {
       // TODO
     });
 
@@ -31,18 +51,18 @@ void main() {
       // TODO
     });
 
-    // Object metadataExtractionQueueCount
-    test('to test the property `metadataExtractionQueueCount`', () async {
-      // TODO
-    });
-
     // bool isVideoConversionActive
     test('to test the property `isVideoConversionActive`', () async {
       // TODO
     });
 
-    // Object videoConversionQueueCount
-    test('to test the property `videoConversionQueueCount`', () async {
+    // bool isMachineLearningActive
+    test('to test the property `isMachineLearningActive`', () async {
+      // TODO
+    });
+
+    // bool isStorageMigrationActive
+    test('to test the property `isStorageMigrationActive`', () async {
       // TODO
     });
 

@@ -1,6 +1,6 @@
-import { AssetEntity } from '@app/database/entities/asset.entity';
-import { SmartInfoEntity } from '@app/database/entities/smart-info.entity';
-import { MachineLearningJobNameEnum, QueueNameEnum } from '@app/job';
+import { AssetEntity } from '@app/infra';
+import { SmartInfoEntity } from '@app/infra';
+import { QueueName, JobName } from '@app/job';
 import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -8,26 +8,26 @@ import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { Job } from 'bull';
 import { Repository } from 'typeorm';
+import { MACHINE_LEARNING_ENABLED, MACHINE_LEARNING_URL } from '@app/common';
 
-const immich_machine_learning_url = process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003';
-
-@Processor(QueueNameEnum.MACHINE_LEARNING)
+@Processor(QueueName.MACHINE_LEARNING)
 export class MachineLearningProcessor {
   constructor(
     @InjectRepository(SmartInfoEntity)
     private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {}
 
-  @Process({ name: MachineLearningJobNameEnum.IMAGE_TAGGING, concurrency: 2 })
+  @Process({ name: JobName.IMAGE_TAGGING, concurrency: 2 })
   async tagImage(job: Job<IMachineLearningJob>) {
+    if (!MACHINE_LEARNING_ENABLED) {
+      return;
+    }
+
     const { asset } = job.data;
 
-    const res = await axios.post(
-      immich_machine_learning_url + '/image-classifier/tag-image',
-      {
-        thumbnailPath: asset.resizePath,
-      },
-    );
+    const res = await axios.post(MACHINE_LEARNING_URL + '/image-classifier/tag-image', {
+      thumbnailPath: asset.resizePath,
+    });
 
     if (res.status == 201 && res.data.length > 0) {
       const smartInfo = new SmartInfoEntity();
@@ -40,17 +40,18 @@ export class MachineLearningProcessor {
     }
   }
 
-  @Process({ name: MachineLearningJobNameEnum.OBJECT_DETECTION, concurrency: 2 })
+  @Process({ name: JobName.OBJECT_DETECTION, concurrency: 2 })
   async detectObject(job: Job<IMachineLearningJob>) {
+    if (!MACHINE_LEARNING_ENABLED) {
+      return;
+    }
+
     try {
       const { asset }: { asset: AssetEntity } = job.data;
 
-      const res = await axios.post(
-        immich_machine_learning_url + '/object-detection/detect-object',
-        {
-          thumbnailPath: asset.resizePath,
-        },
-      );
+      const res = await axios.post(MACHINE_LEARNING_URL + '/object-detection/detect-object', {
+        thumbnailPath: asset.resizePath,
+      });
 
       if (res.status == 201 && res.data.length > 0) {
         const smartInfo = new SmartInfoEntity();

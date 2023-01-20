@@ -16,7 +16,10 @@ class UserApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /user/profile-image' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [MultipartFile] file (required):
@@ -55,6 +58,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [MultipartFile] file (required):
@@ -73,7 +78,10 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /user' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [CreateUserDto] createUserDto (required):
@@ -102,6 +110,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [CreateUserDto] createUserDto (required):
@@ -120,7 +130,10 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /user/{userId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -150,6 +163,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -168,7 +183,10 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [bool] isAll (required):
@@ -199,6 +217,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [bool] isAll (required):
@@ -220,7 +240,9 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/me' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getMyUserInfoWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/user/me';
@@ -246,6 +268,7 @@ class UserApi {
     );
   }
 
+  /// 
   Future<UserResponseDto?> getMyUserInfo() async {
     final response = await getMyUserInfoWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -261,7 +284,10 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/profile-image/{userId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -291,6 +317,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -309,7 +337,10 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/info/{userId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -339,6 +370,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -357,8 +390,14 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/count' operation and returns the [Response].
-  Future<Response> getUserCountWithHttpInfo() async {
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [bool] admin:
+  Future<Response> getUserCountWithHttpInfo({ bool? admin, }) async {
     // ignore: prefer_const_declarations
     final path = r'/user/count';
 
@@ -368,6 +407,10 @@ class UserApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (admin != null) {
+      queryParams.addAll(_queryParams('', 'admin', admin));
+    }
 
     const contentTypes = <String>[];
 
@@ -383,8 +426,13 @@ class UserApi {
     );
   }
 
-  Future<UserCountResponseDto?> getUserCount() async {
-    final response = await getUserCountWithHttpInfo();
+  /// 
+  ///
+  /// Parameters:
+  ///
+  /// * [bool] admin:
+  Future<UserCountResponseDto?> getUserCount({ bool? admin, }) async {
+    final response = await getUserCountWithHttpInfo( admin: admin, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -398,7 +446,10 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /user/{userId}/restore' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -428,6 +479,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -446,7 +499,10 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /user' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [UpdateUserDto] updateUserDto (required):
@@ -475,6 +531,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [UpdateUserDto] updateUserDto (required):

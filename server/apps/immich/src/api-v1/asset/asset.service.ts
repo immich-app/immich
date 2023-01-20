@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'node:crypto';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType } from '@app/database/entities/asset.entity';
+import { AssetEntity, AssetType, SharedLinkType } from '@app/infra';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -28,7 +28,7 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { ASSET_REPOSITORY, IAssetRepository } from './asset-repository';
+import { IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import {
   AssetCountByTimeBucketResponseDto,
@@ -41,18 +41,143 @@ import { timeUtils } from '@app/common/utils';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
+import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
+import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
+import { IAssetUploadedJob, IVideoTranscodeJob, QueueName, JobName } from '@app/job';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import { DownloadService } from '../../modules/download/download.service';
+import { DownloadDto } from './dto/download-library.dto';
+import { IAlbumRepository } from '../album/album-repository';
+import { StorageService } from '@app/storage';
+import { ShareCore } from '../share/share.core';
+import { ISharedLinkRepository } from '../share/shared-link.repository';
+import { DownloadFilesDto } from './dto/download-files.dto';
+import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
+import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 
 const fileInfo = promisify(stat);
 
 @Injectable()
 export class AssetService {
+  readonly logger = new Logger(AssetService.name);
+  private shareCore: ShareCore;
+
   constructor(
-    @Inject(ASSET_REPOSITORY)
-    private _assetRepository: IAssetRepository,
+    @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
+
+    @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-  ) {}
+
+    private backgroundTaskService: BackgroundTaskService,
+
+    @InjectQueue(QueueName.ASSET_UPLOADED)
+    private assetUploadedQueue: Queue<IAssetUploadedJob>,
+
+    @InjectQueue(QueueName.VIDEO_CONVERSION)
+    private videoConversionQueue: Queue<IVideoTranscodeJob>,
+
+    private downloadService: DownloadService,
+
+    private storageService: StorageService,
+    @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
+  ) {
+    this.shareCore = new ShareCore(sharedLinkRepository);
+  }
+
+  public async handleUploadedAsset(
+    authUser: AuthUserDto,
+    createAssetDto: CreateAssetDto,
+    res: Res,
+    originalAssetData: Express.Multer.File,
+    livePhotoAssetData?: Express.Multer.File,
+  ) {
+    const checksum = await this.calculateChecksum(originalAssetData.path);
+    const isLivePhoto = livePhotoAssetData !== undefined;
+    let livePhotoAssetEntity: AssetEntity | undefined;
+
+    try {
+      if (isLivePhoto) {
+        const livePhotoChecksum = await this.calculateChecksum(livePhotoAssetData.path);
+        livePhotoAssetEntity = await this.createUserAsset(
+          authUser,
+          createAssetDto,
+          livePhotoAssetData.path,
+          livePhotoAssetData.mimetype,
+          livePhotoChecksum,
+          false,
+        );
+
+        if (!livePhotoAssetEntity) {
+          await this.backgroundTaskService.deleteFileOnDisk([
+            {
+              originalPath: livePhotoAssetData.path,
+            } as any,
+          ]);
+          throw new BadRequestException('Asset not created');
+        }
+
+        await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
+
+        await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset: livePhotoAssetEntity });
+      }
+
+      const assetEntity = await this.createUserAsset(
+        authUser,
+        createAssetDto,
+        originalAssetData.path,
+        originalAssetData.mimetype,
+        checksum,
+        true,
+        livePhotoAssetEntity,
+      );
+
+      if (!assetEntity) {
+        await this.backgroundTaskService.deleteFileOnDisk([
+          {
+            originalPath: originalAssetData.path,
+          } as any,
+        ]);
+        throw new BadRequestException('Asset not created');
+      }
+
+      const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
+
+      await this.assetUploadedQueue.add(
+        JobName.ASSET_UPLOADED,
+        { asset: movedAsset, fileName: originalAssetData.originalname },
+        { jobId: movedAsset.id },
+      );
+
+      return new AssetFileUploadResponseDto(movedAsset.id);
+    } catch (err) {
+      await this.backgroundTaskService.deleteFileOnDisk([
+        {
+          originalPath: originalAssetData.path,
+        } as any,
+      ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
+
+      if (isLivePhoto) {
+        await this.backgroundTaskService.deleteFileOnDisk([
+          {
+            originalPath: livePhotoAssetData.path,
+          } as any,
+        ]);
+      }
+
+      if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
+        const existedAsset = await this.getAssetByChecksum(authUser.id, checksum);
+        res.status(200); // normal POST is 201. we use 200 to indicate the asset already exists
+        return new AssetFileUploadResponseDto(existedAsset.id);
+      }
+
+      Logger.error(`Error uploading file ${err}`);
+      throw new BadRequestException(`Error uploading file`, `${err}`);
+    }
+  }
 
   public async createUserAsset(
     authUser: AuthUserDto,
@@ -60,17 +185,15 @@ export class AssetService {
     originalPath: string,
     mimeType: string,
     checksum: Buffer,
+    isVisible: boolean,
+    livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity> {
-    // Check valid time.
-    const createdAt = createAssetDto.createdAt;
-    const modifiedAt = createAssetDto.modifiedAt;
-
-    if (!timeUtils.checkValidTimestamp(createdAt)) {
-      createAssetDto.createdAt = await timeUtils.getTimestampFromExif(originalPath);
+    if (!timeUtils.checkValidTimestamp(createAssetDto.createdAt)) {
+      createAssetDto.createdAt = new Date().toISOString();
     }
 
-    if (!timeUtils.checkValidTimestamp(modifiedAt)) {
-      createAssetDto.modifiedAt = await timeUtils.getTimestampFromExif(originalPath);
+    if (!timeUtils.checkValidTimestamp(createAssetDto.modifiedAt)) {
+      createAssetDto.modifiedAt = new Date().toISOString();
     }
 
     const assetEntity = await this._assetRepository.create(
@@ -78,7 +201,9 @@ export class AssetService {
       authUser.id,
       originalPath,
       mimeType,
+      isVisible,
       checksum,
+      livePhotoAssetEntity,
     );
 
     return assetEntity;
@@ -103,47 +228,51 @@ export class AssetService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  // TODO - Refactor this to get asset by its own id
-  private async findAssetOfDevice(deviceId: string, assetId: string): Promise<AssetResponseDto> {
-    const rows = await this.assetRepository.query(
-      'SELECT * FROM assets a WHERE a."deviceAssetId" = $1 AND a."deviceId" = $2',
-      [assetId, deviceId],
-    );
-
-    if (rows.lengh == 0) {
-      throw new NotFoundException('Not Found');
-    }
-
-    const assetOnDevice = rows[0] as AssetEntity;
-
-    return mapAsset(assetOnDevice);
-  }
-
-  public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
+  public async getAssetById(assetId: string): Promise<AssetResponseDto> {
     const asset = await this._assetRepository.getById(assetId);
 
     return mapAsset(asset);
   }
 
-  public async updateAssetById(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+  public async updateAsset(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
       throw new BadRequestException('Asset not found');
     }
 
-    if (authUser.id !== asset.userId) {
-      throw new ForbiddenException('Not the owner');
-    }
-
-    const updatedAsset = await this._assetRepository.update(asset, dto);
+    const updatedAsset = await this._assetRepository.update(authUser.id, asset, dto);
 
     return mapAsset(updatedAsset);
   }
 
-  public async downloadFile(query: ServeFileDto, res: Res) {
+  public async downloadLibrary(user: AuthUserDto, dto: DownloadDto) {
+    const assets = await this._assetRepository.getAllByUserId(user.id, dto.skip);
+
+    return this.downloadService.downloadArchive(dto.name || `library`, assets);
+  }
+
+  public async downloadFiles(dto: DownloadFilesDto) {
+    const assetToDownload = [];
+
+    for (const assetId of dto.assetIds) {
+      const asset = await this._assetRepository.getById(assetId);
+      assetToDownload.push(asset);
+
+      // Get live photo asset
+      if (asset.livePhotoVideoId) {
+        const livePhotoAsset = await this._assetRepository.getById(asset.livePhotoVideoId);
+        assetToDownload.push(livePhotoAsset);
+      }
+    }
+
+    const now = new Date().toISOString();
+    return this.downloadService.downloadArchive(`immich-${now}`, assetToDownload);
+  }
+
+  public async downloadFile(query: ServeFileDto, assetId: string, res: Res) {
     try {
       let fileReadStream = null;
-      const asset = await this.findAssetOfDevice(query.did, query.aid);
+      const asset = await this._assetRepository.getById(assetId);
 
       // Download Video
       if (asset.type === AssetType.VIDEO) {
@@ -198,7 +327,12 @@ export class AssetService {
     }
   }
 
-  public async getAssetThumbnail(assetId: string, query: GetAssetThumbnailDto, res: Res) {
+  public async getAssetThumbnail(
+    assetId: string,
+    query: GetAssetThumbnailDto,
+    res: Res,
+    headers: Record<string, string>,
+  ) {
     let fileReadStream: ReadStream;
 
     const asset = await this.assetRepository.findOne({ where: { id: assetId } });
@@ -208,28 +342,22 @@ export class AssetService {
     }
 
     try {
-      if (query.format == GetAssetThumbnailFormatEnum.JPEG) {
+      if (query.format == GetAssetThumbnailFormatEnum.WEBP && asset.webpPath && asset.webpPath.length > 0) {
+        if (await processETag(asset.webpPath, res, headers)) {
+          return;
+        }
+        await fs.access(asset.webpPath, constants.R_OK);
+        fileReadStream = createReadStream(asset.webpPath);
+      } else {
         if (!asset.resizePath) {
           throw new NotFoundException('resizePath not set');
         }
-
-        await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
-        fileReadStream = createReadStream(asset.resizePath);
-      } else {
-        if (asset.webpPath && asset.webpPath.length > 0) {
-          await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
-          fileReadStream = createReadStream(asset.webpPath);
-        } else {
-          if (!asset.resizePath) {
-            throw new NotFoundException('resizePath not set');
-          }
-
-          await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
-          fileReadStream = createReadStream(asset.resizePath);
+        if (await processETag(asset.resizePath, res, headers)) {
+          return;
         }
+        await fs.access(asset.resizePath, constants.R_OK);
+        fileReadStream = createReadStream(asset.resizePath);
       }
-
-      res.header('Cache-Control', 'max-age=300');
       return new StreamableFile(fileReadStream);
     } catch (e) {
       res.header('Cache-Control', 'none');
@@ -241,9 +369,9 @@ export class AssetService {
     }
   }
 
-  public async serveFile(authUser: AuthUserDto, query: ServeFileDto, res: Res, headers: any) {
+  public async serveFile(assetId: string, query: ServeFileDto, res: Res, headers: Record<string, string>) {
     let fileReadStream: ReadStream;
-    const asset = await this.findAssetOfDevice(query.did, query.aid);
+    const asset = await this._assetRepository.getById(assetId);
 
     if (!asset) {
       throw new NotFoundException('Asset does not exist');
@@ -263,6 +391,9 @@ export class AssetService {
             Logger.error('Error serving IMAGE asset for web', 'ServeFile');
             throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
           }
+          if (await processETag(asset.resizePath, res, headers)) {
+            return;
+          }
           await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
           fileReadStream = createReadStream(asset.resizePath);
 
@@ -276,7 +407,9 @@ export class AssetService {
           res.set({
             'Content-Type': asset.mimeType,
           });
-
+          if (await processETag(asset.originalPath, res, headers)) {
+            return;
+          }
           await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
           fileReadStream = createReadStream(asset.originalPath);
         } else {
@@ -284,7 +417,9 @@ export class AssetService {
             res.set({
               'Content-Type': 'image/webp',
             });
-
+            if (await processETag(asset.webpPath, res, headers)) {
+              return;
+            }
             await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
             fileReadStream = createReadStream(asset.webpPath);
           } else {
@@ -294,6 +429,9 @@ export class AssetService {
 
             if (!asset.resizePath) {
               throw new Error('resizePath not set');
+            }
+            if (await processETag(asset.resizePath, res, headers)) {
+              return;
             }
 
             await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
@@ -328,9 +466,9 @@ export class AssetService {
 
         if (range) {
           /** Extracting Start and End value from Range Header */
-          let [start, end] = range.replace(/bytes=/, '').split('-');
-          start = parseInt(start, 10);
-          end = end ? parseInt(end, 10) : size - 1;
+          const [startStr, endStr] = range.replace(/bytes=/, '').split('-');
+          let start = parseInt(startStr, 10);
+          let end = endStr ? parseInt(endStr, 10) : size - 1;
 
           if (!isNaN(start) && isNaN(end)) {
             start = start;
@@ -367,7 +505,9 @@ export class AssetService {
           res.set({
             'Content-Type': mimeType,
           });
-
+          if (await processETag(asset.originalPath, res, headers)) {
+            return;
+          }
           return new StreamableFile(createReadStream(videoPath));
         }
       } catch (e) {
@@ -377,14 +517,13 @@ export class AssetService {
     }
   }
 
-  public async deleteAssetById(authUser: AuthUserDto, assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+  public async deleteAssetById(assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
     const result: DeleteAssetResponseDto[] = [];
 
     const target = assetIds.ids;
     for (const assetId of target) {
       const res = await this.assetRepository.delete({
         id: assetId,
-        userId: authUser.id,
       });
 
       if (res.affected) {
@@ -523,4 +662,77 @@ export class AssetService {
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this._assetRepository.getAssetCountByUserId(authUser.id);
   }
+
+  async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
+    for (const assetId of assetIds) {
+      // Step 1: Check if asset is part of a public shared
+      if (authUser.sharedLinkId) {
+        const canAccess = await this.shareCore.hasAssetAccess(authUser.sharedLinkId, assetId);
+        if (!canAccess) {
+          throw new ForbiddenException();
+        }
+      }
+
+      // Step 2: Check if user owns asset
+      if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
+        continue;
+      }
+
+      // Avoid additional checks if ownership is required
+      if (!mustBeOwner) {
+        // Step 2: Check if asset is part of an album shared with me
+        if ((await this._albumRepository.getSharedWithUserAlbumCount(authUser.id, assetId)) > 0) {
+          continue;
+        }
+      }
+      throw new ForbiddenException();
+    }
+  }
+
+  async createAssetsSharedLink(authUser: AuthUserDto, dto: CreateAssetsShareLinkDto): Promise<SharedLinkResponseDto> {
+    const assets = [];
+
+    await this.checkAssetsAccess(authUser, dto.assetIds);
+    for (const assetId of dto.assetIds) {
+      const asset = await this._assetRepository.getById(assetId);
+      assets.push(asset);
+    }
+
+    const sharedLink = await this.shareCore.createSharedLink(authUser.id, {
+      sharedType: SharedLinkType.INDIVIDUAL,
+      expiredAt: dto.expiredAt,
+      allowUpload: dto.allowUpload,
+      assets: assets,
+      description: dto.description,
+    });
+
+    return mapSharedLinkToResponseDto(sharedLink);
+  }
+
+  async updateAssetsInSharedLink(
+    authUser: AuthUserDto,
+    dto: UpdateAssetsToSharedLinkDto,
+  ): Promise<SharedLinkResponseDto> {
+    if (!authUser.sharedLinkId) throw new ForbiddenException();
+    const assets = [];
+
+    for (const assetId of dto.assetIds) {
+      const asset = await this._assetRepository.getById(assetId);
+      assets.push(asset);
+    }
+
+    const updatedLink = await this.shareCore.updateAssetsInSharedLink(authUser.sharedLinkId, assets);
+    return mapSharedLinkToResponseDto(updatedLink);
+  }
+}
+
+async function processETag(path: string, res: Res, headers: Record<string, string>): Promise<boolean> {
+  const { size, mtimeNs } = await fs.stat(path, { bigint: true });
+  const etag = `W/"${size}-${mtimeNs}"`;
+  res.setHeader('ETag', etag);
+  if (etag === headers['if-none-match']) {
+    res.status(304);
+    return true;
+  }
+  return false;
 }

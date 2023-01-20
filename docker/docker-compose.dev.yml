@@ -1,7 +1,8 @@
-version: '3.8'
+version: "3.8"
 
 services:
   immich-server:
+    container_name: immich_server
     image: immich-server-dev:latest
     build:
       context: ../server
@@ -13,6 +14,7 @@ services:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
     ports:
+      - 3001:3001
       - 9230:9230
     env_file:
       - .env
@@ -23,6 +25,7 @@ services:
       - database
 
   immich-machine-learning:
+    container_name: immich_machine_learning
     image: immich-machine-learning-dev:latest
     build:
       context: ../machine-learning
@@ -41,6 +44,7 @@ services:
       - database
 
   immich-microservices:
+    container_name: immich_microservices
     image: immich-microservices:latest
     build:
       context: ../server
@@ -60,6 +64,7 @@ services:
       - immich-server
 
   immich-web:
+    container_name: immich_web
     image: immich-web-dev:1.9.0
     build:
       context: ../web
@@ -71,6 +76,7 @@ services:
     environment:
       # Rename these values for svelte public interface
       - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
+      - PUBLIC_IMMICH_API_URL_EXTERNAL=${IMMICH_API_URL_EXTERNAL}
     ports:
       - 3000:3000
       - 24678:24678

@@ -21,7 +21,8 @@ class UserResponseDto {
     required this.profileImagePath,
     required this.shouldChangePassword,
     required this.isAdmin,
-    required this.deletedAt,
+    this.deletedAt,
+    required this.oauthId,
   });
 
   String id;
@@ -40,7 +41,15 @@ class UserResponseDto {
 
   bool isAdmin;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   DateTime? deletedAt;
+
+  String oauthId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
@@ -52,7 +61,8 @@ class UserResponseDto {
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
      other.isAdmin == isAdmin &&
-     other.deletedAt == deletedAt;
+     other.deletedAt == deletedAt &&
+     other.oauthId == oauthId;
 
   @override
   int get hashCode =>
@@ -65,27 +75,29 @@ class UserResponseDto {
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
     (isAdmin.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode);
+    (deletedAt == null ? 0 : deletedAt!.hashCode) +
+    (oauthId.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt]';
+  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt, oauthId=$oauthId]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'id'] = id;
-      _json[r'email'] = email;
-      _json[r'firstName'] = firstName;
-      _json[r'lastName'] = lastName;
-      _json[r'createdAt'] = createdAt;
-      _json[r'profileImagePath'] = profileImagePath;
-      _json[r'shouldChangePassword'] = shouldChangePassword;
-      _json[r'isAdmin'] = isAdmin;
-    if (deletedAt != null) {
-      _json[r'deletedAt'] = deletedAt!.toUtc().toIso8601String();
+    final json = <String, dynamic>{};
+      json[r'id'] = this.id;
+      json[r'email'] = this.email;
+      json[r'firstName'] = this.firstName;
+      json[r'lastName'] = this.lastName;
+      json[r'createdAt'] = this.createdAt;
+      json[r'profileImagePath'] = this.profileImagePath;
+      json[r'shouldChangePassword'] = this.shouldChangePassword;
+      json[r'isAdmin'] = this.isAdmin;
+    if (this.deletedAt != null) {
+      json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
-      _json[r'deletedAt'] = null;
+      // json[r'deletedAt'] = null;
     }
-    return _json;
+      json[r'oauthId'] = this.oauthId;
+    return json;
   }
 
   /// Returns a new [UserResponseDto] instance and imports its values from
@@ -116,6 +128,7 @@ class UserResponseDto {
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         deletedAt: mapDateTime(json, r'deletedAt', ''),
+        oauthId: mapValueOfType<String>(json, r'oauthId')!,
       );
     }
     return null;
@@ -173,7 +186,7 @@ class UserResponseDto {
     'profileImagePath',
     'shouldChangePassword',
     'isAdmin',
-    'deletedAt',
+    'oauthId',
   };
 }
 

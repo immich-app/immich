@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.35.0+54
+version: 1.42.0+65
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
@@ -11,19 +11,14 @@ dependencies:
   flutter:
     sdk: flutter
 
-  photo_manager: ^2.2.1
+  photo_manager: ^2.5.0
   flutter_hooks: ^0.18.0
   hooks_riverpod: ^2.0.0-dev.0
   hive: ^2.2.1
   hive_flutter: ^1.1.0
-  dio: ^4.0.4
   cached_network_image: ^3.2.2
-  percent_indicator: ^4.2.2
   intl: ^0.17.0
   auto_route: ^5.0.1
-  exif: ^3.1.1
-  transparent_image: ^2.0.0
-  flutter_launcher_icons: "^0.9.2"
   fluttertoast: ^8.0.8
   video_player: ^2.2.18
   chewie: ^1.3.5
@@ -33,10 +28,6 @@ dependencies:
   flutter_map: ^0.14.0
   flutter_udid: ^2.0.0
   package_info_plus: ^1.4.0
-  flutter_spinkit: ^5.1.0
-  flutter_swipe_detector: ^2.0.0
-  equatable: ^2.0.3
-  image_picker: ^0.8.5+3
   url_launcher: ^6.1.3
   http: 0.13.4
   cancellation_token_http: ^1.1.0
@@ -44,15 +35,19 @@ dependencies:
   share_plus: ^4.0.10
   flutter_displaymode: ^0.4.0
   scrollable_positioned_list: ^0.3.4
-
   path: ^1.8.1
   path_provider: ^2.0.11
   latlong2: ^0.8.1
   collection: ^1.16.0
   http_parser: ^4.0.1
+  flutter_web_auth: ^0.5.0
 
   openapi:
     path: openapi
+
+  # easy to remove packages:
+  image_picker: ^0.8.5+3 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
+  logging: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -61,6 +56,7 @@ dev_dependencies:
   hive_generator: ^1.1.2
   build_runner: ^2.2.1
   auto_route_generator: ^5.0.2
+  flutter_launcher_icons: "^0.9.2"
 
 flutter:
   uses-material-design: true
@@ -76,7 +72,9 @@ flutter:
     - family: SnowburstOne
       fonts:
         - asset: fonts/SnowburstOne.ttf
-
+    - family: Inconsolata
+      fonts:
+        - asset: fonts/Inconsolata-Regular.ttf
 flutter_icons:
   image_path_android: "assets/immich-logo-no-outline.png"
   image_path_ios: "assets/immich-logo-no-outline.png"

@@ -53,13 +53,17 @@
 	onMount(async () => {
 		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || NO_THUMBNAIL;
 	});
+
+	const locale = navigator.language;
 </script>
 
 <div
 	class="h-[339px] w-[275px] hover:cursor-pointer mt-4 relative"
 	on:click={() => dispatchClick('click', album)}
+	on:keydown={() => dispatchClick('click', album)}
 	data-testid="album-card"
 >
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div
 		id={`icon-${album.id}`}
 		class="absolute top-2 right-2"
@@ -75,6 +79,7 @@
 			alt={album.id}
 			class={`object-cover h-full w-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
 			data-testid="album-image"
+			draggable="false"
 		/>
 	</div>
 
@@ -87,7 +92,7 @@
 		</p>
 
 		<span class="text-xs flex gap-2 dark:text-immich-dark-fg" data-testid="album-details">
-			<p>{album.assetCount} items</p>
+			<p>{album.assetCount.toLocaleString(locale)} {album.assetCount == 1 ? `item` : `items`}</p>
 
 			{#if album.shared}
 				<p>·</p>

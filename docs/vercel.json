@@ -1,0 +1,21 @@
+{
+  "redirects": [
+    { "source": "/docs", "destination": "/docs/overview/introduction" },
+    { "source": "/docs/mobile-app-beta-program", "destination": "/docs/features/mobile-app" },
+    { "source": "/docs/contribution-guidelines", "destination": "/docs/overview/support-the-project#contributing" },
+    { "source": "/docs/install", "destination": "/docs/install/docker-compose" },
+    { "source": "/docs/installation/one-step-installation", "destination": "/docs/install/script" },
+    { "source": "/docs/installation/portainer-installation", "destination": "/docs/install/portainer" },
+    { "source": "/docs/installation/recommended-installation", "destination": "/docs/install/docker-compose" },
+    { "source": "/docs/installation/unraid", "destination": "/docs/install/unraid" },
+    { "source": "/docs/installation/requirements", "destination": "/docs/install/requirements" },
+    { "source": "/docs/overview/logo-meaning", "destination": "/docs/overview/logo" },
+    { "source": "/docs/overview/technology-stack", "destination": "/docs/developer/architecture" },
+    { "source": "/docs/usage/automatic-backup", "destination": "/docs/features/automatic-backup" },
+    { "source": "/docs/usage/bulk-upload", "destination": "/docs/features/bulk-upload" },
+    { "source": "/docs/usage/oauth", "destination": "/docs/features/oauth" },
+    { "source": "/docs/usage/post-installation", "destination": "/docs/install/post-install" },
+    { "source": "/docs/usage/update", "destination": "/docs/install/docker-compose#step-4---upgrading" },
+    { "source": "/docs/usage/server-commands", "destination": "/docs/features/server-commands" }
+  ]
+}

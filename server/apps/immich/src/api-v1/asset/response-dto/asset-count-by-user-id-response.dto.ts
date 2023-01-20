@@ -2,13 +2,17 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class AssetCountByUserIdResponseDto {
   @ApiProperty({ type: 'integer' })
-  photos!: number;
+  audio = 0;
 
   @ApiProperty({ type: 'integer' })
-  videos!: number;
+  photos = 0;
 
-  constructor(photos: number, videos: number) {
-    this.photos = photos;
-    this.videos = videos;
-  }
+  @ApiProperty({ type: 'integer' })
+  videos = 0;
+
+  @ApiProperty({ type: 'integer' })
+  other = 0;
+
+  @ApiProperty({ type: 'integer' })
+  total = 0;
 }
