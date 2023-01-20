@@ -3,7 +3,7 @@ import {
   IDeleteFileOnDiskJob,
   IExifExtractionProcessor,
   IMachineLearningJob,
-  IMp4ConversionProcessor,
+  IVideoConversionProcessor,
   IReverseGeocodingProcessor,
   IUserDeletionJob,
   JpegGeneratorProcessor,
@@ -13,7 +13,7 @@ import { JobName } from './job.constants';
 
 export type JobItem =
   | { name: JobName.ASSET_UPLOADED; data: IAssetUploadedJob }
-  | { name: JobName.MP4_CONVERSION; data: IMp4ConversionProcessor }
+  | { name: JobName.VIDEO_CONVERSION; data: IVideoConversionProcessor }
   | { name: JobName.GENERATE_JPEG_THUMBNAIL; data: JpegGeneratorProcessor }
   | { name: JobName.GENERATE_WEBP_THUMBNAIL; data: WebpGeneratorProcessor }
   | { name: JobName.EXIF_EXTRACTION; data: IExifExtractionProcessor }

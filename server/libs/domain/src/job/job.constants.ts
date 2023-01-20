@@ -12,7 +12,7 @@ export enum QueueName {
 
 export enum JobName {
   ASSET_UPLOADED = 'asset-uploaded',
-  MP4_CONVERSION = 'mp4-conversion',
+  VIDEO_CONVERSION = 'mp4-conversion',
   GENERATE_JPEG_THUMBNAIL = 'generate-jpeg-thumbnail',
   GENERATE_WEBP_THUMBNAIL = 'generate-webp-thumbnail',
   EXIF_EXTRACTION = 'exif-extraction',

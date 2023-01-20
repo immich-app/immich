@@ -1,7 +1,7 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
 import { AssetEntity } from '@app/infra';
 import { QueueName, JobName } from '@app/domain';
-import { IMp4ConversionProcessor } from '@app/domain';
+import { IVideoConversionProcessor } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,24 +19,23 @@ export class VideoTranscodeProcessor {
     private systemConfigService: SystemConfigService,
   ) {}
 
-  @Process({ name: JobName.MP4_CONVERSION, concurrency: 2 })
-  async mp4Conversion(job: Job<IMp4ConversionProcessor>) {
+  @Process({ name: JobName.VIDEO_CONVERSION, concurrency: 2 })
+  async videoConversion(job: Job<IVideoConversionProcessor>) {
+    const { ffmpeg: ffmpegConfig } = await this.systemConfigService.getConfig();
     const { asset } = job.data;
 
-    if (asset.mimeType != 'video/mp4') {
-      const basePath = APP_UPLOAD_LOCATION;
-      const encodedVideoPath = `${basePath}/${asset.userId}/encoded-video`;
+    const basePath = APP_UPLOAD_LOCATION;
+    const encodedVideoPath = `${basePath}/${asset.userId}/encoded-video`;
 
-      if (!existsSync(encodedVideoPath)) {
-        mkdirSync(encodedVideoPath, { recursive: true });
-      }
+    if (!existsSync(encodedVideoPath)) {
+      mkdirSync(encodedVideoPath, { recursive: true });
+    }
 
     const savedEncodedPath = `${encodedVideoPath}/${asset.id}.mp4`;
 
-      if (asset.encodedVideoPath == '' || !asset.encodedVideoPath) {
-        // Put the processing into its own async function to prevent the job exist right away
-        await this.runFFMPEGPipeLine(asset, savedEncodedPath);
-      }
+    if (!asset.encodedVideoPath) {
+      // Put the processing into its own async function to prevent the job exist right away
+      await this.runFFMPEGPipeLine(asset, savedEncodedPath);
     }
   }
 

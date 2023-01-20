@@ -69,7 +69,7 @@ export class ScheduleTasksService {
     });
 
     for (const asset of assets) {
-      await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset });
+      await this.videoConversionQueue.add(JobName.VIDEO_CONVERSION, { asset });
     }
   }
 

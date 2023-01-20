@@ -122,7 +122,7 @@ export class AssetService {
 
         await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
 
-        await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset: livePhotoAssetEntity });
+        await this.videoConversionQueue.add(JobName.VIDEO_CONVERSION, { asset: livePhotoAssetEntity });
       }
 
       const assetEntity = await this.createUserAsset(
