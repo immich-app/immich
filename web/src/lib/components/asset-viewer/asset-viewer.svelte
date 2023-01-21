@@ -46,7 +46,6 @@
 	$: asset.id && getAllAlbums(); // Update the album information when the asset ID changes
 
 	const getAllAlbums = async () => {
-		console.log({ assetId: asset.id });
 		try {
 			const { data } = await api.albumApi.getAllAlbums(undefined, asset.id);
 			appearsInAlbums = data;
