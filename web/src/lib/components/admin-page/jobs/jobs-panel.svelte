@@ -101,6 +101,28 @@
 		}
 	};
 
+	const runVideoConversion = async () => {
+		try {
+			const { data } = await api.jobApi.sendJobCommand(JobId.VideoConversion, {
+				command: JobCommand.Start
+			});
+
+			if (data) {
+				notificationController.show({
+					message: `Video conversion job started for ${data} assets`,
+					type: NotificationType.Info
+				});
+			} else {
+				notificationController.show({
+					message: `No videos without an encoded version found`,
+					type: NotificationType.Info
+				});
+			}
+		} catch (error) {
+			handleError(error, `Error running video conversion job, check console for more detail`);
+		}
+	};
+
 	const runTemplateMigration = async () => {
 		try {
 			const { data } = await api.jobApi.sendJobCommand(JobId.StorageTemplateMigration, {
@@ -157,6 +179,17 @@
 		activeJobCount={allJobsStatus?.machineLearningQueueCount.active}
 	>
 		Note that some assets may not have any objects detected, this is normal.
+	</JobTile>
+
+	<JobTile
+			title={'Video transcoding'}
+			subtitle={'Run video transcoding process to transcode videos not in the desired format'}
+			on:click={runVideoConversion}
+			jobStatus={allJobsStatus?.isVideoConversionActive}
+			waitingJobCount={allJobsStatus?.videoConversionQueueCount.waiting}
+			activeJobCount={allJobsStatus?.videoConversionQueueCount.active}
+	>
+		Note that some videos won't require transcoding, this is normal.
 	</JobTile>
 
 	<JobTile
