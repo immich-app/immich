@@ -1,6 +1,6 @@
 <script lang="ts">
-	import {quintOut} from 'svelte/easing';
-	import {fly} from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
+	import { fly } from 'svelte/transition';
 
 	export let value: string;
 	export let options: string[];
@@ -26,11 +26,11 @@
 		{/if}
 	</div>
 	<select
-			class="immich-form-input w-full"
-			name="presets"
-			id="preset-select"
-			bind:value={value}
-			on:change={handleChange}
+		class="immich-form-input w-full"
+		name="presets"
+		id="preset-select"
+		bind:value
+		on:change={handleChange}
 	>
 		{#each options as option}
 			<option value={option}>{option}</option>

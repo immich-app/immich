@@ -3,9 +3,9 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import {handleError} from '$lib/utils/handle-error';
-	import {AllJobStatusResponseDto, api, JobCommand, JobId} from '@api';
-	import {onDestroy, onMount} from 'svelte';
+	import { handleError } from '$lib/utils/handle-error';
+	import { AllJobStatusResponseDto, api, JobCommand, JobId } from '@api';
+	import { onDestroy, onMount } from 'svelte';
 	import JobTile from './job-tile.svelte';
 
 	let allJobsStatus: AllJobStatusResponseDto;
@@ -182,12 +182,12 @@
 	</JobTile>
 
 	<JobTile
-			title={'Video transcoding'}
-			subtitle={'Run video transcoding process to transcode videos not in the desired format'}
-			on:click={runVideoConversion}
-			jobStatus={allJobsStatus?.isVideoConversionActive}
-			waitingJobCount={allJobsStatus?.videoConversionQueueCount.waiting}
-			activeJobCount={allJobsStatus?.videoConversionQueueCount.active}
+		title={'Video transcoding'}
+		subtitle={'Run video transcoding process to transcode videos not in the desired format'}
+		on:click={runVideoConversion}
+		jobStatus={allJobsStatus?.isVideoConversionActive}
+		waitingJobCount={allJobsStatus?.videoConversionQueueCount.waiting}
+		activeJobCount={allJobsStatus?.videoConversionQueueCount.active}
 	>
 		Note that some videos won't require transcoding, this is normal.
 	</JobTile>

@@ -19,7 +19,6 @@ export class VideoTranscodeProcessor {
 
   @Process({ name: JobName.VIDEO_CONVERSION, concurrency: 2 })
   async videoConversion(job: Job<IVideoConversionProcessor>) {
-    const { ffmpeg: ffmpegConfig } = await this.systemConfigService.getConfig();
     const { asset } = job.data;
 
     const basePath = APP_UPLOAD_LOCATION;
