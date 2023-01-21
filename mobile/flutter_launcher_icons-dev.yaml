@@ -1,0 +1,5 @@
+flutter_icons:
+  image_path: "assets/immich-logo-dev-thick.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true

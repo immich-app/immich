@@ -9,6 +9,14 @@
       "name": "Immich Server",
       "remoteRoot": "/usr/src/app",
       "localRoot": "${workspaceFolder}/server"
+    },
+    {
+      "name": "Immich Android",
+      "cwd": "${workspaceFolder}/mobile",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--flavor", "dev"],
     }
   ]
 }
