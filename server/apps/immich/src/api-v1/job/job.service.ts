@@ -6,7 +6,7 @@ import { AssetType } from '@app/infra';
 import { JobId } from './dto/get-job.dto';
 import { MACHINE_LEARNING_ENABLED } from '@app/common';
 
-const jobIds = Object.keys(JobId) as JobId[];
+const jobIds = Object.values(JobId) as JobId[];
 
 @Injectable()
 export class JobService {
@@ -112,7 +112,7 @@ export class JobService {
         return QueueName.MACHINE_LEARNING;
 
       default:
-        throw new BadRequestException('Invalid job id');
+        throw new BadRequestException(`Invalid job id: ${jobId}`);
     }
   }
 }
