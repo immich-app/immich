@@ -2721,40 +2721,6 @@
       }
     },
     "/jobs/{jobId}": {
-      "get": {
-        "operationId": "getJobStatus",
-        "description": "",
-        "parameters": [
-          {
-            "name": "jobId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "$ref": "#/components/schemas/JobId"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JobStatusResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Job"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
       "put": {
         "operationId": "sendJobCommand",
         "description": "",
@@ -4597,21 +4563,6 @@
           "video-conversion",
           "machine-learning",
           "storage-template-migration"
-        ]
-      },
-      "JobStatusResponseDto": {
-        "type": "object",
-        "properties": {
-          "isActive": {
-            "type": "boolean"
-          },
-          "queueCount": {
-            "type": "object"
-          }
-        },
-        "required": [
-          "isActive",
-          "queueCount"
         ]
       },
       "JobCommand": {

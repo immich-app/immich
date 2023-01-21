@@ -295,7 +295,7 @@ export class AssetController {
       deleteAssetList.filter((a) => a.id == res.id && res.status == DeleteAssetStatusEnum.SUCCESS);
     });
 
-    await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
+    await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList as any[]);
 
     return result;
   }
