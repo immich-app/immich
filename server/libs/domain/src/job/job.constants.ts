@@ -24,4 +24,5 @@ export enum JobName {
   OBJECT_DETECTION = 'detect-object',
   IMAGE_TAGGING = 'tag-image',
   DELETE_FILE_ON_DISK = 'delete-file-on-disk',
+  CHECKSUM_GENERATION = 'checksum-generation',
 }

@@ -4565,48 +4565,28 @@
       "AllJobStatusResponseDto": {
         "type": "object",
         "properties": {
-          "thumbnailGenerationQueueCount": {
+          "thumbnail-generation": {
             "$ref": "#/components/schemas/JobCounts"
           },
-          "metadataExtractionQueueCount": {
+          "metadata-extraction": {
             "$ref": "#/components/schemas/JobCounts"
           },
-          "videoConversionQueueCount": {
+          "video-conversion": {
             "$ref": "#/components/schemas/JobCounts"
           },
-          "machineLearningQueueCount": {
+          "machine-learning": {
             "$ref": "#/components/schemas/JobCounts"
           },
-          "storageMigrationQueueCount": {
+          "storage-template-migration": {
             "$ref": "#/components/schemas/JobCounts"
-          },
-          "isThumbnailGenerationActive": {
-            "type": "boolean"
-          },
-          "isMetadataExtractionActive": {
-            "type": "boolean"
-          },
-          "isVideoConversionActive": {
-            "type": "boolean"
-          },
-          "isMachineLearningActive": {
-            "type": "boolean"
-          },
-          "isStorageMigrationActive": {
-            "type": "boolean"
           }
         },
         "required": [
-          "thumbnailGenerationQueueCount",
-          "metadataExtractionQueueCount",
-          "videoConversionQueueCount",
-          "machineLearningQueueCount",
-          "storageMigrationQueueCount",
-          "isThumbnailGenerationActive",
-          "isMetadataExtractionActive",
-          "isVideoConversionActive",
-          "isMachineLearningActive",
-          "isStorageMigrationActive"
+          "thumbnail-generation",
+          "metadata-extraction",
+          "video-conversion",
+          "machine-learning",
+          "storage-template-migration"
         ]
       },
       "JobId": {
