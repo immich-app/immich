@@ -106,7 +106,6 @@ Class | Method | HTTP request | Description
 *DeviceInfoApi* | [**updateDeviceInfo**](doc//DeviceInfoApi.md#updatedeviceinfo) | **PATCH** /device-info | 
 *DeviceInfoApi* | [**upsertDeviceInfo**](doc//DeviceInfoApi.md#upsertdeviceinfo) | **PUT** /device-info | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
-*JobApi* | [**getJobStatus**](doc//JobApi.md#getjobstatus) | **GET** /jobs/{jobId} | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
@@ -189,7 +188,6 @@ Class | Method | HTTP request | Description
  - [JobCommandDto](doc//JobCommandDto.md)
  - [JobCounts](doc//JobCounts.md)
  - [JobId](doc//JobId.md)
- - [JobStatusResponseDto](doc//JobStatusResponseDto.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)

@@ -84,7 +84,6 @@ part 'model/job_command.dart';
 part 'model/job_command_dto.dart';
 part 'model/job_counts.dart';
 part 'model/job_id.dart';
-part 'model/job_status_response_dto.dart';
 part 'model/login_credential_dto.dart';
 part 'model/login_response_dto.dart';
 part 'model/logout_response_dto.dart';

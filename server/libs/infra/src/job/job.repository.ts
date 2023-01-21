@@ -81,7 +81,7 @@ export class JobRepository implements IJobRepository {
         await this.userDeletion.add(item.name, item.data);
         break;
 
-      case JobName.MP4_CONVERSION:
+      case JobName.VIDEO_CONVERSION:
         await this.videoTranscode.add(item.name, item.data);
         break;
 
