@@ -3,9 +3,9 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import { handleError } from '$lib/utils/handle-error';
-	import { AllJobStatusResponseDto, api, JobCommand, JobId } from '@api';
-	import { onDestroy, onMount } from 'svelte';
+	import {handleError} from '$lib/utils/handle-error';
+	import {AllJobStatusResponseDto, api, JobCommand, JobId} from '@api';
+	import {onDestroy, onMount} from 'svelte';
 	import JobTile from './job-tile.svelte';
 
 	let allJobsStatus: AllJobStatusResponseDto;
@@ -33,7 +33,7 @@
 
 			if (data) {
 				notificationController.show({
-					message: `Thumbnail generation job started for ${data} asset`,
+					message: `Thumbnail generation job started for ${data} assets`,
 					type: NotificationType.Info
 				});
 			} else {
@@ -60,7 +60,7 @@
 
 			if (data) {
 				notificationController.show({
-					message: `Extract EXIF job started for ${data} asset`,
+					message: `Extract EXIF job started for ${data} assets`,
 					type: NotificationType.Info
 				});
 			} else {
@@ -87,7 +87,7 @@
 
 			if (data) {
 				notificationController.show({
-					message: `Object detection job started for ${data} asset`,
+					message: `Object detection job started for ${data} assets`,
 					type: NotificationType.Info
 				});
 			} else {
