@@ -30,14 +30,14 @@ jobs:
         with:
           channel: 'stable'
       - name: Run integration tests
-        uses: reactivecircus/android-emulator-runner@v2.15.0
+        uses: reactivecircus/android-emulator-runner@v2.27.0
         with:
           working-directory: ./mobile
           api-level: 29
           arch: x86_64
           profile: pixel
           target: default
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -accel on
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-linux-hw-accel: false
           script: |
             flutter pub get
