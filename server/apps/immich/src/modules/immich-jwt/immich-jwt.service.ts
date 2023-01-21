@@ -2,7 +2,6 @@ import { UserEntity } from '@app/infra';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { IncomingHttpHeaders } from 'http';
-import { Request } from 'express';
 import { JwtPayloadDto } from '../../api-v1/auth/dto/jwt-payload.dto';
 import { LoginResponseDto, mapLoginResponse } from '../../api-v1/auth/response-dto/login-response.dto';
 import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE, jwtSecret } from '../../constants/jwt.constant';
@@ -23,18 +22,18 @@ export class ImmichJwtService {
     return [IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE];
   }
 
-  public getCookies(loginResponse: LoginResponseDto, authType: AuthType, request: Request) {
+  public getCookies(loginResponse: LoginResponseDto, authType: AuthType, isSecure: boolean) {
     const maxAge = 7 * 24 * 3600; // 7 days
 
     let accessTokenCookie = '';
     let authTypeCookie = '';
 
-    if (request.secure) {
+    if (isSecure) {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; Secure; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
       authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; Secure; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
     } else {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge} SameSite=Strict;`;
-      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; Path=/; Max-Age=${maxAge} SameSite=Strict;`;
+      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
     }
 
     return [accessTokenCookie, authTypeCookie];

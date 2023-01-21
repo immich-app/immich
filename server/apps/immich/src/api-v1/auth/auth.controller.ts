@@ -28,7 +28,10 @@ export class AuthController {
     @Req() request: Request,
   ): Promise<LoginResponseDto> {
     const loginResponse = await this.authService.login(loginCredential, clientIp);
-    response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse, AuthType.PASSWORD, request));
+    response.setHeader(
+      'Set-Cookie',
+      this.immichJwtService.getCookies(loginResponse, AuthType.PASSWORD, request.secure),
+    );
     return loginResponse;
   }
 

@@ -36,7 +36,7 @@ export class OAuthController {
     @Req() request: Request,
   ): Promise<LoginResponseDto> {
     const loginResponse = await this.oauthService.login(dto);
-    response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse, AuthType.OAUTH, request));
+    response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse, AuthType.OAUTH, request.secure));
     return loginResponse;
   }
 
