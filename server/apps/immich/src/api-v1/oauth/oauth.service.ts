@@ -1,11 +1,10 @@
 import { SystemConfig } from '@app/infra';
-import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { LoginResponseDto } from '../auth/response-dto/login-response.dto';
-import { IUserRepository, UserResponseDto, UserCore } from '@app/domain';
+import { IUserRepository, UserResponseDto, UserCore, SystemConfigService, INITIAL_SYSTEM_CONFIG } from '@app/domain';
 import { OAuthCallbackDto } from './dto/oauth-auth-code.dto';
 import { OAuthConfigDto } from './dto/oauth-config.dto';
 import { OAuthConfigResponseDto } from './response-dto/oauth-config-response.dto';
@@ -23,7 +22,7 @@ export class OAuthService {
 
   constructor(
     private immichJwtService: ImmichJwtService,
-    immichConfigService: ImmichConfigService,
+    configService: SystemConfigService,
     @Inject(IUserRepository) userRepository: IUserRepository,
     @Inject(INITIAL_SYSTEM_CONFIG) private config: SystemConfig,
   ) {
@@ -33,7 +32,7 @@ export class OAuthService {
       timeout: 30000,
     });
 
-    immichConfigService.config$.subscribe((config) => (this.config = config));
+    configService.config$.subscribe((config) => (this.config = config));
   }
 
   public async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {

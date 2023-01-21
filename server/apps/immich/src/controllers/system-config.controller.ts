@@ -1,9 +1,7 @@
+import { SystemConfigDto, SystemConfigService, SystemConfigTemplateStorageOptionDto } from '@app/domain';
 import { Body, Controller, Get, Put, ValidationPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Authenticated } from '../../decorators/authenticated.decorator';
-import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
-import { SystemConfigDto } from './dto/system-config.dto';
-import { SystemConfigService } from './system-config.service';
+import { Authenticated } from '../decorators/authenticated.decorator';
 
 @ApiTags('System Config')
 @ApiBearerAuth()

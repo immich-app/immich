@@ -1,4 +1,11 @@
-import { IMetadataExtractionJob, IThumbnailGenerationJob, IVideoTranscodeJob, QueueName, JobName } from '@app/job';
+import {
+  IMachineLearningJob,
+  IMetadataExtractionJob,
+  IThumbnailGenerationJob,
+  IVideoTranscodeJob,
+  QueueName,
+  JobName,
+} from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
@@ -7,7 +14,6 @@ import { IAssetRepository } from '../asset/asset-repository';
 import { AssetType } from '@app/infra';
 import { GetJobDto, JobId } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
-import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
 import { StorageService } from '@app/storage';
 import { MACHINE_LEARNING_ENABLED } from '@app/common';
 

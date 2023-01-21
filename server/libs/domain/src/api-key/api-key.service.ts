@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra';
+import { UserEntity } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthUserDto, ICryptoRepository } from '../auth';
 import { IKeyRepository } from './api-key.repository';

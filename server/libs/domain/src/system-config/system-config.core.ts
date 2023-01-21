@@ -1,9 +1,9 @@
-import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/infra';
+import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/infra/db/entities';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
-import { DeepPartial, In, Repository } from 'typeorm';
+import { DeepPartial } from 'typeorm';
+import { ISystemConfigRepository } from './system-config.repository';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
 
@@ -37,16 +37,13 @@ const defaults: SystemConfig = Object.freeze({
 });
 
 @Injectable()
-export class ImmichConfigService {
-  private logger = new Logger(ImmichConfigService.name);
+export class SystemConfigCore {
+  private logger = new Logger(SystemConfigCore.name);
   private validators: SystemConfigValidator[] = [];
 
   public config$ = new Subject<SystemConfig>();
 
-  constructor(
-    @InjectRepository(SystemConfigEntity)
-    private systemConfigRepository: Repository<SystemConfigEntity>,
-  ) {}
+  constructor(private repository: ISystemConfigRepository) {}
 
   public getDefaults(): SystemConfig {
     return defaults;
@@ -57,7 +54,7 @@ export class ImmichConfigService {
   }
 
   public async getConfig() {
-    const overrides = await this.systemConfigRepository.find();
+    const overrides = await this.repository.load();
     const config: DeepPartial<SystemConfig> = {};
     for (const { key, value } of overrides) {
       // set via dot notation
@@ -95,11 +92,11 @@ export class ImmichConfigService {
     }
 
     if (updates.length > 0) {
-      await this.systemConfigRepository.save(updates);
+      await this.repository.saveAll(updates);
     }
 
     if (deletes.length > 0) {
-      await this.systemConfigRepository.delete({ key: In(deletes.map((item) => item.key)) });
+      await this.repository.deleteKeys(deletes.map((item) => item.key));
     }
 
     const newConfig = await this.getConfig();

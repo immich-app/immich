@@ -1,7 +1,7 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity } from '@app/infra';
-import { ImmichConfigService } from '@app/immich-config';
-import { QueueName, JobName } from '@app/job';
+import { SystemConfigService } from '@app/domain';
+import { QueueName, JobName } from '@app/domain';
 import { StorageService } from '@app/storage';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -14,7 +14,7 @@ export class StorageMigrationProcessor {
 
   constructor(
     private storageService: StorageService,
-    private immichConfigService: ImmichConfigService,
+    private systemConfigService: SystemConfigService,
 
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
@@ -56,6 +56,6 @@ export class StorageMigrationProcessor {
    */
   @Process({ name: JobName.CONFIG_CHANGE, concurrency: 1 })
   async updateTemplate() {
-    await this.immichConfigService.refreshConfig();
+    await this.systemConfigService.refreshConfig();
   }
 }

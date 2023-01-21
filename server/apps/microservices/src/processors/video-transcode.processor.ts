@@ -1,14 +1,14 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
 import { AssetEntity } from '@app/infra';
-import { QueueName, JobName } from '@app/job';
-import { IMp4ConversionProcessor } from '@app/job/interfaces/video-transcode.interface';
+import { QueueName, JobName } from '@app/domain';
+import { IMp4ConversionProcessor } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'fs';
-import { ImmichConfigService } from 'libs/immich-config/src';
+import { SystemConfigService } from '@app/domain';
 import { Repository } from 'typeorm';
 
 @Processor(QueueName.VIDEO_CONVERSION)
@@ -16,7 +16,7 @@ export class VideoTranscodeProcessor {
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-    private immichConfigService: ImmichConfigService,
+    private systemConfigService: SystemConfigService,
   ) {}
 
   @Process({ name: JobName.MP4_CONVERSION, concurrency: 2 })
@@ -41,7 +41,7 @@ export class VideoTranscodeProcessor {
   }
 
   async runFFMPEGPipeLine(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
-    const config = await this.immichConfigService.getConfig();
+    const config = await this.systemConfigService.getConfig();
 
     return new Promise((resolve, reject) => {
       ffmpeg(asset.originalPath)

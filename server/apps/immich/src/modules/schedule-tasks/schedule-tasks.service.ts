@@ -5,9 +5,9 @@ import { IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType, ExifEntity, UserEntity } from '@app/infra';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { IMetadataExtractionJob, IVideoTranscodeJob, QueueName, JobName } from '@app/job';
+import { IMetadataExtractionJob, IVideoTranscodeJob, QueueName, JobName } from '@app/domain';
 import { ConfigService } from '@nestjs/config';
-import { IUserDeletionJob } from '@app/job/interfaces/user-deletion.interface';
+import { IUserDeletionJob } from '@app/domain';
 import { userUtils } from '@app/common';
 
 @Injectable()
