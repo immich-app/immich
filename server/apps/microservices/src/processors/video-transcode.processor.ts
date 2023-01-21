@@ -10,7 +10,6 @@ import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'fs';
 import { ImmichConfigService } from 'libs/immich-config/src';
 import { Repository } from 'typeorm';
-import { assetUtils } from '@app/common';
 
 @Processor(QueueName.VIDEO_CONVERSION)
 export class VideoTranscodeProcessor {
@@ -24,7 +23,7 @@ export class VideoTranscodeProcessor {
   async mp4Conversion(job: Job<IMp4ConversionProcessor>) {
     const { asset } = job.data;
 
-    if (!assetUtils.isWebPlayable(asset.mimeType)) {
+    if (asset.mimeType != 'video/mp4') {
       const basePath = APP_UPLOAD_LOCATION;
       const encodedVideoPath = `${basePath}/${asset.userId}/encoded-video`;
 
