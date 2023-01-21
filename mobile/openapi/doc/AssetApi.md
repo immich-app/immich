@@ -17,7 +17,6 @@ Method | HTTP request | Description
 [**downloadFiles**](AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
 [**downloadLibrary**](AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
-[**getAllDeletedAssets**](AssetApi.md#getalldeletedassets) | **GET** /asset/bin | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 [**getAssetByTimeBucket**](AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
 [**getAssetCountByTimeBucket**](AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
@@ -414,51 +413,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ifNoneMatch** | **String**| ETag of data already cached on the client | [optional] 
-
-### Return type
-
-[**List<AssetResponseDto>**](AssetResponseDto.md)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getAllDeletedAssets**
-> List<AssetResponseDto> getAllDeletedAssets()
-
-
-
-Get all AssetEntity deleted by user
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-
-try {
-    final result = api_instance.getAllDeletedAssets();
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->getAllDeletedAssets: $e\n');
-}
-```
-
-### Parameters
-This endpoint does not need any parameter.
 
 ### Return type
 

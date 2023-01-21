@@ -294,8 +294,12 @@ class ApiClient {
           return OAuthConfigDto.fromJson(value);
         case 'OAuthConfigResponseDto':
           return OAuthConfigResponseDto.fromJson(value);
+        case 'RecycleBinConfigResponseDto':
+          return RecycleBinConfigResponseDto.fromJson(value);
         case 'RemoveAssetsDto':
           return RemoveAssetsDto.fromJson(value);
+        case 'RestoreAssetsDto':
+          return RestoreAssetsDto.fromJson(value);
         case 'SearchAssetDto':
           return SearchAssetDto.fromJson(value);
         case 'ServerInfoResponseDto':

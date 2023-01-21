@@ -83,7 +83,6 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**downloadFiles**](doc//AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
 *AssetApi* | [**downloadLibrary**](doc//AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
-*AssetApi* | [**getAllDeletedAssets**](doc//AssetApi.md#getalldeletedassets) | **GET** /asset/bin | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 *AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
 *AssetApi* | [**getAssetCountByTimeBucket**](doc//AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
@@ -114,6 +113,12 @@ Class | Method | HTTP request | Description
 *OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
 *OAuthApi* | [**mobileRedirect**](doc//OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
 *OAuthApi* | [**unlink**](doc//OAuthApi.md#unlink) | **POST** /oauth/unlink | 
+*RecycleBinApi* | [**deleteRecyleBinAssets**](doc//RecycleBinApi.md#deleterecylebinassets) | **DELETE** /bin/assets | 
+*RecycleBinApi* | [**emptyBin**](doc//RecycleBinApi.md#emptybin) | **DELETE** /bin | 
+*RecycleBinApi* | [**getAllDeletedAssets**](doc//RecycleBinApi.md#getalldeletedassets) | **GET** /bin | 
+*RecycleBinApi* | [**getRecycleBinConfig**](doc//RecycleBinApi.md#getrecyclebinconfig) | **GET** /bin/config | 
+*RecycleBinApi* | [**getRecycleBinCountByUserId**](doc//RecycleBinApi.md#getrecyclebincountbyuserid) | **GET** /bin/count-by-user-id | 
+*RecycleBinApi* | [**restoreDeletedAssets**](doc//RecycleBinApi.md#restoredeletedassets) | **PUT** /bin/assets | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
@@ -197,7 +202,9 @@ Class | Method | HTTP request | Description
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
+ - [RecycleBinConfigResponseDto](doc//RecycleBinConfigResponseDto.md)
  - [RemoveAssetsDto](doc//RemoveAssetsDto.md)
+ - [RestoreAssetsDto](doc//RestoreAssetsDto.md)
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
  - [ServerPingResponse](doc//ServerPingResponse.md)

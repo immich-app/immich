@@ -61,7 +61,10 @@ doc/OAuthApi.md
 doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
+doc/RecycleBinApi.md
+doc/RecycleBinConfigResponseDto.md
 doc/RemoveAssetsDto.md
+doc/RestoreAssetsDto.md
 doc/SearchAssetDto.md
 doc/ServerInfoApi.md
 doc/ServerInfoResponseDto.md
@@ -106,6 +109,7 @@ lib/api/authentication_api.dart
 lib/api/device_info_api.dart
 lib/api/job_api.dart
 lib/api/o_auth_api.dart
+lib/api/recycle_bin_api.dart
 lib/api/server_info_api.dart
 lib/api/share_api.dart
 lib/api/system_config_api.dart
@@ -170,7 +174,9 @@ lib/model/logout_response_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
+lib/model/recycle_bin_config_response_dto.dart
 lib/model/remove_assets_dto.dart
+lib/model/restore_assets_dto.dart
 lib/model/search_asset_dto.dart
 lib/model/server_info_response_dto.dart
 lib/model/server_ping_response.dart
@@ -260,7 +266,10 @@ test/o_auth_api_test.dart
 test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
+test/recycle_bin_api_test.dart
+test/recycle_bin_config_response_dto_test.dart
 test/remove_assets_dto_test.dart
+test/restore_assets_dto_test.dart
 test/search_asset_dto_test.dart
 test/server_info_api_test.dart
 test/server_info_response_dto_test.dart
