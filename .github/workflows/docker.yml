@@ -46,8 +46,7 @@ jobs:
 
       - name: Login to Docker Hub
         # Only push to Docker Hub when making a release
-        if: false
-        # if: ${{ github.event_name == 'release' }}
+        if: ${{ github.event_name == 'release' }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
