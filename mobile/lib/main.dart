@@ -29,12 +29,11 @@ import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'constants/hive_box.dart';
 
 void main() async {
-  await Hive.initFlutter();
-  Hive.registerAdapter(HiveSavedLoginInfoAdapter());
-  Hive.registerAdapter(HiveBackupAlbumsAdapter());
-  Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
-  Hive.registerAdapter(ImmichLoggerMessageAdapter());
+  await initApp();
+  runApp(getMainWidget());
+}
 
+Future<void> openBoxes() async {
   await Future.wait([
     Hive.openBox<ImmichLoggerMessage>(immichLoggerBox),
     Hive.openBox(userInfoBox),
@@ -47,6 +46,16 @@ void main() async {
     if (!Platform.isAndroid) Hive.openBox(backgroundBackupInfoBox),
     EasyLocalization.ensureInitialized(),
   ]);
+}
+
+Future<void> initApp() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter(HiveSavedLoginInfoAdapter());
+  Hive.registerAdapter(HiveBackupAlbumsAdapter());
+  Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
+  Hive.registerAdapter(ImmichLoggerMessageAdapter());
+
+  await openBoxes();
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -65,15 +74,15 @@ void main() async {
 
   // Initialize Immich Logger Service
   ImmichLogger().init();
+}
 
-  runApp(
-    EasyLocalization(
-      supportedLocales: locales,
-      path: translationsPath,
-      useFallbackTranslations: true,
-      fallbackLocale: locales.first,
-      child: const ProviderScope(child: ImmichApp()),
-    ),
+Widget getMainWidget() {
+  return EasyLocalization(
+    supportedLocales: locales,
+    path: translationsPath,
+    useFallbackTranslations: true,
+    fallbackLocale: locales.first,
+    child: const ProviderScope(child: ImmichApp()),
   );
 }
 
