@@ -37,7 +37,7 @@ jobs:
           arch: x86_64
           profile: pixel
           target: default
-          emulator-options: -no-window -gpu off -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu guest -no-snapshot -noaudio -no-boot-anim
           script: |
             flutter pub get
             flutter test integration_test
