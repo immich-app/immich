@@ -8,8 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { Job } from 'bull';
 import { Repository } from 'typeorm';
-
-const immich_machine_learning_url = process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003';
+import { MACHINE_LEARNING_ENABLED, MACHINE_LEARNING_URL } from '@app/common';
 
 @Processor(QueueName.MACHINE_LEARNING)
 export class MachineLearningProcessor {
@@ -20,9 +19,13 @@ export class MachineLearningProcessor {
 
   @Process({ name: JobName.IMAGE_TAGGING, concurrency: 2 })
   async tagImage(job: Job<IMachineLearningJob>) {
+    if (!MACHINE_LEARNING_ENABLED) {
+      return;
+    }
+
     const { asset } = job.data;
 
-    const res = await axios.post(immich_machine_learning_url + '/image-classifier/tag-image', {
+    const res = await axios.post(MACHINE_LEARNING_URL + '/image-classifier/tag-image', {
       thumbnailPath: asset.resizePath,
     });
 
@@ -39,10 +42,14 @@ export class MachineLearningProcessor {
 
   @Process({ name: JobName.OBJECT_DETECTION, concurrency: 2 })
   async detectObject(job: Job<IMachineLearningJob>) {
+    if (!MACHINE_LEARNING_ENABLED) {
+      return;
+    }
+
     try {
       const { asset }: { asset: AssetEntity } = job.data;
 
-      const res = await axios.post(immich_machine_learning_url + '/object-detection/detect-object', {
+      const res = await axios.post(MACHINE_LEARNING_URL + '/object-detection/detect-object', {
         thumbnailPath: asset.resizePath,
       });
 

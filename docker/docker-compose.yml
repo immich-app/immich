@@ -51,10 +51,6 @@ services:
     entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
       - .env
-    environment:
-      # Rename these values for svelte public interface
-      - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
-      - PUBLIC_IMMICH_API_URL_EXTERNAL=${IMMICH_API_URL_EXTERNAL}
     restart: always
 
   redis:

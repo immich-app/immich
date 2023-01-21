@@ -79,6 +79,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | OAuth support                               | Yes     | Yes |
 | LivePhoto backup and playback               | iOS     | Yes |
 | User-defined storage structure              | Yes     | Yes |
+| Public Sharing                              | N/A     | Yes |
 
 # Support the project
 
