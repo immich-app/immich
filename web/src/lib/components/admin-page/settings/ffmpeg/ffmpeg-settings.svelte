@@ -3,13 +3,15 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import { api, SystemConfigFFmpegDto } from '@api';
+	import {api, SystemConfigFFmpegDto} from '@api';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
-	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
+	import SettingInputField, {SettingInputFieldType} from '../setting-input-field.svelte';
+	import SettingSelect from '../setting-select.svelte'
 	import SettingSwitch from '../setting-switch.svelte';
 	import _ from 'lodash';
+	import {fade} from 'svelte/transition';
+
 	export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
-	import { fade } from 'svelte/transition';
 
 	let savedConfig: SystemConfigFFmpegDto;
 	let defaultConfig: SystemConfigFFmpegDto;
@@ -100,11 +102,10 @@
 						isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
 					/>
 
-					<SettingInputField
-						inputType={SettingInputFieldType.TEXT}
+					<SettingSelect
 						label="VIDEO CODEC (-vcodec)"
 						bind:value={ffmpegConfig.targetVideoCodec}
-						required={true}
+						options={["h264", "hevc", "vp9"]}
 						isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
 					/>
 

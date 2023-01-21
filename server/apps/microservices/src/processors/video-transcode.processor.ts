@@ -69,19 +69,8 @@ export class VideoTranscodeProcessor {
       return stream2Frames - stream1Frames;
     })[0];
 
-    const targetVideoEncoder = config.ffmpeg.targetVideoCodec;
-
-    const targetCodec = { libx264: 'h264', libx265: 'h265', 'libvpx-vp9': 'vp9' }[targetVideoEncoder];
-    if (!targetCodec) {
-      Logger.error(
-        `Unknown target codec, supported codecs are currently libx264, libx265 and libvpx-vp9`,
-        'mp4Conversion',
-      );
-      return Promise.reject();
-    }
-
     //TODO: If video or audio are already the correct format, don't re-encode, copy the stream
-    if (longestVideoStream.codec_name !== targetCodec) {
+    if (longestVideoStream.codec_name !== config.ffmpeg.targetVideoCodec) {
       return this.runFFMPEGPipeLine(asset, savedEncodedPath);
     }
   }
