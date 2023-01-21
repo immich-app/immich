@@ -1,17 +1,12 @@
-import { InjectQueue } from '@nestjs/bull/dist/decorators';
-import { Injectable } from '@nestjs/common';
-import { Queue } from 'bull';
-import { JobName, QueueName } from '@app/domain';
-import { AssetResponseDto } from '../../api-v1/asset/response-dto/asset-response.dto';
+import { IJobRepository, JobName } from '@app/domain';
+import { AssetEntity } from '@app/infra';
+import { Inject, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class BackgroundTaskService {
-  constructor(
-    @InjectQueue(QueueName.BACKGROUND_TASK)
-    private backgroundTaskQueue: Queue,
-  ) {}
+  constructor(@Inject(IJobRepository) private jobRepository: IJobRepository) {}
 
-  async deleteFileOnDisk(assets: AssetResponseDto[]) {
-    await this.backgroundTaskQueue.add(JobName.DELETE_FILE_ON_DISK, { assets });
+  async deleteFileOnDisk(assets: AssetEntity[]) {
+    await this.jobRepository.add({ name: JobName.DELETE_FILE_ON_DISK, data: { assets } });
   }
 }
