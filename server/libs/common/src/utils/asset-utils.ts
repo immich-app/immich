@@ -36,4 +36,13 @@ const deleteFiles = (asset: AssetEntity | AssetResponseDto) => {
   }
 };
 
-export const assetUtils = { deleteFiles };
+const isWebPlayable = (mimeType: string | null): boolean => {
+  const WEB_PLAYABLE = ['video/webm', 'video/mp4'];
+
+  if (mimeType !== null) {
+    return WEB_PLAYABLE.includes(mimeType);
+  }
+  return false;
+};
+
+export const assetUtils = { deleteFiles, isWebPlayable };

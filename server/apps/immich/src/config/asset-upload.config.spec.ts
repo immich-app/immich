@@ -60,6 +60,12 @@ describe('assetUploadOption', () => {
       expect(callback).toHaveBeenCalledWith(null, true);
     });
 
+    it('should allow webm videos', async () => {
+      const file = { mimetype: 'video/webm', originalname: 'test.webm' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
     it('should not allow unknown types', async () => {
       const file = { mimetype: 'application/html', originalname: 'test.html' } as any;
       const callback = jest.fn();
