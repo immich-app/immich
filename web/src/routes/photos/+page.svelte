@@ -33,9 +33,16 @@
 	let isShowCreateSharedLinkModal = false;
 	const deleteSelectedAssetHandler = async () => {
 		try {
+			const { data: recycleBinConfig } = await api.recycleBinApi.getRecycleBinConfig();
 			if (
 				window.confirm(
-					`Caution! Are you sure you want to delete ${$selectedAssets.size} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!`
+					`Caution! Are you sure you want to delete ${
+						$selectedAssets.size
+					} assets? This step also deletes assets in the album(s) to which they belong. ${
+						recycleBinConfig.enabled
+							? 'Assets will be moved to the Recycle Bin'
+							: 'You can not undo this action!'
+					}`
 				)
 			) {
 				const { data: deletedAssets } = await api.assetApi.deleteAsset({

@@ -1436,6 +1436,25 @@ export interface OAuthConfigResponseDto {
 /**
  * 
  * @export
+ * @interface RecycleBinConfigResponseDto
+ */
+export interface RecycleBinConfigResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof RecycleBinConfigResponseDto
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof RecycleBinConfigResponseDto
+     */
+    'days': string;
+}
+/**
+ * 
+ * @export
  * @interface RemoveAssetsDto
  */
 export interface RemoveAssetsDto {
@@ -1443,6 +1462,19 @@ export interface RemoveAssetsDto {
      * 
      * @type {Array<string>}
      * @memberof RemoveAssetsDto
+     */
+    'assetIds': Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface RestoreAssetsDto
+ */
+export interface RestoreAssetsDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof RestoreAssetsDto
      */
     'assetIds': Array<string>;
 }
@@ -3909,39 +3941,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * Get all AssetEntity deleted by user
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAllDeletedAssets: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/asset/bin`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * Get a single asset\'s information
          * @param {string} assetId 
          * @param {*} [options] Override http request option.
@@ -4572,15 +4571,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * Get all AssetEntity deleted by user
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getAllDeletedAssets(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllDeletedAssets(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
          * Get a single asset\'s information
          * @param {string} assetId 
          * @param {*} [options] Override http request option.
@@ -4803,14 +4793,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getAllAssets(ifNoneMatch?: string, options?: any): AxiosPromise<Array<AssetResponseDto>> {
             return localVarFp.getAllAssets(ifNoneMatch, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Get all AssetEntity deleted by user
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAllDeletedAssets(options?: any): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllDeletedAssets(options).then((request) => request(axios, basePath));
         },
         /**
          * Get a single asset\'s information
@@ -5036,16 +5018,6 @@ export class AssetApi extends BaseAPI {
      */
     public getAllAssets(ifNoneMatch?: string, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getAllAssets(ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Get all AssetEntity deleted by user
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AssetApi
-     */
-    public getAllDeletedAssets(options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllDeletedAssets(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6392,6 +6364,422 @@ export class OAuthApi extends BaseAPI {
      */
     public unlink(options?: AxiosRequestConfig) {
         return OAuthApiFp(this.configuration).unlink(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * RecycleBinApi - axios parameter creator
+ * @export
+ */
+export const RecycleBinApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * Permenantly delete Assets
+         * @param {DeleteAssetDto} deleteAssetDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteRecyleBinAssets: async (deleteAssetDto: DeleteAssetDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'deleteAssetDto' is not null or undefined
+            assertParamExists('deleteRecyleBinAssets', 'deleteAssetDto', deleteAssetDto)
+            const localVarPath = `/bin/assets`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(deleteAssetDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Empty out bin for User
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        emptyBin: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/bin`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Get all AssetEntity deleted by user
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllDeletedAssets: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/bin`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getRecycleBinConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/bin/config`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getRecycleBinCountByUserId: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/bin/count-by-user-id`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Restore deleted Assets by User
+         * @param {RestoreAssetsDto} restoreAssetsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        restoreDeletedAssets: async (restoreAssetsDto: RestoreAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'restoreAssetsDto' is not null or undefined
+            assertParamExists('restoreDeletedAssets', 'restoreAssetsDto', restoreAssetsDto)
+            const localVarPath = `/bin/assets`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(restoreAssetsDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * RecycleBinApi - functional programming interface
+ * @export
+ */
+export const RecycleBinApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = RecycleBinApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * Permenantly delete Assets
+         * @param {DeleteAssetDto} deleteAssetDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteRecyleBinAssets(deleteAssetDto: DeleteAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<DeleteAssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteRecyleBinAssets(deleteAssetDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Empty out bin for User
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async emptyBin(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<DeleteAssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.emptyBin(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Get all AssetEntity deleted by user
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAllDeletedAssets(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllDeletedAssets(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getRecycleBinConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RecycleBinConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getRecycleBinConfig(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getRecycleBinCountByUserId(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetCountByUserIdResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getRecycleBinCountByUserId(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Restore deleted Assets by User
+         * @param {RestoreAssetsDto} restoreAssetsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async restoreDeletedAssets(restoreAssetsDto: RestoreAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.restoreDeletedAssets(restoreAssetsDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * RecycleBinApi - factory interface
+ * @export
+ */
+export const RecycleBinApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = RecycleBinApiFp(configuration)
+    return {
+        /**
+         * Permenantly delete Assets
+         * @param {DeleteAssetDto} deleteAssetDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteRecyleBinAssets(deleteAssetDto: DeleteAssetDto, options?: any): AxiosPromise<Array<DeleteAssetResponseDto>> {
+            return localVarFp.deleteRecyleBinAssets(deleteAssetDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Empty out bin for User
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        emptyBin(options?: any): AxiosPromise<Array<DeleteAssetResponseDto>> {
+            return localVarFp.emptyBin(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Get all AssetEntity deleted by user
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllDeletedAssets(options?: any): AxiosPromise<Array<AssetResponseDto>> {
+            return localVarFp.getAllDeletedAssets(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getRecycleBinConfig(options?: any): AxiosPromise<RecycleBinConfigResponseDto> {
+            return localVarFp.getRecycleBinConfig(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getRecycleBinCountByUserId(options?: any): AxiosPromise<AssetCountByUserIdResponseDto> {
+            return localVarFp.getRecycleBinCountByUserId(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Restore deleted Assets by User
+         * @param {RestoreAssetsDto} restoreAssetsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        restoreDeletedAssets(restoreAssetsDto: RestoreAssetsDto, options?: any): AxiosPromise<Array<AssetResponseDto>> {
+            return localVarFp.restoreDeletedAssets(restoreAssetsDto, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * RecycleBinApi - object-oriented interface
+ * @export
+ * @class RecycleBinApi
+ * @extends {BaseAPI}
+ */
+export class RecycleBinApi extends BaseAPI {
+    /**
+     * Permenantly delete Assets
+     * @param {DeleteAssetDto} deleteAssetDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RecycleBinApi
+     */
+    public deleteRecyleBinAssets(deleteAssetDto: DeleteAssetDto, options?: AxiosRequestConfig) {
+        return RecycleBinApiFp(this.configuration).deleteRecyleBinAssets(deleteAssetDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Empty out bin for User
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RecycleBinApi
+     */
+    public emptyBin(options?: AxiosRequestConfig) {
+        return RecycleBinApiFp(this.configuration).emptyBin(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Get all AssetEntity deleted by user
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RecycleBinApi
+     */
+    public getAllDeletedAssets(options?: AxiosRequestConfig) {
+        return RecycleBinApiFp(this.configuration).getAllDeletedAssets(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RecycleBinApi
+     */
+    public getRecycleBinConfig(options?: AxiosRequestConfig) {
+        return RecycleBinApiFp(this.configuration).getRecycleBinConfig(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RecycleBinApi
+     */
+    public getRecycleBinCountByUserId(options?: AxiosRequestConfig) {
+        return RecycleBinApiFp(this.configuration).getRecycleBinCountByUserId(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Restore deleted Assets by User
+     * @param {RestoreAssetsDto} restoreAssetsDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RecycleBinApi
+     */
+    public restoreDeletedAssets(restoreAssetsDto: RestoreAssetsDto, options?: AxiosRequestConfig) {
+        return RecycleBinApiFp(this.configuration).restoreDeletedAssets(restoreAssetsDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

@@ -56,6 +56,7 @@ import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
+import { ImmichConfigService } from '@app/immich-config';
 
 const fileInfo = promisify(stat);
 
@@ -84,6 +85,8 @@ export class AssetService {
 
     private storageService: StorageService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
+
+    private immichConfigService: ImmichConfigService,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository);
   }
@@ -518,17 +521,23 @@ export class AssetService {
   }
 
   public async deleteAssetById(assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+    const config = await this.immichConfigService.getConfig();
     const result: DeleteAssetResponseDto[] = [];
-
     const target = assetIds.ids;
+
     for (const assetId of target) {
-      const asset = await this._assetRepository.getById(assetId);
-      asset.isVisible = false;
-      asset.deletedAt = new Date().toISOString();
+      let assetSuccessfullyDeleted = false;
+      if (config.recycleBin.enabled) {
+        const res = await this.markAssetAsDeleted(assetId);
+        assetSuccessfullyDeleted = res.deletedAt ? true : false;
+      } else {
+        const res = await this.assetRepository.delete({
+          id: assetId,
+        });
+        assetSuccessfullyDeleted = res.affected ? true : false;
+      }
 
-      const res = await this.assetRepository.save(asset);
-
-      if (res) {
+      if (assetSuccessfullyDeleted) {
         result.push({
           id: assetId,
           status: DeleteAssetStatusEnum.SUCCESS,
@@ -542,6 +551,14 @@ export class AssetService {
     }
 
     return result;
+  }
+
+  async markAssetAsDeleted(assetId: string): Promise<AssetEntity> {
+    const asset = await this._assetRepository.getById(assetId);
+    asset.isVisible = false;
+    asset.deletedAt = new Date().toISOString();
+
+    return await this.assetRepository.save(asset);
   }
 
   async getAssetSearchTerm(authUser: AuthUserDto): Promise<string[]> {

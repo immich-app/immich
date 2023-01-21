@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { redirect, error } from '@sveltejs/kit';
+import { serverApi } from '@api';
 
 export const load: PageServerLoad = async ({ parent }) => {
 	try {
@@ -8,8 +9,11 @@ export const load: PageServerLoad = async ({ parent }) => {
 			throw error(400, 'Not logged in');
 		}
 
+		const { data: assets } = await serverApi.recycleBinApi.getAllDeletedAssets();
+
 		return {
 			user,
+			assets,
 			meta: {
 				title: 'Bin'
 			}

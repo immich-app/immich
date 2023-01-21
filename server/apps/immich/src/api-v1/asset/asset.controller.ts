@@ -54,12 +54,17 @@ import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
+import { ImmichConfigService } from '@app/immich-config';
 
 @ApiBearerAuth()
 @ApiTags('Asset')
 @Controller('asset')
 export class AssetController {
-  constructor(private assetService: AssetService, private backgroundTaskService: BackgroundTaskService) {}
+  constructor(
+    private assetService: AssetService,
+    private backgroundTaskService: BackgroundTaskService,
+    private immichConfigService: ImmichConfigService,
+  ) {}
 
   @Authenticated({ isShared: true })
   @Post('upload')
@@ -218,17 +223,6 @@ export class AssetController {
     return assets;
   }
 
-  //TODO - WIP
-  /**
-   * Get all AssetEntity deleted by user
-   */
-  @Authenticated()
-  @Get('/bin')
-  async getAllDeletedAssets(@GetAuthUser() authUser: AuthUserDto): Promise<AssetResponseDto[]> {
-    const assets = await this.assetService.getAllAssets(authUser);
-    return assets;
-  }
-
   @Authenticated()
   @Post('/time-bucket')
   async getAssetByTimeBucket(
@@ -284,7 +278,6 @@ export class AssetController {
 
     const deleteAssetList: AssetResponseDto[] = [];
 
-    // TODO need to check if recylebin has been enabled
     for (const id of assetIds.ids) {
       const assets = await this.assetService.getAssetById(id);
       if (!assets) {
@@ -303,11 +296,15 @@ export class AssetController {
 
     const result = await this.assetService.deleteAssetById(assetIds);
 
-    // result.forEach((res) => {
-    //   deleteAssetList.filter((a) => a.id == res.id && res.status == DeleteAssetStatusEnum.SUCCESS);
-    // });
+    result.forEach((res) => {
+      deleteAssetList.filter((a) => a.id == res.id && res.status == DeleteAssetStatusEnum.SUCCESS);
+    });
 
-    // await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
+    const config = await this.immichConfigService.getConfig();
+
+    if (!config.recycleBin.enabled) {
+      await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
+    }
 
     return result;
   }

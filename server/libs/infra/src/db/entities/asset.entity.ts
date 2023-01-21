@@ -41,7 +41,7 @@ export class AssetEntity {
   modifiedAt!: string;
 
   @Column({ type: 'timestamptz', nullable: true })
-  deletedAt?: string;
+  deletedAt?: string | null;
 
   @Column({ type: 'boolean', default: false })
   isDeleted!: boolean;

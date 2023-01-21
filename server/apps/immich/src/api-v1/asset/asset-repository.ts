@@ -15,7 +15,8 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository } from '../tag/tag.repository';
-import { IsNull } from 'typeorm';
+import { IsNull, UpdateResult } from 'typeorm';
+import { RestoreAssetsDto } from '../album/dto/restore-assets.dto';
 
 export interface IAssetRepository {
   create(
@@ -28,7 +29,9 @@ export interface IAssetRepository {
     livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity>;
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
+  restoreDeleted(userId: string, dto: RestoreAssetsDto): Promise<UpdateResult>;
   getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]>;
+  getAllDeletedByUserId(userId: string, skip?: number): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
@@ -36,6 +39,7 @@ export interface IAssetRepository {
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
+  getDeletedAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
   getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
@@ -97,6 +101,40 @@ export class AssetRepository implements IAssetRepository {
       .addSelect(`asset.type`, 'type')
       .where('"userId" = :userId', { userId: userId })
       .andWhere('asset.isVisible = true')
+      .groupBy('asset.type')
+      .getRawMany();
+
+    const assetCountByUserId = new AssetCountByUserIdResponseDto();
+
+    // asset type to dto property mapping
+    const map: Record<AssetType, keyof AssetCountByUserIdResponseDto> = {
+      [AssetType.AUDIO]: 'audio',
+      [AssetType.IMAGE]: 'photos',
+      [AssetType.VIDEO]: 'videos',
+      [AssetType.OTHER]: 'other',
+    };
+
+    for (const item of items) {
+      const count = Number(item.count) || 0;
+      const assetType = item.type as AssetType;
+      const type = map[assetType];
+
+      assetCountByUserId[type] = count;
+      assetCountByUserId.total += count;
+    }
+
+    return assetCountByUserId;
+  }
+
+  async getDeletedAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {
+    // Get asset count by AssetType
+    const items = await this.assetRepository
+      .createQueryBuilder('asset')
+      .select(`COUNT(asset.id)`, 'count')
+      .addSelect(`asset.type`, 'type')
+      .where('"userId" = :userId', { userId: userId })
+      .andWhere('asset.isVisible = false')
+      .andWhere('asset.deletedAt IS NOT NULL')
       .groupBy('asset.type')
       .getRawMany();
 
@@ -247,6 +285,40 @@ export class AssetRepository implements IAssetRepository {
     return await query.getMany();
   }
 
+  /**
+   * Get all deletd assets belong to the user on the database
+   * @param userId
+   */
+  async getAllDeletedByUserId(userId: string, skip?: number): Promise<AssetEntity[]> {
+    const query = this.assetRepository
+      .createQueryBuilder('asset')
+      .where('asset.userId = :userId', { userId: userId })
+      .andWhere('asset.resizePath is not NULL')
+      .andWhere('asset.isVisible = false')
+      .andWhere('asset.deletedAt is not NULL')
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.tags', 'tags')
+      .skip(skip || 0)
+      .orderBy('asset.deletedAt', 'DESC');
+    return await query.getMany();
+  }
+
+  /**
+   *
+   */
+  async restoreDeleted(userId: string, dto: RestoreAssetsDto): Promise<UpdateResult> {
+    const query = await this.assetRepository
+      .createQueryBuilder('assets')
+      .update()
+      .set({
+        isVisible: true,
+        deletedAt: null,
+      })
+      .andWhere('assets.id IN (:...assetIds)', { assetIds: dto.assetIds })
+      .execute();
+
+    return query;
+  }
   /**
    * Create new asset information in database
    * @param createAssetDto

@@ -15,6 +15,7 @@
 	let showAssetCount = false;
 	let showSharingCount = false;
 	let showAlbumsCount = false;
+	let showRecycleBinCount = false;
 
 	const getAssetCount = async () => {
 		const { data: assetCount } = await api.assetApi.getAssetCountByUserId();
@@ -31,6 +32,13 @@
 			shared: albumCount.shared,
 			sharing: albumCount.sharing,
 			owned: albumCount.owned
+		};
+	};
+
+	const getRecyleBinCount = async () => {
+		const { data: recycleBinCount } = await api.recycleBinApi.getRecycleBinCountByUserId();
+		return {
+			total: recycleBinCount.total
 		};
 	};
 </script>
@@ -151,21 +159,21 @@
 		<div
 			id="bin-count-info"
 			class="absolute right-4 top-[15px] z-40 text-xs hover:cursor-help"
-			on:mouseenter={() => (showAlbumsCount = true)}
-			on:mouseleave={() => (showAlbumsCount = false)}
+			on:mouseenter={() => (showRecycleBinCount = true)}
+			on:mouseleave={() => (showRecycleBinCount = false)}
 		>
 			<InformationOutline size={18} color="#989a9f" />
-			{#if showAlbumsCount}
+			{#if showRecycleBinCount}
 				<div
 					transition:fade={{ duration: 200 }}
 					id="asset-count-info-detail"
 					class="w-24 rounded-lg p-4 shadow-lg bg-white absolute -right-[105px] top-0 z-[9999] flex place-items-center place-content-center"
 				>
-					{#await getAlbumCount()}
+					{#await getRecyleBinCount()}
 						<LoadingSpinner />
 					{:then data}
 						<div>
-							<p>{data.owned} Albums</p>
+							<p>{data.total} Total</p>
 						</div>
 					{/await}
 				</div>

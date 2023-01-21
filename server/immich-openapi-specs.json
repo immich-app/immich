@@ -1023,36 +1023,6 @@
         ]
       }
     },
-    "/asset/bin": {
-      "get": {
-        "operationId": "getAllDeletedAssets",
-        "description": "Get all AssetEntity deleted by user",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
     "/asset/time-bucket": {
       "post": {
         "operationId": "getAssetByTimeBucket",
@@ -2604,6 +2574,196 @@
         },
         "tags": [
           "Server Info"
+        ]
+      }
+    },
+    "/bin": {
+      "get": {
+        "operationId": "getAllDeletedAssets",
+        "description": "Get all AssetEntity deleted by user",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Recycle Bin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "emptyBin",
+        "description": "Empty out bin for User",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeleteAssetResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Recycle Bin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/bin/count-by-user-id": {
+      "get": {
+        "operationId": "getRecycleBinCountByUserId",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Recycle Bin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/bin/config": {
+      "get": {
+        "operationId": "getRecycleBinConfig",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecycleBinConfigResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Recycle Bin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/bin/assets": {
+      "put": {
+        "operationId": "restoreDeletedAssets",
+        "description": "Restore deleted Assets by User",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreAssetsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Recycle Bin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteRecyleBinAssets",
+        "description": "Permenantly delete Assets",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAssetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeleteAssetResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Recycle Bin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
         ]
       }
     },
@@ -4388,6 +4548,35 @@
           "usageRaw",
           "usage",
           "usageByUser"
+        ]
+      },
+      "RecycleBinConfigResponseDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "days": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "days"
+        ]
+      },
+      "RestoreAssetsDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
         ]
       },
       "JobCounts": {

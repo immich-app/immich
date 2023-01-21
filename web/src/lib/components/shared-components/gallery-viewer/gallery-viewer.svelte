@@ -9,6 +9,7 @@
 	export let assets: AssetResponseDto[];
 	export let key: string;
 	export let selectedAssets: Set<AssetResponseDto> = new Set();
+	export let useDefaultSize: boolean | undefined = undefined;
 
 	let isShowAssetViewer = false;
 
@@ -93,15 +94,26 @@
 {#if assets.length > 0}
 	<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
 		{#each assets as asset (asset.id)}
-			<ImmichThumbnail
-				{asset}
-				{thumbnailSize}
-				publicSharedKey={key}
-				format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
-				on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
-				on:select={selectAssetHandler}
-				selected={selectedAssets.has(asset)}
-			/>
+			{#if useDefaultSize}
+				<ImmichThumbnail
+					{asset}
+					publicSharedKey={key}
+					format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
+					on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
+					on:select={selectAssetHandler}
+					selected={selectedAssets.has(asset)}
+				/>
+			{:else}
+				<ImmichThumbnail
+					{asset}
+					{thumbnailSize}
+					publicSharedKey={key}
+					format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
+					on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
+					on:select={selectAssetHandler}
+					selected={selectedAssets.has(asset)}
+				/>
+			{/if}
 		{/each}
 	</div>
 {/if}

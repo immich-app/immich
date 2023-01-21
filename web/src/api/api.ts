@@ -11,7 +11,8 @@ import {
 	ServerInfoApi,
 	ShareApi,
 	SystemConfigApi,
-	UserApi
+	UserApi,
+	RecycleBinApi
 } from './open-api';
 
 class ImmichApi {
@@ -26,6 +27,7 @@ class ImmichApi {
 	public keyApi: APIKeyApi;
 	public systemConfigApi: SystemConfigApi;
 	public shareApi: ShareApi;
+	public recycleBinApi: RecycleBinApi;
 
 	private config = new Configuration({ basePath: '/api' });
 
@@ -41,6 +43,7 @@ class ImmichApi {
 		this.keyApi = new APIKeyApi(this.config);
 		this.systemConfigApi = new SystemConfigApi(this.config);
 		this.shareApi = new ShareApi(this.config);
+		this.recycleBinApi = new RecycleBinApi(this.config);
 	}
 
 	public setAccessToken(accessToken: string) {

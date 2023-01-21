@@ -14,6 +14,7 @@ import { AlbumModule } from '../album/album.module';
 import { StorageModule } from '@app/storage';
 import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.constant';
 import { ShareModule } from '../share/share.module';
+import { ImmichConfigModule } from '@app/immich-config';
 
 const ASSET_REPOSITORY_PROVIDER = {
   provide: IAssetRepository,
@@ -31,6 +32,7 @@ const ASSET_REPOSITORY_PROVIDER = {
     forwardRef(() => AlbumModule),
     BullModule.registerQueue(...immichSharedQueues),
     ShareModule,
+    ImmichConfigModule,
   ],
   controllers: [AssetController],
   providers: [AssetService, BackgroundTaskService, ASSET_REPOSITORY_PROVIDER],

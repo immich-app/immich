@@ -22,6 +22,7 @@ import { ShareModule } from './api-v1/share/share.module';
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
 import { APIKeyController, UserController } from './controllers';
+import { RecycleBinModule } from './api-v1/recycle-bin/recycle-bin.module';
 
 @Module({
   imports: [
@@ -50,6 +51,8 @@ import { APIKeyController, UserController } from './controllers';
     CommunicationModule,
 
     AlbumModule,
+
+    RecycleBinModule,
 
     ScheduleModule.forRoot(),
 
