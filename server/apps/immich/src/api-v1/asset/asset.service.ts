@@ -43,7 +43,7 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-import { IAssetUploadedJob, IVideoTranscodeJob, QueueName, JobName } from '@app/domain';
+import { IAssetUploadedJob, IVideoTranscodeJob, JobName, QueueName } from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
@@ -456,7 +456,7 @@ export class AssetService {
 
         await fs.access(videoPath, constants.R_OK | constants.W_OK);
 
-        if (query.isWeb && !assetUtils.isWebPlayable(asset.mimeType)) {
+        if (asset.encodedVideoPath) {
           videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
           mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
         }
