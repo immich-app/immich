@@ -29,8 +29,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2.1.0
@@ -77,7 +75,6 @@ jobs:
             # Tag with pr-number
             type=ref,event=pr
             # Tag with git tag on release
-            # TBD: I don't know if this will work on the release_publish run?
             type=ref,event=tag
             type=raw,value=release,enable=${{ github.event_name == 'release' }}
 
@@ -86,7 +83,7 @@ jobs:
         with:
           context: ${{ matrix.context }}
           platforms: linux/arm/v7,linux/amd64,linux/arm64
-          # Skip when PR from a fork
+          # Skip pushing when PR from a fork
           push: ${{ !github.event.pull_request.head.repo.fork }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
