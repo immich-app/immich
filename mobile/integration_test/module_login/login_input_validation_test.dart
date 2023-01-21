@@ -8,9 +8,7 @@ void main() async {
   await ImmichTestHelper.initialize();
 
   group("Login input validation test", () {
-    testWidgets("Test http warning message", (tester) async {
-      await ImmichTestHelper.loadApp(tester);
-
+    immichWidgetTest("Test http warning message", (tester) async {
       await ImmichTestLoginHelper.waitForLoginScreen(tester);
       await ImmichTestLoginHelper.acknowledgeNewServerVersion(tester);
 

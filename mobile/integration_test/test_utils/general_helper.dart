@@ -31,3 +31,10 @@ class ImmichTestHelper {
   }
 
 }
+
+void immichWidgetTest(String description, Future<void> Function(WidgetTester) test) {
+  testWidgets(description, (widgetTester) async {
+    await ImmichTestHelper.loadApp(widgetTester);
+    await test(widgetTester);
+  });
+}
