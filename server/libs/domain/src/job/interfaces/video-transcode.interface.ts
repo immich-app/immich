@@ -1,10 +1,10 @@
 import { AssetEntity } from '@app/infra/db/entities';
 
-export interface IMp4ConversionProcessor {
+export interface IVideoConversionProcessor {
   /**
    * The Asset entity that was saved in the database
    */
   asset: AssetEntity;
 }
 
-export type IVideoTranscodeJob = IMp4ConversionProcessor;
+export type IVideoTranscodeJob = IVideoConversionProcessor;

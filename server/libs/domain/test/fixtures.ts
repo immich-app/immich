@@ -48,9 +48,10 @@ export const systemConfigStub = {
     ffmpeg: {
       crf: '23',
       preset: 'ultrafast',
-      targetAudioCodec: 'mp3',
+      targetAudioCodec: 'aac',
       targetScaling: '1280:-2',
-      targetVideoCodec: 'libx264',
+      targetVideoCodec: 'h264',
+      transcodeAll: false,
     },
     oauth: {
       autoLaunch: false,

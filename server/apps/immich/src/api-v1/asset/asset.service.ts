@@ -37,13 +37,13 @@ import {
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { assetUtils, timeUtils } from '@app/common/utils';
+import { timeUtils } from '@app/common/utils';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-import { IAssetUploadedJob, IVideoTranscodeJob, QueueName, JobName } from '@app/domain';
+import { IAssetUploadedJob, IVideoTranscodeJob, JobName, QueueName } from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
@@ -122,7 +122,7 @@ export class AssetService {
 
         await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
 
-        await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset: livePhotoAssetEntity });
+        await this.videoConversionQueue.add(JobName.VIDEO_CONVERSION, { asset: livePhotoAssetEntity });
       }
 
       const assetEntity = await this.createUserAsset(
@@ -456,7 +456,7 @@ export class AssetService {
 
         await fs.access(videoPath, constants.R_OK | constants.W_OK);
 
-        if (query.isWeb && !assetUtils.isWebPlayable(asset.mimeType)) {
+        if (asset.encodedVideoPath) {
           videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
           mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
         }
