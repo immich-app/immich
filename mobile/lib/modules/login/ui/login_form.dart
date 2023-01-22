@@ -223,6 +223,11 @@ class ServerEndpointInput extends StatelessWidget {
         parsedUrl.host.isEmpty) {
       return 'login_form_err_invalid_url'.tr();
     }
+
+    if (!parsedUrl.scheme.startsWith("https")) {
+      return 'login_form_err_http_insecure'.tr();
+    }
+
     return null;
   }
 
@@ -234,6 +239,7 @@ class ServerEndpointInput extends StatelessWidget {
         labelText: 'login_form_endpoint_url'.tr(),
         border: const OutlineInputBorder(),
         hintText: 'login_form_endpoint_hint'.tr(),
+        errorMaxLines: 4
       ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
