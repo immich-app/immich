@@ -36,17 +36,23 @@
 	onMount(async () => {
 		document.addEventListener('keydown', onKeyboardPress);
 
+		getAllAlbums();
+	});
+
+	onDestroy(() => {
+		document.removeEventListener('keydown', onKeyboardPress);
+	});
+
+	$: asset.id && getAllAlbums(); // Update the album information when the asset ID changes
+
+	const getAllAlbums = async () => {
 		try {
 			const { data } = await api.albumApi.getAllAlbums(undefined, asset.id);
 			appearsInAlbums = data;
 		} catch (e) {
 			console.error('Error getting album that asset belong to', e);
 		}
-	});
-
-	onDestroy(() => {
-		document.removeEventListener('keydown', onKeyboardPress);
-	});
+	}
 
 	const handleKeyboardPress = (key: string) => {
 		switch (key) {
