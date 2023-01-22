@@ -51,7 +51,7 @@ describe('ImmichJwtService', () => {
       const dto = { accessToken: 'test-user@immich.com', userId: 'test-user' };
       const cookies = sut.getCookies(dto as LoginResponseDto, AuthType.PASSWORD, false);
       expect(cookies).toEqual([
-        'immich_access_token=test-user@immich.com; HttpOnly; Path=/; Max-Age=604800 SameSite=Strict;',
+        'immich_access_token=test-user@immich.com; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
         'immich_auth_type=password; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
       ]);
     });
