@@ -80,9 +80,7 @@
 					'No videos without an encoded version found'
 				)}
 			jobCounts={jobs[JobId.MachineLearning]}
-		>
-			Note that some assets may not have any objects detected, this is normal.
-		</JobTile>
+		/>
 
 		<JobTile
 			title={'Storage migration'}
