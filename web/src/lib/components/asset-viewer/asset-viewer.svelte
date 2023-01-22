@@ -60,7 +60,7 @@
 		} catch (e) {
 			console.error('Error getting album that asset belong to', e);
 		}
-	}
+	};
 
 	const handleKeyboardPress = (key: string) => {
 		switch (key) {
