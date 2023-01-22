@@ -8,29 +8,42 @@ void main() async {
   await ImmichTestHelper.initialize();
 
   group("Login input validation test", () {
-    immichWidgetTest("Test http warning message", (tester) async {
+    immichWidgetTest("Test leading/trailing whitespace", (tester) async {
       await ImmichTestLoginHelper.waitForLoginScreen(tester);
       await ImmichTestLoginHelper.acknowledgeNewServerVersion(tester);
 
-      // Test https URL
       await ImmichTestLoginHelper.enterLoginCredentials(
         tester,
-        server: "https://demo.immich.app/api",
+        email: " demo@immich.app"
       );
 
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text("login_form_err_http_insecure".tr()), findsNothing);
+      expect(find.text("login_form_err_leading_whitespace".tr()), findsOneWidget);
 
-      // Test http URL
       await ImmichTestLoginHelper.enterLoginCredentials(
-        tester,
-        server: "http://demo.immich.app/api",
+          tester,
+          email: "demo@immich.app "
       );
 
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text("login_form_err_http_insecure".tr()), findsOneWidget);
+      expect(find.text("login_form_err_trailing_whitespace".tr()), findsOneWidget);
     });
+
+    immichWidgetTest("Test invalid email", (tester) async {
+      await ImmichTestLoginHelper.waitForLoginScreen(tester);
+      await ImmichTestLoginHelper.acknowledgeNewServerVersion(tester);
+
+      await ImmichTestLoginHelper.enterLoginCredentials(
+          tester,
+          email: "demo.immich.app"
+      );
+
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text("login_form_err_invalid_email".tr()), findsOneWidget);
+    });
+
   });
 }
