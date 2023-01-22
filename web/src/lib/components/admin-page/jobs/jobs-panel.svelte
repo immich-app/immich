@@ -79,7 +79,7 @@
 					'video conversion',
 					'No videos without an encoded version found'
 				)}
-			jobCounts={jobs[JobId.MachineLearning]}
+			jobCounts={jobs[JobId.VideoConversion]}
 		/>
 
 		<JobTile
