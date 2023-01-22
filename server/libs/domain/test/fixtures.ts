@@ -1,4 +1,4 @@
-import { SystemConfig, UserEntity } from '@app/infra/db/entities';
+import { SharedLinkEntity, SharedLinkType, SystemConfig, UserEntity } from '@app/infra/db/entities';
 import { AuthUserDto } from '../src';
 
 export const authStub = {
@@ -15,6 +15,16 @@ export const authStub = {
     isAdmin: false,
     isPublicUser: false,
     isAllowUpload: true,
+  }),
+  adminSharedLink: Object.freeze<AuthUserDto>({
+    id: 'admin_id',
+    email: 'admin@test.com',
+    isAdmin: true,
+    isAllowUpload: true,
+    isAllowDownload: true,
+    isPublicUser: true,
+    isShowExif: true,
+    sharedLinkId: '123',
   }),
 };
 
@@ -72,4 +82,23 @@ export const systemConfigStub = {
       template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
     },
   } as SystemConfig),
+};
+
+const today = new Date();
+const tomorrow = new Date();
+tomorrow.setDate(today.getDate() + 1);
+
+export const sharedLinkStub = {
+  valid: Object.freeze({
+    id: '123',
+    userId: authStub.admin.id,
+    key: Buffer.from('secret-key', 'utf8'),
+    type: SharedLinkType.ALBUM,
+    createdAt: today.toISOString(),
+    expiresAt: tomorrow.toISOString(),
+    allowUpload: true,
+    allowDownload: true,
+    showExif: true,
+    assets: [],
+  } as SharedLinkEntity),
 };
