@@ -1,4 +1,11 @@
-import { IMetadataExtractionJob, IThumbnailGenerationJob, IVideoTranscodeJob, QueueName, JobName } from '@app/job';
+import {
+  IMachineLearningJob,
+  IMetadataExtractionJob,
+  IThumbnailGenerationJob,
+  IVideoTranscodeJob,
+  JobName,
+  QueueName,
+} from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
@@ -7,8 +14,8 @@ import { IAssetRepository } from '../asset/asset-repository';
 import { AssetType } from '@app/infra';
 import { GetJobDto, JobId } from './dto/get-job.dto';
 import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
-import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
 import { StorageService } from '@app/storage';
+import { MACHINE_LEARNING_ENABLED } from '@app/common';
 
 @Injectable()
 export class JobService {
@@ -46,7 +53,7 @@ export class JobService {
       case JobId.METADATA_EXTRACTION:
         return this.runMetadataExtractionJob();
       case JobId.VIDEO_CONVERSION:
-        return 0;
+        return this.runVideoConversionJob();
       case JobId.MACHINE_LEARNING:
         return this.runMachineLearningPipeline();
       case JobId.STORAGE_TEMPLATE_MIGRATION:
@@ -72,7 +79,6 @@ export class JobService {
     response.videoConversionQueueCount = videoConversionJobCount;
     response.isMachineLearningActive = Boolean(machineLearningJobCount.waiting);
     response.machineLearningQueueCount = machineLearningJobCount;
-
     response.isStorageMigrationActive = Boolean(storageMigrationJobCount.active);
     response.storageMigrationQueueCount = storageMigrationJobCount;
 
@@ -161,6 +167,10 @@ export class JobService {
   }
 
   private async runMachineLearningPipeline(): Promise<number> {
+    if (!MACHINE_LEARNING_ENABLED) {
+      throw new BadRequestException('Machine learning is not enabled.');
+    }
+
     const jobCount = await this.machineLearningQueue.getJobCounts();
 
     if (jobCount.waiting > 0) {
@@ -175,6 +185,22 @@ export class JobService {
     }
 
     return assetWithNoSmartInfo.length;
+  }
+
+  private async runVideoConversionJob(): Promise<number> {
+    const jobCount = await this.videoConversionQueue.getJobCounts();
+
+    if (jobCount.waiting > 0) {
+      throw new BadRequestException('Video conversion job is already running');
+    }
+
+    const assetsWithNoConvertedVideo = await this._assetRepository.getAssetWithNoEncodedVideo();
+
+    for (const asset of assetsWithNoConvertedVideo) {
+      await this.videoConversionQueue.add(JobName.VIDEO_CONVERSION, { asset });
+    }
+
+    return assetsWithNoConvertedVideo.length;
   }
 
   async runStorageMigration() {

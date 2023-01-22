@@ -1,7 +1,7 @@
 import { InjectQueue } from '@nestjs/bull/dist/decorators';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
-import { JobName, QueueName } from '@app/job';
+import { JobName, QueueName } from '@app/domain';
 import { AssetResponseDto } from '../../api-v1/asset/response-dto/asset-response.dto';
 
 @Injectable()

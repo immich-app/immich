@@ -2,7 +2,7 @@ import { UserEntity } from '@app/infra';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { SystemConfig } from '@app/infra';
-import { ImmichConfigService } from '@app/immich-config';
+import { SystemConfigService } from '@app/domain';
 import { AuthType } from '../../constants/jwt.constant';
 import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
 import { OAuthService } from '../oauth/oauth.service';
@@ -50,7 +50,7 @@ describe('AuthService', () => {
   let sut: AuthService;
   let userRepositoryMock: jest.Mocked<IUserRepository>;
   let immichJwtServiceMock: jest.Mocked<ImmichJwtService>;
-  let immichConfigServiceMock: jest.Mocked<ImmichConfigService>;
+  let immichConfigServiceMock: jest.Mocked<SystemConfigService>;
   let oauthServiceMock: jest.Mocked<OAuthService>;
   let compare: jest.Mock;
 
@@ -89,7 +89,7 @@ describe('AuthService', () => {
 
     immichConfigServiceMock = {
       config$: { subscribe: jest.fn() },
-    } as unknown as jest.Mocked<ImmichConfigService>;
+    } as unknown as jest.Mocked<SystemConfigService>;
 
     sut = new AuthService(
       oauthServiceMock,

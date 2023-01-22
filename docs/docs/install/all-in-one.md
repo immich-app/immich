@@ -18,4 +18,4 @@ For installation instructions, refer to the [Github Repository][github].
 
 For issues, open an issue on the associated [GitHub Repository][github].
 
-[github]: https://github.com/martabal/docker-immich
+[github]: https://github.com/imagegenius/docker-immich/

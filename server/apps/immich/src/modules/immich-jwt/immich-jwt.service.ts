@@ -22,11 +22,19 @@ export class ImmichJwtService {
     return [IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE];
   }
 
-  public getCookies(loginResponse: LoginResponseDto, authType: AuthType) {
+  public getCookies(loginResponse: LoginResponseDto, authType: AuthType, isSecure: boolean) {
     const maxAge = 7 * 24 * 3600; // 7 days
 
-    const accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}`;
-    const authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; Path=/; Max-Age=${maxAge}`;
+    let accessTokenCookie = '';
+    let authTypeCookie = '';
+
+    if (isSecure) {
+      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; Secure; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
+      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; Secure; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
+    } else {
+      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge} SameSite=Strict;`;
+      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
+    }
 
     return [accessTokenCookie, authTypeCookie];
   }

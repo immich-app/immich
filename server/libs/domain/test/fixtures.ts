@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra';
+import { SystemConfig, UserEntity } from '@app/infra/db/entities';
 import { AuthUserDto } from '../src';
 
 export const authStub = {
@@ -41,4 +41,35 @@ export const entityStub = {
     createdAt: '2021-01-01',
     tags: [],
   }),
+};
+
+export const systemConfigStub = {
+  defaults: Object.freeze({
+    ffmpeg: {
+      crf: '23',
+      preset: 'ultrafast',
+      targetAudioCodec: 'aac',
+      targetScaling: '1280:-2',
+      targetVideoCodec: 'h264',
+      transcodeAll: false,
+    },
+    oauth: {
+      autoLaunch: false,
+      autoRegister: true,
+      buttonText: 'Login with OAuth',
+      clientId: '',
+      clientSecret: '',
+      enabled: false,
+      issuerUrl: '',
+      mobileOverrideEnabled: false,
+      mobileRedirectUri: '',
+      scope: 'openid email profile',
+    },
+    passwordLogin: {
+      enabled: true,
+    },
+    storageTemplate: {
+      template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+    },
+  } as SystemConfig),
 };

@@ -10,7 +10,7 @@ import { SERVER_VERSION } from './constants/server_version.constant';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 import { json } from 'body-parser';
 import { patchOpenAPI } from './utils/patch-open-api.util';
-import { getLogLevels } from '@app/common';
+import { getLogLevels, MACHINE_LEARNING_ENABLED } from '@app/common';
 
 const logger = new Logger('ImmichServer');
 
@@ -69,5 +69,7 @@ async function bootstrap() {
     const envName = (process.env.NODE_ENV || 'development').toUpperCase();
     logger.log(`Running Immich Server in ${envName} environment - version ${SERVER_VERSION}`);
   });
+
+  logger.warn(`Machine learning is ${MACHINE_LEARNING_ENABLED ? 'enabled' : 'disabled'}`);
 }
 bootstrap();

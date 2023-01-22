@@ -1,5 +1,5 @@
-import { IUserRepository } from '@app/domain';
-import { UserEntity } from '@app/infra';
+import { IUserRepository } from './user.repository';
+import { UserEntity } from '@app/infra/db/entities';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { when } from 'jest-when';
 import { newUserRepositoryMock } from '../../test';

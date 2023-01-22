@@ -8,8 +8,6 @@
   },
   "moduleNameMapper": {
     "^@app/common": "<rootDir>../../../libs/common/src",
-    "^@app/job(|/.*)$": "<rootDir>../../../libs/job/src/$1",
-    "^@app/immich-config(|/.*)$": "<rootDir>../../../libs/immich-config/src/$1",
     "^@app/storage(|/.*)$": "<rootDir>../../../libs/storage/src/$1",
     "^@app/infra(|/.*)$": "<rootDir>../../../libs/infra/src/$1",
     "^@app/domain(|/.*)$": "<rootDir>../../../libs/domain/src/$1"

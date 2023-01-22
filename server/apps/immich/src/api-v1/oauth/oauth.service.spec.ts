@@ -1,5 +1,5 @@
 import { SystemConfig, UserEntity } from '@app/infra';
-import { ImmichConfigService } from '@app/immich-config';
+import { SystemConfigService } from '@app/domain';
 import { BadRequestException } from '@nestjs/common';
 import { generators, Issuer } from 'openid-client';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
@@ -86,7 +86,7 @@ jest.mock('@nestjs/common', () => ({
 describe('OAuthService', () => {
   let sut: OAuthService;
   let userRepositoryMock: jest.Mocked<IUserRepository>;
-  let immichConfigServiceMock: jest.Mocked<ImmichConfigService>;
+  let immichConfigServiceMock: jest.Mocked<SystemConfigService>;
   let immichJwtServiceMock: jest.Mocked<ImmichJwtService>;
   let callbackMock: jest.Mock;
 
@@ -132,7 +132,7 @@ describe('OAuthService', () => {
 
     immichConfigServiceMock = {
       config$: { subscribe: jest.fn() },
-    } as unknown as jest.Mocked<ImmichConfigService>;
+    } as unknown as jest.Mocked<SystemConfigService>;
 
     sut = new OAuthService(immichJwtServiceMock, immichConfigServiceMock, userRepositoryMock, config.disabled);
   });

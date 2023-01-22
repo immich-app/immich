@@ -5,7 +5,7 @@ import {
   IVideoLengthExtractionProcessor,
   QueueName,
   JobName,
-} from '@app/job';
+} from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

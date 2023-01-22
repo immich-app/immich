@@ -1,11 +1,10 @@
-import { ImmichConfigModule } from '@app/immich-config';
 import { Module } from '@nestjs/common';
 import { ImmichJwtModule } from '../../modules/immich-jwt/immich-jwt.module';
 import { OAuthController } from './oauth.controller';
 import { OAuthService } from './oauth.service';
 
 @Module({
-  imports: [ImmichJwtModule, ImmichConfigModule],
+  imports: [ImmichJwtModule],
   controllers: [OAuthController],
   providers: [OAuthService],
   exports: [OAuthService],

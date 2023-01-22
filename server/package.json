@@ -136,7 +136,8 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/migrations/*"
     ],
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
@@ -145,10 +146,10 @@
         "statements": 20
       },
       "./libs/domain/": {
-        "branches": 70,
+        "branches": 75,
         "functions": 85,
-        "lines": 85,
-        "statements": 85
+        "lines": 90,
+        "statements": 90
       }
     },
     "testEnvironment": "node",
@@ -158,9 +159,6 @@
     ],
     "moduleNameMapper": {
       "@app/common": "<rootDir>/libs/common/src",
-      "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1",
-      "@app/job": "<rootDir>/libs/job/src",
-      "^@app/immich-config(|/.*)$": "<rootDir>/libs/immich-config/src/$1",
       "^@app/storage(|/.*)$": "<rootDir>/libs/storage/src/$1",
       "^@app/infra(|/.*)$": "<rootDir>/libs/infra/src/$1",
       "^@app/domain(|/.*)$": "<rootDir>/libs/domain/src/$1"
