@@ -1,7 +1,9 @@
 import { SystemConfig, UserEntity } from '@app/infra/db/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { generators, Issuer } from 'openid-client';
+import { Socket } from 'socket.io';
 import {
+  authStub,
   entityStub,
   loginResponseStub,
   newCryptoRepositoryMock,
@@ -11,7 +13,7 @@ import {
 } from '../../test';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
-import { AuthType } from './auth.constant';
+import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE } from './auth.constant';
 import { AuthService } from './auth.service';
 import { ICryptoRepository } from './crypto.repository';
 import { SignUpDto } from './dto';
@@ -207,6 +209,55 @@ describe('AuthService', () => {
       });
       expect(userMock.getAdmin).toHaveBeenCalled();
       expect(userMock.create).toHaveBeenCalled();
+    });
+  });
+
+  describe('validateSocket', () => {
+    it('should validate using authorization header', async () => {
+      userMock.get.mockResolvedValue(entityStub.user1);
+      const client = { handshake: { headers: { authorization: 'Bearer jwt-token' } } };
+      await expect(sut.validateSocket(client as Socket)).resolves.toEqual(entityStub.user1);
+    });
+  });
+
+  describe('validatePayload', () => {
+    it('should throw if no user is found', async () => {
+      userMock.get.mockResolvedValue(null);
+      await expect(sut.validatePayload({ email: 'a', userId: 'test' })).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should return an auth dto', async () => {
+      userMock.get.mockResolvedValue(entityStub.admin);
+      await expect(sut.validatePayload({ email: 'a', userId: 'test' })).resolves.toEqual(authStub.admin);
+    });
+  });
+
+  describe('extractJwtFromCookie', () => {
+    it('should extract the access token', () => {
+      const cookie = { [IMMICH_ACCESS_COOKIE]: 'signed-jwt', [IMMICH_AUTH_TYPE_COOKIE]: 'password' };
+      expect(sut.extractJwtFromCookie(cookie)).toEqual('signed-jwt');
+    });
+
+    it('should work with no cookies', () => {
+      expect(sut.extractJwtFromCookie(undefined as any)).toBeNull();
+    });
+
+    it('should work on empty cookies', () => {
+      expect(sut.extractJwtFromCookie({})).toBeNull();
+    });
+  });
+
+  describe('extractJwtFromHeader', () => {
+    it('should extract the access token', () => {
+      expect(sut.extractJwtFromHeader({ authorization: `Bearer signed-jwt` })).toEqual('signed-jwt');
+    });
+
+    it('should work without the auth header', () => {
+      expect(sut.extractJwtFromHeader({})).toBeNull();
+    });
+
+    it('should ignore basic auth', () => {
+      expect(sut.extractJwtFromHeader({ authorization: `Basic stuff` })).toBeNull();
     });
   });
 });
