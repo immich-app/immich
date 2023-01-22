@@ -72,4 +72,96 @@ export const systemConfigStub = {
       template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
     },
   } as SystemConfig),
+  enabled: Object.freeze({
+    passwordLogin: {
+      enabled: true,
+    },
+    oauth: {
+      enabled: true,
+      autoRegister: true,
+      buttonText: 'OAuth',
+      autoLaunch: false,
+    },
+  } as SystemConfig),
+  disabled: Object.freeze({
+    passwordLogin: {
+      enabled: false,
+    },
+    oauth: {
+      enabled: false,
+      buttonText: 'OAuth',
+      issuerUrl: 'http://issuer,',
+      autoLaunch: false,
+    },
+  } as SystemConfig),
+  noAutoRegister: {
+    oauth: {
+      enabled: true,
+      autoRegister: false,
+      autoLaunch: false,
+    },
+    passwordLogin: { enabled: true },
+  } as SystemConfig,
+  override: {
+    oauth: {
+      enabled: true,
+      autoRegister: true,
+      autoLaunch: false,
+      buttonText: 'OAuth',
+      mobileOverrideEnabled: true,
+      mobileRedirectUri: 'http://mobile-redirect',
+    },
+    passwordLogin: { enabled: true },
+  } as SystemConfig,
+};
+
+export const loginResponseStub = {
+  user1oauth: {
+    response: {
+      accessToken: 'signed-jwt',
+      userId: 'immich_id',
+      userEmail: 'immich@test.com',
+      firstName: 'immich_first_name',
+      lastName: 'immich_last_name',
+      profileImagePath: '',
+      isAdmin: false,
+      shouldChangePassword: false,
+    },
+    cookie: [
+      'immich_access_token=signed-jwt; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_auth_type=oauth; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+    ],
+  },
+  user1password: {
+    response: {
+      accessToken: 'signed-jwt',
+      userId: 'immich_id',
+      userEmail: 'immich@test.com',
+      firstName: 'immich_first_name',
+      lastName: 'immich_last_name',
+      profileImagePath: '',
+      isAdmin: false,
+      shouldChangePassword: false,
+    },
+    cookie: [
+      'immich_access_token=signed-jwt; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_auth_type=password; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+    ],
+  },
+  user1insecure: {
+    response: {
+      accessToken: 'signed-jwt',
+      userId: 'immich_id',
+      userEmail: 'immich@test.com',
+      firstName: 'immich_first_name',
+      lastName: 'immich_last_name',
+      profileImagePath: '',
+      isAdmin: false,
+      shouldChangePassword: false,
+    },
+    cookie: [
+      'immich_access_token=signed-jwt; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_auth_type=password; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
+    ],
+  },
 };

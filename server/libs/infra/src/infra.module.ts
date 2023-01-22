@@ -6,19 +6,20 @@ import {
   IUserRepository,
   QueueName,
 } from '@app/domain';
-import { databaseConfig, UserEntity } from '@app/infra';
+import { databaseConfig, UserEntity } from './db';
 import { BullModule } from '@nestjs/bull';
 import { Global, Module, Provider } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { cryptoRepository } from './auth/crypto.repository';
+import { jwtConfig } from '@app/domain';
+import { CryptoRepository } from './auth/crypto.repository';
 import { APIKeyEntity, SystemConfigEntity, UserRepository } from './db';
 import { APIKeyRepository } from './db/repository';
 import { SystemConfigRepository } from './db/repository/system-config.repository';
 import { JobRepository } from './job';
 
 const providers: Provider[] = [
-  //
-  { provide: ICryptoRepository, useValue: cryptoRepository },
+  { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
@@ -28,6 +29,7 @@ const providers: Provider[] = [
 @Global()
 @Module({
   imports: [
+    JwtModule.register(jwtConfig),
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature([APIKeyEntity, UserEntity, SystemConfigEntity]),
     BullModule.forRootAsync({
@@ -60,6 +62,6 @@ const providers: Provider[] = [
     ),
   ],
   providers: [...providers],
-  exports: [...providers, BullModule],
+  exports: [...providers, BullModule, JwtModule],
 })
 export class InfraModule {}

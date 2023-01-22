@@ -37,12 +37,14 @@ const defaults: SystemConfig = Object.freeze({
   },
 });
 
+const singleton = new Subject<SystemConfig>();
+
 @Injectable()
 export class SystemConfigCore {
   private logger = new Logger(SystemConfigCore.name);
   private validators: SystemConfigValidator[] = [];
 
-  public config$ = new Subject<SystemConfig>();
+  public config$ = singleton;
 
   constructor(private repository: ISystemConfigRepository) {}
 

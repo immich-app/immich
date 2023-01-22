@@ -1,5 +1,5 @@
 import { JwtModuleOptions } from '@nestjs/jwt';
-import { jwtSecret } from '../constants/jwt.constant';
+import { jwtSecret } from './auth.constant';
 
 export const jwtConfig: JwtModuleOptions = {
   secret: jwtSecret,
