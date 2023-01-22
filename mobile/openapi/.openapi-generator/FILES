@@ -53,7 +53,6 @@ doc/JobCommand.md
 doc/JobCommandDto.md
 doc/JobCounts.md
 doc/JobId.md
-doc/JobStatusResponseDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -162,7 +161,6 @@ lib/model/job_command.dart
 lib/model/job_command_dto.dart
 lib/model/job_counts.dart
 lib/model/job_id.dart
-lib/model/job_status_response_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
@@ -250,7 +248,6 @@ test/job_command_dto_test.dart
 test/job_command_test.dart
 test/job_counts_test.dart
 test/job_id_test.dart
-test/job_status_response_dto_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart

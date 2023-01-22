@@ -1,5 +1,5 @@
 import { AssetEntity } from '@app/infra';
-import { QueueName } from '@app/domain';
+import { JobName, QueueName } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,7 +15,7 @@ export class GenerateChecksumProcessor {
     private assetRepository: Repository<AssetEntity>,
   ) {}
 
-  @Process()
+  @Process(JobName.CHECKSUM_GENERATION)
   async generateChecksum() {
     const pageSize = 200;
     let hasNext = true;

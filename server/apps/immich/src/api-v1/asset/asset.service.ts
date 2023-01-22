@@ -43,9 +43,7 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-import { IAssetUploadedJob, IVideoTranscodeJob, JobName, QueueName } from '@app/domain';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+import { IJobRepository, JobName } from '@app/domain';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
@@ -66,24 +64,14 @@ export class AssetService {
 
   constructor(
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
-
     @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
-
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-
     private backgroundTaskService: BackgroundTaskService,
-
-    @InjectQueue(QueueName.ASSET_UPLOADED)
-    private assetUploadedQueue: Queue<IAssetUploadedJob>,
-
-    @InjectQueue(QueueName.VIDEO_CONVERSION)
-    private videoConversionQueue: Queue<IVideoTranscodeJob>,
-
     private downloadService: DownloadService,
-
     private storageService: StorageService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository);
   }
@@ -122,7 +110,7 @@ export class AssetService {
 
         await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
 
-        await this.videoConversionQueue.add(JobName.VIDEO_CONVERSION, { asset: livePhotoAssetEntity });
+        await this.jobRepository.add({ name: JobName.VIDEO_CONVERSION, data: { asset: livePhotoAssetEntity } });
       }
 
       const assetEntity = await this.createUserAsset(
@@ -146,11 +134,10 @@ export class AssetService {
 
       const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
 
-      await this.assetUploadedQueue.add(
-        JobName.ASSET_UPLOADED,
-        { asset: movedAsset, fileName: originalAssetData.originalname },
-        { jobId: movedAsset.id },
-      );
+      await this.jobRepository.add({
+        name: JobName.ASSET_UPLOADED,
+        data: { asset: movedAsset, fileName: originalAssetData.originalname },
+      });
 
       return new AssetFileUploadResponseDto(movedAsset.id);
     } catch (err) {

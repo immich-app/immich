@@ -6,10 +6,19 @@ import {
   IVideoConversionProcessor,
   IReverseGeocodingProcessor,
   IUserDeletionJob,
+  IVideoLengthExtractionProcessor,
   JpegGeneratorProcessor,
   WebpGeneratorProcessor,
 } from './interfaces';
-import { JobName } from './job.constants';
+import { JobName, QueueName } from './job.constants';
+
+export interface JobCounts {
+  active: number;
+  completed: number;
+  failed: number;
+  delayed: number;
+  waiting: number;
+}
 
 export type JobItem =
   | { name: JobName.ASSET_UPLOADED; data: IAssetUploadedJob }
@@ -21,6 +30,8 @@ export type JobItem =
   | { name: JobName.USER_DELETION; data: IUserDeletionJob }
   | { name: JobName.TEMPLATE_MIGRATION }
   | { name: JobName.CONFIG_CHANGE }
+  | { name: JobName.CHECKSUM_GENERATION }
+  | { name: JobName.EXTRACT_VIDEO_METADATA; data: IVideoLengthExtractionProcessor }
   | { name: JobName.OBJECT_DETECTION; data: IMachineLearningJob }
   | { name: JobName.IMAGE_TAGGING; data: IMachineLearningJob }
   | { name: JobName.DELETE_FILE_ON_DISK; data: IDeleteFileOnDiskJob };
@@ -28,5 +39,8 @@ export type JobItem =
 export const IJobRepository = 'IJobRepository';
 
 export interface IJobRepository {
+  empty(name: QueueName): Promise<void>;
   add(item: JobItem): Promise<void>;
+  isActive(name: QueueName): Promise<boolean>;
+  getJobCounts(name: QueueName): Promise<JobCounts>;
 }

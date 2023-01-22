@@ -1,14 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType, ExifEntity, UserEntity } from '@app/infra';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
-import { IMetadataExtractionJob, IVideoTranscodeJob, QueueName, JobName } from '@app/domain';
 import { ConfigService } from '@nestjs/config';
-import { IUserDeletionJob } from '@app/domain';
 import { userUtils } from '@app/common';
+import { IJobRepository, JobName } from '@app/domain';
 
 @Injectable()
 export class ScheduleTasksService {
@@ -22,17 +19,7 @@ export class ScheduleTasksService {
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
-    @InjectQueue(QueueName.THUMBNAIL_GENERATION)
-    private thumbnailGeneratorQueue: Queue,
-
-    @InjectQueue(QueueName.VIDEO_CONVERSION)
-    private videoConversionQueue: Queue<IVideoTranscodeJob>,
-
-    @InjectQueue(QueueName.METADATA_EXTRACTION)
-    private metadataExtractionQueue: Queue<IMetadataExtractionJob>,
-
-    @InjectQueue(QueueName.USER_DELETION)
-    private userDeletionQueue: Queue<IUserDeletionJob>,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
 
     private configService: ConfigService,
   ) {}
@@ -51,7 +38,7 @@ export class ScheduleTasksService {
     }
 
     for (const asset of assets) {
-      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset: asset });
+      await this.jobRepository.add({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
     }
   }
 
@@ -69,7 +56,7 @@ export class ScheduleTasksService {
     });
 
     for (const asset of assets) {
-      await this.videoConversionQueue.add(JobName.VIDEO_CONVERSION, { asset });
+      await this.jobRepository.add({ name: JobName.VIDEO_CONVERSION, data: { asset } });
     }
   }
 
@@ -87,11 +74,11 @@ export class ScheduleTasksService {
       });
 
       for (const exif of exifInfo) {
-        await this.metadataExtractionQueue.add(
-          JobName.REVERSE_GEOCODING,
+        await this.jobRepository.add({
+          name: JobName.REVERSE_GEOCODING,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          { exifId: exif.id, latitude: exif.latitude!, longitude: exif.longitude! },
-        );
+          data: { exifId: exif.id, latitude: exif.latitude!, longitude: exif.longitude! },
+        });
       }
     }
   }
@@ -106,9 +93,9 @@ export class ScheduleTasksService {
 
     for (const asset of exifAssets) {
       if (asset.type === AssetType.VIDEO) {
-        await this.metadataExtractionQueue.add(JobName.EXTRACT_VIDEO_METADATA, { asset, fileName: asset.id });
+        await this.jobRepository.add({ name: JobName.EXTRACT_VIDEO_METADATA, data: { asset, fileName: asset.id } });
       } else {
-        await this.metadataExtractionQueue.add(JobName.EXIF_EXTRACTION, { asset, fileName: asset.id });
+        await this.jobRepository.add({ name: JobName.EXIF_EXTRACTION, data: { asset, fileName: asset.id } });
       }
     }
   }
@@ -118,7 +105,7 @@ export class ScheduleTasksService {
     const usersToDelete = await this.userRepository.find({ withDeleted: true, where: { deletedAt: Not(IsNull()) } });
     for (const user of usersToDelete) {
       if (userUtils.isReadyForDeletion(user)) {
-        await this.userDeletionQueue.add(JobName.USER_DELETION, { user });
+        await this.jobRepository.add({ name: JobName.USER_DELETION, data: { user } });
       }
     }
   }
