@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { IStrategyOptions, Strategy } from 'passport-http-header-strategy';
-import { ShareService } from '../../../api-v1/share/share.service';
-import { AuthUserDto } from '../../../decorators/auth-user.decorator';
+import { AuthUserDto, ShareService } from '@app/domain';
 
 export const PUBLIC_SHARE_STRATEGY = 'public-share';
 

@@ -1,22 +1,11 @@
-import { SharedLinkEntity } from '@app/infra';
+import { ISharedLinkRepository } from '@app/domain';
+import { SharedLinkEntity } from '../entities/shared-link.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
-export interface ISharedLinkRepository {
-  get(userId: string): Promise<SharedLinkEntity[]>;
-  getById(id: string): Promise<SharedLinkEntity | null>;
-  getByIdAndUserId(id: string, userId: string): Promise<SharedLinkEntity | null>;
-  getByKey(key: string): Promise<SharedLinkEntity | null>;
-  create(payload: SharedLinkEntity): Promise<SharedLinkEntity>;
-  remove(entity: SharedLinkEntity): Promise<SharedLinkEntity>;
-  save(entity: SharedLinkEntity): Promise<SharedLinkEntity>;
-  hasAssetAccess(id: string, assetId: string): Promise<boolean>;
-}
-
-export const ISharedLinkRepository = 'ISharedLinkRepository';
-
+@Injectable()
 export class SharedLinkRepository implements ISharedLinkRepository {
   readonly logger = new Logger(SharedLinkRepository.name);
   constructor(

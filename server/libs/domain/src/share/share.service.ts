@@ -6,10 +6,10 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserService } from '@app/domain';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { EditSharedLinkDto } from './dto/edit-shared-link.dto';
-import { mapSharedLink, mapSharedLinkWithNoExif, SharedLinkResponseDto } from './response-dto/shared-link-response.dto';
+import { AuthUserDto, ICryptoRepository } from '../auth';
+import { IUserRepository, UserCore } from '../user';
+import { EditSharedLinkDto } from './dto';
+import { mapSharedLink, mapSharedLinkWithNoExif, SharedLinkResponseDto } from './response-dto';
 import { ShareCore } from './share.core';
 import { ISharedLinkRepository } from './shared-link.repository';
 
@@ -17,20 +17,22 @@ import { ISharedLinkRepository } from './shared-link.repository';
 export class ShareService {
   readonly logger = new Logger(ShareService.name);
   private shareCore: ShareCore;
+  private userCore: UserCore;
 
   constructor(
-    @Inject(ISharedLinkRepository)
-    sharedLinkRepository: ISharedLinkRepository,
-    private userService: UserService,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
+    @Inject(IUserRepository) userRepository: IUserRepository,
   ) {
-    this.shareCore = new ShareCore(sharedLinkRepository);
+    this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
+    this.userCore = new UserCore(userRepository);
   }
 
   async validate(key: string): Promise<AuthUserDto> {
     const link = await this.shareCore.getSharedLinkByKey(key);
     if (link) {
       if (!link.expiresAt || new Date(link.expiresAt) > new Date()) {
-        const user = await this.userService.getUserById(link.userId).catch(() => null);
+        const user = await this.userCore.get(link.userId);
         if (user) {
           return {
             id: user.id,

@@ -1,22 +1,21 @@
-import { SharedLinkEntity } from '@app/infra';
-import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
+import { SharedLinkEntity } from '@app/infra/db/entities';
+import { CreateSharedLinkDto } from './dto';
 import { ISharedLinkRepository } from './shared-link.repository';
-import crypto from 'node:crypto';
 import { BadRequestException, ForbiddenException, InternalServerErrorException, Logger } from '@nestjs/common';
-import { AssetEntity } from '@app/infra';
-import { EditSharedLinkDto } from './dto/edit-shared-link.dto';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
+import { AssetEntity } from '@app/infra/db/entities';
+import { EditSharedLinkDto } from './dto';
+import { AuthUserDto, ICryptoRepository } from '../auth';
 
 export class ShareCore {
   readonly logger = new Logger(ShareCore.name);
 
-  constructor(private sharedLinkRepository: ISharedLinkRepository) {}
+  constructor(private sharedLinkRepository: ISharedLinkRepository, private cryptoRepository: ICryptoRepository) {}
 
   async createSharedLink(userId: string, dto: CreateSharedLinkDto): Promise<SharedLinkEntity> {
     try {
       const sharedLink = new SharedLinkEntity();
 
-      sharedLink.key = Buffer.from(crypto.randomBytes(50));
+      sharedLink.key = Buffer.from(this.cryptoRepository.randomBytes(50));
       sharedLink.description = dto.description;
       sharedLink.userId = userId;
       sharedLink.createdAt = new Date().toISOString();

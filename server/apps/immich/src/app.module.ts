@@ -15,10 +15,9 @@ import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.mod
 import { JobModule } from './api-v1/job/job.module';
 import { OAuthModule } from './api-v1/oauth/oauth.module';
 import { TagModule } from './api-v1/tag/tag.module';
-import { ShareModule } from './api-v1/share/share.module';
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
-import { APIKeyController, SystemConfigController, UserController } from './controllers';
+import { APIKeyController, ShareController, SystemConfigController, UserController } from './controllers';
 
 @Module({
   imports: [
@@ -52,13 +51,12 @@ import { APIKeyController, SystemConfigController, UserController } from './cont
     JobModule,
 
     TagModule,
-
-    ShareModule,
   ],
   controllers: [
     //
     AppController,
     APIKeyController,
+    ShareController,
     SystemConfigController,
     UserController,
   ],

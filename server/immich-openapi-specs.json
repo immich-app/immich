@@ -148,6 +148,152 @@
         ]
       }
     },
+    "/share": {
+      "get": {
+        "operationId": "getAllSharedLinks",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SharedLinkResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/share/me": {
+      "get": {
+        "operationId": "getMySharedLink",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/share/{id}": {
+      "get": {
+        "operationId": "getSharedLinkById",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      },
+      "delete": {
+        "operationId": "removeSharedLink",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      },
+      "patch": {
+        "operationId": "editSharedLink",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditSharedLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
     "/system-config": {
       "get": {
         "operationId": "getConfig",
@@ -1446,152 +1592,6 @@
         ]
       }
     },
-    "/share": {
-      "get": {
-        "operationId": "getAllSharedLinks",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SharedLinkResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      }
-    },
-    "/share/me": {
-      "get": {
-        "operationId": "getMySharedLink",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      }
-    },
-    "/share/{id}": {
-      "get": {
-        "operationId": "getSharedLinkById",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      },
-      "delete": {
-        "operationId": "removeSharedLink",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      },
-      "patch": {
-        "operationId": "editSharedLink",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EditSharedLinkDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      }
-    },
     "/tag": {
       "post": {
         "operationId": "create",
@@ -2848,437 +2848,11 @@
           "name"
         ]
       },
-      "SystemConfigFFmpegDto": {
-        "type": "object",
-        "properties": {
-          "crf": {
-            "type": "string"
-          },
-          "preset": {
-            "type": "string"
-          },
-          "targetVideoCodec": {
-            "type": "string"
-          },
-          "targetAudioCodec": {
-            "type": "string"
-          },
-          "targetScaling": {
-            "type": "string"
-          },
-          "transcodeAll": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "crf",
-          "preset",
-          "targetVideoCodec",
-          "targetAudioCodec",
-          "targetScaling",
-          "transcodeAll"
-        ]
-      },
-      "SystemConfigOAuthDto": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "issuerUrl": {
-            "type": "string"
-          },
-          "clientId": {
-            "type": "string"
-          },
-          "clientSecret": {
-            "type": "string"
-          },
-          "scope": {
-            "type": "string"
-          },
-          "buttonText": {
-            "type": "string"
-          },
-          "autoRegister": {
-            "type": "boolean"
-          },
-          "autoLaunch": {
-            "type": "boolean"
-          },
-          "mobileOverrideEnabled": {
-            "type": "boolean"
-          },
-          "mobileRedirectUri": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "enabled",
-          "issuerUrl",
-          "clientId",
-          "clientSecret",
-          "scope",
-          "buttonText",
-          "autoRegister",
-          "autoLaunch",
-          "mobileOverrideEnabled",
-          "mobileRedirectUri"
-        ]
-      },
-      "SystemConfigPasswordLoginDto": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ]
-      },
-      "SystemConfigStorageTemplateDto": {
-        "type": "object",
-        "properties": {
-          "template": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "template"
-        ]
-      },
-      "SystemConfigDto": {
-        "type": "object",
-        "properties": {
-          "ffmpeg": {
-            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
-          },
-          "oauth": {
-            "$ref": "#/components/schemas/SystemConfigOAuthDto"
-          },
-          "passwordLogin": {
-            "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
-          },
-          "storageTemplate": {
-            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
-          }
-        },
-        "required": [
-          "ffmpeg",
-          "oauth",
-          "passwordLogin",
-          "storageTemplate"
-        ]
-      },
-      "SystemConfigTemplateStorageOptionDto": {
-        "type": "object",
-        "properties": {
-          "yearOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "monthOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "dayOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "hourOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "minuteOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "secondOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "presetOptions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "yearOptions",
-          "monthOptions",
-          "dayOptions",
-          "hourOptions",
-          "minuteOptions",
-          "secondOptions",
-          "presetOptions"
-        ]
-      },
-      "UserResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "profileImagePath": {
-            "type": "string"
-          },
-          "shouldChangePassword": {
-            "type": "boolean"
-          },
-          "isAdmin": {
-            "type": "boolean"
-          },
-          "deletedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "oauthId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "firstName",
-          "lastName",
-          "createdAt",
-          "profileImagePath",
-          "shouldChangePassword",
-          "isAdmin",
-          "oauthId"
-        ]
-      },
-      "CreateUserDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "testuser@email.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "password"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "John"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Doe"
-          }
-        },
-        "required": [
-          "email",
-          "password",
-          "firstName",
-          "lastName"
-        ]
-      },
-      "UserCountResponseDto": {
-        "type": "object",
-        "properties": {
-          "userCount": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "userCount"
-        ]
-      },
-      "UpdateUserDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "isAdmin": {
-            "type": "boolean"
-          },
-          "shouldChangePassword": {
-            "type": "boolean"
-          },
-          "profileImagePath": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "CreateProfileImageDto": {
-        "type": "object",
-        "properties": {
-          "file": {
-            "type": "string",
-            "format": "binary"
-          }
-        },
-        "required": [
-          "file"
-        ]
-      },
-      "CreateProfileImageResponseDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string"
-          },
-          "profileImagePath": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "userId",
-          "profileImagePath"
-        ]
-      },
-      "AssetFileUploadDto": {
-        "type": "object",
-        "properties": {
-          "assetData": {
-            "type": "string",
-            "format": "binary"
-          }
-        },
-        "required": [
-          "assetData"
-        ]
-      },
-      "AssetFileUploadResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "DownloadFilesDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "title": "Array of asset ids to be downloaded",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
-        ]
-      },
-      "ThumbnailFormat": {
+      "SharedLinkType": {
         "type": "string",
         "enum": [
-          "JPEG",
-          "WEBP"
-        ]
-      },
-      "CuratedObjectsResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "object": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "resizePath",
-          "deviceAssetId",
-          "deviceId"
-        ]
-      },
-      "CuratedLocationsResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "city": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "city",
-          "resizePath",
-          "deviceAssetId",
-          "deviceId"
-        ]
-      },
-      "SearchAssetDto": {
-        "type": "object",
-        "properties": {
-          "searchTerm": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "searchTerm"
+          "ALBUM",
+          "INDIVIDUAL"
         ]
       },
       "AssetTypeEnum": {
@@ -3537,6 +3111,569 @@
           "duration",
           "webpPath",
           "tags"
+        ]
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "oauthId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName",
+          "createdAt",
+          "profileImagePath",
+          "shouldChangePassword",
+          "isAdmin",
+          "oauthId"
+        ]
+      },
+      "AlbumResponseDto": {
+        "type": "object",
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "albumName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "albumThumbnailAssetId": {
+            "type": "string",
+            "nullable": true
+          },
+          "shared": {
+            "type": "boolean"
+          },
+          "sharedUsers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponseDto"
+            }
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          }
+        },
+        "required": [
+          "assetCount",
+          "id",
+          "ownerId",
+          "albumName",
+          "createdAt",
+          "albumThumbnailAssetId",
+          "shared",
+          "sharedUsers",
+          "assets"
+        ]
+      },
+      "SharedLinkResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/SharedLinkType"
+          },
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          },
+          "album": {
+            "$ref": "#/components/schemas/AlbumResponseDto"
+          },
+          "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "userId",
+          "key",
+          "createdAt",
+          "expiresAt",
+          "assets",
+          "allowUpload",
+          "allowDownload",
+          "showExif"
+        ]
+      },
+      "EditSharedLinkDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "expiredAt": {
+            "type": "string"
+          },
+          "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
+          },
+          "isEditExpireTime": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SystemConfigFFmpegDto": {
+        "type": "object",
+        "properties": {
+          "crf": {
+            "type": "string"
+          },
+          "preset": {
+            "type": "string"
+          },
+          "targetVideoCodec": {
+            "type": "string"
+          },
+          "targetAudioCodec": {
+            "type": "string"
+          },
+          "targetScaling": {
+            "type": "string"
+          },
+          "transcodeAll": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "crf",
+          "preset",
+          "targetVideoCodec",
+          "targetAudioCodec",
+          "targetScaling",
+          "transcodeAll"
+        ]
+      },
+      "SystemConfigOAuthDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "issuerUrl": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "buttonText": {
+            "type": "string"
+          },
+          "autoRegister": {
+            "type": "boolean"
+          },
+          "autoLaunch": {
+            "type": "boolean"
+          },
+          "mobileOverrideEnabled": {
+            "type": "boolean"
+          },
+          "mobileRedirectUri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "issuerUrl",
+          "clientId",
+          "clientSecret",
+          "scope",
+          "buttonText",
+          "autoRegister",
+          "autoLaunch",
+          "mobileOverrideEnabled",
+          "mobileRedirectUri"
+        ]
+      },
+      "SystemConfigPasswordLoginDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "SystemConfigStorageTemplateDto": {
+        "type": "object",
+        "properties": {
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "template"
+        ]
+      },
+      "SystemConfigDto": {
+        "type": "object",
+        "properties": {
+          "ffmpeg": {
+            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
+          },
+          "oauth": {
+            "$ref": "#/components/schemas/SystemConfigOAuthDto"
+          },
+          "passwordLogin": {
+            "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
+          },
+          "storageTemplate": {
+            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+          }
+        },
+        "required": [
+          "ffmpeg",
+          "oauth",
+          "passwordLogin",
+          "storageTemplate"
+        ]
+      },
+      "SystemConfigTemplateStorageOptionDto": {
+        "type": "object",
+        "properties": {
+          "yearOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "monthOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dayOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hourOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minuteOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "secondOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "presetOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "yearOptions",
+          "monthOptions",
+          "dayOptions",
+          "hourOptions",
+          "minuteOptions",
+          "secondOptions",
+          "presetOptions"
+        ]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "testuser@email.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "firstName",
+          "lastName"
+        ]
+      },
+      "UserCountResponseDto": {
+        "type": "object",
+        "properties": {
+          "userCount": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "userCount"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
+          "profileImagePath": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "CreateProfileImageDto": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "file"
+        ]
+      },
+      "CreateProfileImageResponseDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "profileImagePath"
+        ]
+      },
+      "AssetFileUploadDto": {
+        "type": "object",
+        "properties": {
+          "assetData": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "assetData"
+        ]
+      },
+      "AssetFileUploadResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "DownloadFilesDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "title": "Array of asset ids to be downloaded",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
+        ]
+      },
+      "ThumbnailFormat": {
+        "type": "string",
+        "enum": [
+          "JPEG",
+          "WEBP"
+        ]
+      },
+      "CuratedObjectsResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string"
+          },
+          "resizePath": {
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "resizePath",
+          "deviceAssetId",
+          "deviceId"
+        ]
+      },
+      "CuratedLocationsResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "resizePath": {
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "city",
+          "resizePath",
+          "deviceAssetId",
+          "deviceId"
+        ]
+      },
+      "SearchAssetDto": {
+        "type": "object",
+        "properties": {
+          "searchTerm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "searchTerm"
         ]
       },
       "TimeGroupEnum": {
@@ -3800,120 +3937,6 @@
           "assetIds"
         ]
       },
-      "SharedLinkType": {
-        "type": "string",
-        "enum": [
-          "ALBUM",
-          "INDIVIDUAL"
-        ]
-      },
-      "AlbumResponseDto": {
-        "type": "object",
-        "properties": {
-          "assetCount": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "string"
-          },
-          "ownerId": {
-            "type": "string"
-          },
-          "albumName": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "albumThumbnailAssetId": {
-            "type": "string",
-            "nullable": true
-          },
-          "shared": {
-            "type": "boolean"
-          },
-          "sharedUsers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserResponseDto"
-            }
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            }
-          }
-        },
-        "required": [
-          "assetCount",
-          "id",
-          "ownerId",
-          "albumName",
-          "createdAt",
-          "albumThumbnailAssetId",
-          "shared",
-          "sharedUsers",
-          "assets"
-        ]
-      },
-      "SharedLinkResponseDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/SharedLinkType"
-          },
-          "id": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "key": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "expiresAt": {
-            "type": "string",
-            "nullable": true
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            }
-          },
-          "album": {
-            "$ref": "#/components/schemas/AlbumResponseDto"
-          },
-          "allowUpload": {
-            "type": "boolean"
-          },
-          "allowDownload": {
-            "type": "boolean"
-          },
-          "showExif": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "type",
-          "id",
-          "userId",
-          "key",
-          "createdAt",
-          "expiresAt",
-          "assets",
-          "allowUpload",
-          "allowDownload",
-          "showExif"
-        ]
-      },
       "UpdateAssetsToSharedLinkDto": {
         "type": "object",
         "properties": {
@@ -3927,29 +3950,6 @@
         "required": [
           "assetIds"
         ]
-      },
-      "EditSharedLinkDto": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "expiredAt": {
-            "type": "string"
-          },
-          "allowUpload": {
-            "type": "boolean"
-          },
-          "allowDownload": {
-            "type": "boolean"
-          },
-          "showExif": {
-            "type": "boolean"
-          },
-          "isEditExpireTime": {
-            "type": "boolean"
-          }
-        }
       },
       "CreateTagDto": {
         "type": "object",

@@ -11,9 +11,8 @@ import { DownloadService } from '../../modules/download/download.service';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
-import { ISharedLinkRepository } from '../share/shared-link.repository';
-import { IJobRepository } from '@app/domain';
-import { newJobRepositoryMock } from '@app/domain/../test';
+import { ICryptoRepository, IJobRepository, ISharedLinkRepository } from '@app/domain';
+import { newCryptoRepositoryMock, newJobRepositoryMock } from '@app/domain/../test';
 
 describe('AssetService', () => {
   let sui: AssetService;
@@ -24,6 +23,7 @@ describe('AssetService', () => {
   let backgroundTaskServiceMock: jest.Mocked<BackgroundTaskService>;
   let storageSeriveMock: jest.Mocked<StorageService>;
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   const authUser: AuthUserDto = Object.freeze({
     id: 'user_id_1',
@@ -148,6 +148,7 @@ describe('AssetService', () => {
     };
 
     jobMock = newJobRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
 
     sui = new AssetService(
       assetRepositoryMock,
@@ -158,6 +159,7 @@ describe('AssetService', () => {
       storageSeriveMock,
       sharedLinkRepositoryMock,
       jobMock,
+      cryptoMock,
     );
   });
 

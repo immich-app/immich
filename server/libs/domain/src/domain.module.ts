@@ -1,5 +1,6 @@
 import { DynamicModule, Global, Module, ModuleMetadata, Provider } from '@nestjs/common';
 import { APIKeyService } from './api-key';
+import { ShareService } from './share';
 import { SystemConfigService } from './system-config';
 import { UserService } from './user';
 
@@ -10,6 +11,7 @@ const providers: Provider[] = [
   APIKeyService,
   SystemConfigService,
   UserService,
+  ShareService,
 
   {
     provide: INITIAL_SYSTEM_CONFIG,

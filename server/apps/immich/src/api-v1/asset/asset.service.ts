@@ -23,7 +23,7 @@ import { SearchAssetDto } from './dto/search-asset.dto';
 import fs from 'fs/promises';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { AssetResponseDto, mapAsset, mapAssetWithoutExif } from './response-dto/asset-response.dto';
+import { AssetResponseDto, mapAsset, mapAssetWithoutExif } from '@app/domain';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -43,16 +43,16 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-import { IJobRepository, JobName } from '@app/domain';
+import { ICryptoRepository, IJobRepository, JobName } from '@app/domain';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
-import { ShareCore } from '../share/share.core';
-import { ISharedLinkRepository } from '../share/shared-link.repository';
+import { ShareCore } from '@app/domain';
+import { ISharedLinkRepository } from '@app/domain';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { mapSharedLink, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 
 const fileInfo = promisify(stat);
@@ -72,8 +72,9 @@ export class AssetService {
     private storageService: StorageService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
   ) {
-    this.shareCore = new ShareCore(sharedLinkRepository);
+    this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
   }
 
   public async handleUploadedAsset(
