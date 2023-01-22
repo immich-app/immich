@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { handleError } from '$lib/utils/handle-error';
-	import { AssetResponseDto, ThumbnailFormat } from '@api';
+	import { AssetResponseDto, SharedLinkResponseDto, ThumbnailFormat } from '@api';
 
 	import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
 	import ImmichThumbnail from '../../shared-components/immich-thumbnail.svelte';
 
 	export let assets: AssetResponseDto[];
-	export let key: string;
+	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 	export let selectedAssets: Set<AssetResponseDto> = new Set();
 
 	let isShowAssetViewer = false;
@@ -96,7 +96,7 @@
 			<ImmichThumbnail
 				{asset}
 				{thumbnailSize}
-				publicSharedKey={key}
+				publicSharedKey={sharedLink?.key}
 				format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
 				on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
 				on:select={selectAssetHandler}
@@ -110,7 +110,8 @@
 {#if isShowAssetViewer}
 	<AssetViewer
 		asset={selectedAsset}
-		publicSharedKey={key}
+		publicSharedKey={sharedLink?.key}
+		{sharedLink}
 		on:navigate-previous={navigateAssetBackward}
 		on:navigate-next={navigateAssetForward}
 		on:close={closeViewer}

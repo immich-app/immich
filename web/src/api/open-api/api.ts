@@ -667,6 +667,18 @@ export interface CreateAlbumShareLinkDto {
     'allowUpload'?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'allowDownload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateAlbumShareLinkDto
+     */
+    'showExif'?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof CreateAlbumShareLinkDto
      */
@@ -696,6 +708,18 @@ export interface CreateAssetsShareLinkDto {
      * @memberof CreateAssetsShareLinkDto
      */
     'allowUpload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateAssetsShareLinkDto
+     */
+    'allowDownload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateAssetsShareLinkDto
+     */
+    'showExif'?: boolean;
     /**
      * 
      * @type {string}
@@ -987,6 +1011,18 @@ export interface EditSharedLinkDto {
      * @memberof EditSharedLinkDto
      */
     'allowUpload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof EditSharedLinkDto
+     */
+    'allowDownload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof EditSharedLinkDto
+     */
+    'showExif'?: boolean;
     /**
      * 
      * @type {boolean}
@@ -1612,6 +1648,18 @@ export interface SharedLinkResponseDto {
      * @memberof SharedLinkResponseDto
      */
     'allowUpload': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SharedLinkResponseDto
+     */
+    'allowDownload': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SharedLinkResponseDto
+     */
+    'showExif': boolean;
 }
 /**
  * 

@@ -16,6 +16,8 @@ class EditSharedLinkDto {
     this.description,
     this.expiredAt,
     this.allowUpload,
+    this.allowDownload,
+    this.showExif,
     this.isEditExpireTime,
   });
 
@@ -49,6 +51,22 @@ class EditSharedLinkDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  bool? allowDownload;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? showExif;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   bool? isEditExpireTime;
 
   @override
@@ -56,6 +74,8 @@ class EditSharedLinkDto {
      other.description == description &&
      other.expiredAt == expiredAt &&
      other.allowUpload == allowUpload &&
+     other.allowDownload == allowDownload &&
+     other.showExif == showExif &&
      other.isEditExpireTime == isEditExpireTime;
 
   @override
@@ -64,10 +84,12 @@ class EditSharedLinkDto {
     (description == null ? 0 : description!.hashCode) +
     (expiredAt == null ? 0 : expiredAt!.hashCode) +
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
+    (allowDownload == null ? 0 : allowDownload!.hashCode) +
+    (showExif == null ? 0 : showExif!.hashCode) +
     (isEditExpireTime == null ? 0 : isEditExpireTime!.hashCode);
 
   @override
-  String toString() => 'EditSharedLinkDto[description=$description, expiredAt=$expiredAt, allowUpload=$allowUpload, isEditExpireTime=$isEditExpireTime]';
+  String toString() => 'EditSharedLinkDto[description=$description, expiredAt=$expiredAt, allowUpload=$allowUpload, allowDownload=$allowDownload, showExif=$showExif, isEditExpireTime=$isEditExpireTime]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -85,6 +107,16 @@ class EditSharedLinkDto {
       json[r'allowUpload'] = this.allowUpload;
     } else {
       // json[r'allowUpload'] = null;
+    }
+    if (this.allowDownload != null) {
+      json[r'allowDownload'] = this.allowDownload;
+    } else {
+      // json[r'allowDownload'] = null;
+    }
+    if (this.showExif != null) {
+      json[r'showExif'] = this.showExif;
+    } else {
+      // json[r'showExif'] = null;
     }
     if (this.isEditExpireTime != null) {
       json[r'isEditExpireTime'] = this.isEditExpireTime;
@@ -116,6 +148,8 @@ class EditSharedLinkDto {
         description: mapValueOfType<String>(json, r'description'),
         expiredAt: mapValueOfType<String>(json, r'expiredAt'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
+        allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
+        showExif: mapValueOfType<bool>(json, r'showExif'),
         isEditExpireTime: mapValueOfType<bool>(json, r'isEditExpireTime'),
       );
     }

@@ -136,15 +136,17 @@
 					/>
 				{/if}
 
-				<CircleIconButton
-					title="Download"
-					on:click={() => downloadAssets(true)}
-					logo={FolderDownloadOutline}
-				/>
+				{#if sharedLink?.allowDownload}
+					<CircleIconButton
+						title="Download"
+						on:click={() => downloadAssets(true)}
+						logo={FolderDownloadOutline}
+					/>
+				{/if}
 			</svelte:fragment>
 		</ControlAppBar>
 	{/if}
 	<section class="flex flex-col my-[160px] px-6 sm:px-12 md:px-24 lg:px-40">
-		<GalleryViewer {assets} key={sharedLink.key} bind:selectedAssets />
+		<GalleryViewer {assets} {sharedLink} bind:selectedAssets />
 	</section>
 </section>

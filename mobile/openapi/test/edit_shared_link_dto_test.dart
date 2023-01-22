@@ -31,6 +31,16 @@ void main() {
       // TODO
     });
 
+    // bool allowDownload
+    test('to test the property `allowDownload`', () async {
+      // TODO
+    });
+
+    // bool showExif
+    test('to test the property `showExif`', () async {
+      // TODO
+    });
+
     // bool isEditExpireTime
     test('to test the property `isEditExpireTime`', () async {
       // TODO

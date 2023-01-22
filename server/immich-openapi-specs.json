@@ -736,7 +736,7 @@
     "/asset/download-library": {
       "get": {
         "operationId": "downloadLibrary",
-        "description": "",
+        "description": "Current this is not used in any UI element",
         "parameters": [
           {
             "name": "skip",
@@ -3786,6 +3786,12 @@
           "allowUpload": {
             "type": "boolean"
           },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
+          },
           "description": {
             "type": "string"
           }
@@ -3887,6 +3893,12 @@
           },
           "allowUpload": {
             "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -3897,7 +3909,9 @@
           "createdAt",
           "expiresAt",
           "assets",
-          "allowUpload"
+          "allowUpload",
+          "allowDownload",
+          "showExif"
         ]
       },
       "UpdateAssetsToSharedLinkDto": {
@@ -3924,6 +3938,12 @@
             "type": "string"
           },
           "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
             "type": "boolean"
           },
           "isEditExpireTime": {
@@ -4083,6 +4103,12 @@
             "type": "string"
           },
           "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
             "type": "boolean"
           },
           "description": {

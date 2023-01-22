@@ -140,6 +140,8 @@ export class AlbumController {
     @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<any> {
+    this.albumService.checkDownloadAccess(authUser);
+
     const { stream, fileName, fileSize, fileCount, complete } = await this.albumService.downloadArchive(
       authUser,
       albumId,

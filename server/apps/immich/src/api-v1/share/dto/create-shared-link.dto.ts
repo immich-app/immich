@@ -8,4 +8,6 @@ export class CreateSharedLinkDto {
   assets!: AssetEntity[];
   album?: AlbumEntity;
   allowUpload?: boolean;
+  allowDownload?: boolean;
+  showExif?: boolean;
 }
