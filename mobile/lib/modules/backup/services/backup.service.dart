@@ -274,7 +274,9 @@ class BackupService {
           setCurrentUploadAssetCb(
             CurrentUploadAsset(
               id: entity.id,
-              createdAt: entity.createDateTime,
+              createdAt: entity.createDateTime.year == 1970
+                  ? entity.modifiedDateTime
+                  : entity.createDateTime,
               fileName: originalFileName,
               fileType: _getAssetType(entity.type),
             ),
