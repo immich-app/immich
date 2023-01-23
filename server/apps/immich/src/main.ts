@@ -27,7 +27,7 @@ async function bootstrap() {
     app.enableCors();
   }
 
-  const serverPort: number = isNaN(Number(process.env.SERVER_PORT)) ? 3001 : Number(process.env.SERVER_PORT);
+  const serverPort = Number(process.env.SERVER_PORT) || 3001;
 
   const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis();
