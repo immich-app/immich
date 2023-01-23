@@ -32,8 +32,16 @@ class Asset {
   double? get longitude =>
       isLocal ? local!.longitude : remote!.exifInfo?.longitude?.toDouble();
 
-  DateTime get createdAt =>
-      isLocal ? local!.createDateTime : DateTime.parse(remote!.createdAt);
+  DateTime get createdAt {
+    if (isLocal) {
+      if (local!.createDateTime.year == 1970) {
+        return local!.modifiedDateTime;
+      }
+      return local!.createDateTime;
+    } else {
+      return DateTime.parse(remote!.createdAt);
+    }
+  }
 
   bool get isImage => isLocal
       ? local!.type == AssetType.image
