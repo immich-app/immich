@@ -116,7 +116,6 @@
   "login_form_email_hint": "youremail@email.com",
   "login_form_endpoint_hint": "https://your-server-ip:port/",
   "login_form_endpoint_url": "Server Endpoint URL",
-  "login_form_err_http_insecure": "Http is unencrypted and therefore not recommended. Please use https unless you are using Immich exclusively in your home network.",
   "login_form_err_invalid_email": "Invalid Email",
   "login_form_err_invalid_url": "Invalid URL",
   "login_form_err_leading_whitespace": "Leading whitespace",

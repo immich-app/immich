@@ -224,10 +224,6 @@ class ServerEndpointInput extends StatelessWidget {
       return 'login_form_err_invalid_url'.tr();
     }
 
-    if (!parsedUrl.scheme.startsWith("https")) {
-      return 'login_form_err_http_insecure'.tr();
-    }
-
     return null;
   }
 

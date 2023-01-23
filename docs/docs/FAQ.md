@@ -38,7 +38,7 @@ Most Immich components are typically deployed using docker. To see logs for depl
 2. Set the corresponding `user` argument in `docker-compose` for each service.
 3. Add an additional volume to `immich-microservices` that mounts internally to `/usr/src/app/.reverse-geocoding-dump`.
 
-The non-root user/group needs will need read/write access to the volume mounts, including `UPLOAD_LOCATION`.
+The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
 
 ### How can I reset the admin password?
 
