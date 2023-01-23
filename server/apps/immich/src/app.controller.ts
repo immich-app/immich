@@ -1,10 +1,10 @@
 import { Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
-import { ImmichConfigService } from '@app/immich-config';
+import { SystemConfigService } from '@app/domain';
 
 @Controller()
 export class AppController {
-  constructor(private configService: ImmichConfigService) {}
+  constructor(private configService: SystemConfigService) {}
 
   @ApiExcludeEndpoint()
   @Post('refresh-config')

@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 import { RecycleBinService } from './recycle-bin.service';
 import { RecycleBinController } from './recycle-bin.controller';
-import { ImmichConfigModule } from '@app/immich-config';
 import { ShareModule } from '../share/share.module';
-import { BullModule } from '@nestjs/bull';
-import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.constant';
 import { StorageModule } from '@app/storage';
 import { BackgroundTaskModule } from '../../modules/background-task/background-task.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -19,15 +16,7 @@ const ASSET_REPOSITORY_PROVIDER = {
 };
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([AssetEntity]),
-    BackgroundTaskModule,
-    TagModule,
-    StorageModule,
-    BullModule.registerQueue(...immichSharedQueues),
-    ShareModule,
-    ImmichConfigModule,
-  ],
+  imports: [TypeOrmModule.forFeature([AssetEntity]), BackgroundTaskModule, TagModule, StorageModule, ShareModule],
   providers: [RecycleBinService, BackgroundTaskService, ASSET_REPOSITORY_PROVIDER],
   controllers: [RecycleBinController],
 })

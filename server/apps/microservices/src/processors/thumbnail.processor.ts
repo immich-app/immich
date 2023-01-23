@@ -1,6 +1,6 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity, AssetType } from '@app/infra';
-import { WebpGeneratorProcessor, JpegGeneratorProcessor, QueueName, JobName } from '@app/job';
+import { WebpGeneratorProcessor, JpegGeneratorProcessor, QueueName, JobName } from '@app/domain';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,7 +13,7 @@ import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { join } from 'path';
 import { CommunicationGateway } from 'apps/immich/src/api-v1/communication/communication.gateway';
-import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
+import { IMachineLearningJob } from '@app/domain';
 
 @Processor(QueueName.THUMBNAIL_GENERATION)
 export class ThumbnailGeneratorProcessor {

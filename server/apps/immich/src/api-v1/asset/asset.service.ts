@@ -13,7 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'node:crypto';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType, SharedLinkType } from '@app/infra';
+import { AssetEntity, AssetType, SharedLinkType, SystemConfig } from '@app/infra';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -37,13 +37,21 @@ import {
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { timeUtils } from '@app/common/utils';
+import { assetUtils, timeUtils } from '@app/common/utils';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-import { IAssetUploadedJob, IVideoTranscodeJob, QueueName, JobName } from '@app/job';
+import {
+  IAssetUploadedJob,
+  IVideoTranscodeJob,
+  QueueName,
+  JobName,
+  SystemConfigPasswordLoginDto,
+  SystemConfigService,
+  INITIAL_SYSTEM_CONFIG,
+} from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { DownloadService } from '../../modules/download/download.service';
@@ -56,7 +64,7 @@ import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
-import { ImmichConfigService } from '@app/immich-config';
+import { SystemConfigCore } from '@app/domain/system-config/system-config.core';
 
 const fileInfo = promisify(stat);
 
@@ -86,9 +94,11 @@ export class AssetService {
     private storageService: StorageService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
 
-    private immichConfigService: ImmichConfigService,
+    private configService: SystemConfigService,
+    @Inject(INITIAL_SYSTEM_CONFIG) private config: SystemConfig,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository);
+    this.configService.config$.subscribe((config) => (this.config = config));
   }
 
   public async handleUploadedAsset(
@@ -459,7 +469,7 @@ export class AssetService {
 
         await fs.access(videoPath, constants.R_OK | constants.W_OK);
 
-        if (query.isWeb && asset.mimeType == 'video/quicktime') {
+        if (query.isWeb && !assetUtils.isWebPlayable(asset.mimeType)) {
           videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
           mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
         }
@@ -521,13 +531,12 @@ export class AssetService {
   }
 
   public async deleteAssetById(assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
-    const config = await this.immichConfigService.getConfig();
     const result: DeleteAssetResponseDto[] = [];
     const target = assetIds.ids;
 
     for (const assetId of target) {
       let assetSuccessfullyDeleted = false;
-      if (config.recycleBin.enabled) {
+      if (this.config.recycleBin.enabled) {
         const res = await this.markAssetAsDeleted(assetId);
         assetSuccessfullyDeleted = res.deletedAt ? true : false;
       } else {

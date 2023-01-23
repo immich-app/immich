@@ -3,7 +3,6 @@ import { AssetService } from './asset.service';
 import { AssetController } from './asset.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetEntity } from '@app/infra';
-import { BullModule } from '@nestjs/bull';
 import { BackgroundTaskModule } from '../../modules/background-task/background-task.module';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { CommunicationModule } from '../communication/communication.module';
@@ -12,9 +11,7 @@ import { DownloadModule } from '../../modules/download/download.module';
 import { TagModule } from '../tag/tag.module';
 import { AlbumModule } from '../album/album.module';
 import { StorageModule } from '@app/storage';
-import { immichSharedQueues } from '@app/job/constants/bull-queue-registration.constant';
 import { ShareModule } from '../share/share.module';
-import { ImmichConfigModule } from '@app/immich-config';
 
 const ASSET_REPOSITORY_PROVIDER = {
   provide: IAssetRepository,
@@ -30,9 +27,7 @@ const ASSET_REPOSITORY_PROVIDER = {
     TagModule,
     StorageModule,
     forwardRef(() => AlbumModule),
-    BullModule.registerQueue(...immichSharedQueues),
     ShareModule,
-    ImmichConfigModule,
   ],
   controllers: [AssetController],
   providers: [AssetService, BackgroundTaskService, ASSET_REPOSITORY_PROVIDER],

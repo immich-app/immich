@@ -15,6 +15,7 @@ import {
   Put,
   UploadedFiles,
   Patch,
+  Inject,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
@@ -54,7 +55,8 @@ import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
-import { ImmichConfigService } from '@app/immich-config';
+import { SystemConfig } from '@app/infra';
+import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from '@app/domain';
 
 @ApiBearerAuth()
 @ApiTags('Asset')
@@ -63,8 +65,11 @@ export class AssetController {
   constructor(
     private assetService: AssetService,
     private backgroundTaskService: BackgroundTaskService,
-    private immichConfigService: ImmichConfigService,
-  ) {}
+    private configService: SystemConfigService,
+    @Inject(INITIAL_SYSTEM_CONFIG) private config: SystemConfig,
+  ) {
+    this.configService.config$.subscribe((config) => (this.config = config));
+  }
 
   @Authenticated({ isShared: true })
   @Post('upload')
@@ -300,9 +305,7 @@ export class AssetController {
       deleteAssetList.filter((a) => a.id == res.id && res.status == DeleteAssetStatusEnum.SUCCESS);
     });
 
-    const config = await this.immichConfigService.getConfig();
-
-    if (!config.recycleBin.enabled) {
+    if (!this.config.recycleBin.enabled) {
       await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
     }
 

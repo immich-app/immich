@@ -1,5 +1,5 @@
-import { ImmichConfigService } from '@app/immich-config';
-import { AssetEntity } from '@app/infra';
+import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from '@app/domain';
+import { AssetEntity, SystemConfig } from '@app/infra';
 import { StorageService } from '@app/storage';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -29,17 +29,17 @@ export class RecycleBinService {
     private storageService: StorageService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
 
-    private immichConfigService: ImmichConfigService,
-
     private backgroundTaskService: BackgroundTaskService,
+
+    private configService: SystemConfigService,
+    @Inject(INITIAL_SYSTEM_CONFIG) private config: SystemConfig,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository);
+    this.configService.config$.subscribe((config) => (this.config = config));
   }
 
   public async getAllUserDeletedAssets(authUser: AuthUserDto): Promise<AssetResponseDto[]> {
-    const config = await this.immichConfigService.getConfig();
-
-    if (config.recycleBin.enabled) {
+    if (this.config.recycleBin.enabled) {
       const assets = await this._assetRepository.getAllDeletedByUserId(authUser.id);
       return assets.map((asset) => mapAsset(asset));
     }
@@ -138,7 +138,6 @@ export class RecycleBinService {
   }
 
   async getConfig(): Promise<RecycleBinConfigResponseDto> {
-    const config = await this.immichConfigService.getConfig();
-    return config.recycleBin;
+    return this.config.recycleBin;
   }
 }

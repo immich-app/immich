@@ -36,13 +36,23 @@ describe('ImmichJwtService', () => {
   });
 
   describe('getCookies', () => {
-    it('should generate the cookie headers', async () => {
+    it('should generate the cookie headers (secure)', async () => {
       jwtServiceMock.sign.mockImplementation((value) => value as string);
       const dto = { accessToken: 'test-user@immich.com', userId: 'test-user' };
-      const cookies = await sut.getCookies(dto as LoginResponseDto, AuthType.PASSWORD);
+      const cookies = sut.getCookies(dto as LoginResponseDto, AuthType.PASSWORD, true);
       expect(cookies).toEqual([
-        'immich_access_token=test-user@immich.com; HttpOnly; Path=/; Max-Age=604800',
-        'immich_auth_type=password; Path=/; Max-Age=604800',
+        'immich_access_token=test-user@immich.com; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+        'immich_auth_type=password; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      ]);
+    });
+
+    it('should generate the cookie headers (insecure)', () => {
+      jwtServiceMock.sign.mockImplementation((value) => value as string);
+      const dto = { accessToken: 'test-user@immich.com', userId: 'test-user' };
+      const cookies = sut.getCookies(dto as LoginResponseDto, AuthType.PASSWORD, false);
+      expect(cookies).toEqual([
+        'immich_access_token=test-user@immich.com; HttpOnly; Path=/; Max-Age=604800 SameSite=Strict;',
+        'immich_auth_type=password; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
       ]);
     });
   });

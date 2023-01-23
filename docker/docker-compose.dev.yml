@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   immich-server:
@@ -14,6 +14,7 @@ services:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
     ports:
+      - 3001:3001
       - 9230:9230
     env_file:
       - .env
@@ -75,6 +76,7 @@ services:
     environment:
       # Rename these values for svelte public interface
       - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
+      - PUBLIC_IMMICH_API_URL_EXTERNAL=${IMMICH_API_URL_EXTERNAL}
     ports:
       - 3000:3000
       - 24678:24678

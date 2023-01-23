@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra';
+import { UserEntity } from '@app/infra/db/entities';
 import {
   BadRequestException,
   ForbiddenException,

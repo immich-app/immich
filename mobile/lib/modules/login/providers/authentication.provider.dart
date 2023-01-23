@@ -54,20 +54,12 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   Future<bool> login(
     String email,
     String password,
-    String serverEndpoint,
+    String serverUrl,
     bool isSavedLoginInfo,
   ) async {
-    // Store server endpoint to Hive and test endpoint
-    if (serverEndpoint[serverEndpoint.length - 1] == "/") {
-      var validUrl = serverEndpoint.substring(0, serverEndpoint.length - 1);
-      Hive.box(userInfoBox).put(serverEndpointKey, validUrl);
-    } else {
-      Hive.box(userInfoBox).put(serverEndpointKey, serverEndpoint);
-    }
-
-    // Check Server URL validity
     try {
-      _apiService.setEndpoint(Hive.box(userInfoBox).get(serverEndpointKey));
+      // Resolve API server endpoint from user provided serverUrl
+      await _apiService.resolveAndSetEndpoint(serverUrl);
       await _apiService.serverInfoApi.pingServer();
     } catch (e) {
       debugPrint('Invalid Server Endpoint Url $e');
@@ -90,7 +82,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       return setSuccessLoginInfo(
         accessToken: loginResponse.accessToken,
-        serverUrl: serverEndpoint,
+        serverUrl: serverUrl,
         isSavedLoginInfo: isSavedLoginInfo,
       );
     } catch (e) {
@@ -174,7 +166,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       var deviceInfo = await _deviceInfoService.getDeviceInfo();
       userInfoHiveBox.put(deviceIdKey, deviceInfo["deviceId"]);
       userInfoHiveBox.put(accessTokenKey, accessToken);
-      userInfoHiveBox.put(serverEndpointKey, serverUrl);
 
       state = state.copyWith(
         isAuthenticated: true,

@@ -25,9 +25,13 @@ export class AuthController {
     @Body(new ValidationPipe({ transform: true })) loginCredential: LoginCredentialDto,
     @Ip() clientIp: string,
     @Res({ passthrough: true }) response: Response,
+    @Req() request: Request,
   ): Promise<LoginResponseDto> {
     const loginResponse = await this.authService.login(loginCredential, clientIp);
-    response.setHeader('Set-Cookie', this.immichJwtService.getCookies(loginResponse, AuthType.PASSWORD));
+    response.setHeader(
+      'Set-Cookie',
+      this.immichJwtService.getCookies(loginResponse, AuthType.PASSWORD, request.secure),
+    );
     return loginResponse;
   }
 

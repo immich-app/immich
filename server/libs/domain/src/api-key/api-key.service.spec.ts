@@ -1,4 +1,4 @@
-import { APIKeyEntity } from '@app/infra';
+import { APIKeyEntity } from '@app/infra/db/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { authStub, entityStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
 import { ICryptoRepository } from '../auth';
