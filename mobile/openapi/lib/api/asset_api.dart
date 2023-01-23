@@ -347,7 +347,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
+  /// Current this is not used in any UI element
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -383,7 +383,7 @@ class AssetApi {
     );
   }
 
-  /// 
+  /// Current this is not used in any UI element
   ///
   /// Parameters:
   ///

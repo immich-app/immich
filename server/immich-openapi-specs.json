@@ -4448,16 +4448,12 @@
           },
           "patch": {
             "type": "integer"
-          },
-          "build": {
-            "type": "integer"
           }
         },
         "required": [
           "major",
           "minor",
-          "patch",
-          "build"
+          "patch"
         ]
       },
       "UsageByUserDto": {
