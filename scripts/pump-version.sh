@@ -1,34 +1,53 @@
 #/bin/bash
 
 #
-# usage: './scripts/pump-version.sh <major|minor|patch> [:mobile]'
+# Pump one or both of the server/mobile versions in appropriate files
+#
+# usage: './scripts/pump-version.sh <major|minor|patch|fase> <mobile|false'>
 #
 # examples:
-#    ./scripts/pump-version.sh major
+#    ./scripts/pump-version.sh major false
 #    ./scripts/pump-version.sh minor mobile
+#    ./scripts/pump-version.sh false mobile
 #
 
-CURRENT_SERVER=$(cat server/package.json | jq -r '.version')
+SERVER_PUMP=$1
+MOBILE_PUMP=$2
 
+CURRENT_SERVER=$(cat server/package.json | jq -r '.version')
 MAJOR=$(echo $CURRENT_SERVER | cut -d '.' -f1)
 MINOR=$(echo $CURRENT_SERVER | cut -d '.' -f2)
 PATCH=$(echo $CURRENT_SERVER | cut -d '.' -f3)
 
-if [[ $1 == "major" ]]; then
-  $((MAJOR++))
-elif [[ $1 == "minor" ]]; then
-  $((MINOR++))
+if [[ $SERVER_PUMP == "major" ]]; then
+  MAJOR=$((MAJOR + 1))
+elif [[ $SERVER_PUMP == "minor" ]]; then
+  MINOR=$((MINOR + 1))
 elif [[ $1 == "patch" ]]; then
-  $((PATCH++))
+  PATCH=$((PATCH + 1))
+elif [[ $SERVER_PUMP == "false" ]]; then
+  echo 'Skipping Server Pump'
 else
-  echo 'Expected <major|minor|patch>'
+  echo 'Expected <major|minor|patch|false> for the first argument'
   exit 1
 fi
 
 NEXT_SERVER=$MAJOR.$MINOR.$PATCH
 
+CURRENT_MOBILE=$(cat mobile/pubspec.yaml | grep "^version: .*+[0-9]\+$" | cut -d "+" -f2)
+NEXT_MOBILE=$CURRENT_MOBILE
+if [[ $MOBILE_PUMP == "mobile" ]]; then
+  set $((NEXT_MOBILE++))
+elif [[ $MOBILE_PUMP == "false" ]]; then
+  echo 'Skipping Mobile Pump'
+else
+  echo 'Expected <mobile|false> for the second argument'
+  exit 1
+fi
+
+
+
 if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
-  # Bump Server
 
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
 
@@ -38,11 +57,8 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
 fi
 
 
-# Bump Mobile
-CURRENT_MOBILE=$(cat mobile/pubspec.yaml | grep "^version: .*+[0-9]\+$" | cut -d "+" -f2)
 
-if [ ! -z "$2" ]; then
-  NEXT_MOBILE=$((CURRENT_MOBILE + 1))
+if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
 
   echo "Pumping Mobile: $CURRENT_MOBILE => $NEXT_MOBILE"
 
