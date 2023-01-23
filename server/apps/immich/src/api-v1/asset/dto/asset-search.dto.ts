@@ -1,11 +1,12 @@
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { toBoolean } from '../../../utils/transform.util';
 
 export class AssetSearchDto {
   @IsOptional()
   @IsNotEmpty()
   @IsBoolean()
-  @Type(() => Boolean)
+  @Transform(toBoolean)
   isFavorite?: boolean;
 
   @IsOptional()
