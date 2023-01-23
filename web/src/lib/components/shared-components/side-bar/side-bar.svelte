@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { api } from '@api';
+	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
-	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-	import SideBarButton from './side-bar-button.svelte';
 	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
-	import StatusBox from '../status-box.svelte';
-	import { api } from '@api';
 	import { fade } from 'svelte/transition';
-	import LoadingSpinner from '../loading-spinner.svelte';
 	import { AppRoute } from '../../../constants';
+	import LoadingSpinner from '../loading-spinner.svelte';
+	import StatusBox from '../status-box.svelte';
+	import SideBarButton from './side-bar-button.svelte';
 
 	let showAssetCount = false;
 	let showSharingCount = false;
