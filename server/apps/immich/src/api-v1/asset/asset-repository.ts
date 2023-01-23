@@ -15,7 +15,8 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository } from '../tag/tag.repository';
-import { IsNull } from 'typeorm';
+import { IsNull, Not } from 'typeorm';
+import { AssetSearchDto } from './dto/asset-search.dto';
 
 export interface IAssetRepository {
   create(
@@ -28,7 +29,7 @@ export interface IAssetRepository {
     livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity>;
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
-  getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]>;
+  getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
@@ -244,17 +245,23 @@ export class AssetRepository implements IAssetRepository {
    * Get all assets belong to the user on the database
    * @param userId
    */
-  async getAllByUserId(userId: string, skip?: number): Promise<AssetEntity[]> {
-    const query = this.assetRepository
-      .createQueryBuilder('asset')
-      .where('asset.userId = :userId', { userId: userId })
-      .andWhere('asset.resizePath is not NULL')
-      .andWhere('asset.isVisible = true')
-      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
-      .leftJoinAndSelect('asset.tags', 'tags')
-      .skip(skip || 0)
-      .orderBy('asset.createdAt', 'DESC');
-    return await query.getMany();
+  async getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]> {
+    return this.assetRepository.find({
+      where: {
+        userId,
+        resizePath: Not(IsNull()),
+        isVisible: true,
+        isFavorite: dto.isFavorite,
+      },
+      relations: {
+        exifInfo: true,
+        tags: true,
+      },
+      skip: dto.skip || 0,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
   }
 
   /**
