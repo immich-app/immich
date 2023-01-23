@@ -46,18 +46,30 @@ The API key can be obtained in the user setting panel on the web interface.
 
 ### Run via Docker
 
-Be aware that as this runs inside a container it mounts your current directory as a volume, and for the -d flag you need to use the path inside the container.
+:::caution Running inside Docker
+Be aware that as this runs inside a container, you need to mount the folder from which you want to import into 
+the container. The below command uses `$(pwd)` to mount the folder you are currently in.
+:::
+
+You can run the CLI inside of a docker container like this:
 
 ```bash
-docker run -it --rm -v $(pwd):/import ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api -d /import
+docker run -it --rm -v $(pwd):/import ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
 ```
 
 Optionally, you can create an alias:
 
 ```bash
 alias immich="docker run -it --rm -v $(pwd):/import ghcr.io/immich-app/immich-cli:latest"
-immich upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api -d /import
+immich upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
 ```
+
+:::tip Internal networking
+If you are running the CLI container on the same machine as your Immich server, you may not be able to reach the external address. In that case, try the following steps:
+1. Find the internal Docker network used by Immich via `docker network ls`.
+2. Adapt the above command to pass the `--network <immich_network>` argument to `docker run`, substituting `<immich_network>` with the result from step 1.
+3. Use `--server http://immich-server/` for the upload command instead of the external address.
+:::
 
 ### Run from source
 
