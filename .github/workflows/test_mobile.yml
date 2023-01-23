@@ -26,7 +26,7 @@ jobs:
         if: steps.android-sdk.outputs.cache-hit != 'true'
         uses: android-actions/setup-android@v2
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v1
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
       - name: Run integration tests
