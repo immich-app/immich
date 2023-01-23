@@ -15,7 +15,7 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
       - name: Cache android SDK
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: android-sdk
         with:
           key: android-sdk
