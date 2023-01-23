@@ -137,9 +137,14 @@
 		</div>
 	</a>
 
-	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} class="relative" draggable="false">
-	    <SideBarButton
-		    title="Favorites"
+	<a
+		data-sveltekit-preload-data="hover"
+		href={AppRoute.FAVORITES}
+		class="relative"
+		draggable="false"
+	>
+		<SideBarButton
+			title="Favorites"
 			logo={StarOutline}
 			isSelected={$page.route.id == AppRoute.FAVORITES}
 		/>

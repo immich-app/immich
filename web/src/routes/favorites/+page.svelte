@@ -25,10 +25,7 @@
 	export let data: PageData;
 	let isShowCreateSharedLinkModal = false;
 
-	const {
-		favorites,
-		loadFavorites,
-	} = useFavorites({ favorites: [] });
+	const { favorites, loadFavorites } = useFavorites({ favorites: [] });
 
 	onMount(loadFavorites);
 
@@ -75,7 +72,6 @@
 			assetInteractionStore.addAssetToMultiselectGroup(asset);
 		}
 	};
-
 </script>
 
 <section>
@@ -164,7 +160,6 @@
 			{/if}
 		</section>
 	</section>
-
 </section>
 
 <Portal target="body">

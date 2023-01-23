@@ -13,12 +13,14 @@ export const useFavorites = (props: AssestsProps) => {
 	async function loadFavorites(): Promise<void> {
 		try {
 			const { data } = await api.assetApi.getAllAssets();
-			favorites.set(data.filter((value) => {
-				return value.isFavorite;
-			}));
+			favorites.set(
+				data.filter((value) => {
+					return value.isFavorite;
+				})
+			);
 		} catch {
 			notificationController.show({
-				message: 'Error loading albums',
+				message: 'Error loading favorites',
 				type: NotificationType.Error
 			});
 		}
