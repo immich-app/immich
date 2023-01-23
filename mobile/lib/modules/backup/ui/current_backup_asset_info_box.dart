@@ -142,11 +142,26 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
           alignment: Alignment.centerLeft,
           firstChild: GestureDetector(
             onTap: () => isShowThumbnail.value = false,
-            child: CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.grey[200],
-              backgroundImage: MemoryImage(thumbnail.data!),
-            ),
+            child: thumbnail.hasData
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: Image.memory(
+                      thumbnail.data!,
+                      fit: BoxFit.cover,
+                      width: 50,
+                      height: 50,
+                    ),
+                  )
+                : const SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator.adaptive(
+                        strokeWidth: 1,
+                      ),
+                    ),
+                  ),
           ),
           secondChild: GestureDetector(
             onTap: () => isShowThumbnail.value = true,
