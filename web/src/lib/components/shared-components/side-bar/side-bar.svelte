@@ -5,6 +5,7 @@
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
 	import SideBarButton from './side-bar-button.svelte';
+	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
 	import StatusBox from '../status-box.svelte';
 	import { api } from '@api';
 	import { fade } from 'svelte/transition';
@@ -116,7 +117,7 @@
 			class="absolute right-4 top-[15px] z-40 text-xs hover:cursor-help"
 			on:mouseenter={() => (showAlbumsCount = true)}
 			on:mouseleave={() => (showAlbumsCount = false)}
-		>e4
+		>
 			<InformationOutline size={18} color="#989a9f" />
 			{#if showAlbumsCount}
 				<div
@@ -139,7 +140,7 @@
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} class="relative" draggable="false">
 	    <SideBarButton
 		    title="Favorites"
-			logo={ImageAlbum}
+			logo={StarOutline}
 			isSelected={$page.route.id == AppRoute.FAVORITES}
 		/>
 	</a>

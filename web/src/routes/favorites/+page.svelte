@@ -1,131 +1,87 @@
 <script lang="ts">
+	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
+	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
+	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
+	import Portal from '$lib/components/shared-components/portal/portal.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-	import AlbumSelectionModal from '$lib/components/shared-components/album-selection-modal.svelte';
-	import { goto } from '$app/navigation';
-	import type { PageData } from './$types';
-	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
-	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import {
 		assetInteractionStore,
 		isMultiSelectStoreState,
-		selectedAssets
+		isViewingAssetStoreState,
+		selectedAssets,
+		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
-	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+	import { api, AssetResponseDto } from '@api';
+	import { onMount } from 'svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
-	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
-	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
-	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-	import Plus from 'svelte-material-icons/Plus.svelte';
-	import { AlbumResponseDto, api, SharedLinkType } from '@api';
-	import {
-		notificationController,
-		NotificationType
-	} from '$lib/components/shared-components/notification/notification';
-	import { assetStore } from '$lib/stores/assets.store';
-	import { addAssetsToAlbum, bulkDownload } from '$lib/utils/asset-utils';
-	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
+	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
+	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
+	import StarMinusOutline from 'svelte-material-icons/StarMinusOutline.svelte';
+	import type { PageData } from './$types';
+	import { useFavorites } from './favorites.bloc';
 
 	export let data: PageData;
 	let isShowCreateSharedLinkModal = false;
-	const deleteSelectedAssetHandler = async () => {
-		try {
-			if (
-				window.confirm(
-					`Caution! Are you sure you want to delete ${$selectedAssets.size} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!`
-				)
-			) {
-				const { data: deletedAssets } = await api.assetApi.deleteAsset({
-					ids: Array.from($selectedAssets).map((a) => a.id)
-				});
 
-				for (const asset of deletedAssets) {
-					if (asset.status == 'SUCCESS') {
-						assetStore.removeAsset(asset.id);
-					}
-				}
+	const {
+		favorites,
+		loadFavorites,
+	} = useFavorites({ favorites: [] });
 
-				assetInteractionStore.clearMultiselect();
-			}
-		} catch (e) {
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error deleting assets, check console for more details'
-			});
-			console.error('Error deleteSelectedAssetHandler', e);
-		}
-	};
-
-	let contextMenuPosition = { x: 0, y: 0 };
-	let isShowAddMenu = false;
-	let isShowAlbumPicker = false;
-	let addToSharedAlbum = false;
-
-	const handleShowMenu = (event: CustomEvent) => {
-		contextMenuPosition = {
-			x: event.detail.mouseEvent.x,
-			y: event.detail.mouseEvent.y
-		};
-
-		isShowAddMenu = !isShowAddMenu;
-	};
-
-	const handleShowAlbumPicker = (shared: boolean) => {
-		isShowAddMenu = false;
-		isShowAlbumPicker = true;
-		addToSharedAlbum = shared;
-	};
-
-	const handleAddToNewAlbum = (event: CustomEvent) => {
-		isShowAlbumPicker = false;
-
-		const { albumName }: { albumName: string } = event.detail;
-		const assetIds = Array.from($selectedAssets).map((asset) => asset.id);
-		api.albumApi.createAlbum({ albumName, assetIds }).then((response) => {
-			const { id, albumName } = response.data;
-
-			notificationController.show({
-				message: `Added ${assetIds.length} to ${albumName}`,
-				type: NotificationType.Info
-			});
-
-			assetInteractionStore.clearMultiselect();
-
-			goto('/albums/' + id);
-		});
-	};
-
-	const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
-		isShowAlbumPicker = false;
-		const album = event.detail.album;
-
-		const assetIds = Array.from($selectedAssets).map((asset) => asset.id);
-
-		addAssetsToAlbum(album.id, assetIds).then(() => {
-			assetInteractionStore.clearMultiselect();
-		});
-	};
-
-	const handleDownloadFiles = async () => {
-		await bulkDownload('immich', Array.from($selectedAssets), () => {
-			assetInteractionStore.clearMultiselect();
-		});
-	};
+	onMount(loadFavorites);
 
 	const handleCreateSharedLink = async () => {
 		isShowCreateSharedLinkModal = true;
 	};
 
-	const handleCloseSharedLinkModal = () => {
+	const handleRemoveFavorite = () => {
+		const assetIds = Array.from($selectedAssets).map((asset) => asset.id);
+		for (const assetId of assetIds) {
+			api.assetApi.updateAsset(assetId, {
+				isFavorite: false
+			});
+		}
+
 		assetInteractionStore.clearMultiselect();
-		isShowCreateSharedLinkModal = false;
 	};
+
+	const navigateToPreviousAsset = () => {
+		assetInteractionStore.navigateAsset('previous');
+	};
+
+	const navigateToNextAsset = () => {
+		assetInteractionStore.navigateAsset('next');
+	};
+
+	const assetClickHandler = (asset: AssetResponseDto) => {
+		if ($isMultiSelectStoreState) {
+			assetSelectHandler(asset);
+		} else {
+			assetInteractionStore.setViewingAsset(asset);
+		}
+	};
+
+	const assetSelectHandler = (asset: AssetResponseDto) => {
+		if ($selectedAssets.has(asset)) {
+			assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+		} else {
+			assetInteractionStore.addAssetToMultiselectGroup(asset);
+		}
+	};
+
 </script>
 
 <section>
+	<NavigationBar user={data.user} shouldShowUploadButton={false} />
+</section>
+
+<section
+	class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg  dark:bg-immich-dark-bg"
+>
+	<SideBar />
+
 	{#if $isMultiSelectStoreState}
 		<ControlAppBar
 			on:close-button-click={() => assetInteractionStore.clearMultiselect()}
@@ -144,53 +100,81 @@
 					on:click={handleCreateSharedLink}
 				/>
 				<CircleIconButton
-					title="Download"
-					logo={CloudDownloadOutline}
-					on:click={handleDownloadFiles}
-				/>
-				<CircleIconButton title="Add" logo={Plus} on:click={handleShowMenu} />
-				<CircleIconButton
-					title="Delete"
-					logo={DeleteOutline}
-					on:click={deleteSelectedAssetHandler}
+					title="Remove Favorite"
+					logo={StarMinusOutline}
+					on:click={handleRemoveFavorite}
 				/>
 			</svelte:fragment>
 		</ControlAppBar>
-	{:else}
-		<NavigationBar user={data.user} on:uploadClicked={() => openFileUploadDialog()} />
 	{/if}
 
-	{#if isShowAddMenu}
-		<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAddMenu = false)}>
-			<div class="flex flex-col rounded-lg ">
-				<MenuOption on:click={() => handleShowAlbumPicker(false)} text="Add to Album" />
-				<MenuOption on:click={() => handleShowAlbumPicker(true)} text="Add to Shared Album" />
+	<!-- Main Section -->
+
+	<section class="overflow-y-auto relative immich-scrollbar">
+		<section
+			id="favorite-content"
+			class="relative pt-8 pl-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg"
+		>
+			<div class="px-4 flex justify-between place-items-center dark:text-immich-dark-fg">
+				<div>
+					<p class="font-medium">Favorites</p>
+				</div>
+
+				<div>
+					<button
+						class="immich-text-button text-sm dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
+						hidden
+					>
+						<span>
+							<PlusBoxOutline size="18" />
+						</span>
+						<p>Add favorites</p>
+					</button>
+				</div>
 			</div>
-		</ContextMenu>
-	{/if}
 
-	{#if isShowAlbumPicker}
-		<AlbumSelectionModal
-			shared={addToSharedAlbum}
-			on:newAlbum={handleAddToNewAlbum}
-			on:newSharedAlbum={handleAddToNewAlbum}
-			on:album={handleAddToAlbum}
-			on:close={() => (isShowAlbumPicker = false)}
-		/>
-	{/if}
+			<div class="my-4">
+				<hr class="dark:border-immich-dark-gray" />
+			</div>
 
-	{#if isShowCreateSharedLinkModal}
-		<CreateSharedLinkModal
-			sharedAssets={Array.from($selectedAssets)}
-			shareType={SharedLinkType.Individual}
-			on:close={handleCloseSharedLinkModal}
-		/>
-	{/if}
+			<!-- Image grid -->
+			<div class="flex flex-wrap gap-[2px]">
+				{#each $favorites as asset (asset.id)}
+					<ImmichThumbnail
+						{asset}
+						on:click={() => assetClickHandler(asset)}
+						on:select={() => assetSelectHandler(asset)}
+						selected={$selectedAssets.has(asset)}
+					/>
+				{/each}
+			</div>
+
+			<!-- Empty Message -->
+			{#if $favorites.length === 0}
+				<div
+					class="border dark:border-immich-dark-gray hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/25 hover:cursor-pointer p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center"
+				>
+					<img src="/empty-1.svg" alt="Empty shared album" width="500" draggable="false" />
+
+					<p class="text-center text-immich-text-gray-500 dark:text-immich-dark-fg">
+						Add favorites to quickly find your best pictures and videos
+					</p>
+				</div>
+			{/if}
+		</section>
+	</section>
+
 </section>
 
-<section
-	class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg dark:bg-immich-dark-bg"
->
-	<SideBar />
-	<AssetGrid />
-</section>
+<Portal target="body">
+	{#if $isViewingAssetStoreState}
+		<AssetViewer
+			asset={$viewingAssetStoreState}
+			on:navigate-previous={navigateToPreviousAsset}
+			on:navigate-next={navigateToNextAsset}
+			on:close={() => {
+				assetInteractionStore.setIsViewingAsset(false);
+			}}
+		/>
+	{/if}
+</Portal>
