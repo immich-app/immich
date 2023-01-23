@@ -17,7 +17,6 @@
 	import { api, AssetResponseDto, SharedLinkType } from '@api';
 	import { onMount } from 'svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
-	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import StarMinusOutline from 'svelte-material-icons/StarMinusOutline.svelte';
 	import type { PageData } from './$types';
