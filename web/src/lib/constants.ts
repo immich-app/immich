@@ -8,6 +8,7 @@ export enum AppRoute {
 	ADMIN_JOBS = '/admin/jobs-status',
 
 	ALBUMS = '/albums',
+	FAVORITES = '/favorites',
 	PHOTOS = '/photos',
 	SHARING = '/sharing'
 }

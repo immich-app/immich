@@ -116,7 +116,7 @@
 			class="absolute right-4 top-[15px] z-40 text-xs hover:cursor-help"
 			on:mouseenter={() => (showAlbumsCount = true)}
 			on:mouseleave={() => (showAlbumsCount = false)}
-		>
+		>e4
 			<InformationOutline size={18} color="#989a9f" />
 			{#if showAlbumsCount}
 				<div
@@ -134,6 +134,14 @@
 				</div>
 			{/if}
 		</div>
+	</a>
+
+	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} class="relative" draggable="false">
+	    <SideBarButton
+		    title="Favorites"
+			logo={ImageAlbum}
+			isSelected={$page.route.id == AppRoute.FAVORITES}
+		/>
 	</a>
 
 	<!-- Status Box -->
