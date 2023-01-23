@@ -2,6 +2,7 @@
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import Portal from '$lib/components/shared-components/portal/portal.svelte';
@@ -13,7 +14,7 @@
 		selectedAssets,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
-	import { api, AssetResponseDto } from '@api';
+	import { api, AssetResponseDto, SharedLinkType } from '@api';
 	import { onMount } from 'svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
@@ -34,6 +35,11 @@
 
 	const handleCreateSharedLink = async () => {
 		isShowCreateSharedLinkModal = true;
+	};
+
+	const handleCloseSharedLinkModal = () => {
+		assetInteractionStore.clearMultiselect();
+		isShowCreateSharedLinkModal = false;
 	};
 
 	const handleRemoveFavorite = () => {
@@ -108,6 +114,14 @@
 		</ControlAppBar>
 	{/if}
 
+	{#if isShowCreateSharedLinkModal}
+		<CreateSharedLinkModal
+			sharedAssets={Array.from($selectedAssets)}
+			shareType={SharedLinkType.Individual}
+			on:close={handleCloseSharedLinkModal}
+		/>
+	{/if}
+
 	<!-- Main Section -->
 
 	<section class="overflow-y-auto relative immich-scrollbar">
@@ -118,18 +132,6 @@
 			<div class="px-4 flex justify-between place-items-center dark:text-immich-dark-fg">
 				<div>
 					<p class="font-medium">Favorites</p>
-				</div>
-
-				<div>
-					<button
-						class="immich-text-button text-sm dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
-						hidden
-					>
-						<span>
-							<PlusBoxOutline size="18" />
-						</span>
-						<p>Add favorites</p>
-					</button>
 				</div>
 			</div>
 
