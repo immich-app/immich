@@ -12,7 +12,9 @@ async function bootstrap() {
     logger: getLogLevels(),
   });
 
-  const listeningPort: number = isNaN(Number(process.env.SERVER_PORT)) ? 3002 : Number(process.env.MICROSERVICES_PORT);
+  const listeningPort: number = isNaN(Number(process.env.MICROSERVICES_PORT))
+    ? 3002
+    : Number(process.env.MICROSERVICES_PORT);
 
   const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis();

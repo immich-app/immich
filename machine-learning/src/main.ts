@@ -5,11 +5,9 @@ import { Logger } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const listeningPort: number = isNaN(Number(process.env.MACHINE_LEARNING_PORT))
-    ? 3003
-    : Number(process.env.MACHINE_LEARNING_PORT);
+  const port = Number(process.env.MACHINE_LEARNING_PORT) || 3003;
 
-  await app.listen(listeningPort, () => {
+  await app.listen(port, () => {
     if (process.env.NODE_ENV == 'development') {
       Logger.log(
         'Running Immich Machine Learning in DEVELOPMENT environment',

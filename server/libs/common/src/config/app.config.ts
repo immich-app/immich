@@ -35,5 +35,8 @@ export const immichAppConfig: ConfigModuleOptions = {
     DISABLE_REVERSE_GEOCODING: Joi.boolean().optional().valid(true, false).default(false),
     REVERSE_GEOCODING_PRECISION: Joi.number().optional().valid(0, 1, 2, 3).default(3),
     LOG_LEVEL: Joi.string().optional().valid('simple', 'verbose', 'debug', 'log', 'warn', 'error').default('log'),
+    MACHINE_LEARNING_PORT: Joi.number().optional(),
+    MICROSERVICES_PORT: Joi.number().optional(),
+    SERVER_PORT: Joi.number().optional(),
   }),
 };
