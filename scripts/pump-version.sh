@@ -6,9 +6,9 @@
 # usage: './scripts/pump-version.sh <major|minor|patch|fase> <mobile|false'>
 #
 # examples:
-#    ./scripts/pump-version.sh major false
-#    ./scripts/pump-version.sh minor mobile
-#    ./scripts/pump-version.sh false mobile
+#    ./scripts/pump-version.sh major false        # 1.0.0+50 => 2.0.0+50 
+#    ./scripts/pump-version.sh minor mobile       # 1.0.0+50 => 1.1.0+51
+#    ./scripts/pump-version.sh false mobile       # 1.0.0+50 => 1.0.0+51
 #
 
 SERVER_PUMP=$1
