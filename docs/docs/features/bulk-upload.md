@@ -73,7 +73,7 @@ If you are running the CLI container on the same machine as your Immich server, 
 3. Use `--server http://immich-server/` for the upload command instead of the external address.
 
 ```bash title="Upload to internal address"
-docker run --network immich_default -it --rm -v $(pwd):/import ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://immich-server/
+docker run --network immich_default -it --rm -v $(pwd):/import ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://immich-server:3001/
 ```
 :::
 
