@@ -1,31 +1,28 @@
-#! /bin/bash
+#! /bin/sh
 
-# usage: file_env VAR [DEFAULT]
-#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
-# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
-#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
-file_env() {
-	local var="$1"
-	local fileVar="${var}_FILE"
-	local def="${2:-}"
-	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
-		printf >&2 'error: both %s and %s are set (but are exclusive)\n' "$var" "$fileVar"
-		exit 1
-	fi
-	local val="$def"
-	if [ "${!var:-}" ]; then
-		val="${!var}"
-	elif [ "${!fileVar:-}" ]; then
-		val="$(< "${!fileVar}")"
-	fi
-	export "$var"="$val"
-	unset "$fileVar"
-}
+if [ "$JWT_SECRET_FILE" ]; then
+	export JWT_SECRET=$(cat $JWT_SECRET_FILE)
+	unset JWT_SECRET_FILE
+fi
 
-file_env 'JWT_SECRET'
-file_env 'DB_HOSTNAME' 'immich_postgres'
-file_env 'DB_DATABASE_NAME' 'immich'
-file_env 'DB_USERNAME' 'postgres'
-file_env 'DB_PASSWORD' 'postgres'
+if [ "$DB_HOSTNAME_FILE" ]; then
+	export DB_HOSTNAME=$(cat $DB_HOSTNAME_FILE)
+	unset DB_HOSTNAME_FILE
+fi
+
+if [ "$DB_DATABASE_NAME_FILE" ]; then
+	export DB_DATABASE_NAME=$(cat $DB_DATABASE_NAME_FILE)
+	unset DB_DATABASE_NAME_FILE
+fi
+
+if [ "$DB_USERNAME_FILE" ]; then
+	export DB_USERNAME=$(cat $DB_USERNAME_FILE)
+	unset DB_USERNAME_FILE
+fi
+
+if [ "$DB_PASSWORD_FILE" ]; then
+	export DB_PASSWORD=$(cat $DB_PASSWORD_FILE)
+	unset DB_PASSWORD_FILE
+fi
 
 exec node dist/apps/microservices/apps/microservices/src/main
