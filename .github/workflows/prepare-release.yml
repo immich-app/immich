@@ -46,4 +46,4 @@ jobs:
           body_path: misc/release/notes.tmpl
           files: |
             docker/docker-compose.yml
-            docker/.env.example
+            docker/example.env
