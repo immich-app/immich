@@ -16,9 +16,9 @@
 
 	export let data: PageData;
 
+	let favorites: AssetResponseDto[] = [];
 	let isShowCreateSharedLinkModal = false;
 	let selectedAssets: Set<AssetResponseDto> = new Set();
-	let favorites: AssetResponseDto[] = [];
 
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 
@@ -27,7 +27,7 @@
 			const { data: assets } = await api.assetApi.getAllAssets(true);
 			favorites = assets;
 		} catch {
-			handleError(Error, 'Unable to load favorites')
+			handleError(Error, 'Unable to load favorites');
 		}
 	});
 
@@ -118,7 +118,7 @@
 			</div>
 
 			<!-- Empty Message -->
-			{#if $favorites.length === 0}
+			{#if favorites.length === 0}
 				<div
 					class="border dark:border-immich-dark-gray hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/25 hover:cursor-pointer p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center"
 				>
@@ -130,7 +130,7 @@
 				</div>
 			{/if}
 
-			<GalleryViewer assets={$favorites} bind:selectedAssets />
+			<GalleryViewer assets={favorites} bind:selectedAssets />
 		</section>
 	</section>
 </section>
