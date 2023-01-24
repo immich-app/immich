@@ -26,7 +26,9 @@ function fileFilter(req: Request, file: any, cb: any) {
   if (!req.user) {
     return cb(new UnauthorizedException());
   }
-  // TODO: Create new API endpoint for mimetypes and use that here.
+  // TODO: Create new API endpoint for mimetypes and use that here as browser's
+  //  file mimetype is not to be trusted blindly.
+  // Reference about issue with it: https://stackoverflow.com/questions/26149389/mime-type-missing-for-rar-and-tar/26222177#26222177
   cb(null, true);
   //if (
   //  file.mimetype.match(
