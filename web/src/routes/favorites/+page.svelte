@@ -5,7 +5,6 @@
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import { assetInteractionStore } from '$lib/stores/asset-interaction.store';
 	import { handleError } from '$lib/utils/handle-error';
 	import { api, AssetResponseDto, SharedLinkType } from '@api';
 	import { onMount } from 'svelte';
@@ -41,7 +40,7 @@
 	};
 
 	const handleCloseSharedLinkModal = () => {
-		assetInteractionStore.clearMultiselect();
+		clearMultiSelectAssetAssetHandler();
 		isShowCreateSharedLinkModal = false;
 	};
 
