@@ -8,7 +8,7 @@ Docker Compose is the recommended method to run Immich in production. Below are 
 
 ### Step 1 - Download the required files
 
-Download [`docker-compose.yml`][compose-file] [`.env.example`][env-file].
+Download [`docker-compose.yml`][compose-file] [`example.env`][env-file].
 
 From a directory of your choice (e.g. `./immich-app`) run the following commands:
 
@@ -17,7 +17,7 @@ wget https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-comp
 ```
 
 ```bash title="Get .env file"
-wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
+wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/example.env
 ```
 
 ### Step 2 - Populate the .env file with custom values
@@ -131,5 +131,5 @@ Immich is currently under heavy development, which means you can expect breaking
 :::
 
 [compose-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml
-[env-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example
+[env-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/example.env
 [watchtower]: https://containrrr.dev/watchtower/

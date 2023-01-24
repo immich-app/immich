@@ -28,7 +28,7 @@ Install Immich using Portainer's Stack feature.
   alt="Dot Env Example"
 />
 
-9. Copy the content of the `.env.example` file from the [GitHub repository](https://raw.githubusercontent.com/immich-app/immich/main/docker/.env.example) and paste into the editor.
+9. Copy the content of the `example.env` file from the [GitHub repository](https://raw.githubusercontent.com/immich-app/immich/main/docker/example.env) and paste into the editor.
 10. Switch back to "**Simple Mode**".
 
 <img
