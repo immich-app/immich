@@ -19,7 +19,7 @@ export const openFileUploadDialog = (
 
 		fileSelector.type = 'file';
 		fileSelector.multiple = true;
-		fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng,.3gp,.nef';
+		fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng,.3gp,.nef,.srw,.raf';
 
 		fileSelector.onchange = async (e: Event) => {
 			const target = e.target as HTMLInputElement;
@@ -55,11 +55,7 @@ export const fileUploadHandler = async (
 		return;
 	}
 
-	const acceptedFile = files.filter(
-		(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
-	);
-
-	for (const asset of acceptedFile) {
+	for (const asset of files) {
 		await fileUploader(asset, albumId, sharedKey, onDone);
 	}
 };
@@ -97,7 +93,12 @@ async function fileUploader(
 		formData.append('deviceId', 'WEB');
 
 		// Get asset type
-		formData.append('assetType', assetType);
+		if (fileExtension.toLowerCase() == 'raf' || fileExtension.toLowerCase() == 'srw') {
+			// Workaround for annoying RAW types.
+			formData.append('assetType', 'IMAGE');
+		} else {
+			formData.append('assetType', assetType);
+		}
 
 		// Get Asset Created Date
 		formData.append('createdAt', createdAt);
