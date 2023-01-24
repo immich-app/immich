@@ -107,6 +107,12 @@ enum LoginCredentials {
     "https://flutter-int-test.preview.immich.app",
     "demo@immich.app",
     "wrong",
+  ),
+
+  wrongInstanceUrl(
+  "https://does-not-exist.preview.immich.app",
+  "demo@immich.app",
+  "demo",
   );
 
   const LoginCredentials(this.server, this.email, this.password);

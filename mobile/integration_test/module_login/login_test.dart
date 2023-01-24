@@ -26,5 +26,14 @@ void main() async {
       await helper.loginHelper.pressLoginButton();
       await helper.loginHelper.assertLoginFailed();
     });
+
+    immichWidgetTest("Test login with wrong server URL", (tester, helper) async {
+      await helper.loginHelper.waitForLoginScreen();
+      await helper.loginHelper.acknowledgeNewServerVersion();
+      await helper.loginHelper.enterCredentialsOf(
+          LoginCredentials.wrongInstanceUrl);
+      await helper.loginHelper.pressLoginButton();
+      await helper.loginHelper.assertLoginFailed();
+    });
   });
 }
