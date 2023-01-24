@@ -1575,12 +1575,6 @@ export interface ServerVersionReponseDto {
      * @memberof ServerVersionReponseDto
      */
     'patch': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ServerVersionReponseDto
-     */
-    'build': number;
 }
 /**
  * 
@@ -3813,7 +3807,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * 
+         * Current this is not used in any UI element
          * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4499,7 +4493,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * 
+         * Current this is not used in any UI element
          * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4725,7 +4719,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.downloadFiles(downloadFilesDto, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Current this is not used in any UI element
          * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4947,7 +4941,7 @@ export class AssetApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Current this is not used in any UI element
      * @param {number} [skip] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
