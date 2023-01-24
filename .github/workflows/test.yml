@@ -49,6 +49,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.3.10'
       - name: Run tests
         working-directory: ./mobile
         run: flutter test
@@ -77,6 +78,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.3.10'
       - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2.27.0
         with:
