@@ -61,7 +61,7 @@ export class ThumbnailGeneratorProcessor {
                 asset.id +
                 ' using sharp, failing over to exiftool-vendored',
             );
-            exiftool.extractThumbnail(asset.originalPath, jpegThumbnailPath);
+            return exiftool.extractThumbnail(asset.originalPath, jpegThumbnailPath);
           });
         await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
       } catch (error: any) {
