@@ -9,6 +9,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:openapi/api.dart';
 
 class AddToAlbumList extends HookConsumerWidget {
 
@@ -22,7 +23,25 @@ class AddToAlbumList extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
     final albums = ref.watch(albumProvider);
+    final sharedAlbums = ref.watch(sharedAlbumProvider);
+
+    void addToAlbum(AlbumResponseDto album) async {
+      await ref
+          .watch(albumServiceProvider)
+          .addAdditionalAssetToAlbum(
+            [asset],
+            album.id,
+          );
+      ref.invalidate(sharedAlbumDetailProvider(album.id));
+      ImmichToast.show(
+        context: context,
+        msg: 'Added to ${album.albumName}',
+      );
+
+      Navigator.pop(context);
+    }
 
     return Card(
       shape: const RoundedRectangleBorder(
@@ -59,27 +78,24 @@ class AddToAlbumList extends HookConsumerWidget {
               ),
             ],
           ),
+          ExpansionTile(
+            title: const Text('Shared'),
+            leading: const Icon(Icons.group),
+            children: sharedAlbums.map((album) => 
+              AlbumThumbnailListTile(
+                album: album,
+                onTap: () => addToAlbum(album),
+              ),
+            ).toList(),
+          ),
+          const SizedBox(height: 12),
           ... albums.map((album) =>
             AlbumThumbnailListTile(
               album: album,
-              onTap: () async {
-                await ref
-                    .watch(albumServiceProvider)
-                    .addAdditionalAssetToAlbum(
-                      [asset],
-                      album.id,
-                    );
-                ref.invalidate(sharedAlbumDetailProvider(album.id));
-                ImmichToast.show(
-                  context: context,
-                  msg: 'Added to ${album.albumName}',
-                );
-   
-                Navigator.pop(context);
-              },
+              onTap: () => addToAlbum(album),
             ),
-        ).toList(),
-      ],
+          ).toList(),
+        ],
       ),
     );
   }
