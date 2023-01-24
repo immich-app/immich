@@ -40,6 +40,17 @@ jobs:
       - name: Run tests
         run: cd web && npm ci && npm run check:all
 
+  mobile-unit-tests:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Run tests
+        run: flutter test
+
   mobile-integration-tests:
     runs-on: macos-latest
     steps:
