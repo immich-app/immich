@@ -11,12 +11,18 @@ import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart
 import 'package:immich_mobile/modules/album/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/album/ui/shared_album_thumbnail_image.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 // ignore: must_be_immutable
 class CreateAlbumPage extends HookConsumerWidget {
-  bool isSharedAlbum;
+  final bool isSharedAlbum;
+  final List<Asset>? initialAssets;
 
-  CreateAlbumPage({Key? key, required this.isSharedAlbum}) : super(key: key);
+  const CreateAlbumPage({
+    Key? key, 
+    required this.isSharedAlbum,
+    this.initialAssets,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,7 +32,8 @@ class CreateAlbumPage extends HookConsumerWidget {
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
     final selectedAssets =
-        ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
+        ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum
+        ..addAll(initialAssets ?? []);
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     showSelectUserPage() {
