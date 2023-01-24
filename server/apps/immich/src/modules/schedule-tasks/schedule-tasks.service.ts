@@ -6,6 +6,7 @@ import { AssetEntity, AssetType, ExifEntity, UserEntity } from '@app/infra';
 import { ConfigService } from '@nestjs/config';
 import { userUtils } from '@app/common';
 import { IJobRepository, JobName } from '@app/domain';
+import { isNull } from 'lodash';
 
 @Injectable()
 export class ScheduleTasksService {
@@ -107,6 +108,14 @@ export class ScheduleTasksService {
       if (userUtils.isReadyForDeletion(user)) {
         await this.jobRepository.add({ name: JobName.USER_DELETION, data: { user } });
       }
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async deleteAssetsInRecycleBin() {
+    const assetsToDelete = await this.assetRepository.find({ where: { deletedAt: Not(IsNull()), isVisible: false } });
+    for (const asset of assetsToDelete) {
+      await this.jobRepository.add({ name: JobName.RECYCLE_BIN_CLEANUP, data: { asset } });
     }
   }
 }

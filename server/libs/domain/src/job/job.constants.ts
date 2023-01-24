@@ -8,6 +8,7 @@ export enum QueueName {
   USER_DELETION = 'user-deletion-queue',
   CONFIG = 'config-queue',
   BACKGROUND_TASK = 'background-task',
+  RECYCLE_BIN = 'recycle-bin',
 }
 
 export enum JobName {
@@ -25,4 +26,5 @@ export enum JobName {
   IMAGE_TAGGING = 'tag-image',
   DELETE_FILE_ON_DISK = 'delete-file-on-disk',
   CHECKSUM_GENERATION = 'checksum-generation',
+  RECYCLE_BIN_CLEANUP = 'recycle-bin-cleanup',
 }

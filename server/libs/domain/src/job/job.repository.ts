@@ -10,6 +10,7 @@ import {
   JpegGeneratorProcessor,
   WebpGeneratorProcessor,
 } from './interfaces';
+import { IRecycleBinCleanup } from './interfaces/recycle-bin-cleanup.interface';
 import { JobName, QueueName } from './job.constants';
 
 export interface JobCounts {
@@ -34,7 +35,8 @@ export type JobItem =
   | { name: JobName.EXTRACT_VIDEO_METADATA; data: IVideoLengthExtractionProcessor }
   | { name: JobName.OBJECT_DETECTION; data: IMachineLearningJob }
   | { name: JobName.IMAGE_TAGGING; data: IMachineLearningJob }
-  | { name: JobName.DELETE_FILE_ON_DISK; data: IDeleteFileOnDiskJob };
+  | { name: JobName.DELETE_FILE_ON_DISK; data: IDeleteFileOnDiskJob }
+  | { name: JobName.RECYCLE_BIN_CLEANUP; data: IRecycleBinCleanup };
 
 export const IJobRepository = 'IJobRepository';
 

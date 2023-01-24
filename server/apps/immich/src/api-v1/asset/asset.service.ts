@@ -43,18 +43,7 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-import {
-  IAssetUploadedJob,
-  IVideoTranscodeJob,
-  QueueName,
-  JobName,
-  SystemConfigPasswordLoginDto,
-  SystemConfigService,
-  INITIAL_SYSTEM_CONFIG,
-} from '@app/domain';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
-import { IJobRepository, JobName } from '@app/domain';
+import { JobName, SystemConfigService, INITIAL_SYSTEM_CONFIG, IJobRepository } from '@app/domain';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
@@ -65,7 +54,6 @@ import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { mapSharedLink, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
-import { SystemConfigCore } from '@app/domain/system-config/system-config.core';
 
 const fileInfo = promisify(stat);
 

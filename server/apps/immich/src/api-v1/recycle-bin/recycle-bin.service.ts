@@ -67,7 +67,7 @@ export class RecycleBinService {
       }
     }
 
-    await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
+    await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList as any[]);
 
     return result;
   }
@@ -93,7 +93,7 @@ export class RecycleBinService {
       }
     }
 
-    await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
+    await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList as any[]);
 
     return result;
   }

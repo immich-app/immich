@@ -57,6 +57,7 @@ const providers: Provider[] = [
       { name: QueueName.MACHINE_LEARNING },
       { name: QueueName.CONFIG },
       { name: QueueName.BACKGROUND_TASK },
+      { name: QueueName.RECYCLE_BIN },
     ),
   ],
   providers: [...providers],

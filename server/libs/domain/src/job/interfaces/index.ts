@@ -5,3 +5,4 @@ export * from './metadata-extraction.interface';
 export * from './thumbnail-generation.interface';
 export * from './user-deletion.interface';
 export * from './video-transcode.interface';
+export * from './recycle-bin-cleanup.interface';

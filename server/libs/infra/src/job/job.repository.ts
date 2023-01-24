@@ -3,6 +3,7 @@ import {
   IJobRepository,
   IMachineLearningJob,
   IMetadataExtractionJob,
+  IRecycleBinCleanup,
   IUserDeletionJob,
   IVideoTranscodeJob,
   JobCounts,
@@ -27,6 +28,7 @@ export class JobRepository implements IJobRepository {
     @InjectQueue(QueueName.THUMBNAIL_GENERATION) private thumbnail: Queue,
     @InjectQueue(QueueName.USER_DELETION) private userDeletion: Queue<IUserDeletionJob>,
     @InjectQueue(QueueName.VIDEO_CONVERSION) private videoTranscode: Queue<IVideoTranscodeJob>,
+    @InjectQueue(QueueName.RECYCLE_BIN) private recycleBinCleanup: Queue<IRecycleBinCleanup>,
   ) {}
 
   async isActive(name: QueueName): Promise<boolean> {
@@ -83,6 +85,10 @@ export class JobRepository implements IJobRepository {
 
       case JobName.VIDEO_CONVERSION:
         await this.videoTranscode.add(item.name, item.data);
+        break;
+
+      case JobName.RECYCLE_BIN_CLEANUP:
+        await this.recycleBinCleanup.add(item.name, item.data);
         break;
 
       default:

@@ -15,6 +15,7 @@ import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { UserDeletionProcessor } from './processors/user-deletion.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
 import { DomainModule } from '@app/domain';
+import { RecycleBinCleanupProcessor } from './processors/recycle-bin-cleaanup.processor';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { DomainModule } from '@app/domain';
     MachineLearningProcessor,
     UserDeletionProcessor,
     StorageMigrationProcessor,
+    RecycleBinCleanupProcessor,
   ],
 })
 export class MicroservicesModule {}
