@@ -41,7 +41,8 @@ jobs:
         run: cd web && npm ci && npm run check:all
 
   mobile-unit-tests:
-    runs-on: macos-latest
+    name: Run mobile unit tests
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Setup Flutter SDK
@@ -49,9 +50,11 @@ jobs:
         with:
           channel: 'stable'
       - name: Run tests
+        working-directory: ./mobile
         run: flutter test
 
   mobile-integration-tests:
+    name: Run mobile e2e integration tests
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
