@@ -12,6 +12,7 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import StarMinusOutline from 'svelte-material-icons/StarMinusOutline.svelte';
+	import Error from '../+error.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -44,12 +45,16 @@
 		isShowCreateSharedLinkModal = false;
 	};
 
-	const handleRemoveFavorite = () => {
-		const assetIds = Array.from(selectedAssets).map((asset) => asset.id);
-		for (const assetId of assetIds) {
-			api.assetApi.updateAsset(assetId, {
-				isFavorite: false
-			});
+	const handleRemoveFavorite = async () => {
+		for (const asset of selectedAssets) {
+			try {
+				await api.assetApi.updateAsset(asset.id, {
+					isFavorite: false
+				});
+				favorites = favorites.filter((a) => a.id != asset.id);
+			} catch {
+				handleError(Error, 'Error updating asset favorite state');
+			}
 		}
 
 		clearMultiSelectAssetAssetHandler();
