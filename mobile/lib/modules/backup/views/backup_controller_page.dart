@@ -468,6 +468,14 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     buildCurrentBackupAssetInfoCard() {
+      String getAssetCreationDate() {
+        return DateFormat.yMMMMd('en_US').format(
+          DateTime.parse(
+            backupState.currentUploadAsset.createdAt.toString(),
+          ).toLocal(),
+        );
+      }
+
       return ListTile(
         leading: Icon(
           Icons.info_outline_rounded,
@@ -576,14 +584,7 @@ class BackupControllerPage extends HookConsumerWidget {
                               fontSize: 10.0,
                             ),
                           ).tr(
-                            args: [
-                              DateFormat.yMMMMd('en_US').format(
-                                DateTime.parse(
-                                  backupState.currentUploadAsset.createdAt
-                                      .toString(),
-                                ).toLocal(),
-                              )
-                            ],
+                            args: [getAssetCreationDate()],
                           ),
                         ),
                       ),

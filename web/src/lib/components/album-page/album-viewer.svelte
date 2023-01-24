@@ -320,6 +320,7 @@
 				}
 			}
 		} catch (e) {
+			$downloadAssets = {};
 			console.error('Error downloading file ', e);
 			notificationController.show({
 				type: NotificationType.Error,
@@ -460,11 +461,13 @@
 						<CircleIconButton title="Remove album" on:click={removeAlbum} logo={DeleteOutline} />
 					{/if}
 
-					<CircleIconButton
-						title="Download"
-						on:click={() => downloadAlbum()}
-						logo={FolderDownloadOutline}
-					/>
+					{#if !isPublicShared || (isPublicShared && sharedLink?.allowDownload)}
+						<CircleIconButton
+							title="Download"
+							on:click={() => downloadAlbum()}
+							logo={FolderDownloadOutline}
+						/>
+					{/if}
 
 					{#if !isPublicShared}
 						<CircleIconButton
@@ -534,11 +537,7 @@
 		{/if}
 
 		{#if album.assetCount > 0}
-			<GalleryViewer
-				assets={album.assets}
-				key={sharedLink?.key ?? ''}
-				bind:selectedAssets={multiSelectAsset}
-			/>
+			<GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
 		{:else}
 			<!-- Album is empty - Show asset selectection buttons -->
 			<section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">

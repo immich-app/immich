@@ -10,6 +10,12 @@ export class EditSharedLinkDto {
   @IsOptional()
   allowUpload?: boolean;
 
+  @IsOptional()
+  allowDownload?: boolean;
+
+  @IsOptional()
+  showExif?: boolean;
+
   @IsNotEmpty()
   isEditExpireTime?: boolean;
 }

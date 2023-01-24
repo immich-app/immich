@@ -23,6 +23,8 @@ class SharedLinkResponseDto {
     this.assets = const [],
     this.album,
     required this.allowUpload,
+    required this.allowDownload,
+    required this.showExif,
   });
 
   SharedLinkType type;
@@ -57,6 +59,10 @@ class SharedLinkResponseDto {
 
   bool allowUpload;
 
+  bool allowDownload;
+
+  bool showExif;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkResponseDto &&
      other.type == type &&
@@ -68,7 +74,9 @@ class SharedLinkResponseDto {
      other.expiresAt == expiresAt &&
      other.assets == assets &&
      other.album == album &&
-     other.allowUpload == allowUpload;
+     other.allowUpload == allowUpload &&
+     other.allowDownload == allowDownload &&
+     other.showExif == showExif;
 
   @override
   int get hashCode =>
@@ -82,10 +90,12 @@ class SharedLinkResponseDto {
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (assets.hashCode) +
     (album == null ? 0 : album!.hashCode) +
-    (allowUpload.hashCode);
+    (allowUpload.hashCode) +
+    (allowDownload.hashCode) +
+    (showExif.hashCode);
 
   @override
-  String toString() => 'SharedLinkResponseDto[type=$type, id=$id, description=$description, userId=$userId, key=$key, createdAt=$createdAt, expiresAt=$expiresAt, assets=$assets, album=$album, allowUpload=$allowUpload]';
+  String toString() => 'SharedLinkResponseDto[type=$type, id=$id, description=$description, userId=$userId, key=$key, createdAt=$createdAt, expiresAt=$expiresAt, assets=$assets, album=$album, allowUpload=$allowUpload, allowDownload=$allowDownload, showExif=$showExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -111,6 +121,8 @@ class SharedLinkResponseDto {
       // json[r'album'] = null;
     }
       json[r'allowUpload'] = this.allowUpload;
+      json[r'allowDownload'] = this.allowDownload;
+      json[r'showExif'] = this.showExif;
     return json;
   }
 
@@ -143,6 +155,8 @@ class SharedLinkResponseDto {
         assets: AssetResponseDto.listFromJson(json[r'assets'])!,
         album: AlbumResponseDto.fromJson(json[r'album']),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
+        allowDownload: mapValueOfType<bool>(json, r'allowDownload')!,
+        showExif: mapValueOfType<bool>(json, r'showExif')!,
       );
     }
     return null;
@@ -200,6 +214,8 @@ class SharedLinkResponseDto {
     'expiresAt',
     'assets',
     'allowUpload',
+    'allowDownload',
+    'showExif',
   };
 }
 

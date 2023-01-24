@@ -10,7 +10,13 @@
 	import { downloadAssets } from '$lib/stores/download';
 	import VideoViewer from './video-viewer.svelte';
 	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
-	import { api, AssetResponseDto, AssetTypeEnum, AlbumResponseDto } from '@api';
+	import {
+		api,
+		AssetResponseDto,
+		AssetTypeEnum,
+		AlbumResponseDto,
+		SharedLinkResponseDto
+	} from '@api';
 	import {
 		notificationController,
 		NotificationType
@@ -22,6 +28,7 @@
 	export let asset: AssetResponseDto;
 	export let publicSharedKey = '';
 	export let showNavigation = true;
+	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
 	const dispatch = createEventDispatcher();
 	let halfLeftHover = false;
@@ -31,22 +38,29 @@
 	let isShowAlbumPicker = false;
 	let addToSharedAlbum = true;
 	let shouldPlayMotionPhoto = false;
+	let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
 	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
 	onMount(async () => {
 		document.addEventListener('keydown', onKeyboardPress);
 
+		getAllAlbums();
+	});
+
+	onDestroy(() => {
+		document.removeEventListener('keydown', onKeyboardPress);
+	});
+
+	$: asset.id && getAllAlbums(); // Update the album information when the asset ID changes
+
+	const getAllAlbums = async () => {
 		try {
 			const { data } = await api.albumApi.getAllAlbums(undefined, asset.id);
 			appearsInAlbums = data;
 		} catch (e) {
 			console.error('Error getting album that asset belong to', e);
 		}
-	});
-
-	onDestroy(() => {
-		document.removeEventListener('keydown', onKeyboardPress);
-	});
+	};
 
 	const handleKeyboardPress = (key: string) => {
 		switch (key) {
@@ -160,6 +174,7 @@
 				}, 2000);
 			}
 		} catch (e) {
+			$downloadAssets = {};
 			console.error('Error downloading file ', e);
 			notificationController.show({
 				type: NotificationType.Error,
@@ -241,6 +256,7 @@
 			isMotionPhotoPlaying={shouldPlayMotionPhoto}
 			showCopyButton={asset.type === AssetTypeEnum.Image}
 			showMotionPlayButton={!!asset.livePhotoVideoId}
+			showDownloadButton={shouldShowDownloadButton}
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
 			on:download={handleDownload}

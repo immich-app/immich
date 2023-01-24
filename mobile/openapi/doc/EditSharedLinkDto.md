@@ -11,6 +11,8 @@ Name | Type | Description | Notes
 **description** | **String** |  | [optional] 
 **expiredAt** | **String** |  | [optional] 
 **allowUpload** | **bool** |  | [optional] 
+**allowDownload** | **bool** |  | [optional] 
+**showExif** | **bool** |  | [optional] 
 **isEditExpireTime** | **bool** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -23,7 +23,7 @@ import { SearchAssetDto } from './dto/search-asset.dto';
 import fs from 'fs/promises';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { AssetResponseDto, mapAsset } from './response-dto/asset-response.dto';
+import { AssetResponseDto, mapAsset, mapAssetWithoutExif } from './response-dto/asset-response.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -37,7 +37,7 @@ import {
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { assetUtils, timeUtils } from '@app/common/utils';
+import { timeUtils } from '@app/common/utils';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
@@ -54,6 +54,7 @@ import {
 } from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { IJobRepository, JobName } from '@app/domain';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
@@ -62,7 +63,7 @@ import { ShareCore } from '../share/share.core';
 import { ISharedLinkRepository } from '../share/shared-link.repository';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { mapSharedLink, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 import { SystemConfigCore } from '@app/domain/system-config/system-config.core';
 
@@ -75,27 +76,17 @@ export class AssetService {
 
   constructor(
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
-
     @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
-
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-
     private backgroundTaskService: BackgroundTaskService,
-
-    @InjectQueue(QueueName.ASSET_UPLOADED)
-    private assetUploadedQueue: Queue<IAssetUploadedJob>,
-
-    @InjectQueue(QueueName.VIDEO_CONVERSION)
-    private videoConversionQueue: Queue<IVideoTranscodeJob>,
-
     private downloadService: DownloadService,
-
     private storageService: StorageService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
 
     private configService: SystemConfigService,
     @Inject(INITIAL_SYSTEM_CONFIG) private config: SystemConfig,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository);
     this.configService.config$.subscribe((config) => (this.config = config));
@@ -135,7 +126,7 @@ export class AssetService {
 
         await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
 
-        await this.videoConversionQueue.add(JobName.MP4_CONVERSION, { asset: livePhotoAssetEntity });
+        await this.jobRepository.add({ name: JobName.VIDEO_CONVERSION, data: { asset: livePhotoAssetEntity } });
       }
 
       const assetEntity = await this.createUserAsset(
@@ -159,11 +150,10 @@ export class AssetService {
 
       const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
 
-      await this.assetUploadedQueue.add(
-        JobName.ASSET_UPLOADED,
-        { asset: movedAsset, fileName: originalAssetData.originalname },
-        { jobId: movedAsset.id },
-      );
+      await this.jobRepository.add({
+        name: JobName.ASSET_UPLOADED,
+        data: { asset: movedAsset, fileName: originalAssetData.originalname },
+      });
 
       return new AssetFileUploadResponseDto(movedAsset.id);
     } catch (err) {
@@ -241,10 +231,15 @@ export class AssetService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async getAssetById(assetId: string): Promise<AssetResponseDto> {
+  public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
+    const allowExif = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
 
-    return mapAsset(asset);
+    if (allowExif) {
+      return mapAsset(asset);
+    } else {
+      return mapAssetWithoutExif(asset);
+    }
   }
 
   public async updateAsset(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
@@ -382,7 +377,15 @@ export class AssetService {
     }
   }
 
-  public async serveFile(assetId: string, query: ServeFileDto, res: Res, headers: Record<string, string>) {
+  public async serveFile(
+    authUser: AuthUserDto,
+    assetId: string,
+    query: ServeFileDto,
+    res: Res,
+    headers: Record<string, string>,
+  ) {
+    const allowOriginalFile = !authUser.isPublicUser || authUser.isAllowDownload;
+
     let fileReadStream: ReadStream;
     const asset = await this._assetRepository.getById(assetId);
 
@@ -416,7 +419,7 @@ export class AssetService {
         /**
          * Serve thumbnail image for both web and mobile app
          */
-        if (!query.isThumb) {
+        if (!query.isThumb && allowOriginalFile) {
           res.set({
             'Content-Type': asset.mimeType,
           });
@@ -469,7 +472,7 @@ export class AssetService {
 
         await fs.access(videoPath, constants.R_OK | constants.W_OK);
 
-        if (query.isWeb && !assetUtils.isWebPlayable(asset.mimeType)) {
+        if (asset.encodedVideoPath) {
           videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
           mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
         }
@@ -717,6 +720,10 @@ export class AssetService {
     }
   }
 
+  checkDownloadAccess(authUser: AuthUserDto) {
+    this.shareCore.checkDownloadAccess(authUser);
+  }
+
   async createAssetsSharedLink(authUser: AuthUserDto, dto: CreateAssetsShareLinkDto): Promise<SharedLinkResponseDto> {
     const assets = [];
 
@@ -732,9 +739,11 @@ export class AssetService {
       allowUpload: dto.allowUpload,
       assets: assets,
       description: dto.description,
+      allowDownload: dto.allowDownload,
+      showExif: dto.showExif,
     });
 
-    return mapSharedLinkToResponseDto(sharedLink);
+    return mapSharedLink(sharedLink);
   }
 
   async updateAssetsInSharedLink(
@@ -750,7 +759,11 @@ export class AssetService {
     }
 
     const updatedLink = await this.shareCore.updateAssetsInSharedLink(authUser.sharedLinkId, assets);
-    return mapSharedLinkToResponseDto(updatedLink);
+    return mapSharedLink(updatedLink);
+  }
+
+  getExifPermission(authUser: AuthUserDto) {
+    return !authUser.isPublicUser || authUser.isShowExif;
   }
 }
 

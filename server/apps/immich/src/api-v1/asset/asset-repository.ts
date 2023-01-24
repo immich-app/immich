@@ -43,6 +43,7 @@ export interface IAssetRepository {
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
   getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
+  getAssetWithNoEncodedVideo(): Promise<AssetEntity[]>;
   getAssetWithNoEXIF(): Promise<AssetEntity[]>;
   getAssetWithNoSmartInfo(): Promise<AssetEntity[]>;
   getExistingAssets(
@@ -80,6 +81,15 @@ export class AssetRepository implements IAssetRepository {
         { resizePath: '', isVisible: true },
         { webpPath: IsNull(), isVisible: true },
         { webpPath: '', isVisible: true },
+      ],
+    });
+  }
+
+  async getAssetWithNoEncodedVideo(): Promise<AssetEntity[]> {
+    return await this.assetRepository.find({
+      where: [
+        { type: AssetType.VIDEO, encodedVideoPath: IsNull() },
+        { type: AssetType.VIDEO, encodedVideoPath: '' },
       ],
     });
   }

@@ -1,15 +1,29 @@
 <script lang="ts">
+	import { quintOut } from 'svelte/easing';
+	import { fly } from 'svelte/transition';
+
 	export let title: string;
 	export let subtitle = '';
 	export let checked = false;
 	export let disabled = false;
+	export let isEdited = false;
 </script>
 
 <div class="flex justify-between place-items-center">
 	<div>
-		<h2 class="immich-form-label text-sm">
-			{title}
-		</h2>
+		<div class="flex place-items-center gap-1 h-[26px]">
+			<label class="immich-form-label text-sm" for={title}>
+				{title}
+			</label>
+			{#if isEdited}
+				<div
+					transition:fly={{ x: 10, duration: 200, easing: quintOut }}
+					class="bg-orange-100 px-2 rounded-full text-orange-900 text-[10px]"
+				>
+					Unsaved change
+				</div>
+			{/if}
+		</div>
 
 		<p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
 	</div>

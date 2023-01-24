@@ -16,6 +16,8 @@ class CreateAlbumShareLinkDto {
     required this.albumId,
     this.expiredAt,
     this.allowUpload,
+    this.allowDownload,
+    this.showExif,
     this.description,
   });
 
@@ -43,6 +45,22 @@ class CreateAlbumShareLinkDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  bool? allowDownload;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? showExif;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   String? description;
 
   @override
@@ -50,6 +68,8 @@ class CreateAlbumShareLinkDto {
      other.albumId == albumId &&
      other.expiredAt == expiredAt &&
      other.allowUpload == allowUpload &&
+     other.allowDownload == allowDownload &&
+     other.showExif == showExif &&
      other.description == description;
 
   @override
@@ -58,10 +78,12 @@ class CreateAlbumShareLinkDto {
     (albumId.hashCode) +
     (expiredAt == null ? 0 : expiredAt!.hashCode) +
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
+    (allowDownload == null ? 0 : allowDownload!.hashCode) +
+    (showExif == null ? 0 : showExif!.hashCode) +
     (description == null ? 0 : description!.hashCode);
 
   @override
-  String toString() => 'CreateAlbumShareLinkDto[albumId=$albumId, expiredAt=$expiredAt, allowUpload=$allowUpload, description=$description]';
+  String toString() => 'CreateAlbumShareLinkDto[albumId=$albumId, expiredAt=$expiredAt, allowUpload=$allowUpload, allowDownload=$allowDownload, showExif=$showExif, description=$description]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -75,6 +97,16 @@ class CreateAlbumShareLinkDto {
       json[r'allowUpload'] = this.allowUpload;
     } else {
       // json[r'allowUpload'] = null;
+    }
+    if (this.allowDownload != null) {
+      json[r'allowDownload'] = this.allowDownload;
+    } else {
+      // json[r'allowDownload'] = null;
+    }
+    if (this.showExif != null) {
+      json[r'showExif'] = this.showExif;
+    } else {
+      // json[r'showExif'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
@@ -106,6 +138,8 @@ class CreateAlbumShareLinkDto {
         albumId: mapValueOfType<String>(json, r'albumId')!,
         expiredAt: mapValueOfType<String>(json, r'expiredAt'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
+        allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
+        showExif: mapValueOfType<bool>(json, r'showExif'),
         description: mapValueOfType<String>(json, r'description'),
       );
     }

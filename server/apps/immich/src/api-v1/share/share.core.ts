@@ -2,9 +2,10 @@ import { SharedLinkEntity } from '@app/infra';
 import { CreateSharedLinkDto } from './dto/create-shared-link.dto';
 import { ISharedLinkRepository } from './shared-link.repository';
 import crypto from 'node:crypto';
-import { BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { AssetEntity } from '@app/infra';
 import { EditSharedLinkDto } from './dto/edit-shared-link.dto';
+import { AuthUserDto } from '../../decorators/auth-user.decorator';
 
 export class ShareCore {
   readonly logger = new Logger(ShareCore.name);
@@ -24,6 +25,8 @@ export class ShareCore {
       sharedLink.assets = dto.assets;
       sharedLink.album = dto.album;
       sharedLink.allowUpload = dto.allowUpload ?? false;
+      sharedLink.allowDownload = dto.allowDownload ?? true;
+      sharedLink.showExif = dto.showExif ?? true;
 
       return this.sharedLinkRepository.create(sharedLink);
     } catch (error: any) {
@@ -74,6 +77,8 @@ export class ShareCore {
 
     link.description = dto.description ?? link.description;
     link.allowUpload = dto.allowUpload ?? link.allowUpload;
+    link.allowDownload = dto.allowDownload ?? link.allowDownload;
+    link.showExif = dto.showExif ?? link.showExif;
 
     if (dto.isEditExpireTime && dto.expiredAt) {
       link.expiresAt = dto.expiredAt;
@@ -86,5 +91,11 @@ export class ShareCore {
 
   async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
     return this.sharedLinkRepository.hasAssetAccess(id, assetId);
+  }
+
+  checkDownloadAccess(user: AuthUserDto) {
+    if (user.isPublicUser && !user.isAllowDownload) {
+      throw new ForbiddenException();
+    }
   }
 }

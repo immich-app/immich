@@ -107,6 +107,7 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
+    this.assetService.checkDownloadAccess(authUser);
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.downloadFile(query, assetId, res);
   }
@@ -118,6 +119,7 @@ export class AssetController {
     @Response({ passthrough: true }) res: Res,
     @Body(new ValidationPipe()) dto: DownloadFilesDto,
   ): Promise<any> {
+    this.assetService.checkDownloadAccess(authUser);
     await this.assetService.checkAssetsAccess(authUser, [...dto.assetIds]);
     const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadFiles(dto);
     res.attachment(fileName);
@@ -127,6 +129,9 @@ export class AssetController {
     return stream;
   }
 
+  /**
+   * Current this is not used in any UI element
+   */
   @Authenticated({ isShared: true })
   @Get('/download-library')
   async downloadLibrary(
@@ -134,6 +139,7 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<any> {
+    this.assetService.checkDownloadAccess(authUser);
     const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadLibrary(authUser, dto);
     res.attachment(fileName);
     res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
@@ -153,7 +159,7 @@ export class AssetController {
     @Param('assetId') assetId: string,
   ): Promise<any> {
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return this.assetService.serveFile(assetId, query, res, headers);
+    return this.assetService.serveFile(authUser, assetId, query, res, headers);
   }
 
   @Authenticated({ isShared: true })
@@ -256,7 +262,7 @@ export class AssetController {
     @Param('assetId') assetId: string,
   ): Promise<AssetResponseDto> {
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return await this.assetService.getAssetById(assetId);
+    return await this.assetService.getAssetById(authUser, assetId);
   }
 
   /**
@@ -284,14 +290,14 @@ export class AssetController {
     const deleteAssetList: AssetResponseDto[] = [];
 
     for (const id of assetIds.ids) {
-      const assets = await this.assetService.getAssetById(id);
+      const assets = await this.assetService.getAssetById(authUser, id);
       if (!assets) {
         continue;
       }
       deleteAssetList.push(assets);
 
       if (assets.livePhotoVideoId) {
-        const livePhotoVideo = await this.assetService.getAssetById(assets.livePhotoVideoId);
+        const livePhotoVideo = await this.assetService.getAssetById(authUser, assets.livePhotoVideoId);
         if (livePhotoVideo) {
           deleteAssetList.push(livePhotoVideo);
           assetIds.ids = [...assetIds.ids, livePhotoVideo.id];
@@ -306,7 +312,7 @@ export class AssetController {
     });
 
     if (!this.config.recycleBin.enabled) {
-      await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
+      await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList as any[]);
     }
 
     return result;

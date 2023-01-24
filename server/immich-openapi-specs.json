@@ -736,7 +736,7 @@
     "/asset/download-library": {
       "get": {
         "operationId": "downloadLibrary",
-        "description": "",
+        "description": "Current this is not used in any UI element",
         "parameters": [
           {
             "name": "skip",
@@ -2911,40 +2911,6 @@
       }
     },
     "/jobs/{jobId}": {
-      "get": {
-        "operationId": "getJobStatus",
-        "description": "",
-        "parameters": [
-          {
-            "name": "jobId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "$ref": "#/components/schemas/JobId"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JobStatusResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Job"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
       "put": {
         "operationId": "sendJobCommand",
         "description": "",
@@ -3089,6 +3055,9 @@
           },
           "targetScaling": {
             "type": "string"
+          },
+          "transcodeAll": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -3096,7 +3065,8 @@
           "preset",
           "targetVideoCodec",
           "targetAudioCodec",
-          "targetScaling"
+          "targetScaling",
+          "transcodeAll"
         ]
       },
       "SystemConfigOAuthDto": {
@@ -4025,6 +3995,12 @@
           "allowUpload": {
             "type": "boolean"
           },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
+          },
           "description": {
             "type": "string"
           }
@@ -4126,6 +4102,12 @@
           },
           "allowUpload": {
             "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -4136,7 +4118,9 @@
           "createdAt",
           "expiresAt",
           "assets",
-          "allowUpload"
+          "allowUpload",
+          "allowDownload",
+          "showExif"
         ]
       },
       "UpdateAssetsToSharedLinkDto": {
@@ -4163,6 +4147,12 @@
             "type": "string"
           },
           "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
             "type": "boolean"
           },
           "isEditExpireTime": {
@@ -4322,6 +4312,12 @@
             "type": "string"
           },
           "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
             "type": "boolean"
           },
           "description": {
@@ -4803,48 +4799,28 @@
       "AllJobStatusResponseDto": {
         "type": "object",
         "properties": {
-          "thumbnailGenerationQueueCount": {
+          "thumbnail-generation": {
             "$ref": "#/components/schemas/JobCounts"
           },
-          "metadataExtractionQueueCount": {
+          "metadata-extraction": {
             "$ref": "#/components/schemas/JobCounts"
           },
-          "videoConversionQueueCount": {
+          "video-conversion": {
             "$ref": "#/components/schemas/JobCounts"
           },
-          "machineLearningQueueCount": {
+          "machine-learning": {
             "$ref": "#/components/schemas/JobCounts"
           },
-          "storageMigrationQueueCount": {
+          "storage-template-migration": {
             "$ref": "#/components/schemas/JobCounts"
-          },
-          "isThumbnailGenerationActive": {
-            "type": "boolean"
-          },
-          "isMetadataExtractionActive": {
-            "type": "boolean"
-          },
-          "isVideoConversionActive": {
-            "type": "boolean"
-          },
-          "isMachineLearningActive": {
-            "type": "boolean"
-          },
-          "isStorageMigrationActive": {
-            "type": "boolean"
           }
         },
         "required": [
-          "thumbnailGenerationQueueCount",
-          "metadataExtractionQueueCount",
-          "videoConversionQueueCount",
-          "machineLearningQueueCount",
-          "storageMigrationQueueCount",
-          "isThumbnailGenerationActive",
-          "isMetadataExtractionActive",
-          "isVideoConversionActive",
-          "isMachineLearningActive",
-          "isStorageMigrationActive"
+          "thumbnail-generation",
+          "metadata-extraction",
+          "video-conversion",
+          "machine-learning",
+          "storage-template-migration"
         ]
       },
       "JobId": {
@@ -4855,21 +4831,6 @@
           "video-conversion",
           "machine-learning",
           "storage-template-migration"
-        ]
-      },
-      "JobStatusResponseDto": {
-        "type": "object",
-        "properties": {
-          "isActive": {
-            "type": "boolean"
-          },
-          "queueCount": {
-            "type": "object"
-          }
-        },
-        "required": [
-          "isActive",
-          "queueCount"
         ]
       },
       "JobCommand": {

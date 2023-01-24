@@ -15,9 +15,10 @@ const updatedConfig = Object.freeze({
   ffmpeg: {
     crf: 'a new value',
     preset: 'ultrafast',
-    targetAudioCodec: 'mp3',
+    targetAudioCodec: 'aac',
     targetScaling: '1280:-2',
-    targetVideoCodec: 'libx264',
+    targetVideoCodec: 'h264',
+    transcodeAll: false,
   },
   oauth: {
     autoLaunch: true,
