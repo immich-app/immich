@@ -54,6 +54,7 @@ import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
+import { AssetSearchDto } from './dto/asset-search.dto';
 
 @ApiBearerAuth()
 @ApiTags('Asset')
@@ -219,9 +220,11 @@ export class AssetController {
     required: false,
     schema: { type: 'string' },
   })
-  async getAllAssets(@GetAuthUser() authUser: AuthUserDto): Promise<AssetResponseDto[]> {
-    const assets = await this.assetService.getAllAssets(authUser);
-    return assets;
+  getAllAssets(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
+  ): Promise<AssetResponseDto[]> {
+    return this.assetService.getAllAssets(authUser, dto);
   }
 
   @Authenticated()

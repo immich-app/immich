@@ -409,9 +409,13 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [num] skip:
+  ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<Response> getAllAssetsWithHttpInfo({ String? ifNoneMatch, }) async {
+  Future<Response> getAllAssetsWithHttpInfo({ bool? isFavorite, num? skip, String? ifNoneMatch, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
@@ -421,6 +425,13 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (skip != null) {
+      queryParams.addAll(_queryParams('', 'skip', skip));
+    }
 
     if (ifNoneMatch != null) {
       headerParams[r'if-none-match'] = parameterToString(ifNoneMatch);
@@ -444,10 +455,14 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [num] skip:
+  ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<List<AssetResponseDto>?> getAllAssets({ String? ifNoneMatch, }) async {
-    final response = await getAllAssetsWithHttpInfo( ifNoneMatch: ifNoneMatch, );
+  Future<List<AssetResponseDto>?> getAllAssets({ bool? isFavorite, num? skip, String? ifNoneMatch, }) async {
+    final response = await getAllAssetsWithHttpInfo( isFavorite: isFavorite, skip: skip, ifNoneMatch: ifNoneMatch, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

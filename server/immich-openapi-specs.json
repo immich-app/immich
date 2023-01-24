@@ -1353,6 +1353,22 @@
         "description": "Get all AssetEntity belong to the user",
         "parameters": [
           {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
             "name": "if-none-match",
             "in": "header",
             "description": "ETag of data already cached on the client",
