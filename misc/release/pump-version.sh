@@ -32,7 +32,7 @@ if [[ $SERVER_PUMP == "major" ]]; then
   MAJOR=$((MAJOR + 1))
 elif [[ $SERVER_PUMP == "minor" ]]; then
   MINOR=$((MINOR + 1))
-elif [[ $1 == "patch" ]]; then
+elif [[ $SERVER_PUMP == "patch" ]]; then
   PATCH=$((PATCH + 1))
 elif [[ $SERVER_PUMP == "false" ]]; then
   echo 'Skipping Server Pump'
