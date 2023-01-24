@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -41,7 +40,6 @@ ThemeData immichDarkTheme = ThemeData(
     foregroundColor: immichDarkThemePrimaryColor,
     elevation: 1,
     centerTitle: true,
-    systemOverlayStyle: SystemUiOverlayStyle.light,
   ),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
@@ -97,7 +95,6 @@ ThemeData immichLightTheme = ThemeData(
     foregroundColor: Colors.indigo,
     elevation: 1,
     centerTitle: true,
-    systemOverlayStyle: SystemUiOverlayStyle.dark,
   ),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,

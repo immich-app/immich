@@ -10,8 +10,11 @@ import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 
-class ImmichSliverAppBar extends ConsumerWidget {
-  const ImmichSliverAppBar({
+class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  const HomePageAppBar({
     Key? key,
     this.onPopBack,
   }) : super(key: key);
@@ -25,11 +28,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
         ref.watch(authenticationProvider).deviceInfo.isAutoBackup;
     final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
 
-    return SliverAppBar(
+    return AppBar(
       centerTitle: true,
-      floating: true,
-      pinned: false,
-      snap: false,
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
