@@ -44,7 +44,7 @@ export class AuthCore {
 
   public async createLoginResponse(user: UserEntity, authType: AuthType, isSecure: boolean) {
     const payload: JwtPayloadDto = { userId: user.id, email: user.email };
-    const accessToken = await this.generateToken(payload);
+    const accessToken = this.generateToken(payload);
     const response = mapLoginResponse(user, accessToken);
     const cookie = this.getCookies(response, authType, isSecure);
     return { response, cookie };
