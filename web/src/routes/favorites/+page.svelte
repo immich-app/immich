@@ -6,23 +6,30 @@
 	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import { assetInteractionStore } from '$lib/stores/asset-interaction.store';
+	import { handleError } from '$lib/utils/handle-error';
 	import { api, AssetResponseDto, SharedLinkType } from '@api';
 	import { onMount } from 'svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import StarMinusOutline from 'svelte-material-icons/StarMinusOutline.svelte';
 	import type { PageData } from './$types';
-	import { useFavorites } from './favorites.bloc';
 
 	export let data: PageData;
 
 	let isShowCreateSharedLinkModal = false;
 	let selectedAssets: Set<AssetResponseDto> = new Set();
+	let favorites: AssetResponseDto[] = [];
 
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 
-	const { favorites, loadFavorites } = useFavorites();
-	onMount(loadFavorites);
+	onMount(async () => {
+		try {
+			const { data: assets } = await api.assetApi.getAllAssets(true);
+			favorites = assets;
+		} catch {
+			handleError(Error, 'Unable to load favorites')
+		}
+	});
 
 	const clearMultiSelectAssetAssetHandler = () => {
 		selectedAssets = new Set();
