@@ -1,13 +1,14 @@
 import { DynamicModule, Global, Module, ModuleMetadata, Provider } from '@nestjs/common';
 import { APIKeyService } from './api-key';
-import { SystemConfigService } from './system-config';
+import { AuthService } from './auth';
+import { OAuthService } from './oauth';
+import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
 import { UserService } from './user';
 
-export const INITIAL_SYSTEM_CONFIG = 'INITIAL_SYSTEM_CONFIG';
-
 const providers: Provider[] = [
-  //
   APIKeyService,
+  AuthService,
+  OAuthService,
   SystemConfigService,
   UserService,
 

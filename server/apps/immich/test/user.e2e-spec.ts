@@ -7,8 +7,7 @@ import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { DomainModule, CreateUserDto, UserService, AuthUserDto } from '@app/domain';
 import { DataSource } from 'typeorm';
 import { UserController } from '../src/controllers';
-import { AuthModule } from '../src/api-v1/auth/auth.module';
-import { AuthService } from '../src/api-v1/auth/auth.service';
+import { AuthService } from '@app/domain';
 
 function _createUser(userService: UserService, data: CreateUserDto) {
   return userService.createUser(data);
@@ -52,7 +51,7 @@ describe('User', () => {
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({
-        imports: [DomainModule.register({ imports: [InfraModule] }), AuthModule],
+        imports: [DomainModule.register({ imports: [InfraModule] })],
         controllers: [UserController],
       });
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();

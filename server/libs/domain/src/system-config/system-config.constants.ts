@@ -18,3 +18,5 @@ export const supportedPresetTokens = [
   '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
   '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
 ];
+
+export const INITIAL_SYSTEM_CONFIG = 'INITIAL_SYSTEM_CONFIG';
