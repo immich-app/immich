@@ -8,15 +8,19 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
+import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
-import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
+import 'package:immich_mobile/modules/home/ui/home_page_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
+import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
@@ -30,6 +34,10 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final BackUpState backupState = ref.watch(backupProvider);
+    bool isEnableAutoBackup = backupState.backgroundBackup ||
+        ref.watch(authenticationProvider).deviceInfo.isAutoBackup;
+    final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
     final appSettingService = ref.watch(appSettingsServiceProvider);
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
@@ -197,33 +205,19 @@ class HomePage extends HookConsumerWidget {
         top: true,
         child: Stack(
           children: [
-            CustomScrollView(
-              slivers: [
-                if (!multiselectEnabled.state)
-                  ImmichSliverAppBar(
-                    onPopBack: reloadAllAsset,
+            ref.watch(assetProvider).renderList == null ||
+                    ref.watch(assetProvider).allAssets.isEmpty
+                ? buildLoadingIndicator()
+                : ImmichAssetGrid(
+                    renderList: ref.watch(assetProvider).renderList!,
+                    allAssets: ref.watch(assetProvider).allAssets,
+                    assetsPerRow: appSettingService
+                        .getSetting(AppSettingsEnum.tilesPerRow),
+                    showStorageIndicator: appSettingService
+                        .getSetting(AppSettingsEnum.storageIndicator),
+                    listener: selectionListener,
+                    selectionActive: selectionEnabledHook.value,
                   ),
-              ],
-            ),
-            Padding(
-              padding: EdgeInsets.only(
-                top: selectionEnabledHook.value ? 0 : 60,
-                bottom: 0.0,
-              ),
-              child: ref.watch(assetProvider).renderList == null ||
-                      ref.watch(assetProvider).allAssets.isEmpty
-                  ? buildLoadingIndicator()
-                  : ImmichAssetGrid(
-                      renderList: ref.watch(assetProvider).renderList!,
-                      allAssets: ref.watch(assetProvider).allAssets,
-                      assetsPerRow: appSettingService
-                          .getSetting(AppSettingsEnum.tilesPerRow),
-                      showStorageIndicator: appSettingService
-                          .getSetting(AppSettingsEnum.storageIndicator),
-                      listener: selectionListener,
-                      selectionActive: selectionEnabledHook.value,
-                    ),
-            ),
             if (selectionEnabledHook.value)
               ControlBottomAppBar(
                 onShare: onShareAssets,
@@ -238,6 +232,11 @@ class HomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
+      appBar: multiselectEnabled.state
+          ? null
+          : HomePageAppBar(
+              onPopBack: reloadAllAsset,
+            ),
       drawer: const ProfileDrawer(),
       body: buildBody(),
     );
