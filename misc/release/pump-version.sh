@@ -74,3 +74,5 @@ if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
   sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.injected\.version\.code\" => $NEXT_MOBILE,/" mobile/android/fastlane/Fastfile
   sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
 fi
+
+echo "IMMICH_VERSION=v$NEXT_SERVER" >> $GITHUB_ENV
