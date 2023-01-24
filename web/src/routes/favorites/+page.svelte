@@ -1,19 +1,11 @@
 <script lang="ts">
-	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
+	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-	import Portal from '$lib/components/shared-components/portal/portal.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import {
-		assetInteractionStore,
-		isMultiSelectStoreState,
-		isViewingAssetStoreState,
-		selectedAssets,
-		viewingAssetStoreState
-	} from '$lib/stores/asset-interaction.store';
+	import { assetInteractionStore } from '$lib/stores/asset-interaction.store';
 	import { api, AssetResponseDto, SharedLinkType } from '@api';
 	import { onMount } from 'svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
@@ -23,11 +15,18 @@
 	import { useFavorites } from './favorites.bloc';
 
 	export let data: PageData;
+
 	let isShowCreateSharedLinkModal = false;
+	let selectedAssets: Set<AssetResponseDto> = new Set();
 
-	const { favorites, loadFavorites } = useFavorites({ favorites: [] });
+	$: isMultiSelectionMode = selectedAssets.size > 0;
 
+	const { favorites, loadFavorites } = useFavorites();
 	onMount(loadFavorites);
+
+	const clearMultiSelectAssetAssetHandler = () => {
+		selectedAssets = new Set();
+	};
 
 	const handleCreateSharedLink = async () => {
 		isShowCreateSharedLinkModal = true;
@@ -39,38 +38,14 @@
 	};
 
 	const handleRemoveFavorite = () => {
-		const assetIds = Array.from($selectedAssets).map((asset) => asset.id);
+		const assetIds = Array.from(selectedAssets).map((asset) => asset.id);
 		for (const assetId of assetIds) {
 			api.assetApi.updateAsset(assetId, {
 				isFavorite: false
 			});
 		}
 
-		assetInteractionStore.clearMultiselect();
-	};
-
-	const navigateToPreviousAsset = () => {
-		assetInteractionStore.navigateAsset('previous');
-	};
-
-	const navigateToNextAsset = () => {
-		assetInteractionStore.navigateAsset('next');
-	};
-
-	const assetClickHandler = (asset: AssetResponseDto) => {
-		if ($isMultiSelectStoreState) {
-			assetSelectHandler(asset);
-		} else {
-			assetInteractionStore.setViewingAsset(asset);
-		}
-	};
-
-	const assetSelectHandler = (asset: AssetResponseDto) => {
-		if ($selectedAssets.has(asset)) {
-			assetInteractionStore.removeAssetFromMultiselectGroup(asset);
-		} else {
-			assetInteractionStore.addAssetToMultiselectGroup(asset);
-		}
+		clearMultiSelectAssetAssetHandler();
 	};
 </script>
 
@@ -83,15 +58,16 @@
 >
 	<SideBar />
 
-	{#if $isMultiSelectStoreState}
+	<!-- Multiselection mode app bar -->
+	{#if isMultiSelectionMode}
 		<ControlAppBar
-			on:close-button-click={() => assetInteractionStore.clearMultiselect()}
+			on:close-button-click={clearMultiSelectAssetAssetHandler}
 			backIcon={Close}
 			tailwindClasses={'bg-white shadow-md'}
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {$selectedAssets.size}
+					Selected {selectedAssets.size}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
@@ -109,16 +85,16 @@
 		</ControlAppBar>
 	{/if}
 
+	<!-- Create shared link modal -->
 	{#if isShowCreateSharedLinkModal}
 		<CreateSharedLinkModal
-			sharedAssets={Array.from($selectedAssets)}
+			sharedAssets={Array.from(selectedAssets)}
 			shareType={SharedLinkType.Individual}
 			on:close={handleCloseSharedLinkModal}
 		/>
 	{/if}
 
 	<!-- Main Section -->
-
 	<section class="overflow-y-auto relative immich-scrollbar">
 		<section
 			id="favorite-content"
@@ -134,18 +110,6 @@
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
 
-			<!-- Image grid -->
-			<div class="flex flex-wrap gap-[2px]">
-				{#each $favorites as asset (asset.id)}
-					<ImmichThumbnail
-						{asset}
-						on:click={() => assetClickHandler(asset)}
-						on:select={() => assetSelectHandler(asset)}
-						selected={$selectedAssets.has(asset)}
-					/>
-				{/each}
-			</div>
-
 			<!-- Empty Message -->
 			{#if $favorites.length === 0}
 				<div
@@ -158,19 +122,8 @@
 					</p>
 				</div>
 			{/if}
+
+			<GalleryViewer assets={$favorites} bind:selectedAssets />
 		</section>
 	</section>
 </section>
-
-<Portal target="body">
-	{#if $isViewingAssetStoreState}
-		<AssetViewer
-			asset={$viewingAssetStoreState}
-			on:navigate-previous={navigateToPreviousAsset}
-			on:navigate-next={navigateToNextAsset}
-			on:close={() => {
-				assetInteractionStore.setIsViewingAsset(false);
-			}}
-		/>
-	{/if}
-</Portal>
