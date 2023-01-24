@@ -1,7 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
@@ -10,28 +8,33 @@ import 'package:immich_mobile/modules/album/ui/album_thumbnail_listtile.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class AddToAlbumList extends HookConsumerWidget {
+
+  /// The asset to add to an album
+  final Asset asset;
 
   const AddToAlbumList({
     Key? key,
     required this.asset,
   }) : super(key: key);
 
-  final Asset asset;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = ref.watch(albumProvider);
-    final albumService = ref.watch(albumServiceProvider);
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(18.0),
-      itemCount: albums.length + 1, // +1 for the header
-      itemBuilder: (_, index) {
-        // Build header
-        if (index == 0) {
-          return Column(
+    return Card(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(15),
+          topRight: Radius.circular(15),
+        ),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(18.0),
+        children: [
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Align(
@@ -55,24 +58,29 @@ class AddToAlbumList extends HookConsumerWidget {
                 },
               ),
             ],
-          );
-        }
-
-        // Offset for header
-        final album = albums[index - 1];
-        return AlbumThumbnailListTile(
-          album: album,
-          onTap: () {
-            albumService.addAdditionalAssetToAlbum([asset], album.id);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Added to ${album.albumName}'),
-              ),
-            );
-            Navigator.pop(context);
-          },
-        );
-      },
+          ),
+          ... albums.map((album) =>
+            AlbumThumbnailListTile(
+              album: album,
+              onTap: () async {
+                await ref
+                    .watch(albumServiceProvider)
+                    .addAdditionalAssetToAlbum(
+                      [asset],
+                      album.id,
+                    );
+                ref.invalidate(sharedAlbumDetailProvider(album.id));
+                ImmichToast.show(
+                  context: context,
+                  msg: 'Added to ${album.albumName}',
+                );
+   
+                Navigator.pop(context);
+              },
+            ),
+        ).toList(),
+      ],
+      ),
     );
   }
 }

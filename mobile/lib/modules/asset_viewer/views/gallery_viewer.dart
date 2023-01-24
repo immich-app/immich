@@ -108,12 +108,17 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     void addToAlbum(Asset addToAlbumAsset) {
       showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+        barrierColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
         context: context,
         builder: (BuildContext _) {
           return AddToAlbumList(
             asset: addToAlbumAsset,
           );
-        }
+        },
       );
     }
 
