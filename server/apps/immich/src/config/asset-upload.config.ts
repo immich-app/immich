@@ -26,16 +26,18 @@ function fileFilter(req: Request, file: any, cb: any) {
   if (!req.user) {
     return cb(new UnauthorizedException());
   }
-  if (
-    file.mimetype.match(
-      /\/(jpg|jpeg|png|gif|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef)$/,
-    )
-  ) {
-    cb(null, true);
-  } else {
-    logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
-    cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
-  }
+  // TODO: Create new API endpoint for mimetypes and use that here.
+  cb(null, true);
+  //if (
+  //  file.mimetype.match(
+  //    /\/(jpg|jpeg|png|gif|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef)$/,
+  //  )
+  //) {
+  //  cb(null, true);
+  //} else {
+  //  logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${filetype}`);
+  //  cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
+  // }
 }
 
 function destination(req: Request, file: Express.Multer.File, cb: any) {
