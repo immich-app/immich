@@ -49,7 +49,7 @@ export const fileUploadHandler = async (
 	if (files.length > 50) {
 		notificationController.show({
 			type: NotificationType.Error,
-			message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files. 
+			message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files.
 			Please check out <u>the bulk upload documentation</u> if you need to upload more than 50 files.`,
 			timeout: 10000,
 			action: { type: 'link', target: 'https://immich.app/docs/features/bulk-upload' }
