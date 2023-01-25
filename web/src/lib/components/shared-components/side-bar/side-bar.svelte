@@ -14,6 +14,7 @@
 
 	let showAssetCount = false;
 	let showSharingCount = false;
+	let showFavoritesCount = false;
 	let showAlbumsCount = false;
 
 	const getAssetCount = async () => {
@@ -22,6 +23,14 @@
 		return {
 			videos: assetCount.videos,
 			photos: assetCount.photos
+		};
+	};
+
+	const getFavoriteCount = async () => {
+		const { data: assets } = await api.assetApi.getAllAssets(true);
+
+		return {
+			favorites: assets.length
 		};
 	};
 
@@ -116,6 +125,30 @@
 			logo={StarOutline}
 			isSelected={$page.route.id == AppRoute.FAVORITES}
 		/>
+
+		<div
+			id="favorite-count-info"
+			class="absolute right-4 top-[15px] z-40 text-xs hover:cursor-help"
+			on:mouseenter={() => (showFavoritesCount = true)}
+			on:mouseleave={() => (showFavoritesCount = false)}
+		>
+			<InformationOutline size={18} color="#989a9f" />
+			{#if showFavoritesCount}
+				<div
+					transition:fade={{ duration: 200 }}
+					id="asset-count-info-detail"
+					class="w-32 rounded-lg p-4 shadow-lg bg-white absolute -right-[105px] top-0 z-[9999] flex place-items-center place-content-center"
+				>
+					{#await getFavoriteCount()}
+						<LoadingSpinner />
+					{:then data}
+						<div>
+							<p>{data.favorites} Favorites</p>
+						</div>
+					{/await}
+				</div>
+			{/if}
+		</div>
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.ALBUMS} class="relative" draggable="false">
 		<SideBarButton
