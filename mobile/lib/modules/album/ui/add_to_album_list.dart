@@ -23,22 +23,32 @@ class AddToAlbumList extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final albums = ref.watch(albumProvider);
+    final albumService = ref.watch(albumServiceProvider);
     final sharedAlbums = ref.watch(sharedAlbumProvider);
 
     void addToAlbum(AlbumResponseDto album) async {
-      await ref
-          .watch(albumServiceProvider)
-          .addAdditionalAssetToAlbum(
-            [asset],
-            album.id,
-          );
-      ref.invalidate(sharedAlbumDetailProvider(album.id));
-      ImmichToast.show(
-        context: context,
-        msg: 'Added to ${album.albumName}',
+      final result = await albumService.addAdditionalAssetToAlbum(
+        [asset],
+        album.id,
       );
+      
+      if (result != null) {
+        if (result.alreadyInAlbum.isNotEmpty) {
+          ImmichToast.show(
+            context: context,
+            msg: 'Already in ${album.albumName}',
+          );
+        } else {
+          ImmichToast.show(
+            context: context,
+            msg: 'Added to ${album.albumName}',
+          );
+        }
+      } 
+
+      ref.read(albumProvider.notifier).getAllAlbums();
+      ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
 
       Navigator.pop(context);
     }

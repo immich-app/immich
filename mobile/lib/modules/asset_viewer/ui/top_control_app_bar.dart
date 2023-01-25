@@ -82,17 +82,18 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
             color: Colors.grey[200],
           ),
         ),
-        IconButton(
-          iconSize: iconSize,
-          splashRadius: iconSize,
-          onPressed: () {
-            onAddToAlbumPressed();
-          },
-          icon: Icon(
-            Icons.add,
-            color: Colors.grey[200],
+        if (asset.isRemote)
+          IconButton(
+            iconSize: iconSize,
+            splashRadius: iconSize,
+            onPressed: () {
+              onAddToAlbumPressed();
+            },
+            icon: Icon(
+              Icons.add,
+              color: Colors.grey[200],
+            ),
           ),
-        ),
         IconButton(
           iconSize: iconSize,
           splashRadius: iconSize,
