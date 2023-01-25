@@ -3491,7 +3491,7 @@
           "description": {
             "type": "string"
           },
-          "expiredAt": {
+          "expiresAt": {
             "type": "string",
             "nullable": true
           },

@@ -14,7 +14,7 @@ class EditSharedLinkDto {
   /// Returns a new [EditSharedLinkDto] instance.
   EditSharedLinkDto({
     this.description,
-    this.expiredAt,
+    this.expiresAt,
     this.allowUpload,
     this.allowDownload,
     this.showExif,
@@ -28,7 +28,7 @@ class EditSharedLinkDto {
   ///
   String? description;
 
-  String? expiredAt;
+  String? expiresAt;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -57,7 +57,7 @@ class EditSharedLinkDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is EditSharedLinkDto &&
      other.description == description &&
-     other.expiredAt == expiredAt &&
+     other.expiresAt == expiresAt &&
      other.allowUpload == allowUpload &&
      other.allowDownload == allowDownload &&
      other.showExif == showExif;
@@ -66,13 +66,13 @@ class EditSharedLinkDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (description == null ? 0 : description!.hashCode) +
-    (expiredAt == null ? 0 : expiredAt!.hashCode) +
+    (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
     (allowDownload == null ? 0 : allowDownload!.hashCode) +
     (showExif == null ? 0 : showExif!.hashCode);
 
   @override
-  String toString() => 'EditSharedLinkDto[description=$description, expiredAt=$expiredAt, allowUpload=$allowUpload, allowDownload=$allowDownload, showExif=$showExif]';
+  String toString() => 'EditSharedLinkDto[description=$description, expiresAt=$expiresAt, allowUpload=$allowUpload, allowDownload=$allowDownload, showExif=$showExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -81,10 +81,10 @@ class EditSharedLinkDto {
     } else {
       // json[r'description'] = null;
     }
-    if (this.expiredAt != null) {
-      json[r'expiredAt'] = this.expiredAt;
+    if (this.expiresAt != null) {
+      json[r'expiresAt'] = this.expiresAt;
     } else {
-      // json[r'expiredAt'] = null;
+      // json[r'expiresAt'] = null;
     }
     if (this.allowUpload != null) {
       json[r'allowUpload'] = this.allowUpload;
@@ -124,7 +124,7 @@ class EditSharedLinkDto {
 
       return EditSharedLinkDto(
         description: mapValueOfType<String>(json, r'description'),
-        expiredAt: mapValueOfType<String>(json, r'expiredAt'),
+        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
         showExif: mapValueOfType<bool>(json, r'showExif'),

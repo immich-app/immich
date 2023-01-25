@@ -1004,7 +1004,7 @@ export interface EditSharedLinkDto {
      * @type {string}
      * @memberof EditSharedLinkDto
      */
-    'expiredAt'?: string | null;
+    'expiresAt'?: string | null;
     /**
      * 
      * @type {boolean}
