@@ -118,6 +118,7 @@
   "login_form_endpoint_url": "URL du point d'accès au serveur",
   "login_form_err_http": "Veuillez préciser http:// ou https://",
   "login_form_err_invalid_email": "Email invalide",
+  "login_form_err_invalid_url": "Invalid URL",
   "login_form_err_leading_whitespace": "Espace en début de ligne",
   "login_form_err_trailing_whitespace": "Espace de fin de ligne",
   "login_form_failed_get_oauth_server_config": "Error logging using OAuth, check server URL",

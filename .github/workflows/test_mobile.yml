@@ -10,12 +10,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
           java-version: '11'
       - name: Cache android SDK
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: android-sdk
         with:
           key: android-sdk
@@ -26,7 +26,7 @@ jobs:
         if: steps.android-sdk.outputs.cache-hit != 'true'
         uses: android-actions/setup-android@v2
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v1
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
       - name: Run integration tests

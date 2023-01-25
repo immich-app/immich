@@ -118,6 +118,7 @@
   "login_form_endpoint_url": "Server Endpoint URL",
   "login_form_err_http": "Angiv venligst http:// eller https://",
   "login_form_err_invalid_email": "Ugyldig email",
+  "login_form_err_invalid_url": "Invalid URL",
   "login_form_err_leading_whitespace": "Mellemrum før",
   "login_form_err_trailing_whitespace": "Mellemrum efter",
   "login_form_failed_get_oauth_server_config": "Fejl med at logge på med OAuth. Tjek serveres URL",
@@ -185,10 +186,10 @@
   "theme_setting_theme_title": "Tema",
   "theme_setting_three_stage_loading_subtitle": "Tre-trins indlæsning kan øge ydeevnen, men kan ligeledes føre til højere netværksbelastning",
   "theme_setting_three_stage_loading_title": "Slå tre-trins indlæsning til",
-  "version_announcement_overlay_ack": "Vedkend",
-  "version_announcement_overlay_release_notes": "udgivelsesnoter",
-  "version_announcement_overlay_text_1": "Hej vej, der er en ny version af",
-  "version_announcement_overlay_text_2": "bresøg venligst ",
-  "version_announcement_overlay_text_3": " og sikker dig, at din dockercompose og .env-fil er opdateret, for at undgå fejlkonfiguration, specielt hvis u bruger WatchTowereller andre mekanisme, der automatisk opdaterer serverprogrammer.",
+  "version_announcement_overlay_ack": "Accepter",
+  "version_announcement_overlay_release_notes": "udgivelsesnoterne",
+  "version_announcement_overlay_text_1": "Hej ven, der er en ny version af",
+  "version_announcement_overlay_text_2": ". Besøg venligst ",
+  "version_announcement_overlay_text_3": " for at sikre dig, at din dockercompose- og .env-fil er opdateret, så der undgås fejlkonfiguration, specielt hvis du bruger WatchTower eller lignede.",
   "version_announcement_overlay_title": "Ny serverversion er tilgængelig \uD83C\uDF89"
 }

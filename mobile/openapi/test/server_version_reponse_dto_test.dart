@@ -31,11 +31,6 @@ void main() {
       // TODO
     });
 
-    // int build
-    test('to test the property `build`', () async {
-      // TODO
-    });
-
 
   });
 

@@ -28,7 +28,7 @@ download_docker_compose_file() {
 
 download_dot_env_file() {
   echo "Downloading .env file..."
-  curl -L https://raw.githubusercontent.com/immich-app/immich/$release_version/docker/.env.example -o ./.env >/dev/null 2>&1
+  curl -L https://raw.githubusercontent.com/immich-app/immich/$release_version/docker/example.env -o ./.env >/dev/null 2>&1
 }
 
 replace_env_value() {

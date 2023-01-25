@@ -148,6 +148,292 @@
         ]
       }
     },
+    "/auth/login": {
+      "post": {
+        "operationId": "login",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginCredentialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/admin-sign-up": {
+      "post": {
+        "operationId": "adminSignUp",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSignupResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The server already has an admin"
+          }
+        },
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/validateToken": {
+      "post": {
+        "operationId": "validateAccessToken",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateAccessTokenResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/auth/change-password": {
+      "post": {
+        "operationId": "changePassword",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/oauth/mobile-redirect": {
+      "get": {
+        "operationId": "mobileRedirect",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
+    "/oauth/config": {
+      "post": {
+        "operationId": "generateConfig",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthConfigResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
+    "/oauth/callback": {
+      "post": {
+        "operationId": "callback",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthCallbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
+    "/oauth/link": {
+      "post": {
+        "operationId": "link",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthCallbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
+    "/oauth/unlink": {
+      "post": {
+        "operationId": "unlink",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
     "/share": {
       "get": {
         "operationId": "getAllSharedLinks",
@@ -1206,6 +1492,22 @@
         "description": "Get all AssetEntity belong to the user",
         "parameters": [
           {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
             "name": "if-none-match",
             "in": "header",
             "description": "ETag of data already cached on the client",
@@ -2203,292 +2505,6 @@
         ]
       }
     },
-    "/auth/login": {
-      "post": {
-        "operationId": "login",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginCredentialDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/auth/admin-sign-up": {
-      "post": {
-        "operationId": "adminSignUp",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SignUpDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminSignupResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The server already has an admin"
-          }
-        },
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/auth/validateToken": {
-      "post": {
-        "operationId": "validateAccessToken",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidateAccessTokenResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Authentication"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/auth/change-password": {
-      "post": {
-        "operationId": "changePassword",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChangePasswordDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Authentication"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/auth/logout": {
-      "post": {
-        "operationId": "logout",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LogoutResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/oauth/mobile-redirect": {
-      "get": {
-        "operationId": "mobileRedirect",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "OAuth"
-        ]
-      }
-    },
-    "/oauth/config": {
-      "post": {
-        "operationId": "generateConfig",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthConfigDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OAuthConfigResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "OAuth"
-        ]
-      }
-    },
-    "/oauth/callback": {
-      "post": {
-        "operationId": "callback",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthCallbackDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "OAuth"
-        ]
-      }
-    },
-    "/oauth/link": {
-      "post": {
-        "operationId": "link",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthCallbackDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "OAuth"
-        ]
-      }
-    },
-    "/oauth/unlink": {
-      "post": {
-        "operationId": "unlink",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "OAuth"
-        ]
-      }
-    },
     "/device-info": {
       "post": {
         "operationId": "createDeviceInfo",
@@ -2841,6 +2857,262 @@
           "name"
         ]
       },
+      "LoginCredentialDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "testuser@email.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "readOnly": true
+          },
+          "userId": {
+            "type": "string",
+            "readOnly": true
+          },
+          "userEmail": {
+            "type": "string",
+            "readOnly": true
+          },
+          "firstName": {
+            "type": "string",
+            "readOnly": true
+          },
+          "lastName": {
+            "type": "string",
+            "readOnly": true
+          },
+          "profileImagePath": {
+            "type": "string",
+            "readOnly": true
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "shouldChangePassword": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "accessToken",
+          "userId",
+          "userEmail",
+          "firstName",
+          "lastName",
+          "profileImagePath",
+          "isAdmin",
+          "shouldChangePassword"
+        ]
+      },
+      "SignUpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "testuser@email.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Admin"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "firstName",
+          "lastName"
+        ]
+      },
+      "AdminSignupResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName",
+          "createdAt"
+        ]
+      },
+      "ValidateAccessTokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "authStatus": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "authStatus"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "example": "password"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "password"
+          }
+        },
+        "required": [
+          "password",
+          "newPassword"
+        ]
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "oauthId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName",
+          "createdAt",
+          "profileImagePath",
+          "shouldChangePassword",
+          "isAdmin",
+          "oauthId"
+        ]
+      },
+      "LogoutResponseDto": {
+        "type": "object",
+        "properties": {
+          "successful": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "redirectUri": {
+            "type": "string",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "successful",
+          "redirectUri"
+        ]
+      },
+      "OAuthConfigDto": {
+        "type": "object",
+        "properties": {
+          "redirectUri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "redirectUri"
+        ]
+      },
+      "OAuthConfigResponseDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "passwordLoginEnabled": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          },
+          "buttonText": {
+            "type": "string"
+          },
+          "autoLaunch": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "passwordLoginEnabled"
+        ]
+      },
+      "OAuthCallbackDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
       "SharedLinkType": {
         "type": "string",
         "enum": [
@@ -3104,53 +3376,6 @@
           "duration",
           "webpPath",
           "tags"
-        ]
-      },
-      "UserResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "profileImagePath": {
-            "type": "string"
-          },
-          "shouldChangePassword": {
-            "type": "boolean"
-          },
-          "isAdmin": {
-            "type": "boolean"
-          },
-          "deletedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "oauthId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "firstName",
-          "lastName",
-          "createdAt",
-          "profileImagePath",
-          "shouldChangePassword",
-          "isAdmin",
-          "oauthId"
         ]
       },
       "AlbumResponseDto": {
@@ -4110,215 +4335,6 @@
           "albumId"
         ]
       },
-      "LoginCredentialDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "testuser@email.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "password"
-          }
-        },
-        "required": [
-          "email",
-          "password"
-        ]
-      },
-      "LoginResponseDto": {
-        "type": "object",
-        "properties": {
-          "accessToken": {
-            "type": "string",
-            "readOnly": true
-          },
-          "userId": {
-            "type": "string",
-            "readOnly": true
-          },
-          "userEmail": {
-            "type": "string",
-            "readOnly": true
-          },
-          "firstName": {
-            "type": "string",
-            "readOnly": true
-          },
-          "lastName": {
-            "type": "string",
-            "readOnly": true
-          },
-          "profileImagePath": {
-            "type": "string",
-            "readOnly": true
-          },
-          "isAdmin": {
-            "type": "boolean",
-            "readOnly": true
-          },
-          "shouldChangePassword": {
-            "type": "boolean",
-            "readOnly": true
-          }
-        },
-        "required": [
-          "accessToken",
-          "userId",
-          "userEmail",
-          "firstName",
-          "lastName",
-          "profileImagePath",
-          "isAdmin",
-          "shouldChangePassword"
-        ]
-      },
-      "SignUpDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "testuser@email.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "password"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "Admin"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Doe"
-          }
-        },
-        "required": [
-          "email",
-          "password",
-          "firstName",
-          "lastName"
-        ]
-      },
-      "AdminSignupResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "firstName",
-          "lastName",
-          "createdAt"
-        ]
-      },
-      "ValidateAccessTokenResponseDto": {
-        "type": "object",
-        "properties": {
-          "authStatus": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "authStatus"
-        ]
-      },
-      "ChangePasswordDto": {
-        "type": "object",
-        "properties": {
-          "password": {
-            "type": "string",
-            "example": "password"
-          },
-          "newPassword": {
-            "type": "string",
-            "example": "password"
-          }
-        },
-        "required": [
-          "password",
-          "newPassword"
-        ]
-      },
-      "LogoutResponseDto": {
-        "type": "object",
-        "properties": {
-          "successful": {
-            "type": "boolean",
-            "readOnly": true
-          },
-          "redirectUri": {
-            "type": "string",
-            "readOnly": true
-          }
-        },
-        "required": [
-          "successful",
-          "redirectUri"
-        ]
-      },
-      "OAuthConfigDto": {
-        "type": "object",
-        "properties": {
-          "redirectUri": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "redirectUri"
-        ]
-      },
-      "OAuthConfigResponseDto": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "passwordLoginEnabled": {
-            "type": "boolean"
-          },
-          "url": {
-            "type": "string"
-          },
-          "buttonText": {
-            "type": "string"
-          },
-          "autoLaunch": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled",
-          "passwordLoginEnabled"
-        ]
-      },
-      "OAuthCallbackDto": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "url"
-        ]
-      },
       "DeviceTypeEnum": {
         "type": "string",
         "enum": [
@@ -4439,16 +4455,12 @@
           },
           "patch": {
             "type": "integer"
-          },
-          "build": {
-            "type": "integer"
           }
         },
         "required": [
           "major",
           "minor",
-          "patch",
-          "build"
+          "patch"
         ]
       },
       "UsageByUserDto": {

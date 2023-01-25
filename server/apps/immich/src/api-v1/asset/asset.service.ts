@@ -54,6 +54,7 @@ import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
+import { AssetSearchDto } from './dto/asset-search.dto';
 
 const fileInfo = promisify(stat);
 
@@ -201,8 +202,8 @@ export class AssetService {
     return this._assetRepository.getAllByDeviceId(authUser.id, deviceId);
   }
 
-  public async getAllAssets(authUser: AuthUserDto): Promise<AssetResponseDto[]> {
-    const assets = await this._assetRepository.getAllByUserId(authUser.id);
+  public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
+    const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
 
     return assets.map((asset) => mapAsset(asset));
   }
@@ -239,7 +240,7 @@ export class AssetService {
   }
 
   public async downloadLibrary(user: AuthUserDto, dto: DownloadDto) {
-    const assets = await this._assetRepository.getAllByUserId(user.id, dto.skip);
+    const assets = await this._assetRepository.getAllByUserId(user.id, dto);
 
     return this.downloadService.downloadArchive(dto.name || `library`, assets);
   }

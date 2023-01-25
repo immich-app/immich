@@ -12,13 +12,17 @@ async function bootstrap() {
     logger: getLogLevels(),
   });
 
+  const listeningPort = Number(process.env.MACHINE_LEARNING_PORT) || 3002;
+
   const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis();
   app.useWebSocketAdapter(redisIoAdapter);
 
-  await app.listen(3002, () => {
+  await app.listen(listeningPort, () => {
     const envName = (process.env.NODE_ENV || 'development').toUpperCase();
-    logger.log(`Running Immich Microservices in ${envName} environment - version ${SERVER_VERSION}`);
+    logger.log(
+      `Running Immich Microservices in ${envName} environment - version ${SERVER_VERSION} - Listening on port: ${listeningPort}`,
+    );
   });
 }
 bootstrap();

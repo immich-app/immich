@@ -16,7 +16,6 @@ class ServerVersionReponseDto {
     required this.major,
     required this.minor,
     required this.patch_,
-    required this.build,
   });
 
   int major;
@@ -25,32 +24,27 @@ class ServerVersionReponseDto {
 
   int patch_;
 
-  int build;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerVersionReponseDto &&
      other.major == major &&
      other.minor == minor &&
-     other.patch_ == patch_ &&
-     other.build == build;
+     other.patch_ == patch_;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (major.hashCode) +
     (minor.hashCode) +
-    (patch_.hashCode) +
-    (build.hashCode);
+    (patch_.hashCode);
 
   @override
-  String toString() => 'ServerVersionReponseDto[major=$major, minor=$minor, patch_=$patch_, build=$build]';
+  String toString() => 'ServerVersionReponseDto[major=$major, minor=$minor, patch_=$patch_]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'major'] = this.major;
       json[r'minor'] = this.minor;
       json[r'patch'] = this.patch_;
-      json[r'build'] = this.build;
     return json;
   }
 
@@ -76,7 +70,6 @@ class ServerVersionReponseDto {
         major: mapValueOfType<int>(json, r'major')!,
         minor: mapValueOfType<int>(json, r'minor')!,
         patch_: mapValueOfType<int>(json, r'patch')!,
-        build: mapValueOfType<int>(json, r'build')!,
       );
     }
     return null;
@@ -129,7 +122,6 @@ class ServerVersionReponseDto {
     'major',
     'minor',
     'patch',
-    'build',
   };
 }
 

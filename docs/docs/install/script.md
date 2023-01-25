@@ -16,7 +16,7 @@ curl -o- https://raw.githubusercontent.com/immich-app/immich/main/install.sh | b
 
 The script will perform the following actions:
 
-1. Download [docker-compose.yml](https://github.com/immich-app/immich/blob/main/docker/docker-compose.yml), and the [.env](https://github.com/immich-app/immich/blob/main/docker/.env.example) file from the main branch of the [repository](https://github.com/immich-app/immich).
+1. Download [docker-compose.yml](https://github.com/immich-app/immich/blob/main/docker/docker-compose.yml), and the [.env](https://github.com/immich-app/immich/blob/main/docker/example.env) file from the main branch of the [repository](https://github.com/immich-app/immich).
 2. Populate the `.env` file with necessary information based on the current directory path.
 3. Start the containers.
 

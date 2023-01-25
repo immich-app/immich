@@ -11,7 +11,7 @@ import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
-import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
+import 'package:immich_mobile/modules/home/ui/home_page_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -197,33 +197,19 @@ class HomePage extends HookConsumerWidget {
         top: true,
         child: Stack(
           children: [
-            CustomScrollView(
-              slivers: [
-                if (!multiselectEnabled.state)
-                  ImmichSliverAppBar(
-                    onPopBack: reloadAllAsset,
+            ref.watch(assetProvider).renderList == null ||
+                    ref.watch(assetProvider).allAssets.isEmpty
+                ? buildLoadingIndicator()
+                : ImmichAssetGrid(
+                    renderList: ref.watch(assetProvider).renderList!,
+                    allAssets: ref.watch(assetProvider).allAssets,
+                    assetsPerRow: appSettingService
+                        .getSetting(AppSettingsEnum.tilesPerRow),
+                    showStorageIndicator: appSettingService
+                        .getSetting(AppSettingsEnum.storageIndicator),
+                    listener: selectionListener,
+                    selectionActive: selectionEnabledHook.value,
                   ),
-              ],
-            ),
-            Padding(
-              padding: EdgeInsets.only(
-                top: selectionEnabledHook.value ? 0 : 60,
-                bottom: 0.0,
-              ),
-              child: ref.watch(assetProvider).renderList == null ||
-                      ref.watch(assetProvider).allAssets.isEmpty
-                  ? buildLoadingIndicator()
-                  : ImmichAssetGrid(
-                      renderList: ref.watch(assetProvider).renderList!,
-                      allAssets: ref.watch(assetProvider).allAssets,
-                      assetsPerRow: appSettingService
-                          .getSetting(AppSettingsEnum.tilesPerRow),
-                      showStorageIndicator: appSettingService
-                          .getSetting(AppSettingsEnum.storageIndicator),
-                      listener: selectionListener,
-                      selectionActive: selectionEnabledHook.value,
-                    ),
-            ),
             if (selectionEnabledHook.value)
               ControlBottomAppBar(
                 onShare: onShareAssets,
@@ -238,6 +224,11 @@ class HomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
+      appBar: multiselectEnabled.state
+          ? null
+          : HomePageAppBar(
+              onPopBack: reloadAllAsset,
+            ),
       drawer: const ProfileDrawer(),
       body: buildBody(),
     );

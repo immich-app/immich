@@ -22,7 +22,7 @@
 
 <section
 	transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-	class="absolute top-0 left-0 w-full h-full py-[160px]  bg-immich-bg z-[9999]"
+	class="absolute top-0 left-0 w-full h-full py-[160px] bg-immich-bg dark:bg-immich-dark-bg z-[9999]"
 >
 	<ControlAppBar on:close-button-click={() => dispatch('close')}>
 		<svelte:fragment slot="leading">

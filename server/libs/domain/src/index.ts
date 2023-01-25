@@ -4,6 +4,7 @@ export * from './asset';
 export * from './auth';
 export * from './domain.module';
 export * from './job';
+export * from './oauth';
 export * from './share';
 export * from './system-config';
 export * from './tag';

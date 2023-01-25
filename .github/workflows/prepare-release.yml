@@ -1,0 +1,49 @@
+name: Prepare new release
+
+on:
+  workflow_dispatch:
+    inputs:
+      serverBump:
+        description: 'Bump server version'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+        - false
+        - minor
+        - patch
+      mobileBump:
+        description: 'Bump mobile build number'
+        required: false
+        type: boolean
+
+jobs:
+  tag_release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Bump version
+        run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
+          
+      - name: Commit and tag
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: Immich Release Bot
+          author_email: bot@immich.app
+          message: "Version ${{ env.IMMICH_VERSION }}"
+          tag: ${{ env.IMMICH_VERSION }}
+          push: true
+          
+      - name: Create draft release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          tag_name: ${{ env.IMMICH_VERSION }}
+          generate_release_notes: true
+          body_path: misc/release/notes.tmpl
+          files: |
+            docker/docker-compose.yml
+            docker/example.env

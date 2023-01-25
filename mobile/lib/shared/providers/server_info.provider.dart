@@ -13,7 +13,6 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
               major: 0,
               patch_: 0,
               minor: 0,
-              build: 0,
             ),
             isVersionMismatch: false,
             versionMismatchErrorMessage: "",

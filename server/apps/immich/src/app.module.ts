@@ -1,7 +1,6 @@
 import { immichAppConfig } from '@app/common/config';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AssetModule } from './api-v1/asset/asset.module';
-import { AuthModule } from './api-v1/auth/auth.module';
 import { ImmichJwtModule } from './modules/immich-jwt/immich-jwt.module';
 import { DeviceInfoModule } from './api-v1/device-info/device-info.module';
 import { ConfigModule } from '@nestjs/config';
@@ -13,11 +12,17 @@ import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { JobModule } from './api-v1/job/job.module';
-import { OAuthModule } from './api-v1/oauth/oauth.module';
 import { TagModule } from './api-v1/tag/tag.module';
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
-import { APIKeyController, ShareController, SystemConfigController, UserController } from './controllers';
+import {
+  APIKeyController,
+  AuthController,
+  OAuthController,
+  ShareController,
+  SystemConfigController,
+  UserController,
+} from './controllers';
 
 @Module({
   imports: [
@@ -28,9 +33,6 @@ import { APIKeyController, ShareController, SystemConfigController, UserControll
     }),
 
     AssetModule,
-
-    AuthModule,
-    OAuthModule,
 
     ImmichJwtModule,
 
@@ -56,6 +58,8 @@ import { APIKeyController, ShareController, SystemConfigController, UserControll
     //
     AppController,
     APIKeyController,
+    AuthController,
+    OAuthController,
     ShareController,
     SystemConfigController,
     UserController,
