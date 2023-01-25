@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -52,7 +53,10 @@ class HomePage extends HookConsumerWidget {
         });
 
         return () {
-          selectionEnabledHook.dispose();
+          // This does not work in tests
+          if (kReleaseMode) {
+            selectionEnabledHook.dispose();
+          }
         };
       },
       [],
@@ -162,28 +166,28 @@ class HomePage extends HookConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
                 child: Text(
-                  'Building the timeline',
+                  'home_page_building_timeline',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                     color: Theme.of(context).primaryColor,
                   ),
-                ),
+                ).tr(),
               ),
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 500),
                 opacity: tipOneOpacity.value,
-                child: const SizedBox(
+                child: SizedBox(
                   width: 250,
                   child: Padding(
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      'If this is your first time using the app, please make sure to choose a backup album(s) so that the timeline can populate photos and videos in the album(s).',
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: const Text(
+                      'home_page_first_time_notice',
                       textAlign: TextAlign.justify,
                       style: TextStyle(
                         fontSize: 12,
                       ),
-                    ),
+                    ).tr(),
                   ),
                 ),
               )
