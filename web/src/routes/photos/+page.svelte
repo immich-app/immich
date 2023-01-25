@@ -73,6 +73,27 @@
 		isShowAddMenu = !isShowAddMenu;
 	};
 
+	const handleAddToFavorites = () => {
+		isShowAddMenu = false;
+		
+                var cnt = 0;
+		for (const asset of $selectedAssets) {
+			if (!asset.isFavorite) {
+                                api.assetApi.updateAsset(asset.id, {
+				        isFavorite: true
+			        });
+                                cnt = cnt + 1;
+                        }
+		}
+
+		notificationController.show({
+			message: `Added ${cnt} to favorites`,
+			type: NotificationType.Info
+		})
+
+		assetInteractionStore.clearMultiselect();
+	}
+
 	const handleShowAlbumPicker = (shared: boolean) => {
 		isShowAddMenu = false;
 		isShowAlbumPicker = true;
@@ -163,6 +184,7 @@
 	{#if isShowAddMenu}
 		<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAddMenu = false)}>
 			<div class="flex flex-col rounded-lg ">
+				<MenuOption on:click={handleAddToFavorites} text="Add to Favorites" />
 				<MenuOption on:click={() => handleShowAlbumPicker(false)} text="Add to Album" />
 				<MenuOption on:click={() => handleShowAlbumPicker(true)} text="Add to Shared Album" />
 			</div>

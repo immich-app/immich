@@ -137,7 +137,7 @@
 				<div
 					transition:fade={{ duration: 200 }}
 					id="asset-count-info-detail"
-					class="w-32 rounded-lg p-4 shadow-lg bg-white absolute -right-[105px] top-0 z-[9999] flex place-items-center place-content-center"
+					class="w-32 rounded-lg p-4 shadow-lg bg-white absolute -right-[135px] top-0 z-[9999] flex place-items-center place-content-center"
 				>
 					{#await getFavoriteCount()}
 						<LoadingSpinner />
