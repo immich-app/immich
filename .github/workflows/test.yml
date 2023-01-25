@@ -55,7 +55,7 @@ jobs:
         run: flutter test
 
   mobile-integration-tests:
-    name: Run mobile e2e integration tests
+    name: Run mobile end-to-end integration tests
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
