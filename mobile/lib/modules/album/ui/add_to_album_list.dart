@@ -91,25 +91,26 @@ class AddToAlbumList extends HookConsumerWidget {
               ),
             ],
           ),
-          ExpansionTile(
-            title: const Text('Shared'),
-            leading: const Icon(Icons.group),
-            children: sharedAlbums.map((album) => 
+          if (sharedAlbums.isNotEmpty)
+            ExpansionTile(
+              title: const Text('Shared'),
+              leading: const Icon(Icons.group),
+              children: sharedAlbums.map((album) => 
+                AlbumThumbnailListTile(
+                  album: album,
+                  onTap: () => addToAlbum(album),
+                ),
+              ).toList(),
+            ),
+            const SizedBox(height: 12),
+            ... albums.map((album) =>
               AlbumThumbnailListTile(
                 album: album,
                 onTap: () => addToAlbum(album),
               ),
             ).toList(),
-          ),
-          const SizedBox(height: 12),
-          ... albums.map((album) =>
-            AlbumThumbnailListTile(
-              album: album,
-              onTap: () => addToAlbum(album),
-            ),
-          ).toList(),
-        ],
-      ),
+          ],
+        ),
     );
   }
 }
