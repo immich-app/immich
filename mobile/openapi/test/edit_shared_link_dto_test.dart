@@ -21,8 +21,8 @@ void main() {
       // TODO
     });
 
-    // String expiredAt
-    test('to test the property `expiredAt`', () async {
+    // String expiresAt
+    test('to test the property `expiresAt`', () async {
       // TODO
     });
 
@@ -38,11 +38,6 @@ void main() {
 
     // bool showExif
     test('to test the property `showExif`', () async {
-      // TODO
-    });
-
-    // bool isEditExpireTime
-    test('to test the property `isEditExpireTime`', () async {
       // TODO
     });
 
