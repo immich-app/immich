@@ -8,12 +8,11 @@ void main() async {
   await ImmichTestHelper.initialize();
 
   group("Login input validation test", () {
-    immichWidgetTest("Test leading/trailing whitespace", (tester) async {
-      await ImmichTestLoginHelper.waitForLoginScreen(tester);
-      await ImmichTestLoginHelper.acknowledgeNewServerVersion(tester);
+    immichWidgetTest("Test leading/trailing whitespace", (tester, helper) async {
+      await helper.loginHelper.waitForLoginScreen();
+      await helper.loginHelper.acknowledgeNewServerVersion();
 
-      await ImmichTestLoginHelper.enterLoginCredentials(
-        tester,
+      await helper.loginHelper.enterCredentials(
         email: " demo@immich.app"
       );
 
@@ -21,8 +20,7 @@ void main() async {
 
       expect(find.text("login_form_err_leading_whitespace".tr()), findsOneWidget);
 
-      await ImmichTestLoginHelper.enterLoginCredentials(
-          tester,
+      await helper.loginHelper.enterCredentials(
           email: "demo@immich.app "
       );
 
@@ -31,12 +29,11 @@ void main() async {
       expect(find.text("login_form_err_trailing_whitespace".tr()), findsOneWidget);
     });
 
-    immichWidgetTest("Test invalid email", (tester) async {
-      await ImmichTestLoginHelper.waitForLoginScreen(tester);
-      await ImmichTestLoginHelper.acknowledgeNewServerVersion(tester);
+    immichWidgetTest("Test invalid email", (tester, helper) async {
+      await helper.loginHelper.waitForLoginScreen();
+      await helper.loginHelper.acknowledgeNewServerVersion();
 
-      await ImmichTestLoginHelper.enterLoginCredentials(
-          tester,
+      await helper.loginHelper.enterCredentials(
           email: "demo.immich.app"
       );
 
