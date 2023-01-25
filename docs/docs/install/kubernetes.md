@@ -19,6 +19,14 @@ nameserver 192.168.1.1
 ```
 
 When you encounter this bug, it will cause the immich-microservices to crash on startup because it cannot download 
-the geocoder data. This can be solved in one of two ways: Either reconfigure your nodes to remove the searchdomain from 
-`resolv.conf`, or set the `DISABLE_REVERSE_GEOCODING` environment variable for Immich to `true` to disable the geocoder.
+the geocoder data. This can be solved in one of multiple ways: 
+* Either reconfigure your nodes to remove the searchdomain from `resolv.conf`
+* Set the `DISABLE_REVERSE_GEOCODING` environment variable for Immich to `true` to disable the geocoder
+* Change the `ndots` paramater for the immich-microservices container:
+```
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+```
 :::
