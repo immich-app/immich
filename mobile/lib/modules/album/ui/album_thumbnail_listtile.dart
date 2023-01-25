@@ -21,7 +21,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var box = Hive.box(userInfoBox);
-    var cardSize = MediaQuery.of(context).size.width / 4 - 18;
+    var cardSize = 68.0;
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     buildEmptyThumbnail() {
