@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_listtile.dart';
@@ -78,6 +79,8 @@ class AddToAlbumList extends HookConsumerWidget {
                 icon: const Icon(Icons.add),
                 label: const Text('New album'),
                 onPressed: () {
+                  ref.watch(assetSelectionProvider.notifier).removeAll();
+                  ref.watch(assetSelectionProvider.notifier).addNewAssets([asset]);
                   AutoRouter.of(context).push(
                     CreateAlbumRoute(
                       isSharedAlbum: false,
