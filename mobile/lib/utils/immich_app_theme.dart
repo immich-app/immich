@@ -51,17 +51,17 @@ ThemeData immichDarkTheme = ThemeData(
     scrimColor: Colors.white.withOpacity(0.1),
   ),
   textTheme: TextTheme(
-    headline1: const TextStyle(
+    displayLarge: const TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.bold,
       color: Color.fromARGB(255, 255, 255, 255),
     ),
-    headline2: const TextStyle(
+    displayMedium: const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
       color: Color.fromARGB(255, 148, 151, 155),
     ),
-    headline3: TextStyle(
+    displaySmall: TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.bold,
       color: immichDarkThemePrimaryColor,
@@ -80,6 +80,7 @@ ThemeData immichLightTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
   primarySwatch: Colors.indigo,
+  primaryColor: Colors.indigo,
   hintColor: Colors.indigo,
   fontFamily: 'WorkSans',
   scaffoldBackgroundColor: immichBackgroundColor,
@@ -105,17 +106,17 @@ ThemeData immichLightTheme = ThemeData(
     backgroundColor: immichBackgroundColor,
   ),
   textTheme: const TextTheme(
-    headline1: TextStyle(
+    displayLarge: TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.bold,
       color: Colors.indigo,
     ),
-    headline2: TextStyle(
+    displayMedium: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
       color: Colors.black87,
     ),
-    headline3: TextStyle(
+    displaySmall: TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.bold,
       color: Colors.indigo,

@@ -14,21 +14,23 @@ void main() async {
 
       await ImmichTestLoginHelper.enterLoginCredentials(
         tester,
-        email: " demo@immich.app"
+        email: " demo@immich.app",
       );
 
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text("login_form_err_leading_whitespace".tr()), findsOneWidget);
+      expect(
+          find.text("login_form_err_leading_whitespace".tr()), findsOneWidget);
 
       await ImmichTestLoginHelper.enterLoginCredentials(
-          tester,
-          email: "demo@immich.app "
+        tester,
+        email: "demo@immich.app ",
       );
 
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text("login_form_err_trailing_whitespace".tr()), findsOneWidget);
+      expect(
+          find.text("login_form_err_trailing_whitespace".tr()), findsOneWidget);
     });
 
     immichWidgetTest("Test invalid email", (tester) async {
@@ -36,14 +38,13 @@ void main() async {
       await ImmichTestLoginHelper.acknowledgeNewServerVersion(tester);
 
       await ImmichTestLoginHelper.enterLoginCredentials(
-          tester,
-          email: "demo.immich.app"
+        tester,
+        email: "demo.immich.app",
       );
 
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text("login_form_err_invalid_email".tr()), findsOneWidget);
     });
-
   });
 }
