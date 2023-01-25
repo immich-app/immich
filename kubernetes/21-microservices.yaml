@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: microservices
+  name: microservices
+  namespace: immich
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: microservices
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: microservices
+    spec:
+      containers:
+      - name: immich-microservices
+        image: altran1502/immich-server:release
+        imagePullPolicy: Always
+        command: ["/bin/sh", "./start-microservices.sh"]
+        envFrom:
+        - configMapRef:
+            name: default-env
+        volumeMounts:
+            - name: uploads
+              mountPath: /usr/src/app/upload
+      volumes:
+          - name: uploads
+            nfs:
+                server: NFS_SERVER
+                path: /some/path

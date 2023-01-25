@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: server
+  name: server
+  namespace: immich
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: server
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: server
+    spec:
+      containers:
+      - name: server
+        image: altran1502/immich-server:release
+        imagePullPolicy: Always
+        command: ["/bin/sh", "./start-server.sh"]
+        ports:
+          - containerPort: 3001
+        envFrom:
+        - configMapRef:
+            name: default-env
+        volumeMounts:
+            - name: uploads
+              mountPath: /usr/src/app/upload
+      volumes:
+          - name: uploads
+            nfs:
+                server: NFS_SERVER
+                path: /some/path
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server
+  namespace: immich
+spec:
+  selector:
+    run: server
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001

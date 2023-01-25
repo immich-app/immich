@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: machine-learning
+  name: machine-learning
+  namespace: immich
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: machine-learning
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: machine-learning
+    spec:
+      containers:
+      - name: machine-learning
+        image: altran1502/immich-machine-learning:release
+        imagePullPolicy: Always
+        command: ["/bin/sh", "./entrypoint.sh"]
+        ports:
+          - containerPort: 3003
+        envFrom:
+        - configMapRef:
+            name: default-env
+        volumeMounts:
+            - name: uploads
+              mountPath: /usr/src/app/upload
+      volumes:
+          - name: uploads
+            nfs:
+                server: NFS_SERVER
+                path: /some/path
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: machine-learning
+  namespace: immich
+spec:
+  selector:
+    run: machine-learning
+  ports:
+    - protocol: TCP
+      port: 3003
+      targetPort: 3003

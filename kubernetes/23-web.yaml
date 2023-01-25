@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: web
+  name: web
+  namespace: immich
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: web
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: web
+    spec:
+      containers:
+      - name: web
+        image: altran1502/immich-web:release
+        imagePullPolicy: Always
+        command: ["/bin/sh", "./entrypoint.sh"]
+        ports:
+          - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: default-env
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: immich
+spec:
+  selector:
+    run: web
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

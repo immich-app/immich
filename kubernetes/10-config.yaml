@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-env
+  namespace: immich
+data:
+  DB_HOSTNAME: "postgres.immich"
+  DB_USERNAME: "immich"
+  DB_PASSWORD: "PASSWORD HERE"
+  DB_DATABASE_NAME: "immich"
+  PG_DATA: "/var/lib/postgresql/data"
+  POSTGRES_PASSWORD: "PASSWORD HERE"
+  POSTGRES_USER: "immich"
+  POSTGRES_DB: "immich"
+  REDIS_HOSTNAME: "redis.immich"
+  REDIS_PORT: "6379"
+  JWT_SECRET: "SECRET HERE"
+  REVERSE_GEOCODING_PRECISION: "3"
+  IMMICH_WEB_URL: "http://web.immich:3000"
+  IMMICH_SERVER_URL: "http://server.immich:3001"
+  PUBLIC_IMMICH_SERVER_URL: "http://server.immich:3001"
+  IMMICH_MACHINE_LEARNING_URL: "http://machine-learning.immich:3003"
+  NODE_ENV: "production"

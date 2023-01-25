@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: immich
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  serviceName: "postgres"
+  replicas: 1
+  minReadySeconds: 10 # by default is 0
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: postgres
+          image: postgres:14
+          ports:
+            - containerPort: 5432
+          envFrom:
+          - configMapRef:
+              name: default-env
+          volumeMounts:
+              - name: pg
+                mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+  - metadata:
+      name: pg
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "pg-storage"
+      resources:
+        requests:
+          storage: 1Mi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pg
+spec:
+  storageClassName: pg-storage
+  capacity:
+    storage: 1Mi
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    server: NFS_SERVER
+    path: /some/path
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: immich
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

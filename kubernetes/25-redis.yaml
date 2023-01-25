@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: redis
+  name: redis
+  namespace: immich
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: redis
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.2
+        ports:
+          - containerPort: 6379
+        envFrom:
+        - configMapRef:
+            name: default-env
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: immich
+spec:
+  selector:
+    run: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379

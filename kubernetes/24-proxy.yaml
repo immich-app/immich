@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: proxy
+  name: proxy
+  namespace: immich
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: proxy
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: proxy
+    spec:
+      containers:
+      - name: immich-proxy
+        image: altran1502/immich-proxy:release
+        ports:
+          - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: default-env
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: proxy
+  namespace: immich
+spec:
+  selector:
+    run: proxy
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: immich-ingress
+  namespace: immich
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  tls:
+  - hosts:
+    - PUBLIC_FQDN_HERE
+    secretName: immich-public-cert
+  rules:
+  - host: PUBLIC_FQDN_HERE
+    http:
+     paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: proxy
+            port:
+              number: 8080
