@@ -1,10 +1,15 @@
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 
 class ImmichTestLoginHelper {
-  static Future<void> waitForLoginScreen(WidgetTester tester,
-      {int timeoutSeconds = 20}) async {
+  final WidgetTester tester;
+
+  ImmichTestLoginHelper(this.tester);
+
+  Future<void> waitForLoginScreen({int timeoutSeconds = 20}) async {
     for (var i = 0; i < timeoutSeconds; i++) {
       // Search for "IMMICH" test in the app bar
       final result = find.text("IMMICH");
@@ -21,7 +26,7 @@ class ImmichTestLoginHelper {
     fail("Timeout while waiting for login screen");
   }
 
-  static Future<bool> acknowledgeNewServerVersion(WidgetTester tester) async {
+  Future<bool> acknowledgeNewServerVersion() async {
     final result = find.text("Acknowledge");
     if (!tester.any(result)) {
       return false;
@@ -33,8 +38,7 @@ class ImmichTestLoginHelper {
     return true;
   }
 
-  static Future<void> enterLoginCredentials(
-    WidgetTester tester, {
+  Future<void> enterCredentials({
     String server = "",
     String email = "",
     String password = "",
@@ -50,6 +54,70 @@ class ImmichTestLoginHelper {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.enterText(loginForms.at(2), server);
 
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
   }
+
+  Future<void> enterCredentialsOf(LoginCredentials credentials) async {
+    await enterCredentials(
+      server: credentials.server,
+      email: credentials.email,
+      password: credentials.password,
+    );
+  }
+
+  Future<void> pressLoginButton() async {
+    final button = find.textContaining("login_form_button_text".tr());
+    await tester.tap(button);
+  }
+
+  Future<void> assertLoginSuccess({int timeoutSeconds = 15}) async {
+    for (var i = 0; i < timeoutSeconds * 2; i++) {
+      if (tester.any(find.text("home_page_building_timeline".tr()))) {
+        return;
+      }
+
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    fail("Login failed.");
+  }
+
+  Future<void> assertLoginFailed({int timeoutSeconds = 15}) async {
+    for (var i = 0; i < timeoutSeconds * 2; i++) {
+      if (tester.any(find.text("login_form_failed_login".tr()))) {
+        return;
+      }
+
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    fail("Timeout.");
+  }
+}
+
+enum LoginCredentials {
+  testInstance(
+    "https://flutter-int-test.preview.immich.app",
+    "demo@immich.app",
+    "demo",
+  ),
+
+  testInstanceButWithWrongPassword(
+    "https://flutter-int-test.preview.immich.app",
+    "demo@immich.app",
+    "wrong",
+  ),
+
+  wrongInstanceUrl(
+  "https://does-not-exist.preview.immich.app",
+  "demo@immich.app",
+  "demo",
+  );
+
+  const LoginCredentials(this.server, this.email, this.password);
+
+  final String server;
+  final String email;
+  final String password;
 }
