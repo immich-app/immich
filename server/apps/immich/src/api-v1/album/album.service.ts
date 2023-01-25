@@ -6,16 +6,14 @@ import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
-import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from './response-dto/album-response.dto';
+import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from '../asset/dto/download-library.dto';
-import { ShareCore } from '../share/share.core';
-import { ISharedLinkRepository } from '../share/shared-link.repository';
-import { mapSharedLink, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { ShareCore, ISharedLinkRepository, mapSharedLink, SharedLinkResponseDto, ICryptoRepository } from '@app/domain';
 import { CreateAlbumShareLinkDto } from './dto/create-album-shared-link.dto';
 import _ from 'lodash';
 
@@ -26,10 +24,11 @@ export class AlbumService {
 
   constructor(
     @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
-    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
+    @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     private downloadService: DownloadService,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
   ) {
-    this.shareCore = new ShareCore(sharedLinkRepository);
+    this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
   }
 
   private async _getAlbum({
@@ -102,7 +101,7 @@ export class AlbumService {
     const album = await this._getAlbum({ authUser, albumId });
 
     for (const sharedLink of album.sharedLinks) {
-      await this.shareCore.removeSharedLink(sharedLink.id, authUser.id);
+      await this.shareCore.remove(sharedLink.id, authUser.id);
     }
 
     await this._albumRepository.delete(album);
@@ -203,11 +202,11 @@ export class AlbumService {
   async createAlbumSharedLink(authUser: AuthUserDto, dto: CreateAlbumShareLinkDto): Promise<SharedLinkResponseDto> {
     const album = await this._getAlbum({ authUser, albumId: dto.albumId });
 
-    const sharedLink = await this.shareCore.createSharedLink(authUser.id, {
-      sharedType: SharedLinkType.ALBUM,
-      expiredAt: dto.expiredAt,
+    const sharedLink = await this.shareCore.create(authUser.id, {
+      type: SharedLinkType.ALBUM,
+      expiresAt: dto.expiresAt,
       allowUpload: dto.allowUpload,
-      album: album,
+      album,
       assets: [],
       description: dto.description,
       allowDownload: dto.allowDownload,

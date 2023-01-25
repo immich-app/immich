@@ -60,7 +60,7 @@
 			if (shareType === SharedLinkType.Album && album) {
 				const { data } = await api.albumApi.createAlbumSharedLink({
 					albumId: album.id,
-					expiredAt: expirationDate,
+					expiresAt: expirationDate,
 					allowUpload: isAllowUpload,
 					description: description,
 					allowDownload: isAllowDownload,
@@ -70,7 +70,7 @@
 			} else {
 				const { data } = await api.assetApi.createAssetsSharedLink({
 					assetIds: sharedAssets.map((a) => a.id),
-					expiredAt: expirationDate,
+					expiresAt: expirationDate,
 					allowUpload: isAllowUpload,
 					description: description,
 					allowDownload: isAllowDownload,
@@ -128,19 +128,14 @@
 			try {
 				const expirationTime = getExpirationTimeInMillisecond();
 				const currentTime = new Date().getTime();
-				let expirationDate = expirationTime
+				const expirationDate: string | null = expirationTime
 					? new Date(currentTime + expirationTime).toISOString()
-					: undefined;
-
-				if (expirationTime === 0) {
-					expirationDate = undefined;
-				}
+					: null;
 
 				await api.shareApi.editSharedLink(editingLink.id, {
-					description: description,
-					expiredAt: expirationDate,
+					description,
+					expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
 					allowUpload: isAllowUpload,
-					isEditExpireTime: shouldChangeExpirationTime,
 					allowDownload: isAllowDownload,
 					showExif: shouldShowExif
 				});

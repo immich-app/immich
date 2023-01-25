@@ -5,7 +5,7 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { mapTag, TagResponseDto } from './response-dto/tag-response.dto';
+import { mapTag, TagResponseDto } from '@app/domain';
 
 @Authenticated()
 @ApiTags('Tag')

@@ -19,7 +19,7 @@ export class CreateAssetsShareLinkDto {
 
   @IsString()
   @IsOptional()
-  expiredAt?: string;
+  expiresAt?: string;
 
   @IsBoolean()
   @IsOptional()

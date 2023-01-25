@@ -2,17 +2,19 @@ import { AlbumService } from './album.service';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity } from '@app/infra';
-import { AlbumResponseDto } from './response-dto/album-response.dto';
+import { AlbumResponseDto, ICryptoRepository } from '@app/domain';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
-import { ISharedLinkRepository } from '../share/shared-link.repository';
+import { ISharedLinkRepository } from '@app/domain';
+import { newCryptoRepositoryMock, newSharedLinkRepositoryMock } from '@app/domain/../test';
 
 describe('Album service', () => {
   let sut: AlbumService;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
 
   const authUser: AuthUserDto = Object.freeze({
     id: '1111',
@@ -129,22 +131,20 @@ describe('Album service', () => {
       getSharedWithUserAlbumCount: jest.fn(),
     };
 
-    sharedLinkRepositoryMock = {
-      create: jest.fn(),
-      remove: jest.fn(),
-      get: jest.fn(),
-      getById: jest.fn(),
-      getByKey: jest.fn(),
-      save: jest.fn(),
-      hasAssetAccess: jest.fn(),
-      getByIdAndUserId: jest.fn(),
-    };
+    sharedLinkRepositoryMock = newSharedLinkRepositoryMock();
 
     downloadServiceMock = {
       downloadArchive: jest.fn(),
     };
 
-    sut = new AlbumService(albumRepositoryMock, sharedLinkRepositoryMock, downloadServiceMock as DownloadService);
+    cryptoMock = newCryptoRepositoryMock();
+
+    sut = new AlbumService(
+      albumRepositoryMock,
+      sharedLinkRepositoryMock,
+      downloadServiceMock as DownloadService,
+      cryptoMock,
+    );
   });
 
   it('creates album', async () => {

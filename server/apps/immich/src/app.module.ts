@@ -13,13 +13,13 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { JobModule } from './api-v1/job/job.module';
 import { TagModule } from './api-v1/tag/tag.module';
-import { ShareModule } from './api-v1/share/share.module';
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
 import {
   APIKeyController,
   AuthController,
   OAuthController,
+  ShareController,
   SystemConfigController,
   UserController,
 } from './controllers';
@@ -53,8 +53,6 @@ import {
     JobModule,
 
     TagModule,
-
-    ShareModule,
   ],
   controllers: [
     //
@@ -62,6 +60,7 @@ import {
     APIKeyController,
     AuthController,
     OAuthController,
+    ShareController,
     SystemConfigController,
     UserController,
   ],

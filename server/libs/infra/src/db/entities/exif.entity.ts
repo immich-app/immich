@@ -7,7 +7,7 @@ import { AssetEntity } from './asset.entity';
 @Entity('exif')
 export class ExifEntity {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: number;
 
   @Index({ unique: true })
   @Column({ type: 'uuid' })
