@@ -101,7 +101,7 @@ export class AlbumService {
     const album = await this._getAlbum({ authUser, albumId });
 
     for (const sharedLink of album.sharedLinks) {
-      await this.shareCore.removeSharedLink(sharedLink.id, authUser.id);
+      await this.shareCore.remove(sharedLink.id, authUser.id);
     }
 
     await this._albumRepository.delete(album);
@@ -202,11 +202,11 @@ export class AlbumService {
   async createAlbumSharedLink(authUser: AuthUserDto, dto: CreateAlbumShareLinkDto): Promise<SharedLinkResponseDto> {
     const album = await this._getAlbum({ authUser, albumId: dto.albumId });
 
-    const sharedLink = await this.shareCore.createSharedLink(authUser.id, {
-      sharedType: SharedLinkType.ALBUM,
-      expiredAt: dto.expiredAt,
+    const sharedLink = await this.shareCore.create(authUser.id, {
+      type: SharedLinkType.ALBUM,
+      expiresAt: dto.expiresAt,
       allowUpload: dto.allowUpload,
-      album: album,
+      album,
       assets: [],
       description: dto.description,
       allowDownload: dto.allowDownload,

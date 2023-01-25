@@ -7,7 +7,7 @@ import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
 import { ISharedLinkRepository } from '@app/domain';
-import { newCryptoRepositoryMock } from '@app/domain/../test';
+import { newCryptoRepositoryMock, newSharedLinkRepositoryMock } from '@app/domain/../test';
 
 describe('Album service', () => {
   let sut: AlbumService;
@@ -131,16 +131,7 @@ describe('Album service', () => {
       getSharedWithUserAlbumCount: jest.fn(),
     };
 
-    sharedLinkRepositoryMock = {
-      create: jest.fn(),
-      remove: jest.fn(),
-      get: jest.fn(),
-      getById: jest.fn(),
-      getByKey: jest.fn(),
-      save: jest.fn(),
-      hasAssetAccess: jest.fn(),
-      getByIdAndUserId: jest.fn(),
-    };
+    sharedLinkRepositoryMock = newSharedLinkRepositoryMock();
 
     downloadServiceMock = {
       downloadArchive: jest.fn(),

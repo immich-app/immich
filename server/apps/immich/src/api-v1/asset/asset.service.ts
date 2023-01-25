@@ -669,23 +669,24 @@ export class AssetService {
       // Step 1: Check if asset is part of a public shared
       if (authUser.sharedLinkId) {
         const canAccess = await this.shareCore.hasAssetAccess(authUser.sharedLinkId, assetId);
-        if (!canAccess) {
-          throw new ForbiddenException();
-        }
-      }
-
-      // Step 2: Check if user owns asset
-      if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
-        continue;
-      }
-
-      // Avoid additional checks if ownership is required
-      if (!mustBeOwner) {
-        // Step 2: Check if asset is part of an album shared with me
-        if ((await this._albumRepository.getSharedWithUserAlbumCount(authUser.id, assetId)) > 0) {
+        if (canAccess) {
           continue;
         }
+      } else {
+        // Step 2: Check if user owns asset
+        if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
+          continue;
+        }
+
+        // Avoid additional checks if ownership is required
+        if (!mustBeOwner) {
+          // Step 2: Check if asset is part of an album shared with me
+          if ((await this._albumRepository.getSharedWithUserAlbumCount(authUser.id, assetId)) > 0) {
+            continue;
+          }
+        }
       }
+
       throw new ForbiddenException();
     }
   }
@@ -703,11 +704,11 @@ export class AssetService {
       assets.push(asset);
     }
 
-    const sharedLink = await this.shareCore.createSharedLink(authUser.id, {
-      sharedType: SharedLinkType.INDIVIDUAL,
-      expiredAt: dto.expiredAt,
+    const sharedLink = await this.shareCore.create(authUser.id, {
+      type: SharedLinkType.INDIVIDUAL,
+      expiresAt: dto.expiresAt,
       allowUpload: dto.allowUpload,
-      assets: assets,
+      assets,
       description: dto.description,
       allowDownload: dto.allowDownload,
       showExif: dto.showExif,
@@ -720,15 +721,19 @@ export class AssetService {
     authUser: AuthUserDto,
     dto: UpdateAssetsToSharedLinkDto,
   ): Promise<SharedLinkResponseDto> {
-    if (!authUser.sharedLinkId) throw new ForbiddenException();
+    if (!authUser.sharedLinkId) {
+      throw new ForbiddenException();
+    }
+
     const assets = [];
 
+    await this.checkAssetsAccess(authUser, dto.assetIds);
     for (const assetId of dto.assetIds) {
       const asset = await this._assetRepository.getById(assetId);
       assets.push(asset);
     }
 
-    const updatedLink = await this.shareCore.updateAssetsInSharedLink(authUser.sharedLinkId, assets);
+    const updatedLink = await this.shareCore.updateAssets(authUser.id, authUser.sharedLinkId, assets);
     return mapSharedLink(updatedLink);
   }
 

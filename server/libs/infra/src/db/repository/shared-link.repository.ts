@@ -1,49 +1,22 @@
 import { ISharedLinkRepository } from '@app/domain';
-import { SharedLinkEntity } from '../entities/shared-link.entity';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
-import { Injectable, Logger } from '@nestjs/common';
+import { SharedLinkEntity } from '../entities';
 
 @Injectable()
 export class SharedLinkRepository implements ISharedLinkRepository {
   readonly logger = new Logger(SharedLinkRepository.name);
   constructor(
     @InjectRepository(SharedLinkEntity)
-    private readonly sharedLinkRepository: Repository<SharedLinkEntity>,
+    private readonly repository: Repository<SharedLinkEntity>,
   ) {}
-  async getByIdAndUserId(id: string, userId: string): Promise<SharedLinkEntity | null> {
-    return await this.sharedLinkRepository.findOne({
-      where: {
-        userId: userId,
-        id: id,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-    });
-  }
 
-  async get(userId: string): Promise<SharedLinkEntity[]> {
-    return await this.sharedLinkRepository.find({
+  get(userId: string, id: string): Promise<SharedLinkEntity | null> {
+    return this.repository.findOne({
       where: {
-        userId: userId,
-      },
-      relations: ['assets', 'album'],
-      order: {
-        createdAt: 'DESC',
-      },
-    });
-  }
-
-  async create(payload: SharedLinkEntity): Promise<SharedLinkEntity> {
-    return await this.sharedLinkRepository.save(payload);
-  }
-
-  async getById(id: string): Promise<SharedLinkEntity | null> {
-    return await this.sharedLinkRepository.findOne({
-      where: {
-        id: id,
+        id,
+        userId,
       },
       relations: {
         assets: {
@@ -73,8 +46,23 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     });
   }
 
+  getAll(userId: string): Promise<SharedLinkEntity[]> {
+    return this.repository.find({
+      where: {
+        userId,
+      },
+      relations: {
+        assets: true,
+        album: true,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
   async getByKey(key: string): Promise<SharedLinkEntity | null> {
-    return await this.sharedLinkRepository.findOne({
+    return await this.repository.findOne({
       where: {
         key: Buffer.from(key, 'hex'),
       },
@@ -92,16 +80,21 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     });
   }
 
-  async remove(entity: SharedLinkEntity): Promise<SharedLinkEntity> {
-    return await this.sharedLinkRepository.remove(entity);
+  create(entity: Omit<SharedLinkEntity, 'id'>): Promise<SharedLinkEntity> {
+    return this.repository.save(entity);
+  }
+
+  remove(entity: SharedLinkEntity): Promise<SharedLinkEntity> {
+    return this.repository.remove(entity);
   }
 
   async save(entity: SharedLinkEntity): Promise<SharedLinkEntity> {
-    return await this.sharedLinkRepository.save(entity);
+    await this.repository.save(entity);
+    return this.repository.findOneOrFail({ where: { id: entity.id } });
   }
 
   async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
-    const count1 = await this.sharedLinkRepository.count({
+    const count1 = await this.repository.count({
       where: {
         id,
         assets: {
@@ -110,7 +103,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       },
     });
 
-    const count2 = await this.sharedLinkRepository.count({
+    const count2 = await this.repository.count({
       where: {
         id,
         album: {

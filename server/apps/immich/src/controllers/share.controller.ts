@@ -22,23 +22,23 @@ export class ShareController {
 
   @Authenticated()
   @Get(':id')
-  getSharedLinkById(@Param('id') id: string): Promise<SharedLinkResponseDto> {
-    return this.shareService.getById(id, true);
+  getSharedLinkById(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<SharedLinkResponseDto> {
+    return this.shareService.getById(authUser, id, true);
   }
 
   @Authenticated()
   @Delete(':id')
-  removeSharedLink(@Param('id') id: string, @GetAuthUser() authUser: AuthUserDto): Promise<string> {
-    return this.shareService.remove(id, authUser.id);
+  removeSharedLink(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<void> {
+    return this.shareService.remove(authUser, id);
   }
 
   @Authenticated()
   @Patch(':id')
   editSharedLink(
-    @Param('id') id: string,
     @GetAuthUser() authUser: AuthUserDto,
+    @Param('id') id: string,
     @Body(new ValidationPipe()) dto: EditSharedLinkDto,
   ): Promise<SharedLinkResponseDto> {
-    return this.shareService.edit(id, authUser, dto);
+    return this.shareService.edit(authUser, id, dto);
   }
 }

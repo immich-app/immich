@@ -29,7 +29,7 @@ export class ExifResponseDto {
 
 export function mapExif(entity: ExifEntity): ExifResponseDto {
   return {
-    id: parseInt(entity.id),
+    id: entity.id,
     make: entity.make,
     model: entity.model,
     imageName: entity.imageName,

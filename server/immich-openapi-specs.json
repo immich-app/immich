@@ -240,14 +240,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -3274,7 +3267,8 @@
             "type": "string"
           },
           "expiredAt": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "allowUpload": {
             "type": "boolean"
@@ -3283,9 +3277,6 @@
             "type": "boolean"
           },
           "showExif": {
-            "type": "boolean"
-          },
-          "isEditExpireTime": {
             "type": "boolean"
           }
         }
@@ -3917,7 +3908,7 @@
               "type": "string"
             }
           },
-          "expiredAt": {
+          "expiresAt": {
             "type": "string"
           },
           "allowUpload": {
@@ -4099,7 +4090,7 @@
           "albumId": {
             "type": "string"
           },
-          "expiredAt": {
+          "expiresAt": {
             "type": "string"
           },
           "allowUpload": {

@@ -1,95 +1,76 @@
-import { SharedLinkEntity } from '@app/infra/db/entities';
+import { AssetEntity, SharedLinkEntity } from '@app/infra/db/entities';
+import { BadRequestException, ForbiddenException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { AuthUserDto, ICryptoRepository } from '../auth';
 import { CreateSharedLinkDto } from './dto';
 import { ISharedLinkRepository } from './shared-link.repository';
-import { BadRequestException, ForbiddenException, InternalServerErrorException, Logger } from '@nestjs/common';
-import { AssetEntity } from '@app/infra/db/entities';
-import { EditSharedLinkDto } from './dto';
-import { AuthUserDto, ICryptoRepository } from '../auth';
 
 export class ShareCore {
   readonly logger = new Logger(ShareCore.name);
 
-  constructor(private sharedLinkRepository: ISharedLinkRepository, private cryptoRepository: ICryptoRepository) {}
+  constructor(private repository: ISharedLinkRepository, private cryptoRepository: ICryptoRepository) {}
 
-  async createSharedLink(userId: string, dto: CreateSharedLinkDto): Promise<SharedLinkEntity> {
+  getAll(userId: string): Promise<SharedLinkEntity[]> {
+    return this.repository.getAll(userId);
+  }
+
+  get(userId: string, id: string): Promise<SharedLinkEntity | null> {
+    return this.repository.get(userId, id);
+  }
+
+  getByKey(key: string): Promise<SharedLinkEntity | null> {
+    return this.repository.getByKey(key);
+  }
+
+  create(userId: string, dto: CreateSharedLinkDto): Promise<SharedLinkEntity> {
     try {
-      const sharedLink = new SharedLinkEntity();
-
-      sharedLink.key = Buffer.from(this.cryptoRepository.randomBytes(50));
-      sharedLink.description = dto.description;
-      sharedLink.userId = userId;
-      sharedLink.createdAt = new Date().toISOString();
-      sharedLink.expiresAt = dto.expiredAt ?? null;
-      sharedLink.type = dto.sharedType;
-      sharedLink.assets = dto.assets;
-      sharedLink.album = dto.album;
-      sharedLink.allowUpload = dto.allowUpload ?? false;
-      sharedLink.allowDownload = dto.allowDownload ?? true;
-      sharedLink.showExif = dto.showExif ?? true;
-
-      return this.sharedLinkRepository.create(sharedLink);
+      return this.repository.create({
+        key: Buffer.from(this.cryptoRepository.randomBytes(50)),
+        description: dto.description,
+        userId,
+        createdAt: new Date().toISOString(),
+        expiresAt: dto.expiresAt ?? null,
+        type: dto.type,
+        assets: dto.assets,
+        album: dto.album,
+        allowUpload: dto.allowUpload ?? false,
+        allowDownload: dto.allowDownload ?? true,
+        showExif: dto.showExif ?? true,
+      });
     } catch (error: any) {
       this.logger.error(error, error.stack);
       throw new InternalServerErrorException('failed to create shared link');
     }
   }
 
-  getSharedLinks(userId: string): Promise<SharedLinkEntity[]> {
-    return this.sharedLinkRepository.get(userId);
-  }
-
-  async removeSharedLink(id: string, userId: string): Promise<SharedLinkEntity> {
-    const link = await this.sharedLinkRepository.getByIdAndUserId(id, userId);
-
+  async save(userId: string, id: string, entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity> {
+    const link = await this.get(userId, id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
 
-    return await this.sharedLinkRepository.remove(link);
+    return this.repository.save({ ...entity, userId, id });
   }
 
-  getSharedLinkById(id: string): Promise<SharedLinkEntity | null> {
-    return this.sharedLinkRepository.getById(id);
-  }
-
-  getSharedLinkByKey(key: string): Promise<SharedLinkEntity | null> {
-    return this.sharedLinkRepository.getByKey(key);
-  }
-
-  async updateAssetsInSharedLink(sharedLinkId: string, assets: AssetEntity[]) {
-    const link = await this.getSharedLinkById(sharedLinkId);
+  async remove(userId: string, id: string): Promise<SharedLinkEntity> {
+    const link = await this.get(userId, id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
 
-    link.assets = assets;
-
-    return await this.sharedLinkRepository.save(link);
+    return this.repository.remove(link);
   }
 
-  async updateSharedLink(id: string, userId: string, dto: EditSharedLinkDto): Promise<SharedLinkEntity> {
-    const link = await this.sharedLinkRepository.getByIdAndUserId(id, userId);
-
+  async updateAssets(userId: string, id: string, assets: AssetEntity[]) {
+    const link = await this.get(userId, id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
 
-    link.description = dto.description ?? link.description;
-    link.allowUpload = dto.allowUpload ?? link.allowUpload;
-    link.allowDownload = dto.allowDownload ?? link.allowDownload;
-    link.showExif = dto.showExif ?? link.showExif;
-
-    if (dto.isEditExpireTime && dto.expiredAt) {
-      link.expiresAt = dto.expiredAt;
-    } else if (dto.isEditExpireTime && !dto.expiredAt) {
-      link.expiresAt = null;
-    }
-
-    return await this.sharedLinkRepository.save(link);
+    return this.repository.save({ ...link, assets });
   }
 
   async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
-    return this.sharedLinkRepository.hasAssetAccess(id, assetId);
+    return this.repository.hasAssetAccess(id, assetId);
   }
 
   checkDownloadAccess(user: AuthUserDto) {

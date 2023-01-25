@@ -29,7 +29,7 @@ export class ShareService {
   }
 
   async validate(key: string): Promise<AuthUserDto> {
-    const link = await this.shareCore.getSharedLinkByKey(key);
+    const link = await this.shareCore.getByKey(key);
     if (link) {
       if (!link.expiresAt || new Date(link.expiresAt) > new Date()) {
         const user = await this.userCore.get(link.userId);
@@ -51,7 +51,7 @@ export class ShareService {
   }
 
   async getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
-    const links = await this.shareCore.getSharedLinks(authUser.id);
+    const links = await this.shareCore.getAll(authUser.id);
     return links.map(mapSharedLink);
   }
 
@@ -65,11 +65,11 @@ export class ShareService {
       allowExif = authUser.isShowExif;
     }
 
-    return this.getById(authUser.sharedLinkId, allowExif);
+    return this.getById(authUser, authUser.sharedLinkId, allowExif);
   }
 
-  async getById(id: string, allowExif: boolean): Promise<SharedLinkResponseDto> {
-    const link = await this.shareCore.getSharedLinkById(id);
+  async getById(authUser: AuthUserDto, id: string, allowExif: boolean): Promise<SharedLinkResponseDto> {
+    const link = await this.shareCore.get(authUser.id, id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
@@ -81,21 +81,20 @@ export class ShareService {
     }
   }
 
-  async remove(id: string, userId: string): Promise<string> {
-    await this.shareCore.removeSharedLink(id, userId);
-    return id;
-  }
-
   async getByKey(key: string): Promise<SharedLinkResponseDto> {
-    const link = await this.shareCore.getSharedLinkByKey(key);
+    const link = await this.shareCore.getByKey(key);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
     return mapSharedLink(link);
   }
 
-  async edit(id: string, authUser: AuthUserDto, dto: EditSharedLinkDto) {
-    const link = await this.shareCore.updateSharedLink(id, authUser.id, dto);
+  async remove(authUser: AuthUserDto, id: string): Promise<void> {
+    await this.shareCore.remove(authUser.id, id);
+  }
+
+  async edit(authUser: AuthUserDto, id: string, dto: EditSharedLinkDto) {
+    const link = await this.shareCore.save(authUser.id, id, dto);
     return mapSharedLink(link);
   }
 }
