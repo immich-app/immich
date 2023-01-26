@@ -106,6 +106,7 @@ class AddToAlbumList extends HookConsumerWidget {
           if (sharedAlbums.isNotEmpty)
             ExpansionTile(
               title: const Text('Shared'),
+              tilePadding: const EdgeInsets.symmetric(horizontal: 10.0),
               leading: const Icon(Icons.group),
               children: sharedAlbums.map((album) => 
                 AlbumThumbnailListTile(
