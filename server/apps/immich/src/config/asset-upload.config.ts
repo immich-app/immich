@@ -32,6 +32,7 @@ export function customStorage(): StorageEngine {
 
       storage._handleFile(req, file, (error, response) => {
         if (error) {
+          hash.destroy();
           callback(error);
         } else {
           callback(null, { ...response, checksum: hash.digest() } as ImmichFile);
