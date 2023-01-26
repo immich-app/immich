@@ -10,6 +10,10 @@
 
 	let jobs: AllJobStatusResponseDto;
 	let timer: NodeJS.Timer;
+	let thumbnailGenerationIncludeAll = false;
+	let metadataExtractionIncludeAll = false;
+	let machineLearningIncludeAll = false;
+	let transcodeVideoIncludeAll = false;
 
 	const load = async () => {
 		const { data } = await api.jobApi.getAllJobsStatus();
@@ -25,11 +29,16 @@
 		clearInterval(timer);
 	});
 
-	const run = async (jobId: JobId, jobName: string, emptyMessage: string) => {
+	const run = async (
+		jobId: JobId,
+		jobName: string,
+		emptyMessage: string,
+		includeAllAssets: boolean
+	) => {
 		try {
 			const { data } = await api.jobApi.sendJobCommand(jobId, {
 				command: JobCommand.Start,
-				includeAllAssets: false
+				includeAllAssets
 			});
 
 			if (data) {
@@ -51,23 +60,42 @@
 		<JobTile
 			title={'Generate thumbnails'}
 			subtitle={'Regenerate JPEG and WebP thumbnails'}
+			bind:includeAllAssets={thumbnailGenerationIncludeAll}
 			on:click={() =>
-				run(JobId.ThumbnailGeneration, 'thumbnail generation', 'No missing thumbnails found')}
+				run(
+					JobId.ThumbnailGeneration,
+					'thumbnail generation',
+					'No missing thumbnails found',
+					thumbnailGenerationIncludeAll
+				)}
 			jobCounts={jobs[JobId.ThumbnailGeneration]}
 		/>
 
 		<JobTile
 			title={'EXTRACT METADATA'}
 			subtitle={'Extract metadata information i.e. GPS, resolution...etc'}
-			on:click={() => run(JobId.MetadataExtraction, 'extract EXIF', 'No missing EXIF found')}
+			bind:includeAllAssets={metadataExtractionIncludeAll}
+			on:click={() =>
+				run(
+					JobId.MetadataExtraction,
+					'extract EXIF',
+					'No missing EXIF found',
+					metadataExtractionIncludeAll
+				)}
 			jobCounts={jobs[JobId.MetadataExtraction]}
 		/>
 
 		<JobTile
 			title={'Detect objects'}
 			subtitle={'Run machine learning process to detect and classify objects'}
+			bind:includeAllAssets={machineLearningIncludeAll}
 			on:click={() =>
-				run(JobId.MachineLearning, 'object detection', 'No missing object detection found')}
+				run(
+					JobId.MachineLearning,
+					'object detection',
+					'No missing object detection found',
+					machineLearningIncludeAll
+				)}
 			jobCounts={jobs[JobId.MachineLearning]}
 		>
 			Note that some assets may not have any objects detected
@@ -76,11 +104,13 @@
 		<JobTile
 			title={'Video transcoding'}
 			subtitle={'Transcode videos not in the desired format'}
+			bind:includeAllAssets={transcodeVideoIncludeAll}
 			on:click={() =>
 				run(
 					JobId.VideoConversion,
 					'video conversion',
-					'No videos without an encoded version found'
+					'No videos without an encoded version found',
+					transcodeVideoIncludeAll
 				)}
 			jobCounts={jobs[JobId.VideoConversion]}
 		/>
@@ -93,7 +123,8 @@
 				run(
 					JobId.StorageTemplateMigration,
 					'storage template migration',
-					'All files have been migrated to the new storage template'
+					'All files have been migrated to the new storage template',
+					false
 				)}
 			jobCounts={jobs[JobId.StorageTemplateMigration]}
 		>

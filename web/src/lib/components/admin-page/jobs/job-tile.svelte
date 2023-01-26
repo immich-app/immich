@@ -9,7 +9,7 @@
 	export let subtitle: string;
 	export let buttonTitle = 'Run';
 	export let jobCounts: JobCounts;
-
+	export let includeAllAssets = false;
 	/**
 	 * Show options to run job on all assets of just missing ones
 	 */
@@ -19,7 +19,7 @@
 </script>
 
 <div class="flex justify-between rounded-xl bg-gray-100 dark:bg-immich-dark-gray">
-	<div id="job-info" class="w-[70%] p-9 ">
+	<div id="job-info" class="w-[70%] p-7">
 		<div class="flex flex-col gap-2">
 			<div class="text-xl font-semibold text-immich-primary dark:text-immich-dark-primary">
 				{title.toUpperCase()}
@@ -59,15 +59,7 @@
 			</div>
 		</div>
 	</div>
-
 	<div id="job-action" class="flex">
-		{#if showOptions}
-			<div class="flex flex-col">
-				<button class="h-1/2 px-4 text-sm bg-slate-300"> ALL </button>
-				<button class="h-1/2 px-4 text-sm text-gray-300"> MISSING </button>
-			</div>
-		{/if}
-
 		<button
 			class="h-full flex flex-col place-items-center place-content-center px-8 bg-immich-primary dark:bg-immich-dark-primary dark:text-black text-white rounded-tr-xl rounded-br-xl"
 		>
