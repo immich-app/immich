@@ -45,7 +45,7 @@ export class JobService {
     switch (name) {
       case QueueName.VIDEO_CONVERSION: {
         const assets = includeAllAssets
-          ? await this._assetRepository.getAll()
+          ? await this._assetRepository.getAll(true)
           : await this._assetRepository.getAssetWithNoEncodedVideo();
         for (const asset of assets) {
           await this.jobRepository.add({ name: JobName.VIDEO_CONVERSION, data: { asset } });
@@ -81,9 +81,15 @@ export class JobService {
 
         for (const asset of assets) {
           if (asset.type === AssetType.VIDEO) {
-            await this.jobRepository.add({ name: JobName.EXTRACT_VIDEO_METADATA, data: { asset, fileName: asset.id } });
+            await this.jobRepository.add({
+              name: JobName.EXTRACT_VIDEO_METADATA,
+              data: { asset, fileName: asset.exifInfo?.imageName ?? asset.id },
+            });
           } else {
-            await this.jobRepository.add({ name: JobName.EXIF_EXTRACTION, data: { asset, fileName: asset.id } });
+            await this.jobRepository.add({
+              name: JobName.EXIF_EXTRACTION,
+              data: { asset, fileName: asset.exifInfo?.imageName ?? asset.id },
+            });
           }
         }
         return assets.length;

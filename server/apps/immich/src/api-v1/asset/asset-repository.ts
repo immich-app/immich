@@ -29,7 +29,7 @@ export interface IAssetRepository {
     livePhotoAssetEntity?: AssetEntity,
   ): Promise<AssetEntity>;
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
-  getAll(): Promise<AssetEntity[]>;
+  getAll(videoOnly?: boolean): Promise<AssetEntity[]>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -62,8 +62,24 @@ export class AssetRepository implements IAssetRepository {
     @Inject(ITagRepository) private _tagRepository: ITagRepository,
   ) {}
 
-  async getAll(): Promise<AssetEntity[]> {
-    return await this.assetRepository.find();
+  async getAll(videoOnly?: boolean): Promise<AssetEntity[]> {
+    if (videoOnly) {
+      return await this.assetRepository.find({
+        where: { isVisible: true, type: AssetType.VIDEO },
+        relations: {
+          exifInfo: true,
+          smartInfo: true,
+        },
+      });
+    } else {
+      return await this.assetRepository.find({
+        where: { isVisible: true },
+        relations: {
+          exifInfo: true,
+          smartInfo: true,
+        },
+      });
+    }
   }
 
   async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
