@@ -5,7 +5,7 @@ import { IAssetRepository } from '../asset/asset-repository';
 import { AssetType } from '@app/infra';
 import { JobId } from './dto/get-job.dto';
 import { MACHINE_LEARNING_ENABLED } from '@app/common';
-import { basename, extname } from 'node:path';
+import { getFileNameWithoutExtension } from '../../utils/file-name.util';
 const jobIds = Object.values(JobId) as JobId[];
 
 @Injectable()
@@ -85,7 +85,7 @@ export class JobService {
               name: JobName.EXTRACT_VIDEO_METADATA,
               data: {
                 asset,
-                fileName: asset.exifInfo?.imageName ?? this.getFileNameWithoutExtension(asset.originalPath),
+                fileName: asset.exifInfo?.imageName ?? getFileNameWithoutExtension(asset.originalPath),
               },
             });
           } else {
@@ -93,7 +93,7 @@ export class JobService {
               name: JobName.EXIF_EXTRACTION,
               data: {
                 asset,
-                fileName: asset.exifInfo?.imageName ?? this.getFileNameWithoutExtension(asset.originalPath),
+                fileName: asset.exifInfo?.imageName ?? getFileNameWithoutExtension(asset.originalPath),
               },
             });
           }
@@ -137,9 +137,5 @@ export class JobService {
       default:
         throw new BadRequestException(`Invalid job id: ${jobId}`);
     }
-  }
-
-  private getFileNameWithoutExtension(path: string): string {
-    return basename(path, extname(path));
   }
 }

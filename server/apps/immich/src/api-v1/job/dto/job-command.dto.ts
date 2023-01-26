@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBoolean, IsIn, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class JobCommandDto {
   @IsNotEmpty()
@@ -11,5 +11,6 @@ export class JobCommandDto {
   command!: string;
 
   @IsOptional()
+  @IsBoolean()
   includeAllAssets = false;
 }
