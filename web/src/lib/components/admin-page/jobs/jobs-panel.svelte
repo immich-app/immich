@@ -46,19 +46,19 @@
 	};
 </script>
 
-<div class="flex flex-col gap-10">
+<div class="flex flex-col gap-5">
 	{#if jobs}
 		<JobTile
 			title={'Generate thumbnails'}
-			subtitle={'Regenerate missing thumbnail (JPEG, WEBP)'}
+			subtitle={'Regenerate JPEG and WebP thumbnails'}
 			on:click={() =>
 				run(JobId.ThumbnailGeneration, 'thumbnail generation', 'No missing thumbnails found')}
 			jobCounts={jobs[JobId.ThumbnailGeneration]}
 		/>
 
 		<JobTile
-			title={'Extract EXIF'}
-			subtitle={'Extract missing EXIF information'}
+			title={'EXTRACT METADATA'}
+			subtitle={'Extract metadata information i.e. GPS, resolution...etc'}
 			on:click={() => run(JobId.MetadataExtraction, 'extract EXIF', 'No missing EXIF found')}
 			jobCounts={jobs[JobId.MetadataExtraction]}
 		/>
@@ -70,12 +70,12 @@
 				run(JobId.MachineLearning, 'object detection', 'No missing object detection found')}
 			jobCounts={jobs[JobId.MachineLearning]}
 		>
-			Note that some assets may not have any objects detected, this is normal.
+			Note that some assets may not have any objects detected
 		</JobTile>
 
 		<JobTile
 			title={'Video transcoding'}
-			subtitle={'Run video transcoding process to transcode videos not in the desired format'}
+			subtitle={'Transcode videos not in the desired format'}
 			on:click={() =>
 				run(
 					JobId.VideoConversion,
@@ -87,6 +87,7 @@
 
 		<JobTile
 			title={'Storage migration'}
+			showOptions={false}
 			subtitle={''}
 			on:click={() =>
 				run(
