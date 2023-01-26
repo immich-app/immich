@@ -21,7 +21,7 @@ describe('Album', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [DomainModule.register({ imports: [InfraModule] }), AlbumModule, AppModule],
+        imports: [DomainModule.register({ imports: [InfraModule] }), AppModule],
       }).compile();
 
       app = moduleFixture.createNestApplication();
