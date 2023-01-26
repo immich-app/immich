@@ -57,7 +57,7 @@ class ImmichImage extends StatelessWidget {
         },
       );
     }
-    final String token = Hive.box(userInfoBox).get(accessTokenKey);
+    final String? token = Hive.box(userInfoBox).get(accessTokenKey);
     final String thumbnailRequestUrl = getThumbnailUrl(asset.remote!);
     return CachedNetworkImage(
       imageUrl: thumbnailRequestUrl,

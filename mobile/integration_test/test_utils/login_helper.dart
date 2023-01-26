@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 
 class ImmichTestLoginHelper {
   final WidgetTester tester;
@@ -92,6 +93,33 @@ class ImmichTestLoginHelper {
 
     fail("Timeout.");
   }
+
+  Future<void> waitForTimeline({int timeoutSeconds = 15}) async {
+    for (var i = 0; i < timeoutSeconds * 2; i++) {
+      if (tester.any(find.byType(ImmichAssetGrid))) {
+        return;
+      }
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    fail("Wait for timeline timed out.");
+  }
+
+  Future<void> loginTo(
+    LoginCredentials credentials, {
+    int timelineTimeoutSeconds = 15,
+  }) async {
+    // All required steps for the login process
+    await waitForLoginScreen();
+    await acknowledgeNewServerVersion();
+    await enterCredentialsOf(credentials);
+    await pressLoginButton();
+    await assertLoginSuccess();
+    // Wait for timeline
+    await waitForTimeline(timeoutSeconds: timelineTimeoutSeconds);
+    // Wait some more time
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+  }
 }
 
 enum LoginCredentials {
@@ -108,9 +136,9 @@ enum LoginCredentials {
   ),
 
   wrongInstanceUrl(
-  "https://does-not-exist.preview.immich.app",
-  "demo@immich.app",
-  "demo",
+    "https://does-not-exist.preview.immich.app",
+    "demo@immich.app",
+    "demo",
   );
 
   const LoginCredentials(this.server, this.email, this.password);

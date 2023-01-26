@@ -18,6 +18,7 @@ import 'package:immich_mobile/modules/login/models/authentication_state.model.da
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
+import 'package:immich_mobile/utils/environment.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -190,6 +191,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// the one that has all assets (`Recent` on Android, `Recents` on iOS)
   ///
   Future<void> _getBackupAlbumsInfo() async {
+
+    if (ImmichEnvironment.instance.testMode) {
+      // Don't run this method in test mode
+      return;
+    }
+
     Stopwatch stopwatch = Stopwatch()..start();
     // Get all albums on the device
     List<AvailableAlbum> availableAlbums = [];

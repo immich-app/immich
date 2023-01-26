@@ -1,12 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:immich_mobile/utils/environment.dart';
 import 'package:integration_test/integration_test.dart';
 // ignore: depend_on_referenced_packages
 import 'package:meta/meta.dart';
 import 'package:immich_mobile/main.dart' as app;
 
 import 'login_helper.dart';
+import 'navigation_helper.dart';
 
 class ImmichTestHelper {
   final WidgetTester tester;
@@ -14,10 +16,16 @@ class ImmichTestHelper {
   ImmichTestHelper(this.tester);
 
   ImmichTestLoginHelper? _loginHelper;
+  ImmichTestNavigationHelper? _navigationHelper;
 
   ImmichTestLoginHelper get loginHelper {
     _loginHelper ??= ImmichTestLoginHelper(tester);
     return _loginHelper!;
+  }
+
+  ImmichTestNavigationHelper get navigationHelper {
+    _navigationHelper ??= ImmichTestNavigationHelper(tester);
+    return _navigationHelper!;
   }
 
   static Future<IntegrationTestWidgetsFlutterBinding> initialize() async {
@@ -50,6 +58,8 @@ void immichWidgetTest(
   testWidgets(
     description,
     (widgetTester) async {
+      ImmichEnvironment.instance.testMode = true;
+
       await ImmichTestHelper.loadApp(widgetTester);
       await test(widgetTester, ImmichTestHelper(widgetTester));
     },
