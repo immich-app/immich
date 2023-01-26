@@ -1116,10 +1116,10 @@ export interface ExifResponseDto {
     'iso'?: number | null;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof ExifResponseDto
      */
-    'exposureTime'?: number | null;
+    'exposureTime'?: string | null;
     /**
      * 
      * @type {number}

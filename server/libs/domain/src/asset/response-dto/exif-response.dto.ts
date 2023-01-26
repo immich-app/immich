@@ -19,7 +19,7 @@ export class ExifResponseDto {
   fNumber?: number | null = null;
   focalLength?: number | null = null;
   iso?: number | null = null;
-  exposureTime?: number | null = null;
+  exposureTime?: string | null = null;
   latitude?: number | null = null;
   longitude?: number | null = null;
   city?: string | null = null;
