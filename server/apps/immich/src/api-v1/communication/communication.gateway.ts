@@ -27,7 +27,8 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
         client.disconnect();
       }
     } catch (e) {
-      // Logger.error(`Error establish websocket conneciton ${e}`, 'HandleWebscoketConnection');
+      client.emit('error', 'unauthorized');
+      client.disconnect();
     }
   }
 }
