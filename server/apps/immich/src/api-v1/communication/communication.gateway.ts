@@ -19,8 +19,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
   async handleConnection(client: Socket) {
     try {
       this.logger.log(`New websocket connection: ${client.id}`);
-
-      const user = await this.authService.validateSocket(client);
+      const user = await this.authService.validate(client.request.headers);
       if (user) {
         client.join(user.id);
       } else {

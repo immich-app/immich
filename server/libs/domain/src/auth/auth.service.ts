@@ -7,20 +7,20 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
-import { Socket } from 'socket.io';
 import { OAuthCore } from '../oauth/oauth.core';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore, UserResponseDto } from '../user';
-import { AuthType, jwtSecret } from './auth.constant';
+import { AuthType } from './auth.constant';
 import { AuthCore } from './auth.core';
 import { ICryptoRepository } from './crypto.repository';
-import { AuthUserDto, ChangePasswordDto, JwtPayloadDto, LoginCredentialDto, SignUpDto } from './dto';
+import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, SignUpDto } from './dto';
 import { AdminSignupResponseDto, LoginResponseDto, LogoutResponseDto, mapAdminSignupResponse } from './response-dto';
+import { IUserTokenRepository, UserTokenCore } from '@app/domain/user-token';
 
 @Injectable()
 export class AuthService {
+  private userTokenCore: UserTokenCore;
   private authCore: AuthCore;
   private oauthCore: OAuthCore;
   private userCore: UserCore;
@@ -31,9 +31,12 @@ export class AuthService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
-    @Inject(INITIAL_SYSTEM_CONFIG) initialConfig: SystemConfig,
+    @Inject(IUserTokenRepository) userTokenRepository: IUserTokenRepository,
+    @Inject(INITIAL_SYSTEM_CONFIG)
+    initialConfig: SystemConfig,
   ) {
-    this.authCore = new AuthCore(cryptoRepository, configRepository, initialConfig);
+    this.userTokenCore = new UserTokenCore(cryptoRepository, userTokenRepository);
+    this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
     this.userCore = new UserCore(userRepository);
   }
@@ -112,49 +115,21 @@ export class AuthService {
     }
   }
 
-  async validateSocket(client: Socket): Promise<UserResponseDto | null> {
-    try {
-      const headers = client.handshake.headers;
-      const accessToken =
-        this.extractJwtFromCookie(cookieParser.parse(headers.cookie || '')) || this.extractJwtFromHeader(headers);
-
-      if (accessToken) {
-        const payload = await this.cryptoRepository.verifyJwtAsync<JwtPayloadDto>(accessToken, { secret: jwtSecret });
-        if (payload?.userId && payload?.email) {
-          const user = await this.userCore.get(payload.userId);
-          if (user) {
-            return user;
-          }
-        }
-      }
-    } catch (e) {
-      return null;
-    }
-    return null;
-  }
-
-  async validatePayload(payload: JwtPayloadDto) {
-    const { userId } = payload;
-    const user = await this.userCore.get(userId);
-    if (!user) {
-      throw new UnauthorizedException('Failure to validate JWT payload');
+  public async validate(headers: IncomingHttpHeaders): Promise<UserResponseDto> {
+    const tokenValue = this.extractTokenFromHeader(headers);
+    if (!tokenValue) {
+      throw new UnauthorizedException('No access token provided in request');
     }
 
-    const authUser = new AuthUserDto();
-    authUser.id = user.id;
-    authUser.email = user.email;
-    authUser.isAdmin = user.isAdmin;
-    authUser.isPublicUser = false;
-    authUser.isAllowUpload = true;
+    const user = await this.userTokenCore.getUserByToken(tokenValue);
+    if (user) {
+      return user;
+    }
 
-    return authUser;
+    throw new UnauthorizedException('Invalid access token provided');
   }
 
-  extractJwtFromCookie(cookies: Record<string, string>) {
-    return this.authCore.extractJwtFromCookie(cookies);
-  }
-
-  extractJwtFromHeader(headers: IncomingHttpHeaders) {
-    return this.authCore.extractJwtFromHeader(headers);
+  extractTokenFromHeader(headers: IncomingHttpHeaders) {
+    return this.authCore.extractTokenFromHeader(headers);
   }
 }

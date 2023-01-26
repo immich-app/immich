@@ -1,6 +1,6 @@
 import { APIKeyEntity } from '@app/infra/db/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { authStub, entityStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
+import { authStub, userEntityStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
 import { ICryptoRepository } from '../auth';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyService } from './api-key.service';
@@ -10,7 +10,7 @@ const adminKey = Object.freeze({
   name: 'My Key',
   key: 'my-api-key (hashed)',
   userId: authStub.admin.id,
-  user: entityStub.admin,
+  user: userEntityStub.admin,
 } as APIKeyEntity);
 
 const token = Buffer.from('1:my-api-key', 'utf8').toString('base64');

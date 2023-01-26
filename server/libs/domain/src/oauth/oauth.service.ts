@@ -7,6 +7,7 @@ import { IUserRepository, UserCore, UserResponseDto } from '../user';
 import { OAuthCallbackDto, OAuthConfigDto } from './dto';
 import { OAuthCore } from './oauth.core';
 import { OAuthConfigResponseDto } from './response-dto';
+import { IUserTokenRepository } from '@app/domain/user-token';
 
 @Injectable()
 export class OAuthService {
@@ -20,9 +21,10 @@ export class OAuthService {
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
+    @Inject(IUserTokenRepository) userTokenRepository: IUserTokenRepository,
     @Inject(INITIAL_SYSTEM_CONFIG) initialConfig: SystemConfig,
   ) {
-    this.authCore = new AuthCore(cryptoRepository, configRepository, initialConfig);
+    this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
     this.userCore = new UserCore(userRepository);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
   }
