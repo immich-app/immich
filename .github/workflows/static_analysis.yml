@@ -21,6 +21,11 @@ jobs:
           channel: 'stable'
           flutter-version: '3.3.10'
 
+      - name: Install dependencies
+        run: dart pub get
+        working-directory: ./mobile
+
       - name: Run dart analyze
         run: dart analyze --fatal-infos
+        working-directory: ./mobile
 
