@@ -76,7 +76,7 @@
 	const handleAddToFavorites = () => {
 		isShowAddMenu = false;
 
-		var cnt = 0;
+		let cnt = 0;
 		for (const asset of $selectedAssets) {
 			if (!asset.isFavorite) {
 				api.assetApi.updateAsset(asset.id, {
