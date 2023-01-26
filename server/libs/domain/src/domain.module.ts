@@ -13,7 +13,6 @@ const providers: Provider[] = [
   SystemConfigService,
   UserService,
   ShareService,
-
   {
     provide: INITIAL_SYSTEM_CONFIG,
     inject: [SystemConfigService],

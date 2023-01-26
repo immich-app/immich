@@ -1,4 +1,11 @@
-import { AssetType, SharedLinkEntity, SharedLinkType, SystemConfig, UserEntity } from '@app/infra/db/entities';
+import {
+  AssetType,
+  SharedLinkEntity,
+  SharedLinkType,
+  SystemConfig,
+  UserEntity,
+  UserTokenEntity,
+} from '@app/infra/db/entities';
 import { AlbumResponseDto, AssetResponseDto, AuthUserDto, ExifResponseDto, SharedLinkResponseDto } from '../src';
 
 const today = new Date();
@@ -104,7 +111,7 @@ export const authStub = {
   }),
 };
 
-export const entityStub = {
+export const userEntityStub = {
   admin: Object.freeze<UserEntity>({
     ...authStub.admin,
     password: 'admin_password',
@@ -126,6 +133,16 @@ export const entityStub = {
     profileImagePath: '',
     createdAt: '2021-01-01',
     tags: [],
+  }),
+};
+
+export const userTokenEntityStub = {
+  userToken: Object.freeze<UserTokenEntity>({
+    id: 'token-id',
+    token: 'auth_token',
+    user: userEntityStub.user1,
+    createdAt: '2021-01-01',
+    updatedAt: '2021-01-01',
   }),
 };
 
@@ -204,7 +221,7 @@ export const systemConfigStub = {
 export const loginResponseStub = {
   user1oauth: {
     response: {
-      accessToken: 'signed-jwt',
+      accessToken: 'auth_token',
       userId: 'immich_id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
@@ -214,13 +231,13 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=signed-jwt; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_access_token=auth_token; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
       'immich_auth_type=oauth; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
     ],
   },
   user1password: {
     response: {
-      accessToken: 'signed-jwt',
+      accessToken: 'auth_token',
       userId: 'immich_id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
@@ -230,13 +247,13 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=signed-jwt; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_access_token=auth_token; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
       'immich_auth_type=password; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
     ],
   },
   user1insecure: {
     response: {
-      accessToken: 'signed-jwt',
+      accessToken: 'auth_token',
       userId: 'immich_id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
@@ -246,7 +263,7 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=signed-jwt; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_access_token=auth_token; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
       'immich_auth_type=password; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
     ],
   },

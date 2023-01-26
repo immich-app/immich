@@ -5,10 +5,10 @@ import { clearDb, getAuthUser, authCustom } from './test-utils';
 import { InfraModule } from '@app/infra';
 import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
-import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
 import { AuthService, DomainModule, UserService } from '@app/domain';
 import { DataSource } from 'typeorm';
+import { AppModule } from '../src/app.module';
 
 function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   return request(app.getHttpServer()).post('/album').send(data);
@@ -21,7 +21,7 @@ describe('Album', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [DomainModule.register({ imports: [InfraModule] }), AlbumModule, ImmichJwtModule],
+        imports: [DomainModule.register({ imports: [InfraModule] }), AlbumModule, AppModule],
       }).compile();
 
       app = moduleFixture.createNestApplication();
