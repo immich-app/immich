@@ -24,7 +24,7 @@ import {
 } from './controllers';
 import { PublicShareStrategy } from './modules/immich-auth/strategies/public-share.strategy';
 import { APIKeyStrategy } from './modules/immich-auth/strategies/api-key.strategy';
-import { AuthCookieStrategy } from './modules/immich-auth/strategies/auth-cookie-strategy';
+import { UserAuthStrategy } from './modules/immich-auth/strategies/user-auth-strategy.service';
 
 @Module({
   imports: [
@@ -64,7 +64,7 @@ import { AuthCookieStrategy } from './modules/immich-auth/strategies/auth-cookie
     SystemConfigController,
     UserController,
   ],
-  providers: [AuthCookieStrategy, APIKeyStrategy, PublicShareStrategy],
+  providers: [UserAuthStrategy, APIKeyStrategy, PublicShareStrategy],
 })
 export class AppModule implements NestModule {
   // TODO: check if consumer is needed or remove
