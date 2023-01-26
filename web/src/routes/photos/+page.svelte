@@ -82,6 +82,7 @@
 				api.assetApi.updateAsset(asset.id, {
 					isFavorite: true
 				});
+				assetStore.updateAsset(asset.id, true);
 				cnt = cnt + 1;
 			}
 		}
