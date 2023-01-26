@@ -235,7 +235,7 @@ class ServerEndpointInput extends StatelessWidget {
         labelText: 'login_form_endpoint_url'.tr(),
         border: const OutlineInputBorder(),
         hintText: 'login_form_endpoint_hint'.tr(),
-        errorMaxLines: 4
+        errorMaxLines: 4,
       ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
