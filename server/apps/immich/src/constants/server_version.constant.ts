@@ -15,3 +15,4 @@ export const serverVersion: IServerVersion = {
 };
 
 export const SERVER_VERSION = `${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`;
+export const IMMICH_IS_AWESOME = true;

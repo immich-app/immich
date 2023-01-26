@@ -17,7 +17,7 @@
 		<h1
 			class="text-4xl text-immich-primary dark:text-immich-dark-primary font-bold font-immich-title"
 		>
-			Welcome to IMMICH Web
+			Welcome to IMMICH Web :)
 		</h1>
 		<button
 			class="border px-4 py-4 rounded-md bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:border-immich-dark-gray hover:bg-immich-primary/75 text-white font-bold w-[200px]"
