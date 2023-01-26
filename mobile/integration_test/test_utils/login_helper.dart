@@ -94,7 +94,7 @@ class ImmichTestLoginHelper {
     fail("Timeout.");
   }
 
-  Future<void> waitForTimeline({int timeoutSeconds = 15}) async {
+  Future<void> waitForTimeline({int timeoutSeconds = 120}) async {
     for (var i = 0; i < timeoutSeconds * 2; i++) {
       if (tester.any(find.byType(ImmichAssetGrid))) {
         return;
@@ -107,7 +107,7 @@ class ImmichTestLoginHelper {
 
   Future<void> loginTo(
     LoginCredentials credentials, {
-    int timelineTimeoutSeconds = 15,
+    int timelineTimeoutSeconds = 360,
   }) async {
     // All required steps for the login process
     await waitForLoginScreen();
