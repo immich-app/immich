@@ -62,7 +62,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
           if (addAssetsResult != null &&
               addAssetsResult.successfullyAdded > 0) {
-            ref.refresh(sharedAlbumDetailProvider(albumId));
+            ref.invalidate(sharedAlbumDetailProvider(albumId));
           }
 
           ImmichLoadingOverlayController.appLoader.hide();
@@ -88,7 +88,7 @@ class AlbumViewerPage extends HookConsumerWidget {
             .addAdditionalUserToAlbum(sharedUserIds, albumId);
 
         if (isSuccess) {
-          ref.refresh(sharedAlbumDetailProvider(albumId));
+          ref.invalidate(sharedAlbumDetailProvider(albumId));
         }
 
         ImmichLoadingOverlayController.appLoader.hide();

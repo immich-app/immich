@@ -1,17 +1,14 @@
-
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
-import 'package:immich_mobile/main.dart';
 import 'package:integration_test/integration_test.dart';
+// ignore: depend_on_referenced_packages
 import 'package:meta/meta.dart';
 import 'package:immich_mobile/main.dart' as app;
 
 import 'login_helper.dart';
 
 class ImmichTestHelper {
-
   final WidgetTester tester;
 
   ImmichTestHelper(this.tester);
@@ -43,15 +40,19 @@ class ImmichTestHelper {
     await tester.pumpAndSettle();
     await EasyLocalization.ensureInitialized();
   }
-
 }
 
 @isTest
-void immichWidgetTest(String description, Future<void> Function(WidgetTester, ImmichTestHelper) test) {
-
-    testWidgets(description, (widgetTester) async {
-        await ImmichTestHelper.loadApp(widgetTester);
-        await test(widgetTester, ImmichTestHelper(widgetTester));
-    }, semanticsEnabled: false);
-
+void immichWidgetTest(
+  String description,
+  Future<void> Function(WidgetTester, ImmichTestHelper) test,
+) {
+  testWidgets(
+    description,
+    (widgetTester) async {
+      await ImmichTestHelper.loadApp(widgetTester);
+      await test(widgetTester, ImmichTestHelper(widgetTester));
+    },
+    semanticsEnabled: false,
+  );
 }

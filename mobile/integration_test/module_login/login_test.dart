@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 
 import '../test_utils/general_helper.dart';
@@ -12,8 +10,9 @@ void main() async {
     immichWidgetTest("Test correct credentials", (tester, helper) async {
       await helper.loginHelper.waitForLoginScreen();
       await helper.loginHelper.acknowledgeNewServerVersion();
-      await helper.loginHelper
-          .enterCredentialsOf(LoginCredentials.testInstance);
+      await helper.loginHelper.enterCredentialsOf(
+        LoginCredentials.testInstance,
+      );
       await helper.loginHelper.pressLoginButton();
       await helper.loginHelper.assertLoginSuccess();
     });
@@ -22,16 +21,19 @@ void main() async {
       await helper.loginHelper.waitForLoginScreen();
       await helper.loginHelper.acknowledgeNewServerVersion();
       await helper.loginHelper.enterCredentialsOf(
-          LoginCredentials.testInstanceButWithWrongPassword);
+        LoginCredentials.testInstanceButWithWrongPassword,
+      );
       await helper.loginHelper.pressLoginButton();
       await helper.loginHelper.assertLoginFailed();
     });
 
-    immichWidgetTest("Test login with wrong server URL", (tester, helper) async {
+    immichWidgetTest("Test login with wrong server URL",
+        (tester, helper) async {
       await helper.loginHelper.waitForLoginScreen();
       await helper.loginHelper.acknowledgeNewServerVersion();
       await helper.loginHelper.enterCredentialsOf(
-          LoginCredentials.wrongInstanceUrl);
+        LoginCredentials.wrongInstanceUrl,
+      );
       await helper.loginHelper.pressLoginButton();
       await helper.loginHelper.assertLoginFailed();
     });

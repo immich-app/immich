@@ -10,8 +10,10 @@ String getThumbnailUrl(
   return _getThumbnailUrl(asset.id, type: type);
 }
 
-String getThumbnailCacheKey(final AssetResponseDto asset,
-    {ThumbnailFormat type = ThumbnailFormat.WEBP}) {
+String getThumbnailCacheKey(
+  final AssetResponseDto asset, {
+  ThumbnailFormat type = ThumbnailFormat.WEBP,
+}) {
   return _getThumbnailCacheKey(asset.id, type);
 }
 
