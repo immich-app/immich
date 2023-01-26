@@ -1,10 +1,9 @@
-import { AlbumEntity, AssetEntity } from '@app/infra';
-import { SharedLinkType } from '@app/infra';
+import { AlbumEntity, AssetEntity, SharedLinkType } from '@app/infra/db/entities';
 
 export class CreateSharedLinkDto {
   description?: string;
-  expiredAt?: string;
-  sharedType!: SharedLinkType;
+  expiresAt?: string;
+  type!: SharedLinkType;
   assets!: AssetEntity[];
   album?: AlbumEntity;
   allowUpload?: boolean;

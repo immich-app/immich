@@ -7,7 +7,7 @@ export class CreateAlbumShareLinkDto {
 
   @IsString()
   @IsOptional()
-  expiredAt?: string;
+  expiresAt?: string;
 
   @IsBoolean()
   @IsOptional()

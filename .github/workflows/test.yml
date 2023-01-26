@@ -39,3 +39,56 @@ jobs:
 
       - name: Run tests
         run: cd web && npm ci && npm run check:all
+
+  mobile-unit-tests:
+    name: Run mobile unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.3.10'
+      - name: Run tests
+        working-directory: ./mobile
+        run: flutter test
+
+  mobile-integration-tests:
+    name: Run mobile end-to-end integration tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+      - name: Cache android SDK
+        uses: actions/cache@v3
+        id: android-sdk
+        with:
+          key: android-sdk
+          path: |
+            /usr/local/lib/android/
+            ~/.android
+      - name: Setup Android SDK
+        if: steps.android-sdk.outputs.cache-hit != 'true'
+        uses: android-actions/setup-android@v2
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.3.10'
+      - name: Run integration tests
+        uses: reactivecircus/android-emulator-runner@v2.27.0
+        with:
+          working-directory: ./mobile
+          api-level: 29
+          arch: x86_64
+          profile: pixel
+          target: default
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-linux-hw-accel: false
+          script: |
+            flutter pub get
+            flutter test integration_test

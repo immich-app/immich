@@ -1,11 +1,11 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsOptional } from 'class-validator';
 
 export class EditSharedLinkDto {
   @IsOptional()
   description?: string;
 
   @IsOptional()
-  expiredAt?: string;
+  expiresAt?: string | null;
 
   @IsOptional()
   allowUpload?: boolean;
@@ -15,7 +15,4 @@ export class EditSharedLinkDto {
 
   @IsOptional()
   showExif?: boolean;
-
-  @IsNotEmpty()
-  isEditExpireTime?: boolean;
 }

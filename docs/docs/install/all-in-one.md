@@ -1,5 +1,5 @@
 ---
-sidebar_position: 99
+sidebar_position: 70
 ---
 
 # All-In-One [Community]

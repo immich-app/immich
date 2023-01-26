@@ -434,6 +434,145 @@
         ]
       }
     },
+    "/share": {
+      "get": {
+        "operationId": "getAllSharedLinks",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SharedLinkResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/share/me": {
+      "get": {
+        "operationId": "getMySharedLink",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/share/{id}": {
+      "get": {
+        "operationId": "getSharedLinkById",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      },
+      "delete": {
+        "operationId": "removeSharedLink",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      },
+      "patch": {
+        "operationId": "editSharedLink",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditSharedLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "share"
+        ]
+      }
+    },
     "/system-config": {
       "get": {
         "operationId": "getConfig",
@@ -2366,152 +2505,6 @@
         ]
       }
     },
-    "/share": {
-      "get": {
-        "operationId": "getAllSharedLinks",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SharedLinkResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      }
-    },
-    "/share/me": {
-      "get": {
-        "operationId": "getMySharedLink",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      }
-    },
-    "/share/{id}": {
-      "get": {
-        "operationId": "getSharedLinkById",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      },
-      "delete": {
-        "operationId": "removeSharedLink",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      },
-      "patch": {
-        "operationId": "editSharedLink",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EditSharedLinkDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ]
-      }
-    },
     "/device-info": {
       "post": {
         "operationId": "createDeviceInfo",
@@ -3120,6 +3113,399 @@
           "url"
         ]
       },
+      "SharedLinkType": {
+        "type": "string",
+        "enum": [
+          "ALBUM",
+          "INDIVIDUAL"
+        ]
+      },
+      "AssetTypeEnum": {
+        "type": "string",
+        "enum": [
+          "IMAGE",
+          "VIDEO",
+          "AUDIO",
+          "OTHER"
+        ]
+      },
+      "ExifResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "nullable": true,
+            "default": null,
+            "format": "int64"
+          },
+          "fileSizeInByte": {
+            "type": "integer",
+            "nullable": true,
+            "default": null,
+            "format": "int64"
+          },
+          "make": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "model": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "imageName": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "exifImageWidth": {
+            "type": "number",
+            "nullable": true,
+            "default": null
+          },
+          "exifImageHeight": {
+            "type": "number",
+            "nullable": true,
+            "default": null
+          },
+          "orientation": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "dateTimeOriginal": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "modifyDate": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "lensModel": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "fNumber": {
+            "type": "number",
+            "nullable": true,
+            "default": null
+          },
+          "focalLength": {
+            "type": "number",
+            "nullable": true,
+            "default": null
+          },
+          "iso": {
+            "type": "number",
+            "nullable": true,
+            "default": null
+          },
+          "exposureTime": {
+            "type": "number",
+            "nullable": true,
+            "default": null
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true,
+            "default": null
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true,
+            "default": null
+          },
+          "city": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "state": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "country": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          }
+        }
+      },
+      "SmartInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tags": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "objects": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TagTypeEnum": {
+        "type": "string",
+        "enum": [
+          "OBJECT",
+          "FACE",
+          "CUSTOM"
+        ]
+      },
+      "TagResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TagTypeEnum"
+          },
+          "name": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "renameTagId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "userId"
+        ]
+      },
+      "AssetResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "id": {
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "originalPath": {
+            "type": "string"
+          },
+          "resizePath": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "modifiedAt": {
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "mimeType": {
+            "type": "string",
+            "nullable": true
+          },
+          "duration": {
+            "type": "string"
+          },
+          "webpPath": {
+            "type": "string",
+            "nullable": true
+          },
+          "encodedVideoPath": {
+            "type": "string",
+            "nullable": true
+          },
+          "exifInfo": {
+            "$ref": "#/components/schemas/ExifResponseDto"
+          },
+          "smartInfo": {
+            "$ref": "#/components/schemas/SmartInfoResponseDto"
+          },
+          "livePhotoVideoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagResponseDto"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "deviceAssetId",
+          "ownerId",
+          "deviceId",
+          "originalPath",
+          "resizePath",
+          "createdAt",
+          "modifiedAt",
+          "isFavorite",
+          "mimeType",
+          "duration",
+          "webpPath",
+          "tags"
+        ]
+      },
+      "AlbumResponseDto": {
+        "type": "object",
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "albumName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "albumThumbnailAssetId": {
+            "type": "string",
+            "nullable": true
+          },
+          "shared": {
+            "type": "boolean"
+          },
+          "sharedUsers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponseDto"
+            }
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          }
+        },
+        "required": [
+          "assetCount",
+          "id",
+          "ownerId",
+          "albumName",
+          "createdAt",
+          "albumThumbnailAssetId",
+          "shared",
+          "sharedUsers",
+          "assets"
+        ]
+      },
+      "SharedLinkResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/SharedLinkType"
+          },
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          },
+          "album": {
+            "$ref": "#/components/schemas/AlbumResponseDto"
+          },
+          "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "userId",
+          "key",
+          "createdAt",
+          "expiresAt",
+          "assets",
+          "allowUpload",
+          "allowDownload",
+          "showExif"
+        ]
+      },
+      "EditSharedLinkDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
+          }
+        }
+      },
       "SystemConfigFFmpegDto": {
         "type": "object",
         "properties": {
@@ -3506,264 +3892,6 @@
           "searchTerm"
         ]
       },
-      "AssetTypeEnum": {
-        "type": "string",
-        "enum": [
-          "IMAGE",
-          "VIDEO",
-          "AUDIO",
-          "OTHER"
-        ]
-      },
-      "ExifResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "nullable": true,
-            "default": null,
-            "format": "int64"
-          },
-          "fileSizeInByte": {
-            "type": "integer",
-            "nullable": true,
-            "default": null,
-            "format": "int64"
-          },
-          "make": {
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
-          "model": {
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
-          "imageName": {
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
-          "exifImageWidth": {
-            "type": "number",
-            "nullable": true,
-            "default": null
-          },
-          "exifImageHeight": {
-            "type": "number",
-            "nullable": true,
-            "default": null
-          },
-          "orientation": {
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
-          "dateTimeOriginal": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
-          "modifyDate": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
-          "lensModel": {
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
-          "fNumber": {
-            "type": "number",
-            "nullable": true,
-            "default": null
-          },
-          "focalLength": {
-            "type": "number",
-            "nullable": true,
-            "default": null
-          },
-          "iso": {
-            "type": "number",
-            "nullable": true,
-            "default": null
-          },
-          "exposureTime": {
-            "type": "number",
-            "nullable": true,
-            "default": null
-          },
-          "latitude": {
-            "type": "number",
-            "nullable": true,
-            "default": null
-          },
-          "longitude": {
-            "type": "number",
-            "nullable": true,
-            "default": null
-          },
-          "city": {
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
-          "state": {
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
-          "country": {
-            "type": "string",
-            "nullable": true,
-            "default": null
-          }
-        }
-      },
-      "SmartInfoResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "tags": {
-            "nullable": true,
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "objects": {
-            "nullable": true,
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "TagTypeEnum": {
-        "type": "string",
-        "enum": [
-          "OBJECT",
-          "FACE",
-          "CUSTOM"
-        ]
-      },
-      "TagResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
-          },
-          "name": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "renameTagId": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "type",
-          "name",
-          "userId"
-        ]
-      },
-      "AssetResponseDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
-          },
-          "id": {
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "ownerId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "originalPath": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "modifiedAt": {
-            "type": "string"
-          },
-          "isFavorite": {
-            "type": "boolean"
-          },
-          "mimeType": {
-            "type": "string",
-            "nullable": true
-          },
-          "duration": {
-            "type": "string"
-          },
-          "webpPath": {
-            "type": "string",
-            "nullable": true
-          },
-          "encodedVideoPath": {
-            "type": "string",
-            "nullable": true
-          },
-          "exifInfo": {
-            "$ref": "#/components/schemas/ExifResponseDto"
-          },
-          "smartInfo": {
-            "$ref": "#/components/schemas/SmartInfoResponseDto"
-          },
-          "livePhotoVideoId": {
-            "type": "string",
-            "nullable": true
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TagResponseDto"
-            }
-          }
-        },
-        "required": [
-          "type",
-          "id",
-          "deviceAssetId",
-          "ownerId",
-          "deviceId",
-          "originalPath",
-          "resizePath",
-          "createdAt",
-          "modifiedAt",
-          "isFavorite",
-          "mimeType",
-          "duration",
-          "webpPath",
-          "tags"
-        ]
-      },
       "TimeGroupEnum": {
         "type": "string",
         "enum": [
@@ -4005,7 +4133,7 @@
               "type": "string"
             }
           },
-          "expiredAt": {
+          "expiresAt": {
             "type": "string"
           },
           "allowUpload": {
@@ -4023,120 +4151,6 @@
         },
         "required": [
           "assetIds"
-        ]
-      },
-      "SharedLinkType": {
-        "type": "string",
-        "enum": [
-          "ALBUM",
-          "INDIVIDUAL"
-        ]
-      },
-      "AlbumResponseDto": {
-        "type": "object",
-        "properties": {
-          "assetCount": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "string"
-          },
-          "ownerId": {
-            "type": "string"
-          },
-          "albumName": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "albumThumbnailAssetId": {
-            "type": "string",
-            "nullable": true
-          },
-          "shared": {
-            "type": "boolean"
-          },
-          "sharedUsers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserResponseDto"
-            }
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            }
-          }
-        },
-        "required": [
-          "assetCount",
-          "id",
-          "ownerId",
-          "albumName",
-          "createdAt",
-          "albumThumbnailAssetId",
-          "shared",
-          "sharedUsers",
-          "assets"
-        ]
-      },
-      "SharedLinkResponseDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/SharedLinkType"
-          },
-          "id": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "key": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "expiresAt": {
-            "type": "string",
-            "nullable": true
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            }
-          },
-          "album": {
-            "$ref": "#/components/schemas/AlbumResponseDto"
-          },
-          "allowUpload": {
-            "type": "boolean"
-          },
-          "allowDownload": {
-            "type": "boolean"
-          },
-          "showExif": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "type",
-          "id",
-          "userId",
-          "key",
-          "createdAt",
-          "expiresAt",
-          "assets",
-          "allowUpload",
-          "allowDownload",
-          "showExif"
         ]
       },
       "UpdateAssetsToSharedLinkDto": {
@@ -4301,7 +4315,7 @@
           "albumId": {
             "type": "string"
           },
-          "expiredAt": {
+          "expiresAt": {
             "type": "string"
           },
           "allowUpload": {
@@ -4320,29 +4334,6 @@
         "required": [
           "albumId"
         ]
-      },
-      "EditSharedLinkDto": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "expiredAt": {
-            "type": "string"
-          },
-          "allowUpload": {
-            "type": "boolean"
-          },
-          "allowDownload": {
-            "type": "boolean"
-          },
-          "showExif": {
-            "type": "boolean"
-          },
-          "isEditExpireTime": {
-            "type": "boolean"
-          }
-        }
       },
       "DeviceTypeEnum": {
         "type": "string",

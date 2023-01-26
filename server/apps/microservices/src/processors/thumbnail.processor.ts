@@ -4,7 +4,7 @@ import { WebpGeneratorProcessor, JpegGeneratorProcessor, QueueName, JobName } fr
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
+import { mapAsset } from '@app/domain';
 import { Job, Queue } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'node:fs';

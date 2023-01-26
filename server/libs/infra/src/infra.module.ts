@@ -2,6 +2,7 @@ import {
   ICryptoRepository,
   IJobRepository,
   IKeyRepository,
+  ISharedLinkRepository,
   ISystemConfigRepository,
   IUserRepository,
   QueueName,
@@ -11,10 +12,10 @@ import { BullModule } from '@nestjs/bull';
 import { Global, Module, Provider } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APIKeyEntity, SharedLinkEntity, SystemConfigEntity, UserRepository } from './db';
+import { APIKeyRepository, SharedLinkRepository } from './db/repository';
 import { jwtConfig } from '@app/domain';
 import { CryptoRepository } from './auth/crypto.repository';
-import { APIKeyEntity, SystemConfigEntity, UserRepository } from './db';
-import { APIKeyRepository } from './db/repository';
 import { SystemConfigRepository } from './db/repository/system-config.repository';
 import { JobRepository } from './job';
 
@@ -22,6 +23,7 @@ const providers: Provider[] = [
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IJobRepository, useClass: JobRepository },
+  { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
   { provide: IUserRepository, useClass: UserRepository },
 ];
@@ -31,7 +33,7 @@ const providers: Provider[] = [
   imports: [
     JwtModule.register(jwtConfig),
     TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature([APIKeyEntity, UserEntity, SystemConfigEntity]),
+    TypeOrmModule.forFeature([APIKeyEntity, UserEntity, SharedLinkEntity, SystemConfigEntity]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',

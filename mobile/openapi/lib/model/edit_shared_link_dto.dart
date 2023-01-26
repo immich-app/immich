@@ -14,11 +14,10 @@ class EditSharedLinkDto {
   /// Returns a new [EditSharedLinkDto] instance.
   EditSharedLinkDto({
     this.description,
-    this.expiredAt,
+    this.expiresAt,
     this.allowUpload,
     this.allowDownload,
     this.showExif,
-    this.isEditExpireTime,
   });
 
   ///
@@ -29,13 +28,7 @@ class EditSharedLinkDto {
   ///
   String? description;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? expiredAt;
+  String? expiresAt;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -61,35 +54,25 @@ class EditSharedLinkDto {
   ///
   bool? showExif;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isEditExpireTime;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is EditSharedLinkDto &&
      other.description == description &&
-     other.expiredAt == expiredAt &&
+     other.expiresAt == expiresAt &&
      other.allowUpload == allowUpload &&
      other.allowDownload == allowDownload &&
-     other.showExif == showExif &&
-     other.isEditExpireTime == isEditExpireTime;
+     other.showExif == showExif;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (description == null ? 0 : description!.hashCode) +
-    (expiredAt == null ? 0 : expiredAt!.hashCode) +
+    (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
     (allowDownload == null ? 0 : allowDownload!.hashCode) +
-    (showExif == null ? 0 : showExif!.hashCode) +
-    (isEditExpireTime == null ? 0 : isEditExpireTime!.hashCode);
+    (showExif == null ? 0 : showExif!.hashCode);
 
   @override
-  String toString() => 'EditSharedLinkDto[description=$description, expiredAt=$expiredAt, allowUpload=$allowUpload, allowDownload=$allowDownload, showExif=$showExif, isEditExpireTime=$isEditExpireTime]';
+  String toString() => 'EditSharedLinkDto[description=$description, expiresAt=$expiresAt, allowUpload=$allowUpload, allowDownload=$allowDownload, showExif=$showExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -98,10 +81,10 @@ class EditSharedLinkDto {
     } else {
       // json[r'description'] = null;
     }
-    if (this.expiredAt != null) {
-      json[r'expiredAt'] = this.expiredAt;
+    if (this.expiresAt != null) {
+      json[r'expiresAt'] = this.expiresAt;
     } else {
-      // json[r'expiredAt'] = null;
+      // json[r'expiresAt'] = null;
     }
     if (this.allowUpload != null) {
       json[r'allowUpload'] = this.allowUpload;
@@ -117,11 +100,6 @@ class EditSharedLinkDto {
       json[r'showExif'] = this.showExif;
     } else {
       // json[r'showExif'] = null;
-    }
-    if (this.isEditExpireTime != null) {
-      json[r'isEditExpireTime'] = this.isEditExpireTime;
-    } else {
-      // json[r'isEditExpireTime'] = null;
     }
     return json;
   }
@@ -146,11 +124,10 @@ class EditSharedLinkDto {
 
       return EditSharedLinkDto(
         description: mapValueOfType<String>(json, r'description'),
-        expiredAt: mapValueOfType<String>(json, r'expiredAt'),
+        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
         showExif: mapValueOfType<bool>(json, r'showExif'),
-        isEditExpireTime: mapValueOfType<bool>(json, r'isEditExpireTime'),
       );
     }
     return null;

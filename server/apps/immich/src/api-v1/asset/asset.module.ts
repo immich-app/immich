@@ -11,7 +11,6 @@ import { DownloadModule } from '../../modules/download/download.module';
 import { TagModule } from '../tag/tag.module';
 import { AlbumModule } from '../album/album.module';
 import { StorageModule } from '@app/storage';
-import { ShareModule } from '../share/share.module';
 
 const ASSET_REPOSITORY_PROVIDER = {
   provide: IAssetRepository,
@@ -27,7 +26,6 @@ const ASSET_REPOSITORY_PROVIDER = {
     TagModule,
     StorageModule,
     forwardRef(() => AlbumModule),
-    ShareModule,
   ],
   controllers: [AssetController],
   providers: [AssetService, BackgroundTaskService, ASSET_REPOSITORY_PROVIDER],

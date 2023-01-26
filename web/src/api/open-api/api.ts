@@ -658,7 +658,7 @@ export interface CreateAlbumShareLinkDto {
      * @type {string}
      * @memberof CreateAlbumShareLinkDto
      */
-    'expiredAt'?: string;
+    'expiresAt'?: string;
     /**
      * 
      * @type {boolean}
@@ -701,7 +701,7 @@ export interface CreateAssetsShareLinkDto {
      * @type {string}
      * @memberof CreateAssetsShareLinkDto
      */
-    'expiredAt'?: string;
+    'expiresAt'?: string;
     /**
      * 
      * @type {boolean}
@@ -1004,7 +1004,7 @@ export interface EditSharedLinkDto {
      * @type {string}
      * @memberof EditSharedLinkDto
      */
-    'expiredAt'?: string;
+    'expiresAt'?: string | null;
     /**
      * 
      * @type {boolean}
@@ -1023,12 +1023,6 @@ export interface EditSharedLinkDto {
      * @memberof EditSharedLinkDto
      */
     'showExif'?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof EditSharedLinkDto
-     */
-    'isEditExpireTime'?: boolean;
 }
 /**
  * 
@@ -6745,7 +6739,7 @@ export const ShareApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async removeSharedLink(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+        async removeSharedLink(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.removeSharedLink(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6800,7 +6794,7 @@ export const ShareApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeSharedLink(id: string, options?: any): AxiosPromise<string> {
+        removeSharedLink(id: string, options?: any): AxiosPromise<void> {
             return localVarFp.removeSharedLink(id, options).then((request) => request(axios, basePath));
         },
     };

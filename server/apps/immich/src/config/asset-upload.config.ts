@@ -23,7 +23,7 @@ export const assetUploadOption: MulterOptions = {
 export const multerUtils = { fileFilter, filename, destination };
 
 function fileFilter(req: Request, file: any, cb: any) {
-  if (!req.user) {
+  if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
   // TODO: Create new API endpoint for mimetypes and use that here as browser's
@@ -43,15 +43,11 @@ function fileFilter(req: Request, file: any, cb: any) {
 }
 
 function destination(req: Request, file: Express.Multer.File, cb: any) {
-  if (!req.user) {
+  if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
 
   const user = req.user as AuthUserDto;
-
-  if (user.isPublicUser && !user.isAllowUpload) {
-    return cb(new UnauthorizedException());
-  }
 
   const basePath = APP_UPLOAD_LOCATION;
   const sanitizedDeviceId = sanitize(String(req.body['deviceId']));
@@ -66,7 +62,7 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
 }
 
 function filename(req: Request, file: Express.Multer.File, cb: any) {
-  if (!req.user) {
+  if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
 

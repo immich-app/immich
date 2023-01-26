@@ -6,7 +6,6 @@ import { AlbumEntity, AssetAlbumEntity, UserAlbumEntity } from '@app/infra';
 import { AlbumRepository, IAlbumRepository } from './album-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { AssetModule } from '../asset/asset.module';
-import { ShareModule } from '../share/share.module';
 
 const ALBUM_REPOSITORY_PROVIDER = {
   provide: IAlbumRepository,
@@ -18,7 +17,6 @@ const ALBUM_REPOSITORY_PROVIDER = {
     TypeOrmModule.forFeature([AlbumEntity, AssetAlbumEntity, UserAlbumEntity]),
     DownloadModule,
     forwardRef(() => AssetModule),
-    ShareModule,
   ],
   controllers: [AlbumController],
   providers: [AlbumService, ALBUM_REPOSITORY_PROVIDER],
