@@ -19,7 +19,7 @@ import {
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { assetUploadOption } from '../../config/asset-upload.config';
+import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -80,7 +80,7 @@ export class AssetController {
   })
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
-    @UploadedFiles() files: { assetData: Express.Multer.File[]; livePhotoData?: Express.Multer.File[] },
+    @UploadedFiles() files: { assetData: ImmichFile[]; livePhotoData?: ImmichFile[] },
     @Body(ValidationPipe) createAssetDto: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {

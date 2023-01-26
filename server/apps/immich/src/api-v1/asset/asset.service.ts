@@ -55,6 +55,7 @@ import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
+import { ImmichFile } from '../../config/asset-upload.config';
 
 const fileInfo = promisify(stat);
 
@@ -82,16 +83,16 @@ export class AssetService {
     authUser: AuthUserDto,
     createAssetDto: CreateAssetDto,
     res: Res,
-    originalAssetData: Express.Multer.File,
-    livePhotoAssetData?: Express.Multer.File,
+    originalAssetData: ImmichFile,
+    livePhotoAssetData?: ImmichFile,
   ) {
-    const checksum = await this.calculateChecksum(originalAssetData.path);
+    const checksum = originalAssetData.checksum;
     const isLivePhoto = livePhotoAssetData !== undefined;
     let livePhotoAssetEntity: AssetEntity | undefined;
 
     try {
       if (isLivePhoto) {
-        const livePhotoChecksum = await this.calculateChecksum(livePhotoAssetData.path);
+        const livePhotoChecksum = livePhotoAssetData.checksum;
         livePhotoAssetEntity = await this.createUserAsset(
           authUser,
           createAssetDto,
