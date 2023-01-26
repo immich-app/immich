@@ -5,7 +5,7 @@ import { IAssetRepository } from '../asset/asset-repository';
 import { AssetType } from '@app/infra';
 import { JobId } from './dto/get-job.dto';
 import { MACHINE_LEARNING_ENABLED } from '@app/common';
-
+import { basename, extname } from 'node:path';
 const jobIds = Object.values(JobId) as JobId[];
 
 @Injectable()
@@ -45,7 +45,7 @@ export class JobService {
     switch (name) {
       case QueueName.VIDEO_CONVERSION: {
         const assets = includeAllAssets
-          ? await this._assetRepository.getAll(true)
+          ? await this._assetRepository.getAllVideos()
           : await this._assetRepository.getAssetWithNoEncodedVideo();
         for (const asset of assets) {
           await this.jobRepository.add({ name: JobName.VIDEO_CONVERSION, data: { asset } });
@@ -83,12 +83,18 @@ export class JobService {
           if (asset.type === AssetType.VIDEO) {
             await this.jobRepository.add({
               name: JobName.EXTRACT_VIDEO_METADATA,
-              data: { asset, fileName: asset.exifInfo?.imageName ?? asset.id },
+              data: {
+                asset,
+                fileName: asset.exifInfo?.imageName ?? this.getFileNameWithoutExtension(asset.originalPath),
+              },
             });
           } else {
             await this.jobRepository.add({
               name: JobName.EXIF_EXTRACTION,
-              data: { asset, fileName: asset.exifInfo?.imageName ?? asset.id },
+              data: {
+                asset,
+                fileName: asset.exifInfo?.imageName ?? this.getFileNameWithoutExtension(asset.originalPath),
+              },
             });
           }
         }
@@ -131,5 +137,9 @@ export class JobService {
       default:
         throw new BadRequestException(`Invalid job id: ${jobId}`);
     }
+  }
+
+  private getFileNameWithoutExtension(path: string): string {
+    return basename(path, extname(path));
   }
 }
