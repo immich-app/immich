@@ -27,7 +27,10 @@
 
 	const run = async (jobId: JobId, jobName: string, emptyMessage: string) => {
 		try {
-			const { data } = await api.jobApi.sendJobCommand(jobId, { command: JobCommand.Start });
+			const { data } = await api.jobApi.sendJobCommand(jobId, {
+				command: JobCommand.Start,
+				includeAllAssets: false
+			});
 
 			if (data) {
 				notificationController.show({

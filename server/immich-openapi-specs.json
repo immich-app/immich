@@ -4610,10 +4610,15 @@
         "properties": {
           "command": {
             "$ref": "#/components/schemas/JobCommand"
+          },
+          "includeAllAssets": {
+            "type": "object",
+            "default": false
           }
         },
         "required": [
-          "command"
+          "command",
+          "includeAllAssets"
         ]
       }
     }
