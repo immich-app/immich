@@ -57,7 +57,7 @@ export class AuthCore {
     if (!user || !user.password) {
       return false;
     }
-    return this.cryptoRepository.compareSync(inputPassword, user.password);
+    return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
   }
 
   extractTokenFromHeader(headers: IncomingHttpHeaders) {

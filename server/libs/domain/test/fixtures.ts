@@ -221,7 +221,7 @@ export const systemConfigStub = {
 export const loginResponseStub = {
   user1oauth: {
     response: {
-      accessToken: 'auth_token',
+      accessToken: 'cmFuZG9tLWJ5dGVz',
       userId: 'immich_id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
@@ -231,13 +231,13 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=auth_token; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_access_token=cmFuZG9tLWJ5dGVz; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
       'immich_auth_type=oauth; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
     ],
   },
   user1password: {
     response: {
-      accessToken: 'auth_token',
+      accessToken: 'cmFuZG9tLWJ5dGVz',
       userId: 'immich_id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
@@ -247,13 +247,13 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=auth_token; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_access_token=cmFuZG9tLWJ5dGVz; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
       'immich_auth_type=password; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
     ],
   },
   user1insecure: {
     response: {
-      accessToken: 'auth_token',
+      accessToken: 'cmFuZG9tLWJ5dGVz',
       userId: 'immich_id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
@@ -263,7 +263,7 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=auth_token; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
       'immich_auth_type=password; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict;',
     ],
   },

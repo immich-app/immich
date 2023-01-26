@@ -25,7 +25,7 @@ export class OAuthService {
     @Inject(INITIAL_SYSTEM_CONFIG) initialConfig: SystemConfig,
   ) {
     this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
-    this.userCore = new UserCore(userRepository);
+    this.userCore = new UserCore(userRepository, cryptoRepository);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
   }
 

@@ -17,11 +17,12 @@ export class UserTokenCore {
 
   public async createToken(user: UserEntity): Promise<string> {
     const key = this.crypto.randomBytes(32).toString('base64').replace(/\W/g, '');
-    const entity = await this.repository.create({
-      token: await this.crypto.hash(key, 10),
+    const token = this.crypto.hashSha256(key);
+    await this.repository.create({
+      token,
       user,
     });
 
-    return entity.token;
+    return key;
   }
 }
