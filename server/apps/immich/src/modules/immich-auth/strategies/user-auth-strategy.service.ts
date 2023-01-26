@@ -7,7 +7,7 @@ import { Request } from 'express';
 export const AUTH_COOKIE_STRATEGY = 'auth-cookie';
 
 @Injectable()
-export class AuthCookieStrategy extends PassportStrategy(Strategy, AUTH_COOKIE_STRATEGY) {
+export class UserAuthStrategy extends PassportStrategy(Strategy, AUTH_COOKIE_STRATEGY) {
   constructor(private userService: UserService, private authService: AuthService) {
     super();
   }
