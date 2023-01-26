@@ -85,7 +85,6 @@ jobs:
           working-directory: ./mobile
           api-level: 29
           arch: x86_64
-          profile: pixel
           target: default
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-linux-hw-accel: false
