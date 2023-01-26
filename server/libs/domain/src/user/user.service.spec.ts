@@ -2,8 +2,8 @@ import { IUserRepository } from './user.repository';
 import { UserEntity } from '@app/infra/db/entities';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { when } from 'jest-when';
-import { newUserRepositoryMock } from '../../test';
-import { AuthUserDto } from '../auth';
+import { newCryptoRepositoryMock, newUserRepositoryMock } from '../../test';
+import { AuthUserDto, ICryptoRepository } from '../auth';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
@@ -77,10 +77,12 @@ const adminUserResponse = Object.freeze({
 describe(UserService.name, () => {
   let sut: UserService;
   let userRepositoryMock: jest.Mocked<IUserRepository>;
+  let cryptoRepositoryMock: jest.Mocked<ICryptoRepository>;
 
   beforeEach(async () => {
     userRepositoryMock = newUserRepositoryMock();
-    sut = new UserService(userRepositoryMock);
+    cryptoRepositoryMock = newCryptoRepositoryMock();
+    sut = new UserService(userRepositoryMock, cryptoRepositoryMock);
 
     when(userRepositoryMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);
     when(userRepositoryMock.get).calledWith(adminUser.id, undefined).mockResolvedValue(adminUser);

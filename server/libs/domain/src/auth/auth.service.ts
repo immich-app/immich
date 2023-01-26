@@ -38,7 +38,7 @@ export class AuthService {
     this.userTokenCore = new UserTokenCore(cryptoRepository, userTokenRepository);
     this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
-    this.userCore = new UserCore(userRepository);
+    this.userCore = new UserCore(userRepository, cryptoRepository);
   }
 
   public async login(
@@ -52,7 +52,7 @@ export class AuthService {
 
     let user = await this.userCore.getByEmail(loginCredential.email, true);
     if (user) {
-      const isAuthenticated = await this.authCore.validatePassword(loginCredential.password, user);
+      const isAuthenticated = this.authCore.validatePassword(loginCredential.password, user);
       if (!isAuthenticated) {
         user = null;
       }
@@ -84,7 +84,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const valid = await this.authCore.validatePassword(password, user);
+    const valid = this.authCore.validatePassword(password, user);
     if (!valid) {
       throw new BadRequestException('Wrong password');
     }
@@ -121,7 +121,8 @@ export class AuthService {
       throw new UnauthorizedException('No access token provided in request');
     }
 
-    const user = await this.userTokenCore.getUserByToken(tokenValue);
+    const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
+    const user = await this.userTokenCore.getUserByToken(hashedToken);
     if (user) {
       return user;
     }

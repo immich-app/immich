@@ -1,4 +1,3 @@
-import { UserEntity } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthUserDto, ICryptoRepository } from '../auth';
 import { IKeyRepository } from './api-key.repository';
@@ -14,14 +13,12 @@ export class APIKeyService {
   ) {}
 
   async create(authUser: AuthUserDto, dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
-    const key = this.crypto.randomBytes(24).toString('base64').replace(/\W/g, '');
+    const secret = this.crypto.randomBytes(32).toString('base64').replace(/\W/g, '');
     const entity = await this.repository.create({
-      key: await this.crypto.hash(key, 10),
+      key: this.crypto.hashSha256(secret),
       name: dto.name || 'API Key',
       userId: authUser.id,
     });
-
-    const secret = Buffer.from(`${entity.id}:${key}`, 'utf8').toString('base64');
 
     return { secret, apiKey: mapKey(entity) };
   }
@@ -60,22 +57,18 @@ export class APIKeyService {
   }
 
   async validate(token: string): Promise<AuthUserDto> {
-    const [_id, key] = Buffer.from(token, 'base64').toString('utf8').split(':');
-    const id = Number(_id);
+    const hashedToken = this.crypto.hashSha256(token);
+    const keyEntity = await this.repository.getKey(hashedToken);
+    if (keyEntity?.user) {
+      const user = keyEntity.user;
 
-    if (id && key) {
-      const entity = await this.repository.getKey(id);
-      if (entity?.user && entity?.key && this.crypto.compareSync(key, entity.key)) {
-        const user = entity.user as UserEntity;
-
-        return {
-          id: user.id,
-          email: user.email,
-          isAdmin: user.isAdmin,
-          isPublicUser: false,
-          isAllowUpload: true,
-        };
-      }
+      return {
+        id: user.id,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        isPublicUser: false,
+        isAllowUpload: true,
+      };
     }
 
     throw new UnauthorizedException('Invalid API Key');

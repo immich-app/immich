@@ -10,14 +10,14 @@ import {
 import { hash } from 'bcrypt';
 import { constants, createReadStream, ReadStream } from 'fs';
 import fs from 'fs/promises';
-import { AuthUserDto } from '../auth';
+import { AuthUserDto, ICryptoRepository } from '../auth';
 import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './dto/create-user.dto';
 import { IUserRepository, UserListFilter } from './user.repository';
 
 const SALT_ROUNDS = 10;
 
 export class UserCore {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(private userRepository: IUserRepository, private cryptoRepository: ICryptoRepository) {}
 
   async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
     if (!(authUser.isAdmin || authUser.id === id)) {
@@ -37,7 +37,7 @@ export class UserCore {
 
     try {
       if (dto.password) {
-        dto.password = await hash(dto.password, SALT_ROUNDS);
+        dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
       }
 
       return this.userRepository.update(id, dto);

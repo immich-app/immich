@@ -138,7 +138,7 @@ describe('AuthService', () => {
       await sut.changePassword(authUser, dto);
 
       expect(userMock.getByEmail).toHaveBeenCalledWith(authUser.email, true);
-      expect(cryptoMock.compareSync).toHaveBeenCalledWith('old-password', 'hash-password');
+      expect(cryptoMock.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
     });
 
     it('should throw when auth user email is not found', async () => {
@@ -154,7 +154,7 @@ describe('AuthService', () => {
       const authUser = { email: 'test@imimch.com' } as UserEntity;
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      cryptoMock.compareSync.mockReturnValue(false);
+      cryptoMock.compareBcrypt.mockReturnValue(false);
 
       userMock.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
@@ -167,8 +167,6 @@ describe('AuthService', () => {
     it('should throw when user does not have a password', async () => {
       const authUser = { email: 'test@imimch.com' } as UserEntity;
       const dto = { password: 'old-password', newPassword: 'new-password' };
-
-      cryptoMock.compareSync.mockReturnValue(false);
 
       userMock.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
