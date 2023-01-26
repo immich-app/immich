@@ -188,7 +188,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                             ),
                           ),
                           subtitle: Text(
-                            "ƒ/${exifInfo.fNumber}   1/${(1 / (exifInfo.exposureTime ?? 1)).toStringAsFixed(0)}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
+                            "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
                           ),
                         ),
                     ],

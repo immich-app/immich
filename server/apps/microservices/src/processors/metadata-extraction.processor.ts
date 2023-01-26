@@ -154,13 +154,6 @@ export class MetadataExtractionProcessor {
         return exifDate.toDate();
       };
 
-      const getExposureTimeDenominator = (exposureTime: string | undefined) => {
-        if (!exposureTime) return null;
-
-        const exposureTimeSplit = exposureTime.split('/');
-        return exposureTimeSplit.length === 2 ? parseInt(exposureTimeSplit[1]) : null;
-      };
-
       const createdAt = exifToDate(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.createdAt);
       const modifyDate = exifToDate(exifData?.ModifyDate ?? asset.modifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
@@ -174,7 +167,7 @@ export class MetadataExtractionProcessor {
       newExif.model = exifData?.Model || null;
       newExif.exifImageHeight = exifData?.ExifImageHeight || exifData?.ImageHeight || null;
       newExif.exifImageWidth = exifData?.ExifImageWidth || exifData?.ImageWidth || null;
-      newExif.exposureTime = getExposureTimeDenominator(exifData?.ExposureTime);
+      newExif.exposureTime = exifData?.ExposureTime || null;
       newExif.orientation = exifData?.Orientation?.toString() || null;
       newExif.dateTimeOriginal = createdAt;
       newExif.modifyDate = modifyDate;

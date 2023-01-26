@@ -3207,7 +3207,7 @@
             "default": null
           },
           "exposureTime": {
-            "type": "number",
+            "type": "string",
             "nullable": true,
             "default": null
           },
