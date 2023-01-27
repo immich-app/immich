@@ -22,7 +22,6 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
-import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
@@ -34,7 +33,7 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
 import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
+import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
@@ -60,7 +59,7 @@ import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config'
 @ApiTags('Asset')
 @Controller('asset')
 export class AssetController {
-  constructor(private assetService: AssetService, private backgroundTaskService: BackgroundTaskService) {}
+  constructor(private assetService: AssetService) {}
 
   @Authenticated({ isShared: true })
   @Post('upload')
@@ -285,37 +284,10 @@ export class AssetController {
   @Delete('/')
   async deleteAsset(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) assetIds: DeleteAssetDto,
+    @Body(ValidationPipe) dto: DeleteAssetDto,
   ): Promise<DeleteAssetResponseDto[]> {
-    await this.assetService.checkAssetsAccess(authUser, assetIds.ids, true);
-
-    const deleteAssetList: AssetResponseDto[] = [];
-
-    for (const id of assetIds.ids) {
-      const assets = await this.assetService.getAssetById(authUser, id);
-      if (!assets) {
-        continue;
-      }
-      deleteAssetList.push(assets);
-
-      if (assets.livePhotoVideoId) {
-        const livePhotoVideo = await this.assetService.getAssetById(authUser, assets.livePhotoVideoId);
-        if (livePhotoVideo) {
-          deleteAssetList.push(livePhotoVideo);
-          assetIds.ids = [...assetIds.ids, livePhotoVideo.id];
-        }
-      }
-    }
-
-    const result = await this.assetService.deleteAssetById(assetIds);
-
-    result.forEach((res) => {
-      deleteAssetList.filter((a) => a.id == res.id && res.status == DeleteAssetStatusEnum.SUCCESS);
-    });
-
-    await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList as any[]);
-
-    return result;
+    await this.assetService.checkAssetsAccess(authUser, dto.ids, true);
+    return this.assetService.deleteAll(authUser, dto);
   }
 
   /**

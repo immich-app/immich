@@ -23,7 +23,7 @@ import { SearchAssetDto } from './dto/search-asset.dto';
 import fs from 'fs/promises';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { AssetResponseDto, mapAsset, mapAssetWithoutExif } from '@app/domain';
+import { AssetResponseDto, JobName, mapAsset, mapAssetWithoutExif } from '@app/domain';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -42,7 +42,6 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { ICryptoRepository, IJobRepository } from '@app/domain';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
@@ -69,11 +68,10 @@ export class AssetService {
     @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-    private backgroundTaskService: BackgroundTaskService,
     private downloadService: DownloadService,
     storageService: StorageService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
-    @Inject(IJobRepository) jobRepository: IJobRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository, storageService);
@@ -103,12 +101,17 @@ export class AssetService {
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
       // clean up files
-      await this.backgroundTaskService.deleteFileOnDisk([
-        {
-          originalPath: file.originalPath,
-          resizePath: livePhotoFile?.originalPath || null,
-        } as AssetEntity,
-      ]);
+      await this.jobRepository.add({
+        name: JobName.DELETE_FILE_ON_DISK,
+        data: {
+          assets: [
+            {
+              originalPath: file.originalPath,
+              resizePath: livePhotoFile?.originalPath || null,
+            } as AssetEntity,
+          ],
+        },
+      });
 
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
@@ -442,26 +445,39 @@ export class AssetService {
     }
   }
 
-  public async deleteAssetById(assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
-    const result: DeleteAssetResponseDto[] = [];
+  public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+    const assets: AssetResponseDto[] = [];
 
-    const target = assetIds.ids;
-    for (const assetId of target) {
-      const res = await this.assetRepository.delete({
-        id: assetId,
-      });
-
-      if (res.affected) {
-        result.push({
-          id: assetId,
-          status: DeleteAssetStatusEnum.SUCCESS,
-        });
-      } else {
-        result.push({
-          id: assetId,
-          status: DeleteAssetStatusEnum.FAILED,
-        });
+    for (const id of dto.ids) {
+      const asset = await this.getAssetById(authUser, id);
+      if (!asset) {
+        continue;
       }
+
+      assets.push(asset);
+
+      if (asset.livePhotoVideoId) {
+        const livePhotoVideo = await this.getAssetById(authUser, asset.livePhotoVideoId);
+        if (livePhotoVideo) {
+          assets.push(livePhotoVideo);
+        }
+      }
+    }
+
+    const deleteQueue: AssetEntity[] = [];
+    const result: DeleteAssetResponseDto[] = [];
+    for (const asset of assets) {
+      const res = await this.assetRepository.delete({ id: asset.id });
+      if (res.affected) {
+        deleteQueue.push(asset as any);
+        result.push({ id: asset.id, status: DeleteAssetStatusEnum.SUCCESS });
+      } else {
+        result.push({ id: asset.id, status: DeleteAssetStatusEnum.FAILED });
+      }
+    }
+
+    if (deleteQueue.length > 0) {
+      await this.jobRepository.add({ name: JobName.DELETE_FILE_ON_DISK, data: { assets: deleteQueue } });
     }
 
     return result;
