@@ -32,6 +32,8 @@
 			owned: albumCount.owned
 		};
 	};
+
+	const locale = navigator.language;
 </script>
 
 <section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg">
@@ -63,8 +65,8 @@
 						<LoadingSpinner />
 					{:then data}
 						<div>
-							<p>{data.videos} Videos</p>
-							<p>{data.photos} Photos</p>
+							<p>{data.videos.toLocaleString(locale)} Videos</p>
+							<p>{data.photos.toLocaleString(locale)} Photos</p>
 						</div>
 					{/await}
 				</div>
@@ -94,7 +96,7 @@
 						<LoadingSpinner />
 					{:then data}
 						<div>
-							<p>{data.shared + data.sharing} Albums</p>
+							<p>{(data.shared + data.sharing).toLocaleString(locale)} Albums</p>
 						</div>
 					{/await}
 				</div>
@@ -128,7 +130,7 @@
 						<LoadingSpinner />
 					{:then data}
 						<div>
-							<p>{data.owned} Albums</p>
+							<p>{data.owned.toLocaleString(locale)} Albums</p>
 						</div>
 					{/await}
 				</div>
