@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/utils/environment.dart';
@@ -8,6 +9,7 @@ import 'package:meta/meta.dart';
 import 'package:immich_mobile/main.dart' as app;
 import 'package:path_provider/path_provider.dart';
 
+import 'asset_grid_helper.dart';
 import 'login_helper.dart';
 import 'navigation_helper.dart';
 
@@ -18,6 +20,7 @@ class ImmichTestHelper {
 
   ImmichTestLoginHelper? _loginHelper;
   ImmichTestNavigationHelper? _navigationHelper;
+  ImmichTestAssetGridHelper? _assetGridHelper;
 
   ImmichTestLoginHelper get loginHelper {
     _loginHelper ??= ImmichTestLoginHelper(tester);
@@ -27,6 +30,11 @@ class ImmichTestHelper {
   ImmichTestNavigationHelper get navigationHelper {
     _navigationHelper ??= ImmichTestNavigationHelper(tester);
     return _navigationHelper!;
+  }
+
+  ImmichTestAssetGridHelper get assetGridHelper {
+    _assetGridHelper ??= ImmichTestAssetGridHelper(tester);
+    return _assetGridHelper!;
   }
 
   static Future<IntegrationTestWidgetsFlutterBinding> initialize() async {
@@ -55,6 +63,22 @@ class ImmichTestHelper {
     // Post run tasks
     await tester.pumpAndSettle();
     await EasyLocalization.ensureInitialized();
+  }
+
+}
+
+class ImmichTestFindUtils {
+
+  static Finder findByWidgetKeyStartsWith(String expression) {
+    return find.byWidgetPredicate(
+            (widget) {
+          if (widget.key == null || widget.key is! ValueKey<String>) {
+            return false;
+          }
+          final keyValue = (widget.key as ValueKey<String>).value;
+          return keyValue.startsWith(expression);
+        }
+    );
   }
 
 }
