@@ -10,10 +10,6 @@
 
 	let jobs: AllJobStatusResponseDto;
 	let timer: NodeJS.Timer;
-	let thumbnailGenerationIncludeAll = false;
-	let metadataExtractionIncludeAll = false;
-	let machineLearningIncludeAll = false;
-	let transcodeVideoIncludeAll = false;
 
 	const load = async () => {
 		const { data } = await api.jobApi.getAllJobsStatus();
@@ -22,7 +18,7 @@
 
 	onMount(async () => {
 		await load();
-		timer = setInterval(async () => await load(), 5_000);
+		timer = setInterval(async () => await load(), 1_000);
 	});
 
 	onDestroy(() => {
@@ -43,7 +39,7 @@
 
 			if (data) {
 				notificationController.show({
-					message: `Started ${jobName}`,
+					message: includeAllAssets ? `Started ${jobName} for all assets` : `Started ${jobName}`,
 					type: NotificationType.Info
 				});
 			} else {
@@ -55,47 +51,47 @@
 	};
 </script>
 
-<div class="flex flex-col gap-5">
+<div class="flex flex-col gap-7">
 	{#if jobs}
 		<JobTile
 			title={'Generate thumbnails'}
 			subtitle={'Regenerate JPEG and WebP thumbnails'}
-			bind:includeAllAssets={thumbnailGenerationIncludeAll}
-			on:click={() =>
+			on:click={(e) => {
+				const { includeAllAssets } = e.detail;
+
 				run(
 					JobId.ThumbnailGeneration,
 					'thumbnail generation',
 					'No missing thumbnails found',
-					thumbnailGenerationIncludeAll
-				)}
+					includeAllAssets
+				);
+			}}
 			jobCounts={jobs[JobId.ThumbnailGeneration]}
 		/>
 
 		<JobTile
 			title={'EXTRACT METADATA'}
 			subtitle={'Extract metadata information i.e. GPS, resolution...etc'}
-			bind:includeAllAssets={metadataExtractionIncludeAll}
-			on:click={() =>
-				run(
-					JobId.MetadataExtraction,
-					'extract EXIF',
-					'No missing EXIF found',
-					metadataExtractionIncludeAll
-				)}
+			on:click={(e) => {
+				const { includeAllAssets } = e.detail;
+				run(JobId.MetadataExtraction, 'extract EXIF', 'No missing EXIF found', includeAllAssets);
+			}}
 			jobCounts={jobs[JobId.MetadataExtraction]}
 		/>
 
 		<JobTile
 			title={'Detect objects'}
 			subtitle={'Run machine learning process to detect and classify objects'}
-			bind:includeAllAssets={machineLearningIncludeAll}
-			on:click={() =>
+			on:click={(e) => {
+				const { includeAllAssets } = e.detail;
+
 				run(
 					JobId.MachineLearning,
 					'object detection',
 					'No missing object detection found',
-					machineLearningIncludeAll
-				)}
+					includeAllAssets
+				);
+			}}
 			jobCounts={jobs[JobId.MachineLearning]}
 		>
 			Note that some assets may not have any objects detected
@@ -104,14 +100,15 @@
 		<JobTile
 			title={'Video transcoding'}
 			subtitle={'Transcode videos not in the desired format'}
-			bind:includeAllAssets={transcodeVideoIncludeAll}
-			on:click={() =>
+			on:click={(e) => {
+				const { includeAllAssets } = e.detail;
 				run(
 					JobId.VideoConversion,
 					'video conversion',
 					'No videos without an encoded version found',
-					transcodeVideoIncludeAll
-				)}
+					includeAllAssets
+				);
+			}}
 			jobCounts={jobs[JobId.VideoConversion]}
 		/>
 

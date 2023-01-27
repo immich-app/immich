@@ -101,4 +101,8 @@ input:focus-visible {
 		display: none;
 		scrollbar-width: none;
 	}
+
+	.job-play-button {
+		@apply h-full flex flex-col place-items-center place-content-center px-8 text-gray-600 transition-all hover:bg-immich-primary hover:text-white dark:text-gray-200 dark:hover:bg-immich-dark-primary text-sm dark:hover:text-black w-[120px] gap-2;
+	}
 }
