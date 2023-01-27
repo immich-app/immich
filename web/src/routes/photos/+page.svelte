@@ -123,6 +123,8 @@
 		assetInteractionStore.clearMultiselect();
 		isShowCreateSharedLinkModal = false;
 	};
+
+	const locale = navigator.language;
 </script>
 
 <section>
@@ -134,7 +136,7 @@
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {$selectedAssets.size}
+					Selected {$selectedAssets.size.toLocaleString(locale)}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
