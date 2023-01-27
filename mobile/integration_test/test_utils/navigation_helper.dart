@@ -8,18 +8,45 @@ class ImmichTestNavigationHelper {
   ImmichTestNavigationHelper(this.tester);
 
   Future<void> openSideDrawer() async {
-    final drawerButton = find.byType(IconButton);
-    expect(drawerButton, findsWidgets);
+    await _tapFirstOf(IconButton);
+  }
 
-    await tester.tap(drawerButton.first);
-    await tester.pumpAndSettle();
+  Future<void> closeSideDrawer() async {
+    final ScaffoldState state = tester.firstState(find.byType(Scaffold));
+    state.openDrawer();
+
+    await tester.pump(const Duration(seconds: 1));
+  }
+
+  Future<void> openSettings() async {
+    await _clickOnByI18nText("profile_drawer_settings");
+  }
+
+  Future<void> closeSettings() async {
+    await _tapFirstOf(IconButton);
+  }
+
+  Future<void> openPhotoGridSettings() async {
+    await _clickOnByI18nText("asset_list_settings_title");
   }
 
   Future<void> clickSignOutButton() async {
-    final drawerButton = find.textContaining("profile_drawer_sign_out".tr());
-    expect(drawerButton, findsOneWidget);
+    await _clickOnByI18nText("profile_drawer_sign_out");
+  }
 
-    await tester.tap(drawerButton.first);
+  Future<void> _clickOnByI18nText(String text) async {
+    final btn = find.textContaining(text.tr());
+    expect(btn, findsOneWidget);
+
+    await tester.tap(btn);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> _tapFirstOf(Type type) async {
+    final widget = find.byType(IconButton);
+    expect(widget, findsWidgets);
+
+    await tester.tap(widget.first);
     await tester.pumpAndSettle();
   }
 }
