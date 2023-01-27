@@ -11,7 +11,7 @@ export class JobService {
     this.uploadCore = new JobUploadCore(repository);
   }
 
-  async handleUploadedVideo(job: Job<IAssetUploadedJob>) {
+  async handleUploadedAsset(job: Job<IAssetUploadedJob>) {
     await this.uploadCore.handleAsset(job);
   }
 }

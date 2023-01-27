@@ -29,9 +29,9 @@ describe(JobService.name, () => {
     sut = new JobService(jobMock);
   });
 
-  describe('handleUploadedVideo', () => {
+  describe('handleUploadedAsset', () => {
     it('should process a video', async () => {
-      await expect(sut.handleUploadedVideo(jobStub.upload.video)).resolves.toBeUndefined();
+      await expect(sut.handleUploadedAsset(jobStub.upload.video)).resolves.toBeUndefined();
 
       expect(jobMock.add).toHaveBeenCalledTimes(3);
       expect(jobMock.add.mock.calls).toEqual([
@@ -42,7 +42,7 @@ describe(JobService.name, () => {
     });
 
     it('should process an image', async () => {
-      await sut.handleUploadedVideo(jobStub.upload.image);
+      await sut.handleUploadedAsset(jobStub.upload.image);
 
       expect(jobMock.add).toHaveBeenCalledTimes(2);
       expect(jobMock.add.mock.calls).toEqual([

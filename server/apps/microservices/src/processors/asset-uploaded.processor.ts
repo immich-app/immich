@@ -8,6 +8,6 @@ export class AssetUploadedProcessor {
 
   @Process(JobName.ASSET_UPLOADED)
   async processUploadedVideo(job: Job<IAssetUploadedJob>) {
-    await this.jobService.handleUploadedVideo(job);
+    await this.jobService.handleUploadedAsset(job);
   }
 }
