@@ -24,7 +24,7 @@ import {
 } from './controllers';
 import { PublicShareStrategy } from './modules/immich-auth/strategies/public-share.strategy';
 import { APIKeyStrategy } from './modules/immich-auth/strategies/api-key.strategy';
-import { UserAuthStrategy } from './modules/immich-auth/strategies/user-auth-strategy.service';
+import { UserAuthStrategy } from './modules/immich-auth/strategies/user-auth.strategy';
 
 @Module({
   imports: [

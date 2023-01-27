@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { AuthService, UserResponseDto, UserService } from '@app/domain';
+import { AuthService, AuthUserDto, UserService } from '@app/domain';
 import { Strategy } from 'passport-custom';
 import { Request } from 'express';
 
@@ -12,7 +12,7 @@ export class UserAuthStrategy extends PassportStrategy(Strategy, AUTH_COOKIE_STR
     super();
   }
 
-  async validate(request: Request): Promise<UserResponseDto> {
+  async validate(request: Request): Promise<AuthUserDto> {
     const authUser = await this.authService.validate(request.headers);
 
     if (!authUser) {
