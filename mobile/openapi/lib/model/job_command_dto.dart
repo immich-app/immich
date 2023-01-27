@@ -14,25 +14,31 @@ class JobCommandDto {
   /// Returns a new [JobCommandDto] instance.
   JobCommandDto({
     required this.command,
+    required this.includeAllAssets,
   });
 
   JobCommand command;
 
+  bool includeAllAssets;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobCommandDto &&
-     other.command == command;
+     other.command == command &&
+     other.includeAllAssets == includeAllAssets;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (command.hashCode);
+    (command.hashCode) +
+    (includeAllAssets.hashCode);
 
   @override
-  String toString() => 'JobCommandDto[command=$command]';
+  String toString() => 'JobCommandDto[command=$command, includeAllAssets=$includeAllAssets]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'command'] = this.command;
+      json[r'includeAllAssets'] = this.includeAllAssets;
     return json;
   }
 
@@ -56,6 +62,7 @@ class JobCommandDto {
 
       return JobCommandDto(
         command: JobCommand.fromJson(json[r'command'])!,
+        includeAllAssets: mapValueOfType<bool>(json, r'includeAllAssets')!,
       );
     }
     return null;
@@ -106,6 +113,7 @@ class JobCommandDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'command',
+    'includeAllAssets',
   };
 }
 

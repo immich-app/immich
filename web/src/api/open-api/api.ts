@@ -1203,6 +1203,12 @@ export interface JobCommandDto {
      * @memberof JobCommandDto
      */
     'command': JobCommand;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof JobCommandDto
+     */
+    'includeAllAssets': boolean;
 }
 /**
  * 

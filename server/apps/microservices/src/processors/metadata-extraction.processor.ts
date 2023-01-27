@@ -216,7 +216,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      await this.exifRepository.save(newExif);
+      await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
     } catch (error: any) {
       this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
     }
@@ -327,7 +327,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      await this.exifRepository.save(newExif);
+      await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
       await this.assetRepository.update({ id: asset.id }, { duration: durationString, createdAt: createdAt });
     } catch (err) {
       // do nothing
