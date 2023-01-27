@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/album/ui/add_to_album_list.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
@@ -105,6 +106,22 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    void addToAlbum(Asset addToAlbumAsset) {
+      showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+        barrierColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        context: context,
+        builder: (BuildContext _) {
+          return AddToAlbumList(
+            asset: addToAlbumAsset,
+          );
+        },
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: TopControlAppBar(
@@ -130,6 +147,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
         }),
         onDeletePressed: () => handleDelete((assetList[indexOfAsset.value])),
+        onAddToAlbumPressed: () => addToAlbum(assetList[indexOfAsset.value]),
       ),
       body: SafeArea(
         child: PageView.builder(

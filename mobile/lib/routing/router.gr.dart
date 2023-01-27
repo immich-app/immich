@@ -60,7 +60,8 @@ class _$AppRouter extends RootStackRouter {
               isZoomedFunction: args.isZoomedFunction,
               isZoomedListener: args.isZoomedListener,
               loadPreview: args.loadPreview,
-              loadOriginal: args.loadOriginal));
+              loadOriginal: args.loadOriginal,
+              showExifSheet: args.showExifSheet));
     },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
@@ -87,7 +88,9 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
           routeData: routeData,
           child: CreateAlbumPage(
-              key: args.key, isSharedAlbum: args.isSharedAlbum));
+              key: args.key,
+              isSharedAlbum: args.isSharedAlbum,
+              initialAssets: args.initialAssets));
     },
     AssetSelectionRoute.name: (routeData) {
       return CustomPage<AssetSelectionPageResult?>(
@@ -307,7 +310,8 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
       required void Function() isZoomedFunction,
       required ValueNotifier<bool> isZoomedListener,
       required bool loadPreview,
-      required bool loadOriginal})
+      required bool loadOriginal,
+      void Function()? showExifSheet})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
             args: ImageViewerRouteArgs(
@@ -318,7 +322,8 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
                 isZoomedFunction: isZoomedFunction,
                 isZoomedListener: isZoomedListener,
                 loadPreview: loadPreview,
-                loadOriginal: loadOriginal));
+                loadOriginal: loadOriginal,
+                showExifSheet: showExifSheet));
 
   static const String name = 'ImageViewerRoute';
 }
@@ -332,7 +337,8 @@ class ImageViewerRouteArgs {
       required this.isZoomedFunction,
       required this.isZoomedListener,
       required this.loadPreview,
-      required this.loadOriginal});
+      required this.loadOriginal,
+      this.showExifSheet});
 
   final Key? key;
 
@@ -350,9 +356,11 @@ class ImageViewerRouteArgs {
 
   final bool loadOriginal;
 
+  final void Function()? showExifSheet;
+
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, loadPreview: $loadPreview, loadOriginal: $loadOriginal}';
+    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, loadPreview: $loadPreview, loadOriginal: $loadOriginal, showExifSheet: $showExifSheet}';
   }
 }
 
@@ -432,24 +440,31 @@ class SearchResultRouteArgs {
 /// generated route for
 /// [CreateAlbumPage]
 class CreateAlbumRoute extends PageRouteInfo<CreateAlbumRouteArgs> {
-  CreateAlbumRoute({Key? key, required bool isSharedAlbum})
+  CreateAlbumRoute(
+      {Key? key, required bool isSharedAlbum, List<Asset>? initialAssets})
       : super(CreateAlbumRoute.name,
             path: '/create-album-page',
-            args: CreateAlbumRouteArgs(key: key, isSharedAlbum: isSharedAlbum));
+            args: CreateAlbumRouteArgs(
+                key: key,
+                isSharedAlbum: isSharedAlbum,
+                initialAssets: initialAssets));
 
   static const String name = 'CreateAlbumRoute';
 }
 
 class CreateAlbumRouteArgs {
-  const CreateAlbumRouteArgs({this.key, required this.isSharedAlbum});
+  const CreateAlbumRouteArgs(
+      {this.key, required this.isSharedAlbum, this.initialAssets});
 
   final Key? key;
 
   final bool isSharedAlbum;
 
+  final List<Asset>? initialAssets;
+
   @override
   String toString() {
-    return 'CreateAlbumRouteArgs{key: $key, isSharedAlbum: $isSharedAlbum}';
+    return 'CreateAlbumRouteArgs{key: $key, isSharedAlbum: $isSharedAlbum, initialAssets: $initialAssets}';
   }
 }
 
