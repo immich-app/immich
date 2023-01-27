@@ -1,13 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {

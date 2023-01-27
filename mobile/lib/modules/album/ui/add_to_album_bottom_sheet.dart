@@ -96,7 +96,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
                       ),
                       TextButton.icon(
                         icon: const Icon(Icons.add),
-                        label: const Text('Create album'),
+                        label: const Text('Create new album'),
                         onPressed: () {
                           ref.watch(assetSelectionProvider.notifier).removeAll();
                           ref.watch(assetSelectionProvider.notifier).addNewAssets(assets);
