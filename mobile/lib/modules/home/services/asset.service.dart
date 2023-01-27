@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/utils/environment.dart';
 import 'package:immich_mobile/utils/openapi_extensions.dart';
 import 'package:immich_mobile/utils/tuple.dart';
 import 'package:logging/logging.dart';
@@ -52,6 +53,9 @@ class AssetService {
   /// if [urgent] is `true`, do not block by waiting on the background service
   /// to finish running. Returns `null` instead after a timeout.
   Future<List<Asset>?> getLocalAssets({bool urgent = false}) async {
+    if (ImmichEnvironment.instance.testMode) {
+      return [];
+    }
     try {
       final Future<bool> hasAccess = urgent
           ? _backgroundService.hasAccess

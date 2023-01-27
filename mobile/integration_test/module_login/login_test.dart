@@ -45,7 +45,7 @@ void main() async {
       await helper.navigationHelper.openSideDrawer();
       await helper.navigationHelper.clickSignOutButton();
 
-      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 5));
 
       expect(
         find.textContaining("login_form_button_text".tr()),

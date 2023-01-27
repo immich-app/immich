@@ -6,6 +6,7 @@ import 'package:integration_test/integration_test.dart';
 // ignore: depend_on_referenced_packages
 import 'package:meta/meta.dart';
 import 'package:immich_mobile/main.dart' as app;
+import 'package:path_provider/path_provider.dart';
 
 import 'login_helper.dart';
 import 'navigation_helper.dart';
@@ -38,7 +39,14 @@ class ImmichTestHelper {
     return binding;
   }
 
+  static Future<void> clearCacheFiles() async {
+    final temp = await getTemporaryDirectory();
+    temp.listSync().forEach((element) { element.deleteSync(recursive: true); });
+  }
+
   static Future<void> loadApp(WidgetTester tester) async {
+    // Clear cache
+    await clearCacheFiles();
     // Clear all data from Hive
     await Hive.deleteFromDisk();
     await app.openBoxes();
@@ -48,6 +56,7 @@ class ImmichTestHelper {
     await tester.pumpAndSettle();
     await EasyLocalization.ensureInitialized();
   }
+
 }
 
 @isTest
@@ -59,7 +68,6 @@ void immichWidgetTest(
     description,
     (widgetTester) async {
       ImmichEnvironment.instance.testMode = true;
-
       await ImmichTestHelper.loadApp(widgetTester);
       await test(widgetTester, ImmichTestHelper(widgetTester));
     },

@@ -59,6 +59,10 @@ class BackupService {
 
   /// Get duplicated asset id from Hive storage
   Set<String> getDuplicatedAssetIds() {
+    if (!Hive.isBoxOpen(duplicatedAssetsBox)) {
+      return {};
+    }
+
     HiveDuplicatedAssets duplicatedAssets =
         Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
                 .get(duplicatedAssetsKey) ??
