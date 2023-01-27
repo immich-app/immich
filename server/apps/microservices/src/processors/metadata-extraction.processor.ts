@@ -327,7 +327,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      await this.exifRepository.upsert(newExif, {conflictPaths: ['assetId']});
+      await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
       await this.assetRepository.update({ id: asset.id }, { duration: durationString, createdAt: createdAt });
     } catch (err) {
       // do nothing
